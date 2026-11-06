@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EndpointAccessType, OrganizationDetail } from "./types/index.js";
 
 /**
- * Response from RetrieveCurrentOrganization function
+ * Response from the RetrieveCurrentOrganization function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveCurrentOrganizationResponse {
+  "@odata.context"?: string;
   Detail: OrganizationDetail;
 }
 
@@ -56,8 +59,7 @@ export class RetrieveCurrentOrganizationFunction implements Executable<RetrieveC
   }
 
   async parseResponse(response: Response): Promise<RetrieveCurrentOrganizationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveCurrentOrganizationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveCurrentOrganizationResponse;
   }
 }

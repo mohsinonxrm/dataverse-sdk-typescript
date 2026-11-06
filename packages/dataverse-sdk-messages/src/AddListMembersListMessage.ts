@@ -47,9 +47,9 @@ export class AddListMembersListRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AddListMembersListResponse> {
+  parseResponse(_response: Response): Promise<AddListMembersListResponse> {
     // No return value (204 No Content)
-    return new AddListMembersListResponse();
+    return Promise.resolve(new AddListMembersListResponse());
   }
 }
 
@@ -61,7 +61,7 @@ export class AddListMembersListResponse extends OrganizationResponse {
     super("AddListMembersList");
   }
 
-  static fromResponse(_data: unknown): AddListMembersListResponse {
+  static fromResponse(_data?: unknown): AddListMembersListResponse {
     return new AddListMembersListResponse();
   }
 }

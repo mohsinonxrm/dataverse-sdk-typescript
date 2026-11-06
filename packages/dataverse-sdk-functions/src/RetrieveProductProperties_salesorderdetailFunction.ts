@@ -2,11 +2,14 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { dynamicproperty } from "./types/index.js";
 
 /**
- * Response from RetrieveProductProperties function
+ * Response from the RetrieveProductProperties function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveProductProperties_salesorderdetailResponse {
-  value: dynamicproperty[];
-}
+export type RetrieveProductProperties_salesorderdetailResponse = Array<
+  dynamicproperty & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * RetrieveProductProperties function
@@ -35,8 +38,11 @@ export class RetrieveProductProperties_salesorderdetailFunction implements Execu
   async parseResponse(
     response: Response
   ): Promise<RetrieveProductProperties_salesorderdetailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveProductProperties_salesorderdetailResponse;
-    return (await response.json()) as RetrieveProductProperties_salesorderdetailResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return (
+      (await response.json()) as { value: RetrieveProductProperties_salesorderdetailResponse }
+    ).value;
   }
 }

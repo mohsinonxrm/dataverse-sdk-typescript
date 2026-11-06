@@ -46,11 +46,11 @@ export class msdyn_AutonomousSQA_ProcessBANTAndPIExtractionRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse> {
     // No return value (204 No Content)
-    return new msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse();
+    return Promise.resolve(new msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse extends Orga
     super("msdyn_AutonomousSQA_ProcessBANTAndPIExtraction");
   }
 
-  static fromResponse(_data: unknown): msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse {
+  static fromResponse(_data?: unknown): msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse {
     return new msdyn_AutonomousSQA_ProcessBANTAndPIExtractionResponse();
   }
 }

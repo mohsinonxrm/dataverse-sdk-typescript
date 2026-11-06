@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_getsuppressionlistentriesResponse as msdynmkt_getsuppressionlistentriesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_getsuppressionlistentries message, by their CSDL names. A parameter the CSDL declares
@@ -46,23 +44,35 @@ export class msdynmkt_getsuppressionlistentriesRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_getsuppressionlistentriesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_getsuppressionlistentriesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_getsuppressionlistentriesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_getsuppressionlistentries action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_getsuppressionlistentriesResult {
+  "@odata.context"?: string;
+  msdynmkt_getsuppressionlistentriesresponse: string;
+}
+
+/**
  * msdynmkt_getsuppressionlistentries response message
+ *
+ * `result` is the value the msdynmkt_getsuppressionlistentries action returns (see {@link msdynmkt_getsuppressionlistentriesResult}).
  */
 export class msdynmkt_getsuppressionlistentriesResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_getsuppressionlistentriesResponseData) {
+  constructor(public result: msdynmkt_getsuppressionlistentriesResult) {
     super("msdynmkt_getsuppressionlistentries");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_getsuppressionlistentriesResponse {
     return new msdynmkt_getsuppressionlistentriesResponse(
-      responseObject<msdynmkt_getsuppressionlistentriesResponseData>(data)
+      data as msdynmkt_getsuppressionlistentriesResult
     );
   }
 }

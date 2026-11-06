@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetLeadCallPrepSheetDetailsResponse as msdyn_GetLeadCallPrepSheetDetailsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetLeadCallPrepSheetDetails message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,36 @@ export class msdyn_GetLeadCallPrepSheetDetailsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetLeadCallPrepSheetDetailsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetLeadCallPrepSheetDetailsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetLeadCallPrepSheetDetailsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetLeadCallPrepSheetDetails action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetLeadCallPrepSheetDetailsResult {
+  "@odata.context"?: string;
+  msdyn_label: string;
+  msdyn_url: string;
+}
+
+/**
  * msdyn_GetLeadCallPrepSheetDetails response message
+ *
+ * `result` is the value the msdyn_GetLeadCallPrepSheetDetails action returns (see {@link msdyn_GetLeadCallPrepSheetDetailsResult}).
  */
 export class msdyn_GetLeadCallPrepSheetDetailsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetLeadCallPrepSheetDetailsResponseData) {
+  constructor(public result: msdyn_GetLeadCallPrepSheetDetailsResult) {
     super("msdyn_GetLeadCallPrepSheetDetails");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetLeadCallPrepSheetDetailsResponse {
     return new msdyn_GetLeadCallPrepSheetDetailsResponse(
-      responseObject<msdyn_GetLeadCallPrepSheetDetailsResponseData>(data)
+      data as msdyn_GetLeadCallPrepSheetDetailsResult
     );
   }
 }

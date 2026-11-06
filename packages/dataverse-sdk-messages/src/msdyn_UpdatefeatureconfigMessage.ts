@@ -44,9 +44,9 @@ export class msdyn_UpdatefeatureconfigRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdatefeatureconfigResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdatefeatureconfigResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdatefeatureconfigResponse();
+    return Promise.resolve(new msdyn_UpdatefeatureconfigResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_UpdatefeatureconfigResponse extends OrganizationResponse {
     super("msdyn_Updatefeatureconfig");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdatefeatureconfigResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdatefeatureconfigResponse {
     return new msdyn_UpdatefeatureconfigResponse();
   }
 }

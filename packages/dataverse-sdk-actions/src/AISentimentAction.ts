@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AISentiment action
+ * Response from the AISentiment action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface AISentimentResponse {
+  "@odata.context"?: string;
   AnalyzedSentiment: string;
 }
 
@@ -42,8 +45,7 @@ export class AISentimentAction implements Executable<AISentimentResponse> {
   }
 
   async parseResponse(response: Response): Promise<AISentimentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AISentimentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as AISentimentResponse;
   }
 }

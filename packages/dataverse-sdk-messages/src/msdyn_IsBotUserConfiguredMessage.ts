@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_IsBotUserConfiguredResponse as msdyn_IsBotUserConfiguredResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_IsBotUserConfigured message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_IsBotUserConfiguredRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsBotUserConfiguredResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_IsBotUserConfiguredResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IsBotUserConfiguredResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IsBotUserConfigured action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IsBotUserConfiguredResult {
+  "@odata.context"?: string;
+  IsConfigurationValid: boolean;
+}
+
+/**
  * msdyn_IsBotUserConfigured response message
+ *
+ * `result` is the value the msdyn_IsBotUserConfigured action returns (see {@link msdyn_IsBotUserConfiguredResult}).
  */
 export class msdyn_IsBotUserConfiguredResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IsBotUserConfiguredResponseData) {
+  constructor(public result: msdyn_IsBotUserConfiguredResult) {
     super("msdyn_IsBotUserConfigured");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IsBotUserConfiguredResponse {
-    return new msdyn_IsBotUserConfiguredResponse(
-      responseObject<msdyn_IsBotUserConfiguredResponseData>(data)
-    );
+    return new msdyn_IsBotUserConfiguredResponse(data as msdyn_IsBotUserConfiguredResult);
   }
 }

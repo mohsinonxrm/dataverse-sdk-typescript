@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RemoveFromQueue action
+ * Response from the RemoveFromQueue action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RemoveFromQueueResponse {
-  // No content returned
-}
+export type RemoveFromQueueResponse = void;
 
 /**
  * RemoveFromQueue action
@@ -31,9 +31,8 @@ export class RemoveFromQueueAction implements Executable<RemoveFromQueueResponse
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveFromQueueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RemoveFromQueueResponse;
-    return (await response.json()) as RemoveFromQueueResponse;
+  parseResponse(_response: Response): Promise<RemoveFromQueueResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

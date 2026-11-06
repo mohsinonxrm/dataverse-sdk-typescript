@@ -44,11 +44,11 @@ export class msdyn_QueueItemOperationsOnLwiDeleteOrClosureRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse> {
     // No return value (204 No Content)
-    return new msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse();
+    return Promise.resolve(new msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse extends Organ
     super("msdyn_QueueItemOperationsOnLwiDeleteOrClosure");
   }
 
-  static fromResponse(_data: unknown): msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse {
+  static fromResponse(_data?: unknown): msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse {
     return new msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse();
   }
 }

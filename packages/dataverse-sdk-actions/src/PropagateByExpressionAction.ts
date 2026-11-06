@@ -6,9 +6,12 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PropagationOwnershipOptions, TypedQueryBase } from "./types/index.js";
 
 /**
- * Response from PropagateByExpression action
+ * Response from the PropagateByExpression action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PropagateByExpressionResponse {
+  "@odata.context"?: string;
   BulkOperationId: string;
 }
 
@@ -66,8 +69,7 @@ export class PropagateByExpressionAction implements Executable<PropagateByExpres
   }
 
   async parseResponse(response: Response): Promise<PropagateByExpressionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PropagateByExpressionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as PropagateByExpressionResponse;
   }
 }

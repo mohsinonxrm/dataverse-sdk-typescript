@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAgent_RetrieveConfiguration action
+ * Response from the msdyn_SalesAgent_RetrieveConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesAgent_RetrieveConfigurationResponse {
+  "@odata.context"?: string;
   FeatureName: string;
   Fields: string;
   Message: string;
@@ -50,8 +53,7 @@ export class msdyn_SalesAgent_RetrieveConfigurationAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgent_RetrieveConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SalesAgent_RetrieveConfigurationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SalesAgent_RetrieveConfigurationResponse;
   }
 }

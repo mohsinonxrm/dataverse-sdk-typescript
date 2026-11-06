@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetDealRiskSuggestedActionsResponse as msdyn_GetDealRiskSuggestedActionsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetDealRiskSuggestedActions message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,35 @@ export class msdyn_GetDealRiskSuggestedActionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetDealRiskSuggestedActionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetDealRiskSuggestedActionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetDealRiskSuggestedActionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetDealRiskSuggestedActions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetDealRiskSuggestedActionsResult {
+  "@odata.context"?: string;
+  msdyn_Response: string;
+}
+
+/**
  * msdyn_GetDealRiskSuggestedActions response message
+ *
+ * `result` is the value the msdyn_GetDealRiskSuggestedActions action returns (see {@link msdyn_GetDealRiskSuggestedActionsResult}).
  */
 export class msdyn_GetDealRiskSuggestedActionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetDealRiskSuggestedActionsResponseData) {
+  constructor(public result: msdyn_GetDealRiskSuggestedActionsResult) {
     super("msdyn_GetDealRiskSuggestedActions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetDealRiskSuggestedActionsResponse {
     return new msdyn_GetDealRiskSuggestedActionsResponse(
-      responseObject<msdyn_GetDealRiskSuggestedActionsResponseData>(data)
+      data as msdyn_GetDealRiskSuggestedActionsResult
     );
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_UserLogout action
+ * Response from the CCaaS_UserLogout action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_UserLogoutResponse {
+  "@odata.context"?: string;
   Message: string;
 }
 
@@ -44,8 +47,7 @@ export class CCaaS_UserLogoutAction implements Executable<CCaaS_UserLogoutRespon
   }
 
   async parseResponse(response: Response): Promise<CCaaS_UserLogoutResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_UserLogoutResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_UserLogoutResponse;
   }
 }

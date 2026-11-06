@@ -50,9 +50,9 @@ export class CCaaS_ConversationTimeoutRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_ConversationTimeoutResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_ConversationTimeoutResponse> {
     // No return value (204 No Content)
-    return new CCaaS_ConversationTimeoutResponse();
+    return Promise.resolve(new CCaaS_ConversationTimeoutResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class CCaaS_ConversationTimeoutResponse extends OrganizationResponse {
     super("CCaaS_ConversationTimeout");
   }
 
-  static fromResponse(_data: unknown): CCaaS_ConversationTimeoutResponse {
+  static fromResponse(_data?: unknown): CCaaS_ConversationTimeoutResponse {
     return new CCaaS_ConversationTimeoutResponse();
   }
 }

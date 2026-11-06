@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_CreateProactiveSimpleJourney action
+ * Response from the CCaaS_CreateProactiveSimpleJourney action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_CreateProactiveSimpleJourneyResponse {
-  // No content returned
-}
+export type CCaaS_CreateProactiveSimpleJourneyResponse = void;
 
 /**
  * Parameters of the CCaaS_CreateProactiveSimpleJourney action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class CCaaS_CreateProactiveSimpleJourneyAction implements Executable<CCaa
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_CreateProactiveSimpleJourneyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_CreateProactiveSimpleJourneyResponse;
-    return (await response.json()) as CCaaS_CreateProactiveSimpleJourneyResponse;
+  parseResponse(_response: Response): Promise<CCaaS_CreateProactiveSimpleJourneyResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

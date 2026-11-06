@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_RetrieveRelationshipActivityKPIValuesResponse as msdyn_RetrieveRelationshipActivityKPIValuesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveRelationshipActivityKPIValues message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,37 @@ export class msdyn_RetrieveRelationshipActivityKPIValuesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveRelationshipActivityKPIValuesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RetrieveRelationshipActivityKPIValuesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveRelationshipActivityKPIValuesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveRelationshipActivityKPIValues action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveRelationshipActivityKPIValuesResult {
+  "@odata.context"?: string;
+  ErrorList: string;
+  KPIValues: string;
+  LastModifiedOn: string;
+}
+
+/**
  * msdyn_RetrieveRelationshipActivityKPIValues response message
+ *
+ * `result` is the value the msdyn_RetrieveRelationshipActivityKPIValues action returns (see {@link msdyn_RetrieveRelationshipActivityKPIValuesResult}).
  */
 export class msdyn_RetrieveRelationshipActivityKPIValuesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveRelationshipActivityKPIValuesResponseData) {
+  constructor(public result: msdyn_RetrieveRelationshipActivityKPIValuesResult) {
     super("msdyn_RetrieveRelationshipActivityKPIValues");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveRelationshipActivityKPIValuesResponse {
     return new msdyn_RetrieveRelationshipActivityKPIValuesResponse(
-      responseObject<msdyn_RetrieveRelationshipActivityKPIValuesResponseData>(data)
+      data as msdyn_RetrieveRelationshipActivityKPIValuesResult
     );
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from CCaaS_GetTeamsPresenceSubscriptionConfig function
+ * Response from the CCaaS_GetTeamsPresenceSubscriptionConfig function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_GetTeamsPresenceSubscriptionConfigResponse {
+  "@odata.context"?: string;
   AzureADClientId: string;
   CertificateId: string;
   ClientState: string;
@@ -56,8 +59,7 @@ export class CCaaS_GetTeamsPresenceSubscriptionConfigFunction implements Executa
   async parseResponse(
     response: Response
   ): Promise<CCaaS_GetTeamsPresenceSubscriptionConfigResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_GetTeamsPresenceSubscriptionConfigResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_GetTeamsPresenceSubscriptionConfigResponse;
   }
 }

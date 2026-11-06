@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { SendAppNotificationResponse as SendAppNotificationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the SendAppNotification message, by their CSDL names. A parameter the CSDL declares
@@ -63,21 +61,33 @@ export class SendAppNotificationRequest
   }
 
   async parseResponse(response: Response): Promise<SendAppNotificationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return SendAppNotificationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return SendAppNotificationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the SendAppNotification action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface SendAppNotificationResult {
+  "@odata.context"?: string;
+  NotificationId: string;
+}
+
+/**
  * SendAppNotification response message
+ *
+ * `result` is the value the SendAppNotification action returns (see {@link SendAppNotificationResult}).
  */
 export class SendAppNotificationResponse extends OrganizationResponse {
-  constructor(public result: SendAppNotificationResponseData) {
+  constructor(public result: SendAppNotificationResult) {
     super("SendAppNotification");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): SendAppNotificationResponse {
-    return new SendAppNotificationResponse(responseObject<SendAppNotificationResponseData>(data));
+    return new SendAppNotificationResponse(data as SendAppNotificationResult);
   }
 }

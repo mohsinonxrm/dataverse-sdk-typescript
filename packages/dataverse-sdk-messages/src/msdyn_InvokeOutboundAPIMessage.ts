@@ -47,9 +47,9 @@ export class msdyn_InvokeOutboundAPIRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_InvokeOutboundAPIResponse> {
+  parseResponse(_response: Response): Promise<msdyn_InvokeOutboundAPIResponse> {
     // No return value (204 No Content)
-    return new msdyn_InvokeOutboundAPIResponse();
+    return Promise.resolve(new msdyn_InvokeOutboundAPIResponse());
   }
 }
 
@@ -61,7 +61,7 @@ export class msdyn_InvokeOutboundAPIResponse extends OrganizationResponse {
     super("msdyn_InvokeOutboundAPI");
   }
 
-  static fromResponse(_data: unknown): msdyn_InvokeOutboundAPIResponse {
+  static fromResponse(_data?: unknown): msdyn_InvokeOutboundAPIResponse {
     return new msdyn_InvokeOutboundAPIResponse();
   }
 }

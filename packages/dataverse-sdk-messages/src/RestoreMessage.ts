@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { RestoreResponse as RestoreResponseData } from "./types/index.js";
 
 /**
  * Parameters of the Restore message, by their CSDL names. A parameter the CSDL declares
@@ -44,21 +42,33 @@ export class RestoreRequest extends OrganizationRequest implements Executable<Re
   }
 
   async parseResponse(response: Response): Promise<RestoreResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RestoreResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RestoreResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the Restore action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RestoreResult {
+  "@odata.context"?: string;
+  id: string;
+}
+
+/**
  * Restore response message
+ *
+ * `result` is the value the Restore action returns (see {@link RestoreResult}).
  */
 export class RestoreResponse extends OrganizationResponse {
-  constructor(public result: RestoreResponseData) {
+  constructor(public result: RestoreResult) {
     super("Restore");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RestoreResponse {
-    return new RestoreResponse(responseObject<RestoreResponseData>(data));
+    return new RestoreResponse(data as RestoreResult);
   }
 }

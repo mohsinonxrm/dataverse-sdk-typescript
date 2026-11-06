@@ -1,8 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { RetrieveFeatureControlStringSettingsForNamespaceResponse as RetrieveFeatureControlStringSettingsForNamespaceResponseData } from "./types/index.js";
+import type { FeatureControlStringSettingData } from "./types/index.js";
 
 /**
  * Parameters of the RetrieveFeatureControlStringSettingsForNamespace message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +46,7 @@ export class RetrieveFeatureControlStringSettingsForNamespaceRequest
   async parseResponse(
     response: Response
   ): Promise<RetrieveFeatureControlStringSettingsForNamespaceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return RetrieveFeatureControlStringSettingsForNamespaceResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RetrieveFeatureControlStringSettingsForNamespaceResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +54,29 @@ export class RetrieveFeatureControlStringSettingsForNamespaceRequest
 }
 
 /**
+ * Response from the RetrieveFeatureControlStringSettingsForNamespace action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RetrieveFeatureControlStringSettingsForNamespaceResult {
+  "@odata.context"?: string;
+  FeatureControlStringSettingCollection: FeatureControlStringSettingData[];
+}
+
+/**
  * RetrieveFeatureControlStringSettingsForNamespace response message
+ *
+ * `result` is the value the RetrieveFeatureControlStringSettingsForNamespace action returns (see {@link RetrieveFeatureControlStringSettingsForNamespaceResult}).
  */
 export class RetrieveFeatureControlStringSettingsForNamespaceResponse extends OrganizationResponse {
-  constructor(public result: RetrieveFeatureControlStringSettingsForNamespaceResponseData) {
+  constructor(public result: RetrieveFeatureControlStringSettingsForNamespaceResult) {
     super("RetrieveFeatureControlStringSettingsForNamespace");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RetrieveFeatureControlStringSettingsForNamespaceResponse {
     return new RetrieveFeatureControlStringSettingsForNamespaceResponse(
-      responseObject<RetrieveFeatureControlStringSettingsForNamespaceResponseData>(data)
+      data as RetrieveFeatureControlStringSettingsForNamespaceResult
     );
   }
 }

@@ -51,9 +51,9 @@ export class RemoveMembersTeamRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveMembersTeamResponse> {
+  parseResponse(_response: Response): Promise<RemoveMembersTeamResponse> {
     // No return value (204 No Content)
-    return new RemoveMembersTeamResponse();
+    return Promise.resolve(new RemoveMembersTeamResponse());
   }
 }
 
@@ -65,7 +65,7 @@ export class RemoveMembersTeamResponse extends OrganizationResponse {
     super("RemoveMembersTeam");
   }
 
-  static fromResponse(_data: unknown): RemoveMembersTeamResponse {
+  static fromResponse(_data?: unknown): RemoveMembersTeamResponse {
     return new RemoveMembersTeamResponse();
   }
 }

@@ -26,9 +26,9 @@ export class msdyn_OperatingHoursUpgradeFlowRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OperatingHoursUpgradeFlowResponse> {
+  parseResponse(_response: Response): Promise<msdyn_OperatingHoursUpgradeFlowResponse> {
     // No return value (204 No Content)
-    return new msdyn_OperatingHoursUpgradeFlowResponse();
+    return Promise.resolve(new msdyn_OperatingHoursUpgradeFlowResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_OperatingHoursUpgradeFlowResponse extends OrganizationRespons
     super("msdyn_OperatingHoursUpgradeFlow");
   }
 
-  static fromResponse(_data: unknown): msdyn_OperatingHoursUpgradeFlowResponse {
+  static fromResponse(_data?: unknown): msdyn_OperatingHoursUpgradeFlowResponse {
     return new msdyn_OperatingHoursUpgradeFlowResponse();
   }
 }

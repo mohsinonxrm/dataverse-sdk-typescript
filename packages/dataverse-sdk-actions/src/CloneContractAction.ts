@@ -3,14 +3,13 @@ import { requestBody } from "./internal/requestBody.js";
 import type { contract } from "./types/index.js";
 
 /**
- * Response from CloneContract action
+ * Response from the CloneContract action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface CloneContractResponse extends contract {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type CloneContractResponse =
+  (contract & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
 
 /**
  * Parameters of the CloneContract action, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +52,9 @@ export class CloneContractAction implements Executable<CloneContractResponse> {
   }
 
   async parseResponse(response: Response): Promise<CloneContractResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CloneContractResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as CloneContractResponse;
   }
 }

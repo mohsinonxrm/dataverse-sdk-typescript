@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from EmptyRecycleBin action
+ * Response from the EmptyRecycleBin action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface EmptyRecycleBinResponse {
+  "@odata.context"?: string;
   DeletedCount: number;
 }
 
@@ -26,8 +29,7 @@ export class EmptyRecycleBinAction implements Executable<EmptyRecycleBinResponse
   }
 
   async parseResponse(response: Response): Promise<EmptyRecycleBinResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as EmptyRecycleBinResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as EmptyRecycleBinResponse;
   }
 }

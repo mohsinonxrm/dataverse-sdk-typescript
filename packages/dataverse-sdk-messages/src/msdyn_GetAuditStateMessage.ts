@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetAuditStateResponse as msdyn_GetAuditStateResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetAuditState request message
@@ -29,21 +27,33 @@ export class msdyn_GetAuditStateRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAuditStateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetAuditStateResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAuditStateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAuditState action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAuditStateResult {
+  "@odata.context"?: string;
+  msdyn_output: string;
+}
+
+/**
  * msdyn_GetAuditState response message
+ *
+ * `result` is the value the msdyn_GetAuditState action returns (see {@link msdyn_GetAuditStateResult}).
  */
 export class msdyn_GetAuditStateResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAuditStateResponseData) {
+  constructor(public result: msdyn_GetAuditStateResult) {
     super("msdyn_GetAuditState");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAuditStateResponse {
-    return new msdyn_GetAuditStateResponse(responseObject<msdyn_GetAuditStateResponseData>(data));
+    return new msdyn_GetAuditStateResponse(data as msdyn_GetAuditStateResult);
   }
 }

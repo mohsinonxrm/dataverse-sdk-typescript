@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_knowledgeHarvestCreateArticleResponse as msdyn_knowledgeHarvestCreateArticleResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_knowledgeHarvestCreateArticle message, by their CSDL names. A parameter the CSDL declares
@@ -53,24 +51,35 @@ export class msdyn_knowledgeHarvestCreateArticleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_knowledgeHarvestCreateArticleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_knowledgeHarvestCreateArticleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_knowledgeHarvestCreateArticleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_knowledgeHarvestCreateArticle action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_knowledgeHarvestCreateArticleResult {
+  "@odata.context"?: string;
+  msdyn_apiResponse: string;
+}
+
+/**
  * msdyn_knowledgeHarvestCreateArticle response message
+ *
+ * `result` is the value the msdyn_knowledgeHarvestCreateArticle action returns (see {@link msdyn_knowledgeHarvestCreateArticleResult}).
  */
 export class msdyn_knowledgeHarvestCreateArticleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_knowledgeHarvestCreateArticleResponseData) {
+  constructor(public result: msdyn_knowledgeHarvestCreateArticleResult) {
     super("msdyn_knowledgeHarvestCreateArticle");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_knowledgeHarvestCreateArticleResponse {
     return new msdyn_knowledgeHarvestCreateArticleResponse(
-      responseObject<msdyn_knowledgeHarvestCreateArticleResponseData>(data)
+      data as msdyn_knowledgeHarvestCreateArticleResult
     );
   }
 }

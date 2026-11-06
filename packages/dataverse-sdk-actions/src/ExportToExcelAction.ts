@@ -5,9 +5,12 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { InputArgumentCollection } from "./types/index.js";
 
 /**
- * Response from ExportToExcel action
+ * Response from the ExportToExcel action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ExportToExcelResponse {
+  "@odata.context"?: string;
   ExcelFile: string;
 }
 
@@ -53,8 +56,7 @@ export class ExportToExcelAction implements Executable<ExportToExcelResponse> {
   }
 
   async parseResponse(response: Response): Promise<ExportToExcelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ExportToExcelResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ExportToExcelResponse;
   }
 }

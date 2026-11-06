@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetSimulationEligibilityResponse as msdyn_GetSimulationEligibilityResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSimulationEligibility request message
@@ -29,23 +27,33 @@ export class msdyn_GetSimulationEligibilityRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSimulationEligibilityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSimulationEligibilityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSimulationEligibilityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSimulationEligibility action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSimulationEligibilityResult {
+  "@odata.context"?: string;
+  msdyn_simulationenabled: boolean;
+}
+
+/**
  * msdyn_GetSimulationEligibility response message
+ *
+ * `result` is the value the msdyn_GetSimulationEligibility action returns (see {@link msdyn_GetSimulationEligibilityResult}).
  */
 export class msdyn_GetSimulationEligibilityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSimulationEligibilityResponseData) {
+  constructor(public result: msdyn_GetSimulationEligibilityResult) {
     super("msdyn_GetSimulationEligibility");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSimulationEligibilityResponse {
-    return new msdyn_GetSimulationEligibilityResponse(
-      responseObject<msdyn_GetSimulationEligibilityResponseData>(data)
-    );
+    return new msdyn_GetSimulationEligibilityResponse(data as msdyn_GetSimulationEligibilityResult);
   }
 }

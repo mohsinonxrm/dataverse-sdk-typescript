@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DeleteOQOILineWithSkipPricingCalculation action
+ * Response from the DeleteOQOILineWithSkipPricingCalculation action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeleteOQOILineWithSkipPricingCalculationResponse {
-  // No content returned
-}
+export type DeleteOQOILineWithSkipPricingCalculationResponse = void;
 
 /**
  * Parameters of the DeleteOQOILineWithSkipPricingCalculation action, by their CSDL names. A parameter the CSDL declares
@@ -45,11 +45,8 @@ export class DeleteOQOILineWithSkipPricingCalculationAction implements Executabl
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<DeleteOQOILineWithSkipPricingCalculationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DeleteOQOILineWithSkipPricingCalculationResponse;
-    return (await response.json()) as DeleteOQOILineWithSkipPricingCalculationResponse;
+  parseResponse(_response: Response): Promise<DeleteOQOILineWithSkipPricingCalculationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

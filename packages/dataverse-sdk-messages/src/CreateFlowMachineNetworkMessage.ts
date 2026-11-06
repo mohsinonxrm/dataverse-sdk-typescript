@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CreateFlowMachineNetworkResponse as CreateFlowMachineNetworkResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CreateFlowMachineNetwork message, by their CSDL names. A parameter the CSDL declares
@@ -56,23 +54,33 @@ export class CreateFlowMachineNetworkRequest
   }
 
   async parseResponse(response: Response): Promise<CreateFlowMachineNetworkResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CreateFlowMachineNetworkResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CreateFlowMachineNetworkResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateFlowMachineNetwork action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateFlowMachineNetworkResult {
+  "@odata.context"?: string;
+  flowmachinenetworkid: string;
+}
+
+/**
  * CreateFlowMachineNetwork response message
+ *
+ * `result` is the value the CreateFlowMachineNetwork action returns (see {@link CreateFlowMachineNetworkResult}).
  */
 export class CreateFlowMachineNetworkResponse extends OrganizationResponse {
-  constructor(public result: CreateFlowMachineNetworkResponseData) {
+  constructor(public result: CreateFlowMachineNetworkResult) {
     super("CreateFlowMachineNetwork");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateFlowMachineNetworkResponse {
-    return new CreateFlowMachineNetworkResponse(
-      responseObject<CreateFlowMachineNetworkResponseData>(data)
-    );
+    return new CreateFlowMachineNetworkResponse(data as CreateFlowMachineNetworkResult);
   }
 }

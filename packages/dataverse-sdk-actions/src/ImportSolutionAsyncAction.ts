@@ -4,9 +4,12 @@ import { enumBody } from "./internal/enumBody.js";
 import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
 
 /**
- * Response from ImportSolutionAsync action
+ * Response from the ImportSolutionAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ImportSolutionAsyncResponse {
+  "@odata.context"?: string;
   AsyncOperationId: string;
   ImportJobKey: string;
 }
@@ -77,8 +80,7 @@ export class ImportSolutionAsyncAction implements Executable<ImportSolutionAsync
   }
 
   async parseResponse(response: Response): Promise<ImportSolutionAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ImportSolutionAsyncResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ImportSolutionAsyncResponse;
   }
 }

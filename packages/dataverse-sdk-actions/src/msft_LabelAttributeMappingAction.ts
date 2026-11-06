@@ -1,13 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msft_LabelAttributeMapping action
+ * Response from the msft_LabelAttributeMapping action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface msft_LabelAttributeMappingResponse {
-  value: EntityReference[];
-}
+export type msft_LabelAttributeMappingResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the msft_LabelAttributeMapping action, by their CSDL names. A parameter the CSDL declares
@@ -43,8 +47,9 @@ export class msft_LabelAttributeMappingAction implements Executable<msft_LabelAt
   }
 
   async parseResponse(response: Response): Promise<msft_LabelAttributeMappingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msft_LabelAttributeMappingResponse;
-    return (await response.json()) as msft_LabelAttributeMappingResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: msft_LabelAttributeMappingResponse }).value;
   }
 }

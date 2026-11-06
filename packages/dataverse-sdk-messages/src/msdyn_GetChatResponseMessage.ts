@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetChatResponseResponse as msdyn_GetChatResponseResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetChatResponse message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_GetChatResponseRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetChatResponseResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetChatResponseResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetChatResponseResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetChatResponse action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetChatResponseResult {
+  "@odata.context"?: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_GetChatResponse response message
+ *
+ * `result` is the value the msdyn_GetChatResponse action returns (see {@link msdyn_GetChatResponseResult}).
  */
 export class msdyn_GetChatResponseResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetChatResponseResponseData) {
+  constructor(public result: msdyn_GetChatResponseResult) {
     super("msdyn_GetChatResponse");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetChatResponseResponse {
-    return new msdyn_GetChatResponseResponse(
-      responseObject<msdyn_GetChatResponseResponseData>(data)
-    );
+    return new msdyn_GetChatResponseResponse(data as msdyn_GetChatResponseResult);
   }
 }

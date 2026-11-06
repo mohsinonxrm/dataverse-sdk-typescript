@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from AppendRelatedParty action
+ * Response from the AppendRelatedParty action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AppendRelatedPartyResponse {
-  // No content returned
-}
+export type AppendRelatedPartyResponse = void;
 
 /**
  * Parameters of the AppendRelatedParty action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class AppendRelatedPartyAction implements Executable<AppendRelatedPartyRe
     };
   }
 
-  async parseResponse(response: Response): Promise<AppendRelatedPartyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AppendRelatedPartyResponse;
-    return (await response.json()) as AppendRelatedPartyResponse;
+  parseResponse(_response: Response): Promise<AppendRelatedPartyResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

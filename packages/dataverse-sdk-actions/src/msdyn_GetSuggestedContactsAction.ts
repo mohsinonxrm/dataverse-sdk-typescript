@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetSuggestedContacts action
+ * Response from the msdyn_GetSuggestedContacts action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetSuggestedContactsResponse {
+  "@odata.context"?: string;
   IsUserLevelLocalized: boolean;
   SuggestedContacts: string;
 }
@@ -45,8 +48,7 @@ export class msdyn_GetSuggestedContactsAction implements Executable<msdyn_GetSug
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSuggestedContactsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetSuggestedContactsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetSuggestedContactsResponse;
   }
 }

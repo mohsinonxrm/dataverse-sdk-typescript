@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRule request message
@@ -31,9 +29,7 @@ export class msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,20 +37,33 @@ export class msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleRequest
 }
 
 /**
+ * Response from the msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRule response message
+ *
+ * `result` is the value the msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRule action returns (see {@link msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResult}).
  */
 export class msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(
-    public result: msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponseData
-  ) {
+  constructor(public result: msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResult) {
     super("msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse {
     return new msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse(
-      responseObject<msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+      data as msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResult
     );
   }
 }

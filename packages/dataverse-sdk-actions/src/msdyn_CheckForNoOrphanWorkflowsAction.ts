@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CheckForNoOrphanWorkflows action
+ * Response from the msdyn_CheckForNoOrphanWorkflows action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckForNoOrphanWorkflowsResponse {
+  "@odata.context"?: string;
   Message: string;
   ResultEntities: string;
   ReturnLevel: number;
@@ -46,8 +49,7 @@ export class msdyn_CheckForNoOrphanWorkflowsAction implements Executable<msdyn_C
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForNoOrphanWorkflowsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CheckForNoOrphanWorkflowsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CheckForNoOrphanWorkflowsResponse;
   }
 }

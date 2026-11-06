@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetAllAttributesData action
+ * Response from the msdyn_GetAllAttributesData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetAllAttributesDataResponse {
+  "@odata.context"?: string;
   Response: string;
 }
 
@@ -44,8 +47,7 @@ export class msdyn_GetAllAttributesDataAction implements Executable<msdyn_GetAll
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAllAttributesDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetAllAttributesDataResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetAllAttributesDataResponse;
   }
 }

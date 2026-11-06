@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_ValidateTSIKeyResponse as msdyn_ValidateTSIKeyResponseData } from "./types/index.js";
 
 /**
  * msdyn_ValidateTSIKey request message
@@ -29,21 +27,33 @@ export class msdyn_ValidateTSIKeyRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ValidateTSIKeyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ValidateTSIKeyResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ValidateTSIKeyResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ValidateTSIKey action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ValidateTSIKeyResult {
+  "@odata.context"?: string;
+  Message: string;
+}
+
+/**
  * msdyn_ValidateTSIKey response message
+ *
+ * `result` is the value the msdyn_ValidateTSIKey action returns (see {@link msdyn_ValidateTSIKeyResult}).
  */
 export class msdyn_ValidateTSIKeyResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ValidateTSIKeyResponseData) {
+  constructor(public result: msdyn_ValidateTSIKeyResult) {
     super("msdyn_ValidateTSIKey");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ValidateTSIKeyResponse {
-    return new msdyn_ValidateTSIKeyResponse(responseObject<msdyn_ValidateTSIKeyResponseData>(data));
+    return new msdyn_ValidateTSIKeyResponse(data as msdyn_ValidateTSIKeyResult);
   }
 }

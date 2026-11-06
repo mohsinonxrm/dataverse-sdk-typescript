@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdn_evaluationplanorchestrator action
+ * Response from the msdn_evaluationplanorchestrator action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdn_evaluationplanorchestratorResponse {
+  "@odata.context"?: string;
   Status: boolean;
 }
 
@@ -42,8 +45,7 @@ export class msdn_evaluationplanorchestratorAction implements Executable<msdn_ev
   }
 
   async parseResponse(response: Response): Promise<msdn_evaluationplanorchestratorResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdn_evaluationplanorchestratorResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdn_evaluationplanorchestratorResponse;
   }
 }

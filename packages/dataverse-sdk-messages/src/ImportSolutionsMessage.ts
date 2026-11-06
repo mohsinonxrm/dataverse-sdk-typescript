@@ -54,9 +54,9 @@ export class ImportSolutionsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ImportSolutionsResponse> {
+  parseResponse(_response: Response): Promise<ImportSolutionsResponse> {
     // No return value (204 No Content)
-    return new ImportSolutionsResponse();
+    return Promise.resolve(new ImportSolutionsResponse());
   }
 }
 
@@ -68,7 +68,7 @@ export class ImportSolutionsResponse extends OrganizationResponse {
     super("ImportSolutions");
   }
 
-  static fromResponse(_data: unknown): ImportSolutionsResponse {
+  static fromResponse(_data?: unknown): ImportSolutionsResponse {
     return new ImportSolutionsResponse();
   }
 }

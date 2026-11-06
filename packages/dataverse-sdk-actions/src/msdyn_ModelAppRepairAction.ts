@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_ModelAppRepair action
+ * Response from the msdyn_ModelAppRepair action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ModelAppRepairResponse {
+  "@odata.context"?: string;
   HelpLink: string;
   ResolutionState: number;
   ResolvedRecordsCount: number;
@@ -46,8 +49,7 @@ export class msdyn_ModelAppRepairAction implements Executable<msdyn_ModelAppRepa
   }
 
   async parseResponse(response: Response): Promise<msdyn_ModelAppRepairResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ModelAppRepairResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ModelAppRepairResponse;
   }
 }

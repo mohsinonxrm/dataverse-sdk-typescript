@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from CalculatePrice action
+ * Response from the CalculatePrice action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CalculatePriceResponse {
-  // No content returned
-}
+export type CalculatePriceResponse = void;
 
 /**
  * Parameters of the CalculatePrice action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class CalculatePriceAction implements Executable<CalculatePriceResponse> 
     };
   }
 
-  async parseResponse(response: Response): Promise<CalculatePriceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CalculatePriceResponse;
-    return (await response.json()) as CalculatePriceResponse;
+  parseResponse(_response: Response): Promise<CalculatePriceResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

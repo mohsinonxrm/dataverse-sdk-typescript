@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetAppModuleSettingsResponse as msdyn_GetAppModuleSettingsResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetAppModuleSettings request message
@@ -29,23 +27,33 @@ export class msdyn_GetAppModuleSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAppModuleSettingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetAppModuleSettingsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAppModuleSettingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAppModuleSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAppModuleSettingsResult {
+  "@odata.context"?: string;
+  msdyn_output: string;
+}
+
+/**
  * msdyn_GetAppModuleSettings response message
+ *
+ * `result` is the value the msdyn_GetAppModuleSettings action returns (see {@link msdyn_GetAppModuleSettingsResult}).
  */
 export class msdyn_GetAppModuleSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAppModuleSettingsResponseData) {
+  constructor(public result: msdyn_GetAppModuleSettingsResult) {
     super("msdyn_GetAppModuleSettings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAppModuleSettingsResponse {
-    return new msdyn_GetAppModuleSettingsResponse(
-      responseObject<msdyn_GetAppModuleSettingsResponseData>(data)
-    );
+    return new msdyn_GetAppModuleSettingsResponse(data as msdyn_GetAppModuleSettingsResult);
   }
 }

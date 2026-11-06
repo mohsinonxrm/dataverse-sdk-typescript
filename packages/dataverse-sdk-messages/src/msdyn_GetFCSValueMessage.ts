@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetFCSValueResponse as msdyn_GetFCSValueResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetFCSValue message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class msdyn_GetFCSValueRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetFCSValueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetFCSValueResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetFCSValueResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetFCSValue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetFCSValueResult {
+  "@odata.context"?: string;
+  Value: boolean;
+}
+
+/**
  * msdyn_GetFCSValue response message
+ *
+ * `result` is the value the msdyn_GetFCSValue action returns (see {@link msdyn_GetFCSValueResult}).
  */
 export class msdyn_GetFCSValueResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetFCSValueResponseData) {
+  constructor(public result: msdyn_GetFCSValueResult) {
     super("msdyn_GetFCSValue");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetFCSValueResponse {
-    return new msdyn_GetFCSValueResponse(responseObject<msdyn_GetFCSValueResponseData>(data));
+    return new msdyn_GetFCSValueResponse(data as msdyn_GetFCSValueResult);
   }
 }

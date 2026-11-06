@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_retrieveConnectionsResponse as msdyn_retrieveConnectionsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_retrieveConnections message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class msdyn_retrieveConnectionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_retrieveConnectionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_retrieveConnectionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_retrieveConnectionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_retrieveConnections action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_retrieveConnectionsResult {
+  "@odata.context"?: string;
+  Connections: string;
+}
+
+/**
  * msdyn_retrieveConnections response message
+ *
+ * `result` is the value the msdyn_retrieveConnections action returns (see {@link msdyn_retrieveConnectionsResult}).
  */
 export class msdyn_retrieveConnectionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_retrieveConnectionsResponseData) {
+  constructor(public result: msdyn_retrieveConnectionsResult) {
     super("msdyn_retrieveConnections");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_retrieveConnectionsResponse {
-    return new msdyn_retrieveConnectionsResponse(
-      responseObject<msdyn_retrieveConnectionsResponseData>(data)
-    );
+    return new msdyn_retrieveConnectionsResponse(data as msdyn_retrieveConnectionsResult);
   }
 }

@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_PostOperationRevokeUsrConsent action
+ * Response from the msdyn_PostOperationRevokeUsrConsent action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_PostOperationRevokeUsrConsentResponse {
-  // No content returned
-}
+export type msdyn_PostOperationRevokeUsrConsentResponse = void;
 
 /**
  * msdyn_PostOperationRevokeUsrConsent action
@@ -25,9 +25,8 @@ export class msdyn_PostOperationRevokeUsrConsentAction implements Executable<msd
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_PostOperationRevokeUsrConsentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_PostOperationRevokeUsrConsentResponse;
-    return (await response.json()) as msdyn_PostOperationRevokeUsrConsentResponse;
+  parseResponse(_response: Response): Promise<msdyn_PostOperationRevokeUsrConsentResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ActivateWorkflowResponse as msdyn_ActivateWorkflowResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ActivateWorkflow message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_ActivateWorkflowRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ActivateWorkflowResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ActivateWorkflowResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ActivateWorkflowResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ActivateWorkflow action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ActivateWorkflowResult {
+  "@odata.context"?: string;
+  msdyn_ActivateWorkflowResponse: string;
+}
+
+/**
  * msdyn_ActivateWorkflow response message
+ *
+ * `result` is the value the msdyn_ActivateWorkflow action returns (see {@link msdyn_ActivateWorkflowResult}).
  */
 export class msdyn_ActivateWorkflowResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ActivateWorkflowResponseData) {
+  constructor(public result: msdyn_ActivateWorkflowResult) {
     super("msdyn_ActivateWorkflow");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ActivateWorkflowResponse {
-    return new msdyn_ActivateWorkflowResponse(
-      responseObject<msdyn_ActivateWorkflowResponseData>(data)
-    );
+    return new msdyn_ActivateWorkflowResponse(data as msdyn_ActivateWorkflowResult);
   }
 }

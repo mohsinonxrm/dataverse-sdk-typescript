@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_RejectExternalTransfer action
+ * Response from the CCaaS_RejectExternalTransfer action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_RejectExternalTransferResponse {
-  // No content returned
-}
+export type CCaaS_RejectExternalTransferResponse = void;
 
 /**
  * Parameters of the CCaaS_RejectExternalTransfer action, by their CSDL names. A parameter the CSDL declares
@@ -58,9 +58,8 @@ export class CCaaS_RejectExternalTransferAction implements Executable<CCaaS_Reje
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_RejectExternalTransferResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_RejectExternalTransferResponse;
-    return (await response.json()) as CCaaS_RejectExternalTransferResponse;
+  parseResponse(_response: Response): Promise<CCaaS_RejectExternalTransferResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

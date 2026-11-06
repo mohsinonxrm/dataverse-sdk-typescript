@@ -5,14 +5,18 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_aiagentstatus } from "./types/index.js";
 
 /**
- * Response from msdyn_SetAIAgentStatus action
+ * Response from the msdyn_SetAIAgentStatus action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface msdyn_SetAIAgentStatusResponse extends msdyn_aiagentstatus {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type msdyn_SetAIAgentStatusResponse =
+  | (msdyn_aiagentstatus & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
 
 /**
  * Parameters of the msdyn_SetAIAgentStatus action, by their CSDL names. A parameter the CSDL declares
@@ -74,8 +78,9 @@ export class msdyn_SetAIAgentStatusAction implements Executable<msdyn_SetAIAgent
   }
 
   async parseResponse(response: Response): Promise<msdyn_SetAIAgentStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SetAIAgentStatusResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as msdyn_SetAIAgentStatusResponse;
   }
 }

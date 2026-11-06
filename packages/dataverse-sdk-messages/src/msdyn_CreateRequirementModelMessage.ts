@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CreateRequirementModelResponse as msdyn_CreateRequirementModelResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateRequirementModel message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_CreateRequirementModelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateRequirementModelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateRequirementModelResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateRequirementModelResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateRequirementModel action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateRequirementModelResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * msdyn_CreateRequirementModel response message
+ *
+ * `result` is the value the msdyn_CreateRequirementModel action returns (see {@link msdyn_CreateRequirementModelResult}).
  */
 export class msdyn_CreateRequirementModelResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateRequirementModelResponseData) {
+  constructor(public result: msdyn_CreateRequirementModelResult) {
     super("msdyn_CreateRequirementModel");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateRequirementModelResponse {
-    return new msdyn_CreateRequirementModelResponse(
-      responseObject<msdyn_CreateRequirementModelResponseData>(data)
-    );
+    return new msdyn_CreateRequirementModelResponse(data as msdyn_CreateRequirementModelResult);
   }
 }

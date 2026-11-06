@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ResolveTimezoneResponse as msdyn_ResolveTimezoneResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ResolveTimezone message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_ResolveTimezoneRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ResolveTimezoneResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ResolveTimezoneResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ResolveTimezoneResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ResolveTimezone action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ResolveTimezoneResult {
+  "@odata.context"?: string;
+  TimezoneData: string;
+}
+
+/**
  * msdyn_ResolveTimezone response message
+ *
+ * `result` is the value the msdyn_ResolveTimezone action returns (see {@link msdyn_ResolveTimezoneResult}).
  */
 export class msdyn_ResolveTimezoneResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ResolveTimezoneResponseData) {
+  constructor(public result: msdyn_ResolveTimezoneResult) {
     super("msdyn_ResolveTimezone");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ResolveTimezoneResponse {
-    return new msdyn_ResolveTimezoneResponse(
-      responseObject<msdyn_ResolveTimezoneResponseData>(data)
-    );
+    return new msdyn_ResolveTimezoneResponse(data as msdyn_ResolveTimezoneResult);
   }
 }

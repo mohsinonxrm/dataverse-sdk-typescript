@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ValidateCustomMessagingApplication action
+ * Response from the msdyn_ValidateCustomMessagingApplication action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ValidateCustomMessagingApplicationResponse {
+  "@odata.context"?: string;
   IsValidBCR: boolean;
   LastValidatedDate: string;
 }
@@ -51,8 +54,7 @@ export class msdyn_ValidateCustomMessagingApplicationAction implements Executabl
   async parseResponse(
     response: Response
   ): Promise<msdyn_ValidateCustomMessagingApplicationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ValidateCustomMessagingApplicationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ValidateCustomMessagingApplicationResponse;
   }
 }

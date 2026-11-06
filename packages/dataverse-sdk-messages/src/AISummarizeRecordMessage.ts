@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { AISummarizeRecordResponse as AISummarizeRecordResponseData } from "./types/index.js";
 
 /**
  * Parameters of the AISummarizeRecord message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,33 @@ export class AISummarizeRecordRequest
   }
 
   async parseResponse(response: Response): Promise<AISummarizeRecordResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AISummarizeRecordResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AISummarizeRecordResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AISummarizeRecord action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AISummarizeRecordResult {
+  "@odata.context"?: string;
+  SummarizedText: string;
+}
+
+/**
  * AISummarizeRecord response message
+ *
+ * `result` is the value the AISummarizeRecord action returns (see {@link AISummarizeRecordResult}).
  */
 export class AISummarizeRecordResponse extends OrganizationResponse {
-  constructor(public result: AISummarizeRecordResponseData) {
+  constructor(public result: AISummarizeRecordResult) {
     super("AISummarizeRecord");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AISummarizeRecordResponse {
-    return new AISummarizeRecordResponse(responseObject<AISummarizeRecordResponseData>(data));
+    return new AISummarizeRecordResponse(data as AISummarizeRecordResult);
   }
 }

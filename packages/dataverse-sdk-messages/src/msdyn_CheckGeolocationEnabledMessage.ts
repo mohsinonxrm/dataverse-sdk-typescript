@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckGeolocationEnabledResponse as msdyn_CheckGeolocationEnabledResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckGeolocationEnabled message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_CheckGeolocationEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckGeolocationEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CheckGeolocationEnabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckGeolocationEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckGeolocationEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckGeolocationEnabledResult {
+  "@odata.context"?: string;
+  IsEnabled: boolean;
+}
+
+/**
  * msdyn_CheckGeolocationEnabled response message
+ *
+ * `result` is the value the msdyn_CheckGeolocationEnabled action returns (see {@link msdyn_CheckGeolocationEnabledResult}).
  */
 export class msdyn_CheckGeolocationEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckGeolocationEnabledResponseData) {
+  constructor(public result: msdyn_CheckGeolocationEnabledResult) {
     super("msdyn_CheckGeolocationEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckGeolocationEnabledResponse {
-    return new msdyn_CheckGeolocationEnabledResponse(
-      responseObject<msdyn_CheckGeolocationEnabledResponseData>(data)
-    );
+    return new msdyn_CheckGeolocationEnabledResponse(data as msdyn_CheckGeolocationEnabledResult);
   }
 }

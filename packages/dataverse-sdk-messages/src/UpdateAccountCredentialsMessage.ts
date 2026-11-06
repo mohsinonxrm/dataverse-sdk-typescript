@@ -48,9 +48,9 @@ export class UpdateAccountCredentialsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateAccountCredentialsResponse> {
+  parseResponse(_response: Response): Promise<UpdateAccountCredentialsResponse> {
     // No return value (204 No Content)
-    return new UpdateAccountCredentialsResponse();
+    return Promise.resolve(new UpdateAccountCredentialsResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class UpdateAccountCredentialsResponse extends OrganizationResponse {
     super("UpdateAccountCredentials");
   }
 
-  static fromResponse(_data: unknown): UpdateAccountCredentialsResponse {
+  static fromResponse(_data?: unknown): UpdateAccountCredentialsResponse {
     return new UpdateAccountCredentialsResponse();
   }
 }

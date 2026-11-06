@@ -42,9 +42,9 @@ export class cascadeAsync_SuccessAPIRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<cascadeAsync_SuccessAPIResponse> {
+  parseResponse(_response: Response): Promise<cascadeAsync_SuccessAPIResponse> {
     // No return value (204 No Content)
-    return new cascadeAsync_SuccessAPIResponse();
+    return Promise.resolve(new cascadeAsync_SuccessAPIResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class cascadeAsync_SuccessAPIResponse extends OrganizationResponse {
     super("cascadeAsync_SuccessAPI");
   }
 
-  static fromResponse(_data: unknown): cascadeAsync_SuccessAPIResponse {
+  static fromResponse(_data?: unknown): cascadeAsync_SuccessAPIResponse {
     return new cascadeAsync_SuccessAPIResponse();
   }
 }

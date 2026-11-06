@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_CECLiveDataMigrationCustomAction action
+ * Response from the msdyn_CECLiveDataMigrationCustomAction action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CECLiveDataMigrationCustomActionResponse {
-  // No content returned
-}
+export type msdyn_CECLiveDataMigrationCustomActionResponse = void;
 
 /**
  * msdyn_CECLiveDataMigrationCustomAction action
@@ -25,9 +25,8 @@ export class msdyn_CECLiveDataMigrationCustomActionAction implements Executable<
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CECLiveDataMigrationCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CECLiveDataMigrationCustomActionResponse;
-    return (await response.json()) as msdyn_CECLiveDataMigrationCustomActionResponse;
+  parseResponse(_response: Response): Promise<msdyn_CECLiveDataMigrationCustomActionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

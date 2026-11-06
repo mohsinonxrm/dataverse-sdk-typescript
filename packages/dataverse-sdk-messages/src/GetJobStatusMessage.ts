@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { GetJobStatusResponse as GetJobStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the GetJobStatus message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class GetJobStatusRequest
   }
 
   async parseResponse(response: Response): Promise<GetJobStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GetJobStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return GetJobStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GetJobStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface GetJobStatusResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * GetJobStatus response message
+ *
+ * `result` is the value the GetJobStatus action returns (see {@link GetJobStatusResult}).
  */
 export class GetJobStatusResponse extends OrganizationResponse {
-  constructor(public result: GetJobStatusResponseData) {
+  constructor(public result: GetJobStatusResult) {
     super("GetJobStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GetJobStatusResponse {
-    return new GetJobStatusResponse(responseObject<GetJobStatusResponseData>(data));
+    return new GetJobStatusResponse(data as GetJobStatusResult);
   }
 }

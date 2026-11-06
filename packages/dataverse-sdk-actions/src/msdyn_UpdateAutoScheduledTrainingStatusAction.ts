@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_UpdateAutoScheduledTrainingStatus action
+ * Response from the msdyn_UpdateAutoScheduledTrainingStatus action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_UpdateAutoScheduledTrainingStatusResponse {
-  // No content returned
-}
+export type msdyn_UpdateAutoScheduledTrainingStatusResponse = void;
 
 /**
  * Parameters of the msdyn_UpdateAutoScheduledTrainingStatus action, by their CSDL names. A parameter the CSDL declares
@@ -47,11 +47,8 @@ export class msdyn_UpdateAutoScheduledTrainingStatusAction implements Executable
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_UpdateAutoScheduledTrainingStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_UpdateAutoScheduledTrainingStatusResponse;
-    return (await response.json()) as msdyn_UpdateAutoScheduledTrainingStatusResponse;
+  parseResponse(_response: Response): Promise<msdyn_UpdateAutoScheduledTrainingStatusResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

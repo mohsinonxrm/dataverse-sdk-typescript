@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_TelephonyResourceProvisionActionResponse as msdyn_TelephonyResourceProvisionActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TelephonyResourceProvisionAction message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,35 @@ export class msdyn_TelephonyResourceProvisionActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TelephonyResourceProvisionActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_TelephonyResourceProvisionActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TelephonyResourceProvisionActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TelephonyResourceProvisionAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TelephonyResourceProvisionActionResult {
+  "@odata.context"?: string;
+  ActionResult: string;
+}
+
+/**
  * msdyn_TelephonyResourceProvisionAction response message
+ *
+ * `result` is the value the msdyn_TelephonyResourceProvisionAction action returns (see {@link msdyn_TelephonyResourceProvisionActionResult}).
  */
 export class msdyn_TelephonyResourceProvisionActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TelephonyResourceProvisionActionResponseData) {
+  constructor(public result: msdyn_TelephonyResourceProvisionActionResult) {
     super("msdyn_TelephonyResourceProvisionAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TelephonyResourceProvisionActionResponse {
     return new msdyn_TelephonyResourceProvisionActionResponse(
-      responseObject<msdyn_TelephonyResourceProvisionActionResponseData>(data)
+      data as msdyn_TelephonyResourceProvisionActionResult
     );
   }
 }

@@ -54,9 +54,9 @@ export class CCaaS_JoinConversationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_JoinConversationResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_JoinConversationResponse> {
     // No return value (204 No Content)
-    return new CCaaS_JoinConversationResponse();
+    return Promise.resolve(new CCaaS_JoinConversationResponse());
   }
 }
 
@@ -68,7 +68,7 @@ export class CCaaS_JoinConversationResponse extends OrganizationResponse {
     super("CCaaS_JoinConversation");
   }
 
-  static fromResponse(_data: unknown): CCaaS_JoinConversationResponse {
+  static fromResponse(_data?: unknown): CCaaS_JoinConversationResponse {
     return new CCaaS_JoinConversationResponse();
   }
 }

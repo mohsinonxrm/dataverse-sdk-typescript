@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { githubappconfig } from "./types/index.js";
 
 /**
- * Response from ConnectToGit action
+ * Response from the ConnectToGit action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ConnectToGitResponse {
-  // No content returned
-}
+export type ConnectToGitResponse = void;
 
 /**
  * Parameters of the ConnectToGit action, by their CSDL names. A parameter the CSDL declares
@@ -70,9 +70,8 @@ export class ConnectToGitAction implements Executable<ConnectToGitResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<ConnectToGitResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ConnectToGitResponse;
-    return (await response.json()) as ConnectToGitResponse;
+  parseResponse(_response: Response): Promise<ConnectToGitResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

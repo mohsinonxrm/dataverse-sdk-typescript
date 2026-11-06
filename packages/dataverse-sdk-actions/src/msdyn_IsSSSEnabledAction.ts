@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_IsSSSEnabled action
+ * Response from the msdyn_IsSSSEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_IsSSSEnabledResponse {
+  "@odata.context"?: string;
   IsSSSEnabled: boolean;
 }
 
@@ -26,8 +29,7 @@ export class msdyn_IsSSSEnabledAction implements Executable<msdyn_IsSSSEnabledRe
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsSSSEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_IsSSSEnabledResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_IsSSSEnabledResponse;
   }
 }

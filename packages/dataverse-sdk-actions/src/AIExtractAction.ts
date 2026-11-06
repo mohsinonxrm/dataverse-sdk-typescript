@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AIExtract action
+ * Response from the AIExtract action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface AIExtractResponse {
+  "@odata.context"?: string;
   ExtractedData: string[];
 }
 
@@ -44,8 +47,7 @@ export class AIExtractAction implements Executable<AIExtractResponse> {
   }
 
   async parseResponse(response: Response): Promise<AIExtractResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AIExtractResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as AIExtractResponse;
   }
 }

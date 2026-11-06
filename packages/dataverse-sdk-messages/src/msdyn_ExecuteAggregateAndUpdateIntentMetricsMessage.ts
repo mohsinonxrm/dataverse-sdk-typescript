@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse as msdyn_ExecuteAggregateAndUpdateIntentMetricsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ExecuteAggregateAndUpdateIntentMetrics message, by their CSDL names. A parameter the CSDL declares
@@ -59,24 +57,36 @@ export class msdyn_ExecuteAggregateAndUpdateIntentMetricsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ExecuteAggregateAndUpdateIntentMetrics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExecuteAggregateAndUpdateIntentMetricsResult {
+  "@odata.context"?: string;
+  msdyn_pagingcookieresponse: string;
+  msdyn_status: string;
+}
+
+/**
  * msdyn_ExecuteAggregateAndUpdateIntentMetrics response message
+ *
+ * `result` is the value the msdyn_ExecuteAggregateAndUpdateIntentMetrics action returns (see {@link msdyn_ExecuteAggregateAndUpdateIntentMetricsResult}).
  */
 export class msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteAggregateAndUpdateIntentMetricsResponseData) {
+  constructor(public result: msdyn_ExecuteAggregateAndUpdateIntentMetricsResult) {
     super("msdyn_ExecuteAggregateAndUpdateIntentMetrics");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse {
     return new msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse(
-      responseObject<msdyn_ExecuteAggregateAndUpdateIntentMetricsResponseData>(data)
+      data as msdyn_ExecuteAggregateAndUpdateIntentMetricsResult
     );
   }
 }

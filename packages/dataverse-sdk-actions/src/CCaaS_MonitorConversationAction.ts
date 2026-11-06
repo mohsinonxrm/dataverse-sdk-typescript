@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_MonitorConversation action
+ * Response from the CCaaS_MonitorConversation action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_MonitorConversationResponse {
-  // No content returned
-}
+export type CCaaS_MonitorConversationResponse = void;
 
 /**
  * Parameters of the CCaaS_MonitorConversation action, by their CSDL names. A parameter the CSDL declares
@@ -50,9 +50,8 @@ export class CCaaS_MonitorConversationAction implements Executable<CCaaS_Monitor
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_MonitorConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_MonitorConversationResponse;
-    return (await response.json()) as CCaaS_MonitorConversationResponse;
+  parseResponse(_response: Response): Promise<CCaaS_MonitorConversationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

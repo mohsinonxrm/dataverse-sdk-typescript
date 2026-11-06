@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
@@ -51,23 +50,40 @@ export class msdyn_ForecastGenerateHierarchyRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ForecastGenerateHierarchyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ForecastGenerateHierarchyResponse.fromResponse({});
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204)
+      return msdyn_ForecastGenerateHierarchyResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return msdyn_ForecastGenerateHierarchyResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ForecastGenerateHierarchy action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type msdyn_ForecastGenerateHierarchyResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * msdyn_ForecastGenerateHierarchy response message
+ *
+ * `result` is the value the msdyn_ForecastGenerateHierarchy action returns (see {@link msdyn_ForecastGenerateHierarchyResult}).
  */
 export class msdyn_ForecastGenerateHierarchyResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: msdyn_ForecastGenerateHierarchyResult) {
     super("msdyn_ForecastGenerateHierarchy");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ForecastGenerateHierarchyResponse {
     return new msdyn_ForecastGenerateHierarchyResponse(
-      responseValue<Record<string, unknown>[]>(data)
+      data === undefined ? [] : (data as { value: msdyn_ForecastGenerateHierarchyResult }).value
     );
   }
 }

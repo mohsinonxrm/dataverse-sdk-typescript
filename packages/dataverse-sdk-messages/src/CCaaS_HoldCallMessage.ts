@@ -60,9 +60,9 @@ export class CCaaS_HoldCallRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_HoldCallResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_HoldCallResponse> {
     // No return value (204 No Content)
-    return new CCaaS_HoldCallResponse();
+    return Promise.resolve(new CCaaS_HoldCallResponse());
   }
 }
 
@@ -74,7 +74,7 @@ export class CCaaS_HoldCallResponse extends OrganizationResponse {
     super("CCaaS_HoldCall");
   }
 
-  static fromResponse(_data: unknown): CCaaS_HoldCallResponse {
+  static fromResponse(_data?: unknown): CCaaS_HoldCallResponse {
     return new CCaaS_HoldCallResponse();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_CreateProactiveSMSDeliveryResponse as CCaaS_CreateProactiveSMSDeliveryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_CreateProactiveSMSDelivery message, by their CSDL names. A parameter the CSDL declares
@@ -63,23 +61,35 @@ export class CCaaS_CreateProactiveSMSDeliveryRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_CreateProactiveSMSDeliveryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_CreateProactiveSMSDeliveryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_CreateProactiveSMSDeliveryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_CreateProactiveSMSDelivery action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_CreateProactiveSMSDeliveryResult {
+  "@odata.context"?: string;
+  SMSDeliveryId: string;
+}
+
+/**
  * CCaaS_CreateProactiveSMSDelivery response message
+ *
+ * `result` is the value the CCaaS_CreateProactiveSMSDelivery action returns (see {@link CCaaS_CreateProactiveSMSDeliveryResult}).
  */
 export class CCaaS_CreateProactiveSMSDeliveryResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_CreateProactiveSMSDeliveryResponseData) {
+  constructor(public result: CCaaS_CreateProactiveSMSDeliveryResult) {
     super("CCaaS_CreateProactiveSMSDelivery");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_CreateProactiveSMSDeliveryResponse {
     return new CCaaS_CreateProactiveSMSDeliveryResponse(
-      responseObject<CCaaS_CreateProactiveSMSDeliveryResponseData>(data)
+      data as CCaaS_CreateProactiveSMSDeliveryResult
     );
   }
 }

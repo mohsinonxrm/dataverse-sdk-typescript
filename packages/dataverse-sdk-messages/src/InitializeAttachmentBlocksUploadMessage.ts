@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { InitializeAttachmentBlocksUploadResponse as InitializeAttachmentBlocksUploadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the InitializeAttachmentBlocksUpload message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,35 @@ export class InitializeAttachmentBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<InitializeAttachmentBlocksUploadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return InitializeAttachmentBlocksUploadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return InitializeAttachmentBlocksUploadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the InitializeAttachmentBlocksUpload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface InitializeAttachmentBlocksUploadResult {
+  "@odata.context"?: string;
+  FileContinuationToken: string;
+}
+
+/**
  * InitializeAttachmentBlocksUpload response message
+ *
+ * `result` is the value the InitializeAttachmentBlocksUpload action returns (see {@link InitializeAttachmentBlocksUploadResult}).
  */
 export class InitializeAttachmentBlocksUploadResponse extends OrganizationResponse {
-  constructor(public result: InitializeAttachmentBlocksUploadResponseData) {
+  constructor(public result: InitializeAttachmentBlocksUploadResult) {
     super("InitializeAttachmentBlocksUpload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): InitializeAttachmentBlocksUploadResponse {
     return new InitializeAttachmentBlocksUploadResponse(
-      responseObject<InitializeAttachmentBlocksUploadResponseData>(data)
+      data as InitializeAttachmentBlocksUploadResult
     );
   }
 }

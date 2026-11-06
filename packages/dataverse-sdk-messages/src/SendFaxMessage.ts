@@ -41,9 +41,9 @@ export class SendFaxRequest extends OrganizationRequest implements Executable<Se
     };
   }
 
-  async parseResponse(response: Response): Promise<SendFaxResponse> {
+  parseResponse(_response: Response): Promise<SendFaxResponse> {
     // No return value (204 No Content)
-    return new SendFaxResponse();
+    return Promise.resolve(new SendFaxResponse());
   }
 }
 
@@ -55,7 +55,7 @@ export class SendFaxResponse extends OrganizationResponse {
     super("SendFax");
   }
 
-  static fromResponse(_data: unknown): SendFaxResponse {
+  static fromResponse(_data?: unknown): SendFaxResponse {
     return new SendFaxResponse();
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from adx_SendPasswordResetToContact action
+ * Response from the adx_SendPasswordResetToContact action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface adx_SendPasswordResetToContactResponse {
-  // No content returned
-}
+export type adx_SendPasswordResetToContactResponse = void;
 
 /**
  * Parameters of the adx_SendPasswordResetToContact action, by their CSDL names. A parameter the CSDL declares
@@ -62,9 +62,8 @@ export class adx_SendPasswordResetToContactAction implements Executable<adx_Send
     };
   }
 
-  async parseResponse(response: Response): Promise<adx_SendPasswordResetToContactResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as adx_SendPasswordResetToContactResponse;
-    return (await response.json()) as adx_SendPasswordResetToContactResponse;
+  parseResponse(_response: Response): Promise<adx_SendPasswordResetToContactResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

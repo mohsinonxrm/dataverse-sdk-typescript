@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetOrganizationProvisioningStatus action
+ * Response from the msdyn_GetOrganizationProvisioningStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetOrganizationProvisioningStatusResponse {
+  "@odata.context"?: string;
   OrgProvisioningStatus: string;
 }
 
@@ -28,8 +31,7 @@ export class msdyn_GetOrganizationProvisioningStatusAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetOrganizationProvisioningStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetOrganizationProvisioningStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetOrganizationProvisioningStatusResponse;
   }
 }

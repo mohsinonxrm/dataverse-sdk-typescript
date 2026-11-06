@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_BookingResourceResponse as msdyn_BookingResourceResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_BookingResource message, by their CSDL names. A parameter the CSDL declares
@@ -111,23 +109,33 @@ export class msdyn_BookingResourceRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_BookingResourceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_BookingResourceResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_BookingResourceResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_BookingResource action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_BookingResourceResult {
+  "@odata.context"?: string;
+  BookingResult: string;
+}
+
+/**
  * msdyn_BookingResource response message
+ *
+ * `result` is the value the msdyn_BookingResource action returns (see {@link msdyn_BookingResourceResult}).
  */
 export class msdyn_BookingResourceResponse extends OrganizationResponse {
-  constructor(public result: msdyn_BookingResourceResponseData) {
+  constructor(public result: msdyn_BookingResourceResult) {
     super("msdyn_BookingResource");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_BookingResourceResponse {
-    return new msdyn_BookingResourceResponse(
-      responseObject<msdyn_BookingResourceResponseData>(data)
-    );
+    return new msdyn_BookingResourceResponse(data as msdyn_BookingResourceResult);
   }
 }

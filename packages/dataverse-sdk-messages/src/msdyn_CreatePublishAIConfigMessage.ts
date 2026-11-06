@@ -1,13 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
-import type {
-  msdyn_CreatePublishAIConfigResponse as msdyn_CreatePublishAIConfigResponseData,
-  msdyn_ocsimltraining,
-} from "./types/index.js";
+import type { msdyn_ocsimltraining } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreatePublishAIConfig message, by their CSDL names. A parameter the CSDL declares
@@ -56,23 +52,33 @@ export class msdyn_CreatePublishAIConfigRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreatePublishAIConfigResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreatePublishAIConfigResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreatePublishAIConfigResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreatePublishAIConfig action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreatePublishAIConfigResult {
+  "@odata.context"?: string;
+  isUnpublish: string;
+}
+
+/**
  * msdyn_CreatePublishAIConfig response message
+ *
+ * `result` is the value the msdyn_CreatePublishAIConfig action returns (see {@link msdyn_CreatePublishAIConfigResult}).
  */
 export class msdyn_CreatePublishAIConfigResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreatePublishAIConfigResponseData) {
+  constructor(public result: msdyn_CreatePublishAIConfigResult) {
     super("msdyn_CreatePublishAIConfig");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreatePublishAIConfigResponse {
-    return new msdyn_CreatePublishAIConfigResponse(
-      responseObject<msdyn_CreatePublishAIConfigResponseData>(data)
-    );
+    return new msdyn_CreatePublishAIConfigResponse(data as msdyn_CreatePublishAIConfigResult);
   }
 }

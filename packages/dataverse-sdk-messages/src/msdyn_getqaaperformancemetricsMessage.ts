@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_getqaaperformancemetricsResponse as msdyn_getqaaperformancemetricsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_getqaaperformancemetrics message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,46 @@ export class msdyn_getqaaperformancemetricsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_getqaaperformancemetricsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_getqaaperformancemetricsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_getqaaperformancemetricsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_getqaaperformancemetrics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_getqaaperformancemetricsResult {
+  "@odata.context"?: string;
+  AsOf: string;
+  CoachingNudges: number;
+  Coverage: string;
+  DailySeries: string;
+  DippedEvaluations: number;
+  Error: string;
+  EvaluationCount: number;
+  QualityInsights: string;
+  QualityScore: number;
+  Status: string;
+  SupervisorNotifications: number;
+  Window: string;
+  WindowEndDate: string;
+  WindowStartDate: string;
+}
+
+/**
  * msdyn_getqaaperformancemetrics response message
+ *
+ * `result` is the value the msdyn_getqaaperformancemetrics action returns (see {@link msdyn_getqaaperformancemetricsResult}).
  */
 export class msdyn_getqaaperformancemetricsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_getqaaperformancemetricsResponseData) {
+  constructor(public result: msdyn_getqaaperformancemetricsResult) {
     super("msdyn_getqaaperformancemetrics");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_getqaaperformancemetricsResponse {
-    return new msdyn_getqaaperformancemetricsResponse(
-      responseObject<msdyn_getqaaperformancemetricsResponseData>(data)
-    );
+    return new msdyn_getqaaperformancemetricsResponse(data as msdyn_getqaaperformancemetricsResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_VoiceBiometricsOptOutResponse as CCaaS_VoiceBiometricsOptOutResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_VoiceBiometricsOptOut message, by their CSDL names. A parameter the CSDL declares
@@ -59,23 +57,37 @@ export class CCaaS_VoiceBiometricsOptOutRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_VoiceBiometricsOptOutResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_VoiceBiometricsOptOutResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_VoiceBiometricsOptOutResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_VoiceBiometricsOptOut action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_VoiceBiometricsOptOutResult {
+  "@odata.context"?: string;
+  decision: string;
+  errorCode: string;
+  message: string;
+  operationId: string;
+  subCode: number;
+}
+
+/**
  * CCaaS_VoiceBiometricsOptOut response message
+ *
+ * `result` is the value the CCaaS_VoiceBiometricsOptOut action returns (see {@link CCaaS_VoiceBiometricsOptOutResult}).
  */
 export class CCaaS_VoiceBiometricsOptOutResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_VoiceBiometricsOptOutResponseData) {
+  constructor(public result: CCaaS_VoiceBiometricsOptOutResult) {
     super("CCaaS_VoiceBiometricsOptOut");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_VoiceBiometricsOptOutResponse {
-    return new CCaaS_VoiceBiometricsOptOutResponse(
-      responseObject<CCaaS_VoiceBiometricsOptOutResponseData>(data)
-    );
+    return new CCaaS_VoiceBiometricsOptOutResponse(data as CCaaS_VoiceBiometricsOptOutResult);
   }
 }

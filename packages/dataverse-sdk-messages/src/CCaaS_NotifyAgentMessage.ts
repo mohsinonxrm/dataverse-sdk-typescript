@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_NotifyAgentResponse as CCaaS_NotifyAgentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_NotifyAgent message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,33 @@ export class CCaaS_NotifyAgentRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_NotifyAgentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_NotifyAgentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_NotifyAgentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_NotifyAgent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_NotifyAgentResult {
+  "@odata.context"?: string;
+  BulkActionId: string;
+}
+
+/**
  * CCaaS_NotifyAgent response message
+ *
+ * `result` is the value the CCaaS_NotifyAgent action returns (see {@link CCaaS_NotifyAgentResult}).
  */
 export class CCaaS_NotifyAgentResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_NotifyAgentResponseData) {
+  constructor(public result: CCaaS_NotifyAgentResult) {
     super("CCaaS_NotifyAgent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_NotifyAgentResponse {
-    return new CCaaS_NotifyAgentResponse(responseObject<CCaaS_NotifyAgentResponseData>(data));
+    return new CCaaS_NotifyAgentResponse(data as CCaaS_NotifyAgentResult);
   }
 }

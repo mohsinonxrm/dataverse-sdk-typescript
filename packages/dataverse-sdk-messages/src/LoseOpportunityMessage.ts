@@ -49,9 +49,9 @@ export class LoseOpportunityRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<LoseOpportunityResponse> {
+  parseResponse(_response: Response): Promise<LoseOpportunityResponse> {
     // No return value (204 No Content)
-    return new LoseOpportunityResponse();
+    return Promise.resolve(new LoseOpportunityResponse());
   }
 }
 
@@ -63,7 +63,7 @@ export class LoseOpportunityResponse extends OrganizationResponse {
     super("LoseOpportunity");
   }
 
-  static fromResponse(_data: unknown): LoseOpportunityResponse {
+  static fromResponse(_data?: unknown): LoseOpportunityResponse {
     return new LoseOpportunityResponse();
   }
 }

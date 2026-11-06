@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_PollODOSForConsent action
+ * Response from the msdyn_PollODOSForConsent action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_PollODOSForConsentResponse {
-  // No content returned
-}
+export type msdyn_PollODOSForConsentResponse = void;
 
 /**
  * Parameters of the msdyn_PollODOSForConsent action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_PollODOSForConsentAction implements Executable<msdyn_PollODOS
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_PollODOSForConsentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_PollODOSForConsentResponse;
-    return (await response.json()) as msdyn_PollODOSForConsentResponse;
+  parseResponse(_response: Response): Promise<msdyn_PollODOSForConsentResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

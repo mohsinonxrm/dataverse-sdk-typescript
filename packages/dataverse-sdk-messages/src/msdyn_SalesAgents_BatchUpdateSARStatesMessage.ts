@@ -48,9 +48,9 @@ export class msdyn_SalesAgents_BatchUpdateSARStatesRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SalesAgents_BatchUpdateSARStatesResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SalesAgents_BatchUpdateSARStatesResponse> {
     // No return value (204 No Content)
-    return new msdyn_SalesAgents_BatchUpdateSARStatesResponse();
+    return Promise.resolve(new msdyn_SalesAgents_BatchUpdateSARStatesResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_SalesAgents_BatchUpdateSARStatesResponse extends Organization
     super("msdyn_SalesAgents_BatchUpdateSARStates");
   }
 
-  static fromResponse(_data: unknown): msdyn_SalesAgents_BatchUpdateSARStatesResponse {
+  static fromResponse(_data?: unknown): msdyn_SalesAgents_BatchUpdateSARStatesResponse {
     return new msdyn_SalesAgents_BatchUpdateSARStatesResponse();
   }
 }

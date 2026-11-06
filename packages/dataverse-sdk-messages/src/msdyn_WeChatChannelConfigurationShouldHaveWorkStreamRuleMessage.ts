@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse as msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRule request message
@@ -31,9 +29,7 @@ export class msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,18 +37,33 @@ export class msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleRequest
 }
 
 /**
+ * Response from the msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRule response message
+ *
+ * `result` is the value the msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRule action returns (see {@link msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResult}).
  */
 export class msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponseData) {
+  constructor(public result: msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResult) {
     super("msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse {
     return new msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse(
-      responseObject<msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponseData>(data)
+      data as msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResult
     );
   }
 }

@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { campaignactivityitem } from "./types/index.js";
 
 /**
- * Response from RemoveItemCampaignActivity action
+ * Response from the RemoveItemCampaignActivity action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RemoveItemCampaignActivityResponse {
-  // No content returned
-}
+export type RemoveItemCampaignActivityResponse = void;
 
 /**
  * Parameters of the RemoveItemCampaignActivity action, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +51,8 @@ export class RemoveItemCampaignActivityAction implements Executable<RemoveItemCa
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveItemCampaignActivityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RemoveItemCampaignActivityResponse;
-    return (await response.json()) as RemoveItemCampaignActivityResponse;
+  parseResponse(_response: Response): Promise<RemoveItemCampaignActivityResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

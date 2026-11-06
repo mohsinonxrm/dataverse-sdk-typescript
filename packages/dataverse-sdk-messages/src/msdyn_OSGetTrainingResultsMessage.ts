@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_OSGetTrainingResultsResponse as msdyn_OSGetTrainingResultsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_OSGetTrainingResults message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_OSGetTrainingResultsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_OSGetTrainingResultsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_OSGetTrainingResultsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_OSGetTrainingResultsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_OSGetTrainingResults action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_OSGetTrainingResultsResult {
+  "@odata.context"?: string;
+  TrainingResults: string;
+}
+
+/**
  * msdyn_OSGetTrainingResults response message
+ *
+ * `result` is the value the msdyn_OSGetTrainingResults action returns (see {@link msdyn_OSGetTrainingResultsResult}).
  */
 export class msdyn_OSGetTrainingResultsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OSGetTrainingResultsResponseData) {
+  constructor(public result: msdyn_OSGetTrainingResultsResult) {
     super("msdyn_OSGetTrainingResults");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_OSGetTrainingResultsResponse {
-    return new msdyn_OSGetTrainingResultsResponse(
-      responseObject<msdyn_OSGetTrainingResultsResponseData>(data)
-    );
+    return new msdyn_OSGetTrainingResultsResponse(data as msdyn_OSGetTrainingResultsResult);
   }
 }

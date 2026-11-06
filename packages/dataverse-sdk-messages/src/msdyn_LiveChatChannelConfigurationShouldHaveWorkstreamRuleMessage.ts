@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse as msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRule request message
@@ -31,9 +29,7 @@ export class msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,20 +37,33 @@ export class msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleRequest
 }
 
 /**
+ * Response from the msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRule response message
+ *
+ * `result` is the value the msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRule action returns (see {@link msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResult}).
  */
 export class msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse extends OrganizationResponse {
-  constructor(
-    public result: msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponseData
-  ) {
+  constructor(public result: msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResult) {
     super("msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse {
     return new msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse(
-      responseObject<msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponseData>(data)
+      data as msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResult
     );
   }
 }

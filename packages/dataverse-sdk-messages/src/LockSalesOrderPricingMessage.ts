@@ -29,9 +29,9 @@ export class LockSalesOrderPricingRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<LockSalesOrderPricingResponse> {
+  parseResponse(_response: Response): Promise<LockSalesOrderPricingResponse> {
     // No return value (204 No Content)
-    return new LockSalesOrderPricingResponse();
+    return Promise.resolve(new LockSalesOrderPricingResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class LockSalesOrderPricingResponse extends OrganizationResponse {
     super("LockSalesOrderPricing");
   }
 
-  static fromResponse(_data: unknown): LockSalesOrderPricingResponse {
+  static fromResponse(_data?: unknown): LockSalesOrderPricingResponse {
     return new LockSalesOrderPricingResponse();
   }
 }

@@ -1,13 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
-import type {
-  msdyn_CheckARCDependenciesResponse as msdyn_CheckARCDependenciesResponseData,
-  queueitem,
-} from "./types/index.js";
+import type { queueitem } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckARCDependencies message, by their CSDL names. A parameter the CSDL declares
@@ -52,23 +48,33 @@ export class msdyn_CheckARCDependenciesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckARCDependenciesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CheckARCDependenciesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckARCDependenciesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckARCDependencies action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckARCDependenciesResult {
+  "@odata.context"?: string;
+  msdyn_AreDependenciesMet: boolean;
+}
+
+/**
  * msdyn_CheckARCDependencies response message
+ *
+ * `result` is the value the msdyn_CheckARCDependencies action returns (see {@link msdyn_CheckARCDependenciesResult}).
  */
 export class msdyn_CheckARCDependenciesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckARCDependenciesResponseData) {
+  constructor(public result: msdyn_CheckARCDependenciesResult) {
     super("msdyn_CheckARCDependencies");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckARCDependenciesResponse {
-    return new msdyn_CheckARCDependenciesResponse(
-      responseObject<msdyn_CheckARCDependenciesResponseData>(data)
-    );
+    return new msdyn_CheckARCDependenciesResponse(data as msdyn_CheckARCDependenciesResult);
   }
 }

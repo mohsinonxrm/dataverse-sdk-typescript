@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
@@ -60,21 +59,35 @@ export class ConvertQuoteToSalesOrderRequest
   }
 
   async parseResponse(response: Response): Promise<ConvertQuoteToSalesOrderResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ConvertQuoteToSalesOrderResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return ConvertQuoteToSalesOrderResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return ConvertQuoteToSalesOrderResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ConvertQuoteToSalesOrder action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type ConvertQuoteToSalesOrderResult =
+  | (salesorder & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
+
+/**
  * ConvertQuoteToSalesOrder response message
+ *
+ * `result` is the value the ConvertQuoteToSalesOrder action returns (see {@link ConvertQuoteToSalesOrderResult}).
  */
 export class ConvertQuoteToSalesOrderResponse extends OrganizationResponse {
-  constructor(public result: salesorder) {
+  constructor(public result: ConvertQuoteToSalesOrderResult) {
     super("ConvertQuoteToSalesOrder");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ConvertQuoteToSalesOrderResponse {
-    return new ConvertQuoteToSalesOrderResponse(responseObject<salesorder>(data));
+    return new ConvertQuoteToSalesOrderResponse((data ?? null) as ConvertQuoteToSalesOrderResult);
   }
 }

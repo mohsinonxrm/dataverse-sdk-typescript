@@ -44,9 +44,9 @@ export class DeprovisionLanguageRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<DeprovisionLanguageResponse> {
+  parseResponse(_response: Response): Promise<DeprovisionLanguageResponse> {
     // No return value (204 No Content)
-    return new DeprovisionLanguageResponse();
+    return Promise.resolve(new DeprovisionLanguageResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class DeprovisionLanguageResponse extends OrganizationResponse {
     super("DeprovisionLanguage");
   }
 
-  static fromResponse(_data: unknown): DeprovisionLanguageResponse {
+  static fromResponse(_data?: unknown): DeprovisionLanguageResponse {
     return new DeprovisionLanguageResponse();
   }
 }

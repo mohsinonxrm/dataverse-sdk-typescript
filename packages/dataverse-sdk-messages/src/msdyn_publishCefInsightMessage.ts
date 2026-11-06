@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_publishCefInsightResponse as msdyn_publishCefInsightResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_publishCefInsight message, by their CSDL names. A parameter the CSDL declares
@@ -59,23 +57,33 @@ export class msdyn_publishCefInsightRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_publishCefInsightResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_publishCefInsightResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_publishCefInsightResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_publishCefInsight action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_publishCefInsightResult {
+  "@odata.context"?: string;
+  msdyn_responseStatus: string;
+}
+
+/**
  * msdyn_publishCefInsight response message
+ *
+ * `result` is the value the msdyn_publishCefInsight action returns (see {@link msdyn_publishCefInsightResult}).
  */
 export class msdyn_publishCefInsightResponse extends OrganizationResponse {
-  constructor(public result: msdyn_publishCefInsightResponseData) {
+  constructor(public result: msdyn_publishCefInsightResult) {
     super("msdyn_publishCefInsight");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_publishCefInsightResponse {
-    return new msdyn_publishCefInsightResponse(
-      responseObject<msdyn_publishCefInsightResponseData>(data)
-    );
+    return new msdyn_publishCefInsightResponse(data as msdyn_publishCefInsightResult);
   }
 }

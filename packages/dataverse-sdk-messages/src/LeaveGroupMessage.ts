@@ -29,9 +29,9 @@ export class LeaveGroupRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<LeaveGroupResponse> {
+  parseResponse(_response: Response): Promise<LeaveGroupResponse> {
     // No return value (204 No Content)
-    return new LeaveGroupResponse();
+    return Promise.resolve(new LeaveGroupResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class LeaveGroupResponse extends OrganizationResponse {
     super("LeaveGroup");
   }
 
-  static fromResponse(_data: unknown): LeaveGroupResponse {
+  static fromResponse(_data?: unknown): LeaveGroupResponse {
     return new LeaveGroupResponse();
   }
 }

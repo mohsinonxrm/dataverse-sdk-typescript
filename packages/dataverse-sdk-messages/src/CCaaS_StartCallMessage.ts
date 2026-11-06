@@ -54,9 +54,9 @@ export class CCaaS_StartCallRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_StartCallResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_StartCallResponse> {
     // No return value (204 No Content)
-    return new CCaaS_StartCallResponse();
+    return Promise.resolve(new CCaaS_StartCallResponse());
   }
 }
 
@@ -68,7 +68,7 @@ export class CCaaS_StartCallResponse extends OrganizationResponse {
     super("CCaaS_StartCall");
   }
 
-  static fromResponse(_data: unknown): CCaaS_StartCallResponse {
+  static fromResponse(_data?: unknown): CCaaS_StartCallResponse {
     return new CCaaS_StartCallResponse();
   }
 }

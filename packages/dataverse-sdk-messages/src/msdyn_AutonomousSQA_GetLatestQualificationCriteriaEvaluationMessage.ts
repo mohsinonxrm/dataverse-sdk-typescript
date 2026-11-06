@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse as msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation message, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +51,7 @@ export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse.fromResponse(
       await response.json()
     );
@@ -63,20 +59,32 @@ export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRequest
 }
 
 /**
+ * Response from the msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResult {
+  "@odata.context"?: string;
+  msdyn_IsEvaluationComplete: boolean;
+  msdyn_QualificationDecision: number;
+}
+
+/**
  * msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation response message
+ *
+ * `result` is the value the msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation action returns (see {@link msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResult}).
  */
 export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse extends OrganizationResponse {
-  constructor(
-    public result: msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponseData
-  ) {
+  constructor(public result: msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResult) {
     super("msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse {
     return new msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse(
-      responseObject<msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponseData>(data)
+      data as msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResult
     );
   }
 }

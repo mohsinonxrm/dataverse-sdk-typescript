@@ -3,14 +3,14 @@ import { requestBody } from "./internal/requestBody.js";
 import type { importjob } from "./types/index.js";
 
 /**
- * Response from ImportFieldTranslation action
+ * Response from the ImportFieldTranslation action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface ImportFieldTranslationResponse extends importjob {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type ImportFieldTranslationResponse =
+  | (importjob & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
 
 /**
  * Parameters of the ImportFieldTranslation action, by their CSDL names. A parameter the CSDL declares
@@ -46,8 +46,9 @@ export class ImportFieldTranslationAction implements Executable<ImportFieldTrans
   }
 
   async parseResponse(response: Response): Promise<ImportFieldTranslationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ImportFieldTranslationResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as ImportFieldTranslationResponse;
   }
 }

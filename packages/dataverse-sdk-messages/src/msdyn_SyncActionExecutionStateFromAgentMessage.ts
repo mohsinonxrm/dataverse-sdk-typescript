@@ -50,11 +50,9 @@ export class msdyn_SyncActionExecutionStateFromAgentRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_SyncActionExecutionStateFromAgentResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SyncActionExecutionStateFromAgentResponse> {
     // No return value (204 No Content)
-    return new msdyn_SyncActionExecutionStateFromAgentResponse();
+    return Promise.resolve(new msdyn_SyncActionExecutionStateFromAgentResponse());
   }
 }
 
@@ -66,7 +64,7 @@ export class msdyn_SyncActionExecutionStateFromAgentResponse extends Organizatio
     super("msdyn_SyncActionExecutionStateFromAgent");
   }
 
-  static fromResponse(_data: unknown): msdyn_SyncActionExecutionStateFromAgentResponse {
+  static fromResponse(_data?: unknown): msdyn_SyncActionExecutionStateFromAgentResponse {
     return new msdyn_SyncActionExecutionStateFromAgentResponse();
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from NextYear function
+ * Response from the NextYear function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface NextYearResponse {
-  value: boolean;
-}
+export type NextYearResponse = boolean;
 
 /**
  * Parameters of the NextYear function, by their CSDL names. A parameter the CSDL declares
@@ -48,8 +48,7 @@ export class NextYearFunction implements Executable<NextYearResponse> {
   }
 
   async parseResponse(response: Response): Promise<NextYearResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as NextYearResponse;
-    return (await response.json()) as NextYearResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: NextYearResponse }).value;
   }
 }

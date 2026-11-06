@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_SendEmailFromTemplate action
+ * Response from the msdyn_SendEmailFromTemplate action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SendEmailFromTemplateResponse {
-  // No content returned
-}
+export type msdyn_SendEmailFromTemplateResponse = void;
 
 /**
  * Parameters of the msdyn_SendEmailFromTemplate action, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +53,8 @@ export class msdyn_SendEmailFromTemplateAction implements Executable<msdyn_SendE
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SendEmailFromTemplateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SendEmailFromTemplateResponse;
-    return (await response.json()) as msdyn_SendEmailFromTemplateResponse;
+  parseResponse(_response: Response): Promise<msdyn_SendEmailFromTemplateResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

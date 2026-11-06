@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_reassignmentbatch action
+ * Response from the msdyn_reassignmentbatch action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_reassignmentbatchResponse {
-  // No content returned
-}
+export type msdyn_reassignmentbatchResponse = void;
 
 /**
  * Parameters of the msdyn_reassignmentbatch action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_reassignmentbatchAction implements Executable<msdyn_reassignm
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_reassignmentbatchResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_reassignmentbatchResponse;
-    return (await response.json()) as msdyn_reassignmentbatchResponse;
+  parseResponse(_response: Response): Promise<msdyn_reassignmentbatchResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

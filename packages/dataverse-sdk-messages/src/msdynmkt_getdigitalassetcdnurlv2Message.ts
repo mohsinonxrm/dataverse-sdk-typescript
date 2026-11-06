@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_getdigitalassetcdnurlv2Response as msdynmkt_getdigitalassetcdnurlv2ResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_getdigitalassetcdnurlv2 message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,35 @@ export class msdynmkt_getdigitalassetcdnurlv2Request
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_getdigitalassetcdnurlv2Response> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_getdigitalassetcdnurlv2Response.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_getdigitalassetcdnurlv2Response.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_getdigitalassetcdnurlv2 action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_getdigitalassetcdnurlv2Result {
+  "@odata.context"?: string;
+  msdynmkt_filecdnurl: string;
+}
+
+/**
  * msdynmkt_getdigitalassetcdnurlv2 response message
+ *
+ * `result` is the value the msdynmkt_getdigitalassetcdnurlv2 action returns (see {@link msdynmkt_getdigitalassetcdnurlv2Result}).
  */
 export class msdynmkt_getdigitalassetcdnurlv2Response extends OrganizationResponse {
-  constructor(public result: msdynmkt_getdigitalassetcdnurlv2ResponseData) {
+  constructor(public result: msdynmkt_getdigitalassetcdnurlv2Result) {
     super("msdynmkt_getdigitalassetcdnurlv2");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_getdigitalassetcdnurlv2Response {
     return new msdynmkt_getdigitalassetcdnurlv2Response(
-      responseObject<msdynmkt_getdigitalassetcdnurlv2ResponseData>(data)
+      data as msdynmkt_getdigitalassetcdnurlv2Result
     );
   }
 }

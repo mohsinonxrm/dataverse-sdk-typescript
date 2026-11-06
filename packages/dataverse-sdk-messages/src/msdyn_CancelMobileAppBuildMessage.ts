@@ -1,13 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
-import type {
-  msdyn_CancelMobileAppBuildResponse as msdyn_CancelMobileAppBuildResponseData,
-  msdyn_mobileapp,
-} from "./types/index.js";
+import type { msdyn_mobileapp } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CancelMobileAppBuild message, by their CSDL names. A parameter the CSDL declares
@@ -52,23 +48,33 @@ export class msdyn_CancelMobileAppBuildRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CancelMobileAppBuildResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CancelMobileAppBuildResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CancelMobileAppBuildResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CancelMobileAppBuild action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CancelMobileAppBuildResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_CancelMobileAppBuild response message
+ *
+ * `result` is the value the msdyn_CancelMobileAppBuild action returns (see {@link msdyn_CancelMobileAppBuildResult}).
  */
 export class msdyn_CancelMobileAppBuildResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CancelMobileAppBuildResponseData) {
+  constructor(public result: msdyn_CancelMobileAppBuildResult) {
     super("msdyn_CancelMobileAppBuild");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CancelMobileAppBuildResponse {
-    return new msdyn_CancelMobileAppBuildResponse(
-      responseObject<msdyn_CancelMobileAppBuildResponseData>(data)
-    );
+    return new msdyn_CancelMobileAppBuildResponse(data as msdyn_CancelMobileAppBuildResult);
   }
 }

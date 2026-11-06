@@ -2,11 +2,14 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { aipluginconversationstarter } from "./types/index.js";
 
 /**
- * Response from RetrieveUnpublishedMultiple function
+ * Response from the RetrieveUnpublishedMultiple function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResponse {
-  value: aipluginconversationstarter[];
-}
+export type RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResponse = Array<
+  aipluginconversationstarter & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * RetrieveUnpublishedMultiple function
@@ -31,9 +34,13 @@ export class RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionF
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResponse;
-    return (await response.json()) as RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return (
+      (await response.json()) as {
+        value: RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResponse;
+      }
+    ).value;
   }
 }

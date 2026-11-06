@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { _ServiceCalendarActionResponse as _ServiceCalendarActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the _ServiceCalendarAction message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class _ServiceCalendarActionRequest
   }
 
   async parseResponse(response: Response): Promise<_ServiceCalendarActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return _ServiceCalendarActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return _ServiceCalendarActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the _ServiceCalendarAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface _ServiceCalendarActionResult {
+  "@odata.context"?: string;
+  OutputParameter: string;
+}
+
+/**
  * _ServiceCalendarAction response message
+ *
+ * `result` is the value the _ServiceCalendarAction action returns (see {@link _ServiceCalendarActionResult}).
  */
 export class _ServiceCalendarActionResponse extends OrganizationResponse {
-  constructor(public result: _ServiceCalendarActionResponseData) {
+  constructor(public result: _ServiceCalendarActionResult) {
     super("_ServiceCalendarAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): _ServiceCalendarActionResponse {
-    return new _ServiceCalendarActionResponse(
-      responseObject<_ServiceCalendarActionResponseData>(data)
-    );
+    return new _ServiceCalendarActionResponse(data as _ServiceCalendarActionResult);
   }
 }

@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { quoteclose } from "./types/index.js";
 
 /**
- * Response from WinQuote action
+ * Response from the WinQuote action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface WinQuoteResponse {
-  // No content returned
-}
+export type WinQuoteResponse = void;
 
 /**
  * Parameters of the WinQuote action, by their CSDL names. A parameter the CSDL declares
@@ -46,9 +46,8 @@ export class WinQuoteAction implements Executable<WinQuoteResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<WinQuoteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as WinQuoteResponse;
-    return (await response.json()) as WinQuoteResponse;
+  parseResponse(_response: Response): Promise<WinQuoteResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

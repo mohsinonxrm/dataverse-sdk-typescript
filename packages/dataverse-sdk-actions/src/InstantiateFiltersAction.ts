@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { savedquery } from "./types/index.js";
 
 /**
- * Response from InstantiateFilters action
+ * Response from the InstantiateFilters action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface InstantiateFiltersResponse {
-  // No content returned
-}
+export type InstantiateFiltersResponse = void;
 
 /**
  * Parameters of the InstantiateFilters action, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +51,8 @@ export class InstantiateFiltersAction implements Executable<InstantiateFiltersRe
     };
   }
 
-  async parseResponse(response: Response): Promise<InstantiateFiltersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as InstantiateFiltersResponse;
-    return (await response.json()) as InstantiateFiltersResponse;
+  parseResponse(_response: Response): Promise<InstantiateFiltersResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

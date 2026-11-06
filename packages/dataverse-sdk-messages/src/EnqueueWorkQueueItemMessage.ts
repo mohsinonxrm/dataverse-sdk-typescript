@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { EnqueueWorkQueueItemResponse as EnqueueWorkQueueItemResponseData } from "./types/index.js";
 
 /**
  * Parameters of the EnqueueWorkQueueItem message, by their CSDL names. A parameter the CSDL declares
@@ -55,21 +53,33 @@ export class EnqueueWorkQueueItemRequest
   }
 
   async parseResponse(response: Response): Promise<EnqueueWorkQueueItemResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return EnqueueWorkQueueItemResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return EnqueueWorkQueueItemResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the EnqueueWorkQueueItem action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface EnqueueWorkQueueItemResult {
+  "@odata.context"?: string;
+  workQueueItemId: string;
+}
+
+/**
  * EnqueueWorkQueueItem response message
+ *
+ * `result` is the value the EnqueueWorkQueueItem action returns (see {@link EnqueueWorkQueueItemResult}).
  */
 export class EnqueueWorkQueueItemResponse extends OrganizationResponse {
-  constructor(public result: EnqueueWorkQueueItemResponseData) {
+  constructor(public result: EnqueueWorkQueueItemResult) {
     super("EnqueueWorkQueueItem");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): EnqueueWorkQueueItemResponse {
-    return new EnqueueWorkQueueItemResponse(responseObject<EnqueueWorkQueueItemResponseData>(data));
+    return new EnqueueWorkQueueItemResponse(data as EnqueueWorkQueueItemResult);
   }
 }

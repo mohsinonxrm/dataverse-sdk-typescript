@@ -26,9 +26,9 @@ export class msdyn_InitializeSessionChannelRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_InitializeSessionChannelResponse> {
+  parseResponse(_response: Response): Promise<msdyn_InitializeSessionChannelResponse> {
     // No return value (204 No Content)
-    return new msdyn_InitializeSessionChannelResponse();
+    return Promise.resolve(new msdyn_InitializeSessionChannelResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_InitializeSessionChannelResponse extends OrganizationResponse
     super("msdyn_InitializeSessionChannel");
   }
 
-  static fromResponse(_data: unknown): msdyn_InitializeSessionChannelResponse {
+  static fromResponse(_data?: unknown): msdyn_InitializeSessionChannelResponse {
     return new msdyn_InitializeSessionChannelResponse();
   }
 }

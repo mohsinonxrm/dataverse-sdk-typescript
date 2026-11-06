@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from Yesterday function
+ * Response from the Yesterday function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface YesterdayResponse {
-  value: boolean;
-}
+export type YesterdayResponse = boolean;
 
 /**
  * Parameters of the Yesterday function, by their CSDL names. A parameter the CSDL declares
@@ -48,8 +48,7 @@ export class YesterdayFunction implements Executable<YesterdayResponse> {
   }
 
   async parseResponse(response: Response): Promise<YesterdayResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as YesterdayResponse;
-    return (await response.json()) as YesterdayResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: YesterdayResponse }).value;
   }
 }

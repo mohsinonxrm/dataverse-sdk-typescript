@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_CreateOperation action
+ * Response from the CCaaS_CreateOperation action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_CreateOperationResponse {
-  // No content returned
-}
+export type CCaaS_CreateOperationResponse = void;
 
 /**
  * Parameters of the CCaaS_CreateOperation action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class CCaaS_CreateOperationAction implements Executable<CCaaS_CreateOpera
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_CreateOperationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_CreateOperationResponse;
-    return (await response.json()) as CCaaS_CreateOperationResponse;
+  parseResponse(_response: Response): Promise<CCaaS_CreateOperationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

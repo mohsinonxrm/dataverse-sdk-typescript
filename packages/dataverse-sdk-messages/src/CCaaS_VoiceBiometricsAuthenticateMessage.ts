@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_VoiceBiometricsAuthenticateResponse as CCaaS_VoiceBiometricsAuthenticateResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_VoiceBiometricsAuthenticate message, by their CSDL names. A parameter the CSDL declares
@@ -59,23 +57,35 @@ export class CCaaS_VoiceBiometricsAuthenticateRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_VoiceBiometricsAuthenticateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_VoiceBiometricsAuthenticateResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_VoiceBiometricsAuthenticateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_VoiceBiometricsAuthenticate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_VoiceBiometricsAuthenticateResult {
+  "@odata.context"?: string;
+  operationId: string;
+}
+
+/**
  * CCaaS_VoiceBiometricsAuthenticate response message
+ *
+ * `result` is the value the CCaaS_VoiceBiometricsAuthenticate action returns (see {@link CCaaS_VoiceBiometricsAuthenticateResult}).
  */
 export class CCaaS_VoiceBiometricsAuthenticateResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_VoiceBiometricsAuthenticateResponseData) {
+  constructor(public result: CCaaS_VoiceBiometricsAuthenticateResult) {
     super("CCaaS_VoiceBiometricsAuthenticate");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_VoiceBiometricsAuthenticateResponse {
     return new CCaaS_VoiceBiometricsAuthenticateResponse(
-      responseObject<CCaaS_VoiceBiometricsAuthenticateResponseData>(data)
+      data as CCaaS_VoiceBiometricsAuthenticateResult
     );
   }
 }

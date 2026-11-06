@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_UserLogoutResponse as CCaaS_UserLogoutResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_UserLogout message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class CCaaS_UserLogoutRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_UserLogoutResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_UserLogoutResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_UserLogoutResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_UserLogout action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_UserLogoutResult {
+  "@odata.context"?: string;
+  Message: string;
+}
+
+/**
  * CCaaS_UserLogout response message
+ *
+ * `result` is the value the CCaaS_UserLogout action returns (see {@link CCaaS_UserLogoutResult}).
  */
 export class CCaaS_UserLogoutResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_UserLogoutResponseData) {
+  constructor(public result: CCaaS_UserLogoutResult) {
     super("CCaaS_UserLogout");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_UserLogoutResponse {
-    return new CCaaS_UserLogoutResponse(responseObject<CCaaS_UserLogoutResponseData>(data));
+    return new CCaaS_UserLogoutResponse(data as CCaaS_UserLogoutResult);
   }
 }

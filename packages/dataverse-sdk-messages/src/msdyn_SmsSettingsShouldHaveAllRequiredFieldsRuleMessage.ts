@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_SmsSettingsShouldHaveAllRequiredFieldsRule request message
@@ -31,9 +29,7 @@ export class msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleRequest
 }
 
 /**
+ * Response from the msdyn_SmsSettingsShouldHaveAllRequiredFieldsRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_SmsSettingsShouldHaveAllRequiredFieldsRule response message
+ *
+ * `result` is the value the msdyn_SmsSettingsShouldHaveAllRequiredFieldsRule action returns (see {@link msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResult}).
  */
 export class msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
+  constructor(public result: msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResult) {
     super("msdyn_SmsSettingsShouldHaveAllRequiredFieldsRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse {
     return new msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse(
-      responseObject<msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+      data as msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResult
     );
   }
 }

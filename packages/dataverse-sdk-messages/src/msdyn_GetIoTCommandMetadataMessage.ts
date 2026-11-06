@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_GetIoTCommandMetadataResponse as msdyn_GetIoTCommandMetadataResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetIoTCommandMetadata message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_GetIoTCommandMetadataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetIoTCommandMetadataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetIoTCommandMetadataResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetIoTCommandMetadataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetIoTCommandMetadata action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetIoTCommandMetadataResult {
+  "@odata.context"?: string;
+  CommandMetadata: string;
+}
+
+/**
  * msdyn_GetIoTCommandMetadata response message
+ *
+ * `result` is the value the msdyn_GetIoTCommandMetadata action returns (see {@link msdyn_GetIoTCommandMetadataResult}).
  */
 export class msdyn_GetIoTCommandMetadataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetIoTCommandMetadataResponseData) {
+  constructor(public result: msdyn_GetIoTCommandMetadataResult) {
     super("msdyn_GetIoTCommandMetadata");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetIoTCommandMetadataResponse {
-    return new msdyn_GetIoTCommandMetadataResponse(
-      responseObject<msdyn_GetIoTCommandMetadataResponseData>(data)
-    );
+    return new msdyn_GetIoTCommandMetadataResponse(data as msdyn_GetIoTCommandMetadataResult);
   }
 }

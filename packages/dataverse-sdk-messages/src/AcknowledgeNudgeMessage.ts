@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { AcknowledgeNudgeResponse as AcknowledgeNudgeResponseData } from "./types/index.js";
 
 /**
  * Parameters of the AcknowledgeNudge message, by their CSDL names. A parameter the CSDL declares
@@ -53,21 +51,33 @@ export class AcknowledgeNudgeRequest
   }
 
   async parseResponse(response: Response): Promise<AcknowledgeNudgeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AcknowledgeNudgeResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AcknowledgeNudgeResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AcknowledgeNudge action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AcknowledgeNudgeResult {
+  "@odata.context"?: string;
+  Message: string;
+}
+
+/**
  * AcknowledgeNudge response message
+ *
+ * `result` is the value the AcknowledgeNudge action returns (see {@link AcknowledgeNudgeResult}).
  */
 export class AcknowledgeNudgeResponse extends OrganizationResponse {
-  constructor(public result: AcknowledgeNudgeResponseData) {
+  constructor(public result: AcknowledgeNudgeResult) {
     super("AcknowledgeNudge");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AcknowledgeNudgeResponse {
-    return new AcknowledgeNudgeResponse(responseObject<AcknowledgeNudgeResponseData>(data));
+    return new AcknowledgeNudgeResponse(data as AcknowledgeNudgeResult);
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { AttributePrivilege } from "./types/index.js";
 
 /**
- * Response from RetrievePrincipalAttributePrivileges function
+ * Response from the RetrievePrincipalAttributePrivileges function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrievePrincipalAttributePrivileges_systemuserResponse {
+  "@odata.context"?: string;
   AttributePrivileges: AttributePrivilege[];
 }
 
@@ -35,9 +38,7 @@ export class RetrievePrincipalAttributePrivileges_systemuserFunction implements 
   async parseResponse(
     response: Response
   ): Promise<RetrievePrincipalAttributePrivileges_systemuserResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as RetrievePrincipalAttributePrivileges_systemuserResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrievePrincipalAttributePrivileges_systemuserResponse;
   }
 }

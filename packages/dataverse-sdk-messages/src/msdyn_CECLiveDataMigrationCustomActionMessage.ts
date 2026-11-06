@@ -26,9 +26,9 @@ export class msdyn_CECLiveDataMigrationCustomActionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CECLiveDataMigrationCustomActionResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CECLiveDataMigrationCustomActionResponse> {
     // No return value (204 No Content)
-    return new msdyn_CECLiveDataMigrationCustomActionResponse();
+    return Promise.resolve(new msdyn_CECLiveDataMigrationCustomActionResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_CECLiveDataMigrationCustomActionResponse extends Organization
     super("msdyn_CECLiveDataMigrationCustomAction");
   }
 
-  static fromResponse(_data: unknown): msdyn_CECLiveDataMigrationCustomActionResponse {
+  static fromResponse(_data?: unknown): msdyn_CECLiveDataMigrationCustomActionResponse {
     return new msdyn_CECLiveDataMigrationCustomActionResponse();
   }
 }

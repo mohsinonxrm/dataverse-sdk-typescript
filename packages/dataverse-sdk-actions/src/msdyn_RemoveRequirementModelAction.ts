@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_RemoveRequirementModel action
+ * Response from the msdyn_RemoveRequirementModel action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_RemoveRequirementModelResponse {
-  // No content returned
-}
+export type msdyn_RemoveRequirementModelResponse = void;
 
 /**
  * Parameters of the msdyn_RemoveRequirementModel action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_RemoveRequirementModelAction implements Executable<msdyn_Remo
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_RemoveRequirementModelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_RemoveRequirementModelResponse;
-    return (await response.json()) as msdyn_RemoveRequirementModelResponse;
+  parseResponse(_response: Response): Promise<msdyn_RemoveRequirementModelResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

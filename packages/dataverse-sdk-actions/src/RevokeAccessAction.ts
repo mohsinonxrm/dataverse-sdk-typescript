@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from RevokeAccess action
+ * Response from the RevokeAccess action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RevokeAccessResponse {
-  // No content returned
-}
+export type RevokeAccessResponse = void;
 
 /**
  * Parameters of the RevokeAccess action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class RevokeAccessAction implements Executable<RevokeAccessResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<RevokeAccessResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RevokeAccessResponse;
-    return (await response.json()) as RevokeAccessResponse;
+  parseResponse(_response: Response): Promise<RevokeAccessResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

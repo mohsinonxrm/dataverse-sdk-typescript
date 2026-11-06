@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GeneratePlatformSummaryResponse as msdyn_GeneratePlatformSummaryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GeneratePlatformSummary message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_GeneratePlatformSummaryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GeneratePlatformSummaryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GeneratePlatformSummaryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GeneratePlatformSummaryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GeneratePlatformSummary action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GeneratePlatformSummaryResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_GeneratePlatformSummary response message
+ *
+ * `result` is the value the msdyn_GeneratePlatformSummary action returns (see {@link msdyn_GeneratePlatformSummaryResult}).
  */
 export class msdyn_GeneratePlatformSummaryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GeneratePlatformSummaryResponseData) {
+  constructor(public result: msdyn_GeneratePlatformSummaryResult) {
     super("msdyn_GeneratePlatformSummary");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GeneratePlatformSummaryResponse {
-    return new msdyn_GeneratePlatformSummaryResponse(
-      responseObject<msdyn_GeneratePlatformSummaryResponseData>(data)
-    );
+    return new msdyn_GeneratePlatformSummaryResponse(data as msdyn_GeneratePlatformSummaryResult);
   }
 }

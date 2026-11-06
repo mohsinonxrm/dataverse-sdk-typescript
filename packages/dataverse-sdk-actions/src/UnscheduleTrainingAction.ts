@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UnscheduleTraining action
+ * Response from the UnscheduleTraining action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface UnscheduleTrainingResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -49,8 +52,7 @@ export class UnscheduleTrainingAction implements Executable<UnscheduleTrainingRe
   }
 
   async parseResponse(response: Response): Promise<UnscheduleTrainingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UnscheduleTrainingResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as UnscheduleTrainingResponse;
   }
 }

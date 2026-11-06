@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CreateNPSUserRating action
+ * Response from the CreateNPSUserRating action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CreateNPSUserRatingResponse {
-  // No content returned
-}
+export type CreateNPSUserRatingResponse = void;
 
 /**
  * Parameters of the CreateNPSUserRating action, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +49,8 @@ export class CreateNPSUserRatingAction implements Executable<CreateNPSUserRating
     };
   }
 
-  async parseResponse(response: Response): Promise<CreateNPSUserRatingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateNPSUserRatingResponse;
-    return (await response.json()) as CreateNPSUserRatingResponse;
+  parseResponse(_response: Response): Promise<CreateNPSUserRatingResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

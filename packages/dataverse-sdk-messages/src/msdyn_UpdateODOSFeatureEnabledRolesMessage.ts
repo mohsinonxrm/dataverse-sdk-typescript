@@ -44,9 +44,9 @@ export class msdyn_UpdateODOSFeatureEnabledRolesRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateODOSFeatureEnabledRolesResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateODOSFeatureEnabledRolesResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateODOSFeatureEnabledRolesResponse();
+    return Promise.resolve(new msdyn_UpdateODOSFeatureEnabledRolesResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_UpdateODOSFeatureEnabledRolesResponse extends OrganizationRes
     super("msdyn_UpdateODOSFeatureEnabledRoles");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateODOSFeatureEnabledRolesResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateODOSFeatureEnabledRolesResponse {
     return new msdyn_UpdateODOSFeatureEnabledRolesResponse();
   }
 }

@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { InitializeFileBlocksUploadResponse as InitializeFileBlocksUploadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the InitializeFileBlocksUpload message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class InitializeFileBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<InitializeFileBlocksUploadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return InitializeFileBlocksUploadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return InitializeFileBlocksUploadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the InitializeFileBlocksUpload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface InitializeFileBlocksUploadResult {
+  "@odata.context"?: string;
+  FileContinuationToken: string;
+}
+
+/**
  * InitializeFileBlocksUpload response message
+ *
+ * `result` is the value the InitializeFileBlocksUpload action returns (see {@link InitializeFileBlocksUploadResult}).
  */
 export class InitializeFileBlocksUploadResponse extends OrganizationResponse {
-  constructor(public result: InitializeFileBlocksUploadResponseData) {
+  constructor(public result: InitializeFileBlocksUploadResult) {
     super("InitializeFileBlocksUpload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): InitializeFileBlocksUploadResponse {
-    return new InitializeFileBlocksUploadResponse(
-      responseObject<InitializeFileBlocksUploadResponseData>(data)
-    );
+    return new InitializeFileBlocksUploadResponse(data as InitializeFileBlocksUploadResult);
   }
 }

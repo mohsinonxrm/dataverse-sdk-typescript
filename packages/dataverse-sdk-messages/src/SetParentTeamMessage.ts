@@ -53,9 +53,9 @@ export class SetParentTeamRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SetParentTeamResponse> {
+  parseResponse(_response: Response): Promise<SetParentTeamResponse> {
     // No return value (204 No Content)
-    return new SetParentTeamResponse();
+    return Promise.resolve(new SetParentTeamResponse());
   }
 }
 
@@ -67,7 +67,7 @@ export class SetParentTeamResponse extends OrganizationResponse {
     super("SetParentTeam");
   }
 
-  static fromResponse(_data: unknown): SetParentTeamResponse {
+  static fromResponse(_data?: unknown): SetParentTeamResponse {
     return new SetParentTeamResponse();
   }
 }

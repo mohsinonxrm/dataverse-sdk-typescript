@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_PredictiveScoringDataMigration action
+ * Response from the msdyn_PredictiveScoringDataMigration action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_PredictiveScoringDataMigrationResponse {
-  // No content returned
-}
+export type msdyn_PredictiveScoringDataMigrationResponse = void;
 
 /**
  * Parameters of the msdyn_PredictiveScoringDataMigration action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_PredictiveScoringDataMigrationAction implements Executable<ms
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_PredictiveScoringDataMigrationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_PredictiveScoringDataMigrationResponse;
-    return (await response.json()) as msdyn_PredictiveScoringDataMigrationResponse;
+  parseResponse(_response: Response): Promise<msdyn_PredictiveScoringDataMigrationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

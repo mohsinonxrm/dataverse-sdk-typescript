@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdynmkt_GetPublicConfigurationCustomAction action
+ * Response from the msdynmkt_GetPublicConfigurationCustomAction action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdynmkt_GetPublicConfigurationCustomActionResponse {
-  // No content returned
-}
+export type msdynmkt_GetPublicConfigurationCustomActionResponse = void;
 
 /**
  * msdynmkt_GetPublicConfigurationCustomAction action
@@ -25,11 +25,8 @@ export class msdynmkt_GetPublicConfigurationCustomActionAction implements Execut
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdynmkt_GetPublicConfigurationCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_GetPublicConfigurationCustomActionResponse;
-    return (await response.json()) as msdynmkt_GetPublicConfigurationCustomActionResponse;
+  parseResponse(_response: Response): Promise<msdynmkt_GetPublicConfigurationCustomActionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

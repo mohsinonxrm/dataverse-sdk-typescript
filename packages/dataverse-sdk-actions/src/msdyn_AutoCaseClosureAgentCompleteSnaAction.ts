@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AutoCaseClosureAgentCompleteSna action
+ * Response from the msdyn_AutoCaseClosureAgentCompleteSna action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_AutoCaseClosureAgentCompleteSnaResponse {
-  // No content returned
-}
+export type msdyn_AutoCaseClosureAgentCompleteSnaResponse = void;
 
 /**
  * Parameters of the msdyn_AutoCaseClosureAgentCompleteSna action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_AutoCaseClosureAgentCompleteSnaAction implements Executable<m
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AutoCaseClosureAgentCompleteSnaResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_AutoCaseClosureAgentCompleteSnaResponse;
-    return (await response.json()) as msdyn_AutoCaseClosureAgentCompleteSnaResponse;
+  parseResponse(_response: Response): Promise<msdyn_AutoCaseClosureAgentCompleteSnaResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

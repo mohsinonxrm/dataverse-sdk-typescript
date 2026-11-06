@@ -54,9 +54,9 @@ export class msdyn_SendEmailFromTemplateRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SendEmailFromTemplateResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SendEmailFromTemplateResponse> {
     // No return value (204 No Content)
-    return new msdyn_SendEmailFromTemplateResponse();
+    return Promise.resolve(new msdyn_SendEmailFromTemplateResponse());
   }
 }
 
@@ -68,7 +68,7 @@ export class msdyn_SendEmailFromTemplateResponse extends OrganizationResponse {
     super("msdyn_SendEmailFromTemplate");
   }
 
-  static fromResponse(_data: unknown): msdyn_SendEmailFromTemplateResponse {
+  static fromResponse(_data?: unknown): msdyn_SendEmailFromTemplateResponse {
     return new msdyn_SendEmailFromTemplateResponse();
   }
 }

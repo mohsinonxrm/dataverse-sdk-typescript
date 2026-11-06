@@ -44,9 +44,9 @@ export class WinQuoteRequest extends OrganizationRequest implements Executable<W
     };
   }
 
-  async parseResponse(response: Response): Promise<WinQuoteResponse> {
+  parseResponse(_response: Response): Promise<WinQuoteResponse> {
     // No return value (204 No Content)
-    return new WinQuoteResponse();
+    return Promise.resolve(new WinQuoteResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class WinQuoteResponse extends OrganizationResponse {
     super("WinQuote");
   }
 
-  static fromResponse(_data: unknown): WinQuoteResponse {
+  static fromResponse(_data?: unknown): WinQuoteResponse {
     return new WinQuoteResponse();
   }
 }

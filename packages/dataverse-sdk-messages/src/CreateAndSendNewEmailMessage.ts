@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { CreateAndSendNewEmailResponse as CreateAndSendNewEmailResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CreateAndSendNewEmail message, by their CSDL names. A parameter the CSDL declares
@@ -61,23 +59,33 @@ export class CreateAndSendNewEmailRequest
   }
 
   async parseResponse(response: Response): Promise<CreateAndSendNewEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CreateAndSendNewEmailResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CreateAndSendNewEmailResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateAndSendNewEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateAndSendNewEmailResult {
+  "@odata.context"?: string;
+  EmailId: string;
+}
+
+/**
  * CreateAndSendNewEmail response message
+ *
+ * `result` is the value the CreateAndSendNewEmail action returns (see {@link CreateAndSendNewEmailResult}).
  */
 export class CreateAndSendNewEmailResponse extends OrganizationResponse {
-  constructor(public result: CreateAndSendNewEmailResponseData) {
+  constructor(public result: CreateAndSendNewEmailResult) {
     super("CreateAndSendNewEmail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateAndSendNewEmailResponse {
-    return new CreateAndSendNewEmailResponse(
-      responseObject<CreateAndSendNewEmailResponseData>(data)
-    );
+    return new CreateAndSendNewEmailResponse(data as CreateAndSendNewEmailResult);
   }
 }

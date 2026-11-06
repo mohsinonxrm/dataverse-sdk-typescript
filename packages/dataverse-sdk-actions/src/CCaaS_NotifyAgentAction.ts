@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_NotifyAgent action
+ * Response from the CCaaS_NotifyAgent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_NotifyAgentResponse {
+  "@odata.context"?: string;
   BulkActionId: string;
 }
 
@@ -48,8 +51,7 @@ export class CCaaS_NotifyAgentAction implements Executable<CCaaS_NotifyAgentResp
   }
 
   async parseResponse(response: Response): Promise<CCaaS_NotifyAgentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_NotifyAgentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_NotifyAgentResponse;
   }
 }

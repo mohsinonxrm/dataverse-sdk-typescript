@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_VoiceBiometricsUpdateWatchlistResponse as CCaaS_VoiceBiometricsUpdateWatchlistResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_VoiceBiometricsUpdateWatchlist message, by their CSDL names. A parameter the CSDL declares
@@ -57,24 +55,38 @@ export class CCaaS_VoiceBiometricsUpdateWatchlistRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_VoiceBiometricsUpdateWatchlistResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return CCaaS_VoiceBiometricsUpdateWatchlistResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_VoiceBiometricsUpdateWatchlistResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_VoiceBiometricsUpdateWatchlist action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_VoiceBiometricsUpdateWatchlistResult {
+  "@odata.context"?: string;
+  BadRequestReason: string;
+  ErrorMessage: string;
+  StatusCode: string;
+  WatchlistId: string;
+}
+
+/**
  * CCaaS_VoiceBiometricsUpdateWatchlist response message
+ *
+ * `result` is the value the CCaaS_VoiceBiometricsUpdateWatchlist action returns (see {@link CCaaS_VoiceBiometricsUpdateWatchlistResult}).
  */
 export class CCaaS_VoiceBiometricsUpdateWatchlistResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_VoiceBiometricsUpdateWatchlistResponseData) {
+  constructor(public result: CCaaS_VoiceBiometricsUpdateWatchlistResult) {
     super("CCaaS_VoiceBiometricsUpdateWatchlist");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_VoiceBiometricsUpdateWatchlistResponse {
     return new CCaaS_VoiceBiometricsUpdateWatchlistResponse(
-      responseObject<CCaaS_VoiceBiometricsUpdateWatchlistResponseData>(data)
+      data as CCaaS_VoiceBiometricsUpdateWatchlistResult
     );
   }
 }

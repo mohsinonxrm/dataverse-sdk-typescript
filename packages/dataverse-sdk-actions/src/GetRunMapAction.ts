@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from GetRunMap action
+ * Response from the GetRunMap action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetRunMapResponse {
+  "@odata.context"?: string;
   continuationToken: string;
   runMap: string;
 }
@@ -54,8 +57,7 @@ export class GetRunMapAction implements Executable<GetRunMapResponse> {
   }
 
   async parseResponse(response: Response): Promise<GetRunMapResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetRunMapResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetRunMapResponse;
   }
 }

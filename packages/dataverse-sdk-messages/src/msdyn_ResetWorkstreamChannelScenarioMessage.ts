@@ -42,9 +42,9 @@ export class msdyn_ResetWorkstreamChannelScenarioRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ResetWorkstreamChannelScenarioResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ResetWorkstreamChannelScenarioResponse> {
     // No return value (204 No Content)
-    return new msdyn_ResetWorkstreamChannelScenarioResponse();
+    return Promise.resolve(new msdyn_ResetWorkstreamChannelScenarioResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_ResetWorkstreamChannelScenarioResponse extends OrganizationRe
     super("msdyn_ResetWorkstreamChannelScenario");
   }
 
-  static fromResponse(_data: unknown): msdyn_ResetWorkstreamChannelScenarioResponse {
+  static fromResponse(_data?: unknown): msdyn_ResetWorkstreamChannelScenarioResponse {
     return new msdyn_ResetWorkstreamChannelScenarioResponse();
   }
 }

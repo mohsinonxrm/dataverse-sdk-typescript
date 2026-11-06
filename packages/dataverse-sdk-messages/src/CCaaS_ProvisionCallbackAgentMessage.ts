@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_ProvisionCallbackAgentResponse as CCaaS_ProvisionCallbackAgentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_ProvisionCallbackAgent message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class CCaaS_ProvisionCallbackAgentRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_ProvisionCallbackAgentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_ProvisionCallbackAgentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_ProvisionCallbackAgentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_ProvisionCallbackAgent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_ProvisionCallbackAgentResult {
+  "@odata.context"?: string;
+  BotId: string;
+}
+
+/**
  * CCaaS_ProvisionCallbackAgent response message
+ *
+ * `result` is the value the CCaaS_ProvisionCallbackAgent action returns (see {@link CCaaS_ProvisionCallbackAgentResult}).
  */
 export class CCaaS_ProvisionCallbackAgentResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_ProvisionCallbackAgentResponseData) {
+  constructor(public result: CCaaS_ProvisionCallbackAgentResult) {
     super("CCaaS_ProvisionCallbackAgent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_ProvisionCallbackAgentResponse {
-    return new CCaaS_ProvisionCallbackAgentResponse(
-      responseObject<CCaaS_ProvisionCallbackAgentResponseData>(data)
-    );
+    return new CCaaS_ProvisionCallbackAgentResponse(data as CCaaS_ProvisionCallbackAgentResult);
   }
 }

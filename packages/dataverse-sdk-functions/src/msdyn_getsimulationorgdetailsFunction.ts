@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_getsimulationorgdetails function
+ * Response from the msdyn_getsimulationorgdetails function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_getsimulationorgdetailsResponse {
+  "@odata.context"?: string;
   ClusterCategory: string;
   Geo: string;
   OrganizationType: string;
@@ -29,8 +32,7 @@ export class msdyn_getsimulationorgdetailsFunction implements Executable<msdyn_g
   }
 
   async parseResponse(response: Response): Promise<msdyn_getsimulationorgdetailsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_getsimulationorgdetailsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_getsimulationorgdetailsResponse;
   }
 }

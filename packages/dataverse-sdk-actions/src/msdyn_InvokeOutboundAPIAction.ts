@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_ocoutboundconfiguration } from "./types/index.js";
 
 /**
- * Response from msdyn_InvokeOutboundAPI action
+ * Response from the msdyn_InvokeOutboundAPI action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_InvokeOutboundAPIResponse {
-  // No content returned
-}
+export type msdyn_InvokeOutboundAPIResponse = void;
 
 /**
  * Parameters of the msdyn_InvokeOutboundAPI action, by their CSDL names. A parameter the CSDL declares
@@ -46,9 +46,8 @@ export class msdyn_InvokeOutboundAPIAction implements Executable<msdyn_InvokeOut
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_InvokeOutboundAPIResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_InvokeOutboundAPIResponse;
-    return (await response.json()) as msdyn_InvokeOutboundAPIResponse;
+  parseResponse(_response: Response): Promise<msdyn_InvokeOutboundAPIResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

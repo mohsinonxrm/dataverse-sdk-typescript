@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_FindRulesetDependenciesResponse as msdyn_FindRulesetDependenciesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_FindRulesetDependencies message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_FindRulesetDependenciesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FindRulesetDependenciesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_FindRulesetDependenciesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_FindRulesetDependenciesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_FindRulesetDependencies action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_FindRulesetDependenciesResult {
+  "@odata.context"?: string;
+  DependenciesJson: string;
+}
+
+/**
  * msdyn_FindRulesetDependencies response message
+ *
+ * `result` is the value the msdyn_FindRulesetDependencies action returns (see {@link msdyn_FindRulesetDependenciesResult}).
  */
 export class msdyn_FindRulesetDependenciesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FindRulesetDependenciesResponseData) {
+  constructor(public result: msdyn_FindRulesetDependenciesResult) {
     super("msdyn_FindRulesetDependencies");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_FindRulesetDependenciesResponse {
-    return new msdyn_FindRulesetDependenciesResponse(
-      responseObject<msdyn_FindRulesetDependenciesResponseData>(data)
-    );
+    return new msdyn_FindRulesetDependenciesResponse(data as msdyn_FindRulesetDependenciesResult);
   }
 }

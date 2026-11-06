@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAccountSummaryResponse as msdyn_SalesAccountSummaryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAccountSummary message, by their CSDL names. A parameter the CSDL declares
@@ -59,23 +57,38 @@ export class msdyn_SalesAccountSummaryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAccountSummaryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SalesAccountSummaryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAccountSummaryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAccountSummary action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAccountSummaryResult {
+  "@odata.context"?: string;
+  msdyn_additionalDetails: string;
+  msdyn_canUseCache: boolean;
+  msdyn_sales_copilot_output: string;
+  msdyn_summary: string;
+  msdyn_summary_raw: string;
+  msdyn_version: string;
+}
+
+/**
  * msdyn_SalesAccountSummary response message
+ *
+ * `result` is the value the msdyn_SalesAccountSummary action returns (see {@link msdyn_SalesAccountSummaryResult}).
  */
 export class msdyn_SalesAccountSummaryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAccountSummaryResponseData) {
+  constructor(public result: msdyn_SalesAccountSummaryResult) {
     super("msdyn_SalesAccountSummary");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAccountSummaryResponse {
-    return new msdyn_SalesAccountSummaryResponse(
-      responseObject<msdyn_SalesAccountSummaryResponseData>(data)
-    );
+    return new msdyn_SalesAccountSummaryResponse(data as msdyn_SalesAccountSummaryResult);
   }
 }

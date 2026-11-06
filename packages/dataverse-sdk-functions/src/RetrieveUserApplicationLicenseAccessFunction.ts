@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrieveUserApplicationLicenseAccess function
+ * Response from the RetrieveUserApplicationLicenseAccess function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveUserApplicationLicenseAccessResponse {
+  "@odata.context"?: string;
   LicenseAccessInfo: string;
 }
 
@@ -55,8 +58,7 @@ export class RetrieveUserApplicationLicenseAccessFunction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<RetrieveUserApplicationLicenseAccessResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveUserApplicationLicenseAccessResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveUserApplicationLicenseAccessResponse;
   }
 }

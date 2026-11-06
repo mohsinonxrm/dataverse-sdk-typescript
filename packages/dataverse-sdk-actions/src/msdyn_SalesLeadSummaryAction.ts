@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesLeadSummary action
+ * Response from the msdyn_SalesLeadSummary action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesLeadSummaryResponse {
+  "@odata.context"?: string;
   msdyn_additionalDetails: string;
   msdyn_canUseCache: boolean;
   msdyn_sales_copilot_output: string;
@@ -67,8 +70,7 @@ export class msdyn_SalesLeadSummaryAction implements Executable<msdyn_SalesLeadS
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesLeadSummaryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SalesLeadSummaryResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SalesLeadSummaryResponse;
   }
 }

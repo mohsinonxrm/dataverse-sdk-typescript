@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetMessageIdsForOpportunityCustomAction action
+ * Response from the msdyn_GetMessageIdsForOpportunityCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetMessageIdsForOpportunityCustomActionResponse {
+  "@odata.context"?: string;
   ErrorMessage: string;
   IsSuccess: boolean;
   MessageIds: string;
@@ -49,8 +52,7 @@ export class msdyn_GetMessageIdsForOpportunityCustomActionAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetMessageIdsForOpportunityCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetMessageIdsForOpportunityCustomActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetMessageIdsForOpportunityCustomActionResponse;
   }
 }

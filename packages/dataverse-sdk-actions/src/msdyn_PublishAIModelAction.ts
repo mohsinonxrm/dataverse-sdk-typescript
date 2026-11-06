@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_PublishAIModel action
+ * Response from the msdyn_PublishAIModel action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_PublishAIModelResponse {
-  // No content returned
-}
+export type msdyn_PublishAIModelResponse = void;
 
 /**
  * msdyn_PublishAIModel action
@@ -31,9 +31,8 @@ export class msdyn_PublishAIModelAction implements Executable<msdyn_PublishAIMod
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_PublishAIModelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_PublishAIModelResponse;
-    return (await response.json()) as msdyn_PublishAIModelResponse;
+  parseResponse(_response: Response): Promise<msdyn_PublishAIModelResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

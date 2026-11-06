@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DeleteMultiple action
+ * Response from the DeleteMultiple action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeleteMultipleResponse {
-  // No content returned
-}
+export type DeleteMultipleResponse = void;
 
 /**
  * Parameters of the DeleteMultiple action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class DeleteMultipleAction implements Executable<DeleteMultipleResponse> 
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteMultipleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DeleteMultipleResponse;
-    return (await response.json()) as DeleteMultipleResponse;
+  parseResponse(_response: Response): Promise<DeleteMultipleResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

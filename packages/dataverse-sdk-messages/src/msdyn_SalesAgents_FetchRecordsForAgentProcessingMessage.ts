@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse as msdyn_SalesAgents_FetchRecordsForAgentProcessingResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_FetchRecordsForAgentProcessing message, by their CSDL names. A parameter the CSDL declares
@@ -55,9 +53,7 @@ export class msdyn_SalesAgents_FetchRecordsForAgentProcessingRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse.fromResponse(
       await response.json()
     );
@@ -65,16 +61,30 @@ export class msdyn_SalesAgents_FetchRecordsForAgentProcessingRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_FetchRecordsForAgentProcessing action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_FetchRecordsForAgentProcessingResult {
+  "@odata.context"?: string;
+  msdyn_ODataNextLink: string;
+  msdyn_Records: string;
+}
+
+/**
  * msdyn_SalesAgents_FetchRecordsForAgentProcessing response message
+ *
+ * `result` is the value the msdyn_SalesAgents_FetchRecordsForAgentProcessing action returns (see {@link msdyn_SalesAgents_FetchRecordsForAgentProcessingResult}).
  */
 export class msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_FetchRecordsForAgentProcessingResponseData) {
+  constructor(public result: msdyn_SalesAgents_FetchRecordsForAgentProcessingResult) {
     super("msdyn_SalesAgents_FetchRecordsForAgentProcessing");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse {
     return new msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse(
-      responseObject<msdyn_SalesAgents_FetchRecordsForAgentProcessingResponseData>(data)
+      data as msdyn_SalesAgents_FetchRecordsForAgentProcessingResult
     );
   }
 }

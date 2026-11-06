@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_dataprovideroperationsResponse as msdyn_dataprovideroperationsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_dataprovideroperations message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_dataprovideroperationsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_dataprovideroperationsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_dataprovideroperationsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_dataprovideroperationsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_dataprovideroperations action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_dataprovideroperationsResult {
+  "@odata.context"?: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_dataprovideroperations response message
+ *
+ * `result` is the value the msdyn_dataprovideroperations action returns (see {@link msdyn_dataprovideroperationsResult}).
  */
 export class msdyn_dataprovideroperationsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_dataprovideroperationsResponseData) {
+  constructor(public result: msdyn_dataprovideroperationsResult) {
     super("msdyn_dataprovideroperations");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_dataprovideroperationsResponse {
-    return new msdyn_dataprovideroperationsResponse(
-      responseObject<msdyn_dataprovideroperationsResponseData>(data)
-    );
+    return new msdyn_dataprovideroperationsResponse(data as msdyn_dataprovideroperationsResult);
   }
 }

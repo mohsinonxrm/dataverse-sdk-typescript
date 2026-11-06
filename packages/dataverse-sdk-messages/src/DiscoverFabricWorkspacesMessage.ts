@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { DiscoverFabricWorkspacesResponse as DiscoverFabricWorkspacesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the DiscoverFabricWorkspaces message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class DiscoverFabricWorkspacesRequest
   }
 
   async parseResponse(response: Response): Promise<DiscoverFabricWorkspacesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return DiscoverFabricWorkspacesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return DiscoverFabricWorkspacesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the DiscoverFabricWorkspaces action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface DiscoverFabricWorkspacesResult {
+  "@odata.context"?: string;
+  fabricWorkspaces: string;
+}
+
+/**
  * DiscoverFabricWorkspaces response message
+ *
+ * `result` is the value the DiscoverFabricWorkspaces action returns (see {@link DiscoverFabricWorkspacesResult}).
  */
 export class DiscoverFabricWorkspacesResponse extends OrganizationResponse {
-  constructor(public result: DiscoverFabricWorkspacesResponseData) {
+  constructor(public result: DiscoverFabricWorkspacesResult) {
     super("DiscoverFabricWorkspaces");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): DiscoverFabricWorkspacesResponse {
-    return new DiscoverFabricWorkspacesResponse(
-      responseObject<DiscoverFabricWorkspacesResponseData>(data)
-    );
+    return new DiscoverFabricWorkspacesResponse(data as DiscoverFabricWorkspacesResult);
   }
 }

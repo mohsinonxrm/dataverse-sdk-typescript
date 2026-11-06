@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveOptimizeSnapshotResponse as msdyn_RetrieveOptimizeSnapshotResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveOptimizeSnapshot message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class msdyn_RetrieveOptimizeSnapshotRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveOptimizeSnapshotResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RetrieveOptimizeSnapshotResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveOptimizeSnapshotResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveOptimizeSnapshot action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveOptimizeSnapshotResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_RetrieveOptimizeSnapshot response message
+ *
+ * `result` is the value the msdyn_RetrieveOptimizeSnapshot action returns (see {@link msdyn_RetrieveOptimizeSnapshotResult}).
  */
 export class msdyn_RetrieveOptimizeSnapshotResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveOptimizeSnapshotResponseData) {
+  constructor(public result: msdyn_RetrieveOptimizeSnapshotResult) {
     super("msdyn_RetrieveOptimizeSnapshot");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveOptimizeSnapshotResponse {
-    return new msdyn_RetrieveOptimizeSnapshotResponse(
-      responseObject<msdyn_RetrieveOptimizeSnapshotResponseData>(data)
-    );
+    return new msdyn_RetrieveOptimizeSnapshotResponse(data as msdyn_RetrieveOptimizeSnapshotResult);
   }
 }

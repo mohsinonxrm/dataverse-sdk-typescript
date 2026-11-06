@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_EmailClassificationCustomActionResponse as msdyn_EmailClassificationCustomActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_EmailClassificationCustomAction message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,38 @@ export class msdyn_EmailClassificationCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_EmailClassificationCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_EmailClassificationCustomActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_EmailClassificationCustomActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_EmailClassificationCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_EmailClassificationCustomActionResult {
+  "@odata.context"?: string;
+  emailclassificationResponse: string;
+  matchedCategoryId: string;
+  matchedScopeRuleId: string;
+  status: string;
+}
+
+/**
  * msdyn_EmailClassificationCustomAction response message
+ *
+ * `result` is the value the msdyn_EmailClassificationCustomAction action returns (see {@link msdyn_EmailClassificationCustomActionResult}).
  */
 export class msdyn_EmailClassificationCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EmailClassificationCustomActionResponseData) {
+  constructor(public result: msdyn_EmailClassificationCustomActionResult) {
     super("msdyn_EmailClassificationCustomAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_EmailClassificationCustomActionResponse {
     return new msdyn_EmailClassificationCustomActionResponse(
-      responseObject<msdyn_EmailClassificationCustomActionResponseData>(data)
+      data as msdyn_EmailClassificationCustomActionResult
     );
   }
 }

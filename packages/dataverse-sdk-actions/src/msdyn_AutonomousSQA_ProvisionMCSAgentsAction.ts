@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AutonomousSQA_ProvisionMCSAgents action
+ * Response from the msdyn_AutonomousSQA_ProvisionMCSAgents action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_AutonomousSQA_ProvisionMCSAgentsResponse {
-  // No content returned
-}
+export type msdyn_AutonomousSQA_ProvisionMCSAgentsResponse = void;
 
 /**
  * Parameters of the msdyn_AutonomousSQA_ProvisionMCSAgents action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_AutonomousSQA_ProvisionMCSAgentsAction implements Executable<
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AutonomousSQA_ProvisionMCSAgentsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_AutonomousSQA_ProvisionMCSAgentsResponse;
-    return (await response.json()) as msdyn_AutonomousSQA_ProvisionMCSAgentsResponse;
+  parseResponse(_response: Response): Promise<msdyn_AutonomousSQA_ProvisionMCSAgentsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

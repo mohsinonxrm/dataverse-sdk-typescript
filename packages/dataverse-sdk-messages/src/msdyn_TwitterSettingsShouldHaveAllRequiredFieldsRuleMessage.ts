@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRule request message
@@ -31,9 +29,7 @@ export class msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleRequest
 }
 
 /**
+ * Response from the msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRule response message
+ *
+ * `result` is the value the msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRule action returns (see {@link msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResult}).
  */
 export class msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
+  constructor(public result: msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResult) {
     super("msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponse {
     return new msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponse(
-      responseObject<msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+      data as msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResult
     );
   }
 }

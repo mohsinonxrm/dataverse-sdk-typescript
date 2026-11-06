@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_TelephonyACSResourceUsageDetailsActionResponse as msdyn_TelephonyACSResourceUsageDetailsActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TelephonyACSResourceUsageDetailsAction message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_TelephonyACSResourceUsageDetailsActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyACSResourceUsageDetailsActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_TelephonyACSResourceUsageDetailsActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TelephonyACSResourceUsageDetailsActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TelephonyACSResourceUsageDetailsAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TelephonyACSResourceUsageDetailsActionResult {
+  "@odata.context"?: string;
+  ActionResult: string;
+}
+
+/**
  * msdyn_TelephonyACSResourceUsageDetailsAction response message
+ *
+ * `result` is the value the msdyn_TelephonyACSResourceUsageDetailsAction action returns (see {@link msdyn_TelephonyACSResourceUsageDetailsActionResult}).
  */
 export class msdyn_TelephonyACSResourceUsageDetailsActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TelephonyACSResourceUsageDetailsActionResponseData) {
+  constructor(public result: msdyn_TelephonyACSResourceUsageDetailsActionResult) {
     super("msdyn_TelephonyACSResourceUsageDetailsAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TelephonyACSResourceUsageDetailsActionResponse {
     return new msdyn_TelephonyACSResourceUsageDetailsActionResponse(
-      responseObject<msdyn_TelephonyACSResourceUsageDetailsActionResponseData>(data)
+      data as msdyn_TelephonyACSResourceUsageDetailsActionResult
     );
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_IntentServiceAPICallProxyResponse as msdyn_IntentServiceAPICallProxyResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_IntentServiceAPICallProxy message, by their CSDL names. A parameter the CSDL declares
@@ -50,23 +48,35 @@ export class msdyn_IntentServiceAPICallProxyRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IntentServiceAPICallProxyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_IntentServiceAPICallProxyResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IntentServiceAPICallProxyResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IntentServiceAPICallProxy action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IntentServiceAPICallProxyResult {
+  "@odata.context"?: string;
+  IntentServiceResponsePayload: string;
+}
+
+/**
  * msdyn_IntentServiceAPICallProxy response message
+ *
+ * `result` is the value the msdyn_IntentServiceAPICallProxy action returns (see {@link msdyn_IntentServiceAPICallProxyResult}).
  */
 export class msdyn_IntentServiceAPICallProxyResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IntentServiceAPICallProxyResponseData) {
+  constructor(public result: msdyn_IntentServiceAPICallProxyResult) {
     super("msdyn_IntentServiceAPICallProxy");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IntentServiceAPICallProxyResponse {
     return new msdyn_IntentServiceAPICallProxyResponse(
-      responseObject<msdyn_IntentServiceAPICallProxyResponseData>(data)
+      data as msdyn_IntentServiceAPICallProxyResult
     );
   }
 }

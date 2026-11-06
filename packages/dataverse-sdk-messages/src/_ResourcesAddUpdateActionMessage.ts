@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { _ResourcesAddUpdateActionResponse as _ResourcesAddUpdateActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the _ResourcesAddUpdateAction message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class _ResourcesAddUpdateActionRequest
   }
 
   async parseResponse(response: Response): Promise<_ResourcesAddUpdateActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return _ResourcesAddUpdateActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return _ResourcesAddUpdateActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the _ResourcesAddUpdateAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface _ResourcesAddUpdateActionResult {
+  "@odata.context"?: string;
+  CyclicResources: string;
+}
+
+/**
  * _ResourcesAddUpdateAction response message
+ *
+ * `result` is the value the _ResourcesAddUpdateAction action returns (see {@link _ResourcesAddUpdateActionResult}).
  */
 export class _ResourcesAddUpdateActionResponse extends OrganizationResponse {
-  constructor(public result: _ResourcesAddUpdateActionResponseData) {
+  constructor(public result: _ResourcesAddUpdateActionResult) {
     super("_ResourcesAddUpdateAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): _ResourcesAddUpdateActionResponse {
-    return new _ResourcesAddUpdateActionResponse(
-      responseObject<_ResourcesAddUpdateActionResponseData>(data)
-    );
+    return new _ResourcesAddUpdateActionResponse(data as _ResourcesAddUpdateActionResult);
   }
 }

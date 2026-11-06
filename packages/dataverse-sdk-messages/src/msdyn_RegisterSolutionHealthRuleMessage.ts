@@ -1,14 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
-import type {
-  msdyn_RegisterSolutionHealthRuleResponse as msdyn_RegisterSolutionHealthRuleResponseData,
-  msdyn_solutionhealthruleset,
-  workflow,
-} from "./types/index.js";
+import type { msdyn_solutionhealthruleset, workflow } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RegisterSolutionHealthRule message, by their CSDL names. A parameter the CSDL declares
@@ -67,23 +62,35 @@ export class msdyn_RegisterSolutionHealthRuleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RegisterSolutionHealthRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RegisterSolutionHealthRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RegisterSolutionHealthRuleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RegisterSolutionHealthRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RegisterSolutionHealthRuleResult {
+  "@odata.context"?: string;
+  RuleId: string;
+}
+
+/**
  * msdyn_RegisterSolutionHealthRule response message
+ *
+ * `result` is the value the msdyn_RegisterSolutionHealthRule action returns (see {@link msdyn_RegisterSolutionHealthRuleResult}).
  */
 export class msdyn_RegisterSolutionHealthRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RegisterSolutionHealthRuleResponseData) {
+  constructor(public result: msdyn_RegisterSolutionHealthRuleResult) {
     super("msdyn_RegisterSolutionHealthRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RegisterSolutionHealthRuleResponse {
     return new msdyn_RegisterSolutionHealthRuleResponse(
-      responseObject<msdyn_RegisterSolutionHealthRuleResponseData>(data)
+      data as msdyn_RegisterSolutionHealthRuleResult
     );
   }
 }

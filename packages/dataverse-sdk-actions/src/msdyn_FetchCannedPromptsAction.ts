@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_FetchCannedPrompts action
+ * Response from the msdyn_FetchCannedPrompts action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_FetchCannedPromptsResponse {
+  "@odata.context"?: string;
   cannedprompts: string;
   errormessage: string;
 }
@@ -45,8 +48,7 @@ export class msdyn_FetchCannedPromptsAction implements Executable<msdyn_FetchCan
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchCannedPromptsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_FetchCannedPromptsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_FetchCannedPromptsResponse;
   }
 }

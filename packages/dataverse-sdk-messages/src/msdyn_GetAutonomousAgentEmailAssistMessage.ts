@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetAutonomousAgentEmailAssistResponse as msdyn_GetAutonomousAgentEmailAssistResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetAutonomousAgentEmailAssist message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,37 @@ export class msdyn_GetAutonomousAgentEmailAssistRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAutonomousAgentEmailAssistResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetAutonomousAgentEmailAssistResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAutonomousAgentEmailAssistResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAutonomousAgentEmailAssist action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAutonomousAgentEmailAssistResult {
+  "@odata.context"?: string;
+  emailContent: string;
+  emailSubject: string;
+  isGovernanceAgentGuardrailViolated: boolean;
+}
+
+/**
  * msdyn_GetAutonomousAgentEmailAssist response message
+ *
+ * `result` is the value the msdyn_GetAutonomousAgentEmailAssist action returns (see {@link msdyn_GetAutonomousAgentEmailAssistResult}).
  */
 export class msdyn_GetAutonomousAgentEmailAssistResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAutonomousAgentEmailAssistResponseData) {
+  constructor(public result: msdyn_GetAutonomousAgentEmailAssistResult) {
     super("msdyn_GetAutonomousAgentEmailAssist");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAutonomousAgentEmailAssistResponse {
     return new msdyn_GetAutonomousAgentEmailAssistResponse(
-      responseObject<msdyn_GetAutonomousAgentEmailAssistResponseData>(data)
+      data as msdyn_GetAutonomousAgentEmailAssistResult
     );
   }
 }

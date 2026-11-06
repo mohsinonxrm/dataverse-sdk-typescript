@@ -48,9 +48,9 @@ export class msdyn_ExecuteRecurringSalesOperationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ExecuteRecurringSalesOperationResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ExecuteRecurringSalesOperationResponse> {
     // No return value (204 No Content)
-    return new msdyn_ExecuteRecurringSalesOperationResponse();
+    return Promise.resolve(new msdyn_ExecuteRecurringSalesOperationResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_ExecuteRecurringSalesOperationResponse extends OrganizationRe
     super("msdyn_ExecuteRecurringSalesOperation");
   }
 
-  static fromResponse(_data: unknown): msdyn_ExecuteRecurringSalesOperationResponse {
+  static fromResponse(_data?: unknown): msdyn_ExecuteRecurringSalesOperationResponse {
     return new msdyn_ExecuteRecurringSalesOperationResponse();
   }
 }

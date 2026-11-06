@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_HoldCall action
+ * Response from the CCaaS_HoldCall action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_HoldCallResponse {
-  // No content returned
-}
+export type CCaaS_HoldCallResponse = void;
 
 /**
  * Parameters of the CCaaS_HoldCall action, by their CSDL names. A parameter the CSDL declares
@@ -60,9 +60,8 @@ export class CCaaS_HoldCallAction implements Executable<CCaaS_HoldCallResponse> 
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_HoldCallResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_HoldCallResponse;
-    return (await response.json()) as CCaaS_HoldCallResponse;
+  parseResponse(_response: Response): Promise<CCaaS_HoldCallResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

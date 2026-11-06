@@ -3,9 +3,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AddComponentToSolutionParametersCollection } from "./types/index.js";
 
 /**
- * Response from AddComponentsToSolutionAsync action
+ * Response from the AddComponentsToSolutionAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface AddComponentsToSolutionAsyncResponse {
+  "@odata.context"?: string;
   AsyncOperationId: string;
 }
 
@@ -47,8 +50,7 @@ export class AddComponentsToSolutionAsyncAction implements Executable<AddCompone
   }
 
   async parseResponse(response: Response): Promise<AddComponentsToSolutionAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddComponentsToSolutionAsyncResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as AddComponentsToSolutionAsyncResponse;
   }
 }

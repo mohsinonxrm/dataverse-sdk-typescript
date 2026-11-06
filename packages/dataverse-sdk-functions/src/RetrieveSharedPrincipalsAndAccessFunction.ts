@@ -4,9 +4,12 @@ import type { EntityReference } from "./types/EntityReference.js";
 import type { PrincipalAccess } from "./types/index.js";
 
 /**
- * Response from RetrieveSharedPrincipalsAndAccess function
+ * Response from the RetrieveSharedPrincipalsAndAccess function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveSharedPrincipalsAndAccessResponse {
+  "@odata.context"?: string;
   PrincipalAccesses: PrincipalAccess[];
 }
 
@@ -53,8 +56,7 @@ export class RetrieveSharedPrincipalsAndAccessFunction implements Executable<Ret
   }
 
   async parseResponse(response: Response): Promise<RetrieveSharedPrincipalsAndAccessResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveSharedPrincipalsAndAccessResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveSharedPrincipalsAndAccessResponse;
   }
 }

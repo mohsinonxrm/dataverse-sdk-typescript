@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_CopyEventTwitterChannelsCleanup action
+ * Response from the msdyn_CopyEventTwitterChannelsCleanup action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CopyEventTwitterChannelsCleanupResponse {
-  // No content returned
-}
+export type msdyn_CopyEventTwitterChannelsCleanupResponse = void;
 
 /**
  * msdyn_CopyEventTwitterChannelsCleanup action
@@ -25,9 +25,8 @@ export class msdyn_CopyEventTwitterChannelsCleanupAction implements Executable<m
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CopyEventTwitterChannelsCleanupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CopyEventTwitterChannelsCleanupResponse;
-    return (await response.json()) as msdyn_CopyEventTwitterChannelsCleanupResponse;
+  parseResponse(_response: Response): Promise<msdyn_CopyEventTwitterChannelsCleanupResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

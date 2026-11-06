@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyncrm_GetFileAttributesFromConfigurationResponse as msdyncrm_GetFileAttributesFromConfigurationResponseData } from "./types/index.js";
 
 /**
  * msdyncrm_GetFileAttributesFromConfiguration request message
@@ -31,24 +29,37 @@ export class msdyncrm_GetFileAttributesFromConfigurationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyncrm_GetFileAttributesFromConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyncrm_GetFileAttributesFromConfigurationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyncrm_GetFileAttributesFromConfigurationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyncrm_GetFileAttributesFromConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyncrm_GetFileAttributesFromConfigurationResult {
+  "@odata.context"?: string;
+  AllowedFileTypesRegularExpression: string;
+  MaxAssetSizeInBytesConfig: string;
+  MaxFileSizeInBytes: string;
+}
+
+/**
  * msdyncrm_GetFileAttributesFromConfiguration response message
+ *
+ * `result` is the value the msdyncrm_GetFileAttributesFromConfiguration action returns (see {@link msdyncrm_GetFileAttributesFromConfigurationResult}).
  */
 export class msdyncrm_GetFileAttributesFromConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdyncrm_GetFileAttributesFromConfigurationResponseData) {
+  constructor(public result: msdyncrm_GetFileAttributesFromConfigurationResult) {
     super("msdyncrm_GetFileAttributesFromConfiguration");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyncrm_GetFileAttributesFromConfigurationResponse {
     return new msdyncrm_GetFileAttributesFromConfigurationResponse(
-      responseObject<msdyncrm_GetFileAttributesFromConfigurationResponseData>(data)
+      data as msdyncrm_GetFileAttributesFromConfigurationResult
     );
   }
 }

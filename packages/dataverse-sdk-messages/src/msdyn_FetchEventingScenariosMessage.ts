@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_FetchEventingScenariosResponse as msdyn_FetchEventingScenariosResponseData } from "./types/index.js";
 
 /**
  * msdyn_FetchEventingScenarios request message
@@ -29,23 +27,34 @@ export class msdyn_FetchEventingScenariosRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchEventingScenariosResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_FetchEventingScenariosResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_FetchEventingScenariosResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_FetchEventingScenarios action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_FetchEventingScenariosResult {
+  "@odata.context"?: string;
+  errormessage: string;
+  scenarios: string;
+}
+
+/**
  * msdyn_FetchEventingScenarios response message
+ *
+ * `result` is the value the msdyn_FetchEventingScenarios action returns (see {@link msdyn_FetchEventingScenariosResult}).
  */
 export class msdyn_FetchEventingScenariosResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FetchEventingScenariosResponseData) {
+  constructor(public result: msdyn_FetchEventingScenariosResult) {
     super("msdyn_FetchEventingScenarios");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_FetchEventingScenariosResponse {
-    return new msdyn_FetchEventingScenariosResponse(
-      responseObject<msdyn_FetchEventingScenariosResponseData>(data)
-    );
+    return new msdyn_FetchEventingScenariosResponse(data as msdyn_FetchEventingScenariosResult);
   }
 }

@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetUserConsentStatusResponse as msdyn_GetUserConsentStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetUserConsentStatus request message
@@ -29,23 +27,33 @@ export class msdyn_GetUserConsentStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetUserConsentStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetUserConsentStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetUserConsentStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetUserConsentStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetUserConsentStatusResult {
+  "@odata.context"?: string;
+  status: string;
+}
+
+/**
  * msdyn_GetUserConsentStatus response message
+ *
+ * `result` is the value the msdyn_GetUserConsentStatus action returns (see {@link msdyn_GetUserConsentStatusResult}).
  */
 export class msdyn_GetUserConsentStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetUserConsentStatusResponseData) {
+  constructor(public result: msdyn_GetUserConsentStatusResult) {
     super("msdyn_GetUserConsentStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetUserConsentStatusResponse {
-    return new msdyn_GetUserConsentStatusResponse(
-      responseObject<msdyn_GetUserConsentStatusResponseData>(data)
-    );
+    return new msdyn_GetUserConsentStatusResponse(data as msdyn_GetUserConsentStatusResult);
   }
 }

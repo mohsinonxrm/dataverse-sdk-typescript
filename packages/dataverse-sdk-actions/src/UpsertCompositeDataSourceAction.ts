@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UpsertCompositeDataSource action
+ * Response from the UpsertCompositeDataSource action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpsertCompositeDataSourceResponse {
-  // No content returned
-}
+export type UpsertCompositeDataSourceResponse = void;
 
 /**
  * Parameters of the UpsertCompositeDataSource action, by their CSDL names. A parameter the CSDL declares
@@ -57,9 +57,8 @@ export class UpsertCompositeDataSourceAction implements Executable<UpsertComposi
     };
   }
 
-  async parseResponse(response: Response): Promise<UpsertCompositeDataSourceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UpsertCompositeDataSourceResponse;
-    return (await response.json()) as UpsertCompositeDataSourceResponse;
+  parseResponse(_response: Response): Promise<UpsertCompositeDataSourceResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

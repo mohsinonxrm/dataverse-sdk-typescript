@@ -42,11 +42,9 @@ export class msdyn_HandleTimedOutAgentProcessingStateRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_HandleTimedOutAgentProcessingStateResponse> {
+  parseResponse(_response: Response): Promise<msdyn_HandleTimedOutAgentProcessingStateResponse> {
     // No return value (204 No Content)
-    return new msdyn_HandleTimedOutAgentProcessingStateResponse();
+    return Promise.resolve(new msdyn_HandleTimedOutAgentProcessingStateResponse());
   }
 }
 
@@ -58,7 +56,7 @@ export class msdyn_HandleTimedOutAgentProcessingStateResponse extends Organizati
     super("msdyn_HandleTimedOutAgentProcessingState");
   }
 
-  static fromResponse(_data: unknown): msdyn_HandleTimedOutAgentProcessingStateResponse {
+  static fromResponse(_data?: unknown): msdyn_HandleTimedOutAgentProcessingStateResponse {
     return new msdyn_HandleTimedOutAgentProcessingStateResponse();
   }
 }

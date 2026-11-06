@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_GetEngageAgentInputPayloadResponse as msdyn_SalesAgents_GetEngageAgentInputPayloadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_GetEngageAgentInputPayload message, by their CSDL names. A parameter the CSDL declares
@@ -53,24 +51,36 @@ export class msdyn_SalesAgents_GetEngageAgentInputPayloadRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetEngageAgentInputPayloadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_GetEngageAgentInputPayloadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_GetEngageAgentInputPayloadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_GetEngageAgentInputPayload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_GetEngageAgentInputPayloadResult {
+  "@odata.context"?: string;
+  msdyn_EngageAgentInput: string;
+  msdyn_Thread: string;
+}
+
+/**
  * msdyn_SalesAgents_GetEngageAgentInputPayload response message
+ *
+ * `result` is the value the msdyn_SalesAgents_GetEngageAgentInputPayload action returns (see {@link msdyn_SalesAgents_GetEngageAgentInputPayloadResult}).
  */
 export class msdyn_SalesAgents_GetEngageAgentInputPayloadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetEngageAgentInputPayloadResponseData) {
+  constructor(public result: msdyn_SalesAgents_GetEngageAgentInputPayloadResult) {
     super("msdyn_SalesAgents_GetEngageAgentInputPayload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_GetEngageAgentInputPayloadResponse {
     return new msdyn_SalesAgents_GetEngageAgentInputPayloadResponse(
-      responseObject<msdyn_SalesAgents_GetEngageAgentInputPayloadResponseData>(data)
+      data as msdyn_SalesAgents_GetEngageAgentInputPayloadResult
     );
   }
 }

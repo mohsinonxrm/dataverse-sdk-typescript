@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CascadeCrewMembershipsResponse as msdyn_CascadeCrewMembershipsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CascadeCrewMemberships message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_CascadeCrewMembershipsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CascadeCrewMembershipsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CascadeCrewMembershipsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CascadeCrewMembershipsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CascadeCrewMemberships action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CascadeCrewMembershipsResult {
+  "@odata.context"?: string;
+  AsyncOperationRequestId: string;
+}
+
+/**
  * msdyn_CascadeCrewMemberships response message
+ *
+ * `result` is the value the msdyn_CascadeCrewMemberships action returns (see {@link msdyn_CascadeCrewMembershipsResult}).
  */
 export class msdyn_CascadeCrewMembershipsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CascadeCrewMembershipsResponseData) {
+  constructor(public result: msdyn_CascadeCrewMembershipsResult) {
     super("msdyn_CascadeCrewMemberships");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CascadeCrewMembershipsResponse {
-    return new msdyn_CascadeCrewMembershipsResponse(
-      responseObject<msdyn_CascadeCrewMembershipsResponseData>(data)
-    );
+    return new msdyn_CascadeCrewMembershipsResponse(data as msdyn_CascadeCrewMembershipsResult);
   }
 }

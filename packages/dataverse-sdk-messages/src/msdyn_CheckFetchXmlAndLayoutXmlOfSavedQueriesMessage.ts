@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse as msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,33 @@ export class msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesRequest
 }
 
 /**
+ * Response from the msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries response message
+ *
+ * `result` is the value the msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries action returns (see {@link msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResult}).
  */
 export class msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponseData) {
+  constructor(public result: msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResult) {
     super("msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse {
     return new msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse(
-      responseObject<msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponseData>(data)
+      data as msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResult
     );
   }
 }

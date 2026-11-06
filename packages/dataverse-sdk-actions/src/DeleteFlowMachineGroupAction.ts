@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from DeleteFlowMachineGroup action
+ * Response from the DeleteFlowMachineGroup action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeleteFlowMachineGroupResponse {
-  // No content returned
-}
+export type DeleteFlowMachineGroupResponse = void;
 
 /**
  * DeleteFlowMachineGroup action
@@ -31,9 +31,8 @@ export class DeleteFlowMachineGroupAction implements Executable<DeleteFlowMachin
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteFlowMachineGroupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DeleteFlowMachineGroupResponse;
-    return (await response.json()) as DeleteFlowMachineGroupResponse;
+  parseResponse(_response: Response): Promise<DeleteFlowMachineGroupResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

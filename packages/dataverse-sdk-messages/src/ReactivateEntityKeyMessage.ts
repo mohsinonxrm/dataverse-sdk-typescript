@@ -44,9 +44,9 @@ export class ReactivateEntityKeyRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ReactivateEntityKeyResponse> {
+  parseResponse(_response: Response): Promise<ReactivateEntityKeyResponse> {
     // No return value (204 No Content)
-    return new ReactivateEntityKeyResponse();
+    return Promise.resolve(new ReactivateEntityKeyResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class ReactivateEntityKeyResponse extends OrganizationResponse {
     super("ReactivateEntityKey");
   }
 
-  static fromResponse(_data: unknown): ReactivateEntityKeyResponse {
+  static fromResponse(_data?: unknown): ReactivateEntityKeyResponse {
     return new ReactivateEntityKeyResponse();
   }
 }

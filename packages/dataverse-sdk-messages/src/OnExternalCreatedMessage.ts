@@ -44,9 +44,9 @@ export class OnExternalCreatedRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<OnExternalCreatedResponse> {
+  parseResponse(_response: Response): Promise<OnExternalCreatedResponse> {
     // No return value (204 No Content)
-    return new OnExternalCreatedResponse();
+    return Promise.resolve(new OnExternalCreatedResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class OnExternalCreatedResponse extends OrganizationResponse {
     super("OnExternalCreated");
   }
 
-  static fromResponse(_data: unknown): OnExternalCreatedResponse {
+  static fromResponse(_data?: unknown): OnExternalCreatedResponse {
     return new OnExternalCreatedResponse();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CaseClassificationResponse as msdyn_CaseClassificationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CaseClassification message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,34 @@ export class msdyn_CaseClassificationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CaseClassificationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CaseClassificationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CaseClassificationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CaseClassification action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CaseClassificationResult {
+  "@odata.context"?: string;
+  Response4: string;
+  usage: string;
+}
+
+/**
  * msdyn_CaseClassification response message
+ *
+ * `result` is the value the msdyn_CaseClassification action returns (see {@link msdyn_CaseClassificationResult}).
  */
 export class msdyn_CaseClassificationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CaseClassificationResponseData) {
+  constructor(public result: msdyn_CaseClassificationResult) {
     super("msdyn_CaseClassification");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CaseClassificationResponse {
-    return new msdyn_CaseClassificationResponse(
-      responseObject<msdyn_CaseClassificationResponseData>(data)
-    );
+    return new msdyn_CaseClassificationResponse(data as msdyn_CaseClassificationResult);
   }
 }

@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -44,24 +43,42 @@ export class msdyn_CalculateAndUpdateBookingTravelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CalculateAndUpdateBookingTravelResponse> {
-    // 204 No Content is an empty result
+    // An output that wasn't set answers 204 No Content: an empty collection
     if (response.status === 204)
-      return msdyn_CalculateAndUpdateBookingTravelResponse.fromResponse({});
+      return msdyn_CalculateAndUpdateBookingTravelResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return msdyn_CalculateAndUpdateBookingTravelResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CalculateAndUpdateBookingTravel action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type msdyn_CalculateAndUpdateBookingTravelResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * msdyn_CalculateAndUpdateBookingTravel response message
+ *
+ * `result` is the value the msdyn_CalculateAndUpdateBookingTravel action returns (see {@link msdyn_CalculateAndUpdateBookingTravelResult}).
  */
 export class msdyn_CalculateAndUpdateBookingTravelResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: msdyn_CalculateAndUpdateBookingTravelResult) {
     super("msdyn_CalculateAndUpdateBookingTravel");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CalculateAndUpdateBookingTravelResponse {
     return new msdyn_CalculateAndUpdateBookingTravelResponse(
-      responseValue<Record<string, unknown>[]>(data)
+      data === undefined
+        ? []
+        : (data as { value: msdyn_CalculateAndUpdateBookingTravelResult }).value
     );
   }
 }

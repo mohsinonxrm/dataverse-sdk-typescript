@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { AlmHandlerResponse as AlmHandlerResponseData } from "./types/index.js";
 
 /**
  * Parameters of the AlmHandler message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class AlmHandlerRequest
   }
 
   async parseResponse(response: Response): Promise<AlmHandlerResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AlmHandlerResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AlmHandlerResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AlmHandler action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AlmHandlerResult {
+  "@odata.context"?: string;
+  result: string;
+}
+
+/**
  * AlmHandler response message
+ *
+ * `result` is the value the AlmHandler action returns (see {@link AlmHandlerResult}).
  */
 export class AlmHandlerResponse extends OrganizationResponse {
-  constructor(public result: AlmHandlerResponseData) {
+  constructor(public result: AlmHandlerResult) {
     super("AlmHandler");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AlmHandlerResponse {
-    return new AlmHandlerResponse(responseObject<AlmHandlerResponseData>(data));
+    return new AlmHandlerResponse(data as AlmHandlerResult);
   }
 }

@@ -42,9 +42,9 @@ export class msdyn_PollODOSForExtractionsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_PollODOSForExtractionsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_PollODOSForExtractionsResponse> {
     // No return value (204 No Content)
-    return new msdyn_PollODOSForExtractionsResponse();
+    return Promise.resolve(new msdyn_PollODOSForExtractionsResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_PollODOSForExtractionsResponse extends OrganizationResponse {
     super("msdyn_PollODOSForExtractions");
   }
 
-  static fromResponse(_data: unknown): msdyn_PollODOSForExtractionsResponse {
+  static fromResponse(_data?: unknown): msdyn_PollODOSForExtractionsResponse {
     return new msdyn_PollODOSForExtractionsResponse();
   }
 }

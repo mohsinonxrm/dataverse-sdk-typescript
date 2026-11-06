@@ -44,9 +44,9 @@ export class CCaaS_SetPresenceRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_SetPresenceResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_SetPresenceResponse> {
     // No return value (204 No Content)
-    return new CCaaS_SetPresenceResponse();
+    return Promise.resolve(new CCaaS_SetPresenceResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class CCaaS_SetPresenceResponse extends OrganizationResponse {
     super("CCaaS_SetPresence");
   }
 
-  static fromResponse(_data: unknown): CCaaS_SetPresenceResponse {
+  static fromResponse(_data?: unknown): CCaaS_SetPresenceResponse {
     return new CCaaS_SetPresenceResponse();
   }
 }

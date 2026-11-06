@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SLACustomTimeCalculationTemplate action
+ * Response from the msdyn_SLACustomTimeCalculationTemplate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SLACustomTimeCalculationTemplateResponse {
+  "@odata.context"?: string;
   firstOutputValue: string;
   returnCalendarId: string;
   secondOutputValue: string;
@@ -62,8 +65,7 @@ export class msdyn_SLACustomTimeCalculationTemplateAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_SLACustomTimeCalculationTemplateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SLACustomTimeCalculationTemplateResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SLACustomTimeCalculationTemplateResponse;
   }
 }

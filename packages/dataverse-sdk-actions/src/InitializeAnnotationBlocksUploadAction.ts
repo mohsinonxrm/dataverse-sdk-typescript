@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from InitializeAnnotationBlocksUpload action
+ * Response from the InitializeAnnotationBlocksUpload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface InitializeAnnotationBlocksUploadResponse {
+  "@odata.context"?: string;
   FileContinuationToken: string;
 }
 
@@ -44,8 +47,7 @@ export class InitializeAnnotationBlocksUploadAction implements Executable<Initia
   }
 
   async parseResponse(response: Response): Promise<InitializeAnnotationBlocksUploadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as InitializeAnnotationBlocksUploadResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as InitializeAnnotationBlocksUploadResponse;
   }
 }

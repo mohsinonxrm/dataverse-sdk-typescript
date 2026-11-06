@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetSuggestedContactsResponse as msdyn_GetSuggestedContactsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetSuggestedContacts message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,34 @@ export class msdyn_GetSuggestedContactsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSuggestedContactsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSuggestedContactsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSuggestedContactsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSuggestedContacts action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSuggestedContactsResult {
+  "@odata.context"?: string;
+  IsUserLevelLocalized: boolean;
+  SuggestedContacts: string;
+}
+
+/**
  * msdyn_GetSuggestedContacts response message
+ *
+ * `result` is the value the msdyn_GetSuggestedContacts action returns (see {@link msdyn_GetSuggestedContactsResult}).
  */
 export class msdyn_GetSuggestedContactsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSuggestedContactsResponseData) {
+  constructor(public result: msdyn_GetSuggestedContactsResult) {
     super("msdyn_GetSuggestedContacts");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSuggestedContactsResponse {
-    return new msdyn_GetSuggestedContactsResponse(
-      responseObject<msdyn_GetSuggestedContactsResponseData>(data)
-    );
+    return new msdyn_GetSuggestedContactsResponse(data as msdyn_GetSuggestedContactsResult);
   }
 }

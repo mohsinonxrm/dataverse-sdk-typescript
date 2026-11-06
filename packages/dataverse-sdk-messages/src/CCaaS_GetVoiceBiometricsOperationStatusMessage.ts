@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_GetVoiceBiometricsOperationStatusResponse as CCaaS_GetVoiceBiometricsOperationStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_GetVoiceBiometricsOperationStatus message, by their CSDL names. A parameter the CSDL declares
@@ -55,24 +53,35 @@ export class CCaaS_GetVoiceBiometricsOperationStatusRequest
   async parseResponse(
     response: Response
   ): Promise<CCaaS_GetVoiceBiometricsOperationStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return CCaaS_GetVoiceBiometricsOperationStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_GetVoiceBiometricsOperationStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_GetVoiceBiometricsOperationStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_GetVoiceBiometricsOperationStatusResult {
+  "@odata.context"?: string;
+  ResponseData: string;
+}
+
+/**
  * CCaaS_GetVoiceBiometricsOperationStatus response message
+ *
+ * `result` is the value the CCaaS_GetVoiceBiometricsOperationStatus action returns (see {@link CCaaS_GetVoiceBiometricsOperationStatusResult}).
  */
 export class CCaaS_GetVoiceBiometricsOperationStatusResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_GetVoiceBiometricsOperationStatusResponseData) {
+  constructor(public result: CCaaS_GetVoiceBiometricsOperationStatusResult) {
     super("CCaaS_GetVoiceBiometricsOperationStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_GetVoiceBiometricsOperationStatusResponse {
     return new CCaaS_GetVoiceBiometricsOperationStatusResponse(
-      responseObject<CCaaS_GetVoiceBiometricsOperationStatusResponseData>(data)
+      data as CCaaS_GetVoiceBiometricsOperationStatusResult
     );
   }
 }

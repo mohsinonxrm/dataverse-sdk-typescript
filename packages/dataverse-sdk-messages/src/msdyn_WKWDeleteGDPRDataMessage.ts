@@ -42,9 +42,9 @@ export class msdyn_WKWDeleteGDPRDataRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_WKWDeleteGDPRDataResponse> {
+  parseResponse(_response: Response): Promise<msdyn_WKWDeleteGDPRDataResponse> {
     // No return value (204 No Content)
-    return new msdyn_WKWDeleteGDPRDataResponse();
+    return Promise.resolve(new msdyn_WKWDeleteGDPRDataResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_WKWDeleteGDPRDataResponse extends OrganizationResponse {
     super("msdyn_WKWDeleteGDPRData");
   }
 
-  static fromResponse(_data: unknown): msdyn_WKWDeleteGDPRDataResponse {
+  static fromResponse(_data?: unknown): msdyn_WKWDeleteGDPRDataResponse {
     return new msdyn_WKWDeleteGDPRDataResponse();
   }
 }

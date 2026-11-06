@@ -6,11 +6,11 @@ import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PrincipalAccess } from "./types/index.js";
 
 /**
- * Response from GrantAccess action
+ * Response from the GrantAccess action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface GrantAccessResponse {
-  // No content returned
-}
+export type GrantAccessResponse = void;
 
 /**
  * Parameters of the GrantAccess action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class GrantAccessAction implements Executable<GrantAccessResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<GrantAccessResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GrantAccessResponse;
-    return (await response.json()) as GrantAccessResponse;
+  parseResponse(_response: Response): Promise<GrantAccessResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

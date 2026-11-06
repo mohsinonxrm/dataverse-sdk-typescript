@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_GetSwarmResponseCardResponse as msdyn_GetSwarmResponseCardResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetSwarmResponseCard message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,34 @@ export class msdyn_GetSwarmResponseCardRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSwarmResponseCardResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSwarmResponseCardResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSwarmResponseCardResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSwarmResponseCard action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSwarmResponseCardResult {
+  "@odata.context"?: string;
+  msdyn_SwarmResponseCardJson: string;
+  msdyn_SwarmResponseCardRecipient: string;
+}
+
+/**
  * msdyn_GetSwarmResponseCard response message
+ *
+ * `result` is the value the msdyn_GetSwarmResponseCard action returns (see {@link msdyn_GetSwarmResponseCardResult}).
  */
 export class msdyn_GetSwarmResponseCardResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSwarmResponseCardResponseData) {
+  constructor(public result: msdyn_GetSwarmResponseCardResult) {
     super("msdyn_GetSwarmResponseCard");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSwarmResponseCardResponse {
-    return new msdyn_GetSwarmResponseCardResponse(
-      responseObject<msdyn_GetSwarmResponseCardResponseData>(data)
-    );
+    return new msdyn_GetSwarmResponseCardResponse(data as msdyn_GetSwarmResponseCardResult);
   }
 }

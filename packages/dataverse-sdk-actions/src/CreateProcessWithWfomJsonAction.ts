@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from CreateProcessWithWfomJson action
+ * Response from the CreateProcessWithWfomJson action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CreateProcessWithWfomJsonResponse {
-  // No content returned
-}
+export type CreateProcessWithWfomJsonResponse = void;
 
 /**
  * Parameters of the CreateProcessWithWfomJson action, by their CSDL names. A parameter the CSDL declares
@@ -52,9 +52,8 @@ export class CreateProcessWithWfomJsonAction implements Executable<CreateProcess
     };
   }
 
-  async parseResponse(response: Response): Promise<CreateProcessWithWfomJsonResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateProcessWithWfomJsonResponse;
-    return (await response.json()) as CreateProcessWithWfomJsonResponse;
+  parseResponse(_response: Response): Promise<CreateProcessWithWfomJsonResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse as msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery message, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +51,7 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse.fromResponse(
       await response.json()
     );
@@ -63,16 +59,31 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryRequest
 }
 
 /**
+ * Response from the msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResult {
+  "@odata.context"?: string;
+  msdynmkt_apiresponsedata: string;
+  msdynmkt_error: string;
+  msdynmkt_resultcode: number;
+}
+
+/**
  * msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery response message
+ *
+ * `result` is the value the msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery action returns (see {@link msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResult}).
  */
 export class msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponseData) {
+  constructor(public result: msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResult) {
     super("msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse {
     return new msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse(
-      responseObject<msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponseData>(data)
+      data as msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResult
     );
   }
 }

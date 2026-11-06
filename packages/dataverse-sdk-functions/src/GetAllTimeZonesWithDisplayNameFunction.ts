@@ -1,13 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "./types/EntityReference.js";
 
 /**
- * Response from GetAllTimeZonesWithDisplayName function
+ * Response from the GetAllTimeZonesWithDisplayName function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface GetAllTimeZonesWithDisplayNameResponse {
-  value: EntityReference[];
-}
+export type GetAllTimeZonesWithDisplayNameResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the GetAllTimeZonesWithDisplayName function, by their CSDL names. A parameter the CSDL declares
@@ -51,8 +55,9 @@ export class GetAllTimeZonesWithDisplayNameFunction implements Executable<GetAll
   }
 
   async parseResponse(response: Response): Promise<GetAllTimeZonesWithDisplayNameResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetAllTimeZonesWithDisplayNameResponse;
-    return (await response.json()) as GetAllTimeZonesWithDisplayNameResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: GetAllTimeZonesWithDisplayNameResponse }).value;
   }
 }

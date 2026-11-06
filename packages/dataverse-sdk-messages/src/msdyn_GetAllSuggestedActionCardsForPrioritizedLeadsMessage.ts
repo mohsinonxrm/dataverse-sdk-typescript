@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse as msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetAllSuggestedActionCardsForPrioritizedLeads message, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +49,7 @@ export class msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse.fromResponse(
       await response.json()
     );
@@ -61,16 +57,29 @@ export class msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsRequest
 }
 
 /**
+ * Response from the msdyn_GetAllSuggestedActionCardsForPrioritizedLeads action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_GetAllSuggestedActionCardsForPrioritizedLeads response message
+ *
+ * `result` is the value the msdyn_GetAllSuggestedActionCardsForPrioritizedLeads action returns (see {@link msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResult}).
  */
 export class msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponseData) {
+  constructor(public result: msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResult) {
     super("msdyn_GetAllSuggestedActionCardsForPrioritizedLeads");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse {
     return new msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponse(
-      responseObject<msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResponseData>(data)
+      data as msdyn_GetAllSuggestedActionCardsForPrioritizedLeadsResult
     );
   }
 }

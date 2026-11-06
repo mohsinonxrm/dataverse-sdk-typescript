@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from CreateHostedFlowMachineGroup action
+ * Response from the CreateHostedFlowMachineGroup action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateHostedFlowMachineGroupResponse {
+  "@odata.context"?: string;
   flowMachineGroupId: string;
   response: string;
 }
@@ -63,8 +66,7 @@ export class CreateHostedFlowMachineGroupAction implements Executable<CreateHost
   }
 
   async parseResponse(response: Response): Promise<CreateHostedFlowMachineGroupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateHostedFlowMachineGroupResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CreateHostedFlowMachineGroupResponse;
   }
 }

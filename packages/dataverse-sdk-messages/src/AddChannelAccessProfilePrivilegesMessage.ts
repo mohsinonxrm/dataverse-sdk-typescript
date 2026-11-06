@@ -46,9 +46,9 @@ export class AddChannelAccessProfilePrivilegesRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AddChannelAccessProfilePrivilegesResponse> {
+  parseResponse(_response: Response): Promise<AddChannelAccessProfilePrivilegesResponse> {
     // No return value (204 No Content)
-    return new AddChannelAccessProfilePrivilegesResponse();
+    return Promise.resolve(new AddChannelAccessProfilePrivilegesResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class AddChannelAccessProfilePrivilegesResponse extends OrganizationRespo
     super("AddChannelAccessProfilePrivileges");
   }
 
-  static fromResponse(_data: unknown): AddChannelAccessProfilePrivilegesResponse {
+  static fromResponse(_data?: unknown): AddChannelAccessProfilePrivilegesResponse {
     return new AddChannelAccessProfilePrivilegesResponse();
   }
 }

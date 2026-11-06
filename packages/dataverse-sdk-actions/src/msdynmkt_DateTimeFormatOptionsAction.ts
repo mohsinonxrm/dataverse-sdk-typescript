@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_DateTimeFormatOptions action
+ * Response from the msdynmkt_DateTimeFormatOptions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_DateTimeFormatOptionsResponse {
+  "@odata.context"?: string;
   msdynmkt_DateTimeResponse: string;
 }
 
@@ -53,8 +56,7 @@ export class msdynmkt_DateTimeFormatOptionsAction implements Executable<msdynmkt
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_DateTimeFormatOptionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_DateTimeFormatOptionsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_DateTimeFormatOptionsResponse;
   }
 }

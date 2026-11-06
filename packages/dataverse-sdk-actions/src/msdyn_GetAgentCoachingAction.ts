@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetAgentCoaching action
+ * Response from the msdyn_GetAgentCoaching action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetAgentCoachingResponse {
+  "@odata.context"?: string;
   msdyn_CoachingResult: string;
   msdyn_ErrorResult: string;
 }
@@ -45,8 +48,7 @@ export class msdyn_GetAgentCoachingAction implements Executable<msdyn_GetAgentCo
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAgentCoachingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetAgentCoachingResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetAgentCoachingResponse;
   }
 }

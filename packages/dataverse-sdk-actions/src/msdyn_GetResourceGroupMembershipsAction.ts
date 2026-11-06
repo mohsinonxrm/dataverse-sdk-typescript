@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetResourceGroupMemberships action
+ * Response from the msdyn_GetResourceGroupMemberships action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetResourceGroupMembershipsResponse {
+  "@odata.context"?: string;
   GroupMemberships: string;
 }
 
@@ -46,8 +49,7 @@ export class msdyn_GetResourceGroupMembershipsAction implements Executable<msdyn
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourceGroupMembershipsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetResourceGroupMembershipsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetResourceGroupMembershipsResponse;
   }
 }

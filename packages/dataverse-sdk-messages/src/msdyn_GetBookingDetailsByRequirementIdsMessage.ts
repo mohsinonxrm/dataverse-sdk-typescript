@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetBookingDetailsByRequirementIdsResponse as msdyn_GetBookingDetailsByRequirementIdsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetBookingDetailsByRequirementIds message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,35 @@ export class msdyn_GetBookingDetailsByRequirementIdsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetBookingDetailsByRequirementIdsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetBookingDetailsByRequirementIdsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetBookingDetailsByRequirementIdsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetBookingDetailsByRequirementIds action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetBookingDetailsByRequirementIdsResult {
+  "@odata.context"?: string;
+  RequirementsBookingDetails: string;
+}
+
+/**
  * msdyn_GetBookingDetailsByRequirementIds response message
+ *
+ * `result` is the value the msdyn_GetBookingDetailsByRequirementIds action returns (see {@link msdyn_GetBookingDetailsByRequirementIdsResult}).
  */
 export class msdyn_GetBookingDetailsByRequirementIdsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetBookingDetailsByRequirementIdsResponseData) {
+  constructor(public result: msdyn_GetBookingDetailsByRequirementIdsResult) {
     super("msdyn_GetBookingDetailsByRequirementIds");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetBookingDetailsByRequirementIdsResponse {
     return new msdyn_GetBookingDetailsByRequirementIdsResponse(
-      responseObject<msdyn_GetBookingDetailsByRequirementIdsResponseData>(data)
+      data as msdyn_GetBookingDetailsByRequirementIdsResult
     );
   }
 }

@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse as msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WorkstreamShouldNotHaveDuplicateContextRule request message
@@ -31,9 +29,7 @@ export class msdyn_WorkstreamShouldNotHaveDuplicateContextRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_WorkstreamShouldNotHaveDuplicateContextRuleRequest
 }
 
 /**
+ * Response from the msdyn_WorkstreamShouldNotHaveDuplicateContextRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_WorkstreamShouldNotHaveDuplicateContextRule response message
+ *
+ * `result` is the value the msdyn_WorkstreamShouldNotHaveDuplicateContextRule action returns (see {@link msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResult}).
  */
 export class msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponseData) {
+  constructor(public result: msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResult) {
     super("msdyn_WorkstreamShouldNotHaveDuplicateContextRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse {
     return new msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse(
-      responseObject<msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponseData>(data)
+      data as msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResult
     );
   }
 }

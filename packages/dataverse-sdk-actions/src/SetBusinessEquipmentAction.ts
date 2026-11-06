@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from SetBusinessEquipment action
+ * Response from the SetBusinessEquipment action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SetBusinessEquipmentResponse {
-  // No content returned
-}
+export type SetBusinessEquipmentResponse = void;
 
 /**
  * Parameters of the SetBusinessEquipment action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class SetBusinessEquipmentAction implements Executable<SetBusinessEquipme
     };
   }
 
-  async parseResponse(response: Response): Promise<SetBusinessEquipmentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SetBusinessEquipmentResponse;
-    return (await response.json()) as SetBusinessEquipmentResponse;
+  parseResponse(_response: Response): Promise<SetBusinessEquipmentResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

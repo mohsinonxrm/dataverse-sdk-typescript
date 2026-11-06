@@ -48,9 +48,9 @@ export class msdyn_UpdateRequirementModelRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateRequirementModelResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateRequirementModelResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateRequirementModelResponse();
+    return Promise.resolve(new msdyn_UpdateRequirementModelResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_UpdateRequirementModelResponse extends OrganizationResponse {
     super("msdyn_UpdateRequirementModel");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateRequirementModelResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateRequirementModelResponse {
     return new msdyn_UpdateRequirementModelResponse();
   }
 }

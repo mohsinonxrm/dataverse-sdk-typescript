@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_BulkForceCloseResponse as CCaaS_BulkForceCloseResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_BulkForceClose message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class CCaaS_BulkForceCloseRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_BulkForceCloseResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_BulkForceCloseResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_BulkForceCloseResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_BulkForceClose action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_BulkForceCloseResult {
+  "@odata.context"?: string;
+  BulkActionId: string;
+}
+
+/**
  * CCaaS_BulkForceClose response message
+ *
+ * `result` is the value the CCaaS_BulkForceClose action returns (see {@link CCaaS_BulkForceCloseResult}).
  */
 export class CCaaS_BulkForceCloseResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_BulkForceCloseResponseData) {
+  constructor(public result: CCaaS_BulkForceCloseResult) {
     super("CCaaS_BulkForceClose");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_BulkForceCloseResponse {
-    return new CCaaS_BulkForceCloseResponse(responseObject<CCaaS_BulkForceCloseResponseData>(data));
+    return new CCaaS_BulkForceCloseResponse(data as CCaaS_BulkForceCloseResult);
   }
 }

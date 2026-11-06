@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdynmkt_getObmDeprecationConfiguration action
+ * Response from the msdynmkt_getObmDeprecationConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_getObmDeprecationConfigurationResponse {
+  "@odata.context"?: string;
   msdynmkt_obmDeprecationConfiguration: string;
 }
 
@@ -28,8 +31,7 @@ export class msdynmkt_getObmDeprecationConfigurationAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_getObmDeprecationConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_getObmDeprecationConfigurationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_getObmDeprecationConfigurationResponse;
   }
 }

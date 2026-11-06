@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_CheckIfAppProfileHasGenericTemplatesResponse as msdyn_CheckIfAppProfileHasGenericTemplatesResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfAppProfileHasGenericTemplates request message
@@ -31,24 +29,37 @@ export class msdyn_CheckIfAppProfileHasGenericTemplatesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfAppProfileHasGenericTemplatesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckIfAppProfileHasGenericTemplatesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckIfAppProfileHasGenericTemplatesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfAppProfileHasGenericTemplates action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfAppProfileHasGenericTemplatesResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfAppProfileHasGenericTemplates response message
+ *
+ * `result` is the value the msdyn_CheckIfAppProfileHasGenericTemplates action returns (see {@link msdyn_CheckIfAppProfileHasGenericTemplatesResult}).
  */
 export class msdyn_CheckIfAppProfileHasGenericTemplatesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfAppProfileHasGenericTemplatesResponseData) {
+  constructor(public result: msdyn_CheckIfAppProfileHasGenericTemplatesResult) {
     super("msdyn_CheckIfAppProfileHasGenericTemplates");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfAppProfileHasGenericTemplatesResponse {
     return new msdyn_CheckIfAppProfileHasGenericTemplatesResponse(
-      responseObject<msdyn_CheckIfAppProfileHasGenericTemplatesResponseData>(data)
+      data as msdyn_CheckIfAppProfileHasGenericTemplatesResult
     );
   }
 }

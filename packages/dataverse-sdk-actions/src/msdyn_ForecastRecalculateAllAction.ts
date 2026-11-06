@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_ForecastRecalculateAll action
+ * Response from the msdyn_ForecastRecalculateAll action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ForecastRecalculateAllResponse {
-  // No content returned
-}
+export type msdyn_ForecastRecalculateAllResponse = void;
 
 /**
  * msdyn_ForecastRecalculateAll action
@@ -25,9 +25,8 @@ export class msdyn_ForecastRecalculateAllAction implements Executable<msdyn_Fore
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ForecastRecalculateAllResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ForecastRecalculateAllResponse;
-    return (await response.json()) as msdyn_ForecastRecalculateAllResponse;
+  parseResponse(_response: Response): Promise<msdyn_ForecastRecalculateAllResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

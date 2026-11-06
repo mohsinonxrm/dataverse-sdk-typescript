@@ -3,9 +3,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { EntityRecordCountCollection } from "./types/index.js";
 
 /**
- * Response from PurgeRetainedContent action
+ * Response from the PurgeRetainedContent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PurgeRetainedContentResponse {
+  "@odata.context"?: string;
   EntityCountCollection: EntityRecordCountCollection;
   HasMoreRecords: boolean;
 }
@@ -52,8 +55,7 @@ export class PurgeRetainedContentAction implements Executable<PurgeRetainedConte
   }
 
   async parseResponse(response: Response): Promise<PurgeRetainedContentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PurgeRetainedContentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as PurgeRetainedContentResponse;
   }
 }

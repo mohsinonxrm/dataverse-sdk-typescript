@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { list } from "./types/index.js";
 
 /**
@@ -32,21 +31,34 @@ export class CopyDynamicListToStaticRequest
   }
 
   async parseResponse(response: Response): Promise<CopyDynamicListToStaticResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CopyDynamicListToStaticResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return CopyDynamicListToStaticResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return CopyDynamicListToStaticResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CopyDynamicListToStatic action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type CopyDynamicListToStaticResult =
+  (list & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
+
+/**
  * CopyDynamicListToStatic response message
+ *
+ * `result` is the value the CopyDynamicListToStatic action returns (see {@link CopyDynamicListToStaticResult}).
  */
 export class CopyDynamicListToStaticResponse extends OrganizationResponse {
-  constructor(public result: list) {
+  constructor(public result: CopyDynamicListToStaticResult) {
     super("CopyDynamicListToStatic");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CopyDynamicListToStaticResponse {
-    return new CopyDynamicListToStaticResponse(responseObject<list>(data));
+    return new CopyDynamicListToStaticResponse((data ?? null) as CopyDynamicListToStaticResult);
   }
 }

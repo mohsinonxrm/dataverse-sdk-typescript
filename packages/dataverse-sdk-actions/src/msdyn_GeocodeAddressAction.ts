@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_GeocodeAddress action
+ * Response from the msdyn_GeocodeAddress action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GeocodeAddressResponse {
+  "@odata.context"?: string;
   Latitude: number;
   Longitude: number;
 }
@@ -59,8 +62,7 @@ export class msdyn_GeocodeAddressAction implements Executable<msdyn_GeocodeAddre
   }
 
   async parseResponse(response: Response): Promise<msdyn_GeocodeAddressResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GeocodeAddressResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GeocodeAddressResponse;
   }
 }

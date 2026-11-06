@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from PBIAutoRefreshDataset action
+ * Response from the PBIAutoRefreshDataset action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PBIAutoRefreshDatasetResponse {
+  "@odata.context"?: string;
   HttpResponse: string;
 }
 
@@ -44,8 +47,7 @@ export class PBIAutoRefreshDatasetAction implements Executable<PBIAutoRefreshDat
   }
 
   async parseResponse(response: Response): Promise<PBIAutoRefreshDatasetResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PBIAutoRefreshDatasetResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as PBIAutoRefreshDatasetResponse;
   }
 }

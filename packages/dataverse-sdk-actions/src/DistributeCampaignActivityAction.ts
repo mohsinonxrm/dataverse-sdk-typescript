@@ -6,14 +6,14 @@ import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { PropagationOwnershipOptions, bulkoperation, queue, template } from "./types/index.js";
 
 /**
- * Response from DistributeCampaignActivity action
+ * Response from the DistributeCampaignActivity action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface DistributeCampaignActivityResponse extends bulkoperation {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type DistributeCampaignActivityResponse =
+  | (bulkoperation & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
 
 /**
  * Parameters of the DistributeCampaignActivity action, by their CSDL names. A parameter the CSDL declares
@@ -72,8 +72,9 @@ export class DistributeCampaignActivityAction implements Executable<DistributeCa
   }
 
   async parseResponse(response: Response): Promise<DistributeCampaignActivityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DistributeCampaignActivityResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as DistributeCampaignActivityResponse;
   }
 }

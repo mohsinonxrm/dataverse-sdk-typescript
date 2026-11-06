@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from InitializeAnnotationBlocksDownload action
+ * Response from the InitializeAnnotationBlocksDownload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface InitializeAnnotationBlocksDownloadResponse {
+  "@odata.context"?: string;
   FileContinuationToken: string;
   FileName: string;
   FileSizeInBytes: number;
@@ -46,8 +49,7 @@ export class InitializeAnnotationBlocksDownloadAction implements Executable<Init
   }
 
   async parseResponse(response: Response): Promise<InitializeAnnotationBlocksDownloadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as InitializeAnnotationBlocksDownloadResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as InitializeAnnotationBlocksDownloadResponse;
   }
 }

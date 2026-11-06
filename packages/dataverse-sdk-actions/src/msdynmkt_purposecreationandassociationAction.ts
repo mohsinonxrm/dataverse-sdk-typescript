@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdynmkt_purposecreationandassociation action
+ * Response from the msdynmkt_purposecreationandassociation action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdynmkt_purposecreationandassociationResponse {
-  // No content returned
-}
+export type msdynmkt_purposecreationandassociationResponse = void;
 
 /**
  * Parameters of the msdynmkt_purposecreationandassociation action, by their CSDL names. A parameter the CSDL declares
@@ -59,9 +59,8 @@ export class msdynmkt_purposecreationandassociationAction implements Executable<
     };
   }
 
-  async parseResponse(response: Response): Promise<msdynmkt_purposecreationandassociationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_purposecreationandassociationResponse;
-    return (await response.json()) as msdynmkt_purposecreationandassociationResponse;
+  parseResponse(_response: Response): Promise<msdynmkt_purposecreationandassociationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

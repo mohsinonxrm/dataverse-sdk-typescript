@@ -62,9 +62,9 @@ export class adx_SendPasswordResetToContactRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<adx_SendPasswordResetToContactResponse> {
+  parseResponse(_response: Response): Promise<adx_SendPasswordResetToContactResponse> {
     // No return value (204 No Content)
-    return new adx_SendPasswordResetToContactResponse();
+    return Promise.resolve(new adx_SendPasswordResetToContactResponse());
   }
 }
 
@@ -76,7 +76,7 @@ export class adx_SendPasswordResetToContactResponse extends OrganizationResponse
     super("adx_SendPasswordResetToContact");
   }
 
-  static fromResponse(_data: unknown): adx_SendPasswordResetToContactResponse {
+  static fromResponse(_data?: unknown): adx_SendPasswordResetToContactResponse {
     return new adx_SendPasswordResetToContactResponse();
   }
 }

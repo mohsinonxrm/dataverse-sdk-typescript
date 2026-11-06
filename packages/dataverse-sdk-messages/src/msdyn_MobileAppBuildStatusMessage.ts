@@ -1,13 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
-import type {
-  msdyn_MobileAppBuildStatusResponse as msdyn_MobileAppBuildStatusResponseData,
-  msdyn_mobileapp,
-} from "./types/index.js";
+import type { msdyn_mobileapp } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_MobileAppBuildStatus message, by their CSDL names. A parameter the CSDL declares
@@ -52,23 +48,33 @@ export class msdyn_MobileAppBuildStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_MobileAppBuildStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_MobileAppBuildStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_MobileAppBuildStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_MobileAppBuildStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_MobileAppBuildStatusResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_MobileAppBuildStatus response message
+ *
+ * `result` is the value the msdyn_MobileAppBuildStatus action returns (see {@link msdyn_MobileAppBuildStatusResult}).
  */
 export class msdyn_MobileAppBuildStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_MobileAppBuildStatusResponseData) {
+  constructor(public result: msdyn_MobileAppBuildStatusResult) {
     super("msdyn_MobileAppBuildStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_MobileAppBuildStatusResponse {
-    return new msdyn_MobileAppBuildStatusResponse(
-      responseObject<msdyn_MobileAppBuildStatusResponseData>(data)
-    );
+    return new msdyn_MobileAppBuildStatusResponse(data as msdyn_MobileAppBuildStatusResult);
   }
 }

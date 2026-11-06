@@ -1,13 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_GetCjoEventsMetadataItemsByNames action
+ * Response from the msdynmkt_GetCjoEventsMetadataItemsByNames action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface msdynmkt_GetCjoEventsMetadataItemsByNamesResponse {
-  value: EntityReference[];
-}
+export type msdynmkt_GetCjoEventsMetadataItemsByNamesResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the msdynmkt_GetCjoEventsMetadataItemsByNames action, by their CSDL names. A parameter the CSDL declares
@@ -51,8 +55,10 @@ export class msdynmkt_GetCjoEventsMetadataItemsByNamesAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_GetCjoEventsMetadataItemsByNamesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_GetCjoEventsMetadataItemsByNamesResponse;
-    return (await response.json()) as msdynmkt_GetCjoEventsMetadataItemsByNamesResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: msdynmkt_GetCjoEventsMetadataItemsByNamesResponse })
+      .value;
   }
 }

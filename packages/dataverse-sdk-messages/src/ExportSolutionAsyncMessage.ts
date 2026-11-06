@@ -1,11 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type {
-  ExportComponentsParams,
-  ExportSolutionAsyncResponse as ExportSolutionAsyncResponseData,
-} from "./types/index.js";
+import type { ExportComponentsParams } from "./types/index.js";
 
 /**
  * Parameters of the ExportSolutionAsync message, by their CSDL names. A parameter the CSDL declares
@@ -76,21 +72,34 @@ export class ExportSolutionAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<ExportSolutionAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ExportSolutionAsyncResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ExportSolutionAsyncResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ExportSolutionAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ExportSolutionAsyncResult {
+  "@odata.context"?: string;
+  AsyncOperationId: string;
+  ExportJobId: string;
+}
+
+/**
  * ExportSolutionAsync response message
+ *
+ * `result` is the value the ExportSolutionAsync action returns (see {@link ExportSolutionAsyncResult}).
  */
 export class ExportSolutionAsyncResponse extends OrganizationResponse {
-  constructor(public result: ExportSolutionAsyncResponseData) {
+  constructor(public result: ExportSolutionAsyncResult) {
     super("ExportSolutionAsync");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ExportSolutionAsyncResponse {
-    return new ExportSolutionAsyncResponse(responseObject<ExportSolutionAsyncResponseData>(data));
+    return new ExportSolutionAsyncResponse(data as ExportSolutionAsyncResult);
   }
 }

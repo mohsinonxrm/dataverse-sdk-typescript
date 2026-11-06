@@ -1,13 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
-import type {
-  msdyn_DownloadMobileAppBuildResponse as msdyn_DownloadMobileAppBuildResponseData,
-  msdyn_mobileapp,
-} from "./types/index.js";
+import type { msdyn_mobileapp } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_DownloadMobileAppBuild message, by their CSDL names. A parameter the CSDL declares
@@ -56,23 +52,33 @@ export class msdyn_DownloadMobileAppBuildRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DownloadMobileAppBuildResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_DownloadMobileAppBuildResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_DownloadMobileAppBuildResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_DownloadMobileAppBuild action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_DownloadMobileAppBuildResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_DownloadMobileAppBuild response message
+ *
+ * `result` is the value the msdyn_DownloadMobileAppBuild action returns (see {@link msdyn_DownloadMobileAppBuildResult}).
  */
 export class msdyn_DownloadMobileAppBuildResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DownloadMobileAppBuildResponseData) {
+  constructor(public result: msdyn_DownloadMobileAppBuildResult) {
     super("msdyn_DownloadMobileAppBuild");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_DownloadMobileAppBuildResponse {
-    return new msdyn_DownloadMobileAppBuildResponse(
-      responseObject<msdyn_DownloadMobileAppBuildResponseData>(data)
-    );
+    return new msdyn_DownloadMobileAppBuildResponse(data as msdyn_DownloadMobileAppBuildResult);
   }
 }

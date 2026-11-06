@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_LeavePublicConsult action
+ * Response from the CCaaS_LeavePublicConsult action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_LeavePublicConsultResponse {
-  // No content returned
-}
+export type CCaaS_LeavePublicConsultResponse = void;
 
 /**
  * Parameters of the CCaaS_LeavePublicConsult action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class CCaaS_LeavePublicConsultAction implements Executable<CCaaS_LeavePub
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_LeavePublicConsultResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_LeavePublicConsultResponse;
-    return (await response.json()) as CCaaS_LeavePublicConsultResponse;
+  parseResponse(_response: Response): Promise<CCaaS_LeavePublicConsultResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

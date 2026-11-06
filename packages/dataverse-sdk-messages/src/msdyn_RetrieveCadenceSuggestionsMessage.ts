@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_RetrieveCadenceSuggestionsResponse as msdyn_RetrieveCadenceSuggestionsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveCadenceSuggestions message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,35 @@ export class msdyn_RetrieveCadenceSuggestionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveCadenceSuggestionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RetrieveCadenceSuggestionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveCadenceSuggestionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveCadenceSuggestions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveCadenceSuggestionsResult {
+  "@odata.context"?: string;
+  Suggestions: string;
+}
+
+/**
  * msdyn_RetrieveCadenceSuggestions response message
+ *
+ * `result` is the value the msdyn_RetrieveCadenceSuggestions action returns (see {@link msdyn_RetrieveCadenceSuggestionsResult}).
  */
 export class msdyn_RetrieveCadenceSuggestionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveCadenceSuggestionsResponseData) {
+  constructor(public result: msdyn_RetrieveCadenceSuggestionsResult) {
     super("msdyn_RetrieveCadenceSuggestions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveCadenceSuggestionsResponse {
     return new msdyn_RetrieveCadenceSuggestionsResponse(
-      responseObject<msdyn_RetrieveCadenceSuggestionsResponseData>(data)
+      data as msdyn_RetrieveCadenceSuggestionsResult
     );
   }
 }

@@ -44,9 +44,9 @@ export class OnExternalDeletedRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<OnExternalDeletedResponse> {
+  parseResponse(_response: Response): Promise<OnExternalDeletedResponse> {
     // No return value (204 No Content)
-    return new OnExternalDeletedResponse();
+    return Promise.resolve(new OnExternalDeletedResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class OnExternalDeletedResponse extends OrganizationResponse {
     super("OnExternalDeleted");
   }
 
-  static fromResponse(_data: unknown): OnExternalDeletedResponse {
+  static fromResponse(_data?: unknown): OnExternalDeletedResponse {
     return new OnExternalDeletedResponse();
   }
 }

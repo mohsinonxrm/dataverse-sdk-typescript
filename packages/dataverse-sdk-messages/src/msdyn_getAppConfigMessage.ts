@@ -26,9 +26,9 @@ export class msdyn_getAppConfigRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_getAppConfigResponse> {
+  parseResponse(_response: Response): Promise<msdyn_getAppConfigResponse> {
     // No return value (204 No Content)
-    return new msdyn_getAppConfigResponse();
+    return Promise.resolve(new msdyn_getAppConfigResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_getAppConfigResponse extends OrganizationResponse {
     super("msdyn_getAppConfig");
   }
 
-  static fromResponse(_data: unknown): msdyn_getAppConfigResponse {
+  static fromResponse(_data?: unknown): msdyn_getAppConfigResponse {
     return new msdyn_getAppConfigResponse();
   }
 }

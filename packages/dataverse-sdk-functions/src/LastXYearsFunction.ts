@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from LastXYears function
+ * Response from the LastXYears function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface LastXYearsResponse {
-  value: boolean;
-}
+export type LastXYearsResponse = boolean;
 
 /**
  * Parameters of the LastXYears function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class LastXYearsFunction implements Executable<LastXYearsResponse> {
   }
 
   async parseResponse(response: Response): Promise<LastXYearsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as LastXYearsResponse;
-    return (await response.json()) as LastXYearsResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: LastXYearsResponse }).value;
   }
 }

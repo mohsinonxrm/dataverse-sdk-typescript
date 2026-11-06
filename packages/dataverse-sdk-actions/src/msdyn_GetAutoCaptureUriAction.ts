@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetAutoCaptureUri action
+ * Response from the msdyn_GetAutoCaptureUri action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetAutoCaptureUriResponse {
+  "@odata.context"?: string;
   uri: string;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_GetAutoCaptureUriAction implements Executable<msdyn_GetAutoCa
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAutoCaptureUriResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetAutoCaptureUriResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetAutoCaptureUriResponse;
   }
 }

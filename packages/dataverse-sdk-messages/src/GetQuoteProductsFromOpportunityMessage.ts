@@ -51,9 +51,9 @@ export class GetQuoteProductsFromOpportunityRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<GetQuoteProductsFromOpportunityResponse> {
+  parseResponse(_response: Response): Promise<GetQuoteProductsFromOpportunityResponse> {
     // No return value (204 No Content)
-    return new GetQuoteProductsFromOpportunityResponse();
+    return Promise.resolve(new GetQuoteProductsFromOpportunityResponse());
   }
 }
 
@@ -65,7 +65,7 @@ export class GetQuoteProductsFromOpportunityResponse extends OrganizationRespons
     super("GetQuoteProductsFromOpportunity");
   }
 
-  static fromResponse(_data: unknown): GetQuoteProductsFromOpportunityResponse {
+  static fromResponse(_data?: unknown): GetQuoteProductsFromOpportunityResponse {
     return new GetQuoteProductsFromOpportunityResponse();
   }
 }

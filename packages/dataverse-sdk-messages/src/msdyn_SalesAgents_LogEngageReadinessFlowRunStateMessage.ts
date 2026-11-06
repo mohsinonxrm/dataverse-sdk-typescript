@@ -48,11 +48,11 @@ export class msdyn_SalesAgents_LogEngageReadinessFlowRunStateRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse> {
     // No return value (204 No Content)
-    return new msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse();
+    return Promise.resolve(new msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse extends Or
     super("msdyn_SalesAgents_LogEngageReadinessFlowRunState");
   }
 
-  static fromResponse(_data: unknown): msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse {
+  static fromResponse(_data?: unknown): msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse {
     return new msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse();
   }
 }

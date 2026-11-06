@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { ExtractTextEntitiesResponse as ExtractTextEntitiesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the ExtractTextEntities message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,34 @@ export class ExtractTextEntitiesRequest
   }
 
   async parseResponse(response: Response): Promise<ExtractTextEntitiesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ExtractTextEntitiesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ExtractTextEntitiesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ExtractTextEntities action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ExtractTextEntitiesResult {
+  "@odata.context"?: string;
+  originalText: string;
+  textScore: number;
+}
+
+/**
  * ExtractTextEntities response message
+ *
+ * `result` is the value the ExtractTextEntities action returns (see {@link ExtractTextEntitiesResult}).
  */
 export class ExtractTextEntitiesResponse extends OrganizationResponse {
-  constructor(public result: ExtractTextEntitiesResponseData) {
+  constructor(public result: ExtractTextEntitiesResult) {
     super("ExtractTextEntities");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ExtractTextEntitiesResponse {
-    return new ExtractTextEntitiesResponse(responseObject<ExtractTextEntitiesResponseData>(data));
+    return new ExtractTextEntitiesResponse(data as ExtractTextEntitiesResult);
   }
 }

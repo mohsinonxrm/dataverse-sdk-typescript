@@ -44,9 +44,9 @@ export class RevertProductRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RevertProductResponse> {
+  parseResponse(_response: Response): Promise<RevertProductResponse> {
     // No return value (204 No Content)
-    return new RevertProductResponse();
+    return Promise.resolve(new RevertProductResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class RevertProductResponse extends OrganizationResponse {
     super("RevertProduct");
   }
 
-  static fromResponse(_data: unknown): RevertProductResponse {
+  static fromResponse(_data?: unknown): RevertProductResponse {
     return new RevertProductResponse();
   }
 }

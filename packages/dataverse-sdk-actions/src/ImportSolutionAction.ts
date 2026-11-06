@@ -4,11 +4,11 @@ import { enumBody } from "./internal/enumBody.js";
 import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
 
 /**
- * Response from ImportSolution action
+ * Response from the ImportSolution action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ImportSolutionResponse {
-  // No content returned
-}
+export type ImportSolutionResponse = void;
 
 /**
  * Parameters of the ImportSolution action, by their CSDL names. A parameter the CSDL declares
@@ -75,9 +75,8 @@ export class ImportSolutionAction implements Executable<ImportSolutionResponse> 
     };
   }
 
-  async parseResponse(response: Response): Promise<ImportSolutionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ImportSolutionResponse;
-    return (await response.json()) as ImportSolutionResponse;
+  parseResponse(_response: Response): Promise<ImportSolutionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

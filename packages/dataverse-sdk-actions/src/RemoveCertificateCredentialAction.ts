@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from RemoveCertificateCredential action
+ * Response from the RemoveCertificateCredential action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RemoveCertificateCredentialResponse {
-  // No content returned
-}
+export type RemoveCertificateCredentialResponse = void;
 
 /**
  * Parameters of the RemoveCertificateCredential action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class RemoveCertificateCredentialAction implements Executable<RemoveCerti
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveCertificateCredentialResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RemoveCertificateCredentialResponse;
-    return (await response.json()) as RemoveCertificateCredentialResponse;
+  parseResponse(_response: Response): Promise<RemoveCertificateCredentialResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ClassifySegments action
+ * Response from the msdyn_ClassifySegments action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ClassifySegmentsResponse {
-  // No content returned
-}
+export type msdyn_ClassifySegmentsResponse = void;
 
 /**
  * Parameters of the msdyn_ClassifySegments action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_ClassifySegmentsAction implements Executable<msdyn_ClassifySe
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ClassifySegmentsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ClassifySegmentsResponse;
-    return (await response.json()) as msdyn_ClassifySegmentsResponse;
+  parseResponse(_response: Response): Promise<msdyn_ClassifySegmentsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_SendHeartbeat action
+ * Response from the CCaaS_SendHeartbeat action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_SendHeartbeatResponse {
+  "@odata.context"?: string;
   ActiveBrowserSessions: number;
   AgentId: string;
   AgentName: string;
@@ -51,8 +54,7 @@ export class CCaaS_SendHeartbeatAction implements Executable<CCaaS_SendHeartbeat
   }
 
   async parseResponse(response: Response): Promise<CCaaS_SendHeartbeatResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_SendHeartbeatResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_SendHeartbeatResponse;
   }
 }

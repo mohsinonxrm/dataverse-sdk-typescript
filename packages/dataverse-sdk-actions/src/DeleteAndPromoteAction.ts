@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DeleteAndPromote action
+ * Response from the DeleteAndPromote action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface DeleteAndPromoteResponse {
+  "@odata.context"?: string;
   SolutionId: string;
 }
 
@@ -42,8 +45,7 @@ export class DeleteAndPromoteAction implements Executable<DeleteAndPromoteRespon
   }
 
   async parseResponse(response: Response): Promise<DeleteAndPromoteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DeleteAndPromoteResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as DeleteAndPromoteResponse;
   }
 }

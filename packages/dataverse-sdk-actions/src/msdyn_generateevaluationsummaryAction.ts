@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_generateevaluationsummary action
+ * Response from the msdyn_generateevaluationsummary action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_generateevaluationsummaryResponse {
+  "@odata.context"?: string;
   actionPlan: string;
   evaluationSummary: string;
   status: string;
@@ -44,8 +47,7 @@ export class msdyn_generateevaluationsummaryAction implements Executable<msdyn_g
   }
 
   async parseResponse(response: Response): Promise<msdyn_generateevaluationsummaryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_generateevaluationsummaryResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_generateevaluationsummaryResponse;
   }
 }

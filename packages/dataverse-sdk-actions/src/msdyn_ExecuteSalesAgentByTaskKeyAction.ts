@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ExecuteSalesAgentByTaskKey action
+ * Response from the msdyn_ExecuteSalesAgentByTaskKey action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ExecuteSalesAgentByTaskKeyResponse {
+  "@odata.context"?: string;
   msdyn_ErrorMessage: string;
   msdyn_IsSuccess: boolean;
   msdyn_TaskResponse: string;
@@ -50,8 +53,7 @@ export class msdyn_ExecuteSalesAgentByTaskKeyAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteSalesAgentByTaskKeyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ExecuteSalesAgentByTaskKeyResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ExecuteSalesAgentByTaskKeyResponse;
   }
 }

@@ -3,9 +3,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { CreateVirtualConnectorTableMetadata } from "./types/index.js";
 
 /**
- * Response from CreateVirtualConnectorTable action
+ * Response from the CreateVirtualConnectorTable action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateVirtualConnectorTableResponse {
+  "@odata.context"?: string;
   EntityId: string;
 }
 
@@ -43,8 +46,7 @@ export class CreateVirtualConnectorTableAction implements Executable<CreateVirtu
   }
 
   async parseResponse(response: Response): Promise<CreateVirtualConnectorTableResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateVirtualConnectorTableResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CreateVirtualConnectorTableResponse;
   }
 }

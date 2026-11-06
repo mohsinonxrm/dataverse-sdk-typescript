@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_CancelProactiveEngagement action
+ * Response from the CCaaS_CancelProactiveEngagement action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CCaaS_CancelProactiveEngagementResponse {
-  // No content returned
-}
+export type CCaaS_CancelProactiveEngagementResponse = void;
 
 /**
  * Parameters of the CCaaS_CancelProactiveEngagement action, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +51,8 @@ export class CCaaS_CancelProactiveEngagementAction implements Executable<CCaaS_C
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_CancelProactiveEngagementResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_CancelProactiveEngagementResponse;
-    return (await response.json()) as CCaaS_CancelProactiveEngagementResponse;
+  parseResponse(_response: Response): Promise<CCaaS_CancelProactiveEngagementResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

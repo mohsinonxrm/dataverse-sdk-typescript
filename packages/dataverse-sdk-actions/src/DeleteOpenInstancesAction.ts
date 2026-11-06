@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { recurringappointmentmaster } from "./types/index.js";
 
 /**
- * Response from DeleteOpenInstances action
+ * Response from the DeleteOpenInstances action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeleteOpenInstancesResponse {
-  // No content returned
-}
+export type DeleteOpenInstancesResponse = void;
 
 /**
  * Parameters of the DeleteOpenInstances action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class DeleteOpenInstancesAction implements Executable<DeleteOpenInstances
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteOpenInstancesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DeleteOpenInstancesResponse;
-    return (await response.json()) as DeleteOpenInstancesResponse;
+  parseResponse(_response: Response): Promise<DeleteOpenInstancesResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

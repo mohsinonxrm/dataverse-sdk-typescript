@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CustomApiCustomerServiceCaseSummary action
+ * Response from the msdyn_CustomApiCustomerServiceCaseSummary action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CustomApiCustomerServiceCaseSummaryResponse {
+  "@odata.context"?: string;
   msdyn_CaseSummary: string;
 }
 
@@ -46,8 +49,7 @@ export class msdyn_CustomApiCustomerServiceCaseSummaryAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdyn_CustomApiCustomerServiceCaseSummaryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CustomApiCustomerServiceCaseSummaryResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CustomApiCustomerServiceCaseSummaryResponse;
   }
 }

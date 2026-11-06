@@ -42,9 +42,9 @@ export class msdynmkt_PredefinedPlaceholderAddCountRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdynmkt_PredefinedPlaceholderAddCountResponse> {
+  parseResponse(_response: Response): Promise<msdynmkt_PredefinedPlaceholderAddCountResponse> {
     // No return value (204 No Content)
-    return new msdynmkt_PredefinedPlaceholderAddCountResponse();
+    return Promise.resolve(new msdynmkt_PredefinedPlaceholderAddCountResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdynmkt_PredefinedPlaceholderAddCountResponse extends Organization
     super("msdynmkt_PredefinedPlaceholderAddCount");
   }
 
-  static fromResponse(_data: unknown): msdynmkt_PredefinedPlaceholderAddCountResponse {
+  static fromResponse(_data?: unknown): msdynmkt_PredefinedPlaceholderAddCountResponse {
     return new msdynmkt_PredefinedPlaceholderAddCountResponse();
   }
 }

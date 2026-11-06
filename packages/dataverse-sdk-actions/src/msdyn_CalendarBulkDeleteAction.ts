@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CalendarBulkDelete action
+ * Response from the msdyn_CalendarBulkDelete action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CalendarBulkDeleteResponse {
-  // No content returned
-}
+export type msdyn_CalendarBulkDeleteResponse = void;
 
 /**
  * Parameters of the msdyn_CalendarBulkDelete action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_CalendarBulkDeleteAction implements Executable<msdyn_Calendar
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CalendarBulkDeleteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CalendarBulkDeleteResponse;
-    return (await response.json()) as msdyn_CalendarBulkDeleteResponse;
+  parseResponse(_response: Response): Promise<msdyn_CalendarBulkDeleteResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

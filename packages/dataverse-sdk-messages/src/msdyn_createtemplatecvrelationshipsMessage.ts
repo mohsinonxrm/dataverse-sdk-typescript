@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_createtemplatecvrelationshipsResponse as msdyn_createtemplatecvrelationshipsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_createtemplatecvrelationships message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,35 @@ export class msdyn_createtemplatecvrelationshipsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_createtemplatecvrelationshipsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_createtemplatecvrelationshipsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_createtemplatecvrelationshipsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_createtemplatecvrelationships action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_createtemplatecvrelationshipsResult {
+  "@odata.context"?: string;
+  status: boolean;
+}
+
+/**
  * msdyn_createtemplatecvrelationships response message
+ *
+ * `result` is the value the msdyn_createtemplatecvrelationships action returns (see {@link msdyn_createtemplatecvrelationshipsResult}).
  */
 export class msdyn_createtemplatecvrelationshipsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_createtemplatecvrelationshipsResponseData) {
+  constructor(public result: msdyn_createtemplatecvrelationshipsResult) {
     super("msdyn_createtemplatecvrelationships");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_createtemplatecvrelationshipsResponse {
     return new msdyn_createtemplatecvrelationshipsResponse(
-      responseObject<msdyn_createtemplatecvrelationshipsResponseData>(data)
+      data as msdyn_createtemplatecvrelationshipsResult
     );
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CancelEvaluation action
+ * Response from the msdyn_CancelEvaluation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CancelEvaluationResponse {
+  "@odata.context"?: string;
   status: string;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_CancelEvaluationAction implements Executable<msdyn_CancelEval
   }
 
   async parseResponse(response: Response): Promise<msdyn_CancelEvaluationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CancelEvaluationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CancelEvaluationResponse;
   }
 }

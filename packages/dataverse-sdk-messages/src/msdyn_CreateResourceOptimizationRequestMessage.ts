@@ -52,11 +52,9 @@ export class msdyn_CreateResourceOptimizationRequestRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_CreateResourceOptimizationRequestResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CreateResourceOptimizationRequestResponse> {
     // No return value (204 No Content)
-    return new msdyn_CreateResourceOptimizationRequestResponse();
+    return Promise.resolve(new msdyn_CreateResourceOptimizationRequestResponse());
   }
 }
 
@@ -68,7 +66,7 @@ export class msdyn_CreateResourceOptimizationRequestResponse extends Organizatio
     super("msdyn_CreateResourceOptimizationRequest");
   }
 
-  static fromResponse(_data: unknown): msdyn_CreateResourceOptimizationRequestResponse {
+  static fromResponse(_data?: unknown): msdyn_CreateResourceOptimizationRequestResponse {
     return new msdyn_CreateResourceOptimizationRequestResponse();
   }
 }

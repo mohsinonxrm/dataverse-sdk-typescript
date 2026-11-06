@@ -48,11 +48,11 @@ export class msdyn_SalesAgents_SetExecutionConfigPropertyRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAgents_SetExecutionConfigPropertyResponse> {
     // No return value (204 No Content)
-    return new msdyn_SalesAgents_SetExecutionConfigPropertyResponse();
+    return Promise.resolve(new msdyn_SalesAgents_SetExecutionConfigPropertyResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class msdyn_SalesAgents_SetExecutionConfigPropertyResponse extends Organi
     super("msdyn_SalesAgents_SetExecutionConfigProperty");
   }
 
-  static fromResponse(_data: unknown): msdyn_SalesAgents_SetExecutionConfigPropertyResponse {
+  static fromResponse(_data?: unknown): msdyn_SalesAgents_SetExecutionConfigPropertyResponse {
     return new msdyn_SalesAgents_SetExecutionConfigPropertyResponse();
   }
 }

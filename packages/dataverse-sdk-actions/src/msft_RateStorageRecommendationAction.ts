@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msft_RateStorageRecommendation action
+ * Response from the msft_RateStorageRecommendation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msft_RateStorageRecommendationResponse {
+  "@odata.context"?: string;
   IsSuccess: boolean;
 }
 
@@ -46,8 +49,7 @@ export class msft_RateStorageRecommendationAction implements Executable<msft_Rat
   }
 
   async parseResponse(response: Response): Promise<msft_RateStorageRecommendationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msft_RateStorageRecommendationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msft_RateStorageRecommendationResponse;
   }
 }

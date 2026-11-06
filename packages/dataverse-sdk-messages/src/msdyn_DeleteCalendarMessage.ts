@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_DeleteCalendarResponse as msdyn_DeleteCalendarResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_DeleteCalendar message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,33 @@ export class msdyn_DeleteCalendarRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DeleteCalendarResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_DeleteCalendarResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_DeleteCalendarResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_DeleteCalendar action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_DeleteCalendarResult {
+  "@odata.context"?: string;
+  InnerCalendarIds: string;
+}
+
+/**
  * msdyn_DeleteCalendar response message
+ *
+ * `result` is the value the msdyn_DeleteCalendar action returns (see {@link msdyn_DeleteCalendarResult}).
  */
 export class msdyn_DeleteCalendarResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DeleteCalendarResponseData) {
+  constructor(public result: msdyn_DeleteCalendarResult) {
     super("msdyn_DeleteCalendar");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_DeleteCalendarResponse {
-    return new msdyn_DeleteCalendarResponse(responseObject<msdyn_DeleteCalendarResponseData>(data));
+    return new msdyn_DeleteCalendarResponse(data as msdyn_DeleteCalendarResult);
   }
 }

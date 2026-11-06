@@ -42,9 +42,9 @@ export class msdyn_StartCRASimulationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_StartCRASimulationResponse> {
+  parseResponse(_response: Response): Promise<msdyn_StartCRASimulationResponse> {
     // No return value (204 No Content)
-    return new msdyn_StartCRASimulationResponse();
+    return Promise.resolve(new msdyn_StartCRASimulationResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_StartCRASimulationResponse extends OrganizationResponse {
     super("msdyn_StartCRASimulation");
   }
 
-  static fromResponse(_data: unknown): msdyn_StartCRASimulationResponse {
+  static fromResponse(_data?: unknown): msdyn_StartCRASimulationResponse {
     return new msdyn_StartCRASimulationResponse();
   }
 }

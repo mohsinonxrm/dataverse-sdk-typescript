@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_get_required_fields action
+ * Response from the msdyn_get_required_fields action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_get_required_fieldsResponse {
+  "@odata.context"?: string;
   eligible_primary_fields: string[];
   eligible_primary_keys: string[];
   table_display_name: string;
@@ -55,8 +58,7 @@ export class msdyn_get_required_fieldsAction implements Executable<msdyn_get_req
   }
 
   async parseResponse(response: Response): Promise<msdyn_get_required_fieldsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_get_required_fieldsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_get_required_fieldsResponse;
   }
 }

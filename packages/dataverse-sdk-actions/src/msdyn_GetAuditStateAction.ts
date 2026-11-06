@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetAuditState action
+ * Response from the msdyn_GetAuditState action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetAuditStateResponse {
+  "@odata.context"?: string;
   msdyn_output: string;
 }
 
@@ -26,8 +29,7 @@ export class msdyn_GetAuditStateAction implements Executable<msdyn_GetAuditState
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAuditStateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetAuditStateResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetAuditStateResponse;
   }
 }

@@ -45,9 +45,9 @@ export class PullChangesFromGitRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<PullChangesFromGitResponse> {
+  parseResponse(_response: Response): Promise<PullChangesFromGitResponse> {
     // No return value (204 No Content)
-    return new PullChangesFromGitResponse();
+    return Promise.resolve(new PullChangesFromGitResponse());
   }
 }
 
@@ -59,7 +59,7 @@ export class PullChangesFromGitResponse extends OrganizationResponse {
     super("PullChangesFromGit");
   }
 
-  static fromResponse(_data: unknown): PullChangesFromGitResponse {
+  static fromResponse(_data?: unknown): PullChangesFromGitResponse {
     return new PullChangesFromGitResponse();
   }
 }

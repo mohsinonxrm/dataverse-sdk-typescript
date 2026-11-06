@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_TrackExchangeActivityResponse as msdyn_TrackExchangeActivityResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TrackExchangeActivity message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class msdyn_TrackExchangeActivityRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TrackExchangeActivityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_TrackExchangeActivityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TrackExchangeActivityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TrackExchangeActivity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TrackExchangeActivityResult {
+  "@odata.context"?: string;
+  ExchangeResponse: string;
+}
+
+/**
  * msdyn_TrackExchangeActivity response message
+ *
+ * `result` is the value the msdyn_TrackExchangeActivity action returns (see {@link msdyn_TrackExchangeActivityResult}).
  */
 export class msdyn_TrackExchangeActivityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TrackExchangeActivityResponseData) {
+  constructor(public result: msdyn_TrackExchangeActivityResult) {
     super("msdyn_TrackExchangeActivity");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TrackExchangeActivityResponse {
-    return new msdyn_TrackExchangeActivityResponse(
-      responseObject<msdyn_TrackExchangeActivityResponseData>(data)
-    );
+    return new msdyn_TrackExchangeActivityResponse(data as msdyn_TrackExchangeActivityResult);
   }
 }

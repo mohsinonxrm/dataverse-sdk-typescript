@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SwarmExpertFinder action
+ * Response from the msdyn_SwarmExpertFinder action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SwarmExpertFinderResponse {
-  // No content returned
-}
+export type msdyn_SwarmExpertFinderResponse = void;
 
 /**
  * Parameters of the msdyn_SwarmExpertFinder action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_SwarmExpertFinderAction implements Executable<msdyn_SwarmExpe
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SwarmExpertFinderResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SwarmExpertFinderResponse;
-    return (await response.json()) as msdyn_SwarmExpertFinderResponse;
+  parseResponse(_response: Response): Promise<msdyn_SwarmExpertFinderResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_generatePromptForGovernanceAgentGuardrailResponse as msdyn_generatePromptForGovernanceAgentGuardrailResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_generatePromptForGovernanceAgentGuardrail message, by their CSDL names. A parameter the CSDL declares
@@ -57,9 +55,7 @@ export class msdyn_generatePromptForGovernanceAgentGuardrailRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_generatePromptForGovernanceAgentGuardrailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_generatePromptForGovernanceAgentGuardrailResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_generatePromptForGovernanceAgentGuardrailResponse.fromResponse(
       await response.json()
     );
@@ -67,16 +63,32 @@ export class msdyn_generatePromptForGovernanceAgentGuardrailRequest
 }
 
 /**
+ * Response from the msdyn_generatePromptForGovernanceAgentGuardrail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_generatePromptForGovernanceAgentGuardrailResult {
+  "@odata.context"?: string;
+  msdyn_error: string;
+  msdyn_policystatement: string;
+  msdyn_prompt: string;
+  msdyn_status: string;
+}
+
+/**
  * msdyn_generatePromptForGovernanceAgentGuardrail response message
+ *
+ * `result` is the value the msdyn_generatePromptForGovernanceAgentGuardrail action returns (see {@link msdyn_generatePromptForGovernanceAgentGuardrailResult}).
  */
 export class msdyn_generatePromptForGovernanceAgentGuardrailResponse extends OrganizationResponse {
-  constructor(public result: msdyn_generatePromptForGovernanceAgentGuardrailResponseData) {
+  constructor(public result: msdyn_generatePromptForGovernanceAgentGuardrailResult) {
     super("msdyn_generatePromptForGovernanceAgentGuardrail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_generatePromptForGovernanceAgentGuardrailResponse {
     return new msdyn_generatePromptForGovernanceAgentGuardrailResponse(
-      responseObject<msdyn_generatePromptForGovernanceAgentGuardrailResponseData>(data)
+      data as msdyn_generatePromptForGovernanceAgentGuardrailResult
     );
   }
 }

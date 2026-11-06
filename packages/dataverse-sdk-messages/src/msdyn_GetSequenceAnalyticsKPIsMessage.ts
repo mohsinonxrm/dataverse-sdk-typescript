@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetSequenceAnalyticsKPIsResponse as msdyn_GetSequenceAnalyticsKPIsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetSequenceAnalyticsKPIs message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,33 @@ export class msdyn_GetSequenceAnalyticsKPIsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSequenceAnalyticsKPIsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSequenceAnalyticsKPIsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSequenceAnalyticsKPIsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSequenceAnalyticsKPIs action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSequenceAnalyticsKPIsResult {
+  "@odata.context"?: string;
+  SequenceAnalyticsKPIs: string;
+}
+
+/**
  * msdyn_GetSequenceAnalyticsKPIs response message
+ *
+ * `result` is the value the msdyn_GetSequenceAnalyticsKPIs action returns (see {@link msdyn_GetSequenceAnalyticsKPIsResult}).
  */
 export class msdyn_GetSequenceAnalyticsKPIsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSequenceAnalyticsKPIsResponseData) {
+  constructor(public result: msdyn_GetSequenceAnalyticsKPIsResult) {
     super("msdyn_GetSequenceAnalyticsKPIs");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSequenceAnalyticsKPIsResponse {
-    return new msdyn_GetSequenceAnalyticsKPIsResponse(
-      responseObject<msdyn_GetSequenceAnalyticsKPIsResponseData>(data)
-    );
+    return new msdyn_GetSequenceAnalyticsKPIsResponse(data as msdyn_GetSequenceAnalyticsKPIsResult);
   }
 }

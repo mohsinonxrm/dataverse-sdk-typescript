@@ -46,11 +46,9 @@ export class msdyn_UpdateAutoScheduledTrainingStatusRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_UpdateAutoScheduledTrainingStatusResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateAutoScheduledTrainingStatusResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateAutoScheduledTrainingStatusResponse();
+    return Promise.resolve(new msdyn_UpdateAutoScheduledTrainingStatusResponse());
   }
 }
 
@@ -62,7 +60,7 @@ export class msdyn_UpdateAutoScheduledTrainingStatusResponse extends Organizatio
     super("msdyn_UpdateAutoScheduledTrainingStatus");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateAutoScheduledTrainingStatusResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateAutoScheduledTrainingStatusResponse {
     return new msdyn_UpdateAutoScheduledTrainingStatusResponse();
   }
 }

@@ -26,9 +26,9 @@ export class msdyn_CopyEventTwitterChannelsCleanupRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CopyEventTwitterChannelsCleanupResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CopyEventTwitterChannelsCleanupResponse> {
     // No return value (204 No Content)
-    return new msdyn_CopyEventTwitterChannelsCleanupResponse();
+    return Promise.resolve(new msdyn_CopyEventTwitterChannelsCleanupResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class msdyn_CopyEventTwitterChannelsCleanupResponse extends OrganizationR
     super("msdyn_CopyEventTwitterChannelsCleanup");
   }
 
-  static fromResponse(_data: unknown): msdyn_CopyEventTwitterChannelsCleanupResponse {
+  static fromResponse(_data?: unknown): msdyn_CopyEventTwitterChannelsCleanupResponse {
     return new msdyn_CopyEventTwitterChannelsCleanupResponse();
   }
 }

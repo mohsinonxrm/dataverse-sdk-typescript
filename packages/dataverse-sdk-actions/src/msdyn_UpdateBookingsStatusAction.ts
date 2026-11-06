@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_UpdateBookingsStatus action
+ * Response from the msdyn_UpdateBookingsStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_UpdateBookingsStatusResponse {
+  "@odata.context"?: string;
   BookingResult: string;
   UpdatedBookingIds: string;
 }
@@ -53,8 +56,7 @@ export class msdyn_UpdateBookingsStatusAction implements Executable<msdyn_Update
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateBookingsStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_UpdateBookingsStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_UpdateBookingsStatusResponse;
   }
 }

@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { InitializeFileBlocksDownloadResponse as InitializeFileBlocksDownloadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the InitializeFileBlocksDownload message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,36 @@ export class InitializeFileBlocksDownloadRequest
   }
 
   async parseResponse(response: Response): Promise<InitializeFileBlocksDownloadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return InitializeFileBlocksDownloadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return InitializeFileBlocksDownloadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the InitializeFileBlocksDownload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface InitializeFileBlocksDownloadResult {
+  "@odata.context"?: string;
+  FileContinuationToken: string;
+  FileName: string;
+  FileSizeInBytes: number;
+  IsChunkingSupported: boolean;
+}
+
+/**
  * InitializeFileBlocksDownload response message
+ *
+ * `result` is the value the InitializeFileBlocksDownload action returns (see {@link InitializeFileBlocksDownloadResult}).
  */
 export class InitializeFileBlocksDownloadResponse extends OrganizationResponse {
-  constructor(public result: InitializeFileBlocksDownloadResponseData) {
+  constructor(public result: InitializeFileBlocksDownloadResult) {
     super("InitializeFileBlocksDownload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): InitializeFileBlocksDownloadResponse {
-    return new InitializeFileBlocksDownloadResponse(
-      responseObject<InitializeFileBlocksDownloadResponseData>(data)
-    );
+    return new InitializeFileBlocksDownloadResponse(data as InitializeFileBlocksDownloadResult);
   }
 }

@@ -29,11 +29,9 @@ export class AddRequiredDesktopFlowComponentsToSolutionsRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<AddRequiredDesktopFlowComponentsToSolutionsResponse> {
+  parseResponse(_response: Response): Promise<AddRequiredDesktopFlowComponentsToSolutionsResponse> {
     // No return value (204 No Content)
-    return new AddRequiredDesktopFlowComponentsToSolutionsResponse();
+    return Promise.resolve(new AddRequiredDesktopFlowComponentsToSolutionsResponse());
   }
 }
 
@@ -45,7 +43,7 @@ export class AddRequiredDesktopFlowComponentsToSolutionsResponse extends Organiz
     super("AddRequiredDesktopFlowComponentsToSolutions");
   }
 
-  static fromResponse(_data: unknown): AddRequiredDesktopFlowComponentsToSolutionsResponse {
+  static fromResponse(_data?: unknown): AddRequiredDesktopFlowComponentsToSolutionsResponse {
     return new AddRequiredDesktopFlowComponentsToSolutionsResponse();
   }
 }

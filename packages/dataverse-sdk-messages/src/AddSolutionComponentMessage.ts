@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { AddSolutionComponentResponse as AddSolutionComponentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the AddSolutionComponent message, by their CSDL names. A parameter the CSDL declares
@@ -55,21 +53,33 @@ export class AddSolutionComponentRequest
   }
 
   async parseResponse(response: Response): Promise<AddSolutionComponentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AddSolutionComponentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AddSolutionComponentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AddSolutionComponent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AddSolutionComponentResult {
+  "@odata.context"?: string;
+  id: string;
+}
+
+/**
  * AddSolutionComponent response message
+ *
+ * `result` is the value the AddSolutionComponent action returns (see {@link AddSolutionComponentResult}).
  */
 export class AddSolutionComponentResponse extends OrganizationResponse {
-  constructor(public result: AddSolutionComponentResponseData) {
+  constructor(public result: AddSolutionComponentResult) {
     super("AddSolutionComponent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AddSolutionComponentResponse {
-    return new AddSolutionComponentResponse(responseObject<AddSolutionComponentResponseData>(data));
+    return new AddSolutionComponentResponse(data as AddSolutionComponentResult);
   }
 }

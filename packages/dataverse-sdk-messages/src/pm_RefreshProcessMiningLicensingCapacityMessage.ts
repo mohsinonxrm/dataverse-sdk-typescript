@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { pm_RefreshProcessMiningLicensingCapacityResponse as pm_RefreshProcessMiningLicensingCapacityResponseData } from "./types/index.js";
 
 /**
  * pm_RefreshProcessMiningLicensingCapacity request message
@@ -31,24 +29,35 @@ export class pm_RefreshProcessMiningLicensingCapacityRequest
   async parseResponse(
     response: Response
   ): Promise<pm_RefreshProcessMiningLicensingCapacityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return pm_RefreshProcessMiningLicensingCapacityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return pm_RefreshProcessMiningLicensingCapacityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the pm_RefreshProcessMiningLicensingCapacity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface pm_RefreshProcessMiningLicensingCapacityResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * pm_RefreshProcessMiningLicensingCapacity response message
+ *
+ * `result` is the value the pm_RefreshProcessMiningLicensingCapacity action returns (see {@link pm_RefreshProcessMiningLicensingCapacityResult}).
  */
 export class pm_RefreshProcessMiningLicensingCapacityResponse extends OrganizationResponse {
-  constructor(public result: pm_RefreshProcessMiningLicensingCapacityResponseData) {
+  constructor(public result: pm_RefreshProcessMiningLicensingCapacityResult) {
     super("pm_RefreshProcessMiningLicensingCapacity");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): pm_RefreshProcessMiningLicensingCapacityResponse {
     return new pm_RefreshProcessMiningLicensingCapacityResponse(
-      responseObject<pm_RefreshProcessMiningLicensingCapacityResponseData>(data)
+      data as pm_RefreshProcessMiningLicensingCapacityResult
     );
   }
 }

@@ -42,9 +42,9 @@ export class msdyn_ActionCardCreateRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ActionCardCreateResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ActionCardCreateResponse> {
     // No return value (204 No Content)
-    return new msdyn_ActionCardCreateResponse();
+    return Promise.resolve(new msdyn_ActionCardCreateResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_ActionCardCreateResponse extends OrganizationResponse {
     super("msdyn_ActionCardCreate");
   }
 
-  static fromResponse(_data: unknown): msdyn_ActionCardCreateResponse {
+  static fromResponse(_data?: unknown): msdyn_ActionCardCreateResponse {
     return new msdyn_ActionCardCreateResponse();
   }
 }

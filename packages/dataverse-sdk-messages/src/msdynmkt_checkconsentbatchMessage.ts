@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_checkconsentbatchResponse as msdynmkt_checkconsentbatchResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_checkconsentbatch message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,34 @@ export class msdynmkt_checkconsentbatchRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_checkconsentbatchResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_checkconsentbatchResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_checkconsentbatchResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_checkconsentbatch action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_checkconsentbatchResult {
+  "@odata.context"?: string;
+  msdynmkt_errormessage: string;
+  msdynmkt_issuccess: boolean;
+}
+
+/**
  * msdynmkt_checkconsentbatch response message
+ *
+ * `result` is the value the msdynmkt_checkconsentbatch action returns (see {@link msdynmkt_checkconsentbatchResult}).
  */
 export class msdynmkt_checkconsentbatchResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_checkconsentbatchResponseData) {
+  constructor(public result: msdynmkt_checkconsentbatchResult) {
     super("msdynmkt_checkconsentbatch");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_checkconsentbatchResponse {
-    return new msdynmkt_checkconsentbatchResponse(
-      responseObject<msdynmkt_checkconsentbatchResponseData>(data)
-    );
+    return new msdynmkt_checkconsentbatchResponse(data as msdynmkt_checkconsentbatchResult);
   }
 }

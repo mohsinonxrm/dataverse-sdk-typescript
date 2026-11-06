@@ -1,13 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_GetMetadataItemsFor action
+ * Response from the msdynmkt_GetMetadataItemsFor action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface msdynmkt_GetMetadataItemsForResponse {
-  value: EntityReference[];
-}
+export type msdynmkt_GetMetadataItemsForResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the msdynmkt_GetMetadataItemsFor action, by their CSDL names. A parameter the CSDL declares
@@ -47,8 +51,9 @@ export class msdynmkt_GetMetadataItemsForAction implements Executable<msdynmkt_G
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_GetMetadataItemsForResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_GetMetadataItemsForResponse;
-    return (await response.json()) as msdynmkt_GetMetadataItemsForResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: msdynmkt_GetMetadataItemsForResponse }).value;
   }
 }

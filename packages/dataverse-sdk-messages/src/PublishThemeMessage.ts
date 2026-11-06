@@ -29,9 +29,9 @@ export class PublishThemeRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<PublishThemeResponse> {
+  parseResponse(_response: Response): Promise<PublishThemeResponse> {
     // No return value (204 No Content)
-    return new PublishThemeResponse();
+    return Promise.resolve(new PublishThemeResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class PublishThemeResponse extends OrganizationResponse {
     super("PublishTheme");
   }
 
-  static fromResponse(_data: unknown): PublishThemeResponse {
+  static fromResponse(_data?: unknown): PublishThemeResponse {
     return new PublishThemeResponse();
   }
 }

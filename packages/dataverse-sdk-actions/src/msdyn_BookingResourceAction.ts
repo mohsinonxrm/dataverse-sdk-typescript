@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_BookingResource action
+ * Response from the msdyn_BookingResource action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_BookingResourceResponse {
+  "@odata.context"?: string;
   BookingResult: string;
 }
 
@@ -108,8 +111,7 @@ export class msdyn_BookingResourceAction implements Executable<msdyn_BookingReso
   }
 
   async parseResponse(response: Response): Promise<msdyn_BookingResourceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_BookingResourceResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_BookingResourceResponse;
   }
 }

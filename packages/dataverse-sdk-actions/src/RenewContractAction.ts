@@ -3,14 +3,13 @@ import { requestBody } from "./internal/requestBody.js";
 import type { contract } from "./types/index.js";
 
 /**
- * Response from RenewContract action
+ * Response from the RenewContract action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface RenewContractResponse extends contract {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type RenewContractResponse =
+  (contract & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
 
 /**
  * Parameters of the RenewContract action, by their CSDL names. A parameter the CSDL declares
@@ -55,8 +54,9 @@ export class RenewContractAction implements Executable<RenewContractResponse> {
   }
 
   async parseResponse(response: Response): Promise<RenewContractResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RenewContractResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as RenewContractResponse;
   }
 }

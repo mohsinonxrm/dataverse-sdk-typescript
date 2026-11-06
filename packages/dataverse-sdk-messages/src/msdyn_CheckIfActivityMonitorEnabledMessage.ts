@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckIfActivityMonitorEnabledResponse as msdyn_CheckIfActivityMonitorEnabledResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckIfActivityMonitorEnabled message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,40 @@ export class msdyn_CheckIfActivityMonitorEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfActivityMonitorEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckIfActivityMonitorEnabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckIfActivityMonitorEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfActivityMonitorEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfActivityMonitorEnabledResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnLevel: number;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfActivityMonitorEnabled response message
+ *
+ * `result` is the value the msdyn_CheckIfActivityMonitorEnabled action returns (see {@link msdyn_CheckIfActivityMonitorEnabledResult}).
  */
 export class msdyn_CheckIfActivityMonitorEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfActivityMonitorEnabledResponseData) {
+  constructor(public result: msdyn_CheckIfActivityMonitorEnabledResult) {
     super("msdyn_CheckIfActivityMonitorEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfActivityMonitorEnabledResponse {
     return new msdyn_CheckIfActivityMonitorEnabledResponse(
-      responseObject<msdyn_CheckIfActivityMonitorEnabledResponseData>(data)
+      data as msdyn_CheckIfActivityMonitorEnabledResult
     );
   }
 }

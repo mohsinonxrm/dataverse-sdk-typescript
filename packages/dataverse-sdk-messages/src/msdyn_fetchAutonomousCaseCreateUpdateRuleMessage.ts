@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_fetchAutonomousCaseCreateUpdateRuleResponse as msdyn_fetchAutonomousCaseCreateUpdateRuleResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_fetchAutonomousCaseCreateUpdateRule message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_fetchAutonomousCaseCreateUpdateRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_fetchAutonomousCaseCreateUpdateRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_fetchAutonomousCaseCreateUpdateRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_fetchAutonomousCaseCreateUpdateRuleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_fetchAutonomousCaseCreateUpdateRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_fetchAutonomousCaseCreateUpdateRuleResult {
+  "@odata.context"?: string;
+  autonomousCaseCreateUpdateRule: string;
+}
+
+/**
  * msdyn_fetchAutonomousCaseCreateUpdateRule response message
+ *
+ * `result` is the value the msdyn_fetchAutonomousCaseCreateUpdateRule action returns (see {@link msdyn_fetchAutonomousCaseCreateUpdateRuleResult}).
  */
 export class msdyn_fetchAutonomousCaseCreateUpdateRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_fetchAutonomousCaseCreateUpdateRuleResponseData) {
+  constructor(public result: msdyn_fetchAutonomousCaseCreateUpdateRuleResult) {
     super("msdyn_fetchAutonomousCaseCreateUpdateRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_fetchAutonomousCaseCreateUpdateRuleResponse {
     return new msdyn_fetchAutonomousCaseCreateUpdateRuleResponse(
-      responseObject<msdyn_fetchAutonomousCaseCreateUpdateRuleResponseData>(data)
+      data as msdyn_fetchAutonomousCaseCreateUpdateRuleResult
     );
   }
 }

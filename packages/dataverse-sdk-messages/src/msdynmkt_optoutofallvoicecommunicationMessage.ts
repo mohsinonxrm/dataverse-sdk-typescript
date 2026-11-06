@@ -44,9 +44,9 @@ export class msdynmkt_optoutofallvoicecommunicationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdynmkt_optoutofallvoicecommunicationResponse> {
+  parseResponse(_response: Response): Promise<msdynmkt_optoutofallvoicecommunicationResponse> {
     // No return value (204 No Content)
-    return new msdynmkt_optoutofallvoicecommunicationResponse();
+    return Promise.resolve(new msdynmkt_optoutofallvoicecommunicationResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdynmkt_optoutofallvoicecommunicationResponse extends Organization
     super("msdynmkt_optoutofallvoicecommunication");
   }
 
-  static fromResponse(_data: unknown): msdynmkt_optoutofallvoicecommunicationResponse {
+  static fromResponse(_data?: unknown): msdynmkt_optoutofallvoicecommunicationResponse {
     return new msdynmkt_optoutofallvoicecommunicationResponse();
   }
 }

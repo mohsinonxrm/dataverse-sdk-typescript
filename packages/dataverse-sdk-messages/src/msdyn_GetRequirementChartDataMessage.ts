@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetRequirementChartDataResponse as msdyn_GetRequirementChartDataResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetRequirementChartData message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_GetRequirementChartDataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRequirementChartDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetRequirementChartDataResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetRequirementChartDataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetRequirementChartData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetRequirementChartDataResult {
+  "@odata.context"?: string;
+  RequirementChartData: string;
+}
+
+/**
  * msdyn_GetRequirementChartData response message
+ *
+ * `result` is the value the msdyn_GetRequirementChartData action returns (see {@link msdyn_GetRequirementChartDataResult}).
  */
 export class msdyn_GetRequirementChartDataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetRequirementChartDataResponseData) {
+  constructor(public result: msdyn_GetRequirementChartDataResult) {
     super("msdyn_GetRequirementChartData");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetRequirementChartDataResponse {
-    return new msdyn_GetRequirementChartDataResponse(
-      responseObject<msdyn_GetRequirementChartDataResponseData>(data)
-    );
+    return new msdyn_GetRequirementChartDataResponse(data as msdyn_GetRequirementChartDataResult);
   }
 }

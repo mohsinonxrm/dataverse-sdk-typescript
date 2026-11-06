@@ -48,9 +48,9 @@ export class ReassignObjectsOwnerRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ReassignObjectsOwnerResponse> {
+  parseResponse(_response: Response): Promise<ReassignObjectsOwnerResponse> {
     // No return value (204 No Content)
-    return new ReassignObjectsOwnerResponse();
+    return Promise.resolve(new ReassignObjectsOwnerResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class ReassignObjectsOwnerResponse extends OrganizationResponse {
     super("ReassignObjectsOwner");
   }
 
-  static fromResponse(_data: unknown): ReassignObjectsOwnerResponse {
+  static fromResponse(_data?: unknown): ReassignObjectsOwnerResponse {
     return new ReassignObjectsOwnerResponse();
   }
 }

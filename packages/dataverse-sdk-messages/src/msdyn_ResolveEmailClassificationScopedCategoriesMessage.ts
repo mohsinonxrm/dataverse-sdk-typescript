@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ResolveEmailClassificationScopedCategoriesResponse as msdyn_ResolveEmailClassificationScopedCategoriesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ResolveEmailClassificationScopedCategories message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_ResolveEmailClassificationScopedCategoriesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ResolveEmailClassificationScopedCategoriesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_ResolveEmailClassificationScopedCategoriesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ResolveEmailClassificationScopedCategoriesResponse.fromResponse(
       await response.json()
     );
@@ -59,16 +55,30 @@ export class msdyn_ResolveEmailClassificationScopedCategoriesRequest
 }
 
 /**
+ * Response from the msdyn_ResolveEmailClassificationScopedCategories action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ResolveEmailClassificationScopedCategoriesResult {
+  "@odata.context"?: string;
+  isRuleMatched: boolean;
+  matchedRuleId: string;
+}
+
+/**
  * msdyn_ResolveEmailClassificationScopedCategories response message
+ *
+ * `result` is the value the msdyn_ResolveEmailClassificationScopedCategories action returns (see {@link msdyn_ResolveEmailClassificationScopedCategoriesResult}).
  */
 export class msdyn_ResolveEmailClassificationScopedCategoriesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ResolveEmailClassificationScopedCategoriesResponseData) {
+  constructor(public result: msdyn_ResolveEmailClassificationScopedCategoriesResult) {
     super("msdyn_ResolveEmailClassificationScopedCategories");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ResolveEmailClassificationScopedCategoriesResponse {
     return new msdyn_ResolveEmailClassificationScopedCategoriesResponse(
-      responseObject<msdyn_ResolveEmailClassificationScopedCategoriesResponseData>(data)
+      data as msdyn_ResolveEmailClassificationScopedCategoriesResult
     );
   }
 }

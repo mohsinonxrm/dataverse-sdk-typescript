@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_PowerAutomateLoggerResponse as msdyn_PowerAutomateLoggerResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_PowerAutomateLogger message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_PowerAutomateLoggerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_PowerAutomateLoggerResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_PowerAutomateLoggerResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_PowerAutomateLoggerResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_PowerAutomateLogger action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_PowerAutomateLoggerResult {
+  "@odata.context"?: string;
+  Success: boolean;
+}
+
+/**
  * msdyn_PowerAutomateLogger response message
+ *
+ * `result` is the value the msdyn_PowerAutomateLogger action returns (see {@link msdyn_PowerAutomateLoggerResult}).
  */
 export class msdyn_PowerAutomateLoggerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_PowerAutomateLoggerResponseData) {
+  constructor(public result: msdyn_PowerAutomateLoggerResult) {
     super("msdyn_PowerAutomateLogger");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_PowerAutomateLoggerResponse {
-    return new msdyn_PowerAutomateLoggerResponse(
-      responseObject<msdyn_PowerAutomateLoggerResponseData>(data)
-    );
+    return new msdyn_PowerAutomateLoggerResponse(data as msdyn_PowerAutomateLoggerResult);
   }
 }

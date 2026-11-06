@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from DeleteRecordChangeHistory action
+ * Response from the DeleteRecordChangeHistory action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface DeleteRecordChangeHistoryResponse {
+  "@odata.context"?: string;
   DeletedEntriesCount: number;
 }
 
@@ -44,8 +47,7 @@ export class DeleteRecordChangeHistoryAction implements Executable<DeleteRecordC
   }
 
   async parseResponse(response: Response): Promise<DeleteRecordChangeHistoryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DeleteRecordChangeHistoryResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as DeleteRecordChangeHistoryResponse;
   }
 }

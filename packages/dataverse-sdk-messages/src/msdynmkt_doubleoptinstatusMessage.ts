@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_doubleoptinstatusResponse as msdynmkt_doubleoptinstatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_doubleoptinstatus message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdynmkt_doubleoptinstatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_doubleoptinstatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdynmkt_doubleoptinstatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_doubleoptinstatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_doubleoptinstatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_doubleoptinstatusResult {
+  "@odata.context"?: string;
+  DOI_Job_Status_Response: string;
+}
+
+/**
  * msdynmkt_doubleoptinstatus response message
+ *
+ * `result` is the value the msdynmkt_doubleoptinstatus action returns (see {@link msdynmkt_doubleoptinstatusResult}).
  */
 export class msdynmkt_doubleoptinstatusResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_doubleoptinstatusResponseData) {
+  constructor(public result: msdynmkt_doubleoptinstatusResult) {
     super("msdynmkt_doubleoptinstatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_doubleoptinstatusResponse {
-    return new msdynmkt_doubleoptinstatusResponse(
-      responseObject<msdynmkt_doubleoptinstatusResponseData>(data)
-    );
+    return new msdynmkt_doubleoptinstatusResponse(data as msdynmkt_doubleoptinstatusResult);
   }
 }

@@ -3,15 +3,17 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "./types/EntityReference.js";
 
 /**
- * Response from IncrementKnowledgeArticleViewCount function
+ * Response from the IncrementKnowledgeArticleViewCount function.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface IncrementKnowledgeArticleViewCountResponse {
+export type IncrementKnowledgeArticleViewCountResponse = {
   "@odata.context"?: string;
   "@odata.etag"?: string;
+  "@odata.type"?: string;
   [column: string]: unknown;
-}
+} | null;
 
 /**
  * Parameters of the IncrementKnowledgeArticleViewCount function, by their CSDL names. A parameter the CSDL declares
@@ -71,8 +73,9 @@ export class IncrementKnowledgeArticleViewCountFunction implements Executable<In
   }
 
   async parseResponse(response: Response): Promise<IncrementKnowledgeArticleViewCountResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as IncrementKnowledgeArticleViewCountResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as IncrementKnowledgeArticleViewCountResponse;
   }
 }

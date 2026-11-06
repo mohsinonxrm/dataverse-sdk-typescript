@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunityclose } from "./types/index.js";
 
 /**
- * Response from WinOpportunity action
+ * Response from the WinOpportunity action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface WinOpportunityResponse {
-  // No content returned
-}
+export type WinOpportunityResponse = void;
 
 /**
  * Parameters of the WinOpportunity action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class WinOpportunityAction implements Executable<WinOpportunityResponse> 
     };
   }
 
-  async parseResponse(response: Response): Promise<WinOpportunityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as WinOpportunityResponse;
-    return (await response.json()) as WinOpportunityResponse;
+  parseResponse(_response: Response): Promise<WinOpportunityResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

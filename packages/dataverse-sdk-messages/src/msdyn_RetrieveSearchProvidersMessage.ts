@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveSearchProvidersResponse as msdyn_RetrieveSearchProvidersResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveSearchProviders message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_RetrieveSearchProvidersRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveSearchProvidersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RetrieveSearchProvidersResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveSearchProvidersResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveSearchProviders action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveSearchProvidersResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_RetrieveSearchProviders response message
+ *
+ * `result` is the value the msdyn_RetrieveSearchProviders action returns (see {@link msdyn_RetrieveSearchProvidersResult}).
  */
 export class msdyn_RetrieveSearchProvidersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveSearchProvidersResponseData) {
+  constructor(public result: msdyn_RetrieveSearchProvidersResult) {
     super("msdyn_RetrieveSearchProviders");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveSearchProvidersResponse {
-    return new msdyn_RetrieveSearchProvidersResponse(
-      responseObject<msdyn_RetrieveSearchProvidersResponseData>(data)
-    );
+    return new msdyn_RetrieveSearchProvidersResponse(data as msdyn_RetrieveSearchProvidersResult);
   }
 }

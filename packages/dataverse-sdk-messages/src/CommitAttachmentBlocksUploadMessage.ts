@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { CommitAttachmentBlocksUploadResponse as CommitAttachmentBlocksUploadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CommitAttachmentBlocksUpload message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,34 @@ export class CommitAttachmentBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<CommitAttachmentBlocksUploadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CommitAttachmentBlocksUploadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CommitAttachmentBlocksUploadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CommitAttachmentBlocksUpload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CommitAttachmentBlocksUploadResult {
+  "@odata.context"?: string;
+  ActivityMimeAttachmentId: string;
+  FileSizeInBytes: number;
+}
+
+/**
  * CommitAttachmentBlocksUpload response message
+ *
+ * `result` is the value the CommitAttachmentBlocksUpload action returns (see {@link CommitAttachmentBlocksUploadResult}).
  */
 export class CommitAttachmentBlocksUploadResponse extends OrganizationResponse {
-  constructor(public result: CommitAttachmentBlocksUploadResponseData) {
+  constructor(public result: CommitAttachmentBlocksUploadResult) {
     super("CommitAttachmentBlocksUpload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CommitAttachmentBlocksUploadResponse {
-    return new CommitAttachmentBlocksUploadResponse(
-      responseObject<CommitAttachmentBlocksUploadResponseData>(data)
-    );
+    return new CommitAttachmentBlocksUploadResponse(data as CommitAttachmentBlocksUploadResult);
   }
 }

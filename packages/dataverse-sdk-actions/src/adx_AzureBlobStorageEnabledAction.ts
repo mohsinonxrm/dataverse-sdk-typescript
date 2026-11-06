@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from adx_AzureBlobStorageEnabled action
+ * Response from the adx_AzureBlobStorageEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface adx_AzureBlobStorageEnabledResponse {
+  "@odata.context"?: string;
   Enabled: boolean;
 }
 
@@ -26,8 +29,7 @@ export class adx_AzureBlobStorageEnabledAction implements Executable<adx_AzureBl
   }
 
   async parseResponse(response: Response): Promise<adx_AzureBlobStorageEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as adx_AzureBlobStorageEnabledResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as adx_AzureBlobStorageEnabledResponse;
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_D365ChannelsNotification action
+ * Response from the msdyn_D365ChannelsNotification action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_D365ChannelsNotificationResponse {
+  "@odata.context"?: string;
   responseMessage: string;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_D365ChannelsNotificationAction implements Executable<msdyn_D3
   }
 
   async parseResponse(response: Response): Promise<msdyn_D365ChannelsNotificationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_D365ChannelsNotificationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_D365ChannelsNotificationResponse;
   }
 }

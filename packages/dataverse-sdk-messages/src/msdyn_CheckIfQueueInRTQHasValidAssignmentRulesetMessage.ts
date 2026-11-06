@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse as msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponseData } from "./types/index.js";
 
 /**
  * msdyn_CheckIfQueueInRTQHasValidAssignmentRuleset request message
@@ -31,9 +29,7 @@ export class msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetRequest
 }
 
 /**
+ * Response from the msdyn_CheckIfQueueInRTQHasValidAssignmentRuleset action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfQueueInRTQHasValidAssignmentRuleset response message
+ *
+ * `result` is the value the msdyn_CheckIfQueueInRTQHasValidAssignmentRuleset action returns (see {@link msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResult}).
  */
 export class msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponseData) {
+  constructor(public result: msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResult) {
     super("msdyn_CheckIfQueueInRTQHasValidAssignmentRuleset");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse {
     return new msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse(
-      responseObject<msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponseData>(data)
+      data as msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResult
     );
   }
 }

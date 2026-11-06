@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from PvaAuthorize action
+ * Response from the PvaAuthorize action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PvaAuthorizeResponse {
-  // No content returned
-}
+export type PvaAuthorizeResponse = void;
 
 /**
  * Parameters of the PvaAuthorize action, by their CSDL names. A parameter the CSDL declares
@@ -52,9 +52,8 @@ export class PvaAuthorizeAction implements Executable<PvaAuthorizeResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaAuthorizeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PvaAuthorizeResponse;
-    return (await response.json()) as PvaAuthorizeResponse;
+  parseResponse(_response: Response): Promise<PvaAuthorizeResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

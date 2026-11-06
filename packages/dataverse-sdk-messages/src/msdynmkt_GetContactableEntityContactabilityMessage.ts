@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_GetContactableEntityContactabilityResponse as msdynmkt_GetContactableEntityContactabilityResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_GetContactableEntityContactability message, by their CSDL names. A parameter the CSDL declares
@@ -55,24 +53,38 @@ export class msdynmkt_GetContactableEntityContactabilityRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_GetContactableEntityContactabilityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_GetContactableEntityContactabilityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_GetContactableEntityContactabilityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_GetContactableEntityContactability action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_GetContactableEntityContactabilityResult {
+  "@odata.context"?: string;
+  ContactPointsFound: number;
+  ContactabilityResult: string;
+  SendablePurposeCount: number;
+  SendableTopicCount: number;
+}
+
+/**
  * msdynmkt_GetContactableEntityContactability response message
+ *
+ * `result` is the value the msdynmkt_GetContactableEntityContactability action returns (see {@link msdynmkt_GetContactableEntityContactabilityResult}).
  */
 export class msdynmkt_GetContactableEntityContactabilityResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_GetContactableEntityContactabilityResponseData) {
+  constructor(public result: msdynmkt_GetContactableEntityContactabilityResult) {
     super("msdynmkt_GetContactableEntityContactability");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_GetContactableEntityContactabilityResponse {
     return new msdynmkt_GetContactableEntityContactabilityResponse(
-      responseObject<msdynmkt_GetContactableEntityContactabilityResponseData>(data)
+      data as msdynmkt_GetContactableEntityContactabilityResult
     );
   }
 }

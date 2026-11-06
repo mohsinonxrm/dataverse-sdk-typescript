@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SaveAgentContentCustomActionResponse as msdyn_SaveAgentContentCustomActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SaveAgentContentCustomAction message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,38 @@ export class msdyn_SaveAgentContentCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SaveAgentContentCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SaveAgentContentCustomActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SaveAgentContentCustomActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SaveAgentContentCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SaveAgentContentCustomActionResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+  Response: string;
+  StatusCode: number;
+}
+
+/**
  * msdyn_SaveAgentContentCustomAction response message
+ *
+ * `result` is the value the msdyn_SaveAgentContentCustomAction action returns (see {@link msdyn_SaveAgentContentCustomActionResult}).
  */
 export class msdyn_SaveAgentContentCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SaveAgentContentCustomActionResponseData) {
+  constructor(public result: msdyn_SaveAgentContentCustomActionResult) {
     super("msdyn_SaveAgentContentCustomAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SaveAgentContentCustomActionResponse {
     return new msdyn_SaveAgentContentCustomActionResponse(
-      responseObject<msdyn_SaveAgentContentCustomActionResponseData>(data)
+      data as msdyn_SaveAgentContentCustomActionResult
     );
   }
 }

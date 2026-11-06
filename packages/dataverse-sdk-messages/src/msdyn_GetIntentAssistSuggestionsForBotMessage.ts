@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetIntentAssistSuggestionsForBotResponse as msdyn_GetIntentAssistSuggestionsForBotResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetIntentAssistSuggestionsForBot message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_GetIntentAssistSuggestionsForBotRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetIntentAssistSuggestionsForBotResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetIntentAssistSuggestionsForBotResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetIntentAssistSuggestionsForBotResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetIntentAssistSuggestionsForBot action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetIntentAssistSuggestionsForBotResult {
+  "@odata.context"?: string;
+  IntentAssistForBotResponse: string;
+}
+
+/**
  * msdyn_GetIntentAssistSuggestionsForBot response message
+ *
+ * `result` is the value the msdyn_GetIntentAssistSuggestionsForBot action returns (see {@link msdyn_GetIntentAssistSuggestionsForBotResult}).
  */
 export class msdyn_GetIntentAssistSuggestionsForBotResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetIntentAssistSuggestionsForBotResponseData) {
+  constructor(public result: msdyn_GetIntentAssistSuggestionsForBotResult) {
     super("msdyn_GetIntentAssistSuggestionsForBot");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetIntentAssistSuggestionsForBotResponse {
     return new msdyn_GetIntentAssistSuggestionsForBotResponse(
-      responseObject<msdyn_GetIntentAssistSuggestionsForBotResponseData>(data)
+      data as msdyn_GetIntentAssistSuggestionsForBotResult
     );
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_OpportunityResearchResultUserActionResponse as msdyn_OpportunityResearchResultUserActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_OpportunityResearchResultUserAction message, by their CSDL names. A parameter the CSDL declares
@@ -57,24 +55,36 @@ export class msdyn_OpportunityResearchResultUserActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_OpportunityResearchResultUserActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_OpportunityResearchResultUserActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_OpportunityResearchResultUserActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_OpportunityResearchResultUserAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_OpportunityResearchResultUserActionResult {
+  "@odata.context"?: string;
+  Success: boolean;
+  Timestamp: string;
+}
+
+/**
  * msdyn_OpportunityResearchResultUserAction response message
+ *
+ * `result` is the value the msdyn_OpportunityResearchResultUserAction action returns (see {@link msdyn_OpportunityResearchResultUserActionResult}).
  */
 export class msdyn_OpportunityResearchResultUserActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OpportunityResearchResultUserActionResponseData) {
+  constructor(public result: msdyn_OpportunityResearchResultUserActionResult) {
     super("msdyn_OpportunityResearchResultUserAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_OpportunityResearchResultUserActionResponse {
     return new msdyn_OpportunityResearchResultUserActionResponse(
-      responseObject<msdyn_OpportunityResearchResultUserActionResponseData>(data)
+      data as msdyn_OpportunityResearchResultUserActionResult
     );
   }
 }

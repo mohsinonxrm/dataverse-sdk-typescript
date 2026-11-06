@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EmptyRecycleBinResponse as EmptyRecycleBinResponseData } from "./types/index.js";
 
 /**
  * EmptyRecycleBin request message
@@ -29,21 +27,33 @@ export class EmptyRecycleBinRequest
   }
 
   async parseResponse(response: Response): Promise<EmptyRecycleBinResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return EmptyRecycleBinResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return EmptyRecycleBinResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the EmptyRecycleBin action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface EmptyRecycleBinResult {
+  "@odata.context"?: string;
+  DeletedCount: number;
+}
+
+/**
  * EmptyRecycleBin response message
+ *
+ * `result` is the value the EmptyRecycleBin action returns (see {@link EmptyRecycleBinResult}).
  */
 export class EmptyRecycleBinResponse extends OrganizationResponse {
-  constructor(public result: EmptyRecycleBinResponseData) {
+  constructor(public result: EmptyRecycleBinResult) {
     super("EmptyRecycleBin");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): EmptyRecycleBinResponse {
-    return new EmptyRecycleBinResponse(responseObject<EmptyRecycleBinResponseData>(data));
+    return new EmptyRecycleBinResponse(data as EmptyRecycleBinResult);
   }
 }

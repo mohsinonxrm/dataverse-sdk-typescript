@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_EvaluateConversationResponse as msdyn_EvaluateConversationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_EvaluateConversation message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,34 @@ export class msdyn_EvaluateConversationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_EvaluateConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_EvaluateConversationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_EvaluateConversationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_EvaluateConversation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_EvaluateConversationResult {
+  "@odata.context"?: string;
+  EnrichedEvaluationInsight: string;
+  Status: string;
+}
+
+/**
  * msdyn_EvaluateConversation response message
+ *
+ * `result` is the value the msdyn_EvaluateConversation action returns (see {@link msdyn_EvaluateConversationResult}).
  */
 export class msdyn_EvaluateConversationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EvaluateConversationResponseData) {
+  constructor(public result: msdyn_EvaluateConversationResult) {
     super("msdyn_EvaluateConversation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_EvaluateConversationResponse {
-    return new msdyn_EvaluateConversationResponse(
-      responseObject<msdyn_EvaluateConversationResponseData>(data)
-    );
+    return new msdyn_EvaluateConversationResponse(data as msdyn_EvaluateConversationResult);
   }
 }

@@ -44,9 +44,9 @@ export class msdyn_applyworktemplateforresourcesRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_applyworktemplateforresourcesResponse> {
+  parseResponse(_response: Response): Promise<msdyn_applyworktemplateforresourcesResponse> {
     // No return value (204 No Content)
-    return new msdyn_applyworktemplateforresourcesResponse();
+    return Promise.resolve(new msdyn_applyworktemplateforresourcesResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_applyworktemplateforresourcesResponse extends OrganizationRes
     super("msdyn_applyworktemplateforresources");
   }
 
-  static fromResponse(_data: unknown): msdyn_applyworktemplateforresourcesResponse {
+  static fromResponse(_data?: unknown): msdyn_applyworktemplateforresourcesResponse {
     return new msdyn_applyworktemplateforresourcesResponse();
   }
 }

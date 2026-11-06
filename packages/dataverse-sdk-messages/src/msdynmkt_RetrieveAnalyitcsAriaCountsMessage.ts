@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_RetrieveAnalyitcsAriaCountsResponse as msdynmkt_RetrieveAnalyitcsAriaCountsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_RetrieveAnalyitcsAriaCounts message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,37 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_RetrieveAnalyitcsAriaCountsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_RetrieveAnalyitcsAriaCountsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_RetrieveAnalyitcsAriaCountsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdynmkt_RetrieveAnalyitcsAriaCounts action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_RetrieveAnalyitcsAriaCountsResult {
+  "@odata.context"?: string;
+  msdynmkt_apiresponsedata: string;
+  msdynmkt_error: string;
+  msdynmkt_resultcode: number;
+}
+
+/**
  * msdynmkt_RetrieveAnalyitcsAriaCounts response message
+ *
+ * `result` is the value the msdynmkt_RetrieveAnalyitcsAriaCounts action returns (see {@link msdynmkt_RetrieveAnalyitcsAriaCountsResult}).
  */
 export class msdynmkt_RetrieveAnalyitcsAriaCountsResponse extends OrganizationResponse {
-  constructor(public result: msdynmkt_RetrieveAnalyitcsAriaCountsResponseData) {
+  constructor(public result: msdynmkt_RetrieveAnalyitcsAriaCountsResult) {
     super("msdynmkt_RetrieveAnalyitcsAriaCounts");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdynmkt_RetrieveAnalyitcsAriaCountsResponse {
     return new msdynmkt_RetrieveAnalyitcsAriaCountsResponse(
-      responseObject<msdynmkt_RetrieveAnalyitcsAriaCountsResponseData>(data)
+      data as msdynmkt_RetrieveAnalyitcsAriaCountsResult
     );
   }
 }

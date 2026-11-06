@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_FetchKPIValues action
+ * Response from the msdyn_FetchKPIValues action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_FetchKPIValuesResponse {
+  "@odata.context"?: string;
   ErrorList: string;
   KPIValues: string;
   LastModifiedOn: string;
@@ -50,8 +53,7 @@ export class msdyn_FetchKPIValuesAction implements Executable<msdyn_FetchKPIValu
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchKPIValuesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_FetchKPIValuesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_FetchKPIValuesResponse;
   }
 }

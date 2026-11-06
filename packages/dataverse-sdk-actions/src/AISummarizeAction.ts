@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AISummarize action
+ * Response from the AISummarize action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface AISummarizeResponse {
+  "@odata.context"?: string;
   SummarizedText: string;
 }
 
@@ -42,8 +45,7 @@ export class AISummarizeAction implements Executable<AISummarizeResponse> {
   }
 
   async parseResponse(response: Response): Promise<AISummarizeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AISummarizeResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as AISummarizeResponse;
   }
 }

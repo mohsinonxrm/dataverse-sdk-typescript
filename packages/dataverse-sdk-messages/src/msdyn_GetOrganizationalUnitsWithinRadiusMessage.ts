@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_GetOrganizationalUnitsWithinRadiusResponse as msdyn_GetOrganizationalUnitsWithinRadiusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetOrganizationalUnitsWithinRadius message, by their CSDL names. A parameter the CSDL declares
@@ -61,24 +59,36 @@ export class msdyn_GetOrganizationalUnitsWithinRadiusRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetOrganizationalUnitsWithinRadiusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetOrganizationalUnitsWithinRadiusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetOrganizationalUnitsWithinRadiusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetOrganizationalUnitsWithinRadius action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetOrganizationalUnitsWithinRadiusResult {
+  "@odata.context"?: string;
+  DistanceUnit: number;
+  ExceptionMessage: string;
+}
+
+/**
  * msdyn_GetOrganizationalUnitsWithinRadius response message
+ *
+ * `result` is the value the msdyn_GetOrganizationalUnitsWithinRadius action returns (see {@link msdyn_GetOrganizationalUnitsWithinRadiusResult}).
  */
 export class msdyn_GetOrganizationalUnitsWithinRadiusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetOrganizationalUnitsWithinRadiusResponseData) {
+  constructor(public result: msdyn_GetOrganizationalUnitsWithinRadiusResult) {
     super("msdyn_GetOrganizationalUnitsWithinRadius");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetOrganizationalUnitsWithinRadiusResponse {
     return new msdyn_GetOrganizationalUnitsWithinRadiusResponse(
-      responseObject<msdyn_GetOrganizationalUnitsWithinRadiusResponseData>(data)
+      data as msdyn_GetOrganizationalUnitsWithinRadiusResult
     );
   }
 }

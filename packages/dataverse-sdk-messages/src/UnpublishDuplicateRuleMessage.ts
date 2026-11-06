@@ -42,9 +42,9 @@ export class UnpublishDuplicateRuleRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UnpublishDuplicateRuleResponse> {
+  parseResponse(_response: Response): Promise<UnpublishDuplicateRuleResponse> {
     // No return value (204 No Content)
-    return new UnpublishDuplicateRuleResponse();
+    return Promise.resolve(new UnpublishDuplicateRuleResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class UnpublishDuplicateRuleResponse extends OrganizationResponse {
     super("UnpublishDuplicateRule");
   }
 
-  static fromResponse(_data: unknown): UnpublishDuplicateRuleResponse {
+  static fromResponse(_data?: unknown): UnpublishDuplicateRuleResponse {
     return new UnpublishDuplicateRuleResponse();
   }
 }

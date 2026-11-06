@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetQEAFabricConfigurationResponse as msdyn_GetQEAFabricConfigurationResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetQEAFabricConfiguration request message
@@ -29,23 +27,35 @@ export class msdyn_GetQEAFabricConfigurationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetQEAFabricConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetQEAFabricConfigurationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetQEAFabricConfigurationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetQEAFabricConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetQEAFabricConfigurationResult {
+  "@odata.context"?: string;
+  Configuration: string;
+}
+
+/**
  * msdyn_GetQEAFabricConfiguration response message
+ *
+ * `result` is the value the msdyn_GetQEAFabricConfiguration action returns (see {@link msdyn_GetQEAFabricConfigurationResult}).
  */
 export class msdyn_GetQEAFabricConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetQEAFabricConfigurationResponseData) {
+  constructor(public result: msdyn_GetQEAFabricConfigurationResult) {
     super("msdyn_GetQEAFabricConfiguration");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetQEAFabricConfigurationResponse {
     return new msdyn_GetQEAFabricConfigurationResponse(
-      responseObject<msdyn_GetQEAFabricConfigurationResponseData>(data)
+      data as msdyn_GetQEAFabricConfigurationResult
     );
   }
 }

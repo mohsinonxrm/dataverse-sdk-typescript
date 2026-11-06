@@ -56,9 +56,9 @@ export class CCaaS_ExternalCallRejectRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_ExternalCallRejectResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_ExternalCallRejectResponse> {
     // No return value (204 No Content)
-    return new CCaaS_ExternalCallRejectResponse();
+    return Promise.resolve(new CCaaS_ExternalCallRejectResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class CCaaS_ExternalCallRejectResponse extends OrganizationResponse {
     super("CCaaS_ExternalCallReject");
   }
 
-  static fromResponse(_data: unknown): CCaaS_ExternalCallRejectResponse {
+  static fromResponse(_data?: unknown): CCaaS_ExternalCallRejectResponse {
     return new CCaaS_ExternalCallRejectResponse();
   }
 }

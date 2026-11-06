@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetOrganizationProvisioningStatusResponse as msdyn_GetOrganizationProvisioningStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetOrganizationProvisioningStatus request message
@@ -31,24 +29,35 @@ export class msdyn_GetOrganizationProvisioningStatusRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetOrganizationProvisioningStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetOrganizationProvisioningStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetOrganizationProvisioningStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetOrganizationProvisioningStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetOrganizationProvisioningStatusResult {
+  "@odata.context"?: string;
+  OrgProvisioningStatus: string;
+}
+
+/**
  * msdyn_GetOrganizationProvisioningStatus response message
+ *
+ * `result` is the value the msdyn_GetOrganizationProvisioningStatus action returns (see {@link msdyn_GetOrganizationProvisioningStatusResult}).
  */
 export class msdyn_GetOrganizationProvisioningStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetOrganizationProvisioningStatusResponseData) {
+  constructor(public result: msdyn_GetOrganizationProvisioningStatusResult) {
     super("msdyn_GetOrganizationProvisioningStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetOrganizationProvisioningStatusResponse {
     return new msdyn_GetOrganizationProvisioningStatusResponse(
-      responseObject<msdyn_GetOrganizationProvisioningStatusResponseData>(data)
+      data as msdyn_GetOrganizationProvisioningStatusResult
     );
   }
 }

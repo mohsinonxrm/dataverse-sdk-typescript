@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_ocflaggedspam } from "./types/index.js";
 
 /**
- * Response from msdyn_SetAutoBlockedFlag action
+ * Response from the msdyn_SetAutoBlockedFlag action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SetAutoBlockedFlagResponse {
-  // No content returned
-}
+export type msdyn_SetAutoBlockedFlagResponse = void;
 
 /**
  * Parameters of the msdyn_SetAutoBlockedFlag action, by their CSDL names. A parameter the CSDL declares
@@ -44,9 +44,8 @@ export class msdyn_SetAutoBlockedFlagAction implements Executable<msdyn_SetAutoB
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SetAutoBlockedFlagResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SetAutoBlockedFlagResponse;
-    return (await response.json()) as msdyn_SetAutoBlockedFlagResponse;
+  parseResponse(_response: Response): Promise<msdyn_SetAutoBlockedFlagResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

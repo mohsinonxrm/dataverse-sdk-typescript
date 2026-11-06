@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from NextWeek function
+ * Response from the NextWeek function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface NextWeekResponse {
-  value: boolean;
-}
+export type NextWeekResponse = boolean;
 
 /**
  * Parameters of the NextWeek function, by their CSDL names. A parameter the CSDL declares
@@ -48,8 +48,7 @@ export class NextWeekFunction implements Executable<NextWeekResponse> {
   }
 
   async parseResponse(response: Response): Promise<NextWeekResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as NextWeekResponse;
-    return (await response.json()) as NextWeekResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: NextWeekResponse }).value;
   }
 }

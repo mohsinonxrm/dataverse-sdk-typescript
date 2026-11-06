@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from cascadeAsync_SuccessAPI action
+ * Response from the cascadeAsync_SuccessAPI action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface cascadeAsync_SuccessAPIResponse {
-  // No content returned
-}
+export type cascadeAsync_SuccessAPIResponse = void;
 
 /**
  * Parameters of the cascadeAsync_SuccessAPI action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class cascadeAsync_SuccessAPIAction implements Executable<cascadeAsync_Su
     };
   }
 
-  async parseResponse(response: Response): Promise<cascadeAsync_SuccessAPIResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as cascadeAsync_SuccessAPIResponse;
-    return (await response.json()) as cascadeAsync_SuccessAPIResponse;
+  parseResponse(_response: Response): Promise<cascadeAsync_SuccessAPIResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

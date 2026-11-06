@@ -2,11 +2,14 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { resourcegroup } from "./types/index.js";
 
 /**
- * Response from RetrieveSubGroupsResourceGroup function
+ * Response from the RetrieveSubGroupsResourceGroup function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveSubGroupsResourceGroupResponse {
-  value: resourcegroup[];
-}
+export type RetrieveSubGroupsResourceGroupResponse = Array<
+  resourcegroup & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * RetrieveSubGroupsResourceGroup function
@@ -33,8 +36,9 @@ export class RetrieveSubGroupsResourceGroupFunction implements Executable<Retrie
   }
 
   async parseResponse(response: Response): Promise<RetrieveSubGroupsResourceGroupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveSubGroupsResourceGroupResponse;
-    return (await response.json()) as RetrieveSubGroupsResourceGroupResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveSubGroupsResourceGroupResponse }).value;
   }
 }

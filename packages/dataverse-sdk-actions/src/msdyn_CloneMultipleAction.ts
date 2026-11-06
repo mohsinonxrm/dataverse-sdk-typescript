@@ -5,9 +5,12 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_configuration } from "./types/index.js";
 
 /**
- * Response from msdyn_CloneMultiple action
+ * Response from the msdyn_CloneMultiple action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CloneMultipleResponse {
+  "@odata.context"?: string;
   CopiedEntities: string;
 }
 
@@ -53,8 +56,7 @@ export class msdyn_CloneMultipleAction implements Executable<msdyn_CloneMultiple
   }
 
   async parseResponse(response: Response): Promise<msdyn_CloneMultipleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CloneMultipleResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CloneMultipleResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { SendEmailResponse as SendEmailResponseData } from "./types/index.js";
 
 /**
  * Parameters of the SendEmail message, by their CSDL names. A parameter the CSDL declares
@@ -50,21 +48,33 @@ export class SendEmailRequest extends OrganizationRequest implements Executable<
   }
 
   async parseResponse(response: Response): Promise<SendEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return SendEmailResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return SendEmailResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the SendEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface SendEmailResult {
+  "@odata.context"?: string;
+  Subject: string;
+}
+
+/**
  * SendEmail response message
+ *
+ * `result` is the value the SendEmail action returns (see {@link SendEmailResult}).
  */
 export class SendEmailResponse extends OrganizationResponse {
-  constructor(public result: SendEmailResponseData) {
+  constructor(public result: SendEmailResult) {
     super("SendEmail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): SendEmailResponse {
-    return new SendEmailResponse(responseObject<SendEmailResponseData>(data));
+    return new SendEmailResponse(data as SendEmailResult);
   }
 }

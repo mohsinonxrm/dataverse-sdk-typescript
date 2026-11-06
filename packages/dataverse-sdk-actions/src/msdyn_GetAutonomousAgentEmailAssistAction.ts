@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetAutonomousAgentEmailAssist action
+ * Response from the msdyn_GetAutonomousAgentEmailAssist action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetAutonomousAgentEmailAssistResponse {
+  "@odata.context"?: string;
   emailContent: string;
   emailSubject: string;
   isGovernanceAgentGuardrailViolated: boolean;
@@ -48,8 +51,7 @@ export class msdyn_GetAutonomousAgentEmailAssistAction implements Executable<msd
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAutonomousAgentEmailAssistResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetAutonomousAgentEmailAssistResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetAutonomousAgentEmailAssistResponse;
   }
 }

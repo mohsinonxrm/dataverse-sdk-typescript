@@ -1,11 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type {
-  InsertStatusValueResponse as InsertStatusValueResponseData,
-  Label,
-} from "./types/index.js";
+import type { Label } from "./types/index.js";
 
 /**
  * Parameters of the InsertStatusValue message, by their CSDL names. A parameter the CSDL declares
@@ -64,21 +60,33 @@ export class InsertStatusValueRequest
   }
 
   async parseResponse(response: Response): Promise<InsertStatusValueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return InsertStatusValueResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return InsertStatusValueResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the InsertStatusValue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface InsertStatusValueResult {
+  "@odata.context"?: string;
+  NewOptionValue: number;
+}
+
+/**
  * InsertStatusValue response message
+ *
+ * `result` is the value the InsertStatusValue action returns (see {@link InsertStatusValueResult}).
  */
 export class InsertStatusValueResponse extends OrganizationResponse {
-  constructor(public result: InsertStatusValueResponseData) {
+  constructor(public result: InsertStatusValueResult) {
     super("InsertStatusValue");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): InsertStatusValueResponse {
-    return new InsertStatusValueResponse(responseObject<InsertStatusValueResponseData>(data));
+    return new InsertStatusValueResponse(data as InsertStatusValueResult);
   }
 }

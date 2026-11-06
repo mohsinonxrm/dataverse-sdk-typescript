@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckForConditionXmlFormatResponse as msdyn_CheckForConditionXmlFormatResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckForConditionXmlFormat message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,39 @@ export class msdyn_CheckForConditionXmlFormatRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForConditionXmlFormatResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CheckForConditionXmlFormatResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckForConditionXmlFormatResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckForConditionXmlFormat action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckForConditionXmlFormatResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnLevel: number;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckForConditionXmlFormat response message
+ *
+ * `result` is the value the msdyn_CheckForConditionXmlFormat action returns (see {@link msdyn_CheckForConditionXmlFormatResult}).
  */
 export class msdyn_CheckForConditionXmlFormatResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForConditionXmlFormatResponseData) {
+  constructor(public result: msdyn_CheckForConditionXmlFormatResult) {
     super("msdyn_CheckForConditionXmlFormat");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckForConditionXmlFormatResponse {
     return new msdyn_CheckForConditionXmlFormatResponse(
-      responseObject<msdyn_CheckForConditionXmlFormatResponseData>(data)
+      data as msdyn_CheckForConditionXmlFormatResult
     );
   }
 }

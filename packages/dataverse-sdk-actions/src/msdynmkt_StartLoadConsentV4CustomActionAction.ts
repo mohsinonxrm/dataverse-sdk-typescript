@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_StartLoadConsentV4CustomAction action
+ * Response from the msdynmkt_StartLoadConsentV4CustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_StartLoadConsentV4CustomActionResponse {
+  "@odata.context"?: string;
   ErrorCodes: string;
   ErrorMetadata: string;
 }
@@ -69,8 +72,7 @@ export class msdynmkt_StartLoadConsentV4CustomActionAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_StartLoadConsentV4CustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_StartLoadConsentV4CustomActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_StartLoadConsentV4CustomActionResponse;
   }
 }

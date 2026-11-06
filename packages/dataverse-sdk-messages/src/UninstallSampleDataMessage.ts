@@ -26,9 +26,9 @@ export class UninstallSampleDataRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UninstallSampleDataResponse> {
+  parseResponse(_response: Response): Promise<UninstallSampleDataResponse> {
     // No return value (204 No Content)
-    return new UninstallSampleDataResponse();
+    return Promise.resolve(new UninstallSampleDataResponse());
   }
 }
 
@@ -40,7 +40,7 @@ export class UninstallSampleDataResponse extends OrganizationResponse {
     super("UninstallSampleData");
   }
 
-  static fromResponse(_data: unknown): UninstallSampleDataResponse {
+  static fromResponse(_data?: unknown): UninstallSampleDataResponse {
     return new UninstallSampleDataResponse();
   }
 }

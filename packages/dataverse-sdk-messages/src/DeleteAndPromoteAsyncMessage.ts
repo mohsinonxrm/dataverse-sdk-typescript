@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { DeleteAndPromoteAsyncResponse as DeleteAndPromoteAsyncResponseData } from "./types/index.js";
 
 /**
  * Parameters of the DeleteAndPromoteAsync message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class DeleteAndPromoteAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<DeleteAndPromoteAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return DeleteAndPromoteAsyncResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return DeleteAndPromoteAsyncResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the DeleteAndPromoteAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface DeleteAndPromoteAsyncResult {
+  "@odata.context"?: string;
+  AsyncOperationId: string;
+}
+
+/**
  * DeleteAndPromoteAsync response message
+ *
+ * `result` is the value the DeleteAndPromoteAsync action returns (see {@link DeleteAndPromoteAsyncResult}).
  */
 export class DeleteAndPromoteAsyncResponse extends OrganizationResponse {
-  constructor(public result: DeleteAndPromoteAsyncResponseData) {
+  constructor(public result: DeleteAndPromoteAsyncResult) {
     super("DeleteAndPromoteAsync");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): DeleteAndPromoteAsyncResponse {
-    return new DeleteAndPromoteAsyncResponse(
-      responseObject<DeleteAndPromoteAsyncResponseData>(data)
-    );
+    return new DeleteAndPromoteAsyncResponse(data as DeleteAndPromoteAsyncResult);
   }
 }

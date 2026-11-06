@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { ColumnSet, quote } from "./types/index.js";
@@ -48,21 +47,34 @@ export class ReviseQuoteRequest
   }
 
   async parseResponse(response: Response): Promise<ReviseQuoteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ReviseQuoteResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return ReviseQuoteResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return ReviseQuoteResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ReviseQuote action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type ReviseQuoteResult =
+  (quote & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
+
+/**
  * ReviseQuote response message
+ *
+ * `result` is the value the ReviseQuote action returns (see {@link ReviseQuoteResult}).
  */
 export class ReviseQuoteResponse extends OrganizationResponse {
-  constructor(public result: quote) {
+  constructor(public result: ReviseQuoteResult) {
     super("ReviseQuote");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ReviseQuoteResponse {
-    return new ReviseQuoteResponse(responseObject<quote>(data));
+    return new ReviseQuoteResponse((data ?? null) as ReviseQuoteResult);
   }
 }

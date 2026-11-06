@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_InsertTrainingRecordsResponse as msdyn_InsertTrainingRecordsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_InsertTrainingRecords message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,34 @@ export class msdyn_InsertTrainingRecordsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InsertTrainingRecordsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_InsertTrainingRecordsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_InsertTrainingRecordsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_InsertTrainingRecords action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_InsertTrainingRecordsResult {
+  "@odata.context"?: string;
+  recordsInserted: number;
+  recordsSkipped: number;
+}
+
+/**
  * msdyn_InsertTrainingRecords response message
+ *
+ * `result` is the value the msdyn_InsertTrainingRecords action returns (see {@link msdyn_InsertTrainingRecordsResult}).
  */
 export class msdyn_InsertTrainingRecordsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InsertTrainingRecordsResponseData) {
+  constructor(public result: msdyn_InsertTrainingRecordsResult) {
     super("msdyn_InsertTrainingRecords");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_InsertTrainingRecordsResponse {
-    return new msdyn_InsertTrainingRecordsResponse(
-      responseObject<msdyn_InsertTrainingRecordsResponseData>(data)
-    );
+    return new msdyn_InsertTrainingRecordsResponse(data as msdyn_InsertTrainingRecordsResult);
   }
 }

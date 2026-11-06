@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetSIFeatureConfigurationResponse as msdyn_GetSIFeatureConfigurationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetSIFeatureConfiguration message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,35 @@ export class msdyn_GetSIFeatureConfigurationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSIFeatureConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSIFeatureConfigurationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSIFeatureConfigurationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSIFeatureConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSIFeatureConfigurationResult {
+  "@odata.context"?: string;
+  FeatureConfiguration: string;
+}
+
+/**
  * msdyn_GetSIFeatureConfiguration response message
+ *
+ * `result` is the value the msdyn_GetSIFeatureConfiguration action returns (see {@link msdyn_GetSIFeatureConfigurationResult}).
  */
 export class msdyn_GetSIFeatureConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSIFeatureConfigurationResponseData) {
+  constructor(public result: msdyn_GetSIFeatureConfigurationResult) {
     super("msdyn_GetSIFeatureConfiguration");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSIFeatureConfigurationResponse {
     return new msdyn_GetSIFeatureConfigurationResponse(
-      responseObject<msdyn_GetSIFeatureConfigurationResponseData>(data)
+      data as msdyn_GetSIFeatureConfigurationResult
     );
   }
 }

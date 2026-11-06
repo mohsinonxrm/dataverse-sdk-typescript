@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ActivateRoutingRule action
+ * Response from the msdyn_ActivateRoutingRule action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ActivateRoutingRuleResponse {
-  // No content returned
-}
+export type msdyn_ActivateRoutingRuleResponse = void;
 
 /**
  * Parameters of the msdyn_ActivateRoutingRule action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_ActivateRoutingRuleAction implements Executable<msdyn_Activat
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ActivateRoutingRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ActivateRoutingRuleResponse;
-    return (await response.json()) as msdyn_ActivateRoutingRuleResponse;
+  parseResponse(_response: Response): Promise<msdyn_ActivateRoutingRuleResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

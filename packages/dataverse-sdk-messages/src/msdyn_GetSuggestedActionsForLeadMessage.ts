@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetSuggestedActionsForLeadResponse as msdyn_GetSuggestedActionsForLeadResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSuggestedActionsForLead request message
@@ -32,23 +30,35 @@ export class msdyn_GetSuggestedActionsForLeadRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSuggestedActionsForLeadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSuggestedActionsForLeadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSuggestedActionsForLeadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSuggestedActionsForLead action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSuggestedActionsForLeadResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_GetSuggestedActionsForLead response message
+ *
+ * `result` is the value the msdyn_GetSuggestedActionsForLead action returns (see {@link msdyn_GetSuggestedActionsForLeadResult}).
  */
 export class msdyn_GetSuggestedActionsForLeadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSuggestedActionsForLeadResponseData) {
+  constructor(public result: msdyn_GetSuggestedActionsForLeadResult) {
     super("msdyn_GetSuggestedActionsForLead");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSuggestedActionsForLeadResponse {
     return new msdyn_GetSuggestedActionsForLeadResponse(
-      responseObject<msdyn_GetSuggestedActionsForLeadResponseData>(data)
+      data as msdyn_GetSuggestedActionsForLeadResult
     );
   }
 }

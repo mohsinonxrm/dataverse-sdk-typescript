@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_EditSequenceResponse as msdyn_EditSequenceResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_EditSequence message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class msdyn_EditSequenceRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_EditSequenceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_EditSequenceResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_EditSequenceResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_EditSequence action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_EditSequenceResult {
+  "@odata.context"?: string;
+  DefinitionSequenceId: string;
+}
+
+/**
  * msdyn_EditSequence response message
+ *
+ * `result` is the value the msdyn_EditSequence action returns (see {@link msdyn_EditSequenceResult}).
  */
 export class msdyn_EditSequenceResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EditSequenceResponseData) {
+  constructor(public result: msdyn_EditSequenceResult) {
     super("msdyn_EditSequence");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_EditSequenceResponse {
-    return new msdyn_EditSequenceResponse(responseObject<msdyn_EditSequenceResponseData>(data));
+    return new msdyn_EditSequenceResponse(data as msdyn_EditSequenceResult);
   }
 }

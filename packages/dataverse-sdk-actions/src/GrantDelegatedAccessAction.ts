@@ -5,11 +5,11 @@ import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { delegatedauthorization } from "./types/index.js";
 
 /**
- * Response from GrantDelegatedAccess action
+ * Response from the GrantDelegatedAccess action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface GrantDelegatedAccessResponse {
-  // No content returned
-}
+export type GrantDelegatedAccessResponse = void;
 
 /**
  * Parameters of the GrantDelegatedAccess action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class GrantDelegatedAccessAction implements Executable<GrantDelegatedAcce
     };
   }
 
-  async parseResponse(response: Response): Promise<GrantDelegatedAccessResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GrantDelegatedAccessResponse;
-    return (await response.json()) as GrantDelegatedAccessResponse;
+  parseResponse(_response: Response): Promise<GrantDelegatedAccessResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

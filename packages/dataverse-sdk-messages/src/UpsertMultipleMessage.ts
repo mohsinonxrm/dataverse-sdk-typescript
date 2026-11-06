@@ -1,8 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { UpsertMultipleResponse as UpsertMultipleResponseData } from "./types/index.js";
+import type { UpsertResponse } from "./types/index.js";
 
 /**
  * Parameters of the UpsertMultiple message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +50,33 @@ export class UpsertMultipleRequest
   }
 
   async parseResponse(response: Response): Promise<UpsertMultipleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return UpsertMultipleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return UpsertMultipleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the UpsertMultiple action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface UpsertMultipleResult {
+  "@odata.context"?: string;
+  Results: UpsertResponse[];
+}
+
+/**
  * UpsertMultiple response message
+ *
+ * `result` is the value the UpsertMultiple action returns (see {@link UpsertMultipleResult}).
  */
 export class UpsertMultipleResponse extends OrganizationResponse {
-  constructor(public result: UpsertMultipleResponseData) {
+  constructor(public result: UpsertMultipleResult) {
     super("UpsertMultiple");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): UpsertMultipleResponse {
-    return new UpsertMultipleResponse(responseObject<UpsertMultipleResponseData>(data));
+    return new UpsertMultipleResponse(data as UpsertMultipleResult);
   }
 }

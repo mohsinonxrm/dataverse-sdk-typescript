@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_IoTGetDeviceEventsResponse as msdyn_IoTGetDeviceEventsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_IoTGetDeviceEvents message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_IoTGetDeviceEventsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTGetDeviceEventsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_IoTGetDeviceEventsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IoTGetDeviceEventsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IoTGetDeviceEvents action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IoTGetDeviceEventsResult {
+  "@odata.context"?: string;
+  EventsData: string;
+}
+
+/**
  * msdyn_IoTGetDeviceEvents response message
+ *
+ * `result` is the value the msdyn_IoTGetDeviceEvents action returns (see {@link msdyn_IoTGetDeviceEventsResult}).
  */
 export class msdyn_IoTGetDeviceEventsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTGetDeviceEventsResponseData) {
+  constructor(public result: msdyn_IoTGetDeviceEventsResult) {
     super("msdyn_IoTGetDeviceEvents");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IoTGetDeviceEventsResponse {
-    return new msdyn_IoTGetDeviceEventsResponse(
-      responseObject<msdyn_IoTGetDeviceEventsResponseData>(data)
-    );
+    return new msdyn_IoTGetDeviceEventsResponse(data as msdyn_IoTGetDeviceEventsResult);
   }
 }

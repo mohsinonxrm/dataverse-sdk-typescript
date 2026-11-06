@@ -48,9 +48,9 @@ export class SetProcessRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SetProcessResponse> {
+  parseResponse(_response: Response): Promise<SetProcessResponse> {
     // No return value (204 No Content)
-    return new SetProcessResponse();
+    return Promise.resolve(new SetProcessResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class SetProcessResponse extends OrganizationResponse {
     super("SetProcess");
   }
 
-  static fromResponse(_data: unknown): SetProcessResponse {
+  static fromResponse(_data?: unknown): SetProcessResponse {
     return new SetProcessResponse();
   }
 }

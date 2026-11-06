@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { CalculateActualValueOpportunityResponse as CalculateActualValueOpportunityResponseData } from "./types/index.js";
 
 /**
  * CalculateActualValueOpportunity request message
@@ -32,23 +30,35 @@ export class CalculateActualValueOpportunityRequest
   }
 
   async parseResponse(response: Response): Promise<CalculateActualValueOpportunityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CalculateActualValueOpportunityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CalculateActualValueOpportunityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CalculateActualValueOpportunity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CalculateActualValueOpportunityResult {
+  "@odata.context"?: string;
+  Value: number;
+}
+
+/**
  * CalculateActualValueOpportunity response message
+ *
+ * `result` is the value the CalculateActualValueOpportunity action returns (see {@link CalculateActualValueOpportunityResult}).
  */
 export class CalculateActualValueOpportunityResponse extends OrganizationResponse {
-  constructor(public result: CalculateActualValueOpportunityResponseData) {
+  constructor(public result: CalculateActualValueOpportunityResult) {
     super("CalculateActualValueOpportunity");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CalculateActualValueOpportunityResponse {
     return new CalculateActualValueOpportunityResponse(
-      responseObject<CalculateActualValueOpportunityResponseData>(data)
+      data as CalculateActualValueOpportunityResult
     );
   }
 }

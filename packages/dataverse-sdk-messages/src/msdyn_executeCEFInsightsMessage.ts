@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_executeCEFInsightsResponse as msdyn_executeCEFInsightsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_executeCEFInsights message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,34 @@ export class msdyn_executeCEFInsightsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_executeCEFInsightsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_executeCEFInsightsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_executeCEFInsightsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_executeCEFInsights action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_executeCEFInsightsResult {
+  "@odata.context"?: string;
+  msdyn_responsePayload: string;
+  msdyn_responseStatus: string;
+}
+
+/**
  * msdyn_executeCEFInsights response message
+ *
+ * `result` is the value the msdyn_executeCEFInsights action returns (see {@link msdyn_executeCEFInsightsResult}).
  */
 export class msdyn_executeCEFInsightsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_executeCEFInsightsResponseData) {
+  constructor(public result: msdyn_executeCEFInsightsResult) {
     super("msdyn_executeCEFInsights");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_executeCEFInsightsResponse {
-    return new msdyn_executeCEFInsightsResponse(
-      responseObject<msdyn_executeCEFInsightsResponseData>(data)
-    );
+    return new msdyn_executeCEFInsightsResponse(data as msdyn_executeCEFInsightsResult);
   }
 }

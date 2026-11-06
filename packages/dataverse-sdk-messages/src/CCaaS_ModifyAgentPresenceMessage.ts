@@ -46,9 +46,9 @@ export class CCaaS_ModifyAgentPresenceRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_ModifyAgentPresenceResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_ModifyAgentPresenceResponse> {
     // No return value (204 No Content)
-    return new CCaaS_ModifyAgentPresenceResponse();
+    return Promise.resolve(new CCaaS_ModifyAgentPresenceResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class CCaaS_ModifyAgentPresenceResponse extends OrganizationResponse {
     super("CCaaS_ModifyAgentPresence");
   }
 
-  static fromResponse(_data: unknown): CCaaS_ModifyAgentPresenceResponse {
+  static fromResponse(_data?: unknown): CCaaS_ModifyAgentPresenceResponse {
     return new CCaaS_ModifyAgentPresenceResponse();
   }
 }

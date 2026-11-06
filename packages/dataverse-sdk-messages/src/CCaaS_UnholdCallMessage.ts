@@ -60,9 +60,9 @@ export class CCaaS_UnholdCallRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_UnholdCallResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_UnholdCallResponse> {
     // No return value (204 No Content)
-    return new CCaaS_UnholdCallResponse();
+    return Promise.resolve(new CCaaS_UnholdCallResponse());
   }
 }
 
@@ -74,7 +74,7 @@ export class CCaaS_UnholdCallResponse extends OrganizationResponse {
     super("CCaaS_UnholdCall");
   }
 
-  static fromResponse(_data: unknown): CCaaS_UnholdCallResponse {
+  static fromResponse(_data?: unknown): CCaaS_UnholdCallResponse {
     return new CCaaS_UnholdCallResponse();
   }
 }

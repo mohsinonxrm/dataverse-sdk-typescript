@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { AITranslateResponse as AITranslateResponseData } from "./types/index.js";
 
 /**
  * Parameters of the AITranslate message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class AITranslateRequest
   }
 
   async parseResponse(response: Response): Promise<AITranslateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AITranslateResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AITranslateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AITranslate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AITranslateResult {
+  "@odata.context"?: string;
+  TranslatedText: string;
+}
+
+/**
  * AITranslate response message
+ *
+ * `result` is the value the AITranslate action returns (see {@link AITranslateResult}).
  */
 export class AITranslateResponse extends OrganizationResponse {
-  constructor(public result: AITranslateResponseData) {
+  constructor(public result: AITranslateResult) {
     super("AITranslate");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AITranslateResponse {
-    return new AITranslateResponse(responseObject<AITranslateResponseData>(data));
+    return new AITranslateResponse(data as AITranslateResult);
   }
 }

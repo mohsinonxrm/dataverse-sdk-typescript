@@ -42,9 +42,9 @@ export class msdyn_DisableBotUserRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_DisableBotUserResponse> {
+  parseResponse(_response: Response): Promise<msdyn_DisableBotUserResponse> {
     // No return value (204 No Content)
-    return new msdyn_DisableBotUserResponse();
+    return Promise.resolve(new msdyn_DisableBotUserResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_DisableBotUserResponse extends OrganizationResponse {
     super("msdyn_DisableBotUser");
   }
 
-  static fromResponse(_data: unknown): msdyn_DisableBotUserResponse {
+  static fromResponse(_data?: unknown): msdyn_DisableBotUserResponse {
     return new msdyn_DisableBotUserResponse();
   }
 }

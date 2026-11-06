@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_GeocodeAddressResponse as msdyn_GeocodeAddressResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GeocodeAddress message, by their CSDL names. A parameter the CSDL declares
@@ -61,21 +59,34 @@ export class msdyn_GeocodeAddressRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GeocodeAddressResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GeocodeAddressResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GeocodeAddressResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GeocodeAddress action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GeocodeAddressResult {
+  "@odata.context"?: string;
+  Latitude: number;
+  Longitude: number;
+}
+
+/**
  * msdyn_GeocodeAddress response message
+ *
+ * `result` is the value the msdyn_GeocodeAddress action returns (see {@link msdyn_GeocodeAddressResult}).
  */
 export class msdyn_GeocodeAddressResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GeocodeAddressResponseData) {
+  constructor(public result: msdyn_GeocodeAddressResult) {
     super("msdyn_GeocodeAddress");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GeocodeAddressResponse {
-    return new msdyn_GeocodeAddressResponse(responseObject<msdyn_GeocodeAddressResponseData>(data));
+    return new msdyn_GeocodeAddressResponse(data as msdyn_GeocodeAddressResult);
   }
 }

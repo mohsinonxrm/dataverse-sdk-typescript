@@ -44,9 +44,9 @@ export class msdyn_CreateSwarmParticipantsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CreateSwarmParticipantsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CreateSwarmParticipantsResponse> {
     // No return value (204 No Content)
-    return new msdyn_CreateSwarmParticipantsResponse();
+    return Promise.resolve(new msdyn_CreateSwarmParticipantsResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_CreateSwarmParticipantsResponse extends OrganizationResponse 
     super("msdyn_CreateSwarmParticipants");
   }
 
-  static fromResponse(_data: unknown): msdyn_CreateSwarmParticipantsResponse {
+  static fromResponse(_data?: unknown): msdyn_CreateSwarmParticipantsResponse {
     return new msdyn_CreateSwarmParticipantsResponse();
   }
 }

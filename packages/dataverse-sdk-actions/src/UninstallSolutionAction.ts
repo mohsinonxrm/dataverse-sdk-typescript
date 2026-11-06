@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UninstallSolution action
+ * Response from the UninstallSolution action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UninstallSolutionResponse {
-  // No content returned
-}
+export type UninstallSolutionResponse = void;
 
 /**
  * Parameters of the UninstallSolution action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class UninstallSolutionAction implements Executable<UninstallSolutionResp
     };
   }
 
-  async parseResponse(response: Response): Promise<UninstallSolutionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UninstallSolutionResponse;
-    return (await response.json()) as UninstallSolutionResponse;
+  parseResponse(_response: Response): Promise<UninstallSolutionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

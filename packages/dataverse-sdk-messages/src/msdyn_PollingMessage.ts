@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_PollingResponse as msdyn_PollingResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_Polling message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,34 @@ export class msdyn_PollingRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_PollingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_PollingResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_PollingResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_Polling action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_PollingResult {
+  "@odata.context"?: string;
+  res: string;
+  response: string;
+}
+
+/**
  * msdyn_Polling response message
+ *
+ * `result` is the value the msdyn_Polling action returns (see {@link msdyn_PollingResult}).
  */
 export class msdyn_PollingResponse extends OrganizationResponse {
-  constructor(public result: msdyn_PollingResponseData) {
+  constructor(public result: msdyn_PollingResult) {
     super("msdyn_Polling");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_PollingResponse {
-    return new msdyn_PollingResponse(responseObject<msdyn_PollingResponseData>(data));
+    return new msdyn_PollingResponse(data as msdyn_PollingResult);
   }
 }

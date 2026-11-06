@@ -1,13 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetCustomActionList action
+ * Response from the msdyn_GetCustomActionList action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface msdyn_GetCustomActionListResponse {
-  value: EntityReference[];
-}
+export type msdyn_GetCustomActionListResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the msdyn_GetCustomActionList action, by their CSDL names. A parameter the CSDL declares
@@ -47,8 +51,9 @@ export class msdyn_GetCustomActionListAction implements Executable<msdyn_GetCust
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCustomActionListResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetCustomActionListResponse;
-    return (await response.json()) as msdyn_GetCustomActionListResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: msdyn_GetCustomActionListResponse }).value;
   }
 }

@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_CopyEventWhatsAppChannelCleanup action
+ * Response from the msdyn_CopyEventWhatsAppChannelCleanup action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CopyEventWhatsAppChannelCleanupResponse {
-  // No content returned
-}
+export type msdyn_CopyEventWhatsAppChannelCleanupResponse = void;
 
 /**
  * msdyn_CopyEventWhatsAppChannelCleanup action
@@ -25,9 +25,8 @@ export class msdyn_CopyEventWhatsAppChannelCleanupAction implements Executable<m
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CopyEventWhatsAppChannelCleanupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CopyEventWhatsAppChannelCleanupResponse;
-    return (await response.json()) as msdyn_CopyEventWhatsAppChannelCleanupResponse;
+  parseResponse(_response: Response): Promise<msdyn_CopyEventWhatsAppChannelCleanupResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

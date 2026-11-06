@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetRequirementDemandDisplayResponse as msdyn_GetRequirementDemandDisplayResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetRequirementDemandDisplay message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,35 @@ export class msdyn_GetRequirementDemandDisplayRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRequirementDemandDisplayResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetRequirementDemandDisplayResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetRequirementDemandDisplayResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetRequirementDemandDisplay action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetRequirementDemandDisplayResult {
+  "@odata.context"?: string;
+  RequirementDemandDisplay: string;
+}
+
+/**
  * msdyn_GetRequirementDemandDisplay response message
+ *
+ * `result` is the value the msdyn_GetRequirementDemandDisplay action returns (see {@link msdyn_GetRequirementDemandDisplayResult}).
  */
 export class msdyn_GetRequirementDemandDisplayResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetRequirementDemandDisplayResponseData) {
+  constructor(public result: msdyn_GetRequirementDemandDisplayResult) {
     super("msdyn_GetRequirementDemandDisplay");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetRequirementDemandDisplayResponse {
     return new msdyn_GetRequirementDemandDisplayResponse(
-      responseObject<msdyn_GetRequirementDemandDisplayResponseData>(data)
+      data as msdyn_GetRequirementDemandDisplayResult
     );
   }
 }

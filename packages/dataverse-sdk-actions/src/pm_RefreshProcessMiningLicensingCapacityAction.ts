@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from pm_RefreshProcessMiningLicensingCapacity action
+ * Response from the pm_RefreshProcessMiningLicensingCapacity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface pm_RefreshProcessMiningLicensingCapacityResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -28,8 +31,7 @@ export class pm_RefreshProcessMiningLicensingCapacityAction implements Executabl
   async parseResponse(
     response: Response
   ): Promise<pm_RefreshProcessMiningLicensingCapacityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as pm_RefreshProcessMiningLicensingCapacityResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as pm_RefreshProcessMiningLicensingCapacityResponse;
   }
 }

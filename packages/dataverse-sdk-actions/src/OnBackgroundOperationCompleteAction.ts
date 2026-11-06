@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from OnBackgroundOperationComplete action
+ * Response from the OnBackgroundOperationComplete action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface OnBackgroundOperationCompleteResponse {
+  "@odata.context"?: string;
   BackgroundOperationStateCode: number;
   BackgroundOperationStatusCode: number;
   OperationName: string;
@@ -50,8 +53,7 @@ export class OnBackgroundOperationCompleteAction implements Executable<OnBackgro
   }
 
   async parseResponse(response: Response): Promise<OnBackgroundOperationCompleteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as OnBackgroundOperationCompleteResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as OnBackgroundOperationCompleteResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckReqWebResourceOnSystemFormResponse as msdyn_CheckReqWebResourceOnSystemFormResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckReqWebResourceOnSystemForm message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,39 @@ export class msdyn_CheckReqWebResourceOnSystemFormRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckReqWebResourceOnSystemFormResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckReqWebResourceOnSystemFormResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckReqWebResourceOnSystemFormResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckReqWebResourceOnSystemForm action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckReqWebResourceOnSystemFormResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckReqWebResourceOnSystemForm response message
+ *
+ * `result` is the value the msdyn_CheckReqWebResourceOnSystemForm action returns (see {@link msdyn_CheckReqWebResourceOnSystemFormResult}).
  */
 export class msdyn_CheckReqWebResourceOnSystemFormResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckReqWebResourceOnSystemFormResponseData) {
+  constructor(public result: msdyn_CheckReqWebResourceOnSystemFormResult) {
     super("msdyn_CheckReqWebResourceOnSystemForm");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckReqWebResourceOnSystemFormResponse {
     return new msdyn_CheckReqWebResourceOnSystemFormResponse(
-      responseObject<msdyn_CheckReqWebResourceOnSystemFormResponseData>(data)
+      data as msdyn_CheckReqWebResourceOnSystemFormResult
     );
   }
 }

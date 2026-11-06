@@ -42,9 +42,9 @@ export class msdyn_AutoCaseClosureAgentCompleteSnaRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AutoCaseClosureAgentCompleteSnaResponse> {
+  parseResponse(_response: Response): Promise<msdyn_AutoCaseClosureAgentCompleteSnaResponse> {
     // No return value (204 No Content)
-    return new msdyn_AutoCaseClosureAgentCompleteSnaResponse();
+    return Promise.resolve(new msdyn_AutoCaseClosureAgentCompleteSnaResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_AutoCaseClosureAgentCompleteSnaResponse extends OrganizationR
     super("msdyn_AutoCaseClosureAgentCompleteSna");
   }
 
-  static fromResponse(_data: unknown): msdyn_AutoCaseClosureAgentCompleteSnaResponse {
+  static fromResponse(_data?: unknown): msdyn_AutoCaseClosureAgentCompleteSnaResponse {
     return new msdyn_AutoCaseClosureAgentCompleteSnaResponse();
   }
 }

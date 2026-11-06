@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetTalkingPointsResponse as msdyn_GetTalkingPointsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetTalkingPoints message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_GetTalkingPointsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetTalkingPointsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetTalkingPointsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetTalkingPointsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetTalkingPoints action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetTalkingPointsResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * msdyn_GetTalkingPoints response message
+ *
+ * `result` is the value the msdyn_GetTalkingPoints action returns (see {@link msdyn_GetTalkingPointsResult}).
  */
 export class msdyn_GetTalkingPointsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetTalkingPointsResponseData) {
+  constructor(public result: msdyn_GetTalkingPointsResult) {
     super("msdyn_GetTalkingPoints");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetTalkingPointsResponse {
-    return new msdyn_GetTalkingPointsResponse(
-      responseObject<msdyn_GetTalkingPointsResponseData>(data)
-    );
+    return new msdyn_GetTalkingPointsResponse(data as msdyn_GetTalkingPointsResult);
   }
 }

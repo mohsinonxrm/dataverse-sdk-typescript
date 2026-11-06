@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResponse as msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_GetOutreachSalesAgentRunRecords message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,30 @@ export class msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_GetOutreachSalesAgentRunRecords action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResult {
+  "@odata.context"?: string;
+  msdyn_OutreachConfig: string;
+  msdyn_Response: string;
+}
+
+/**
  * msdyn_SalesAgents_GetOutreachSalesAgentRunRecords response message
+ *
+ * `result` is the value the msdyn_SalesAgents_GetOutreachSalesAgentRunRecords action returns (see {@link msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResult}).
  */
 export class msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResponseData) {
+  constructor(public result: msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResult) {
     super("msdyn_SalesAgents_GetOutreachSalesAgentRunRecords");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResponse {
     return new msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResponse(
-      responseObject<msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResponseData>(data)
+      data as msdyn_SalesAgents_GetOutreachSalesAgentRunRecordsResult
     );
   }
 }

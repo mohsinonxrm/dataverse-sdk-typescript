@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from GetCallStatus action
+ * Response from the GetCallStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetCallStatusResponse {
+  "@odata.context"?: string;
   ConversationId: string;
   Status: string;
 }
@@ -45,8 +48,7 @@ export class GetCallStatusAction implements Executable<GetCallStatusResponse> {
   }
 
   async parseResponse(response: Response): Promise<GetCallStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetCallStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetCallStatusResponse;
   }
 }

@@ -6,9 +6,12 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { TypedQueryBase, activityparty } from "./types/index.js";
 
 /**
- * Response from BulkDetectDuplicates action
+ * Response from the BulkDetectDuplicates action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface BulkDetectDuplicatesResponse {
+  "@odata.context"?: string;
   JobId: string;
 }
 
@@ -60,8 +63,7 @@ export class BulkDetectDuplicatesAction implements Executable<BulkDetectDuplicat
   }
 
   async parseResponse(response: Response): Promise<BulkDetectDuplicatesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as BulkDetectDuplicatesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as BulkDetectDuplicatesResponse;
   }
 }

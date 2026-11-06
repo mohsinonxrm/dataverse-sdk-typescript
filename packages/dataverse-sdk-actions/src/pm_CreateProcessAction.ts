@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from pm_CreateProcess action
+ * Response from the pm_CreateProcess action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface pm_CreateProcessResponse {
+  "@odata.context"?: string;
   processId: string;
 }
 
@@ -48,8 +51,7 @@ export class pm_CreateProcessAction implements Executable<pm_CreateProcessRespon
   }
 
   async parseResponse(response: Response): Promise<pm_CreateProcessResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as pm_CreateProcessResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as pm_CreateProcessResponse;
   }
 }

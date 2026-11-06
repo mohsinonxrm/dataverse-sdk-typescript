@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_QueueItemOperationsOnLwiDeleteOrClosure action
+ * Response from the msdyn_QueueItemOperationsOnLwiDeleteOrClosure action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse {
-  // No content returned
-}
+export type msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse = void;
 
 /**
  * Parameters of the msdyn_QueueItemOperationsOnLwiDeleteOrClosure action, by their CSDL names. A parameter the CSDL declares
@@ -45,11 +45,10 @@ export class msdyn_QueueItemOperationsOnLwiDeleteOrClosureAction implements Exec
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse;
-    return (await response.json()) as msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse;
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SetSharePointDocumentStatusResponse as msdyn_SetSharePointDocumentStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SetSharePointDocumentStatus message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,37 @@ export class msdyn_SetSharePointDocumentStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SetSharePointDocumentStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SetSharePointDocumentStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SetSharePointDocumentStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SetSharePointDocumentStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SetSharePointDocumentStatusResult {
+  "@odata.context"?: string;
+  FailedLogicalEntityNames: string;
+  OperationResult: boolean;
+  PassedLogicalEntityNames: string;
+}
+
+/**
  * msdyn_SetSharePointDocumentStatus response message
+ *
+ * `result` is the value the msdyn_SetSharePointDocumentStatus action returns (see {@link msdyn_SetSharePointDocumentStatusResult}).
  */
 export class msdyn_SetSharePointDocumentStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SetSharePointDocumentStatusResponseData) {
+  constructor(public result: msdyn_SetSharePointDocumentStatusResult) {
     super("msdyn_SetSharePointDocumentStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SetSharePointDocumentStatusResponse {
     return new msdyn_SetSharePointDocumentStatusResponse(
-      responseObject<msdyn_SetSharePointDocumentStatusResponseData>(data)
+      data as msdyn_SetSharePointDocumentStatusResult
     );
   }
 }

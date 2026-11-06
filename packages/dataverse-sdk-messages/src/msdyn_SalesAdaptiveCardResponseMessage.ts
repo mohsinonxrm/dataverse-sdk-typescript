@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAdaptiveCardResponseResponse as msdyn_SalesAdaptiveCardResponseResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAdaptiveCardResponse message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,38 @@ export class msdyn_SalesAdaptiveCardResponseRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAdaptiveCardResponseResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SalesAdaptiveCardResponseResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAdaptiveCardResponseResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAdaptiveCardResponse action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAdaptiveCardResponseResult {
+  "@odata.context"?: string;
+  msdyn_additionalDetails: string;
+  msdyn_summary: string;
+  msdyn_summary_raw: string;
+  msdyn_version: string;
+}
+
+/**
  * msdyn_SalesAdaptiveCardResponse response message
+ *
+ * `result` is the value the msdyn_SalesAdaptiveCardResponse action returns (see {@link msdyn_SalesAdaptiveCardResponseResult}).
  */
 export class msdyn_SalesAdaptiveCardResponseResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAdaptiveCardResponseResponseData) {
+  constructor(public result: msdyn_SalesAdaptiveCardResponseResult) {
     super("msdyn_SalesAdaptiveCardResponse");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAdaptiveCardResponseResponse {
     return new msdyn_SalesAdaptiveCardResponseResponse(
-      responseObject<msdyn_SalesAdaptiveCardResponseResponseData>(data)
+      data as msdyn_SalesAdaptiveCardResponseResult
     );
   }
 }

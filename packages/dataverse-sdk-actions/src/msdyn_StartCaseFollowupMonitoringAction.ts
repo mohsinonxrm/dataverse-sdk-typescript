@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_StartCaseFollowupMonitoring action
+ * Response from the msdyn_StartCaseFollowupMonitoring action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_StartCaseFollowupMonitoringResponse {
-  // No content returned
-}
+export type msdyn_StartCaseFollowupMonitoringResponse = void;
 
 /**
  * msdyn_StartCaseFollowupMonitoring action
@@ -31,9 +31,8 @@ export class msdyn_StartCaseFollowupMonitoringAction implements Executable<msdyn
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_StartCaseFollowupMonitoringResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_StartCaseFollowupMonitoringResponse;
-    return (await response.json()) as msdyn_StartCaseFollowupMonitoringResponse;
+  parseResponse(_response: Response): Promise<msdyn_StartCaseFollowupMonitoringResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

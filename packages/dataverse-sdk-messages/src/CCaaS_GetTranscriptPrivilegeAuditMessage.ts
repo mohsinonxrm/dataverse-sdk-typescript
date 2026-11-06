@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_GetTranscriptPrivilegeAuditResponse as CCaaS_GetTranscriptPrivilegeAuditResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_GetTranscriptPrivilegeAudit message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class CCaaS_GetTranscriptPrivilegeAuditRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_GetTranscriptPrivilegeAuditResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_GetTranscriptPrivilegeAuditResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_GetTranscriptPrivilegeAuditResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_GetTranscriptPrivilegeAudit action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_GetTranscriptPrivilegeAuditResult {
+  "@odata.context"?: string;
+  ResponseBody: string;
+}
+
+/**
  * CCaaS_GetTranscriptPrivilegeAudit response message
+ *
+ * `result` is the value the CCaaS_GetTranscriptPrivilegeAudit action returns (see {@link CCaaS_GetTranscriptPrivilegeAuditResult}).
  */
 export class CCaaS_GetTranscriptPrivilegeAuditResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_GetTranscriptPrivilegeAuditResponseData) {
+  constructor(public result: CCaaS_GetTranscriptPrivilegeAuditResult) {
     super("CCaaS_GetTranscriptPrivilegeAudit");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_GetTranscriptPrivilegeAuditResponse {
     return new CCaaS_GetTranscriptPrivilegeAuditResponse(
-      responseObject<CCaaS_GetTranscriptPrivilegeAuditResponseData>(data)
+      data as CCaaS_GetTranscriptPrivilegeAuditResult
     );
   }
 }

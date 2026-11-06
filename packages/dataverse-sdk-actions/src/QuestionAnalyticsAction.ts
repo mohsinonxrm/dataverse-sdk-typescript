@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from QuestionAnalytics action
+ * Response from the QuestionAnalytics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface QuestionAnalyticsResponse {
+  "@odata.context"?: string;
   moreRecords: boolean;
   page: number;
   pagingCookie: string;
@@ -55,8 +58,7 @@ export class QuestionAnalyticsAction implements Executable<QuestionAnalyticsResp
   }
 
   async parseResponse(response: Response): Promise<QuestionAnalyticsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as QuestionAnalyticsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as QuestionAnalyticsResponse;
   }
 }

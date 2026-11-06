@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from DoesNotContainValues function
+ * Response from the DoesNotContainValues function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface DoesNotContainValuesResponse {
-  value: boolean;
-}
+export type DoesNotContainValuesResponse = boolean;
 
 /**
  * Parameters of the DoesNotContainValues function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class DoesNotContainValuesFunction implements Executable<DoesNotContainVa
   }
 
   async parseResponse(response: Response): Promise<DoesNotContainValuesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DoesNotContainValuesResponse;
-    return (await response.json()) as DoesNotContainValuesResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: DoesNotContainValuesResponse }).value;
   }
 }

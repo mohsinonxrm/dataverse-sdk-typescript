@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetAgentCoachingResponse as msdyn_GetAgentCoachingResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetAgentCoaching message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,34 @@ export class msdyn_GetAgentCoachingRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAgentCoachingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetAgentCoachingResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAgentCoachingResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAgentCoaching action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAgentCoachingResult {
+  "@odata.context"?: string;
+  msdyn_CoachingResult: string;
+  msdyn_ErrorResult: string;
+}
+
+/**
  * msdyn_GetAgentCoaching response message
+ *
+ * `result` is the value the msdyn_GetAgentCoaching action returns (see {@link msdyn_GetAgentCoachingResult}).
  */
 export class msdyn_GetAgentCoachingResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAgentCoachingResponseData) {
+  constructor(public result: msdyn_GetAgentCoachingResult) {
     super("msdyn_GetAgentCoaching");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAgentCoachingResponse {
-    return new msdyn_GetAgentCoachingResponse(
-      responseObject<msdyn_GetAgentCoachingResponseData>(data)
-    );
+    return new msdyn_GetAgentCoachingResponse(data as msdyn_GetAgentCoachingResult);
   }
 }

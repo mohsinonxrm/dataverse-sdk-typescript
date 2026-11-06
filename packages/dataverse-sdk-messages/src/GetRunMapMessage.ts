@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { GetRunMapResponse as GetRunMapResponseData } from "./types/index.js";
 
 /**
  * Parameters of the GetRunMap message, by their CSDL names. A parameter the CSDL declares
@@ -52,21 +50,34 @@ export class GetRunMapRequest extends OrganizationRequest implements Executable<
   }
 
   async parseResponse(response: Response): Promise<GetRunMapResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GetRunMapResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return GetRunMapResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GetRunMap action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface GetRunMapResult {
+  "@odata.context"?: string;
+  continuationToken: string;
+  runMap: string;
+}
+
+/**
  * GetRunMap response message
+ *
+ * `result` is the value the GetRunMap action returns (see {@link GetRunMapResult}).
  */
 export class GetRunMapResponse extends OrganizationResponse {
-  constructor(public result: GetRunMapResponseData) {
+  constructor(public result: GetRunMapResult) {
     super("GetRunMap");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GetRunMapResponse {
-    return new GetRunMapResponse(responseObject<GetRunMapResponseData>(data));
+    return new GetRunMapResponse(data as GetRunMapResult);
   }
 }

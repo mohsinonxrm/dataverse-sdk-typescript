@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_ExtractAutoReplyInfoResponse as msdyn_SalesAgents_ExtractAutoReplyInfoResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_ExtractAutoReplyInfo message, by their CSDL names. A parameter the CSDL declares
@@ -53,24 +51,35 @@ export class msdyn_SalesAgents_ExtractAutoReplyInfoRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_ExtractAutoReplyInfoResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_ExtractAutoReplyInfoResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_ExtractAutoReplyInfoResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_ExtractAutoReplyInfo action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_ExtractAutoReplyInfoResult {
+  "@odata.context"?: string;
+  msdyn_AutoReplyInfo: string;
+}
+
+/**
  * msdyn_SalesAgents_ExtractAutoReplyInfo response message
+ *
+ * `result` is the value the msdyn_SalesAgents_ExtractAutoReplyInfo action returns (see {@link msdyn_SalesAgents_ExtractAutoReplyInfoResult}).
  */
 export class msdyn_SalesAgents_ExtractAutoReplyInfoResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_ExtractAutoReplyInfoResponseData) {
+  constructor(public result: msdyn_SalesAgents_ExtractAutoReplyInfoResult) {
     super("msdyn_SalesAgents_ExtractAutoReplyInfo");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_ExtractAutoReplyInfoResponse {
     return new msdyn_SalesAgents_ExtractAutoReplyInfoResponse(
-      responseObject<msdyn_SalesAgents_ExtractAutoReplyInfoResponseData>(data)
+      data as msdyn_SalesAgents_ExtractAutoReplyInfoResult
     );
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_OSGetTrainingResults action
+ * Response from the msdyn_OSGetTrainingResults action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_OSGetTrainingResultsResponse {
+  "@odata.context"?: string;
   TrainingResults: string;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_OSGetTrainingResultsAction implements Executable<msdyn_OSGetT
   }
 
   async parseResponse(response: Response): Promise<msdyn_OSGetTrainingResultsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_OSGetTrainingResultsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_OSGetTrainingResultsResponse;
   }
 }

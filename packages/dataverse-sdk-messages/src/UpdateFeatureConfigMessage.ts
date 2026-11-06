@@ -44,9 +44,9 @@ export class UpdateFeatureConfigRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateFeatureConfigResponse> {
+  parseResponse(_response: Response): Promise<UpdateFeatureConfigResponse> {
     // No return value (204 No Content)
-    return new UpdateFeatureConfigResponse();
+    return Promise.resolve(new UpdateFeatureConfigResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class UpdateFeatureConfigResponse extends OrganizationResponse {
     super("UpdateFeatureConfig");
   }
 
-  static fromResponse(_data: unknown): UpdateFeatureConfigResponse {
+  static fromResponse(_data?: unknown): UpdateFeatureConfigResponse {
     return new UpdateFeatureConfigResponse();
   }
 }

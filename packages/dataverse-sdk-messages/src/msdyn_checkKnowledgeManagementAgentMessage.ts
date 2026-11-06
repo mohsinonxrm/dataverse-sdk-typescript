@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_checkKnowledgeManagementAgentResponse as msdyn_checkKnowledgeManagementAgentResponseData } from "./types/index.js";
 
 /**
  * msdyn_checkKnowledgeManagementAgent request message
@@ -29,24 +27,35 @@ export class msdyn_checkKnowledgeManagementAgentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_checkKnowledgeManagementAgentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_checkKnowledgeManagementAgentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_checkKnowledgeManagementAgentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_checkKnowledgeManagementAgent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_checkKnowledgeManagementAgentResult {
+  "@odata.context"?: string;
+  msdyn_apiResponse: string;
+}
+
+/**
  * msdyn_checkKnowledgeManagementAgent response message
+ *
+ * `result` is the value the msdyn_checkKnowledgeManagementAgent action returns (see {@link msdyn_checkKnowledgeManagementAgentResult}).
  */
 export class msdyn_checkKnowledgeManagementAgentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_checkKnowledgeManagementAgentResponseData) {
+  constructor(public result: msdyn_checkKnowledgeManagementAgentResult) {
     super("msdyn_checkKnowledgeManagementAgent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_checkKnowledgeManagementAgentResponse {
     return new msdyn_checkKnowledgeManagementAgentResponse(
-      responseObject<msdyn_checkKnowledgeManagementAgentResponseData>(data)
+      data as msdyn_checkKnowledgeManagementAgentResult
     );
   }
 }

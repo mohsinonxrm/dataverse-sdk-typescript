@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_UpsertAISimulationResultResponse as msdyn_UpsertAISimulationResultResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_UpsertAISimulationResult message, by their CSDL names. A parameter the CSDL declares
@@ -59,23 +57,33 @@ export class msdyn_UpsertAISimulationResultRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpsertAISimulationResultResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_UpsertAISimulationResultResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UpsertAISimulationResultResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_UpsertAISimulationResult action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UpsertAISimulationResultResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_UpsertAISimulationResult response message
+ *
+ * `result` is the value the msdyn_UpsertAISimulationResult action returns (see {@link msdyn_UpsertAISimulationResultResult}).
  */
 export class msdyn_UpsertAISimulationResultResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpsertAISimulationResultResponseData) {
+  constructor(public result: msdyn_UpsertAISimulationResultResult) {
     super("msdyn_UpsertAISimulationResult");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UpsertAISimulationResultResponse {
-    return new msdyn_UpsertAISimulationResultResponse(
-      responseObject<msdyn_UpsertAISimulationResultResponseData>(data)
-    );
+    return new msdyn_UpsertAISimulationResultResponse(data as msdyn_UpsertAISimulationResultResult);
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { resourcegroup } from "./types/index.js";
 
 /**
- * Response from FindParentResourceGroup function
+ * Response from the FindParentResourceGroup function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface FindParentResourceGroupResponse {
+  "@odata.context"?: string;
   result: boolean;
 }
 
@@ -55,8 +58,7 @@ export class FindParentResourceGroupFunction implements Executable<FindParentRes
   }
 
   async parseResponse(response: Response): Promise<FindParentResourceGroupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as FindParentResourceGroupResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as FindParentResourceGroupResponse;
   }
 }

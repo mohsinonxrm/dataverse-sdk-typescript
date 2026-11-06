@@ -49,9 +49,9 @@ export class DeleteOpenInstancesRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteOpenInstancesResponse> {
+  parseResponse(_response: Response): Promise<DeleteOpenInstancesResponse> {
     // No return value (204 No Content)
-    return new DeleteOpenInstancesResponse();
+    return Promise.resolve(new DeleteOpenInstancesResponse());
   }
 }
 
@@ -63,7 +63,7 @@ export class DeleteOpenInstancesResponse extends OrganizationResponse {
     super("DeleteOpenInstances");
   }
 
-  static fromResponse(_data: unknown): DeleteOpenInstancesResponse {
+  static fromResponse(_data?: unknown): DeleteOpenInstancesResponse {
     return new DeleteOpenInstancesResponse();
   }
 }

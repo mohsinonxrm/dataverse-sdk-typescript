@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
@@ -53,21 +52,39 @@ export class AddRecurrenceRequest
   }
 
   async parseResponse(response: Response): Promise<AddRecurrenceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AddRecurrenceResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return AddRecurrenceResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return AddRecurrenceResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AddRecurrence action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type AddRecurrenceResult =
+  | (recurringappointmentmaster & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
+
+/**
  * AddRecurrence response message
+ *
+ * `result` is the value the AddRecurrence action returns (see {@link AddRecurrenceResult}).
  */
 export class AddRecurrenceResponse extends OrganizationResponse {
-  constructor(public result: recurringappointmentmaster) {
+  constructor(public result: AddRecurrenceResult) {
     super("AddRecurrence");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AddRecurrenceResponse {
-    return new AddRecurrenceResponse(responseObject<recurringappointmentmaster>(data));
+    return new AddRecurrenceResponse((data ?? null) as AddRecurrenceResult);
   }
 }

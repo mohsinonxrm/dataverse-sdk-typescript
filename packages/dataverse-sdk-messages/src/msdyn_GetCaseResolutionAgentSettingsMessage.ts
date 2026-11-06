@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_GetCaseResolutionAgentSettingsResponse as msdyn_GetCaseResolutionAgentSettingsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetCaseResolutionAgentSettings message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,35 @@ export class msdyn_GetCaseResolutionAgentSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCaseResolutionAgentSettingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetCaseResolutionAgentSettingsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetCaseResolutionAgentSettingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetCaseResolutionAgentSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetCaseResolutionAgentSettingsResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_GetCaseResolutionAgentSettings response message
+ *
+ * `result` is the value the msdyn_GetCaseResolutionAgentSettings action returns (see {@link msdyn_GetCaseResolutionAgentSettingsResult}).
  */
 export class msdyn_GetCaseResolutionAgentSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetCaseResolutionAgentSettingsResponseData) {
+  constructor(public result: msdyn_GetCaseResolutionAgentSettingsResult) {
     super("msdyn_GetCaseResolutionAgentSettings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetCaseResolutionAgentSettingsResponse {
     return new msdyn_GetCaseResolutionAgentSettingsResponse(
-      responseObject<msdyn_GetCaseResolutionAgentSettingsResponseData>(data)
+      data as msdyn_GetCaseResolutionAgentSettingsResult
     );
   }
 }

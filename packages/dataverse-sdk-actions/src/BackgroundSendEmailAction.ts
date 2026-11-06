@@ -4,9 +4,12 @@ import { enumBody } from "./internal/enumBody.js";
 import type { TypedQueryBase } from "./types/index.js";
 
 /**
- * Response from BackgroundSendEmail action
+ * Response from the BackgroundSendEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface BackgroundSendEmailResponse {
+  "@odata.context"?: string;
   HasAttachments: boolean[];
 }
 
@@ -44,8 +47,7 @@ export class BackgroundSendEmailAction implements Executable<BackgroundSendEmail
   }
 
   async parseResponse(response: Response): Promise<BackgroundSendEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as BackgroundSendEmailResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as BackgroundSendEmailResponse;
   }
 }

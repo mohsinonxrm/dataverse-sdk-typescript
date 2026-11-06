@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_AIAgentActionResponse as msdyn_AIAgentActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_AIAgentAction message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,34 @@ export class msdyn_AIAgentActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AIAgentActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_AIAgentActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AIAgentActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_AIAgentAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AIAgentActionResult {
+  "@odata.context"?: string;
+  Outcome: string;
+  Reason: string;
+}
+
+/**
  * msdyn_AIAgentAction response message
+ *
+ * `result` is the value the msdyn_AIAgentAction action returns (see {@link msdyn_AIAgentActionResult}).
  */
 export class msdyn_AIAgentActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AIAgentActionResponseData) {
+  constructor(public result: msdyn_AIAgentActionResult) {
     super("msdyn_AIAgentAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_AIAgentActionResponse {
-    return new msdyn_AIAgentActionResponse(responseObject<msdyn_AIAgentActionResponseData>(data));
+    return new msdyn_AIAgentActionResponse(data as msdyn_AIAgentActionResult);
   }
 }

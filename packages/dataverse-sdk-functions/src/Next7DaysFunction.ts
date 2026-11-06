@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from Next7Days function
+ * Response from the Next7Days function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface Next7DaysResponse {
-  value: boolean;
-}
+export type Next7DaysResponse = boolean;
 
 /**
  * Parameters of the Next7Days function, by their CSDL names. A parameter the CSDL declares
@@ -48,8 +48,7 @@ export class Next7DaysFunction implements Executable<Next7DaysResponse> {
   }
 
   async parseResponse(response: Response): Promise<Next7DaysResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as Next7DaysResponse;
-    return (await response.json()) as Next7DaysResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: Next7DaysResponse }).value;
   }
 }

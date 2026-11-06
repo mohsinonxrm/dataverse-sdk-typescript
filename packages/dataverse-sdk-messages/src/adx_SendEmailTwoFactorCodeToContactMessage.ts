@@ -54,9 +54,9 @@ export class adx_SendEmailTwoFactorCodeToContactRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<adx_SendEmailTwoFactorCodeToContactResponse> {
+  parseResponse(_response: Response): Promise<adx_SendEmailTwoFactorCodeToContactResponse> {
     // No return value (204 No Content)
-    return new adx_SendEmailTwoFactorCodeToContactResponse();
+    return Promise.resolve(new adx_SendEmailTwoFactorCodeToContactResponse());
   }
 }
 
@@ -68,7 +68,7 @@ export class adx_SendEmailTwoFactorCodeToContactResponse extends OrganizationRes
     super("adx_SendEmailTwoFactorCodeToContact");
   }
 
-  static fromResponse(_data: unknown): adx_SendEmailTwoFactorCodeToContactResponse {
+  static fromResponse(_data?: unknown): adx_SendEmailTwoFactorCodeToContactResponse {
     return new adx_SendEmailTwoFactorCodeToContactResponse();
   }
 }

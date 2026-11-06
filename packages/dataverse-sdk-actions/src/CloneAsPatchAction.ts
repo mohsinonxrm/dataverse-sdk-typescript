@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CloneAsPatch action
+ * Response from the CloneAsPatch action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CloneAsPatchResponse {
+  "@odata.context"?: string;
   SolutionId: string;
 }
 
@@ -46,8 +49,7 @@ export class CloneAsPatchAction implements Executable<CloneAsPatchResponse> {
   }
 
   async parseResponse(response: Response): Promise<CloneAsPatchResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CloneAsPatchResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CloneAsPatchResponse;
   }
 }

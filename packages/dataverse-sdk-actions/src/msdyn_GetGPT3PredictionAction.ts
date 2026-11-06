@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetGPT3Prediction action
+ * Response from the msdyn_GetGPT3Prediction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetGPT3PredictionResponse {
+  "@odata.context"?: string;
   msdyn_prediction: string;
   msdyn_status: number;
 }
@@ -45,8 +48,7 @@ export class msdyn_GetGPT3PredictionAction implements Executable<msdyn_GetGPT3Pr
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetGPT3PredictionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetGPT3PredictionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetGPT3PredictionResponse;
   }
 }

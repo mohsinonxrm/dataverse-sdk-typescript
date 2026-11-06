@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { McpUpdateTableResponse as McpUpdateTableResponseData } from "./types/index.js";
 
 /**
  * Parameters of the McpUpdateTable message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,34 @@ export class McpUpdateTableRequest
   }
 
   async parseResponse(response: Response): Promise<McpUpdateTableResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return McpUpdateTableResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return McpUpdateTableResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the McpUpdateTable action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface McpUpdateTableResult {
+  "@odata.context"?: string;
+  successMessage: string;
+  usage: string;
+}
+
+/**
  * McpUpdateTable response message
+ *
+ * `result` is the value the McpUpdateTable action returns (see {@link McpUpdateTableResult}).
  */
 export class McpUpdateTableResponse extends OrganizationResponse {
-  constructor(public result: McpUpdateTableResponseData) {
+  constructor(public result: McpUpdateTableResult) {
     super("McpUpdateTable");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): McpUpdateTableResponse {
-    return new McpUpdateTableResponse(responseObject<McpUpdateTableResponseData>(data));
+    return new McpUpdateTableResponse(data as McpUpdateTableResult);
   }
 }

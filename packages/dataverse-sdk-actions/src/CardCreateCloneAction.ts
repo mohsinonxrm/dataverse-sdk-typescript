@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CardCreateClone action
+ * Response from the CardCreateClone action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CardCreateCloneResponse {
+  "@odata.context"?: string;
   CardIdClone: string;
 }
 
@@ -44,8 +47,7 @@ export class CardCreateCloneAction implements Executable<CardCreateCloneResponse
   }
 
   async parseResponse(response: Response): Promise<CardCreateCloneResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CardCreateCloneResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CardCreateCloneResponse;
   }
 }

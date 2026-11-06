@@ -44,9 +44,9 @@ export class msdyn_ClassifySegmentsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ClassifySegmentsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ClassifySegmentsResponse> {
     // No return value (204 No Content)
-    return new msdyn_ClassifySegmentsResponse();
+    return Promise.resolve(new msdyn_ClassifySegmentsResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_ClassifySegmentsResponse extends OrganizationResponse {
     super("msdyn_ClassifySegments");
   }
 
-  static fromResponse(_data: unknown): msdyn_ClassifySegmentsResponse {
+  static fromResponse(_data?: unknown): msdyn_ClassifySegmentsResponse {
     return new msdyn_ClassifySegmentsResponse();
   }
 }

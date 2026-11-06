@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { AnalyticsStoreDetails } from "./types/index.js";
 
 /**
- * Response from RetrieveAnalyticsStoreDetails function
+ * Response from the RetrieveAnalyticsStoreDetails function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveAnalyticsStoreDetailsResponse {
+  "@odata.context"?: string;
   AnalyticsStoreDetails: AnalyticsStoreDetails;
 }
 
@@ -27,8 +30,7 @@ export class RetrieveAnalyticsStoreDetailsFunction implements Executable<Retriev
   }
 
   async parseResponse(response: Response): Promise<RetrieveAnalyticsStoreDetailsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveAnalyticsStoreDetailsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveAnalyticsStoreDetailsResponse;
   }
 }

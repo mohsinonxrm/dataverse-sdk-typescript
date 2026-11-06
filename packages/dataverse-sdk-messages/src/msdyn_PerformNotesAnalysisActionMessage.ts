@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_PerformNotesAnalysisActionResponse as msdyn_PerformNotesAnalysisActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_PerformNotesAnalysisAction message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,35 @@ export class msdyn_PerformNotesAnalysisActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_PerformNotesAnalysisActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_PerformNotesAnalysisActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_PerformNotesAnalysisActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_PerformNotesAnalysisAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_PerformNotesAnalysisActionResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_PerformNotesAnalysisAction response message
+ *
+ * `result` is the value the msdyn_PerformNotesAnalysisAction action returns (see {@link msdyn_PerformNotesAnalysisActionResult}).
  */
 export class msdyn_PerformNotesAnalysisActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_PerformNotesAnalysisActionResponseData) {
+  constructor(public result: msdyn_PerformNotesAnalysisActionResult) {
     super("msdyn_PerformNotesAnalysisAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_PerformNotesAnalysisActionResponse {
     return new msdyn_PerformNotesAnalysisActionResponse(
-      responseObject<msdyn_PerformNotesAnalysisActionResponseData>(data)
+      data as msdyn_PerformNotesAnalysisActionResult
     );
   }
 }

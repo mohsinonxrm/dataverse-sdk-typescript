@@ -46,9 +46,9 @@ export class RevokeAccessRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RevokeAccessResponse> {
+  parseResponse(_response: Response): Promise<RevokeAccessResponse> {
     // No return value (204 No Content)
-    return new RevokeAccessResponse();
+    return Promise.resolve(new RevokeAccessResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class RevokeAccessResponse extends OrganizationResponse {
     super("RevokeAccess");
   }
 
-  static fromResponse(_data: unknown): RevokeAccessResponse {
+  static fromResponse(_data?: unknown): RevokeAccessResponse {
     return new RevokeAccessResponse();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RAAgent_GetRecommendationAgentConfigResponse as msdyn_RAAgent_GetRecommendationAgentConfigResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RAAgent_GetRecommendationAgentConfig message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_RAAgent_GetRecommendationAgentConfigRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RAAgent_GetRecommendationAgentConfigResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RAAgent_GetRecommendationAgentConfigResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RAAgent_GetRecommendationAgentConfigResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RAAgent_GetRecommendationAgentConfig action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RAAgent_GetRecommendationAgentConfigResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_RAAgent_GetRecommendationAgentConfig response message
+ *
+ * `result` is the value the msdyn_RAAgent_GetRecommendationAgentConfig action returns (see {@link msdyn_RAAgent_GetRecommendationAgentConfigResult}).
  */
 export class msdyn_RAAgent_GetRecommendationAgentConfigResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RAAgent_GetRecommendationAgentConfigResponseData) {
+  constructor(public result: msdyn_RAAgent_GetRecommendationAgentConfigResult) {
     super("msdyn_RAAgent_GetRecommendationAgentConfig");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RAAgent_GetRecommendationAgentConfigResponse {
     return new msdyn_RAAgent_GetRecommendationAgentConfigResponse(
-      responseObject<msdyn_RAAgent_GetRecommendationAgentConfigResponseData>(data)
+      data as msdyn_RAAgent_GetRecommendationAgentConfigResult
     );
   }
 }

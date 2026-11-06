@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from GetLinkedChats action
+ * Response from the GetLinkedChats action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetLinkedChatsResponse {
+  "@odata.context"?: string;
   LinkedChatDetails: string;
 }
 
@@ -44,8 +47,7 @@ export class GetLinkedChatsAction implements Executable<GetLinkedChatsResponse> 
   }
 
   async parseResponse(response: Response): Promise<GetLinkedChatsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetLinkedChatsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetLinkedChatsResponse;
   }
 }

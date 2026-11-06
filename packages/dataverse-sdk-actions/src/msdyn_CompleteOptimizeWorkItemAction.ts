@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CompleteOptimizeWorkItem action
+ * Response from the msdyn_CompleteOptimizeWorkItem action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CompleteOptimizeWorkItemResponse {
+  "@odata.context"?: string;
   Accepted: boolean;
   ResultJson: string;
 }
@@ -57,8 +60,7 @@ export class msdyn_CompleteOptimizeWorkItemAction implements Executable<msdyn_Co
   }
 
   async parseResponse(response: Response): Promise<msdyn_CompleteOptimizeWorkItemResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CompleteOptimizeWorkItemResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CompleteOptimizeWorkItemResponse;
   }
 }

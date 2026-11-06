@@ -1,13 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
-import type {
-  RemoveSolutionComponentResponse as RemoveSolutionComponentResponseData,
-  solutioncomponent,
-} from "./types/index.js";
+import type { solutioncomponent } from "./types/index.js";
 
 /**
  * Parameters of the RemoveSolutionComponent message, by their CSDL names. A parameter the CSDL declares
@@ -54,23 +50,33 @@ export class RemoveSolutionComponentRequest
   }
 
   async parseResponse(response: Response): Promise<RemoveSolutionComponentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RemoveSolutionComponentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RemoveSolutionComponentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RemoveSolutionComponent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RemoveSolutionComponentResult {
+  "@odata.context"?: string;
+  id: string;
+}
+
+/**
  * RemoveSolutionComponent response message
+ *
+ * `result` is the value the RemoveSolutionComponent action returns (see {@link RemoveSolutionComponentResult}).
  */
 export class RemoveSolutionComponentResponse extends OrganizationResponse {
-  constructor(public result: RemoveSolutionComponentResponseData) {
+  constructor(public result: RemoveSolutionComponentResult) {
     super("RemoveSolutionComponent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RemoveSolutionComponentResponse {
-    return new RemoveSolutionComponentResponse(
-      responseObject<RemoveSolutionComponentResponseData>(data)
-    );
+    return new RemoveSolutionComponentResponse(data as RemoveSolutionComponentResult);
   }
 }

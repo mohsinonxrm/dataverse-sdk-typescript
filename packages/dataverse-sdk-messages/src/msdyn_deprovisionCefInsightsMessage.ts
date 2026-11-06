@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_deprovisionCefInsightsResponse as msdyn_deprovisionCefInsightsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_deprovisionCefInsights message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class msdyn_deprovisionCefInsightsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_deprovisionCefInsightsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_deprovisionCefInsightsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_deprovisionCefInsightsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_deprovisionCefInsights action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_deprovisionCefInsightsResult {
+  "@odata.context"?: string;
+  msdyn_responseStatus: string;
+}
+
+/**
  * msdyn_deprovisionCefInsights response message
+ *
+ * `result` is the value the msdyn_deprovisionCefInsights action returns (see {@link msdyn_deprovisionCefInsightsResult}).
  */
 export class msdyn_deprovisionCefInsightsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_deprovisionCefInsightsResponseData) {
+  constructor(public result: msdyn_deprovisionCefInsightsResult) {
     super("msdyn_deprovisionCefInsights");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_deprovisionCefInsightsResponse {
-    return new msdyn_deprovisionCefInsightsResponse(
-      responseObject<msdyn_deprovisionCefInsightsResponseData>(data)
-    );
+    return new msdyn_deprovisionCefInsightsResponse(data as msdyn_deprovisionCefInsightsResult);
   }
 }

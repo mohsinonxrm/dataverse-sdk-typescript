@@ -47,9 +47,9 @@ export class CloseIncidentRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CloseIncidentResponse> {
+  parseResponse(_response: Response): Promise<CloseIncidentResponse> {
     // No return value (204 No Content)
-    return new CloseIncidentResponse();
+    return Promise.resolve(new CloseIncidentResponse());
   }
 }
 
@@ -61,7 +61,7 @@ export class CloseIncidentResponse extends OrganizationResponse {
     super("CloseIncident");
   }
 
-  static fromResponse(_data: unknown): CloseIncidentResponse {
+  static fromResponse(_data?: unknown): CloseIncidentResponse {
     return new CloseIncidentResponse();
   }
 }

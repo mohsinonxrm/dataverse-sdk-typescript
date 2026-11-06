@@ -46,9 +46,9 @@ export class CompoundUpdateDuplicateDetectionRuleRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CompoundUpdateDuplicateDetectionRuleResponse> {
+  parseResponse(_response: Response): Promise<CompoundUpdateDuplicateDetectionRuleResponse> {
     // No return value (204 No Content)
-    return new CompoundUpdateDuplicateDetectionRuleResponse();
+    return Promise.resolve(new CompoundUpdateDuplicateDetectionRuleResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class CompoundUpdateDuplicateDetectionRuleResponse extends OrganizationRe
     super("CompoundUpdateDuplicateDetectionRule");
   }
 
-  static fromResponse(_data: unknown): CompoundUpdateDuplicateDetectionRuleResponse {
+  static fromResponse(_data?: unknown): CompoundUpdateDuplicateDetectionRuleResponse {
     return new CompoundUpdateDuplicateDetectionRuleResponse();
   }
 }

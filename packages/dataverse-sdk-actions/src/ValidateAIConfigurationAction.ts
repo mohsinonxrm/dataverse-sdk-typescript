@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ValidateAIConfiguration action
+ * Response from the ValidateAIConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ValidateAIConfigurationResponse {
+  "@odata.context"?: string;
   result: string;
 }
 
@@ -44,8 +47,7 @@ export class ValidateAIConfigurationAction implements Executable<ValidateAIConfi
   }
 
   async parseResponse(response: Response): Promise<ValidateAIConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ValidateAIConfigurationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ValidateAIConfigurationResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgent_GetAgentUserResponse as msdyn_SalesAgent_GetAgentUserResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgent_GetAgentUser message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdyn_SalesAgent_GetAgentUserRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgent_GetAgentUserResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SalesAgent_GetAgentUserResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgent_GetAgentUserResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgent_GetAgentUser action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgent_GetAgentUserResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResponseJson: string;
+  Success: boolean;
+}
+
+/**
  * msdyn_SalesAgent_GetAgentUser response message
+ *
+ * `result` is the value the msdyn_SalesAgent_GetAgentUser action returns (see {@link msdyn_SalesAgent_GetAgentUserResult}).
  */
 export class msdyn_SalesAgent_GetAgentUserResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgent_GetAgentUserResponseData) {
+  constructor(public result: msdyn_SalesAgent_GetAgentUserResult) {
     super("msdyn_SalesAgent_GetAgentUser");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgent_GetAgentUserResponse {
-    return new msdyn_SalesAgent_GetAgentUserResponse(
-      responseObject<msdyn_SalesAgent_GetAgentUserResponseData>(data)
-    );
+    return new msdyn_SalesAgent_GetAgentUserResponse(data as msdyn_SalesAgent_GetAgentUserResult);
   }
 }

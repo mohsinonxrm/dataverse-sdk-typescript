@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetDealRiskSuggestedActions action
+ * Response from the msdyn_GetDealRiskSuggestedActions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetDealRiskSuggestedActionsResponse {
+  "@odata.context"?: string;
   msdyn_Response: string;
 }
 
@@ -46,8 +49,7 @@ export class msdyn_GetDealRiskSuggestedActionsAction implements Executable<msdyn
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetDealRiskSuggestedActionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetDealRiskSuggestedActionsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetDealRiskSuggestedActionsResponse;
   }
 }

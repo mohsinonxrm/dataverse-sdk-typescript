@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ScheduleRequirementGroupResponse as msdyn_ScheduleRequirementGroupResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ScheduleRequirementGroup message, by their CSDL names. A parameter the CSDL declares
@@ -83,23 +81,33 @@ export class msdyn_ScheduleRequirementGroupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ScheduleRequirementGroupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ScheduleRequirementGroupResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ScheduleRequirementGroupResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ScheduleRequirementGroup action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ScheduleRequirementGroupResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_ScheduleRequirementGroup response message
+ *
+ * `result` is the value the msdyn_ScheduleRequirementGroup action returns (see {@link msdyn_ScheduleRequirementGroupResult}).
  */
 export class msdyn_ScheduleRequirementGroupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ScheduleRequirementGroupResponseData) {
+  constructor(public result: msdyn_ScheduleRequirementGroupResult) {
     super("msdyn_ScheduleRequirementGroup");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ScheduleRequirementGroupResponse {
-    return new msdyn_ScheduleRequirementGroupResponse(
-      responseObject<msdyn_ScheduleRequirementGroupResponseData>(data)
-    );
+    return new msdyn_ScheduleRequirementGroupResponse(data as msdyn_ScheduleRequirementGroupResult);
   }
 }

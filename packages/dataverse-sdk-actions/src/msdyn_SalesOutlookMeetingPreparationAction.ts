@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesOutlookMeetingPreparation action
+ * Response from the msdyn_SalesOutlookMeetingPreparation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesOutlookMeetingPreparationResponse {
+  "@odata.context"?: string;
   msdyn_error: string;
   msdyn_result: string;
   msdyn_status: number;
@@ -46,8 +49,7 @@ export class msdyn_SalesOutlookMeetingPreparationAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesOutlookMeetingPreparationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SalesOutlookMeetingPreparationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SalesOutlookMeetingPreparationResponse;
   }
 }

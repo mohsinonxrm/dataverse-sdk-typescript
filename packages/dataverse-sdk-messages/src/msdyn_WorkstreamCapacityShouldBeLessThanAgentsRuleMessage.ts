@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse as msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_WorkstreamCapacityShouldBeLessThanAgentsRule request message
@@ -31,9 +29,7 @@ export class msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleRequest
 }
 
 /**
+ * Response from the msdyn_WorkstreamCapacityShouldBeLessThanAgentsRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_WorkstreamCapacityShouldBeLessThanAgentsRule response message
+ *
+ * `result` is the value the msdyn_WorkstreamCapacityShouldBeLessThanAgentsRule action returns (see {@link msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResult}).
  */
 export class msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponseData) {
+  constructor(public result: msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResult) {
     super("msdyn_WorkstreamCapacityShouldBeLessThanAgentsRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse {
     return new msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse(
-      responseObject<msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponseData>(data)
+      data as msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResult
     );
   }
 }

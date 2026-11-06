@@ -42,9 +42,9 @@ export class msdyn_RemoveRequirementModelRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_RemoveRequirementModelResponse> {
+  parseResponse(_response: Response): Promise<msdyn_RemoveRequirementModelResponse> {
     // No return value (204 No Content)
-    return new msdyn_RemoveRequirementModelResponse();
+    return Promise.resolve(new msdyn_RemoveRequirementModelResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_RemoveRequirementModelResponse extends OrganizationResponse {
     super("msdyn_RemoveRequirementModel");
   }
 
-  static fromResponse(_data: unknown): msdyn_RemoveRequirementModelResponse {
+  static fromResponse(_data?: unknown): msdyn_RemoveRequirementModelResponse {
     return new msdyn_RemoveRequirementModelResponse();
   }
 }

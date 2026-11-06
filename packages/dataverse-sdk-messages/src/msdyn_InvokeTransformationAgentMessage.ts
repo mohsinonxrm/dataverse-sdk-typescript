@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_InvokeTransformationAgentResponse as msdyn_InvokeTransformationAgentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_InvokeTransformationAgent message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,38 @@ export class msdyn_InvokeTransformationAgentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeTransformationAgentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_InvokeTransformationAgentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_InvokeTransformationAgentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_InvokeTransformationAgent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_InvokeTransformationAgentResult {
+  "@odata.context"?: string;
+  msdyn_action: string;
+  msdyn_activities: string;
+  msdyn_conversationid: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_InvokeTransformationAgent response message
+ *
+ * `result` is the value the msdyn_InvokeTransformationAgent action returns (see {@link msdyn_InvokeTransformationAgentResult}).
  */
 export class msdyn_InvokeTransformationAgentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InvokeTransformationAgentResponseData) {
+  constructor(public result: msdyn_InvokeTransformationAgentResult) {
     super("msdyn_InvokeTransformationAgent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_InvokeTransformationAgentResponse {
     return new msdyn_InvokeTransformationAgentResponse(
-      responseObject<msdyn_InvokeTransformationAgentResponseData>(data)
+      data as msdyn_InvokeTransformationAgentResult
     );
   }
 }

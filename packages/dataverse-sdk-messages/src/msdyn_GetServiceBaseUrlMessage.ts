@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetServiceBaseUrlResponse as msdyn_GetServiceBaseUrlResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetServiceBaseUrl message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_GetServiceBaseUrlRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetServiceBaseUrlResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetServiceBaseUrlResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetServiceBaseUrlResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetServiceBaseUrl action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetServiceBaseUrlResult {
+  "@odata.context"?: string;
+  BaseUrl: string;
+}
+
+/**
  * msdyn_GetServiceBaseUrl response message
+ *
+ * `result` is the value the msdyn_GetServiceBaseUrl action returns (see {@link msdyn_GetServiceBaseUrlResult}).
  */
 export class msdyn_GetServiceBaseUrlResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetServiceBaseUrlResponseData) {
+  constructor(public result: msdyn_GetServiceBaseUrlResult) {
     super("msdyn_GetServiceBaseUrl");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetServiceBaseUrlResponse {
-    return new msdyn_GetServiceBaseUrlResponse(
-      responseObject<msdyn_GetServiceBaseUrlResponseData>(data)
-    );
+    return new msdyn_GetServiceBaseUrlResponse(data as msdyn_GetServiceBaseUrlResult);
   }
 }

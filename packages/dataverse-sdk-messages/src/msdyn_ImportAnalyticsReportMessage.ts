@@ -46,9 +46,9 @@ export class msdyn_ImportAnalyticsReportRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ImportAnalyticsReportResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ImportAnalyticsReportResponse> {
     // No return value (204 No Content)
-    return new msdyn_ImportAnalyticsReportResponse();
+    return Promise.resolve(new msdyn_ImportAnalyticsReportResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_ImportAnalyticsReportResponse extends OrganizationResponse {
     super("msdyn_ImportAnalyticsReport");
   }
 
-  static fromResponse(_data: unknown): msdyn_ImportAnalyticsReportResponse {
+  static fromResponse(_data?: unknown): msdyn_ImportAnalyticsReportResponse {
     return new msdyn_ImportAnalyticsReportResponse();
   }
 }

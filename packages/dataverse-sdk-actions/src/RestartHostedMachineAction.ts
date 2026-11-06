@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RestartHostedMachine action
+ * Response from the RestartHostedMachine action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RestartHostedMachineResponse {
-  // No content returned
-}
+export type RestartHostedMachineResponse = void;
 
 /**
  * RestartHostedMachine action
@@ -31,9 +31,8 @@ export class RestartHostedMachineAction implements Executable<RestartHostedMachi
     };
   }
 
-  async parseResponse(response: Response): Promise<RestartHostedMachineResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RestartHostedMachineResponse;
-    return (await response.json()) as RestartHostedMachineResponse;
+  parseResponse(_response: Response): Promise<RestartHostedMachineResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

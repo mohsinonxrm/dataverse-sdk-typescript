@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_AnalyzeServiceHealthResponse as msdyn_AnalyzeServiceHealthResponseData } from "./types/index.js";
 
 /**
  * msdyn_AnalyzeServiceHealth request message
@@ -29,23 +27,33 @@ export class msdyn_AnalyzeServiceHealthRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AnalyzeServiceHealthResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_AnalyzeServiceHealthResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AnalyzeServiceHealthResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_AnalyzeServiceHealth action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AnalyzeServiceHealthResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_AnalyzeServiceHealth response message
+ *
+ * `result` is the value the msdyn_AnalyzeServiceHealth action returns (see {@link msdyn_AnalyzeServiceHealthResult}).
  */
 export class msdyn_AnalyzeServiceHealthResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AnalyzeServiceHealthResponseData) {
+  constructor(public result: msdyn_AnalyzeServiceHealthResult) {
     super("msdyn_AnalyzeServiceHealth");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_AnalyzeServiceHealthResponse {
-    return new msdyn_AnalyzeServiceHealthResponse(
-      responseObject<msdyn_AnalyzeServiceHealthResponseData>(data)
-    );
+    return new msdyn_AnalyzeServiceHealthResponse(data as msdyn_AnalyzeServiceHealthResult);
   }
 }

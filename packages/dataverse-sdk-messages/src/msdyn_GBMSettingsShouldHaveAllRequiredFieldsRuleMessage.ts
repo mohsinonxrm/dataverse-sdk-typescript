@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse as msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponseData } from "./types/index.js";
 
 /**
  * msdyn_GBMSettingsShouldHaveAllRequiredFieldsRule request message
@@ -31,9 +29,7 @@ export class msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleRequest
 }
 
 /**
+ * Response from the msdyn_GBMSettingsShouldHaveAllRequiredFieldsRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_GBMSettingsShouldHaveAllRequiredFieldsRule response message
+ *
+ * `result` is the value the msdyn_GBMSettingsShouldHaveAllRequiredFieldsRule action returns (see {@link msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResult}).
  */
 export class msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponseData) {
+  constructor(public result: msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResult) {
     super("msdyn_GBMSettingsShouldHaveAllRequiredFieldsRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse {
     return new msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse(
-      responseObject<msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponseData>(data)
+      data as msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResult
     );
   }
 }

@@ -44,9 +44,9 @@ export class RemoveParentRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveParentResponse> {
+  parseResponse(_response: Response): Promise<RemoveParentResponse> {
     // No return value (204 No Content)
-    return new RemoveParentResponse();
+    return Promise.resolve(new RemoveParentResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class RemoveParentResponse extends OrganizationResponse {
     super("RemoveParent");
   }
 
-  static fromResponse(_data: unknown): RemoveParentResponse {
+  static fromResponse(_data?: unknown): RemoveParentResponse {
     return new RemoveParentResponse();
   }
 }

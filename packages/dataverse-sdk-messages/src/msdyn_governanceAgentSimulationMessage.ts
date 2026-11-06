@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_governanceAgentSimulationResponse as msdyn_governanceAgentSimulationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_governanceAgentSimulation message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,36 @@ export class msdyn_governanceAgentSimulationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_governanceAgentSimulationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_governanceAgentSimulationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_governanceAgentSimulationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_governanceAgentSimulation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_governanceAgentSimulationResult {
+  "@odata.context"?: string;
+  msdyn_HasMoreRecords: string;
+  msdyn_NeedThrottling: string;
+}
+
+/**
  * msdyn_governanceAgentSimulation response message
+ *
+ * `result` is the value the msdyn_governanceAgentSimulation action returns (see {@link msdyn_governanceAgentSimulationResult}).
  */
 export class msdyn_governanceAgentSimulationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_governanceAgentSimulationResponseData) {
+  constructor(public result: msdyn_governanceAgentSimulationResult) {
     super("msdyn_governanceAgentSimulation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_governanceAgentSimulationResponse {
     return new msdyn_governanceAgentSimulationResponse(
-      responseObject<msdyn_governanceAgentSimulationResponseData>(data)
+      data as msdyn_governanceAgentSimulationResult
     );
   }
 }

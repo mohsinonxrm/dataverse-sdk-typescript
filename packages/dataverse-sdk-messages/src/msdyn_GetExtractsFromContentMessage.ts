@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetExtractsFromContentResponse as msdyn_GetExtractsFromContentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetExtractsFromContent message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,34 @@ export class msdyn_GetExtractsFromContentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetExtractsFromContentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetExtractsFromContentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetExtractsFromContentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetExtractsFromContent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetExtractsFromContentResult {
+  "@odata.context"?: string;
+  msdyn_documents: string;
+  msdyn_mdlDetails: string;
+}
+
+/**
  * msdyn_GetExtractsFromContent response message
+ *
+ * `result` is the value the msdyn_GetExtractsFromContent action returns (see {@link msdyn_GetExtractsFromContentResult}).
  */
 export class msdyn_GetExtractsFromContentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetExtractsFromContentResponseData) {
+  constructor(public result: msdyn_GetExtractsFromContentResult) {
     super("msdyn_GetExtractsFromContent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetExtractsFromContentResponse {
-    return new msdyn_GetExtractsFromContentResponse(
-      responseObject<msdyn_GetExtractsFromContentResponseData>(data)
-    );
+    return new msdyn_GetExtractsFromContentResponse(data as msdyn_GetExtractsFromContentResult);
   }
 }

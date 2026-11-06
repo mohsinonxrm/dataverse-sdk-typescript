@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetContactsForOptyConnectedSalesTeamMemberResponse as msdyn_GetContactsForOptyConnectedSalesTeamMemberResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetContactsForOptyConnectedSalesTeamMember message, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +49,7 @@ export class msdyn_GetContactsForOptyConnectedSalesTeamMemberRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetContactsForOptyConnectedSalesTeamMemberResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetContactsForOptyConnectedSalesTeamMemberResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetContactsForOptyConnectedSalesTeamMemberResponse.fromResponse(
       await response.json()
     );
@@ -61,16 +57,29 @@ export class msdyn_GetContactsForOptyConnectedSalesTeamMemberRequest
 }
 
 /**
+ * Response from the msdyn_GetContactsForOptyConnectedSalesTeamMember action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetContactsForOptyConnectedSalesTeamMemberResult {
+  "@odata.context"?: string;
+  CustomActionSuggestedUsers: string;
+}
+
+/**
  * msdyn_GetContactsForOptyConnectedSalesTeamMember response message
+ *
+ * `result` is the value the msdyn_GetContactsForOptyConnectedSalesTeamMember action returns (see {@link msdyn_GetContactsForOptyConnectedSalesTeamMemberResult}).
  */
 export class msdyn_GetContactsForOptyConnectedSalesTeamMemberResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetContactsForOptyConnectedSalesTeamMemberResponseData) {
+  constructor(public result: msdyn_GetContactsForOptyConnectedSalesTeamMemberResult) {
     super("msdyn_GetContactsForOptyConnectedSalesTeamMember");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetContactsForOptyConnectedSalesTeamMemberResponse {
     return new msdyn_GetContactsForOptyConnectedSalesTeamMemberResponse(
-      responseObject<msdyn_GetContactsForOptyConnectedSalesTeamMemberResponseData>(data)
+      data as msdyn_GetContactsForOptyConnectedSalesTeamMemberResult
     );
   }
 }

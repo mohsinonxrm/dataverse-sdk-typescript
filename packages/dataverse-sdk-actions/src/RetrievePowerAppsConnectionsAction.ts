@@ -1,12 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
 
 /**
- * Response from RetrievePowerAppsConnections action
+ * Response from the RetrievePowerAppsConnections action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrievePowerAppsConnectionsResponse {
-  value: EntityReference[];
-}
+export type RetrievePowerAppsConnectionsResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * RetrievePowerAppsConnections action
@@ -27,8 +31,9 @@ export class RetrievePowerAppsConnectionsAction implements Executable<RetrievePo
   }
 
   async parseResponse(response: Response): Promise<RetrievePowerAppsConnectionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrievePowerAppsConnectionsResponse;
-    return (await response.json()) as RetrievePowerAppsConnectionsResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrievePowerAppsConnectionsResponse }).value;
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery action
+ * Response from the msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse {
+  "@odata.context"?: string;
   msdynmkt_apiresponsedata: string;
   msdynmkt_error: string;
   msdynmkt_resultcode: number;
@@ -54,8 +57,7 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse;
   }
 }

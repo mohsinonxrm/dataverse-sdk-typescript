@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from SendTemplate action
+ * Response from the SendTemplate action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SendTemplateResponse {
-  // No content returned
-}
+export type SendTemplateResponse = void;
 
 /**
  * Parameters of the SendTemplate action, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +51,8 @@ export class SendTemplateAction implements Executable<SendTemplateResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<SendTemplateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SendTemplateResponse;
-    return (await response.json()) as SendTemplateResponse;
+  parseResponse(_response: Response): Promise<SendTemplateResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

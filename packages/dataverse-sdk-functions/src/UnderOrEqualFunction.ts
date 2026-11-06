@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from UnderOrEqual function
+ * Response from the UnderOrEqual function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface UnderOrEqualResponse {
-  value: boolean;
-}
+export type UnderOrEqualResponse = boolean;
 
 /**
  * Parameters of the UnderOrEqual function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class UnderOrEqualFunction implements Executable<UnderOrEqualResponse> {
   }
 
   async parseResponse(response: Response): Promise<UnderOrEqualResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UnderOrEqualResponse;
-    return (await response.json()) as UnderOrEqualResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: UnderOrEqualResponse }).value;
   }
 }

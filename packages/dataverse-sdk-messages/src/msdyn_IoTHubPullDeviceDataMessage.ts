@@ -42,9 +42,9 @@ export class msdyn_IoTHubPullDeviceDataRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_IoTHubPullDeviceDataResponse> {
+  parseResponse(_response: Response): Promise<msdyn_IoTHubPullDeviceDataResponse> {
     // No return value (204 No Content)
-    return new msdyn_IoTHubPullDeviceDataResponse();
+    return Promise.resolve(new msdyn_IoTHubPullDeviceDataResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_IoTHubPullDeviceDataResponse extends OrganizationResponse {
     super("msdyn_IoTHubPullDeviceData");
   }
 
-  static fromResponse(_data: unknown): msdyn_IoTHubPullDeviceDataResponse {
+  static fromResponse(_data?: unknown): msdyn_IoTHubPullDeviceDataResponse {
     return new msdyn_IoTHubPullDeviceDataResponse();
   }
 }

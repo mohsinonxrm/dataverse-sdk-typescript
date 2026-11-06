@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetSalesSuggestedActionsResponse as msdyn_GetSalesSuggestedActionsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetSalesSuggestedActions message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_GetSalesSuggestedActionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSalesSuggestedActionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSalesSuggestedActionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSalesSuggestedActionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSalesSuggestedActions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSalesSuggestedActionsResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_GetSalesSuggestedActions response message
+ *
+ * `result` is the value the msdyn_GetSalesSuggestedActions action returns (see {@link msdyn_GetSalesSuggestedActionsResult}).
  */
 export class msdyn_GetSalesSuggestedActionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSalesSuggestedActionsResponseData) {
+  constructor(public result: msdyn_GetSalesSuggestedActionsResult) {
     super("msdyn_GetSalesSuggestedActions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSalesSuggestedActionsResponse {
-    return new msdyn_GetSalesSuggestedActionsResponse(
-      responseObject<msdyn_GetSalesSuggestedActionsResponseData>(data)
-    );
+    return new msdyn_GetSalesSuggestedActionsResponse(data as msdyn_GetSalesSuggestedActionsResult);
   }
 }

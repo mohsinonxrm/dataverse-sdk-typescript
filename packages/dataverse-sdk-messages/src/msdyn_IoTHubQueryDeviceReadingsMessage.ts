@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_IoTHubQueryDeviceReadingsResponse as msdyn_IoTHubQueryDeviceReadingsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_IoTHubQueryDeviceReadings message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,35 @@ export class msdyn_IoTHubQueryDeviceReadingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTHubQueryDeviceReadingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_IoTHubQueryDeviceReadingsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IoTHubQueryDeviceReadingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IoTHubQueryDeviceReadings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IoTHubQueryDeviceReadingsResult {
+  "@odata.context"?: string;
+  AggregatedDeviceReadings: string;
+}
+
+/**
  * msdyn_IoTHubQueryDeviceReadings response message
+ *
+ * `result` is the value the msdyn_IoTHubQueryDeviceReadings action returns (see {@link msdyn_IoTHubQueryDeviceReadingsResult}).
  */
 export class msdyn_IoTHubQueryDeviceReadingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTHubQueryDeviceReadingsResponseData) {
+  constructor(public result: msdyn_IoTHubQueryDeviceReadingsResult) {
     super("msdyn_IoTHubQueryDeviceReadings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IoTHubQueryDeviceReadingsResponse {
     return new msdyn_IoTHubQueryDeviceReadingsResponse(
-      responseObject<msdyn_IoTHubQueryDeviceReadingsResponseData>(data)
+      data as msdyn_IoTHubQueryDeviceReadingsResult
     );
   }
 }

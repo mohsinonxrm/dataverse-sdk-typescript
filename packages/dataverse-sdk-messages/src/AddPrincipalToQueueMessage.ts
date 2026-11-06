@@ -50,9 +50,9 @@ export class AddPrincipalToQueueRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AddPrincipalToQueueResponse> {
+  parseResponse(_response: Response): Promise<AddPrincipalToQueueResponse> {
     // No return value (204 No Content)
-    return new AddPrincipalToQueueResponse();
+    return Promise.resolve(new AddPrincipalToQueueResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class AddPrincipalToQueueResponse extends OrganizationResponse {
     super("AddPrincipalToQueue");
   }
 
-  static fromResponse(_data: unknown): AddPrincipalToQueueResponse {
+  static fromResponse(_data?: unknown): AddPrincipalToQueueResponse {
     return new AddPrincipalToQueueResponse();
   }
 }

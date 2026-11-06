@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_CheckIfCSFormsFromUnmanagedLayer action
+ * Response from the msdyn_CheckIfCSFormsFromUnmanagedLayer action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckIfCSFormsFromUnmanagedLayerResponse {
+  "@odata.context"?: string;
   HelpLink: string;
   Message: string;
   ResultEntities: string;
@@ -30,8 +33,7 @@ export class msdyn_CheckIfCSFormsFromUnmanagedLayerAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfCSFormsFromUnmanagedLayerResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CheckIfCSFormsFromUnmanagedLayerResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CheckIfCSFormsFromUnmanagedLayerResponse;
   }
 }

@@ -29,9 +29,9 @@ export class ConvertOwnerTeamToAccessTeamRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ConvertOwnerTeamToAccessTeamResponse> {
+  parseResponse(_response: Response): Promise<ConvertOwnerTeamToAccessTeamResponse> {
     // No return value (204 No Content)
-    return new ConvertOwnerTeamToAccessTeamResponse();
+    return Promise.resolve(new ConvertOwnerTeamToAccessTeamResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class ConvertOwnerTeamToAccessTeamResponse extends OrganizationResponse {
     super("ConvertOwnerTeamToAccessTeam");
   }
 
-  static fromResponse(_data: unknown): ConvertOwnerTeamToAccessTeamResponse {
+  static fromResponse(_data?: unknown): ConvertOwnerTeamToAccessTeamResponse {
     return new ConvertOwnerTeamToAccessTeamResponse();
   }
 }

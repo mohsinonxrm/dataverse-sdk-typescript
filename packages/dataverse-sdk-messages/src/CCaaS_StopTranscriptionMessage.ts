@@ -56,9 +56,9 @@ export class CCaaS_StopTranscriptionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_StopTranscriptionResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_StopTranscriptionResponse> {
     // No return value (204 No Content)
-    return new CCaaS_StopTranscriptionResponse();
+    return Promise.resolve(new CCaaS_StopTranscriptionResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class CCaaS_StopTranscriptionResponse extends OrganizationResponse {
     super("CCaaS_StopTranscription");
   }
 
-  static fromResponse(_data: unknown): CCaaS_StopTranscriptionResponse {
+  static fromResponse(_data?: unknown): CCaaS_StopTranscriptionResponse {
     return new CCaaS_StopTranscriptionResponse();
   }
 }

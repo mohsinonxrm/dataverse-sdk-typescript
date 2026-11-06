@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyncrm_GetFileAttributesFromConfiguration action
+ * Response from the msdyncrm_GetFileAttributesFromConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyncrm_GetFileAttributesFromConfigurationResponse {
+  "@odata.context"?: string;
   AllowedFileTypesRegularExpression: string;
   MaxAssetSizeInBytesConfig: string;
   MaxFileSizeInBytes: string;
@@ -30,8 +33,7 @@ export class msdyncrm_GetFileAttributesFromConfigurationAction implements Execut
   async parseResponse(
     response: Response
   ): Promise<msdyncrm_GetFileAttributesFromConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyncrm_GetFileAttributesFromConfigurationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyncrm_GetFileAttributesFromConfigurationResponse;
   }
 }

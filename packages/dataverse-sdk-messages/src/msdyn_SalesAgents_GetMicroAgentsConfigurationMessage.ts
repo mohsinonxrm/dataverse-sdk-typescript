@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_GetMicroAgentsConfigurationResponse as msdyn_SalesAgents_GetMicroAgentsConfigurationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_GetMicroAgentsConfiguration message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_SalesAgents_GetMicroAgentsConfigurationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetMicroAgentsConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_GetMicroAgentsConfigurationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_GetMicroAgentsConfigurationResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,29 @@ export class msdyn_SalesAgents_GetMicroAgentsConfigurationRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_GetMicroAgentsConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_GetMicroAgentsConfigurationResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_SalesAgents_GetMicroAgentsConfiguration response message
+ *
+ * `result` is the value the msdyn_SalesAgents_GetMicroAgentsConfiguration action returns (see {@link msdyn_SalesAgents_GetMicroAgentsConfigurationResult}).
  */
 export class msdyn_SalesAgents_GetMicroAgentsConfigurationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetMicroAgentsConfigurationResponseData) {
+  constructor(public result: msdyn_SalesAgents_GetMicroAgentsConfigurationResult) {
     super("msdyn_SalesAgents_GetMicroAgentsConfiguration");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_GetMicroAgentsConfigurationResponse {
     return new msdyn_SalesAgents_GetMicroAgentsConfigurationResponse(
-      responseObject<msdyn_SalesAgents_GetMicroAgentsConfigurationResponseData>(data)
+      data as msdyn_SalesAgents_GetMicroAgentsConfigurationResult
     );
   }
 }

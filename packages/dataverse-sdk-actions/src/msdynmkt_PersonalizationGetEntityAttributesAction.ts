@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_PersonalizationGetEntityAttributes action
+ * Response from the msdynmkt_PersonalizationGetEntityAttributes action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_PersonalizationGetEntityAttributesResponse {
+  "@odata.context"?: string;
   GetEntityAttributesResult: string;
 }
 
@@ -46,8 +49,7 @@ export class msdynmkt_PersonalizationGetEntityAttributesAction implements Execut
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_PersonalizationGetEntityAttributesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_PersonalizationGetEntityAttributesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_PersonalizationGetEntityAttributesResponse;
   }
 }

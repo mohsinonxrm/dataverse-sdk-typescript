@@ -50,9 +50,9 @@ export class CCaaS_StartSecondaryChannelRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_StartSecondaryChannelResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_StartSecondaryChannelResponse> {
     // No return value (204 No Content)
-    return new CCaaS_StartSecondaryChannelResponse();
+    return Promise.resolve(new CCaaS_StartSecondaryChannelResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class CCaaS_StartSecondaryChannelResponse extends OrganizationResponse {
     super("CCaaS_StartSecondaryChannel");
   }
 
-  static fromResponse(_data: unknown): CCaaS_StartSecondaryChannelResponse {
+  static fromResponse(_data?: unknown): CCaaS_StartSecondaryChannelResponse {
     return new CCaaS_StartSecondaryChannelResponse();
   }
 }

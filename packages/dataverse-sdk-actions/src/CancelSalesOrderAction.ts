@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from CancelSalesOrder action
+ * Response from the CancelSalesOrder action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CancelSalesOrderResponse {
-  // No content returned
-}
+export type CancelSalesOrderResponse = void;
 
 /**
  * Parameters of the CancelSalesOrder action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class CancelSalesOrderAction implements Executable<CancelSalesOrderRespon
     };
   }
 
-  async parseResponse(response: Response): Promise<CancelSalesOrderResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CancelSalesOrderResponse;
-    return (await response.json()) as CancelSalesOrderResponse;
+  parseResponse(_response: Response): Promise<CancelSalesOrderResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

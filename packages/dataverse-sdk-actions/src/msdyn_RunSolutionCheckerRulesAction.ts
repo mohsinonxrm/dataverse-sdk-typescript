@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_RunSolutionCheckerRules action
+ * Response from the msdyn_RunSolutionCheckerRules action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_RunSolutionCheckerRulesResponse {
-  // No content returned
-}
+export type msdyn_RunSolutionCheckerRulesResponse = void;
 
 /**
  * Parameters of the msdyn_RunSolutionCheckerRules action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_RunSolutionCheckerRulesAction implements Executable<msdyn_Run
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_RunSolutionCheckerRulesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_RunSolutionCheckerRulesResponse;
-    return (await response.json()) as msdyn_RunSolutionCheckerRulesResponse;
+  parseResponse(_response: Response): Promise<msdyn_RunSolutionCheckerRulesResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

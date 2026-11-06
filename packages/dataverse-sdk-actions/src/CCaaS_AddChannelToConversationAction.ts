@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_AddChannelToConversation action
+ * Response from the CCaaS_AddChannelToConversation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_AddChannelToConversationResponse {
+  "@odata.context"?: string;
   ResponseBody: string;
 }
 
@@ -55,8 +58,7 @@ export class CCaaS_AddChannelToConversationAction implements Executable<CCaaS_Ad
   }
 
   async parseResponse(response: Response): Promise<CCaaS_AddChannelToConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_AddChannelToConversationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_AddChannelToConversationResponse;
   }
 }

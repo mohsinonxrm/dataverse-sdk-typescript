@@ -5,11 +5,11 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { businessunit } from "./types/index.js";
 
 /**
- * Response from SetParentTeam action
+ * Response from the SetParentTeam action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SetParentTeamResponse {
-  // No content returned
-}
+export type SetParentTeamResponse = void;
 
 /**
  * Parameters of the SetParentTeam action, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +53,8 @@ export class SetParentTeamAction implements Executable<SetParentTeamResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<SetParentTeamResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SetParentTeamResponse;
-    return (await response.json()) as SetParentTeamResponse;
+  parseResponse(_response: Response): Promise<SetParentTeamResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

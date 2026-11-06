@@ -4,15 +4,17 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from CreateKnowledgeArticleVersion action
+ * Response from the CreateKnowledgeArticleVersion action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface CreateKnowledgeArticleVersionResponse {
+export type CreateKnowledgeArticleVersionResponse = {
   "@odata.context"?: string;
   "@odata.etag"?: string;
+  "@odata.type"?: string;
   [column: string]: unknown;
-}
+} | null;
 
 /**
  * Parameters of the CreateKnowledgeArticleVersion action, by their CSDL names. A parameter the CSDL declares
@@ -50,8 +52,9 @@ export class CreateKnowledgeArticleVersionAction implements Executable<CreateKno
   }
 
   async parseResponse(response: Response): Promise<CreateKnowledgeArticleVersionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateKnowledgeArticleVersionResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as CreateKnowledgeArticleVersionResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResponse as msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdynmkt_UnsubscribeContactableEntityFromAllCommunication message, by their CSDL names. A parameter the CSDL declares
@@ -55,9 +53,7 @@ export class msdynmkt_UnsubscribeContactableEntityFromAllCommunicationRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResponse.fromResponse(
       await response.json()
     );
@@ -65,20 +61,35 @@ export class msdynmkt_UnsubscribeContactableEntityFromAllCommunicationRequest
 }
 
 /**
+ * Response from the msdynmkt_UnsubscribeContactableEntityFromAllCommunication action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResult {
+  "@odata.context"?: string;
+  ContactPointsFound: number;
+  FailedContactPointCount: number;
+  IsSuccess: boolean;
+  OptedOutContactPointCount: number;
+  UnsubscribeResult: string;
+}
+
+/**
  * msdynmkt_UnsubscribeContactableEntityFromAllCommunication response message
+ *
+ * `result` is the value the msdynmkt_UnsubscribeContactableEntityFromAllCommunication action returns (see {@link msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResult}).
  */
 export class msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResponse extends OrganizationResponse {
-  constructor(
-    public result: msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResponseData
-  ) {
+  constructor(public result: msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResult) {
     super("msdynmkt_UnsubscribeContactableEntityFromAllCommunication");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResponse {
     return new msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResponse(
-      responseObject<msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResponseData>(data)
+      data as msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResult
     );
   }
 }

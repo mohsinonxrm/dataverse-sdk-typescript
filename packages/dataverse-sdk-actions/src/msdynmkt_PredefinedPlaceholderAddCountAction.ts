@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_PredefinedPlaceholderAddCount action
+ * Response from the msdynmkt_PredefinedPlaceholderAddCount action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdynmkt_PredefinedPlaceholderAddCountResponse {
-  // No content returned
-}
+export type msdynmkt_PredefinedPlaceholderAddCountResponse = void;
 
 /**
  * Parameters of the msdynmkt_PredefinedPlaceholderAddCount action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdynmkt_PredefinedPlaceholderAddCountAction implements Executable<
     };
   }
 
-  async parseResponse(response: Response): Promise<msdynmkt_PredefinedPlaceholderAddCountResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_PredefinedPlaceholderAddCountResponse;
-    return (await response.json()) as msdynmkt_PredefinedPlaceholderAddCountResponse;
+  parseResponse(_response: Response): Promise<msdynmkt_PredefinedPlaceholderAddCountResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

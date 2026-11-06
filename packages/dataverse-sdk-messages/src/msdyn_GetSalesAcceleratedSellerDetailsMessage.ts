@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetSalesAcceleratedSellerDetailsResponse as msdyn_GetSalesAcceleratedSellerDetailsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetSalesAcceleratedSellerDetails message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,35 @@ export class msdyn_GetSalesAcceleratedSellerDetailsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSalesAcceleratedSellerDetailsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetSalesAcceleratedSellerDetailsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSalesAcceleratedSellerDetailsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSalesAcceleratedSellerDetails action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSalesAcceleratedSellerDetailsResult {
+  "@odata.context"?: string;
+  SellerDetails: string;
+}
+
+/**
  * msdyn_GetSalesAcceleratedSellerDetails response message
+ *
+ * `result` is the value the msdyn_GetSalesAcceleratedSellerDetails action returns (see {@link msdyn_GetSalesAcceleratedSellerDetailsResult}).
  */
 export class msdyn_GetSalesAcceleratedSellerDetailsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSalesAcceleratedSellerDetailsResponseData) {
+  constructor(public result: msdyn_GetSalesAcceleratedSellerDetailsResult) {
     super("msdyn_GetSalesAcceleratedSellerDetails");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSalesAcceleratedSellerDetailsResponse {
     return new msdyn_GetSalesAcceleratedSellerDetailsResponse(
-      responseObject<msdyn_GetSalesAcceleratedSellerDetailsResponseData>(data)
+      data as msdyn_GetSalesAcceleratedSellerDetailsResult
     );
   }
 }

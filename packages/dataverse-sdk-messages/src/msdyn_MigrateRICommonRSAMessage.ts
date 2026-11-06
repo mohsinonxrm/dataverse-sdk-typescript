@@ -42,9 +42,9 @@ export class msdyn_MigrateRICommonRSARequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_MigrateRICommonRSAResponse> {
+  parseResponse(_response: Response): Promise<msdyn_MigrateRICommonRSAResponse> {
     // No return value (204 No Content)
-    return new msdyn_MigrateRICommonRSAResponse();
+    return Promise.resolve(new msdyn_MigrateRICommonRSAResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_MigrateRICommonRSAResponse extends OrganizationResponse {
     super("msdyn_MigrateRICommonRSA");
   }
 
-  static fromResponse(_data: unknown): msdyn_MigrateRICommonRSAResponse {
+  static fromResponse(_data?: unknown): msdyn_MigrateRICommonRSAResponse {
     return new msdyn_MigrateRICommonRSAResponse();
   }
 }

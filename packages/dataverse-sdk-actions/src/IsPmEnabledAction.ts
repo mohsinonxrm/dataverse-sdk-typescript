@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from IsPmEnabled action
+ * Response from the IsPmEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface IsPmEnabledResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -26,8 +29,7 @@ export class IsPmEnabledAction implements Executable<IsPmEnabledResponse> {
   }
 
   async parseResponse(response: Response): Promise<IsPmEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as IsPmEnabledResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as IsPmEnabledResponse;
   }
 }

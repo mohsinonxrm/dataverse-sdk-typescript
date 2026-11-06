@@ -44,9 +44,9 @@ export class _SkillToUserRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<_SkillToUserResponse> {
+  parseResponse(_response: Response): Promise<_SkillToUserResponse> {
     // No return value (204 No Content)
-    return new _SkillToUserResponse();
+    return Promise.resolve(new _SkillToUserResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class _SkillToUserResponse extends OrganizationResponse {
     super("_SkillToUser");
   }
 
-  static fromResponse(_data: unknown): _SkillToUserResponse {
+  static fromResponse(_data?: unknown): _SkillToUserResponse {
     return new _SkillToUserResponse();
   }
 }

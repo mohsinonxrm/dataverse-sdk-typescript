@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CloneAsSolutionResponse as CloneAsSolutionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CloneAsSolution message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class CloneAsSolutionRequest
   }
 
   async parseResponse(response: Response): Promise<CloneAsSolutionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CloneAsSolutionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CloneAsSolutionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CloneAsSolution action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CloneAsSolutionResult {
+  "@odata.context"?: string;
+  SolutionId: string;
+}
+
+/**
  * CloneAsSolution response message
+ *
+ * `result` is the value the CloneAsSolution action returns (see {@link CloneAsSolutionResult}).
  */
 export class CloneAsSolutionResponse extends OrganizationResponse {
-  constructor(public result: CloneAsSolutionResponseData) {
+  constructor(public result: CloneAsSolutionResult) {
     super("CloneAsSolution");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CloneAsSolutionResponse {
-    return new CloneAsSolutionResponse(responseObject<CloneAsSolutionResponseData>(data));
+    return new CloneAsSolutionResponse(data as CloneAsSolutionResult);
   }
 }

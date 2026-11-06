@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SIGetFCBStatus action
+ * Response from the msdyn_SIGetFCBStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SIGetFCBStatusResponse {
+  "@odata.context"?: string;
   Status: boolean;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_SIGetFCBStatusAction implements Executable<msdyn_SIGetFCBStat
   }
 
   async parseResponse(response: Response): Promise<msdyn_SIGetFCBStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SIGetFCBStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SIGetFCBStatusResponse;
   }
 }

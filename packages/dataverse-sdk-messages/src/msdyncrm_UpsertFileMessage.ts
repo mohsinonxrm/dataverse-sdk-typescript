@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyncrm_UpsertFileResponse as msdyncrm_UpsertFileResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyncrm_UpsertFile message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class msdyncrm_UpsertFileRequest
   }
 
   async parseResponse(response: Response): Promise<msdyncrm_UpsertFileResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyncrm_UpsertFileResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyncrm_UpsertFileResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyncrm_UpsertFile action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyncrm_UpsertFileResult {
+  "@odata.context"?: string;
+  OutputFile: string;
+}
+
+/**
  * msdyncrm_UpsertFile response message
+ *
+ * `result` is the value the msdyncrm_UpsertFile action returns (see {@link msdyncrm_UpsertFileResult}).
  */
 export class msdyncrm_UpsertFileResponse extends OrganizationResponse {
-  constructor(public result: msdyncrm_UpsertFileResponseData) {
+  constructor(public result: msdyncrm_UpsertFileResult) {
     super("msdyncrm_UpsertFile");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyncrm_UpsertFileResponse {
-    return new msdyncrm_UpsertFileResponse(responseObject<msdyncrm_UpsertFileResponseData>(data));
+    return new msdyncrm_UpsertFileResponse(data as msdyncrm_UpsertFileResult);
   }
 }

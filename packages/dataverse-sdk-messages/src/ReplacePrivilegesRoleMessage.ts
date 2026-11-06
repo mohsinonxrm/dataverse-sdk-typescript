@@ -50,9 +50,9 @@ export class ReplacePrivilegesRoleRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ReplacePrivilegesRoleResponse> {
+  parseResponse(_response: Response): Promise<ReplacePrivilegesRoleResponse> {
     // No return value (204 No Content)
-    return new ReplacePrivilegesRoleResponse();
+    return Promise.resolve(new ReplacePrivilegesRoleResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class ReplacePrivilegesRoleResponse extends OrganizationResponse {
     super("ReplacePrivilegesRole");
   }
 
-  static fromResponse(_data: unknown): ReplacePrivilegesRoleResponse {
+  static fromResponse(_data?: unknown): ReplacePrivilegesRoleResponse {
     return new ReplacePrivilegesRoleResponse();
   }
 }

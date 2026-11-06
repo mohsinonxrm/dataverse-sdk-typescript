@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_SearchResourceAvailabilityResponse as msdyn_SearchResourceAvailabilityResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SearchResourceAvailability message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,34 @@ export class msdyn_SearchResourceAvailabilityRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SearchResourceAvailabilityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SearchResourceAvailabilityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SearchResourceAvailabilityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SearchResourceAvailability action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SearchResourceAvailabilityResult {
+  "@odata.context"?: string;
+}
+
+/**
  * msdyn_SearchResourceAvailability response message
+ *
+ * `result` is the value the msdyn_SearchResourceAvailability action returns (see {@link msdyn_SearchResourceAvailabilityResult}).
  */
 export class msdyn_SearchResourceAvailabilityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SearchResourceAvailabilityResponseData) {
+  constructor(public result: msdyn_SearchResourceAvailabilityResult) {
     super("msdyn_SearchResourceAvailability");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SearchResourceAvailabilityResponse {
     return new msdyn_SearchResourceAvailabilityResponse(
-      responseObject<msdyn_SearchResourceAvailabilityResponseData>(data)
+      data as msdyn_SearchResourceAvailabilityResult
     );
   }
 }

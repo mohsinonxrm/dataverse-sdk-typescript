@@ -50,9 +50,9 @@ export class CCaaS_AcceptConversationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_AcceptConversationResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_AcceptConversationResponse> {
     // No return value (204 No Content)
-    return new CCaaS_AcceptConversationResponse();
+    return Promise.resolve(new CCaaS_AcceptConversationResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class CCaaS_AcceptConversationResponse extends OrganizationResponse {
     super("CCaaS_AcceptConversation");
   }
 
-  static fromResponse(_data: unknown): CCaaS_AcceptConversationResponse {
+  static fromResponse(_data?: unknown): CCaaS_AcceptConversationResponse {
     return new CCaaS_AcceptConversationResponse();
   }
 }

@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_TrainAIModel action
+ * Response from the msdyn_TrainAIModel action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_TrainAIModelResponse {
+  "@odata.context"?: string;
   Response: string;
 }
 
@@ -32,8 +35,7 @@ export class msdyn_TrainAIModelAction implements Executable<msdyn_TrainAIModelRe
   }
 
   async parseResponse(response: Response): Promise<msdyn_TrainAIModelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_TrainAIModelResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_TrainAIModelResponse;
   }
 }

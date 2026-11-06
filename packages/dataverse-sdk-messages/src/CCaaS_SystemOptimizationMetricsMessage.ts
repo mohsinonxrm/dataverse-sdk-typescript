@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_SystemOptimizationMetricsResponse as CCaaS_SystemOptimizationMetricsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_SystemOptimizationMetrics message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,37 @@ export class CCaaS_SystemOptimizationMetricsRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_SystemOptimizationMetricsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CCaaS_SystemOptimizationMetricsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_SystemOptimizationMetricsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CCaaS_SystemOptimizationMetrics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_SystemOptimizationMetricsResult {
+  "@odata.context"?: string;
+  Data: string;
+  ErrorMessage: string;
+  StatusCode: string;
+}
+
+/**
  * CCaaS_SystemOptimizationMetrics response message
+ *
+ * `result` is the value the CCaaS_SystemOptimizationMetrics action returns (see {@link CCaaS_SystemOptimizationMetricsResult}).
  */
 export class CCaaS_SystemOptimizationMetricsResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_SystemOptimizationMetricsResponseData) {
+  constructor(public result: CCaaS_SystemOptimizationMetricsResult) {
     super("CCaaS_SystemOptimizationMetrics");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_SystemOptimizationMetricsResponse {
     return new CCaaS_SystemOptimizationMetricsResponse(
-      responseObject<CCaaS_SystemOptimizationMetricsResponseData>(data)
+      data as CCaaS_SystemOptimizationMetricsResult
     );
   }
 }

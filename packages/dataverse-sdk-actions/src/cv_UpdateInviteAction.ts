@@ -5,14 +5,18 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msfp_surveyinvite } from "./types/index.js";
 
 /**
- * Response from cv_UpdateInvite action
+ * Response from the cv_UpdateInvite action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface cv_UpdateInviteResponse extends msfp_surveyinvite {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type cv_UpdateInviteResponse =
+  | (msfp_surveyinvite & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
 
 /**
  * Parameters of the cv_UpdateInvite action, by their CSDL names. A parameter the CSDL declares
@@ -48,8 +52,9 @@ export class cv_UpdateInviteAction implements Executable<cv_UpdateInviteResponse
   }
 
   async parseResponse(response: Response): Promise<cv_UpdateInviteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as cv_UpdateInviteResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as cv_UpdateInviteResponse;
   }
 }

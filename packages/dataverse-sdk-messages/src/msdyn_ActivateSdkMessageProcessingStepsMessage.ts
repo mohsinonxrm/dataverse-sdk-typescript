@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_ActivateSdkMessageProcessingStepsResponse as msdyn_ActivateSdkMessageProcessingStepsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ActivateSdkMessageProcessingSteps message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,36 @@ export class msdyn_ActivateSdkMessageProcessingStepsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ActivateSdkMessageProcessingStepsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_ActivateSdkMessageProcessingStepsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ActivateSdkMessageProcessingStepsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ActivateSdkMessageProcessingSteps action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ActivateSdkMessageProcessingStepsResult {
+  "@odata.context"?: string;
+  ResolutionState: number;
+  ResolvedRecordsCount: number;
+}
+
+/**
  * msdyn_ActivateSdkMessageProcessingSteps response message
+ *
+ * `result` is the value the msdyn_ActivateSdkMessageProcessingSteps action returns (see {@link msdyn_ActivateSdkMessageProcessingStepsResult}).
  */
 export class msdyn_ActivateSdkMessageProcessingStepsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ActivateSdkMessageProcessingStepsResponseData) {
+  constructor(public result: msdyn_ActivateSdkMessageProcessingStepsResult) {
     super("msdyn_ActivateSdkMessageProcessingSteps");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ActivateSdkMessageProcessingStepsResponse {
     return new msdyn_ActivateSdkMessageProcessingStepsResponse(
-      responseObject<msdyn_ActivateSdkMessageProcessingStepsResponseData>(data)
+      data as msdyn_ActivateSdkMessageProcessingStepsResult
     );
   }
 }

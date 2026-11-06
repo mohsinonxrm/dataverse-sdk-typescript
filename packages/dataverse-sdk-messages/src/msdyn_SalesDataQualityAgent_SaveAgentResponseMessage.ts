@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesDataQualityAgent_SaveAgentResponseResponse as msdyn_SalesDataQualityAgent_SaveAgentResponseResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesDataQualityAgent_SaveAgentResponse message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_SalesDataQualityAgent_SaveAgentResponseRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesDataQualityAgent_SaveAgentResponseResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesDataQualityAgent_SaveAgentResponseResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesDataQualityAgent_SaveAgentResponseResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,30 @@ export class msdyn_SalesDataQualityAgent_SaveAgentResponseRequest
 }
 
 /**
+ * Response from the msdyn_SalesDataQualityAgent_SaveAgentResponse action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesDataQualityAgent_SaveAgentResponseResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+}
+
+/**
  * msdyn_SalesDataQualityAgent_SaveAgentResponse response message
+ *
+ * `result` is the value the msdyn_SalesDataQualityAgent_SaveAgentResponse action returns (see {@link msdyn_SalesDataQualityAgent_SaveAgentResponseResult}).
  */
 export class msdyn_SalesDataQualityAgent_SaveAgentResponseResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesDataQualityAgent_SaveAgentResponseResponseData) {
+  constructor(public result: msdyn_SalesDataQualityAgent_SaveAgentResponseResult) {
     super("msdyn_SalesDataQualityAgent_SaveAgentResponse");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesDataQualityAgent_SaveAgentResponseResponse {
     return new msdyn_SalesDataQualityAgent_SaveAgentResponseResponse(
-      responseObject<msdyn_SalesDataQualityAgent_SaveAgentResponseResponseData>(data)
+      data as msdyn_SalesDataQualityAgent_SaveAgentResponseResult
     );
   }
 }

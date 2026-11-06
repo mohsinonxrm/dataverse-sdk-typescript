@@ -50,9 +50,9 @@ export class msdyn_StartODOSProvisioningRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_StartODOSProvisioningResponse> {
+  parseResponse(_response: Response): Promise<msdyn_StartODOSProvisioningResponse> {
     // No return value (204 No Content)
-    return new msdyn_StartODOSProvisioningResponse();
+    return Promise.resolve(new msdyn_StartODOSProvisioningResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class msdyn_StartODOSProvisioningResponse extends OrganizationResponse {
     super("msdyn_StartODOSProvisioning");
   }
 
-  static fromResponse(_data: unknown): msdyn_StartODOSProvisioningResponse {
+  static fromResponse(_data?: unknown): msdyn_StartODOSProvisioningResponse {
     return new msdyn_StartODOSProvisioningResponse();
   }
 }

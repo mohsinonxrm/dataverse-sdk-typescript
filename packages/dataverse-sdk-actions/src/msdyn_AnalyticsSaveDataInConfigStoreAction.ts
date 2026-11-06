@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AnalyticsSaveDataInConfigStore action
+ * Response from the msdyn_AnalyticsSaveDataInConfigStore action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_AnalyticsSaveDataInConfigStoreResponse {
-  // No content returned
-}
+export type msdyn_AnalyticsSaveDataInConfigStoreResponse = void;
 
 /**
  * Parameters of the msdyn_AnalyticsSaveDataInConfigStore action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class msdyn_AnalyticsSaveDataInConfigStoreAction implements Executable<ms
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AnalyticsSaveDataInConfigStoreResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_AnalyticsSaveDataInConfigStoreResponse;
-    return (await response.json()) as msdyn_AnalyticsSaveDataInConfigStoreResponse;
+  parseResponse(_response: Response): Promise<msdyn_AnalyticsSaveDataInConfigStoreResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

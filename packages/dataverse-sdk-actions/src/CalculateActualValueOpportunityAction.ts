@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from CalculateActualValueOpportunity action
+ * Response from the CalculateActualValueOpportunity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CalculateActualValueOpportunityResponse {
+  "@odata.context"?: string;
   Value: number;
 }
 
@@ -32,8 +35,7 @@ export class CalculateActualValueOpportunityAction implements Executable<Calcula
   }
 
   async parseResponse(response: Response): Promise<CalculateActualValueOpportunityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CalculateActualValueOpportunityResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CalculateActualValueOpportunityResponse;
   }
 }

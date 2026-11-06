@@ -3,9 +3,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { FeatureControlSettingData } from "./types/index.js";
 
 /**
- * Response from RetrieveFeatureControlSettings action
+ * Response from the RetrieveFeatureControlSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveFeatureControlSettingsResponse {
+  "@odata.context"?: string;
   FeatureControlSettingCollection: FeatureControlSettingData[];
 }
 
@@ -45,8 +48,7 @@ export class RetrieveFeatureControlSettingsAction implements Executable<Retrieve
   }
 
   async parseResponse(response: Response): Promise<RetrieveFeatureControlSettingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveFeatureControlSettingsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveFeatureControlSettingsResponse;
   }
 }

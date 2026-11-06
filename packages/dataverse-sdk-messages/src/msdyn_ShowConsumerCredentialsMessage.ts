@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ShowConsumerCredentialsResponse as msdyn_ShowConsumerCredentialsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ShowConsumerCredentials message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,34 @@ export class msdyn_ShowConsumerCredentialsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ShowConsumerCredentialsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ShowConsumerCredentialsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ShowConsumerCredentialsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ShowConsumerCredentials action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ShowConsumerCredentialsResult {
+  "@odata.context"?: string;
+  ConsumerKeyValue: string;
+  ConsumerSecretValue: string;
+}
+
+/**
  * msdyn_ShowConsumerCredentials response message
+ *
+ * `result` is the value the msdyn_ShowConsumerCredentials action returns (see {@link msdyn_ShowConsumerCredentialsResult}).
  */
 export class msdyn_ShowConsumerCredentialsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ShowConsumerCredentialsResponseData) {
+  constructor(public result: msdyn_ShowConsumerCredentialsResult) {
     super("msdyn_ShowConsumerCredentials");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ShowConsumerCredentialsResponse {
-    return new msdyn_ShowConsumerCredentialsResponse(
-      responseObject<msdyn_ShowConsumerCredentialsResponseData>(data)
-    );
+    return new msdyn_ShowConsumerCredentialsResponse(data as msdyn_ShowConsumerCredentialsResult);
   }
 }

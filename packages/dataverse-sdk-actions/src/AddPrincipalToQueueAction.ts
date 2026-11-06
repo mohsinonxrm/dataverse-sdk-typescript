@@ -4,11 +4,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from AddPrincipalToQueue action
+ * Response from the AddPrincipalToQueue action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AddPrincipalToQueueResponse {
-  // No content returned
-}
+export type AddPrincipalToQueueResponse = void;
 
 /**
  * Parameters of the AddPrincipalToQueue action, by their CSDL names. A parameter the CSDL declares
@@ -50,9 +50,8 @@ export class AddPrincipalToQueueAction implements Executable<AddPrincipalToQueue
     };
   }
 
-  async parseResponse(response: Response): Promise<AddPrincipalToQueueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddPrincipalToQueueResponse;
-    return (await response.json()) as AddPrincipalToQueueResponse;
+  parseResponse(_response: Response): Promise<AddPrincipalToQueueResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

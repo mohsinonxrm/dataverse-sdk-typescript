@@ -46,11 +46,11 @@ export class msdyn_invokeCustomAgentForCaseProcessingAgentRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_invokeCustomAgentForCaseProcessingAgentResponse> {
     // No return value (204 No Content)
-    return new msdyn_invokeCustomAgentForCaseProcessingAgentResponse();
+    return Promise.resolve(new msdyn_invokeCustomAgentForCaseProcessingAgentResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_invokeCustomAgentForCaseProcessingAgentResponse extends Organ
     super("msdyn_invokeCustomAgentForCaseProcessingAgent");
   }
 
-  static fromResponse(_data: unknown): msdyn_invokeCustomAgentForCaseProcessingAgentResponse {
+  static fromResponse(_data?: unknown): msdyn_invokeCustomAgentForCaseProcessingAgentResponse {
     return new msdyn_invokeCustomAgentForCaseProcessingAgentResponse();
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetCopilotAgentStatusForEnvironment action
+ * Response from the msdyn_GetCopilotAgentStatusForEnvironment action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetCopilotAgentStatusForEnvironmentResponse {
+  "@odata.context"?: string;
   ErrorMessage: string;
   IsSuccess: boolean;
   msdyn_isAgentCapacityEnabled: boolean;
@@ -52,8 +55,7 @@ export class msdyn_GetCopilotAgentStatusForEnvironmentAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetCopilotAgentStatusForEnvironmentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetCopilotAgentStatusForEnvironmentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetCopilotAgentStatusForEnvironmentResponse;
   }
 }

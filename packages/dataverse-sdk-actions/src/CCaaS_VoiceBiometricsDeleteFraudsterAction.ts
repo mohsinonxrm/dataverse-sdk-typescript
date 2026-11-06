@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CCaaS_VoiceBiometricsDeleteFraudster action
+ * Response from the CCaaS_VoiceBiometricsDeleteFraudster action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_VoiceBiometricsDeleteFraudsterResponse {
+  "@odata.context"?: string;
   BadRequestReason: string;
   Deleted: string[];
   ErrorMessage: string;
@@ -53,8 +56,7 @@ export class CCaaS_VoiceBiometricsDeleteFraudsterAction implements Executable<CC
   }
 
   async parseResponse(response: Response): Promise<CCaaS_VoiceBiometricsDeleteFraudsterResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_VoiceBiometricsDeleteFraudsterResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_VoiceBiometricsDeleteFraudsterResponse;
   }
 }

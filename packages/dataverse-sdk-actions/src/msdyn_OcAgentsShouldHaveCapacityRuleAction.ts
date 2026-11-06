@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_OcAgentsShouldHaveCapacityRule action
+ * Response from the msdyn_OcAgentsShouldHaveCapacityRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_OcAgentsShouldHaveCapacityRuleResponse {
+  "@odata.context"?: string;
   Message: string;
   ResultEntities: string;
   ReturnStatus: number;
@@ -28,8 +31,7 @@ export class msdyn_OcAgentsShouldHaveCapacityRuleAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_OcAgentsShouldHaveCapacityRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_OcAgentsShouldHaveCapacityRuleResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_OcAgentsShouldHaveCapacityRuleResponse;
   }
 }

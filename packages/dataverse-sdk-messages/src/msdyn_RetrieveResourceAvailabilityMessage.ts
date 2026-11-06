@@ -1,13 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
-import type {
-  msdyn_RetrieveResourceAvailabilityResponse as msdyn_RetrieveResourceAvailabilityResponseData,
-  msdyn_timegroup,
-} from "./types/index.js";
+import type { msdyn_timegroup } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveResourceAvailability message, by their CSDL names. A parameter the CSDL declares
@@ -94,23 +90,35 @@ export class msdyn_RetrieveResourceAvailabilityRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveResourceAvailabilityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RetrieveResourceAvailabilityResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveResourceAvailabilityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveResourceAvailability action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveResourceAvailabilityResult {
+  "@odata.context"?: string;
+  ExceptionMessage: string;
+}
+
+/**
  * msdyn_RetrieveResourceAvailability response message
+ *
+ * `result` is the value the msdyn_RetrieveResourceAvailability action returns (see {@link msdyn_RetrieveResourceAvailabilityResult}).
  */
 export class msdyn_RetrieveResourceAvailabilityResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveResourceAvailabilityResponseData) {
+  constructor(public result: msdyn_RetrieveResourceAvailabilityResult) {
     super("msdyn_RetrieveResourceAvailability");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveResourceAvailabilityResponse {
     return new msdyn_RetrieveResourceAvailabilityResponse(
-      responseObject<msdyn_RetrieveResourceAvailabilityResponseData>(data)
+      data as msdyn_RetrieveResourceAvailabilityResult
     );
   }
 }

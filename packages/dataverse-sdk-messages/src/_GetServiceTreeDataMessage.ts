@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { _GetServiceTreeDataResponse as _GetServiceTreeDataResponseData } from "./types/index.js";
 
 /**
  * Parameters of the _GetServiceTreeData message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class _GetServiceTreeDataRequest
   }
 
   async parseResponse(response: Response): Promise<_GetServiceTreeDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return _GetServiceTreeDataResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return _GetServiceTreeDataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the _GetServiceTreeData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface _GetServiceTreeDataResult {
+  "@odata.context"?: string;
+  TreeObject: string;
+}
+
+/**
  * _GetServiceTreeData response message
+ *
+ * `result` is the value the _GetServiceTreeData action returns (see {@link _GetServiceTreeDataResult}).
  */
 export class _GetServiceTreeDataResponse extends OrganizationResponse {
-  constructor(public result: _GetServiceTreeDataResponseData) {
+  constructor(public result: _GetServiceTreeDataResult) {
     super("_GetServiceTreeData");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): _GetServiceTreeDataResponse {
-    return new _GetServiceTreeDataResponse(responseObject<_GetServiceTreeDataResponseData>(data));
+    return new _GetServiceTreeDataResponse(data as _GetServiceTreeDataResult);
   }
 }

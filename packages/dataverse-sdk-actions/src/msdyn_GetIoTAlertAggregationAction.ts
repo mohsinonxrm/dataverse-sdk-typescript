@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetIoTAlertAggregation action
+ * Response from the msdyn_GetIoTAlertAggregation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetIoTAlertAggregationResponse {
+  "@odata.context"?: string;
   AggregateOutput: string;
   DialogUniqueName: string;
   EntityLogicalName: string;
@@ -48,8 +51,7 @@ export class msdyn_GetIoTAlertAggregationAction implements Executable<msdyn_GetI
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetIoTAlertAggregationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetIoTAlertAggregationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetIoTAlertAggregationResponse;
   }
 }

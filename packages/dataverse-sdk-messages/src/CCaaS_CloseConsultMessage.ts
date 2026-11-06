@@ -48,9 +48,9 @@ export class CCaaS_CloseConsultRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_CloseConsultResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_CloseConsultResponse> {
     // No return value (204 No Content)
-    return new CCaaS_CloseConsultResponse();
+    return Promise.resolve(new CCaaS_CloseConsultResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class CCaaS_CloseConsultResponse extends OrganizationResponse {
     super("CCaaS_CloseConsult");
   }
 
-  static fromResponse(_data: unknown): CCaaS_CloseConsultResponse {
+  static fromResponse(_data?: unknown): CCaaS_CloseConsultResponse {
     return new CCaaS_CloseConsultResponse();
   }
 }

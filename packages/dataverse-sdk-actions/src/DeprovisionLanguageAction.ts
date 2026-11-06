@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DeprovisionLanguage action
+ * Response from the DeprovisionLanguage action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeprovisionLanguageResponse {
-  // No content returned
-}
+export type DeprovisionLanguageResponse = void;
 
 /**
  * Parameters of the DeprovisionLanguage action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class DeprovisionLanguageAction implements Executable<DeprovisionLanguage
     };
   }
 
-  async parseResponse(response: Response): Promise<DeprovisionLanguageResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DeprovisionLanguageResponse;
-    return (await response.json()) as DeprovisionLanguageResponse;
+  parseResponse(_response: Response): Promise<DeprovisionLanguageResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

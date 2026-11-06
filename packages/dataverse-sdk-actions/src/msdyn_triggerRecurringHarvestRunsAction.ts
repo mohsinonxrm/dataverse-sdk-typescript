@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_triggerRecurringHarvestRuns action
+ * Response from the msdyn_triggerRecurringHarvestRuns action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_triggerRecurringHarvestRunsResponse {
-  // No content returned
-}
+export type msdyn_triggerRecurringHarvestRunsResponse = void;
 
 /**
  * msdyn_triggerRecurringHarvestRuns action
@@ -25,9 +25,8 @@ export class msdyn_triggerRecurringHarvestRunsAction implements Executable<msdyn
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_triggerRecurringHarvestRunsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_triggerRecurringHarvestRunsResponse;
-    return (await response.json()) as msdyn_triggerRecurringHarvestRunsResponse;
+  parseResponse(_response: Response): Promise<msdyn_triggerRecurringHarvestRunsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

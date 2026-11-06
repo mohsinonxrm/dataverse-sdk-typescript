@@ -44,9 +44,9 @@ export class msdyn_GetKnowledgeDraftAssistStreamRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_GetKnowledgeDraftAssistStreamResponse> {
+  parseResponse(_response: Response): Promise<msdyn_GetKnowledgeDraftAssistStreamResponse> {
     // No return value (204 No Content)
-    return new msdyn_GetKnowledgeDraftAssistStreamResponse();
+    return Promise.resolve(new msdyn_GetKnowledgeDraftAssistStreamResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_GetKnowledgeDraftAssistStreamResponse extends OrganizationRes
     super("msdyn_GetKnowledgeDraftAssistStream");
   }
 
-  static fromResponse(_data: unknown): msdyn_GetKnowledgeDraftAssistStreamResponse {
+  static fromResponse(_data?: unknown): msdyn_GetKnowledgeDraftAssistStreamResponse {
     return new msdyn_GetKnowledgeDraftAssistStreamResponse();
   }
 }

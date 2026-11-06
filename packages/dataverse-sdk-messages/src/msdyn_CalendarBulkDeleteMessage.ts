@@ -42,9 +42,9 @@ export class msdyn_CalendarBulkDeleteRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CalendarBulkDeleteResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CalendarBulkDeleteResponse> {
     // No return value (204 No Content)
-    return new msdyn_CalendarBulkDeleteResponse();
+    return Promise.resolve(new msdyn_CalendarBulkDeleteResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_CalendarBulkDeleteResponse extends OrganizationResponse {
     super("msdyn_CalendarBulkDelete");
   }
 
-  static fromResponse(_data: unknown): msdyn_CalendarBulkDeleteResponse {
+  static fromResponse(_data?: unknown): msdyn_CalendarBulkDeleteResponse {
     return new msdyn_CalendarBulkDeleteResponse();
   }
 }

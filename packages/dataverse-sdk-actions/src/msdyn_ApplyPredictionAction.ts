@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ApplyPrediction action
+ * Response from the msdyn_ApplyPrediction action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ApplyPredictionResponse {
-  // No content returned
-}
+export type msdyn_ApplyPredictionResponse = void;
 
 /**
  * Parameters of the msdyn_ApplyPrediction action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_ApplyPredictionAction implements Executable<msdyn_ApplyPredic
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ApplyPredictionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ApplyPredictionResponse;
-    return (await response.json()) as msdyn_ApplyPredictionResponse;
+  parseResponse(_response: Response): Promise<msdyn_ApplyPredictionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

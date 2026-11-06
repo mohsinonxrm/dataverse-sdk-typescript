@@ -44,9 +44,9 @@ export class ApplyRoutingRuleRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ApplyRoutingRuleResponse> {
+  parseResponse(_response: Response): Promise<ApplyRoutingRuleResponse> {
     // No return value (204 No Content)
-    return new ApplyRoutingRuleResponse();
+    return Promise.resolve(new ApplyRoutingRuleResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class ApplyRoutingRuleResponse extends OrganizationResponse {
     super("ApplyRoutingRule");
   }
 
-  static fromResponse(_data: unknown): ApplyRoutingRuleResponse {
+  static fromResponse(_data?: unknown): ApplyRoutingRuleResponse {
     return new ApplyRoutingRuleResponse();
   }
 }

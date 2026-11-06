@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from McpGetWorkIQTaskStatus action
+ * Response from the McpGetWorkIQTaskStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface McpGetWorkIQTaskStatusResponse {
+  "@odata.context"?: string;
   results: string;
 }
 
@@ -44,8 +47,7 @@ export class McpGetWorkIQTaskStatusAction implements Executable<McpGetWorkIQTask
   }
 
   async parseResponse(response: Response): Promise<McpGetWorkIQTaskStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as McpGetWorkIQTaskStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as McpGetWorkIQTaskStatusResponse;
   }
 }

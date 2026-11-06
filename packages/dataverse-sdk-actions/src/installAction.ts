@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from install action
+ * Response from the install action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface installResponse {
+  "@odata.context"?: string;
   connectionId: string;
   flowTriggerUri: string;
   stringifiedConnectionObject: string;
@@ -57,8 +60,7 @@ export class installAction implements Executable<installResponse> {
   }
 
   async parseResponse(response: Response): Promise<installResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as installResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as installResponse;
   }
 }

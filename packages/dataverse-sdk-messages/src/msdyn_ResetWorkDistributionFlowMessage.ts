@@ -42,9 +42,9 @@ export class msdyn_ResetWorkDistributionFlowRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ResetWorkDistributionFlowResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ResetWorkDistributionFlowResponse> {
     // No return value (204 No Content)
-    return new msdyn_ResetWorkDistributionFlowResponse();
+    return Promise.resolve(new msdyn_ResetWorkDistributionFlowResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_ResetWorkDistributionFlowResponse extends OrganizationRespons
     super("msdyn_ResetWorkDistributionFlow");
   }
 
-  static fromResponse(_data: unknown): msdyn_ResetWorkDistributionFlowResponse {
+  static fromResponse(_data?: unknown): msdyn_ResetWorkDistributionFlowResponse {
     return new msdyn_ResetWorkDistributionFlowResponse();
   }
 }

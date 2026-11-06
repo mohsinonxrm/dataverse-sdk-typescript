@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_generateStructuredContent action
+ * Response from the msdyn_generateStructuredContent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_generateStructuredContentResponse {
+  "@odata.context"?: string;
   restructuredContent: string;
   status: string;
 }
@@ -53,8 +56,7 @@ export class msdyn_generateStructuredContentAction implements Executable<msdyn_g
   }
 
   async parseResponse(response: Response): Promise<msdyn_generateStructuredContentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_generateStructuredContentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_generateStructuredContentResponse;
   }
 }

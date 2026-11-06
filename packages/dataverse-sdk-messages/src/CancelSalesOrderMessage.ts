@@ -46,9 +46,9 @@ export class CancelSalesOrderRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CancelSalesOrderResponse> {
+  parseResponse(_response: Response): Promise<CancelSalesOrderResponse> {
     // No return value (204 No Content)
-    return new CancelSalesOrderResponse();
+    return Promise.resolve(new CancelSalesOrderResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class CancelSalesOrderResponse extends OrganizationResponse {
     super("CancelSalesOrder");
   }
 
-  static fromResponse(_data: unknown): CancelSalesOrderResponse {
+  static fromResponse(_data?: unknown): CancelSalesOrderResponse {
     return new CancelSalesOrderResponse();
   }
 }

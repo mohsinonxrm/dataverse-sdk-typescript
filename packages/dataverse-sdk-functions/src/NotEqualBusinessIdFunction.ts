@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from NotEqualBusinessId function
+ * Response from the NotEqualBusinessId function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface NotEqualBusinessIdResponse {
-  value: boolean;
-}
+export type NotEqualBusinessIdResponse = boolean;
 
 /**
  * Parameters of the NotEqualBusinessId function, by their CSDL names. A parameter the CSDL declares
@@ -48,8 +48,7 @@ export class NotEqualBusinessIdFunction implements Executable<NotEqualBusinessId
   }
 
   async parseResponse(response: Response): Promise<NotEqualBusinessIdResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as NotEqualBusinessIdResponse;
-    return (await response.json()) as NotEqualBusinessIdResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: NotEqualBusinessIdResponse }).value;
   }
 }

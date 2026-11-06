@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from CCaaS_GuidedAgentGroupTransferConsult function
+ * Response from the CCaaS_GuidedAgentGroupTransferConsult function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CCaaS_GuidedAgentGroupTransferConsultResponse {
+  "@odata.context"?: string;
   AgentGroupId: string;
   AgentGroupName: string;
   IntentFamilyId: string;
@@ -69,8 +72,7 @@ export class CCaaS_GuidedAgentGroupTransferConsultFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<CCaaS_GuidedAgentGroupTransferConsultResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CCaaS_GuidedAgentGroupTransferConsultResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CCaaS_GuidedAgentGroupTransferConsultResponse;
   }
 }

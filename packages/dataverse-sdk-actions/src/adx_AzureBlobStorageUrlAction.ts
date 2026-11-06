@@ -5,9 +5,12 @@ import type { EntityPayload } from "./types/EntityPayload.js";
 import type { annotation } from "./types/index.js";
 
 /**
- * Response from adx_AzureBlobStorageUrl action
+ * Response from the adx_AzureBlobStorageUrl action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface adx_AzureBlobStorageUrlResponse {
+  "@odata.context"?: string;
   Url: string;
 }
 
@@ -45,8 +48,7 @@ export class adx_AzureBlobStorageUrlAction implements Executable<adx_AzureBlobSt
   }
 
   async parseResponse(response: Response): Promise<adx_AzureBlobStorageUrlResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as adx_AzureBlobStorageUrlResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as adx_AzureBlobStorageUrlResponse;
   }
 }

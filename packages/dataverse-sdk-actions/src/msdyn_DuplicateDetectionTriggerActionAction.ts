@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_DuplicateDetectionTriggerAction action
+ * Response from the msdyn_DuplicateDetectionTriggerAction action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_DuplicateDetectionTriggerActionResponse {
-  // No content returned
-}
+export type msdyn_DuplicateDetectionTriggerActionResponse = void;
 
 /**
  * Parameters of the msdyn_DuplicateDetectionTriggerAction action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class msdyn_DuplicateDetectionTriggerActionAction implements Executable<m
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_DuplicateDetectionTriggerActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_DuplicateDetectionTriggerActionResponse;
-    return (await response.json()) as msdyn_DuplicateDetectionTriggerActionResponse;
+  parseResponse(_response: Response): Promise<msdyn_DuplicateDetectionTriggerActionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

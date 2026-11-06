@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_TriggerSequenceStatsDockerJobResponse as msdyn_TriggerSequenceStatsDockerJobResponseData } from "./types/index.js";
 
 /**
  * msdyn_TriggerSequenceStatsDockerJob request message
@@ -29,24 +27,36 @@ export class msdyn_TriggerSequenceStatsDockerJobRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TriggerSequenceStatsDockerJobResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_TriggerSequenceStatsDockerJobResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TriggerSequenceStatsDockerJobResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TriggerSequenceStatsDockerJob action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TriggerSequenceStatsDockerJobResult {
+  "@odata.context"?: string;
+  JobId: string;
+  JobStatus: boolean;
+}
+
+/**
  * msdyn_TriggerSequenceStatsDockerJob response message
+ *
+ * `result` is the value the msdyn_TriggerSequenceStatsDockerJob action returns (see {@link msdyn_TriggerSequenceStatsDockerJobResult}).
  */
 export class msdyn_TriggerSequenceStatsDockerJobResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TriggerSequenceStatsDockerJobResponseData) {
+  constructor(public result: msdyn_TriggerSequenceStatsDockerJobResult) {
     super("msdyn_TriggerSequenceStatsDockerJob");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TriggerSequenceStatsDockerJobResponse {
     return new msdyn_TriggerSequenceStatsDockerJobResponse(
-      responseObject<msdyn_TriggerSequenceStatsDockerJobResponseData>(data)
+      data as msdyn_TriggerSequenceStatsDockerJobResult
     );
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CreateEvaluationRecordsForPlan action
+ * Response from the msdyn_CreateEvaluationRecordsForPlan action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CreateEvaluationRecordsForPlanResponse {
+  "@odata.context"?: string;
   createdEvaluationRecords: string;
 }
 
@@ -44,8 +47,7 @@ export class msdyn_CreateEvaluationRecordsForPlanAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateEvaluationRecordsForPlanResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CreateEvaluationRecordsForPlanResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CreateEvaluationRecordsForPlanResponse;
   }
 }

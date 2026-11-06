@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_fetchmailboxmetricsResponse as msdyn_fetchmailboxmetricsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_fetchmailboxmetrics message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_fetchmailboxmetricsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_fetchmailboxmetricsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_fetchmailboxmetricsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_fetchmailboxmetricsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_fetchmailboxmetrics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_fetchmailboxmetricsResult {
+  "@odata.context"?: string;
+  mailboxmetricsjson: string;
+}
+
+/**
  * msdyn_fetchmailboxmetrics response message
+ *
+ * `result` is the value the msdyn_fetchmailboxmetrics action returns (see {@link msdyn_fetchmailboxmetricsResult}).
  */
 export class msdyn_fetchmailboxmetricsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_fetchmailboxmetricsResponseData) {
+  constructor(public result: msdyn_fetchmailboxmetricsResult) {
     super("msdyn_fetchmailboxmetrics");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_fetchmailboxmetricsResponse {
-    return new msdyn_fetchmailboxmetricsResponse(
-      responseObject<msdyn_fetchmailboxmetricsResponseData>(data)
-    );
+    return new msdyn_fetchmailboxmetricsResponse(data as msdyn_fetchmailboxmetricsResult);
   }
 }

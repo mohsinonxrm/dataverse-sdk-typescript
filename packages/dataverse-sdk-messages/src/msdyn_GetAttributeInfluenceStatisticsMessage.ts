@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetAttributeInfluenceStatisticsResponse as msdyn_GetAttributeInfluenceStatisticsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetAttributeInfluenceStatistics message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,35 @@ export class msdyn_GetAttributeInfluenceStatisticsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAttributeInfluenceStatisticsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetAttributeInfluenceStatisticsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAttributeInfluenceStatisticsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAttributeInfluenceStatistics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAttributeInfluenceStatisticsResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * msdyn_GetAttributeInfluenceStatistics response message
+ *
+ * `result` is the value the msdyn_GetAttributeInfluenceStatistics action returns (see {@link msdyn_GetAttributeInfluenceStatisticsResult}).
  */
 export class msdyn_GetAttributeInfluenceStatisticsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAttributeInfluenceStatisticsResponseData) {
+  constructor(public result: msdyn_GetAttributeInfluenceStatisticsResult) {
     super("msdyn_GetAttributeInfluenceStatistics");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAttributeInfluenceStatisticsResponse {
     return new msdyn_GetAttributeInfluenceStatisticsResponse(
-      responseObject<msdyn_GetAttributeInfluenceStatisticsResponseData>(data)
+      data as msdyn_GetAttributeInfluenceStatisticsResult
     );
   }
 }

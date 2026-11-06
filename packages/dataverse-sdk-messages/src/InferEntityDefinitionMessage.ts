@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { InferEntityDefinitionResponse as InferEntityDefinitionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the InferEntityDefinition message, by their CSDL names. A parameter the CSDL declares
@@ -65,23 +63,37 @@ export class InferEntityDefinitionRequest
   }
 
   async parseResponse(response: Response): Promise<InferEntityDefinitionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return InferEntityDefinitionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return InferEntityDefinitionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the InferEntityDefinition action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface InferEntityDefinitionResult {
+  "@odata.context"?: string;
+  EntitiesCollection: string;
+  EntityDefinition: string;
+  FileInfo: string;
+  SampleData: string;
+  UsingFallbackLogic: boolean;
+}
+
+/**
  * InferEntityDefinition response message
+ *
+ * `result` is the value the InferEntityDefinition action returns (see {@link InferEntityDefinitionResult}).
  */
 export class InferEntityDefinitionResponse extends OrganizationResponse {
-  constructor(public result: InferEntityDefinitionResponseData) {
+  constructor(public result: InferEntityDefinitionResult) {
     super("InferEntityDefinition");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): InferEntityDefinitionResponse {
-    return new InferEntityDefinitionResponse(
-      responseObject<InferEntityDefinitionResponseData>(data)
-    );
+    return new InferEntityDefinitionResponse(data as InferEntityDefinitionResult);
   }
 }

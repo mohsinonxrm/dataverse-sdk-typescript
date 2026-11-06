@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_ExecuteARC action
+ * Response from the msdyn_ExecuteARC action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ExecuteARCResponse {
+  "@odata.context"?: string;
   ErrorMessage: string;
   FlowName: string;
 }
@@ -47,8 +50,7 @@ export class msdyn_ExecuteARCAction implements Executable<msdyn_ExecuteARCRespon
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteARCResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ExecuteARCResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ExecuteARCResponse;
   }
 }

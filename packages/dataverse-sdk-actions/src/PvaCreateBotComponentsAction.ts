@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from PvaCreateBotComponents action
+ * Response from the PvaCreateBotComponents action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PvaCreateBotComponentsResponse {
-  // No content returned
-}
+export type PvaCreateBotComponentsResponse = void;
 
 /**
  * Parameters of the PvaCreateBotComponents action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class PvaCreateBotComponentsAction implements Executable<PvaCreateBotComp
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaCreateBotComponentsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PvaCreateBotComponentsResponse;
-    return (await response.json()) as PvaCreateBotComponentsResponse;
+  parseResponse(_response: Response): Promise<PvaCreateBotComponentsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

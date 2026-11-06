@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from SendAppNotification action
+ * Response from the SendAppNotification action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface SendAppNotificationResponse {
+  "@odata.context"?: string;
   NotificationId: string;
 }
 
@@ -60,8 +63,7 @@ export class SendAppNotificationAction implements Executable<SendAppNotification
   }
 
   async parseResponse(response: Response): Promise<SendAppNotificationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SendAppNotificationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as SendAppNotificationResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SignalRInstanceActionsResponse as msdyn_SignalRInstanceActionsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SignalRInstanceActions message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_SignalRInstanceActionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SignalRInstanceActionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SignalRInstanceActionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SignalRInstanceActionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SignalRInstanceActions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SignalRInstanceActionsResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * msdyn_SignalRInstanceActions response message
+ *
+ * `result` is the value the msdyn_SignalRInstanceActions action returns (see {@link msdyn_SignalRInstanceActionsResult}).
  */
 export class msdyn_SignalRInstanceActionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SignalRInstanceActionsResponseData) {
+  constructor(public result: msdyn_SignalRInstanceActionsResult) {
     super("msdyn_SignalRInstanceActions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SignalRInstanceActionsResponse {
-    return new msdyn_SignalRInstanceActionsResponse(
-      responseObject<msdyn_SignalRInstanceActionsResponseData>(data)
-    );
+    return new msdyn_SignalRInstanceActionsResponse(data as msdyn_SignalRInstanceActionsResult);
   }
 }

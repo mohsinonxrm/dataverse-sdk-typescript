@@ -1,8 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { GetFeatureControlStringSettingsForNamespaceWithUserContextResponse as GetFeatureControlStringSettingsForNamespaceWithUserContextResponseData } from "./types/index.js";
+import type { FeatureControlStringSettingData } from "./types/index.js";
 
 /**
  * Parameters of the GetFeatureControlStringSettingsForNamespaceWithUserContext message, by their CSDL names. A parameter the CSDL declares
@@ -55,9 +54,7 @@ export class GetFeatureControlStringSettingsForNamespaceWithUserContextRequest
   async parseResponse(
     response: Response
   ): Promise<GetFeatureControlStringSettingsForNamespaceWithUserContextResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return GetFeatureControlStringSettingsForNamespaceWithUserContextResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return GetFeatureControlStringSettingsForNamespaceWithUserContextResponse.fromResponse(
       await response.json()
     );
@@ -65,20 +62,31 @@ export class GetFeatureControlStringSettingsForNamespaceWithUserContextRequest
 }
 
 /**
+ * Response from the GetFeatureControlStringSettingsForNamespaceWithUserContext action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface GetFeatureControlStringSettingsForNamespaceWithUserContextResult {
+  "@odata.context"?: string;
+  FeatureControlStringSettingCollection: FeatureControlStringSettingData[];
+}
+
+/**
  * GetFeatureControlStringSettingsForNamespaceWithUserContext response message
+ *
+ * `result` is the value the GetFeatureControlStringSettingsForNamespaceWithUserContext action returns (see {@link GetFeatureControlStringSettingsForNamespaceWithUserContextResult}).
  */
 export class GetFeatureControlStringSettingsForNamespaceWithUserContextResponse extends OrganizationResponse {
-  constructor(
-    public result: GetFeatureControlStringSettingsForNamespaceWithUserContextResponseData
-  ) {
+  constructor(public result: GetFeatureControlStringSettingsForNamespaceWithUserContextResult) {
     super("GetFeatureControlStringSettingsForNamespaceWithUserContext");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): GetFeatureControlStringSettingsForNamespaceWithUserContextResponse {
     return new GetFeatureControlStringSettingsForNamespaceWithUserContextResponse(
-      responseObject<GetFeatureControlStringSettingsForNamespaceWithUserContextResponseData>(data)
+      data as GetFeatureControlStringSettingsForNamespaceWithUserContextResult
     );
   }
 }

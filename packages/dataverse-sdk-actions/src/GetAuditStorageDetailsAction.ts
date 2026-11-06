@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { AuditStorageDetailsResult } from "./types/index.js";
 
 /**
- * Response from GetAuditStorageDetails action
+ * Response from the GetAuditStorageDetails action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetAuditStorageDetailsResponse {
+  "@odata.context"?: string;
   Result: AuditStorageDetailsResult;
 }
 
@@ -27,8 +30,7 @@ export class GetAuditStorageDetailsAction implements Executable<GetAuditStorageD
   }
 
   async parseResponse(response: Response): Promise<GetAuditStorageDetailsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetAuditStorageDetailsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetAuditStorageDetailsResponse;
   }
 }

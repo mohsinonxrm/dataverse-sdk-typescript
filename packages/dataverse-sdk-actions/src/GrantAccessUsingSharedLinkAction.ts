@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from GrantAccessUsingSharedLink action
+ * Response from the GrantAccessUsingSharedLink action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface GrantAccessUsingSharedLinkResponse {
-  // No content returned
-}
+export type GrantAccessUsingSharedLinkResponse = void;
 
 /**
  * Parameters of the GrantAccessUsingSharedLink action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class GrantAccessUsingSharedLinkAction implements Executable<GrantAccessU
     };
   }
 
-  async parseResponse(response: Response): Promise<GrantAccessUsingSharedLinkResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GrantAccessUsingSharedLinkResponse;
-    return (await response.json()) as GrantAccessUsingSharedLinkResponse;
+  parseResponse(_response: Response): Promise<GrantAccessUsingSharedLinkResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

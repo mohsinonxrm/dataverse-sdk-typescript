@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UpsertEnvironmentVariable action
+ * Response from the UpsertEnvironmentVariable action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpsertEnvironmentVariableResponse {
-  // No content returned
-}
+export type UpsertEnvironmentVariableResponse = void;
 
 /**
  * Parameters of the UpsertEnvironmentVariable action, by their CSDL names. A parameter the CSDL declares
@@ -55,9 +55,8 @@ export class UpsertEnvironmentVariableAction implements Executable<UpsertEnviron
     };
   }
 
-  async parseResponse(response: Response): Promise<UpsertEnvironmentVariableResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UpsertEnvironmentVariableResponse;
-    return (await response.json()) as UpsertEnvironmentVariableResponse;
+  parseResponse(_response: Response): Promise<UpsertEnvironmentVariableResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

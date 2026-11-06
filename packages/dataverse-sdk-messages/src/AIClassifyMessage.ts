@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { AIClassifyResponse as AIClassifyResponseData } from "./types/index.js";
 
 /**
  * Parameters of the AIClassify message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class AIClassifyRequest
   }
 
   async parseResponse(response: Response): Promise<AIClassifyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AIClassifyResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AIClassifyResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AIClassify action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AIClassifyResult {
+  "@odata.context"?: string;
+  Classification: string;
+}
+
+/**
  * AIClassify response message
+ *
+ * `result` is the value the AIClassify action returns (see {@link AIClassifyResult}).
  */
 export class AIClassifyResponse extends OrganizationResponse {
-  constructor(public result: AIClassifyResponseData) {
+  constructor(public result: AIClassifyResult) {
     super("AIClassify");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AIClassifyResponse {
-    return new AIClassifyResponse(responseObject<AIClassifyResponseData>(data));
+    return new AIClassifyResponse(data as AIClassifyResult);
   }
 }

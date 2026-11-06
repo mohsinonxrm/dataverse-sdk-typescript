@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from CancelDesktopFlowRun action
+ * Response from the CancelDesktopFlowRun action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CancelDesktopFlowRunResponse {
-  // No content returned
-}
+export type CancelDesktopFlowRunResponse = void;
 
 /**
  * CancelDesktopFlowRun action
@@ -31,9 +31,8 @@ export class CancelDesktopFlowRunAction implements Executable<CancelDesktopFlowR
     };
   }
 
-  async parseResponse(response: Response): Promise<CancelDesktopFlowRunResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CancelDesktopFlowRunResponse;
-    return (await response.json()) as CancelDesktopFlowRunResponse;
+  parseResponse(_response: Response): Promise<CancelDesktopFlowRunResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

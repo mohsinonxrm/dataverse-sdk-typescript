@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
@@ -48,21 +47,38 @@ export class PvaStartConversationRequest
   }
 
   async parseResponse(response: Response): Promise<PvaStartConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PvaStartConversationResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return PvaStartConversationResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return PvaStartConversationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PvaStartConversation action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type PvaStartConversationResult = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
  * PvaStartConversation response message
+ *
+ * `result` is the value the PvaStartConversation action returns (see {@link PvaStartConversationResult}).
  */
 export class PvaStartConversationResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>) {
+  constructor(public result: PvaStartConversationResult) {
     super("PvaStartConversation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PvaStartConversationResponse {
-    return new PvaStartConversationResponse(responseObject<Record<string, unknown>>(data));
+    return new PvaStartConversationResponse((data ?? null) as PvaStartConversationResult);
   }
 }

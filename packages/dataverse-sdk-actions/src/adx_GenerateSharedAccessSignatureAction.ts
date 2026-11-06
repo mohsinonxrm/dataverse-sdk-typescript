@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from adx_GenerateSharedAccessSignature action
+ * Response from the adx_GenerateSharedAccessSignature action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface adx_GenerateSharedAccessSignatureResponse {
+  "@odata.context"?: string;
   SharedAccessSignature: string;
 }
 
@@ -46,8 +49,7 @@ export class adx_GenerateSharedAccessSignatureAction implements Executable<adx_G
   }
 
   async parseResponse(response: Response): Promise<adx_GenerateSharedAccessSignatureResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as adx_GenerateSharedAccessSignatureResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as adx_GenerateSharedAccessSignatureResponse;
   }
 }

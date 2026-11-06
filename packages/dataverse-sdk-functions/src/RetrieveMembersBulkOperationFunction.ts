@@ -1,13 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "./types/EntityReference.js";
 
 /**
- * Response from RetrieveMembersBulkOperation function
+ * Response from the RetrieveMembersBulkOperation function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveMembersBulkOperationResponse {
-  value: EntityReference[];
-}
+export type RetrieveMembersBulkOperationResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the RetrieveMembersBulkOperation function, by their CSDL names. A parameter the CSDL declares
@@ -61,8 +65,9 @@ export class RetrieveMembersBulkOperationFunction implements Executable<Retrieve
   }
 
   async parseResponse(response: Response): Promise<RetrieveMembersBulkOperationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveMembersBulkOperationResponse;
-    return (await response.json()) as RetrieveMembersBulkOperationResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveMembersBulkOperationResponse }).value;
   }
 }

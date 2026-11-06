@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UnpublishAIConfiguration action
+ * Response from the UnpublishAIConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface UnpublishAIConfigurationResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -49,8 +52,7 @@ export class UnpublishAIConfigurationAction implements Executable<UnpublishAICon
   }
 
   async parseResponse(response: Response): Promise<UnpublishAIConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UnpublishAIConfigurationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as UnpublishAIConfigurationResponse;
   }
 }

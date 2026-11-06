@@ -1,15 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from GetPreferredSolution function
+ * Response from the GetPreferredSolution function.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface GetPreferredSolutionResponse {
+export type GetPreferredSolutionResponse = {
   "@odata.context"?: string;
   "@odata.etag"?: string;
+  "@odata.type"?: string;
   [column: string]: unknown;
-}
+} | null;
 
 /**
  * GetPreferredSolution function
@@ -30,8 +32,9 @@ export class GetPreferredSolutionFunction implements Executable<GetPreferredSolu
   }
 
   async parseResponse(response: Response): Promise<GetPreferredSolutionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetPreferredSolutionResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as GetPreferredSolutionResponse;
   }
 }

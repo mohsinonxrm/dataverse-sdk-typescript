@@ -56,9 +56,9 @@ export class CCaaS_InitiateQueueConsultRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_InitiateQueueConsultResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_InitiateQueueConsultResponse> {
     // No return value (204 No Content)
-    return new CCaaS_InitiateQueueConsultResponse();
+    return Promise.resolve(new CCaaS_InitiateQueueConsultResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class CCaaS_InitiateQueueConsultResponse extends OrganizationResponse {
     super("CCaaS_InitiateQueueConsult");
   }
 
-  static fromResponse(_data: unknown): CCaaS_InitiateQueueConsultResponse {
+  static fromResponse(_data?: unknown): CCaaS_InitiateQueueConsultResponse {
     return new CCaaS_InitiateQueueConsultResponse();
   }
 }

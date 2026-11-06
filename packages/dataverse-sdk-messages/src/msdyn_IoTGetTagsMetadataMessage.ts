@@ -1,13 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
-import type {
-  msdyn_IoTGetTagsMetadataResponse as msdyn_IoTGetTagsMetadataResponseData,
-  msdyn_iotdevicecategory,
-} from "./types/index.js";
+import type { msdyn_iotdevicecategory } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_IoTGetTagsMetadata message, by their CSDL names. A parameter the CSDL declares
@@ -50,23 +46,33 @@ export class msdyn_IoTGetTagsMetadataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTGetTagsMetadataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_IoTGetTagsMetadataResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IoTGetTagsMetadataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IoTGetTagsMetadata action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IoTGetTagsMetadataResult {
+  "@odata.context"?: string;
+  Metadata: string;
+}
+
+/**
  * msdyn_IoTGetTagsMetadata response message
+ *
+ * `result` is the value the msdyn_IoTGetTagsMetadata action returns (see {@link msdyn_IoTGetTagsMetadataResult}).
  */
 export class msdyn_IoTGetTagsMetadataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IoTGetTagsMetadataResponseData) {
+  constructor(public result: msdyn_IoTGetTagsMetadataResult) {
     super("msdyn_IoTGetTagsMetadata");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IoTGetTagsMetadataResponse {
-    return new msdyn_IoTGetTagsMetadataResponse(
-      responseObject<msdyn_IoTGetTagsMetadataResponseData>(data)
-    );
+    return new msdyn_IoTGetTagsMetadataResponse(data as msdyn_IoTGetTagsMetadataResult);
   }
 }

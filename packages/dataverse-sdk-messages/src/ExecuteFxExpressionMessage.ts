@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
@@ -54,21 +53,38 @@ export class ExecuteFxExpressionRequest
   }
 
   async parseResponse(response: Response): Promise<ExecuteFxExpressionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ExecuteFxExpressionResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return ExecuteFxExpressionResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return ExecuteFxExpressionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ExecuteFxExpression action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type ExecuteFxExpressionResult = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
  * ExecuteFxExpression response message
+ *
+ * `result` is the value the ExecuteFxExpression action returns (see {@link ExecuteFxExpressionResult}).
  */
 export class ExecuteFxExpressionResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>) {
+  constructor(public result: ExecuteFxExpressionResult) {
     super("ExecuteFxExpression");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ExecuteFxExpressionResponse {
-    return new ExecuteFxExpressionResponse(responseObject<Record<string, unknown>>(data));
+    return new ExecuteFxExpressionResponse((data ?? null) as ExecuteFxExpressionResult);
   }
 }

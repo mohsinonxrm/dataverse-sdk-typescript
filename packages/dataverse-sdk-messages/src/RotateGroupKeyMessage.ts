@@ -29,9 +29,9 @@ export class RotateGroupKeyRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RotateGroupKeyResponse> {
+  parseResponse(_response: Response): Promise<RotateGroupKeyResponse> {
     // No return value (204 No Content)
-    return new RotateGroupKeyResponse();
+    return Promise.resolve(new RotateGroupKeyResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class RotateGroupKeyResponse extends OrganizationResponse {
     super("RotateGroupKey");
   }
 
-  static fromResponse(_data: unknown): RotateGroupKeyResponse {
+  static fromResponse(_data?: unknown): RotateGroupKeyResponse {
     return new RotateGroupKeyResponse();
   }
 }

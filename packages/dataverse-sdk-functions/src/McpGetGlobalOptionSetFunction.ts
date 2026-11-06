@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from McpGetGlobalOptionSet function
+ * Response from the McpGetGlobalOptionSet function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface McpGetGlobalOptionSetResponse {
+  "@odata.context"?: string;
   definition: string;
 }
 
@@ -48,8 +51,7 @@ export class McpGetGlobalOptionSetFunction implements Executable<McpGetGlobalOpt
   }
 
   async parseResponse(response: Response): Promise<McpGetGlobalOptionSetResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as McpGetGlobalOptionSetResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as McpGetGlobalOptionSetResponse;
   }
 }

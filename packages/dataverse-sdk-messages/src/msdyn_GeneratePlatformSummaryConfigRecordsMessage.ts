@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GeneratePlatformSummaryConfigRecordsResponse as msdyn_GeneratePlatformSummaryConfigRecordsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GeneratePlatformSummaryConfigRecords message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_GeneratePlatformSummaryConfigRecordsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GeneratePlatformSummaryConfigRecordsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GeneratePlatformSummaryConfigRecordsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GeneratePlatformSummaryConfigRecordsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GeneratePlatformSummaryConfigRecords action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GeneratePlatformSummaryConfigRecordsResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_GeneratePlatformSummaryConfigRecords response message
+ *
+ * `result` is the value the msdyn_GeneratePlatformSummaryConfigRecords action returns (see {@link msdyn_GeneratePlatformSummaryConfigRecordsResult}).
  */
 export class msdyn_GeneratePlatformSummaryConfigRecordsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GeneratePlatformSummaryConfigRecordsResponseData) {
+  constructor(public result: msdyn_GeneratePlatformSummaryConfigRecordsResult) {
     super("msdyn_GeneratePlatformSummaryConfigRecords");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GeneratePlatformSummaryConfigRecordsResponse {
     return new msdyn_GeneratePlatformSummaryConfigRecordsResponse(
-      responseObject<msdyn_GeneratePlatformSummaryConfigRecordsResponseData>(data)
+      data as msdyn_GeneratePlatformSummaryConfigRecordsResult
     );
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ResetOmnichannelProvider action
+ * Response from the msdyn_ResetOmnichannelProvider action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ResetOmnichannelProviderResponse {
-  // No content returned
-}
+export type msdyn_ResetOmnichannelProviderResponse = void;
 
 /**
  * Parameters of the msdyn_ResetOmnichannelProvider action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_ResetOmnichannelProviderAction implements Executable<msdyn_Re
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ResetOmnichannelProviderResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ResetOmnichannelProviderResponse;
-    return (await response.json()) as msdyn_ResetOmnichannelProviderResponse;
+  parseResponse(_response: Response): Promise<msdyn_ResetOmnichannelProviderResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

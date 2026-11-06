@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_ActivateSdkMessageProcessingSteps action
+ * Response from the msdyn_ActivateSdkMessageProcessingSteps action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ActivateSdkMessageProcessingStepsResponse {
+  "@odata.context"?: string;
   ResolutionState: number;
   ResolvedRecordsCount: number;
 }
@@ -49,8 +52,7 @@ export class msdyn_ActivateSdkMessageProcessingStepsAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_ActivateSdkMessageProcessingStepsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ActivateSdkMessageProcessingStepsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ActivateSdkMessageProcessingStepsResponse;
   }
 }

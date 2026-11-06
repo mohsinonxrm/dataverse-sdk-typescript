@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ResetUserFilters action
+ * Response from the ResetUserFilters action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ResetUserFiltersResponse {
-  // No content returned
-}
+export type ResetUserFiltersResponse = void;
 
 /**
  * Parameters of the ResetUserFilters action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class ResetUserFiltersAction implements Executable<ResetUserFiltersRespon
     };
   }
 
-  async parseResponse(response: Response): Promise<ResetUserFiltersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ResetUserFiltersResponse;
-    return (await response.json()) as ResetUserFiltersResponse;
+  parseResponse(_response: Response): Promise<ResetUserFiltersResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

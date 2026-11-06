@@ -50,9 +50,9 @@ export class CCaaS_AcceptPhoneCallRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_AcceptPhoneCallResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_AcceptPhoneCallResponse> {
     // No return value (204 No Content)
-    return new CCaaS_AcceptPhoneCallResponse();
+    return Promise.resolve(new CCaaS_AcceptPhoneCallResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class CCaaS_AcceptPhoneCallResponse extends OrganizationResponse {
     super("CCaaS_AcceptPhoneCall");
   }
 
-  static fromResponse(_data: unknown): CCaaS_AcceptPhoneCallResponse {
+  static fromResponse(_data?: unknown): CCaaS_AcceptPhoneCallResponse {
     return new CCaaS_AcceptPhoneCallResponse();
   }
 }

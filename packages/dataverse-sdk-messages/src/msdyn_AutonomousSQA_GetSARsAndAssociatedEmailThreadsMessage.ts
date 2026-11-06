@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse as msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreads message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse.fromResponse(
       await response.json()
     );
@@ -59,16 +55,30 @@ export class msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsRequest
 }
 
 /**
+ * Response from the msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreads action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResult {
+  "@odata.context"?: string;
+  msdyn_OrgUrl: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreads response message
+ *
+ * `result` is the value the msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreads action returns (see {@link msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResult}).
  */
 export class msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponseData) {
+  constructor(public result: msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResult) {
     super("msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreads");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse {
     return new msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse(
-      responseObject<msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponseData>(data)
+      data as msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResult
     );
   }
 }

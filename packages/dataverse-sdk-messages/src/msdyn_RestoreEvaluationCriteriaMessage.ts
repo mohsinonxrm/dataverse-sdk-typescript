@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RestoreEvaluationCriteriaResponse as msdyn_RestoreEvaluationCriteriaResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RestoreEvaluationCriteria message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,35 @@ export class msdyn_RestoreEvaluationCriteriaRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RestoreEvaluationCriteriaResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RestoreEvaluationCriteriaResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RestoreEvaluationCriteriaResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RestoreEvaluationCriteria action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RestoreEvaluationCriteriaResult {
+  "@odata.context"?: string;
+  msdyn_RestoreEvaluationCriteriaResponse: string;
+}
+
+/**
  * msdyn_RestoreEvaluationCriteria response message
+ *
+ * `result` is the value the msdyn_RestoreEvaluationCriteria action returns (see {@link msdyn_RestoreEvaluationCriteriaResult}).
  */
 export class msdyn_RestoreEvaluationCriteriaResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RestoreEvaluationCriteriaResponseData) {
+  constructor(public result: msdyn_RestoreEvaluationCriteriaResult) {
     super("msdyn_RestoreEvaluationCriteria");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RestoreEvaluationCriteriaResponse {
     return new msdyn_RestoreEvaluationCriteriaResponse(
-      responseObject<msdyn_RestoreEvaluationCriteriaResponseData>(data)
+      data as msdyn_RestoreEvaluationCriteriaResult
     );
   }
 }

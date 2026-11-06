@@ -4,9 +4,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_FindRulesetDependencies action
+ * Response from the msdyn_FindRulesetDependencies action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_FindRulesetDependenciesResponse {
+  "@odata.context"?: string;
   DependenciesJson: string;
 }
 
@@ -44,8 +47,7 @@ export class msdyn_FindRulesetDependenciesAction implements Executable<msdyn_Fin
   }
 
   async parseResponse(response: Response): Promise<msdyn_FindRulesetDependenciesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_FindRulesetDependenciesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_FindRulesetDependenciesResponse;
   }
 }

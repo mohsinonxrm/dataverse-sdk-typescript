@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdynmkt_checkconsent action
+ * Response from the msdynmkt_checkconsent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdynmkt_checkconsentResponse {
+  "@odata.context"?: string;
   msdynmkt_errormessage: string;
   msdynmkt_isconsentgiven: boolean;
   msdynmkt_issuccess: boolean;
@@ -55,8 +58,7 @@ export class msdynmkt_checkconsentAction implements Executable<msdynmkt_checkcon
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_checkconsentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdynmkt_checkconsentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdynmkt_checkconsentResponse;
   }
 }

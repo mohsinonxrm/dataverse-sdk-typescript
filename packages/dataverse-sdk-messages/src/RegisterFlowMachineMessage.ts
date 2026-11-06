@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { RegisterFlowMachineResponse as RegisterFlowMachineResponseData } from "./types/index.js";
 
 /**
  * Parameters of the RegisterFlowMachine message, by their CSDL names. A parameter the CSDL declares
@@ -63,21 +61,35 @@ export class RegisterFlowMachineRequest
   }
 
   async parseResponse(response: Response): Promise<RegisterFlowMachineResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RegisterFlowMachineResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RegisterFlowMachineResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RegisterFlowMachine action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RegisterFlowMachineResult {
+  "@odata.context"?: string;
+  groupId: string;
+  machineId: string;
+  relayListenKeys: string;
+}
+
+/**
  * RegisterFlowMachine response message
+ *
+ * `result` is the value the RegisterFlowMachine action returns (see {@link RegisterFlowMachineResult}).
  */
 export class RegisterFlowMachineResponse extends OrganizationResponse {
-  constructor(public result: RegisterFlowMachineResponseData) {
+  constructor(public result: RegisterFlowMachineResult) {
     super("RegisterFlowMachine");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RegisterFlowMachineResponse {
-    return new RegisterFlowMachineResponse(responseObject<RegisterFlowMachineResponseData>(data));
+    return new RegisterFlowMachineResponse(data as RegisterFlowMachineResult);
   }
 }

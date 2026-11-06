@@ -1,13 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetPostOperations action
+ * Response from the msdyn_GetPostOperations action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface msdyn_GetPostOperationsResponse {
-  value: EntityReference[];
-}
+export type msdyn_GetPostOperationsResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the msdyn_GetPostOperations action, by their CSDL names. A parameter the CSDL declares
@@ -45,8 +49,9 @@ export class msdyn_GetPostOperationsAction implements Executable<msdyn_GetPostOp
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPostOperationsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetPostOperationsResponse;
-    return (await response.json()) as msdyn_GetPostOperationsResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: msdyn_GetPostOperationsResponse }).value;
   }
 }

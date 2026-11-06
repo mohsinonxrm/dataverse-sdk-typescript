@@ -52,9 +52,9 @@ export class CCaaS_CancelProactiveEngagementRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_CancelProactiveEngagementResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_CancelProactiveEngagementResponse> {
     // No return value (204 No Content)
-    return new CCaaS_CancelProactiveEngagementResponse();
+    return Promise.resolve(new CCaaS_CancelProactiveEngagementResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class CCaaS_CancelProactiveEngagementResponse extends OrganizationRespons
     super("CCaaS_CancelProactiveEngagement");
   }
 
-  static fromResponse(_data: unknown): CCaaS_CancelProactiveEngagementResponse {
+  static fromResponse(_data?: unknown): CCaaS_CancelProactiveEngagementResponse {
     return new CCaaS_CancelProactiveEngagementResponse();
   }
 }

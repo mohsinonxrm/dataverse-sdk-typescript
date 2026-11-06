@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import type { campaignresponse } from "./types/index.js";
 
 /**
@@ -32,21 +31,39 @@ export class CopyCampaignResponseRequest
   }
 
   async parseResponse(response: Response): Promise<CopyCampaignResponseResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CopyCampaignResponseResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return CopyCampaignResponseResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return CopyCampaignResponseResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CopyCampaignResponse action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type CopyCampaignResponseResult =
+  | (campaignresponse & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
+
+/**
  * CopyCampaignResponse response message
+ *
+ * `result` is the value the CopyCampaignResponse action returns (see {@link CopyCampaignResponseResult}).
  */
 export class CopyCampaignResponseResponse extends OrganizationResponse {
-  constructor(public result: campaignresponse) {
+  constructor(public result: CopyCampaignResponseResult) {
     super("CopyCampaignResponse");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CopyCampaignResponseResponse {
-    return new CopyCampaignResponseResponse(responseObject<campaignresponse>(data));
+    return new CopyCampaignResponseResponse((data ?? null) as CopyCampaignResponseResult);
   }
 }

@@ -48,9 +48,9 @@ export class OnExternalUpdatedRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<OnExternalUpdatedResponse> {
+  parseResponse(_response: Response): Promise<OnExternalUpdatedResponse> {
     // No return value (204 No Content)
-    return new OnExternalUpdatedResponse();
+    return Promise.resolve(new OnExternalUpdatedResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class OnExternalUpdatedResponse extends OrganizationResponse {
     super("OnExternalUpdated");
   }
 
-  static fromResponse(_data: unknown): OnExternalUpdatedResponse {
+  static fromResponse(_data?: unknown): OnExternalUpdatedResponse {
     return new OnExternalUpdatedResponse();
   }
 }

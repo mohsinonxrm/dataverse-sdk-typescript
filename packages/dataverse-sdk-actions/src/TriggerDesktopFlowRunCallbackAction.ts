@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from TriggerDesktopFlowRunCallback action
+ * Response from the TriggerDesktopFlowRunCallback action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface TriggerDesktopFlowRunCallbackResponse {
+  "@odata.context"?: string;
   callbackHttpResponseCode: number;
 }
 
@@ -32,8 +35,7 @@ export class TriggerDesktopFlowRunCallbackAction implements Executable<TriggerDe
   }
 
   async parseResponse(response: Response): Promise<TriggerDesktopFlowRunCallbackResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as TriggerDesktopFlowRunCallbackResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as TriggerDesktopFlowRunCallbackResponse;
   }
 }

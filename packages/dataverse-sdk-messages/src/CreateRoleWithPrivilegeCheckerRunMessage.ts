@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CreateRoleWithPrivilegeCheckerRunResponse as CreateRoleWithPrivilegeCheckerRunResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CreateRoleWithPrivilegeCheckerRun message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,35 @@ export class CreateRoleWithPrivilegeCheckerRunRequest
   }
 
   async parseResponse(response: Response): Promise<CreateRoleWithPrivilegeCheckerRunResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CreateRoleWithPrivilegeCheckerRunResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CreateRoleWithPrivilegeCheckerRunResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateRoleWithPrivilegeCheckerRun action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateRoleWithPrivilegeCheckerRunResult {
+  "@odata.context"?: string;
+  RoleId: string;
+}
+
+/**
  * CreateRoleWithPrivilegeCheckerRun response message
+ *
+ * `result` is the value the CreateRoleWithPrivilegeCheckerRun action returns (see {@link CreateRoleWithPrivilegeCheckerRunResult}).
  */
 export class CreateRoleWithPrivilegeCheckerRunResponse extends OrganizationResponse {
-  constructor(public result: CreateRoleWithPrivilegeCheckerRunResponseData) {
+  constructor(public result: CreateRoleWithPrivilegeCheckerRunResult) {
     super("CreateRoleWithPrivilegeCheckerRun");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateRoleWithPrivilegeCheckerRunResponse {
     return new CreateRoleWithPrivilegeCheckerRunResponse(
-      responseObject<CreateRoleWithPrivilegeCheckerRunResponseData>(data)
+      data as CreateRoleWithPrivilegeCheckerRunResult
     );
   }
 }

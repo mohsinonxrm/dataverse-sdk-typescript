@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_EmailValidationCustomActionResponse as msdyn_EmailValidationCustomActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_EmailValidationCustomAction message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,38 @@ export class msdyn_EmailValidationCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_EmailValidationCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_EmailValidationCustomActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_EmailValidationCustomActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_EmailValidationCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_EmailValidationCustomActionResult {
+  "@odata.context"?: string;
+  EmailValidationResponse: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+  StatusCode: number;
+}
+
+/**
  * msdyn_EmailValidationCustomAction response message
+ *
+ * `result` is the value the msdyn_EmailValidationCustomAction action returns (see {@link msdyn_EmailValidationCustomActionResult}).
  */
 export class msdyn_EmailValidationCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EmailValidationCustomActionResponseData) {
+  constructor(public result: msdyn_EmailValidationCustomActionResult) {
     super("msdyn_EmailValidationCustomAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_EmailValidationCustomActionResponse {
     return new msdyn_EmailValidationCustomActionResponse(
-      responseObject<msdyn_EmailValidationCustomActionResponseData>(data)
+      data as msdyn_EmailValidationCustomActionResult
     );
   }
 }

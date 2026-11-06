@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CCaaS_GetAvailabilityForSimulatedConversationResponse as CCaaS_GetAvailabilityForSimulatedConversationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CCaaS_GetAvailabilityForSimulatedConversation message, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +51,7 @@ export class CCaaS_GetAvailabilityForSimulatedConversationRequest
   async parseResponse(
     response: Response
   ): Promise<CCaaS_GetAvailabilityForSimulatedConversationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return CCaaS_GetAvailabilityForSimulatedConversationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CCaaS_GetAvailabilityForSimulatedConversationResponse.fromResponse(
       await response.json()
     );
@@ -63,16 +59,36 @@ export class CCaaS_GetAvailabilityForSimulatedConversationRequest
 }
 
 /**
+ * Response from the CCaaS_GetAvailabilityForSimulatedConversation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CCaaS_GetAvailabilityForSimulatedConversationResult {
+  "@odata.context"?: string;
+  AverageWaitTime: number;
+  EndTimeOfNextOperatingHour: string;
+  IsAgentAvailable: boolean;
+  IsQueueAvailable: boolean;
+  NextTransitionTime: string;
+  PositionInQueue: number;
+  QueueId: string;
+  StartTimeOfNextOperatingHour: string;
+}
+
+/**
  * CCaaS_GetAvailabilityForSimulatedConversation response message
+ *
+ * `result` is the value the CCaaS_GetAvailabilityForSimulatedConversation action returns (see {@link CCaaS_GetAvailabilityForSimulatedConversationResult}).
  */
 export class CCaaS_GetAvailabilityForSimulatedConversationResponse extends OrganizationResponse {
-  constructor(public result: CCaaS_GetAvailabilityForSimulatedConversationResponseData) {
+  constructor(public result: CCaaS_GetAvailabilityForSimulatedConversationResult) {
     super("CCaaS_GetAvailabilityForSimulatedConversation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CCaaS_GetAvailabilityForSimulatedConversationResponse {
     return new CCaaS_GetAvailabilityForSimulatedConversationResponse(
-      responseObject<CCaaS_GetAvailabilityForSimulatedConversationResponseData>(data)
+      data as CCaaS_GetAvailabilityForSimulatedConversationResult
     );
   }
 }

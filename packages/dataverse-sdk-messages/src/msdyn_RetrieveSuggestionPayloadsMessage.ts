@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
@@ -52,23 +51,40 @@ export class msdyn_RetrieveSuggestionPayloadsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveSuggestionPayloadsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RetrieveSuggestionPayloadsResponse.fromResponse({});
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204)
+      return msdyn_RetrieveSuggestionPayloadsResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return msdyn_RetrieveSuggestionPayloadsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveSuggestionPayloads action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type msdyn_RetrieveSuggestionPayloadsResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * msdyn_RetrieveSuggestionPayloads response message
+ *
+ * `result` is the value the msdyn_RetrieveSuggestionPayloads action returns (see {@link msdyn_RetrieveSuggestionPayloadsResult}).
  */
 export class msdyn_RetrieveSuggestionPayloadsResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: msdyn_RetrieveSuggestionPayloadsResult) {
     super("msdyn_RetrieveSuggestionPayloads");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveSuggestionPayloadsResponse {
     return new msdyn_RetrieveSuggestionPayloadsResponse(
-      responseValue<Record<string, unknown>[]>(data)
+      data === undefined ? [] : (data as { value: msdyn_RetrieveSuggestionPayloadsResult }).value
     );
   }
 }

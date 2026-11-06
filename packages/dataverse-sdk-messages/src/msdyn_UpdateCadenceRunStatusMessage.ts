@@ -48,9 +48,9 @@ export class msdyn_UpdateCadenceRunStatusRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateCadenceRunStatusResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateCadenceRunStatusResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateCadenceRunStatusResponse();
+    return Promise.resolve(new msdyn_UpdateCadenceRunStatusResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_UpdateCadenceRunStatusResponse extends OrganizationResponse {
     super("msdyn_UpdateCadenceRunStatus");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateCadenceRunStatusResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateCadenceRunStatusResponse {
     return new msdyn_UpdateCadenceRunStatusResponse();
   }
 }

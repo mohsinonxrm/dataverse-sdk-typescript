@@ -52,9 +52,9 @@ export class CCaaS_RejoinConversationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CCaaS_RejoinConversationResponse> {
+  parseResponse(_response: Response): Promise<CCaaS_RejoinConversationResponse> {
     // No return value (204 No Content)
-    return new CCaaS_RejoinConversationResponse();
+    return Promise.resolve(new CCaaS_RejoinConversationResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class CCaaS_RejoinConversationResponse extends OrganizationResponse {
     super("CCaaS_RejoinConversation");
   }
 
-  static fromResponse(_data: unknown): CCaaS_RejoinConversationResponse {
+  static fromResponse(_data?: unknown): CCaaS_RejoinConversationResponse {
     return new CCaaS_RejoinConversationResponse();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ProcessDescriptionPublishChunkResponse as msdyn_ProcessDescriptionPublishChunkResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ProcessDescriptionPublishChunk message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,37 @@ export class msdyn_ProcessDescriptionPublishChunkRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ProcessDescriptionPublishChunkResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_ProcessDescriptionPublishChunkResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ProcessDescriptionPublishChunkResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ProcessDescriptionPublishChunk action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ProcessDescriptionPublishChunkResult {
+  "@odata.context"?: string;
+  msdyn_FailedCount: number;
+  msdyn_HasMoreRecords: boolean;
+  msdyn_PublishedCount: number;
+}
+
+/**
  * msdyn_ProcessDescriptionPublishChunk response message
+ *
+ * `result` is the value the msdyn_ProcessDescriptionPublishChunk action returns (see {@link msdyn_ProcessDescriptionPublishChunkResult}).
  */
 export class msdyn_ProcessDescriptionPublishChunkResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ProcessDescriptionPublishChunkResponseData) {
+  constructor(public result: msdyn_ProcessDescriptionPublishChunkResult) {
     super("msdyn_ProcessDescriptionPublishChunk");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ProcessDescriptionPublishChunkResponse {
     return new msdyn_ProcessDescriptionPublishChunkResponse(
-      responseObject<msdyn_ProcessDescriptionPublishChunkResponseData>(data)
+      data as msdyn_ProcessDescriptionPublishChunkResult
     );
   }
 }
