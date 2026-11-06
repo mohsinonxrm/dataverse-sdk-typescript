@@ -31,8 +31,10 @@ export class msdyn_CheckIfRecordWorkstreamHasIntakeRulesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse.fromResponse({});
+    return msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse.fromResponse(await response.json());
   }
 }
 

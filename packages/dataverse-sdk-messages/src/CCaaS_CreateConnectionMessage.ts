@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_CreateConnectionResponse as CCaaS_CreateConnectionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_CreateConnection message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_CreateConnectionRequestParameters {
+  ClientSessionId: string;
+  ApiVersion: string;
+}
 
 /**
  * CCaaS_CreateConnection request message
@@ -12,20 +22,19 @@ export class CCaaS_CreateConnectionRequest
   extends OrganizationRequest
   implements Executable<CCaaS_CreateConnectionResponse>
 {
-  constructor(
-    public clientSessionId: string,
-    public apiVersion: string
-  ) {
-    super("CCaaS_CreateConnection");
+  declare readonly Parameters: Readonly<CCaaS_CreateConnectionRequestParameters>;
+
+  constructor(parameters: CCaaS_CreateConnectionRequestParameters) {
+    super("CCaaS_CreateConnection", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_CreateConnection`;
 
-    const body: Record<string, unknown> = {
-      ClientSessionId: this.clientSessionId,
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      ClientSessionId: this.Parameters.ClientSessionId,
+      ApiVersion: this.Parameters.ApiVersion,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class CCaaS_CreateConnectionRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_CreateConnectionResponse> {
-    const data = await response.json();
-    return CCaaS_CreateConnectionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CCaaS_CreateConnectionResponse.fromResponse({});
+    return CCaaS_CreateConnectionResponse.fromResponse(await response.json());
   }
 }
 

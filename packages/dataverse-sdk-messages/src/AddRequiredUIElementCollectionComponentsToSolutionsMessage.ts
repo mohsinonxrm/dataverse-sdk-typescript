@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * AddRequiredUIElementCollectionComponentsToSolutions request message
  *
  * Web API Action: AddRequiredUIElementCollectionComponentsToSolutions
+ *
+ * The first argument is the id of the desktopflowmodule record to call it on.
  */
 export class AddRequiredUIElementCollectionComponentsToSolutionsRequest
   extends OrganizationRequest

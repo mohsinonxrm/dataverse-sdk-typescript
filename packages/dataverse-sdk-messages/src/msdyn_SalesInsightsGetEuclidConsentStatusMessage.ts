@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesInsightsGetEuclidConsentStatusResponse as msdyn_SalesInsightsGetEuclidConsentStatusResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesInsightsGetEuclidConsentStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesInsightsGetEuclidConsentStatusRequestParameters {
+  PermissionLevel: string;
+}
 
 /**
  * msdyn_SalesInsightsGetEuclidConsentStatus request message
@@ -12,16 +21,18 @@ export class msdyn_SalesInsightsGetEuclidConsentStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesInsightsGetEuclidConsentStatusResponse>
 {
-  constructor(public permissionLevel: string) {
-    super("msdyn_SalesInsightsGetEuclidConsentStatus");
+  declare readonly Parameters: Readonly<msdyn_SalesInsightsGetEuclidConsentStatusRequestParameters>;
+
+  constructor(parameters: msdyn_SalesInsightsGetEuclidConsentStatusRequestParameters) {
+    super("msdyn_SalesInsightsGetEuclidConsentStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesInsightsGetEuclidConsentStatus`;
 
-    const body: Record<string, unknown> = {
-      PermissionLevel: this.permissionLevel,
-    };
+    const body = requestBody({
+      PermissionLevel: this.Parameters.PermissionLevel,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,10 @@ export class msdyn_SalesInsightsGetEuclidConsentStatusRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesInsightsGetEuclidConsentStatusResponse> {
-    const data = await response.json();
-    return msdyn_SalesInsightsGetEuclidConsentStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_SalesInsightsGetEuclidConsentStatusResponse.fromResponse({});
+    return msdyn_SalesInsightsGetEuclidConsentStatusResponse.fromResponse(await response.json());
   }
 }
 

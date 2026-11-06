@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -11,19 +12,27 @@ export interface _RoutingRuleSetValidationResponse {
 }
 
 /**
+ * Parameters of the _RoutingRuleSetValidation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _RoutingRuleSetValidationActionParameters {
+  RoutingRuleSet: EntityReference | AnyEntityPayload;
+}
+
+/**
  * _RoutingRuleSetValidation action
  *
  * Unbound action
  */
 export class _RoutingRuleSetValidationAction implements Executable<_RoutingRuleSetValidationResponse> {
-  constructor(public readonly routingRuleSet: EntityReference | AnyEntityPayload) {}
+  constructor(public readonly parameters: _RoutingRuleSetValidationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_RoutingRuleSetValidation`;
 
-    const body: Record<string, unknown> = {
-      RoutingRuleSet: this.routingRuleSet,
-    };
+    const body = requestBody({
+      RoutingRuleSet: this.parameters.RoutingRuleSet,
+    });
 
     return {
       method: "POST",
@@ -36,7 +45,8 @@ export class _RoutingRuleSetValidationAction implements Executable<_RoutingRuleS
   }
 
   async parseResponse(response: Response): Promise<_RoutingRuleSetValidationResponse> {
-    const data = await response.json();
-    return data as _RoutingRuleSetValidationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as _RoutingRuleSetValidationResponse;
+    return (await response.json()) as _RoutingRuleSetValidationResponse;
   }
 }

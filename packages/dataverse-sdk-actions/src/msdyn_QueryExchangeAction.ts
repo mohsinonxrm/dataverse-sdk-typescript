@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_QueryExchange action
@@ -8,25 +9,31 @@ export interface msdyn_QueryExchangeResponse {
 }
 
 /**
+ * Parameters of the msdyn_QueryExchange action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_QueryExchangeActionParameters {
+  method: string;
+  body: string;
+  requesturl: string;
+}
+
+/**
  * msdyn_QueryExchange action
  *
  * Unbound action
  */
 export class msdyn_QueryExchangeAction implements Executable<msdyn_QueryExchangeResponse> {
-  constructor(
-    public readonly method: string,
-    public readonly body: string,
-    public readonly requesturl: string
-  ) {}
+  constructor(public readonly parameters: msdyn_QueryExchangeActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_QueryExchange`;
 
-    const body: Record<string, unknown> = {
-      method: this.method,
-      body: this.body,
-      requesturl: this.requesturl,
-    };
+    const body = requestBody({
+      method: this.parameters.method,
+      body: this.parameters.body,
+      requesturl: this.parameters.requesturl,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_QueryExchangeAction implements Executable<msdyn_QueryExchange
   }
 
   async parseResponse(response: Response): Promise<msdyn_QueryExchangeResponse> {
-    const data = await response.json();
-    return data as msdyn_QueryExchangeResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_QueryExchangeResponse;
+    return (await response.json()) as msdyn_QueryExchangeResponse;
   }
 }

@@ -29,8 +29,9 @@ export class msdyn_CheckForWorkOrderTypesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForWorkOrderTypesResponse> {
-    const data = await response.json();
-    return msdyn_CheckForWorkOrderTypesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckForWorkOrderTypesResponse.fromResponse({});
+    return msdyn_CheckForWorkOrderTypesResponse.fromResponse(await response.json());
   }
 }
 

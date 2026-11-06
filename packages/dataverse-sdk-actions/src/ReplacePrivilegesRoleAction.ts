@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { RolePrivilege } from "./types/index.js";
 
@@ -10,24 +11,34 @@ export interface ReplacePrivilegesRoleResponse {
 }
 
 /**
+ * Parameters of the ReplacePrivilegesRole action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ReplacePrivilegesRoleActionParameters {
+  Privileges?: RolePrivilege[];
+}
+
+/**
  * ReplacePrivilegesRole action
  *
  * Bound action
  * Binding parameter: entity (mscrm.role)
+ *
+ * The first argument is the id of the role record to call it on.
  */
 export class ReplacePrivilegesRoleAction implements Executable<ReplacePrivilegesRoleResponse> {
   constructor(
     public readonly roleId: string,
-    public readonly privileges?: RolePrivilege[]
+    public readonly parameters: ReplacePrivilegesRoleActionParameters = {}
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/roles(${this.roleId})/Microsoft.Dynamics.CRM.ReplacePrivilegesRole`;
 
-    const body: Record<string, unknown> = {
-      Privileges: enumBody(this.privileges, "RolePrivilege"),
-    };
+    const body = requestBody({
+      Privileges: enumBody(this.parameters.Privileges, "RolePrivilege"),
+    });
 
     return {
       method: "POST",
@@ -40,7 +51,8 @@ export class ReplacePrivilegesRoleAction implements Executable<ReplacePrivileges
   }
 
   async parseResponse(response: Response): Promise<ReplacePrivilegesRoleResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ReplacePrivilegesRoleResponse;
+    return (await response.json()) as ReplacePrivilegesRoleResponse;
   }
 }

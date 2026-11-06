@@ -1,7 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetMultipleResourceBookingDetailsResponse as msdyn_GetMultipleResourceBookingDetailsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetMultipleResourceBookingDetails message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetMultipleResourceBookingDetailsRequestParameters {
+  StartDate: string;
+  EndDate: string;
+  Timescale: number;
+  SchedulerSettings?: string;
+  Targets: string;
+  ConsiderAppointments?: boolean;
+  IgnoreTimeZone?: boolean;
+}
 
 /**
  * msdyn_GetMultipleResourceBookingDetails request message
@@ -12,30 +27,24 @@ export class msdyn_GetMultipleResourceBookingDetailsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetMultipleResourceBookingDetailsResponse>
 {
-  constructor(
-    public startDate: string,
-    public endDate: string,
-    public timescale: number,
-    public schedulerSettings: string | undefined,
-    public targets: string,
-    public considerAppointments?: boolean,
-    public ignoreTimeZone?: boolean
-  ) {
-    super("msdyn_GetMultipleResourceBookingDetails");
+  declare readonly Parameters: Readonly<msdyn_GetMultipleResourceBookingDetailsRequestParameters>;
+
+  constructor(parameters: msdyn_GetMultipleResourceBookingDetailsRequestParameters) {
+    super("msdyn_GetMultipleResourceBookingDetails", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetMultipleResourceBookingDetails`;
 
-    const body: Record<string, unknown> = {
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      Timescale: this.timescale,
-      SchedulerSettings: this.schedulerSettings,
-      Targets: this.targets,
-      ConsiderAppointments: this.considerAppointments,
-      IgnoreTimeZone: this.ignoreTimeZone,
-    };
+    const body = requestBody({
+      StartDate: this.Parameters.StartDate,
+      EndDate: this.Parameters.EndDate,
+      Timescale: this.Parameters.Timescale,
+      SchedulerSettings: this.Parameters.SchedulerSettings,
+      Targets: this.Parameters.Targets,
+      ConsiderAppointments: this.Parameters.ConsiderAppointments,
+      IgnoreTimeZone: this.Parameters.IgnoreTimeZone,
+    });
 
     return {
       method: "POST",
@@ -50,8 +59,10 @@ export class msdyn_GetMultipleResourceBookingDetailsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetMultipleResourceBookingDetailsResponse> {
-    const data = await response.json();
-    return msdyn_GetMultipleResourceBookingDetailsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_GetMultipleResourceBookingDetailsResponse.fromResponse({});
+    return msdyn_GetMultipleResourceBookingDetailsResponse.fromResponse(await response.json());
   }
 }
 

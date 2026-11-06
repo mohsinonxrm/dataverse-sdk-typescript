@@ -10,12 +10,20 @@ export interface RetrieveAadUserPrivilegesResponse {
 }
 
 /**
+ * Parameters of the RetrieveAadUserPrivileges function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAadUserPrivilegesFunctionParameters {
+  DirectoryObjectId: string;
+}
+
+/**
  * RetrieveAadUserPrivileges function
  *
  * Unbound function
  */
 export class RetrieveAadUserPrivilegesFunction implements Executable<RetrieveAadUserPrivilegesResponse> {
-  constructor(public readonly directoryObjectId: string) {}
+  constructor(public readonly parameters: RetrieveAadUserPrivilegesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveAadUserPrivileges`;
@@ -23,9 +31,9 @@ export class RetrieveAadUserPrivilegesFunction implements Executable<RetrieveAad
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.directoryObjectId !== undefined) {
+    if (this.parameters.DirectoryObjectId !== undefined) {
       aliases.push(`DirectoryObjectId=@p1`);
-      params.append("@p1", formatParameterAlias(this.directoryObjectId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.DirectoryObjectId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class RetrieveAadUserPrivilegesFunction implements Executable<RetrieveAad
   }
 
   async parseResponse(response: Response): Promise<RetrieveAadUserPrivilegesResponse> {
-    const data = await response.json();
-    return data as RetrieveAadUserPrivilegesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveAadUserPrivilegesResponse;
+    return (await response.json()) as RetrieveAadUserPrivilegesResponse;
   }
 }

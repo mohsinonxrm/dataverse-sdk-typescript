@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetAutoCaptureUriResponse as msdyn_GetAutoCaptureUriResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetAutoCaptureUri message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAutoCaptureUriRequestParameters {
+  uriType: string;
+}
 
 /**
  * msdyn_GetAutoCaptureUri request message
@@ -12,16 +21,18 @@ export class msdyn_GetAutoCaptureUriRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetAutoCaptureUriResponse>
 {
-  constructor(public uriType: string) {
-    super("msdyn_GetAutoCaptureUri");
+  declare readonly Parameters: Readonly<msdyn_GetAutoCaptureUriRequestParameters>;
+
+  constructor(parameters: msdyn_GetAutoCaptureUriRequestParameters) {
+    super("msdyn_GetAutoCaptureUri", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAutoCaptureUri`;
 
-    const body: Record<string, unknown> = {
-      uriType: this.uriType,
-    };
+    const body = requestBody({
+      uriType: this.Parameters.uriType,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetAutoCaptureUriRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAutoCaptureUriResponse> {
-    const data = await response.json();
-    return msdyn_GetAutoCaptureUriResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetAutoCaptureUriResponse.fromResponse({});
+    return msdyn_GetAutoCaptureUriResponse.fromResponse(await response.json());
   }
 }
 

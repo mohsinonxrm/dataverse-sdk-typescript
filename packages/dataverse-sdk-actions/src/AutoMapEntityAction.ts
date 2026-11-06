@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from AutoMapEntity action
@@ -8,19 +9,27 @@ export interface AutoMapEntityResponse {
 }
 
 /**
+ * Parameters of the AutoMapEntity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AutoMapEntityActionParameters {
+  EntityMapId: string;
+}
+
+/**
  * AutoMapEntity action
  *
  * Unbound action
  */
 export class AutoMapEntityAction implements Executable<AutoMapEntityResponse> {
-  constructor(public readonly entityMapId: string) {}
+  constructor(public readonly parameters: AutoMapEntityActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AutoMapEntity`;
 
-    const body: Record<string, unknown> = {
-      EntityMapId: this.entityMapId,
-    };
+    const body = requestBody({
+      EntityMapId: this.parameters.EntityMapId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class AutoMapEntityAction implements Executable<AutoMapEntityResponse> {
   }
 
   async parseResponse(response: Response): Promise<AutoMapEntityResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AutoMapEntityResponse;
+    return (await response.json()) as AutoMapEntityResponse;
   }
 }

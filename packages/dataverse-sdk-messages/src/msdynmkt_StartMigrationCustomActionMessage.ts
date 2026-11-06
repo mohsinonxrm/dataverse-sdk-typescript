@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_StartMigrationCustomActionResponse as msdynmkt_StartMigrationCustomActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_StartMigrationCustomAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_StartMigrationCustomActionRequestParameters {
+  WhatIf?: boolean;
+}
 
 /**
  * msdynmkt_StartMigrationCustomAction request message
@@ -12,16 +21,18 @@ export class msdynmkt_StartMigrationCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_StartMigrationCustomActionResponse>
 {
-  constructor(public whatIf?: boolean) {
-    super("msdynmkt_StartMigrationCustomAction");
+  declare readonly Parameters: Readonly<msdynmkt_StartMigrationCustomActionRequestParameters>;
+
+  constructor(parameters: msdynmkt_StartMigrationCustomActionRequestParameters = {}) {
+    super("msdynmkt_StartMigrationCustomAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_StartMigrationCustomAction`;
 
-    const body: Record<string, unknown> = {
-      WhatIf: this.whatIf,
-    };
+    const body = requestBody({
+      WhatIf: this.Parameters.WhatIf,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,10 @@ export class msdynmkt_StartMigrationCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_StartMigrationCustomActionResponse> {
-    const data = await response.json();
-    return msdynmkt_StartMigrationCustomActionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdynmkt_StartMigrationCustomActionResponse.fromResponse({});
+    return msdynmkt_StartMigrationCustomActionResponse.fromResponse(await response.json());
   }
 }
 

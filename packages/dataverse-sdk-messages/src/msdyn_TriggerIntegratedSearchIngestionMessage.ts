@@ -29,8 +29,10 @@ export class msdyn_TriggerIntegratedSearchIngestionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TriggerIntegratedSearchIngestionResponse> {
-    const data = await response.json();
-    return msdyn_TriggerIntegratedSearchIngestionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_TriggerIntegratedSearchIngestionResponse.fromResponse({});
+    return msdyn_TriggerIntegratedSearchIngestionResponse.fromResponse(await response.json());
   }
 }
 

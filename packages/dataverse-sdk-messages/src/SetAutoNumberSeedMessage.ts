@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the SetAutoNumberSeed message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetAutoNumberSeedRequestParameters {
+  EntityName: string;
+  AttributeName: string;
+  Value: number;
+}
 
 /**
  * SetAutoNumberSeed request message
@@ -10,22 +21,20 @@ export class SetAutoNumberSeedRequest
   extends OrganizationRequest
   implements Executable<SetAutoNumberSeedResponse>
 {
-  constructor(
-    public entityName: string,
-    public attributeName: string,
-    public value: number
-  ) {
-    super("SetAutoNumberSeed");
+  declare readonly Parameters: Readonly<SetAutoNumberSeedRequestParameters>;
+
+  constructor(parameters: SetAutoNumberSeedRequestParameters) {
+    super("SetAutoNumberSeed", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SetAutoNumberSeed`;
 
-    const body: Record<string, unknown> = {
-      EntityName: this.entityName,
-      AttributeName: this.attributeName,
-      Value: this.value,
-    };
+    const body = requestBody({
+      EntityName: this.Parameters.EntityName,
+      AttributeName: this.Parameters.AttributeName,
+      Value: this.Parameters.Value,
+    });
 
     return {
       method: "POST",

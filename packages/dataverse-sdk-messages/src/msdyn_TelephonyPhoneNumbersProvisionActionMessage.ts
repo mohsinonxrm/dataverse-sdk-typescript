@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_TelephonyPhoneNumbersProvisionActionResponse as msdyn_TelephonyPhoneNumbersProvisionActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_TelephonyPhoneNumbersProvisionAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TelephonyPhoneNumbersProvisionActionRequestParameters {
+  ActionRequest: string;
+}
 
 /**
  * msdyn_TelephonyPhoneNumbersProvisionAction request message
@@ -12,16 +21,18 @@ export class msdyn_TelephonyPhoneNumbersProvisionActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_TelephonyPhoneNumbersProvisionActionResponse>
 {
-  constructor(public actionRequest: string) {
-    super("msdyn_TelephonyPhoneNumbersProvisionAction");
+  declare readonly Parameters: Readonly<msdyn_TelephonyPhoneNumbersProvisionActionRequestParameters>;
+
+  constructor(parameters: msdyn_TelephonyPhoneNumbersProvisionActionRequestParameters) {
+    super("msdyn_TelephonyPhoneNumbersProvisionAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TelephonyPhoneNumbersProvisionAction`;
 
-    const body: Record<string, unknown> = {
-      ActionRequest: this.actionRequest,
-    };
+    const body = requestBody({
+      ActionRequest: this.Parameters.ActionRequest,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,10 @@ export class msdyn_TelephonyPhoneNumbersProvisionActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyPhoneNumbersProvisionActionResponse> {
-    const data = await response.json();
-    return msdyn_TelephonyPhoneNumbersProvisionActionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_TelephonyPhoneNumbersProvisionActionResponse.fromResponse({});
+    return msdyn_TelephonyPhoneNumbersProvisionActionResponse.fromResponse(await response.json());
   }
 }
 

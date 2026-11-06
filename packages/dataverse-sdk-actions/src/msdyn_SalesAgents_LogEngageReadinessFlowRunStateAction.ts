@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SalesAgents_LogEngageReadinessFlowRunState action
@@ -8,27 +9,35 @@ export interface msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse {
 }
 
 /**
+ * Parameters of the msdyn_SalesAgents_LogEngageReadinessFlowRunState action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_LogEngageReadinessFlowRunStateActionParameters {
+  msdyn_TrackingId?: string;
+  msdyn_SalesAgentRun?: string;
+  msdyn_Thread?: string;
+  msdyn_FlowRunState?: string;
+}
+
+/**
  * msdyn_SalesAgents_LogEngageReadinessFlowRunState action
  *
  * Unbound action
  */
 export class msdyn_SalesAgents_LogEngageReadinessFlowRunStateAction implements Executable<msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse> {
   constructor(
-    public readonly msdyn_TrackingId?: string,
-    public readonly msdyn_SalesAgentRun?: string,
-    public readonly msdyn_Thread?: string,
-    public readonly msdyn_FlowRunState?: string
+    public readonly parameters: msdyn_SalesAgents_LogEngageReadinessFlowRunStateActionParameters = {}
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_LogEngageReadinessFlowRunState`;
 
-    const body: Record<string, unknown> = {
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_Thread: this.msdyn_Thread,
-      msdyn_FlowRunState: this.msdyn_FlowRunState,
-    };
+    const body = requestBody({
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+      msdyn_Thread: this.parameters.msdyn_Thread,
+      msdyn_FlowRunState: this.parameters.msdyn_FlowRunState,
+    });
 
     return {
       method: "POST",
@@ -43,7 +52,9 @@ export class msdyn_SalesAgents_LogEngageReadinessFlowRunStateAction implements E
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse;
+    return (await response.json()) as msdyn_SalesAgents_LogEngageReadinessFlowRunStateResponse;
   }
 }

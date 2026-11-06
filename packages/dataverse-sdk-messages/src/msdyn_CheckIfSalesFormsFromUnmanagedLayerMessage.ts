@@ -31,8 +31,10 @@ export class msdyn_CheckIfSalesFormsFromUnmanagedLayerRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse.fromResponse({});
+    return msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse.fromResponse(await response.json());
   }
 }
 

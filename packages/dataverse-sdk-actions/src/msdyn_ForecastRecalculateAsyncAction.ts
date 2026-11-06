@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,23 +11,29 @@ export interface msdyn_ForecastRecalculateAsyncResponse {
 }
 
 /**
+ * Parameters of the msdyn_ForecastRecalculateAsync action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ForecastRecalculateAsyncActionParameters {
+  ForecastInstance: EntityReference | AnyEntityPayload;
+  IsRefreshHierarchy: boolean;
+}
+
+/**
  * msdyn_ForecastRecalculateAsync action
  *
  * Unbound action
  */
 export class msdyn_ForecastRecalculateAsyncAction implements Executable<msdyn_ForecastRecalculateAsyncResponse> {
-  constructor(
-    public readonly forecastInstance: EntityReference | AnyEntityPayload,
-    public readonly isRefreshHierarchy: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_ForecastRecalculateAsyncActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ForecastRecalculateAsync`;
 
-    const body: Record<string, unknown> = {
-      ForecastInstance: this.forecastInstance,
-      IsRefreshHierarchy: this.isRefreshHierarchy,
-    };
+    const body = requestBody({
+      ForecastInstance: this.parameters.ForecastInstance,
+      IsRefreshHierarchy: this.parameters.IsRefreshHierarchy,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_ForecastRecalculateAsyncAction implements Executable<msdyn_Fo
   }
 
   async parseResponse(response: Response): Promise<msdyn_ForecastRecalculateAsyncResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ForecastRecalculateAsyncResponse;
+    return (await response.json()) as msdyn_ForecastRecalculateAsyncResponse;
   }
 }

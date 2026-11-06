@@ -16,6 +16,8 @@ export interface CopyDynamicListToStaticResponse extends list {
  *
  * Bound action
  * Binding parameter: entity (mscrm.list)
+ *
+ * The first argument is the id of the list record to call it on.
  */
 export class CopyDynamicListToStaticAction implements Executable<CopyDynamicListToStaticResponse> {
   constructor(public readonly listId: string) {}
@@ -34,7 +36,8 @@ export class CopyDynamicListToStaticAction implements Executable<CopyDynamicList
   }
 
   async parseResponse(response: Response): Promise<CopyDynamicListToStaticResponse> {
-    const data = await response.json();
-    return data as CopyDynamicListToStaticResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CopyDynamicListToStaticResponse;
+    return (await response.json()) as CopyDynamicListToStaticResponse;
   }
 }

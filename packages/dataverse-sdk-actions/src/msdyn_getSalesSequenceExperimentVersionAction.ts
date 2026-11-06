@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_getSalesSequenceExperimentVersion action
@@ -8,27 +9,35 @@ export interface msdyn_getSalesSequenceExperimentVersionResponse {
 }
 
 /**
+ * Parameters of the msdyn_getSalesSequenceExperimentVersion action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_getSalesSequenceExperimentVersionActionParameters {
+  msdyn_experimentKey: string;
+  msdyn_customerId: string;
+  msdyn_versionATraffic: number;
+  msdyn_experimentVersionRecordId: string;
+}
+
+/**
  * msdyn_getSalesSequenceExperimentVersion action
  *
  * Unbound action
  */
 export class msdyn_getSalesSequenceExperimentVersionAction implements Executable<msdyn_getSalesSequenceExperimentVersionResponse> {
   constructor(
-    public readonly msdyn_experimentKey: string,
-    public readonly msdyn_customerId: string,
-    public readonly msdyn_versionATraffic: number,
-    public readonly msdyn_experimentVersionRecordId: string
+    public readonly parameters: msdyn_getSalesSequenceExperimentVersionActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_getSalesSequenceExperimentVersion`;
 
-    const body: Record<string, unknown> = {
-      msdyn_experimentKey: this.msdyn_experimentKey,
-      msdyn_customerId: this.msdyn_customerId,
-      msdyn_versionATraffic: this.msdyn_versionATraffic,
-      msdyn_experimentVersionRecordId: this.msdyn_experimentVersionRecordId,
-    };
+    const body = requestBody({
+      msdyn_experimentKey: this.parameters.msdyn_experimentKey,
+      msdyn_customerId: this.parameters.msdyn_customerId,
+      msdyn_versionATraffic: this.parameters.msdyn_versionATraffic,
+      msdyn_experimentVersionRecordId: this.parameters.msdyn_experimentVersionRecordId,
+    });
 
     return {
       method: "POST",
@@ -43,7 +52,8 @@ export class msdyn_getSalesSequenceExperimentVersionAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_getSalesSequenceExperimentVersionResponse> {
-    const data = await response.json();
-    return data as msdyn_getSalesSequenceExperimentVersionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_getSalesSequenceExperimentVersionResponse;
+    return (await response.json()) as msdyn_getSalesSequenceExperimentVersionResponse;
   }
 }

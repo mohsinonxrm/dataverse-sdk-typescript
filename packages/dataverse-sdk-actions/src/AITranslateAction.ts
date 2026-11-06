@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from AITranslate action
@@ -8,23 +9,29 @@ export interface AITranslateResponse {
 }
 
 /**
+ * Parameters of the AITranslate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AITranslateActionParameters {
+  TargetLanguage?: string;
+  Text: string;
+}
+
+/**
  * AITranslate action
  *
  * Unbound action
  */
 export class AITranslateAction implements Executable<AITranslateResponse> {
-  constructor(
-    public readonly targetLanguage: string | undefined,
-    public readonly text: string
-  ) {}
+  constructor(public readonly parameters: AITranslateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AITranslate`;
 
-    const body: Record<string, unknown> = {
-      TargetLanguage: this.targetLanguage,
-      Text: this.text,
-    };
+    const body = requestBody({
+      TargetLanguage: this.parameters.TargetLanguage,
+      Text: this.parameters.Text,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class AITranslateAction implements Executable<AITranslateResponse> {
   }
 
   async parseResponse(response: Response): Promise<AITranslateResponse> {
-    const data = await response.json();
-    return data as AITranslateResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AITranslateResponse;
+    return (await response.json()) as AITranslateResponse;
   }
 }

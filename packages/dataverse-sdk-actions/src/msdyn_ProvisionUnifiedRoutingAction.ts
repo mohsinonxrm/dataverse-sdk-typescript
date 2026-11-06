@@ -29,7 +29,8 @@ export class msdyn_ProvisionUnifiedRoutingAction implements Executable<msdyn_Pro
   }
 
   async parseResponse(response: Response): Promise<msdyn_ProvisionUnifiedRoutingResponse> {
-    const data = await response.json();
-    return data as msdyn_ProvisionUnifiedRoutingResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ProvisionUnifiedRoutingResponse;
+    return (await response.json()) as msdyn_ProvisionUnifiedRoutingResponse;
   }
 }

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_PersonalizationGetEventsByNameResponse as msdynmkt_PersonalizationGetEventsByNameResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_PersonalizationGetEventsByName message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_PersonalizationGetEventsByNameRequestParameters {
+  GetPersonalizationEventRequest?: string;
+}
 
 /**
  * msdynmkt_PersonalizationGetEventsByName request message
@@ -12,16 +21,18 @@ export class msdynmkt_PersonalizationGetEventsByNameRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_PersonalizationGetEventsByNameResponse>
 {
-  constructor(public getPersonalizationEventRequest?: string) {
-    super("msdynmkt_PersonalizationGetEventsByName");
+  declare readonly Parameters: Readonly<msdynmkt_PersonalizationGetEventsByNameRequestParameters>;
+
+  constructor(parameters: msdynmkt_PersonalizationGetEventsByNameRequestParameters = {}) {
+    super("msdynmkt_PersonalizationGetEventsByName", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_PersonalizationGetEventsByName`;
 
-    const body: Record<string, unknown> = {
-      GetPersonalizationEventRequest: this.getPersonalizationEventRequest,
-    };
+    const body = requestBody({
+      GetPersonalizationEventRequest: this.Parameters.GetPersonalizationEventRequest,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,10 @@ export class msdynmkt_PersonalizationGetEventsByNameRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_PersonalizationGetEventsByNameResponse> {
-    const data = await response.json();
-    return msdynmkt_PersonalizationGetEventsByNameResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdynmkt_PersonalizationGetEventsByNameResponse.fromResponse({});
+    return msdynmkt_PersonalizationGetEventsByNameResponse.fromResponse(await response.json());
   }
 }
 

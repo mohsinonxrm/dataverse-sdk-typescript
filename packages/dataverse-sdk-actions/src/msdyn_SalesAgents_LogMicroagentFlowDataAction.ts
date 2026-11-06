@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SalesAgents_LogMicroagentFlowData action
@@ -9,31 +10,39 @@ export interface msdyn_SalesAgents_LogMicroagentFlowDataResponse {
 }
 
 /**
+ * Parameters of the msdyn_SalesAgents_LogMicroagentFlowData action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_LogMicroagentFlowDataActionParameters {
+  msdyn_salesagentrunid: string;
+  msdyn_agenttype: number;
+  msdyn_salesagenttype?: number;
+  trackingId?: string;
+  continueOnError?: boolean;
+  data: string;
+}
+
+/**
  * msdyn_SalesAgents_LogMicroagentFlowData action
  *
  * Unbound action
  */
 export class msdyn_SalesAgents_LogMicroagentFlowDataAction implements Executable<msdyn_SalesAgents_LogMicroagentFlowDataResponse> {
   constructor(
-    public readonly msdyn_salesagentrunid: string,
-    public readonly msdyn_agenttype: number,
-    public readonly msdyn_salesagenttype: number | undefined,
-    public readonly trackingId: string | undefined,
-    public readonly continueOnError: boolean | undefined,
-    public readonly data: string
+    public readonly parameters: msdyn_SalesAgents_LogMicroagentFlowDataActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_LogMicroagentFlowData`;
 
-    const body: Record<string, unknown> = {
-      msdyn_salesagentrunid: this.msdyn_salesagentrunid,
-      msdyn_agenttype: this.msdyn_agenttype,
-      msdyn_salesagenttype: this.msdyn_salesagenttype,
-      trackingId: this.trackingId,
-      continueOnError: this.continueOnError,
-      data: this.data,
-    };
+    const body = requestBody({
+      msdyn_salesagentrunid: this.parameters.msdyn_salesagentrunid,
+      msdyn_agenttype: this.parameters.msdyn_agenttype,
+      msdyn_salesagenttype: this.parameters.msdyn_salesagenttype,
+      trackingId: this.parameters.trackingId,
+      continueOnError: this.parameters.continueOnError,
+      data: this.parameters.data,
+    });
 
     return {
       method: "POST",
@@ -48,7 +57,8 @@ export class msdyn_SalesAgents_LogMicroagentFlowDataAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_LogMicroagentFlowDataResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_LogMicroagentFlowDataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SalesAgents_LogMicroagentFlowDataResponse;
+    return (await response.json()) as msdyn_SalesAgents_LogMicroagentFlowDataResponse;
   }
 }

@@ -12,6 +12,8 @@ export interface GetReportHistoryLimitResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.report)
+ *
+ * The first argument is the id of the report record to call it on.
  */
 export class GetReportHistoryLimitFunction implements Executable<GetReportHistoryLimitResponse> {
   constructor(public readonly reportId: string) {}
@@ -30,7 +32,8 @@ export class GetReportHistoryLimitFunction implements Executable<GetReportHistor
   }
 
   async parseResponse(response: Response): Promise<GetReportHistoryLimitResponse> {
-    const data = await response.json();
-    return data as GetReportHistoryLimitResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetReportHistoryLimitResponse;
+    return (await response.json()) as GetReportHistoryLimitResponse;
   }
 }

@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { BatchGetFlowMachineStatusResponse as BatchGetFlowMachineStatusResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the BatchGetFlowMachineStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface BatchGetFlowMachineStatusRequestParameters {
+  machineIds: string;
+  version?: string;
+}
 
 /**
  * BatchGetFlowMachineStatus request message
@@ -12,20 +22,19 @@ export class BatchGetFlowMachineStatusRequest
   extends OrganizationRequest
   implements Executable<BatchGetFlowMachineStatusResponse>
 {
-  constructor(
-    public machineIds: string,
-    public version?: string
-  ) {
-    super("BatchGetFlowMachineStatus");
+  declare readonly Parameters: Readonly<BatchGetFlowMachineStatusRequestParameters>;
+
+  constructor(parameters: BatchGetFlowMachineStatusRequestParameters) {
+    super("BatchGetFlowMachineStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BatchGetFlowMachineStatus`;
 
-    const body: Record<string, unknown> = {
-      machineIds: this.machineIds,
-      version: this.version,
-    };
+    const body = requestBody({
+      machineIds: this.Parameters.machineIds,
+      version: this.Parameters.version,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class BatchGetFlowMachineStatusRequest
   }
 
   async parseResponse(response: Response): Promise<BatchGetFlowMachineStatusResponse> {
-    const data = await response.json();
-    return BatchGetFlowMachineStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return BatchGetFlowMachineStatusResponse.fromResponse({});
+    return BatchGetFlowMachineStatusResponse.fromResponse(await response.json());
   }
 }
 

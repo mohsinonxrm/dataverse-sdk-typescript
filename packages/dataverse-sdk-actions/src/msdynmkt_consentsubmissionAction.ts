@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdynmkt_consentsubmission action
@@ -8,33 +9,39 @@ export interface msdynmkt_consentsubmissionResponse {
 }
 
 /**
+ * Parameters of the msdynmkt_consentsubmission action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_consentsubmissionActionParameters {
+  msdynmkt_preferencecenterid?: string;
+  msdynmkt_consentversion?: string;
+  msdynmkt_purposeconsents: string;
+  msdynmkt_trackingcontextid?: string;
+  msdynmkt_contactpointtype: number;
+  msdynmkt_contactpointvalue: string;
+  msdynmkt_topicconsents?: string;
+}
+
+/**
  * msdynmkt_consentsubmission action
  *
  * Unbound action
  */
 export class msdynmkt_consentsubmissionAction implements Executable<msdynmkt_consentsubmissionResponse> {
-  constructor(
-    public readonly msdynmkt_preferencecenterid: string | undefined,
-    public readonly msdynmkt_consentversion: string | undefined,
-    public readonly msdynmkt_purposeconsents: string,
-    public readonly msdynmkt_trackingcontextid: string | undefined,
-    public readonly msdynmkt_contactpointtype: number,
-    public readonly msdynmkt_contactpointvalue: string,
-    public readonly msdynmkt_topicconsents?: string
-  ) {}
+  constructor(public readonly parameters: msdynmkt_consentsubmissionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_consentsubmission`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_preferencecenterid: this.msdynmkt_preferencecenterid,
-      msdynmkt_consentversion: this.msdynmkt_consentversion,
-      msdynmkt_purposeconsents: this.msdynmkt_purposeconsents,
-      msdynmkt_trackingcontextid: this.msdynmkt_trackingcontextid,
-      msdynmkt_contactpointtype: this.msdynmkt_contactpointtype,
-      msdynmkt_contactpointvalue: this.msdynmkt_contactpointvalue,
-      msdynmkt_topicconsents: this.msdynmkt_topicconsents,
-    };
+    const body = requestBody({
+      msdynmkt_preferencecenterid: this.parameters.msdynmkt_preferencecenterid,
+      msdynmkt_consentversion: this.parameters.msdynmkt_consentversion,
+      msdynmkt_purposeconsents: this.parameters.msdynmkt_purposeconsents,
+      msdynmkt_trackingcontextid: this.parameters.msdynmkt_trackingcontextid,
+      msdynmkt_contactpointtype: this.parameters.msdynmkt_contactpointtype,
+      msdynmkt_contactpointvalue: this.parameters.msdynmkt_contactpointvalue,
+      msdynmkt_topicconsents: this.parameters.msdynmkt_topicconsents,
+    });
 
     return {
       method: "POST",
@@ -47,7 +54,8 @@ export class msdynmkt_consentsubmissionAction implements Executable<msdynmkt_con
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_consentsubmissionResponse> {
-    const data = await response.json();
-    return data as msdynmkt_consentsubmissionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_consentsubmissionResponse;
+    return (await response.json()) as msdynmkt_consentsubmissionResponse;
   }
 }

@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_startSequenceStatsCopyJob message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_startSequenceStatsCopyJobRequestParameters {
+  InputData?: string;
+}
 
 /**
  * msdyn_startSequenceStatsCopyJob request message
@@ -10,16 +19,18 @@ export class msdyn_startSequenceStatsCopyJobRequest
   extends OrganizationRequest
   implements Executable<msdyn_startSequenceStatsCopyJobResponse>
 {
-  constructor(public inputData?: string) {
-    super("msdyn_startSequenceStatsCopyJob");
+  declare readonly Parameters: Readonly<msdyn_startSequenceStatsCopyJobRequestParameters>;
+
+  constructor(parameters: msdyn_startSequenceStatsCopyJobRequestParameters = {}) {
+    super("msdyn_startSequenceStatsCopyJob", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_startSequenceStatsCopyJob`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.Parameters.InputData,
+    });
 
     return {
       method: "POST",

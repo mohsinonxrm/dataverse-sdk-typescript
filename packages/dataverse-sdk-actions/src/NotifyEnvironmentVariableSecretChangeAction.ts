@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from NotifyEnvironmentVariableSecretChange action
@@ -8,23 +9,29 @@ export interface NotifyEnvironmentVariableSecretChangeResponse {
 }
 
 /**
+ * Parameters of the NotifyEnvironmentVariableSecretChange action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface NotifyEnvironmentVariableSecretChangeActionParameters {
+  KeyVaultUrl: string;
+  SecretName: string;
+}
+
+/**
  * NotifyEnvironmentVariableSecretChange action
  *
  * Unbound action
  */
 export class NotifyEnvironmentVariableSecretChangeAction implements Executable<NotifyEnvironmentVariableSecretChangeResponse> {
-  constructor(
-    public readonly keyVaultUrl: string,
-    public readonly secretName: string
-  ) {}
+  constructor(public readonly parameters: NotifyEnvironmentVariableSecretChangeActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/NotifyEnvironmentVariableSecretChange`;
 
-    const body: Record<string, unknown> = {
-      KeyVaultUrl: this.keyVaultUrl,
-      SecretName: this.secretName,
-    };
+    const body = requestBody({
+      KeyVaultUrl: this.parameters.KeyVaultUrl,
+      SecretName: this.parameters.SecretName,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class NotifyEnvironmentVariableSecretChangeAction implements Executable<N
   }
 
   async parseResponse(response: Response): Promise<NotifyEnvironmentVariableSecretChangeResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as NotifyEnvironmentVariableSecretChangeResponse;
+    return (await response.json()) as NotifyEnvironmentVariableSecretChangeResponse;
   }
 }

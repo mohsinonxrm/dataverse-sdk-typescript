@@ -26,7 +26,8 @@ export class UpdateRibbonClientMetadataAction implements Executable<UpdateRibbon
   }
 
   async parseResponse(response: Response): Promise<UpdateRibbonClientMetadataResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UpdateRibbonClientMetadataResponse;
+    return (await response.json()) as UpdateRibbonClientMetadataResponse;
   }
 }

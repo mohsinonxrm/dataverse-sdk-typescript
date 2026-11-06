@@ -27,7 +27,8 @@ export class RetrieveConnectorSettingsAction implements Executable<RetrieveConne
   }
 
   async parseResponse(response: Response): Promise<RetrieveConnectorSettingsResponse> {
-    const data = await response.json();
-    return data as RetrieveConnectorSettingsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveConnectorSettingsResponse;
+    return (await response.json()) as RetrieveConnectorSettingsResponse;
   }
 }

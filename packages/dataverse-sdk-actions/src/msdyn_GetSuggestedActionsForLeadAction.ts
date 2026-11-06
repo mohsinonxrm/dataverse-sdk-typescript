@@ -12,6 +12,8 @@ export interface msdyn_GetSuggestedActionsForLeadResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.lead)
+ *
+ * The first argument is the id of the lead record to call it on.
  */
 export class msdyn_GetSuggestedActionsForLeadAction implements Executable<msdyn_GetSuggestedActionsForLeadResponse> {
   constructor(public readonly leadId: string) {}
@@ -30,7 +32,8 @@ export class msdyn_GetSuggestedActionsForLeadAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSuggestedActionsForLeadResponse> {
-    const data = await response.json();
-    return data as msdyn_GetSuggestedActionsForLeadResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetSuggestedActionsForLeadResponse;
+    return (await response.json()) as msdyn_GetSuggestedActionsForLeadResponse;
   }
 }

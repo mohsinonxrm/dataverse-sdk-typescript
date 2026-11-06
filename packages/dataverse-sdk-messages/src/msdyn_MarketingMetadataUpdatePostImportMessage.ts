@@ -31,8 +31,10 @@ export class msdyn_MarketingMetadataUpdatePostImportRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_MarketingMetadataUpdatePostImportResponse> {
-    const data = await response.json();
-    return msdyn_MarketingMetadataUpdatePostImportResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_MarketingMetadataUpdatePostImportResponse.fromResponse({});
+    return msdyn_MarketingMetadataUpdatePostImportResponse.fromResponse(await response.json());
   }
 }
 

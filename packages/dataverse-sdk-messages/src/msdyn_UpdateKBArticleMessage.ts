@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_UpdateKBArticleResponse as msdyn_UpdateKBArticleResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_UpdateKBArticle message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateKBArticleRequestParameters {
+  DoesKBExistResponse3: string;
+  CSCopilotRequest3: string;
+}
 
 /**
  * msdyn_UpdateKBArticle request message
@@ -12,20 +22,19 @@ export class msdyn_UpdateKBArticleRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdateKBArticleResponse>
 {
-  constructor(
-    public doesKBExistResponse3: string,
-    public cSCopilotRequest3: string
-  ) {
-    super("msdyn_UpdateKBArticle");
+  declare readonly Parameters: Readonly<msdyn_UpdateKBArticleRequestParameters>;
+
+  constructor(parameters: msdyn_UpdateKBArticleRequestParameters) {
+    super("msdyn_UpdateKBArticle", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateKBArticle`;
 
-    const body: Record<string, unknown> = {
-      DoesKBExistResponse3: this.doesKBExistResponse3,
-      CSCopilotRequest3: this.cSCopilotRequest3,
-    };
+    const body = requestBody({
+      DoesKBExistResponse3: this.Parameters.DoesKBExistResponse3,
+      CSCopilotRequest3: this.Parameters.CSCopilotRequest3,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_UpdateKBArticleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateKBArticleResponse> {
-    const data = await response.json();
-    return msdyn_UpdateKBArticleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_UpdateKBArticleResponse.fromResponse({});
+    return msdyn_UpdateKBArticleResponse.fromResponse(await response.json());
   }
 }
 

@@ -26,7 +26,8 @@ export class UninstallSampleDataAction implements Executable<UninstallSampleData
   }
 
   async parseResponse(response: Response): Promise<UninstallSampleDataResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UninstallSampleDataResponse;
+    return (await response.json()) as UninstallSampleDataResponse;
   }
 }

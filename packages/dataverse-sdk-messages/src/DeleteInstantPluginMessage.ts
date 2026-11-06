@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the DeleteInstantPlugin message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteInstantPluginRequestParameters {
+  FxExpressionUniqueName: string;
+}
 
 /**
  * DeleteInstantPlugin request message
@@ -10,16 +19,18 @@ export class DeleteInstantPluginRequest
   extends OrganizationRequest
   implements Executable<DeleteInstantPluginResponse>
 {
-  constructor(public fxExpressionUniqueName: string) {
-    super("DeleteInstantPlugin");
+  declare readonly Parameters: Readonly<DeleteInstantPluginRequestParameters>;
+
+  constructor(parameters: DeleteInstantPluginRequestParameters) {
+    super("DeleteInstantPlugin", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeleteInstantPlugin`;
 
-    const body: Record<string, unknown> = {
-      FxExpressionUniqueName: this.fxExpressionUniqueName,
-    };
+    const body = requestBody({
+      FxExpressionUniqueName: this.Parameters.FxExpressionUniqueName,
+    });
 
     return {
       method: "POST",

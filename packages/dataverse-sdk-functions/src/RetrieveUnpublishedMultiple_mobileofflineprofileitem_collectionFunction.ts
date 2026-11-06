@@ -31,7 +31,9 @@ export class RetrieveUnpublishedMultiple_mobileofflineprofileitem_collectionFunc
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_mobileofflineprofileitem_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_mobileofflineprofileitem_collectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublishedMultiple_mobileofflineprofileitem_collectionResponse;
+    return (await response.json()) as RetrieveUnpublishedMultiple_mobileofflineprofileitem_collectionResponse;
   }
 }

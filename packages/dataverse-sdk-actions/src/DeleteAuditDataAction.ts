@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from DeleteAuditData action
@@ -8,19 +9,27 @@ export interface DeleteAuditDataResponse {
 }
 
 /**
+ * Parameters of the DeleteAuditData action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteAuditDataActionParameters {
+  EndDate: string;
+}
+
+/**
  * DeleteAuditData action
  *
  * Unbound action
  */
 export class DeleteAuditDataAction implements Executable<DeleteAuditDataResponse> {
-  constructor(public readonly endDate: string) {}
+  constructor(public readonly parameters: DeleteAuditDataActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeleteAuditData`;
 
-    const body: Record<string, unknown> = {
-      EndDate: this.endDate,
-    };
+    const body = requestBody({
+      EndDate: this.parameters.EndDate,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class DeleteAuditDataAction implements Executable<DeleteAuditDataResponse
   }
 
   async parseResponse(response: Response): Promise<DeleteAuditDataResponse> {
-    const data = await response.json();
-    return data as DeleteAuditDataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as DeleteAuditDataResponse;
+    return (await response.json()) as DeleteAuditDataResponse;
   }
 }

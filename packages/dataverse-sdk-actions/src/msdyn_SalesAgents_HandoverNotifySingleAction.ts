@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SalesAgents_HandoverNotifySingle action
@@ -8,25 +9,31 @@ export interface msdyn_SalesAgents_HandoverNotifySingleResponse {
 }
 
 /**
+ * Parameters of the msdyn_SalesAgents_HandoverNotifySingle action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_HandoverNotifySingleActionParameters {
+  msdyn_SalesAgentRun: string;
+  msdyn_TrackingId?: string;
+  msdyn_HandoverContext?: string;
+}
+
+/**
  * msdyn_SalesAgents_HandoverNotifySingle action
  *
  * Unbound action
  */
 export class msdyn_SalesAgents_HandoverNotifySingleAction implements Executable<msdyn_SalesAgents_HandoverNotifySingleResponse> {
-  constructor(
-    public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_TrackingId?: string,
-    public readonly msdyn_HandoverContext?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_SalesAgents_HandoverNotifySingleActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_HandoverNotifySingle`;
 
-    const body: Record<string, unknown> = {
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_HandoverContext: this.msdyn_HandoverContext,
-    };
+    const body = requestBody({
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_HandoverContext: this.parameters.msdyn_HandoverContext,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_SalesAgents_HandoverNotifySingleAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_HandoverNotifySingleResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_HandoverNotifySingleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SalesAgents_HandoverNotifySingleResponse;
+    return (await response.json()) as msdyn_SalesAgents_HandoverNotifySingleResponse;
   }
 }

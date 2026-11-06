@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from UnpublishDuplicateRule action
@@ -8,19 +9,27 @@ export interface UnpublishDuplicateRuleResponse {
 }
 
 /**
+ * Parameters of the UnpublishDuplicateRule action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UnpublishDuplicateRuleActionParameters {
+  DuplicateRuleId: string;
+}
+
+/**
  * UnpublishDuplicateRule action
  *
  * Unbound action
  */
 export class UnpublishDuplicateRuleAction implements Executable<UnpublishDuplicateRuleResponse> {
-  constructor(public readonly duplicateRuleId: string) {}
+  constructor(public readonly parameters: UnpublishDuplicateRuleActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UnpublishDuplicateRule`;
 
-    const body: Record<string, unknown> = {
-      DuplicateRuleId: this.duplicateRuleId,
-    };
+    const body = requestBody({
+      DuplicateRuleId: this.parameters.DuplicateRuleId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class UnpublishDuplicateRuleAction implements Executable<UnpublishDuplica
   }
 
   async parseResponse(response: Response): Promise<UnpublishDuplicateRuleResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UnpublishDuplicateRuleResponse;
+    return (await response.json()) as UnpublishDuplicateRuleResponse;
   }
 }

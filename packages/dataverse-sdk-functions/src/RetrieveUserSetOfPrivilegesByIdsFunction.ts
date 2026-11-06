@@ -10,16 +10,26 @@ export interface RetrieveUserSetOfPrivilegesByIdsResponse {
 }
 
 /**
+ * Parameters of the RetrieveUserSetOfPrivilegesByIds function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveUserSetOfPrivilegesByIdsFunctionParameters {
+  PrivilegeIds: string[];
+  ExcludeTeamBasic?: boolean;
+}
+
+/**
  * RetrieveUserSetOfPrivilegesByIds function
  *
  * Bound function
  * Binding parameter: entity (mscrm.systemuser)
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class RetrieveUserSetOfPrivilegesByIdsFunction implements Executable<RetrieveUserSetOfPrivilegesByIdsResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly privilegeIds: string[],
-    public readonly excludeTeamBasic?: boolean
+    public readonly parameters: RetrieveUserSetOfPrivilegesByIdsFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -29,13 +39,13 @@ export class RetrieveUserSetOfPrivilegesByIdsFunction implements Executable<Retr
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.privilegeIds !== undefined) {
+    if (this.parameters.PrivilegeIds !== undefined) {
       aliases.push(`PrivilegeIds=@p1`);
-      params.append("@p1", JSON.stringify(this.privilegeIds));
+      params.append("@p1", JSON.stringify(this.parameters.PrivilegeIds));
     }
-    if (this.excludeTeamBasic !== undefined) {
+    if (this.parameters.ExcludeTeamBasic !== undefined) {
       aliases.push(`ExcludeTeamBasic=@p2`);
-      params.append("@p2", formatParameterAlias(this.excludeTeamBasic, "Edm.Boolean"));
+      params.append("@p2", formatParameterAlias(this.parameters.ExcludeTeamBasic, "Edm.Boolean"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -51,7 +61,8 @@ export class RetrieveUserSetOfPrivilegesByIdsFunction implements Executable<Retr
   }
 
   async parseResponse(response: Response): Promise<RetrieveUserSetOfPrivilegesByIdsResponse> {
-    const data = await response.json();
-    return data as RetrieveUserSetOfPrivilegesByIdsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUserSetOfPrivilegesByIdsResponse;
+    return (await response.json()) as RetrieveUserSetOfPrivilegesByIdsResponse;
   }
 }

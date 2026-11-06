@@ -29,8 +29,10 @@ export class msdyn_OcAgentsShouldHaveCapacityRuleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_OcAgentsShouldHaveCapacityRuleResponse> {
-    const data = await response.json();
-    return msdyn_OcAgentsShouldHaveCapacityRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_OcAgentsShouldHaveCapacityRuleResponse.fromResponse({});
+    return msdyn_OcAgentsShouldHaveCapacityRuleResponse.fromResponse(await response.json());
   }
 }
 

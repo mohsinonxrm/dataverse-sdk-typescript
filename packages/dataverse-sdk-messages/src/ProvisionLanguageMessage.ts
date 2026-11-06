@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the ProvisionLanguage message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ProvisionLanguageRequestParameters {
+  Language: number;
+}
 
 /**
  * ProvisionLanguage request message
@@ -10,16 +19,18 @@ export class ProvisionLanguageRequest
   extends OrganizationRequest
   implements Executable<ProvisionLanguageResponse>
 {
-  constructor(public language: number) {
-    super("ProvisionLanguage");
+  declare readonly Parameters: Readonly<ProvisionLanguageRequestParameters>;
+
+  constructor(parameters: ProvisionLanguageRequestParameters) {
+    super("ProvisionLanguage", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ProvisionLanguage`;
 
-    const body: Record<string, unknown> = {
-      Language: this.language,
-    };
+    const body = requestBody({
+      Language: this.Parameters.Language,
+    });
 
     return {
       method: "POST",

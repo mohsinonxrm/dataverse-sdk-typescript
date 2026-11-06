@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_cesinvokeResponse as msdyn_cesinvokeResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_cesinvoke message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_cesinvokeRequestParameters {
+  CallType?: string;
+  EventName?: string;
+  SurveyName?: string;
+}
 
 /**
  * msdyn_cesinvoke request message
@@ -12,22 +23,20 @@ export class msdyn_cesinvokeRequest
   extends OrganizationRequest
   implements Executable<msdyn_cesinvokeResponse>
 {
-  constructor(
-    public callType?: string,
-    public eventName?: string,
-    public surveyName?: string
-  ) {
-    super("msdyn_cesinvoke");
+  declare readonly Parameters: Readonly<msdyn_cesinvokeRequestParameters>;
+
+  constructor(parameters: msdyn_cesinvokeRequestParameters = {}) {
+    super("msdyn_cesinvoke", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_cesinvoke`;
 
-    const body: Record<string, unknown> = {
-      CallType: this.callType,
-      EventName: this.eventName,
-      SurveyName: this.surveyName,
-    };
+    const body = requestBody({
+      CallType: this.Parameters.CallType,
+      EventName: this.Parameters.EventName,
+      SurveyName: this.Parameters.SurveyName,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_cesinvokeRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_cesinvokeResponse> {
-    const data = await response.json();
-    return msdyn_cesinvokeResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_cesinvokeResponse.fromResponse({});
+    return msdyn_cesinvokeResponse.fromResponse(await response.json());
   }
 }
 

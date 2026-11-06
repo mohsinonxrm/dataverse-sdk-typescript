@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_FSDemoDataRequest action
@@ -8,19 +9,27 @@ export interface msdyn_FSDemoDataRequestResponse {
 }
 
 /**
+ * Parameters of the msdyn_FSDemoDataRequest action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FSDemoDataRequestActionParameters {
+  Operation: string;
+}
+
+/**
  * msdyn_FSDemoDataRequest action
  *
  * Unbound action
  */
 export class msdyn_FSDemoDataRequestAction implements Executable<msdyn_FSDemoDataRequestResponse> {
-  constructor(public readonly operation: string) {}
+  constructor(public readonly parameters: msdyn_FSDemoDataRequestActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FSDemoDataRequest`;
 
-    const body: Record<string, unknown> = {
-      Operation: this.operation,
-    };
+    const body = requestBody({
+      Operation: this.parameters.Operation,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_FSDemoDataRequestAction implements Executable<msdyn_FSDemoDat
   }
 
   async parseResponse(response: Response): Promise<msdyn_FSDemoDataRequestResponse> {
-    const data = await response.json();
-    return data as msdyn_FSDemoDataRequestResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_FSDemoDataRequestResponse;
+    return (await response.json()) as msdyn_FSDemoDataRequestResponse;
   }
 }

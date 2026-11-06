@@ -29,8 +29,9 @@ export class msdyn_GetAppModuleSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAppModuleSettingsResponse> {
-    const data = await response.json();
-    return msdyn_GetAppModuleSettingsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetAppModuleSettingsResponse.fromResponse({});
+    return msdyn_GetAppModuleSettingsResponse.fromResponse(await response.json());
   }
 }
 

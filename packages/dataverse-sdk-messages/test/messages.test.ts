@@ -61,7 +61,10 @@ describe("Message Classes", () => {
 
   describe("ExecuteWorkflowRequest/Response", () => {
     it("should create ExecuteWorkflow request with correct message name", () => {
-      const request = new ExecuteWorkflowRequest("workflow-id", "entity-id", {});
+      const request = new ExecuteWorkflowRequest("workflow-id", {
+        EntityId: "entity-id",
+        InputArguments: {},
+      });
       expect(request.messageName).toBe("ExecuteWorkflow");
     });
 
@@ -73,7 +76,7 @@ describe("Message Classes", () => {
 
   describe("WinOpportunityRequest/Response", () => {
     it("should create WinOpportunity request with correct message name", () => {
-      const request = new WinOpportunityRequest({}, "", 3);
+      const request = new WinOpportunityRequest({ OpportunityClose: {}, Status: 3 });
       expect(request.messageName).toBe("WinOpportunity");
     });
 
@@ -85,12 +88,11 @@ describe("Message Classes", () => {
 
   describe("MergeRequest/Response", () => {
     it("should create Merge request with correct message name", () => {
-      const request = new MergeRequest(
-        createEntityReference("account", "master-id"),
-        createEntityReference("account", "subordinate-id"),
-        undefined,
-        false
-      );
+      const request = new MergeRequest({
+        Target: createEntityReference("account", "master-id"),
+        Subordinate: createEntityReference("account", "subordinate-id"),
+        PerformParentingChecks: false,
+      });
       expect(request.messageName).toBe("Merge");
     });
 
@@ -102,7 +104,9 @@ describe("Message Classes", () => {
 
   describe("PublishXmlRequest/Response", () => {
     it("should create PublishXml request with correct message name", () => {
-      const request = new PublishXmlRequest("<importexportxml></importexportxml>");
+      const request = new PublishXmlRequest({
+        ParameterXml: "<importexportxml></importexportxml>",
+      });
       expect(request.messageName).toBe("PublishXml");
     });
 

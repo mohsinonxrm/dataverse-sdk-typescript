@@ -30,7 +30,9 @@ export class msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleAction impleme
   async parseResponse(
     response: Response
   ): Promise<msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    return (await response.json()) as msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse;
   }
 }

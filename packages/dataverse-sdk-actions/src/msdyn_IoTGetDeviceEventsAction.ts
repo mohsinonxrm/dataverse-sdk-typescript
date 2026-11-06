@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_IoTGetDeviceEvents action
@@ -8,25 +9,31 @@ export interface msdyn_IoTGetDeviceEventsResponse {
 }
 
 /**
+ * Parameters of the msdyn_IoTGetDeviceEvents action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IoTGetDeviceEventsActionParameters {
+  IotDeviceId: string;
+  From: string;
+  To: string;
+}
+
+/**
  * msdyn_IoTGetDeviceEvents action
  *
  * Unbound action
  */
 export class msdyn_IoTGetDeviceEventsAction implements Executable<msdyn_IoTGetDeviceEventsResponse> {
-  constructor(
-    public readonly iotDeviceId: string,
-    public readonly from: string,
-    public readonly to: string
-  ) {}
+  constructor(public readonly parameters: msdyn_IoTGetDeviceEventsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTGetDeviceEvents`;
 
-    const body: Record<string, unknown> = {
-      IotDeviceId: this.iotDeviceId,
-      From: this.from,
-      To: this.to,
-    };
+    const body = requestBody({
+      IotDeviceId: this.parameters.IotDeviceId,
+      From: this.parameters.From,
+      To: this.parameters.To,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_IoTGetDeviceEventsAction implements Executable<msdyn_IoTGetDe
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTGetDeviceEventsResponse> {
-    const data = await response.json();
-    return data as msdyn_IoTGetDeviceEventsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_IoTGetDeviceEventsResponse;
+    return (await response.json()) as msdyn_IoTGetDeviceEventsResponse;
   }
 }

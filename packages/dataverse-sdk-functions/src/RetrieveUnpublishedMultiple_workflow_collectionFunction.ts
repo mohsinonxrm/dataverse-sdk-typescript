@@ -31,7 +31,9 @@ export class RetrieveUnpublishedMultiple_workflow_collectionFunction implements 
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_workflow_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_workflow_collectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublishedMultiple_workflow_collectionResponse;
+    return (await response.json()) as RetrieveUnpublishedMultiple_workflow_collectionResponse;
   }
 }

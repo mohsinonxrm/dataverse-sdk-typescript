@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GeneratePlatformSummary action
@@ -8,23 +9,29 @@ export interface msdyn_GeneratePlatformSummaryResponse {
 }
 
 /**
+ * Parameters of the msdyn_GeneratePlatformSummary action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GeneratePlatformSummaryActionParameters {
+  ClientContext?: string;
+  OtherData?: string;
+}
+
+/**
  * msdyn_GeneratePlatformSummary action
  *
  * Unbound action
  */
 export class msdyn_GeneratePlatformSummaryAction implements Executable<msdyn_GeneratePlatformSummaryResponse> {
-  constructor(
-    public readonly clientContext?: string,
-    public readonly otherData?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GeneratePlatformSummaryActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GeneratePlatformSummary`;
 
-    const body: Record<string, unknown> = {
-      ClientContext: this.clientContext,
-      OtherData: this.otherData,
-    };
+    const body = requestBody({
+      ClientContext: this.parameters.ClientContext,
+      OtherData: this.parameters.OtherData,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_GeneratePlatformSummaryAction implements Executable<msdyn_Gen
   }
 
   async parseResponse(response: Response): Promise<msdyn_GeneratePlatformSummaryResponse> {
-    const data = await response.json();
-    return data as msdyn_GeneratePlatformSummaryResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GeneratePlatformSummaryResponse;
+    return (await response.json()) as msdyn_GeneratePlatformSummaryResponse;
   }
 }

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_DiscoverPlaceholdersResponse as msdynmkt_DiscoverPlaceholdersResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_DiscoverPlaceholders message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_DiscoverPlaceholdersRequestParameters {
+  DiscoverPlaceholdersRequest?: string;
+}
 
 /**
  * msdynmkt_DiscoverPlaceholders request message
@@ -12,16 +21,18 @@ export class msdynmkt_DiscoverPlaceholdersRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_DiscoverPlaceholdersResponse>
 {
-  constructor(public discoverPlaceholdersRequest?: string) {
-    super("msdynmkt_DiscoverPlaceholders");
+  declare readonly Parameters: Readonly<msdynmkt_DiscoverPlaceholdersRequestParameters>;
+
+  constructor(parameters: msdynmkt_DiscoverPlaceholdersRequestParameters = {}) {
+    super("msdynmkt_DiscoverPlaceholders", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_DiscoverPlaceholders`;
 
-    const body: Record<string, unknown> = {
-      DiscoverPlaceholdersRequest: this.discoverPlaceholdersRequest,
-    };
+    const body = requestBody({
+      DiscoverPlaceholdersRequest: this.Parameters.DiscoverPlaceholdersRequest,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdynmkt_DiscoverPlaceholdersRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_DiscoverPlaceholdersResponse> {
-    const data = await response.json();
-    return msdynmkt_DiscoverPlaceholdersResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdynmkt_DiscoverPlaceholdersResponse.fromResponse({});
+    return msdynmkt_DiscoverPlaceholdersResponse.fromResponse(await response.json());
   }
 }
 

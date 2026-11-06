@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_DraftFollowupEmailWithTemplate action
@@ -8,31 +9,37 @@ export interface msdyn_DraftFollowupEmailWithTemplateResponse {
 }
 
 /**
+ * Parameters of the msdyn_DraftFollowupEmailWithTemplate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DraftFollowupEmailWithTemplateActionParameters {
+  AgentMonitoringId: string;
+  IncidentEntityName: string;
+  TemplateId: string;
+  IncidentId: string;
+  AgentActivityId: string;
+  EmailAssistInput: string;
+}
+
+/**
  * msdyn_DraftFollowupEmailWithTemplate action
  *
  * Unbound action
  */
 export class msdyn_DraftFollowupEmailWithTemplateAction implements Executable<msdyn_DraftFollowupEmailWithTemplateResponse> {
-  constructor(
-    public readonly agentMonitoringId: string,
-    public readonly incidentEntityName: string,
-    public readonly templateId: string,
-    public readonly incidentId: string,
-    public readonly agentActivityId: string,
-    public readonly emailAssistInput: string
-  ) {}
+  constructor(public readonly parameters: msdyn_DraftFollowupEmailWithTemplateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DraftFollowupEmailWithTemplate`;
 
-    const body: Record<string, unknown> = {
-      AgentMonitoringId: this.agentMonitoringId,
-      IncidentEntityName: this.incidentEntityName,
-      TemplateId: this.templateId,
-      IncidentId: this.incidentId,
-      AgentActivityId: this.agentActivityId,
-      EmailAssistInput: this.emailAssistInput,
-    };
+    const body = requestBody({
+      AgentMonitoringId: this.parameters.AgentMonitoringId,
+      IncidentEntityName: this.parameters.IncidentEntityName,
+      TemplateId: this.parameters.TemplateId,
+      IncidentId: this.parameters.IncidentId,
+      AgentActivityId: this.parameters.AgentActivityId,
+      EmailAssistInput: this.parameters.EmailAssistInput,
+    });
 
     return {
       method: "POST",
@@ -45,7 +52,8 @@ export class msdyn_DraftFollowupEmailWithTemplateAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_DraftFollowupEmailWithTemplateResponse> {
-    const data = await response.json();
-    return data as msdyn_DraftFollowupEmailWithTemplateResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_DraftFollowupEmailWithTemplateResponse;
+    return (await response.json()) as msdyn_DraftFollowupEmailWithTemplateResponse;
   }
 }

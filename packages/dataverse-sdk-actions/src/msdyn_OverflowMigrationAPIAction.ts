@@ -26,7 +26,8 @@ export class msdyn_OverflowMigrationAPIAction implements Executable<msdyn_Overfl
   }
 
   async parseResponse(response: Response): Promise<msdyn_OverflowMigrationAPIResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_OverflowMigrationAPIResponse;
+    return (await response.json()) as msdyn_OverflowMigrationAPIResponse;
   }
 }

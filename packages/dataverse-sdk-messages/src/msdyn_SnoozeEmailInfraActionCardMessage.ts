@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SnoozeEmailInfraActionCardResponse as msdyn_SnoozeEmailInfraActionCardResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SnoozeEmailInfraActionCard message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SnoozeEmailInfraActionCardRequestParameters {
+  ActionCardId: string;
+  CardType: number;
+  MessageId: string;
+}
 
 /**
  * msdyn_SnoozeEmailInfraActionCard request message
@@ -12,22 +23,20 @@ export class msdyn_SnoozeEmailInfraActionCardRequest
   extends OrganizationRequest
   implements Executable<msdyn_SnoozeEmailInfraActionCardResponse>
 {
-  constructor(
-    public actionCardId: string,
-    public cardType: number,
-    public messageId: string
-  ) {
-    super("msdyn_SnoozeEmailInfraActionCard");
+  declare readonly Parameters: Readonly<msdyn_SnoozeEmailInfraActionCardRequestParameters>;
+
+  constructor(parameters: msdyn_SnoozeEmailInfraActionCardRequestParameters) {
+    super("msdyn_SnoozeEmailInfraActionCard", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SnoozeEmailInfraActionCard`;
 
-    const body: Record<string, unknown> = {
-      ActionCardId: this.actionCardId,
-      CardType: this.cardType,
-      MessageId: this.messageId,
-    };
+    const body = requestBody({
+      ActionCardId: this.Parameters.ActionCardId,
+      CardType: this.Parameters.CardType,
+      MessageId: this.Parameters.MessageId,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_SnoozeEmailInfraActionCardRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SnoozeEmailInfraActionCardResponse> {
-    const data = await response.json();
-    return msdyn_SnoozeEmailInfraActionCardResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SnoozeEmailInfraActionCardResponse.fromResponse({});
+    return msdyn_SnoozeEmailInfraActionCardResponse.fromResponse(await response.json());
   }
 }
 

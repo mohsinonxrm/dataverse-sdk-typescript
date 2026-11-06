@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetSalesAcceleratedSeller action
@@ -9,23 +10,29 @@ export interface msdyn_GetSalesAcceleratedSellerResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetSalesAcceleratedSeller action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSalesAcceleratedSellerActionParameters {
+  IsTeamsRequest: boolean;
+  ExpandDetails?: boolean;
+}
+
+/**
  * msdyn_GetSalesAcceleratedSeller action
  *
  * Unbound action
  */
 export class msdyn_GetSalesAcceleratedSellerAction implements Executable<msdyn_GetSalesAcceleratedSellerResponse> {
-  constructor(
-    public readonly isTeamsRequest: boolean,
-    public readonly expandDetails?: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_GetSalesAcceleratedSellerActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSalesAcceleratedSeller`;
 
-    const body: Record<string, unknown> = {
-      IsTeamsRequest: this.isTeamsRequest,
-      ExpandDetails: this.expandDetails,
-    };
+    const body = requestBody({
+      IsTeamsRequest: this.parameters.IsTeamsRequest,
+      ExpandDetails: this.parameters.ExpandDetails,
+    });
 
     return {
       method: "POST",
@@ -38,7 +45,8 @@ export class msdyn_GetSalesAcceleratedSellerAction implements Executable<msdyn_G
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSalesAcceleratedSellerResponse> {
-    const data = await response.json();
-    return data as msdyn_GetSalesAcceleratedSellerResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetSalesAcceleratedSellerResponse;
+    return (await response.json()) as msdyn_GetSalesAcceleratedSellerResponse;
   }
 }

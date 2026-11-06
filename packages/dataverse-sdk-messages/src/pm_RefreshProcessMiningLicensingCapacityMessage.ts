@@ -31,8 +31,10 @@ export class pm_RefreshProcessMiningLicensingCapacityRequest
   async parseResponse(
     response: Response
   ): Promise<pm_RefreshProcessMiningLicensingCapacityResponse> {
-    const data = await response.json();
-    return pm_RefreshProcessMiningLicensingCapacityResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return pm_RefreshProcessMiningLicensingCapacityResponse.fromResponse({});
+    return pm_RefreshProcessMiningLicensingCapacityResponse.fromResponse(await response.json());
   }
 }
 

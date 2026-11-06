@@ -26,7 +26,8 @@ export class msdyn_MarketingListMetadataUpdateAction implements Executable<msdyn
   }
 
   async parseResponse(response: Response): Promise<msdyn_MarketingListMetadataUpdateResponse> {
-    const data = await response.json();
-    return data as msdyn_MarketingListMetadataUpdateResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_MarketingListMetadataUpdateResponse;
+    return (await response.json()) as msdyn_MarketingListMetadataUpdateResponse;
   }
 }

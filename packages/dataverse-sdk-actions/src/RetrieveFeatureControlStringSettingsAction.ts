@@ -27,7 +27,8 @@ export class RetrieveFeatureControlStringSettingsAction implements Executable<Re
   }
 
   async parseResponse(response: Response): Promise<RetrieveFeatureControlStringSettingsResponse> {
-    const data = await response.json();
-    return data as RetrieveFeatureControlStringSettingsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveFeatureControlStringSettingsResponse;
+    return (await response.json()) as RetrieveFeatureControlStringSettingsResponse;
   }
 }

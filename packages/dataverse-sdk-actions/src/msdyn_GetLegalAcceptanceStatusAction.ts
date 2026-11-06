@@ -26,7 +26,8 @@ export class msdyn_GetLegalAcceptanceStatusAction implements Executable<msdyn_Ge
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetLegalAcceptanceStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetLegalAcceptanceStatusResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetLegalAcceptanceStatusResponse;
+    return (await response.json()) as msdyn_GetLegalAcceptanceStatusResponse;
   }
 }

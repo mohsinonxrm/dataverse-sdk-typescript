@@ -2,8 +2,19 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { CommitAnnotationBlocksUploadResponse as CommitAnnotationBlocksUploadResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CommitAnnotationBlocksUpload message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CommitAnnotationBlocksUploadRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+  BlockList: string[];
+  FileContinuationToken: string;
+}
 
 /**
  * CommitAnnotationBlocksUpload request message
@@ -14,22 +25,20 @@ export class CommitAnnotationBlocksUploadRequest
   extends OrganizationRequest
   implements Executable<CommitAnnotationBlocksUploadResponse>
 {
-  constructor(
-    public target: EntityReference | AnyEntityPayload,
-    public blockList: string[],
-    public fileContinuationToken: string
-  ) {
-    super("CommitAnnotationBlocksUpload");
+  declare readonly Parameters: Readonly<CommitAnnotationBlocksUploadRequestParameters>;
+
+  constructor(parameters: CommitAnnotationBlocksUploadRequestParameters) {
+    super("CommitAnnotationBlocksUpload", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CommitAnnotationBlocksUpload`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      BlockList: this.blockList,
-      FileContinuationToken: this.fileContinuationToken,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      BlockList: this.Parameters.BlockList,
+      FileContinuationToken: this.Parameters.FileContinuationToken,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class CommitAnnotationBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<CommitAnnotationBlocksUploadResponse> {
-    const data = await response.json();
-    return CommitAnnotationBlocksUploadResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CommitAnnotationBlocksUploadResponse.fromResponse({});
+    return CommitAnnotationBlocksUploadResponse.fromResponse(await response.json());
   }
 }
 

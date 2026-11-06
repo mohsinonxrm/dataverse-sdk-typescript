@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetCustomActionParametersResponse as msdyn_GetCustomActionParametersResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetCustomActionParameters message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetCustomActionParametersRequestParameters {
+  workflowId: string;
+  customAction: string;
+  correlationId: string;
+}
 
 /**
  * msdyn_GetCustomActionParameters request message
@@ -12,22 +23,20 @@ export class msdyn_GetCustomActionParametersRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetCustomActionParametersResponse>
 {
-  constructor(
-    public workflowId: string,
-    public customAction: string,
-    public correlationId: string
-  ) {
-    super("msdyn_GetCustomActionParameters");
+  declare readonly Parameters: Readonly<msdyn_GetCustomActionParametersRequestParameters>;
+
+  constructor(parameters: msdyn_GetCustomActionParametersRequestParameters) {
+    super("msdyn_GetCustomActionParameters", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetCustomActionParameters`;
 
-    const body: Record<string, unknown> = {
-      workflowId: this.workflowId,
-      customAction: this.customAction,
-      correlationId: this.correlationId,
-    };
+    const body = requestBody({
+      workflowId: this.Parameters.workflowId,
+      customAction: this.Parameters.customAction,
+      correlationId: this.Parameters.correlationId,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_GetCustomActionParametersRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCustomActionParametersResponse> {
-    const data = await response.json();
-    return msdyn_GetCustomActionParametersResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetCustomActionParametersResponse.fromResponse({});
+    return msdyn_GetCustomActionParametersResponse.fromResponse(await response.json());
   }
 }
 

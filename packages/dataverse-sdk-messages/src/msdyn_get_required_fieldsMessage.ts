@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_get_required_fieldsResponse as msdyn_get_required_fieldsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_get_required_fields message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_get_required_fieldsRequestParameters {
+  table_id: string;
+  dataset_value: string;
+  connection_id: string;
+  connector_id: string;
+}
 
 /**
  * msdyn_get_required_fields request message
@@ -12,24 +24,21 @@ export class msdyn_get_required_fieldsRequest
   extends OrganizationRequest
   implements Executable<msdyn_get_required_fieldsResponse>
 {
-  constructor(
-    public table_id: string,
-    public dataset_value: string,
-    public connection_id: string,
-    public connector_id: string
-  ) {
-    super("msdyn_get_required_fields");
+  declare readonly Parameters: Readonly<msdyn_get_required_fieldsRequestParameters>;
+
+  constructor(parameters: msdyn_get_required_fieldsRequestParameters) {
+    super("msdyn_get_required_fields", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_get_required_fields`;
 
-    const body: Record<string, unknown> = {
-      table_id: this.table_id,
-      dataset_value: this.dataset_value,
-      connection_id: this.connection_id,
-      connector_id: this.connector_id,
-    };
+    const body = requestBody({
+      table_id: this.Parameters.table_id,
+      dataset_value: this.Parameters.dataset_value,
+      connection_id: this.Parameters.connection_id,
+      connector_id: this.Parameters.connector_id,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_get_required_fieldsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_get_required_fieldsResponse> {
-    const data = await response.json();
-    return msdyn_get_required_fieldsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_get_required_fieldsResponse.fromResponse({});
+    return msdyn_get_required_fieldsResponse.fromResponse(await response.json());
   }
 }
 

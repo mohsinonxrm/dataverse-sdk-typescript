@@ -31,8 +31,10 @@ export class msdyn_OSGetAllOpportunityPredictionModelsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_OSGetAllOpportunityPredictionModelsResponse> {
-    const data = await response.json();
-    return msdyn_OSGetAllOpportunityPredictionModelsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_OSGetAllOpportunityPredictionModelsResponse.fromResponse({});
+    return msdyn_OSGetAllOpportunityPredictionModelsResponse.fromResponse(await response.json());
   }
 }
 

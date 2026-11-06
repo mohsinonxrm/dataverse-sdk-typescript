@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_ocsimltraining } from "./types/index.js";
 
@@ -11,24 +12,34 @@ export interface msdyn_CreatePublishAIModelResponse {
 }
 
 /**
+ * Parameters of the msdyn_CreatePublishAIModel action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreatePublishAIModelActionParameters {
+  ocsimltraining: EntityReference | EntityPayload<msdyn_ocsimltraining>;
+}
+
+/**
  * msdyn_CreatePublishAIModel action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_ocskillidentmlmodel)
+ *
+ * The first argument is the id of the msdyn_ocskillidentmlmodel record to call it on.
  */
 export class msdyn_CreatePublishAIModelAction implements Executable<msdyn_CreatePublishAIModelResponse> {
   constructor(
     public readonly msdyn_ocskillidentmlmodelId: string,
-    public readonly ocsimltraining: EntityReference | EntityPayload<msdyn_ocsimltraining>
+    public readonly parameters: msdyn_CreatePublishAIModelActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocskillidentmlmodels(${this.msdyn_ocskillidentmlmodelId})/Microsoft.Dynamics.CRM.msdyn_CreatePublishAIModel`;
 
-    const body: Record<string, unknown> = {
-      ocsimltraining: this.ocsimltraining,
-    };
+    const body = requestBody({
+      ocsimltraining: this.parameters.ocsimltraining,
+    });
 
     return {
       method: "POST",
@@ -41,7 +52,8 @@ export class msdyn_CreatePublishAIModelAction implements Executable<msdyn_Create
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreatePublishAIModelResponse> {
-    const data = await response.json();
-    return data as msdyn_CreatePublishAIModelResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CreatePublishAIModelResponse;
+    return (await response.json()) as msdyn_CreatePublishAIModelResponse;
   }
 }

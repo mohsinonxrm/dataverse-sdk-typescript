@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_IsBotUserConfigured action
@@ -8,19 +9,27 @@ export interface msdyn_IsBotUserConfiguredResponse {
 }
 
 /**
+ * Parameters of the msdyn_IsBotUserConfigured action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IsBotUserConfiguredActionParameters {
+  BotApplicationId: string;
+}
+
+/**
  * msdyn_IsBotUserConfigured action
  *
  * Unbound action
  */
 export class msdyn_IsBotUserConfiguredAction implements Executable<msdyn_IsBotUserConfiguredResponse> {
-  constructor(public readonly botApplicationId: string) {}
+  constructor(public readonly parameters: msdyn_IsBotUserConfiguredActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IsBotUserConfigured`;
 
-    const body: Record<string, unknown> = {
-      BotApplicationId: this.botApplicationId,
-    };
+    const body = requestBody({
+      BotApplicationId: this.parameters.BotApplicationId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_IsBotUserConfiguredAction implements Executable<msdyn_IsBotUs
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsBotUserConfiguredResponse> {
-    const data = await response.json();
-    return data as msdyn_IsBotUserConfiguredResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_IsBotUserConfiguredResponse;
+    return (await response.json()) as msdyn_IsBotUserConfiguredResponse;
   }
 }

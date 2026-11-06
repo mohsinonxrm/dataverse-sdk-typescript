@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_StoreQualityEvaluationResult action
@@ -8,29 +9,35 @@ export interface msdyn_StoreQualityEvaluationResultResponse {
 }
 
 /**
+ * Parameters of the msdyn_StoreQualityEvaluationResult action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_StoreQualityEvaluationResultActionParameters {
+  CriteriaVersionNumber: number;
+  EvaluationId: string;
+  EvaluationMethod?: number;
+  EvaluationInsight?: string;
+  Status: string;
+}
+
+/**
  * msdyn_StoreQualityEvaluationResult action
  *
  * Unbound action
  */
 export class msdyn_StoreQualityEvaluationResultAction implements Executable<msdyn_StoreQualityEvaluationResultResponse> {
-  constructor(
-    public readonly criteriaVersionNumber: number,
-    public readonly evaluationId: string,
-    public readonly evaluationMethod: number | undefined,
-    public readonly evaluationInsight: string | undefined,
-    public readonly status: string
-  ) {}
+  constructor(public readonly parameters: msdyn_StoreQualityEvaluationResultActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_StoreQualityEvaluationResult`;
 
-    const body: Record<string, unknown> = {
-      CriteriaVersionNumber: this.criteriaVersionNumber,
-      EvaluationId: this.evaluationId,
-      EvaluationMethod: this.evaluationMethod,
-      EvaluationInsight: this.evaluationInsight,
-      Status: this.status,
-    };
+    const body = requestBody({
+      CriteriaVersionNumber: this.parameters.CriteriaVersionNumber,
+      EvaluationId: this.parameters.EvaluationId,
+      EvaluationMethod: this.parameters.EvaluationMethod,
+      EvaluationInsight: this.parameters.EvaluationInsight,
+      Status: this.parameters.Status,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class msdyn_StoreQualityEvaluationResultAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_StoreQualityEvaluationResultResponse> {
-    const data = await response.json();
-    return data as msdyn_StoreQualityEvaluationResultResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_StoreQualityEvaluationResultResponse;
+    return (await response.json()) as msdyn_StoreQualityEvaluationResultResponse;
   }
 }

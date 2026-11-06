@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_fetchAutonomousCaseCreateUpdateRuleResponse as msdyn_fetchAutonomousCaseCreateUpdateRuleResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_fetchAutonomousCaseCreateUpdateRule message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_fetchAutonomousCaseCreateUpdateRuleRequestParameters {
+  fetchRuleRequest: string;
+}
 
 /**
  * msdyn_fetchAutonomousCaseCreateUpdateRule request message
@@ -12,16 +21,18 @@ export class msdyn_fetchAutonomousCaseCreateUpdateRuleRequest
   extends OrganizationRequest
   implements Executable<msdyn_fetchAutonomousCaseCreateUpdateRuleResponse>
 {
-  constructor(public fetchRuleRequest: string) {
-    super("msdyn_fetchAutonomousCaseCreateUpdateRule");
+  declare readonly Parameters: Readonly<msdyn_fetchAutonomousCaseCreateUpdateRuleRequestParameters>;
+
+  constructor(parameters: msdyn_fetchAutonomousCaseCreateUpdateRuleRequestParameters) {
+    super("msdyn_fetchAutonomousCaseCreateUpdateRule", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_fetchAutonomousCaseCreateUpdateRule`;
 
-    const body: Record<string, unknown> = {
-      fetchRuleRequest: this.fetchRuleRequest,
-    };
+    const body = requestBody({
+      fetchRuleRequest: this.Parameters.fetchRuleRequest,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,10 @@ export class msdyn_fetchAutonomousCaseCreateUpdateRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_fetchAutonomousCaseCreateUpdateRuleResponse> {
-    const data = await response.json();
-    return msdyn_fetchAutonomousCaseCreateUpdateRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_fetchAutonomousCaseCreateUpdateRuleResponse.fromResponse({});
+    return msdyn_fetchAutonomousCaseCreateUpdateRuleResponse.fromResponse(await response.json());
   }
 }
 

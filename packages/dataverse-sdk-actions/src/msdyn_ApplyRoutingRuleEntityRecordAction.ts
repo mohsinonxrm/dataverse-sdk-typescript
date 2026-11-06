@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,19 +11,27 @@ export interface msdyn_ApplyRoutingRuleEntityRecordResponse {
 }
 
 /**
+ * Parameters of the msdyn_ApplyRoutingRuleEntityRecord action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ApplyRoutingRuleEntityRecordActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_ApplyRoutingRuleEntityRecord action
  *
  * Unbound action
  */
 export class msdyn_ApplyRoutingRuleEntityRecordAction implements Executable<msdyn_ApplyRoutingRuleEntityRecordResponse> {
-  constructor(public readonly target: EntityReference | AnyEntityPayload) {}
+  constructor(public readonly parameters: msdyn_ApplyRoutingRuleEntityRecordActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ApplyRoutingRuleEntityRecord`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -35,7 +44,8 @@ export class msdyn_ApplyRoutingRuleEntityRecordAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_ApplyRoutingRuleEntityRecordResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ApplyRoutingRuleEntityRecordResponse;
+    return (await response.json()) as msdyn_ApplyRoutingRuleEntityRecordResponse;
   }
 }

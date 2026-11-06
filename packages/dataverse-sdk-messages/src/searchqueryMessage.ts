@@ -1,7 +1,26 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { searchqueryResponse as searchqueryResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the searchquery message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface searchqueryRequestParameters {
+  options?: string;
+  filter?: string;
+  propertybag?: string;
+  entities?: string;
+  search: string;
+  facets?: string;
+  skip?: number;
+  count?: boolean;
+  top?: number;
+  orderby?: string;
+  semanticquery?: string;
+}
 
 /**
  * searchquery request message
@@ -12,38 +31,28 @@ export class searchqueryRequest
   extends OrganizationRequest
   implements Executable<searchqueryResponse>
 {
-  constructor(
-    public options: string | undefined,
-    public filter: string | undefined,
-    public propertybag: string | undefined,
-    public entities: string | undefined,
-    public search: string,
-    public facets?: string,
-    public skip?: number,
-    public count?: boolean,
-    public top?: number,
-    public orderby?: string,
-    public semanticquery?: string
-  ) {
-    super("searchquery");
+  declare readonly Parameters: Readonly<searchqueryRequestParameters>;
+
+  constructor(parameters: searchqueryRequestParameters) {
+    super("searchquery", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/searchquery`;
 
-    const body: Record<string, unknown> = {
-      options: this.options,
-      filter: this.filter,
-      propertybag: this.propertybag,
-      entities: this.entities,
-      search: this.search,
-      facets: this.facets,
-      skip: this.skip,
-      count: this.count,
-      top: this.top,
-      orderby: this.orderby,
-      semanticquery: this.semanticquery,
-    };
+    const body = requestBody({
+      options: this.Parameters.options,
+      filter: this.Parameters.filter,
+      propertybag: this.Parameters.propertybag,
+      entities: this.Parameters.entities,
+      search: this.Parameters.search,
+      facets: this.Parameters.facets,
+      skip: this.Parameters.skip,
+      count: this.Parameters.count,
+      top: this.Parameters.top,
+      orderby: this.Parameters.orderby,
+      semanticquery: this.Parameters.semanticquery,
+    });
 
     return {
       method: "POST",
@@ -56,8 +65,9 @@ export class searchqueryRequest
   }
 
   async parseResponse(response: Response): Promise<searchqueryResponse> {
-    const data = await response.json();
-    return searchqueryResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return searchqueryResponse.fromResponse({});
+    return searchqueryResponse.fromResponse(await response.json());
   }
 }
 

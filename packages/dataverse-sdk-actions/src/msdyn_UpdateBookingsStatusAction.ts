@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -11,29 +12,35 @@ export interface msdyn_UpdateBookingsStatusResponse {
 }
 
 /**
+ * Parameters of the msdyn_UpdateBookingsStatus action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateBookingsStatusActionParameters {
+  TargetStatusId: string;
+  BookingIds?: string;
+  DefaultBookingDetail?: EntityReference | AnyEntityPayload;
+  BookingStatusChangeContext?: string;
+  ConsiderAppointments?: boolean;
+}
+
+/**
  * msdyn_UpdateBookingsStatus action
  *
  * Unbound action
  */
 export class msdyn_UpdateBookingsStatusAction implements Executable<msdyn_UpdateBookingsStatusResponse> {
-  constructor(
-    public readonly targetStatusId: string,
-    public readonly bookingIds?: string,
-    public readonly defaultBookingDetail?: EntityReference | AnyEntityPayload,
-    public readonly bookingStatusChangeContext?: string,
-    public readonly considerAppointments?: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_UpdateBookingsStatusActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateBookingsStatus`;
 
-    const body: Record<string, unknown> = {
-      TargetStatusId: this.targetStatusId,
-      BookingIds: this.bookingIds,
-      DefaultBookingDetail: this.defaultBookingDetail,
-      BookingStatusChangeContext: this.bookingStatusChangeContext,
-      ConsiderAppointments: this.considerAppointments,
-    };
+    const body = requestBody({
+      TargetStatusId: this.parameters.TargetStatusId,
+      BookingIds: this.parameters.BookingIds,
+      DefaultBookingDetail: this.parameters.DefaultBookingDetail,
+      BookingStatusChangeContext: this.parameters.BookingStatusChangeContext,
+      ConsiderAppointments: this.parameters.ConsiderAppointments,
+    });
 
     return {
       method: "POST",
@@ -46,7 +53,8 @@ export class msdyn_UpdateBookingsStatusAction implements Executable<msdyn_Update
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateBookingsStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_UpdateBookingsStatusResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_UpdateBookingsStatusResponse;
+    return (await response.json()) as msdyn_UpdateBookingsStatusResponse;
   }
 }

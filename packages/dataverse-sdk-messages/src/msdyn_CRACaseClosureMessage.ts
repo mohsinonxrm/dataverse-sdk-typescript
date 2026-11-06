@@ -2,8 +2,22 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CRACaseClosureResponse as msdyn_CRACaseClosureResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CRACaseClosure message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CRACaseClosureRequestParameters {
+  msdyn_ShouldResolveCase: boolean;
+  msdyn_AutomationLevel: string;
+  msdyn_McsConversationId: string;
+  msdyn_IncomingEmailId: string;
+  msdyn_IsMonitoringActive: boolean;
+  msdyn_Entity: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_CRACaseClosure request message
@@ -14,28 +28,23 @@ export class msdyn_CRACaseClosureRequest
   extends OrganizationRequest
   implements Executable<msdyn_CRACaseClosureResponse>
 {
-  constructor(
-    public msdyn_ShouldResolveCase: boolean,
-    public msdyn_AutomationLevel: string,
-    public msdyn_McsConversationId: string,
-    public msdyn_IncomingEmailId: string,
-    public msdyn_IsMonitoringActive: boolean,
-    public msdyn_Entity: EntityReference | AnyEntityPayload
-  ) {
-    super("msdyn_CRACaseClosure");
+  declare readonly Parameters: Readonly<msdyn_CRACaseClosureRequestParameters>;
+
+  constructor(parameters: msdyn_CRACaseClosureRequestParameters) {
+    super("msdyn_CRACaseClosure", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CRACaseClosure`;
 
-    const body: Record<string, unknown> = {
-      msdyn_ShouldResolveCase: this.msdyn_ShouldResolveCase,
-      msdyn_AutomationLevel: this.msdyn_AutomationLevel,
-      msdyn_McsConversationId: this.msdyn_McsConversationId,
-      msdyn_IncomingEmailId: this.msdyn_IncomingEmailId,
-      msdyn_IsMonitoringActive: this.msdyn_IsMonitoringActive,
-      msdyn_Entity: this.msdyn_Entity,
-    };
+    const body = requestBody({
+      msdyn_ShouldResolveCase: this.Parameters.msdyn_ShouldResolveCase,
+      msdyn_AutomationLevel: this.Parameters.msdyn_AutomationLevel,
+      msdyn_McsConversationId: this.Parameters.msdyn_McsConversationId,
+      msdyn_IncomingEmailId: this.Parameters.msdyn_IncomingEmailId,
+      msdyn_IsMonitoringActive: this.Parameters.msdyn_IsMonitoringActive,
+      msdyn_Entity: this.Parameters.msdyn_Entity,
+    });
 
     return {
       method: "POST",
@@ -48,8 +57,9 @@ export class msdyn_CRACaseClosureRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CRACaseClosureResponse> {
-    const data = await response.json();
-    return msdyn_CRACaseClosureResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CRACaseClosureResponse.fromResponse({});
+    return msdyn_CRACaseClosureResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetLeadCallPrepSheetDetailsResponse as msdyn_GetLeadCallPrepSheetDetailsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetLeadCallPrepSheetDetails message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetLeadCallPrepSheetDetailsRequestParameters {
+  msdyn_leadid: string;
+}
 
 /**
  * msdyn_GetLeadCallPrepSheetDetails request message
@@ -12,16 +21,18 @@ export class msdyn_GetLeadCallPrepSheetDetailsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetLeadCallPrepSheetDetailsResponse>
 {
-  constructor(public msdyn_leadid: string) {
-    super("msdyn_GetLeadCallPrepSheetDetails");
+  declare readonly Parameters: Readonly<msdyn_GetLeadCallPrepSheetDetailsRequestParameters>;
+
+  constructor(parameters: msdyn_GetLeadCallPrepSheetDetailsRequestParameters) {
+    super("msdyn_GetLeadCallPrepSheetDetails", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetLeadCallPrepSheetDetails`;
 
-    const body: Record<string, unknown> = {
-      msdyn_leadid: this.msdyn_leadid,
-    };
+    const body = requestBody({
+      msdyn_leadid: this.Parameters.msdyn_leadid,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetLeadCallPrepSheetDetailsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetLeadCallPrepSheetDetailsResponse> {
-    const data = await response.json();
-    return msdyn_GetLeadCallPrepSheetDetailsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetLeadCallPrepSheetDetailsResponse.fromResponse({});
+    return msdyn_GetLeadCallPrepSheetDetailsResponse.fromResponse(await response.json());
   }
 }
 

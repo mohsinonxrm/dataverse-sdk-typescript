@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_MigrateRICommonRSA message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_MigrateRICommonRSARequestParameters {
+  InputData: string;
+}
 
 /**
  * msdyn_MigrateRICommonRSA request message
@@ -10,16 +19,18 @@ export class msdyn_MigrateRICommonRSARequest
   extends OrganizationRequest
   implements Executable<msdyn_MigrateRICommonRSAResponse>
 {
-  constructor(public inputData: string) {
-    super("msdyn_MigrateRICommonRSA");
+  declare readonly Parameters: Readonly<msdyn_MigrateRICommonRSARequestParameters>;
+
+  constructor(parameters: msdyn_MigrateRICommonRSARequestParameters) {
+    super("msdyn_MigrateRICommonRSA", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_MigrateRICommonRSA`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.Parameters.InputData,
+    });
 
     return {
       method: "POST",

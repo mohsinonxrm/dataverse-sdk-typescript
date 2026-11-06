@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -12,23 +13,31 @@ export interface msdyn_RetrieveRelationshipActivityKPIValuesResponse {
 }
 
 /**
+ * Parameters of the msdyn_RetrieveRelationshipActivityKPIValues action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveRelationshipActivityKPIValuesActionParameters {
+  CrmRecord: EntityReference | AnyEntityPayload;
+  GetLinkedInKPI?: boolean;
+}
+
+/**
  * msdyn_RetrieveRelationshipActivityKPIValues action
  *
  * Unbound action
  */
 export class msdyn_RetrieveRelationshipActivityKPIValuesAction implements Executable<msdyn_RetrieveRelationshipActivityKPIValuesResponse> {
   constructor(
-    public readonly crmRecord: EntityReference | AnyEntityPayload,
-    public readonly getLinkedInKPI?: boolean
+    public readonly parameters: msdyn_RetrieveRelationshipActivityKPIValuesActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveRelationshipActivityKPIValues`;
 
-    const body: Record<string, unknown> = {
-      CrmRecord: this.crmRecord,
-      GetLinkedInKPI: this.getLinkedInKPI,
-    };
+    const body = requestBody({
+      CrmRecord: this.parameters.CrmRecord,
+      GetLinkedInKPI: this.parameters.GetLinkedInKPI,
+    });
 
     return {
       method: "POST",
@@ -43,7 +52,8 @@ export class msdyn_RetrieveRelationshipActivityKPIValuesAction implements Execut
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveRelationshipActivityKPIValuesResponse> {
-    const data = await response.json();
-    return data as msdyn_RetrieveRelationshipActivityKPIValuesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_RetrieveRelationshipActivityKPIValuesResponse;
+    return (await response.json()) as msdyn_RetrieveRelationshipActivityKPIValuesResponse;
   }
 }

@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetGPT3PredictionResponse as msdyn_GetGPT3PredictionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetGPT3Prediction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetGPT3PredictionRequestParameters {
+  msdyn_input: string;
+  msdyn_predictiontype: number;
+}
 
 /**
  * msdyn_GetGPT3Prediction request message
@@ -12,20 +22,19 @@ export class msdyn_GetGPT3PredictionRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetGPT3PredictionResponse>
 {
-  constructor(
-    public msdyn_input: string,
-    public msdyn_predictiontype: number
-  ) {
-    super("msdyn_GetGPT3Prediction");
+  declare readonly Parameters: Readonly<msdyn_GetGPT3PredictionRequestParameters>;
+
+  constructor(parameters: msdyn_GetGPT3PredictionRequestParameters) {
+    super("msdyn_GetGPT3Prediction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetGPT3Prediction`;
 
-    const body: Record<string, unknown> = {
-      msdyn_input: this.msdyn_input,
-      msdyn_predictiontype: this.msdyn_predictiontype,
-    };
+    const body = requestBody({
+      msdyn_input: this.Parameters.msdyn_input,
+      msdyn_predictiontype: this.Parameters.msdyn_predictiontype,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_GetGPT3PredictionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetGPT3PredictionResponse> {
-    const data = await response.json();
-    return msdyn_GetGPT3PredictionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetGPT3PredictionResponse.fromResponse({});
+    return msdyn_GetGPT3PredictionResponse.fromResponse(await response.json());
   }
 }
 

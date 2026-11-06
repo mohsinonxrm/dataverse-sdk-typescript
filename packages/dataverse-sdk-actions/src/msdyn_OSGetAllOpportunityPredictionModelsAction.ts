@@ -28,7 +28,8 @@ export class msdyn_OSGetAllOpportunityPredictionModelsAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdyn_OSGetAllOpportunityPredictionModelsResponse> {
-    const data = await response.json();
-    return data as msdyn_OSGetAllOpportunityPredictionModelsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_OSGetAllOpportunityPredictionModelsResponse;
+    return (await response.json()) as msdyn_OSGetAllOpportunityPredictionModelsResponse;
   }
 }

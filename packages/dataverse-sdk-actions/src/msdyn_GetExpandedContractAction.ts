@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetExpandedContract action
@@ -8,23 +9,29 @@ export interface msdyn_GetExpandedContractResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetExpandedContract action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetExpandedContractActionParameters {
+  msdyn_RuleSet: string;
+  msdyn_OrganizationInfo: string;
+}
+
+/**
  * msdyn_GetExpandedContract action
  *
  * Unbound action
  */
 export class msdyn_GetExpandedContractAction implements Executable<msdyn_GetExpandedContractResponse> {
-  constructor(
-    public readonly msdyn_RuleSet: string,
-    public readonly msdyn_OrganizationInfo: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetExpandedContractActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetExpandedContract`;
 
-    const body: Record<string, unknown> = {
-      msdyn_RuleSet: this.msdyn_RuleSet,
-      msdyn_OrganizationInfo: this.msdyn_OrganizationInfo,
-    };
+    const body = requestBody({
+      msdyn_RuleSet: this.parameters.msdyn_RuleSet,
+      msdyn_OrganizationInfo: this.parameters.msdyn_OrganizationInfo,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_GetExpandedContractAction implements Executable<msdyn_GetExpa
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetExpandedContractResponse> {
-    const data = await response.json();
-    return data as msdyn_GetExpandedContractResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetExpandedContractResponse;
+    return (await response.json()) as msdyn_GetExpandedContractResponse;
   }
 }

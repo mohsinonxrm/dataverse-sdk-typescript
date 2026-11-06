@@ -26,7 +26,8 @@ export class PublishAllXmlAction implements Executable<PublishAllXmlResponse> {
   }
 
   async parseResponse(response: Response): Promise<PublishAllXmlResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PublishAllXmlResponse;
+    return (await response.json()) as PublishAllXmlResponse;
   }
 }

@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UpdateFeatureConfig message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateFeatureConfigRequestParameters {
+  FeatureType: number;
+  ConfigData: string;
+}
 
 /**
  * UpdateFeatureConfig request message
@@ -10,20 +20,19 @@ export class UpdateFeatureConfigRequest
   extends OrganizationRequest
   implements Executable<UpdateFeatureConfigResponse>
 {
-  constructor(
-    public featureType: number,
-    public configData: string
-  ) {
-    super("UpdateFeatureConfig");
+  declare readonly Parameters: Readonly<UpdateFeatureConfigRequestParameters>;
+
+  constructor(parameters: UpdateFeatureConfigRequestParameters) {
+    super("UpdateFeatureConfig", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateFeatureConfig`;
 
-    const body: Record<string, unknown> = {
-      FeatureType: this.featureType,
-      ConfigData: this.configData,
-    };
+    const body = requestBody({
+      FeatureType: this.Parameters.FeatureType,
+      ConfigData: this.Parameters.ConfigData,
+    });
 
     return {
       method: "POST",

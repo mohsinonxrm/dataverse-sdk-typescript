@@ -26,7 +26,8 @@ export class RefreshRpaLicensingCapacityAction implements Executable<RefreshRpaL
   }
 
   async parseResponse(response: Response): Promise<RefreshRpaLicensingCapacityResponse> {
-    const data = await response.json();
-    return data as RefreshRpaLicensingCapacityResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RefreshRpaLicensingCapacityResponse;
+    return (await response.json()) as RefreshRpaLicensingCapacityResponse;
   }
 }

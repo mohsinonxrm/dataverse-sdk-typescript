@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from Dequeue action
@@ -12,24 +13,34 @@ export interface DequeueResponse {
 }
 
 /**
+ * Parameters of the Dequeue action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DequeueActionParameters {
+  request?: string;
+}
+
+/**
  * Dequeue action
  *
  * Bound action
  * Binding parameter: entity (mscrm.workqueue)
+ *
+ * The first argument is the id of the workqueue record to call it on.
  */
 export class DequeueAction implements Executable<DequeueResponse> {
   constructor(
     public readonly workqueueId: string,
-    public readonly request?: string
+    public readonly parameters: DequeueActionParameters = {}
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/workqueues(${this.workqueueId})/Microsoft.Dynamics.CRM.Dequeue`;
 
-    const body: Record<string, unknown> = {
-      request: this.request,
-    };
+    const body = requestBody({
+      request: this.parameters.request,
+    });
 
     return {
       method: "POST",
@@ -42,7 +53,8 @@ export class DequeueAction implements Executable<DequeueResponse> {
   }
 
   async parseResponse(response: Response): Promise<DequeueResponse> {
-    const data = await response.json();
-    return data as DequeueResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as DequeueResponse;
+    return (await response.json()) as DequeueResponse;
   }
 }

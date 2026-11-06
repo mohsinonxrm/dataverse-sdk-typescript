@@ -25,10 +25,9 @@ describe("#72: function entity references", () => {
     fake.on("GET", /RetrievePrincipalAccess/, () => jsonResponse({ AccessRights: "ReadAccess" }));
 
     await client.execute(
-      new RetrievePrincipalAccess_organizationFunction(
-        ORG,
-        createEntityReference("accountleads", "l1")
-      )
+      new RetrievePrincipalAccess_organizationFunction(ORG, {
+        Target: createEntityReference("accountleads", "l1"),
+      })
     );
 
     expect(aliases(fake.last().url)).toEqual({
@@ -41,12 +40,13 @@ describe("#72: function entity references", () => {
     fake.on("GET", /InitializeFrom/, () => jsonResponse({}));
 
     await client.execute(
-      new InitializeFromFunction(
-        createEntityReference("new_project", "p1", { entitySetName: "new_projectset" }),
-        undefined,
-        "contact",
-        "ValidForCreate"
-      )
+      new InitializeFromFunction({
+        EntityMoniker: createEntityReference("new_project", "p1", {
+          entitySetName: "new_projectset",
+        }),
+        TargetEntityName: "contact",
+        TargetFieldType: "ValidForCreate",
+      })
     );
 
     expect(aliases(fake.last().url)["@p1"]).toBe('{"@odata.id":"new_projectset(p1)"}');
@@ -54,12 +54,11 @@ describe("#72: function entity references", () => {
 
   it("a reference whose entity set can't be resolved throws before any request", async () => {
     const { client, fake } = createTestClient();
-    const fn = new InitializeFromFunction(
-      createEntityReference("new_project", "p1"),
-      undefined,
-      "contact",
-      "ValidForCreate"
-    );
+    const fn = new InitializeFromFunction({
+      EntityMoniker: createEntityReference("new_project", "p1"),
+      TargetEntityName: "contact",
+      TargetFieldType: "ValidForCreate",
+    });
 
     await expect(client.execute(fn)).rejects.toBeInstanceOf(DataverseInvalidRequestError);
     expect(fake.requests).toHaveLength(0);

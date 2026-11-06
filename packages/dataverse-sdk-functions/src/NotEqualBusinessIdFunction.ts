@@ -9,12 +9,20 @@ export interface NotEqualBusinessIdResponse {
 }
 
 /**
+ * Parameters of the NotEqualBusinessId function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface NotEqualBusinessIdFunctionParameters {
+  PropertyName: string;
+}
+
+/**
  * NotEqualBusinessId function
  *
  * Unbound function
  */
 export class NotEqualBusinessIdFunction implements Executable<NotEqualBusinessIdResponse> {
-  constructor(public readonly propertyName: string) {}
+  constructor(public readonly parameters: NotEqualBusinessIdFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/NotEqualBusinessId`;
@@ -22,9 +30,9 @@ export class NotEqualBusinessIdFunction implements Executable<NotEqualBusinessId
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class NotEqualBusinessIdFunction implements Executable<NotEqualBusinessId
   }
 
   async parseResponse(response: Response): Promise<NotEqualBusinessIdResponse> {
-    const data = await response.json();
-    return data as NotEqualBusinessIdResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as NotEqualBusinessIdResponse;
+    return (await response.json()) as NotEqualBusinessIdResponse;
   }
 }

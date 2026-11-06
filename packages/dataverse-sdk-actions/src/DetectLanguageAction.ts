@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from DetectLanguage action
@@ -9,25 +10,31 @@ export interface DetectLanguageResponse {
 }
 
 /**
+ * Parameters of the DetectLanguage action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DetectLanguageActionParameters {
+  text: string;
+  modelId?: string;
+  countryHint?: string;
+}
+
+/**
  * DetectLanguage action
  *
  * Unbound action
  */
 export class DetectLanguageAction implements Executable<DetectLanguageResponse> {
-  constructor(
-    public readonly text: string,
-    public readonly modelId?: string,
-    public readonly countryHint?: string
-  ) {}
+  constructor(public readonly parameters: DetectLanguageActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DetectLanguage`;
 
-    const body: Record<string, unknown> = {
-      text: this.text,
-      modelId: this.modelId,
-      countryHint: this.countryHint,
-    };
+    const body = requestBody({
+      text: this.parameters.text,
+      modelId: this.parameters.modelId,
+      countryHint: this.parameters.countryHint,
+    });
 
     return {
       method: "POST",
@@ -40,7 +47,8 @@ export class DetectLanguageAction implements Executable<DetectLanguageResponse> 
   }
 
   async parseResponse(response: Response): Promise<DetectLanguageResponse> {
-    const data = await response.json();
-    return data as DetectLanguageResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as DetectLanguageResponse;
+    return (await response.json()) as DetectLanguageResponse;
   }
 }

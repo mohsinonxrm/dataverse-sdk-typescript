@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwners action
@@ -11,19 +12,29 @@ export interface msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwnersResp
 }
 
 /**
+ * Parameters of the msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwners action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwnersActionParameters {
+  SolutionId: string;
+}
+
+/**
  * msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwners action
  *
  * Unbound action
  */
 export class msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwnersAction implements Executable<msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwnersResponse> {
-  constructor(public readonly solutionId: string) {}
+  constructor(
+    public readonly parameters: msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwnersActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwners`;
 
-    const body: Record<string, unknown> = {
-      SolutionId: this.solutionId,
-    };
+    const body = requestBody({
+      SolutionId: this.parameters.SolutionId,
+    });
 
     return {
       method: "POST",
@@ -38,7 +49,9 @@ export class msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwnersAction i
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwnersResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwnersResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwnersResponse;
+    return (await response.json()) as msdyn_CheckForRequiredPrivilegesAgreementBookingSetupOwnersResponse;
   }
 }

@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetSIFeatureConfigurationResponse as msdyn_GetSIFeatureConfigurationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetSIFeatureConfiguration message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSIFeatureConfigurationRequestParameters {
+  SIParameters: string;
+  OrgMigratedToCoreServices?: boolean;
+}
 
 /**
  * msdyn_GetSIFeatureConfiguration request message
@@ -12,20 +22,19 @@ export class msdyn_GetSIFeatureConfigurationRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSIFeatureConfigurationResponse>
 {
-  constructor(
-    public sIParameters: string,
-    public orgMigratedToCoreServices?: boolean
-  ) {
-    super("msdyn_GetSIFeatureConfiguration");
+  declare readonly Parameters: Readonly<msdyn_GetSIFeatureConfigurationRequestParameters>;
+
+  constructor(parameters: msdyn_GetSIFeatureConfigurationRequestParameters) {
+    super("msdyn_GetSIFeatureConfiguration", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSIFeatureConfiguration`;
 
-    const body: Record<string, unknown> = {
-      SIParameters: this.sIParameters,
-      OrgMigratedToCoreServices: this.orgMigratedToCoreServices,
-    };
+    const body = requestBody({
+      SIParameters: this.Parameters.SIParameters,
+      OrgMigratedToCoreServices: this.Parameters.OrgMigratedToCoreServices,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_GetSIFeatureConfigurationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSIFeatureConfigurationResponse> {
-    const data = await response.json();
-    return msdyn_GetSIFeatureConfigurationResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetSIFeatureConfigurationResponse.fromResponse({});
+    return msdyn_GetSIFeatureConfigurationResponse.fromResponse(await response.json());
   }
 }
 

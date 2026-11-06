@@ -28,7 +28,8 @@ export class msdyn_OcQueuesShouldHaveAgentsRuleAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_OcQueuesShouldHaveAgentsRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_OcQueuesShouldHaveAgentsRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_OcQueuesShouldHaveAgentsRuleResponse;
+    return (await response.json()) as msdyn_OcQueuesShouldHaveAgentsRuleResponse;
   }
 }

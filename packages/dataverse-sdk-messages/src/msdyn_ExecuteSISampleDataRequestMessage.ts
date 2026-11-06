@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ExecuteSISampleDataRequestResponse as msdyn_ExecuteSISampleDataRequestResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ExecuteSISampleDataRequest message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecuteSISampleDataRequestRequestParameters {
+  Operation: string;
+  Version?: string;
+  Lcid?: string;
+}
 
 /**
  * msdyn_ExecuteSISampleDataRequest request message
@@ -12,22 +23,20 @@ export class msdyn_ExecuteSISampleDataRequestRequest
   extends OrganizationRequest
   implements Executable<msdyn_ExecuteSISampleDataRequestResponse>
 {
-  constructor(
-    public operation: string,
-    public version?: string,
-    public lcid?: string
-  ) {
-    super("msdyn_ExecuteSISampleDataRequest");
+  declare readonly Parameters: Readonly<msdyn_ExecuteSISampleDataRequestRequestParameters>;
+
+  constructor(parameters: msdyn_ExecuteSISampleDataRequestRequestParameters) {
+    super("msdyn_ExecuteSISampleDataRequest", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecuteSISampleDataRequest`;
 
-    const body: Record<string, unknown> = {
-      Operation: this.operation,
-      Version: this.version,
-      Lcid: this.lcid,
-    };
+    const body = requestBody({
+      Operation: this.Parameters.Operation,
+      Version: this.Parameters.Version,
+      Lcid: this.Parameters.Lcid,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_ExecuteSISampleDataRequestRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteSISampleDataRequestResponse> {
-    const data = await response.json();
-    return msdyn_ExecuteSISampleDataRequestResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ExecuteSISampleDataRequestResponse.fromResponse({});
+    return msdyn_ExecuteSISampleDataRequestResponse.fromResponse(await response.json());
   }
 }
 

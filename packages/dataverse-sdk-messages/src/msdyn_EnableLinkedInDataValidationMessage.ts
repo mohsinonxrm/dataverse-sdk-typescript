@@ -29,8 +29,9 @@ export class msdyn_EnableLinkedInDataValidationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_EnableLinkedInDataValidationResponse> {
-    const data = await response.json();
-    return msdyn_EnableLinkedInDataValidationResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_EnableLinkedInDataValidationResponse.fromResponse({});
+    return msdyn_EnableLinkedInDataValidationResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CanManyToManyResponse as CanManyToManyResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CanManyToMany message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CanManyToManyRequestParameters {
+  EntityName: string;
+}
 
 /**
  * CanManyToMany request message
@@ -12,16 +21,18 @@ export class CanManyToManyRequest
   extends OrganizationRequest
   implements Executable<CanManyToManyResponse>
 {
-  constructor(public entityName: string) {
-    super("CanManyToMany");
+  declare readonly Parameters: Readonly<CanManyToManyRequestParameters>;
+
+  constructor(parameters: CanManyToManyRequestParameters) {
+    super("CanManyToMany", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CanManyToMany`;
 
-    const body: Record<string, unknown> = {
-      EntityName: this.entityName,
-    };
+    const body = requestBody({
+      EntityName: this.Parameters.EntityName,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class CanManyToManyRequest
   }
 
   async parseResponse(response: Response): Promise<CanManyToManyResponse> {
-    const data = await response.json();
-    return CanManyToManyResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CanManyToManyResponse.fromResponse({});
+    return CanManyToManyResponse.fromResponse(await response.json());
   }
 }
 

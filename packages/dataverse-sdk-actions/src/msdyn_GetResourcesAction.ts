@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetResources action
@@ -8,25 +9,31 @@ export interface msdyn_GetResourcesResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetResources action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetResourcesActionParameters {
+  Page: number;
+  PageSize: number;
+  QueryString: string;
+}
+
+/**
  * msdyn_GetResources action
  *
  * Unbound action
  */
 export class msdyn_GetResourcesAction implements Executable<msdyn_GetResourcesResponse> {
-  constructor(
-    public readonly page: number,
-    public readonly pageSize: number,
-    public readonly queryString: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetResourcesActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetResources`;
 
-    const body: Record<string, unknown> = {
-      Page: this.page,
-      PageSize: this.pageSize,
-      QueryString: this.queryString,
-    };
+    const body = requestBody({
+      Page: this.parameters.Page,
+      PageSize: this.parameters.PageSize,
+      QueryString: this.parameters.QueryString,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_GetResourcesAction implements Executable<msdyn_GetResourcesRe
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourcesResponse> {
-    const data = await response.json();
-    return data as msdyn_GetResourcesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetResourcesResponse;
+    return (await response.json()) as msdyn_GetResourcesResponse;
   }
 }

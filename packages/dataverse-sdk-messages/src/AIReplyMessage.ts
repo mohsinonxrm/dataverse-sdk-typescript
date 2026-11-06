@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AIReplyResponse as AIReplyResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the AIReply message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AIReplyRequestParameters {
+  Text: string;
+}
 
 /**
  * AIReply request message
@@ -9,16 +18,18 @@ import type { AIReplyResponse as AIReplyResponseData } from "./types/index.js";
  * Web API Action: AIReply
  */
 export class AIReplyRequest extends OrganizationRequest implements Executable<AIReplyResponse> {
-  constructor(public text: string) {
-    super("AIReply");
+  declare readonly Parameters: Readonly<AIReplyRequestParameters>;
+
+  constructor(parameters: AIReplyRequestParameters) {
+    super("AIReply", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AIReply`;
 
-    const body: Record<string, unknown> = {
-      Text: this.text,
-    };
+    const body = requestBody({
+      Text: this.Parameters.Text,
+    });
 
     return {
       method: "POST",
@@ -31,8 +42,9 @@ export class AIReplyRequest extends OrganizationRequest implements Executable<AI
   }
 
   async parseResponse(response: Response): Promise<AIReplyResponse> {
-    const data = await response.json();
-    return AIReplyResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return AIReplyResponse.fromResponse({});
+    return AIReplyResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { entitlement } from "./types/index.js";
 
 /**
@@ -12,24 +13,34 @@ export interface RenewEntitlementResponse extends entitlement {
 }
 
 /**
+ * Parameters of the RenewEntitlement action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RenewEntitlementActionParameters {
+  Status: number;
+}
+
+/**
  * RenewEntitlement action
  *
  * Bound action
  * Binding parameter: entity (mscrm.entitlement)
+ *
+ * The first argument is the id of the entitlement record to call it on.
  */
 export class RenewEntitlementAction implements Executable<RenewEntitlementResponse> {
   constructor(
     public readonly entitlementId: string,
-    public readonly status: number
+    public readonly parameters: RenewEntitlementActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/entitlements(${this.entitlementId})/Microsoft.Dynamics.CRM.RenewEntitlement`;
 
-    const body: Record<string, unknown> = {
-      Status: this.status,
-    };
+    const body = requestBody({
+      Status: this.parameters.Status,
+    });
 
     return {
       method: "POST",
@@ -42,7 +53,8 @@ export class RenewEntitlementAction implements Executable<RenewEntitlementRespon
   }
 
   async parseResponse(response: Response): Promise<RenewEntitlementResponse> {
-    const data = await response.json();
-    return data as RenewEntitlementResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RenewEntitlementResponse;
+    return (await response.json()) as RenewEntitlementResponse;
   }
 }

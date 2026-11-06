@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from UpsertEnvironmentVariable action
@@ -8,35 +9,41 @@ export interface UpsertEnvironmentVariableResponse {
 }
 
 /**
+ * Parameters of the UpsertEnvironmentVariable action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpsertEnvironmentVariableActionParameters {
+  DisplayName?: string;
+  SchemaName: string;
+  Type: number;
+  DefaultValue?: string;
+  Value?: string;
+  SecretStore?: number;
+  ParameterKey?: string;
+  ApiId?: string;
+}
+
+/**
  * UpsertEnvironmentVariable action
  *
  * Unbound action
  */
 export class UpsertEnvironmentVariableAction implements Executable<UpsertEnvironmentVariableResponse> {
-  constructor(
-    public readonly displayName: string | undefined,
-    public readonly schemaName: string,
-    public readonly type: number,
-    public readonly defaultValue?: string,
-    public readonly value?: string,
-    public readonly secretStore?: number,
-    public readonly parameterKey?: string,
-    public readonly apiId?: string
-  ) {}
+  constructor(public readonly parameters: UpsertEnvironmentVariableActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpsertEnvironmentVariable`;
 
-    const body: Record<string, unknown> = {
-      DisplayName: this.displayName,
-      SchemaName: this.schemaName,
-      Type: this.type,
-      DefaultValue: this.defaultValue,
-      Value: this.value,
-      SecretStore: this.secretStore,
-      ParameterKey: this.parameterKey,
-      ApiId: this.apiId,
-    };
+    const body = requestBody({
+      DisplayName: this.parameters.DisplayName,
+      SchemaName: this.parameters.SchemaName,
+      Type: this.parameters.Type,
+      DefaultValue: this.parameters.DefaultValue,
+      Value: this.parameters.Value,
+      SecretStore: this.parameters.SecretStore,
+      ParameterKey: this.parameters.ParameterKey,
+      ApiId: this.parameters.ApiId,
+    });
 
     return {
       method: "POST",
@@ -49,7 +56,8 @@ export class UpsertEnvironmentVariableAction implements Executable<UpsertEnviron
   }
 
   async parseResponse(response: Response): Promise<UpsertEnvironmentVariableResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UpsertEnvironmentVariableResponse;
+    return (await response.json()) as UpsertEnvironmentVariableResponse;
   }
 }

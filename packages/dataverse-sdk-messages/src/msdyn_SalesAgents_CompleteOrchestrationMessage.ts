@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_CompleteOrchestration message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_CompleteOrchestrationRequestParameters {
+  msdyn_SarRecordId: string;
+  msdyn_TrackingId?: string;
+  msdyn_SalesAgentType: number;
+}
 
 /**
  * msdyn_SalesAgents_CompleteOrchestration request message
@@ -10,22 +21,20 @@ export class msdyn_SalesAgents_CompleteOrchestrationRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_CompleteOrchestrationResponse>
 {
-  constructor(
-    public msdyn_SarRecordId: string,
-    public msdyn_TrackingId: string | undefined,
-    public msdyn_SalesAgentType: number
-  ) {
-    super("msdyn_SalesAgents_CompleteOrchestration");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_CompleteOrchestrationRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_CompleteOrchestrationRequestParameters) {
+    super("msdyn_SalesAgents_CompleteOrchestration", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_CompleteOrchestration`;
 
-    const body: Record<string, unknown> = {
-      msdyn_SarRecordId: this.msdyn_SarRecordId,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-    };
+    const body = requestBody({
+      msdyn_SarRecordId: this.Parameters.msdyn_SarRecordId,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
+    });
 
     return {
       method: "POST",

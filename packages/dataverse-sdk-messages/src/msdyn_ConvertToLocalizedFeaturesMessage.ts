@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ConvertToLocalizedFeaturesResponse as msdyn_ConvertToLocalizedFeaturesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ConvertToLocalizedFeatures message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ConvertToLocalizedFeaturesRequestParameters {
+  PredictionFeatures?: string;
+}
 
 /**
  * msdyn_ConvertToLocalizedFeatures request message
@@ -12,16 +21,18 @@ export class msdyn_ConvertToLocalizedFeaturesRequest
   extends OrganizationRequest
   implements Executable<msdyn_ConvertToLocalizedFeaturesResponse>
 {
-  constructor(public predictionFeatures?: string) {
-    super("msdyn_ConvertToLocalizedFeatures");
+  declare readonly Parameters: Readonly<msdyn_ConvertToLocalizedFeaturesRequestParameters>;
+
+  constructor(parameters: msdyn_ConvertToLocalizedFeaturesRequestParameters = {}) {
+    super("msdyn_ConvertToLocalizedFeatures", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ConvertToLocalizedFeatures`;
 
-    const body: Record<string, unknown> = {
-      PredictionFeatures: this.predictionFeatures,
-    };
+    const body = requestBody({
+      PredictionFeatures: this.Parameters.PredictionFeatures,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_ConvertToLocalizedFeaturesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ConvertToLocalizedFeaturesResponse> {
-    const data = await response.json();
-    return msdyn_ConvertToLocalizedFeaturesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ConvertToLocalizedFeaturesResponse.fromResponse({});
+    return msdyn_ConvertToLocalizedFeaturesResponse.fromResponse(await response.json());
   }
 }
 

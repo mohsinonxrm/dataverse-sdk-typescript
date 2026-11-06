@@ -12,6 +12,8 @@ export interface msdyn_TrainModelResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_ocsimltraining)
+ *
+ * The first argument is the id of the msdyn_ocsimltraining record to call it on.
  */
 export class msdyn_TrainModelAction implements Executable<msdyn_TrainModelResponse> {
   constructor(public readonly msdyn_ocsimltrainingId: string) {}
@@ -30,7 +32,8 @@ export class msdyn_TrainModelAction implements Executable<msdyn_TrainModelRespon
   }
 
   async parseResponse(response: Response): Promise<msdyn_TrainModelResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_TrainModelResponse;
+    return (await response.json()) as msdyn_TrainModelResponse;
   }
 }

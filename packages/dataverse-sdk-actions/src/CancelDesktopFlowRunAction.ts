@@ -12,6 +12,8 @@ export interface CancelDesktopFlowRunResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.flowsession)
+ *
+ * The first argument is the id of the flowsession record to call it on.
  */
 export class CancelDesktopFlowRunAction implements Executable<CancelDesktopFlowRunResponse> {
   constructor(public readonly flowsessionId: string) {}
@@ -30,7 +32,8 @@ export class CancelDesktopFlowRunAction implements Executable<CancelDesktopFlowR
   }
 
   async parseResponse(response: Response): Promise<CancelDesktopFlowRunResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CancelDesktopFlowRunResponse;
+    return (await response.json()) as CancelDesktopFlowRunResponse;
   }
 }

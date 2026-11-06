@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_MaskMessage action
@@ -8,27 +9,33 @@ export interface CCaaS_MaskMessageResponse {
 }
 
 /**
+ * Parameters of the CCaaS_MaskMessage action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_MaskMessageActionParameters {
+  WidgetId: string;
+  MessageId: string;
+  ApiVersion: string;
+  ConversationId: string;
+}
+
+/**
  * CCaaS_MaskMessage action
  *
  * Unbound action
  */
 export class CCaaS_MaskMessageAction implements Executable<CCaaS_MaskMessageResponse> {
-  constructor(
-    public readonly widgetId: string,
-    public readonly messageId: string,
-    public readonly apiVersion: string,
-    public readonly conversationId: string
-  ) {}
+  constructor(public readonly parameters: CCaaS_MaskMessageActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_MaskMessage`;
 
-    const body: Record<string, unknown> = {
-      WidgetId: this.widgetId,
-      MessageId: this.messageId,
-      ApiVersion: this.apiVersion,
-      ConversationId: this.conversationId,
-    };
+    const body = requestBody({
+      WidgetId: this.parameters.WidgetId,
+      MessageId: this.parameters.MessageId,
+      ApiVersion: this.parameters.ApiVersion,
+      ConversationId: this.parameters.ConversationId,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class CCaaS_MaskMessageAction implements Executable<CCaaS_MaskMessageResp
   }
 
   async parseResponse(response: Response): Promise<CCaaS_MaskMessageResponse> {
-    const data = await response.json();
-    return data as CCaaS_MaskMessageResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_MaskMessageResponse;
+    return (await response.json()) as CCaaS_MaskMessageResponse;
   }
 }

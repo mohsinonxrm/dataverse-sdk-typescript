@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_executeemailsentimentbotResponse as msdyn_executeemailsentimentbotResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_executeemailsentimentbot message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_executeemailsentimentbotRequestParameters {
+  environmentId: string;
+  emailId: string;
+}
 
 /**
  * msdyn_executeemailsentimentbot request message
@@ -12,20 +22,19 @@ export class msdyn_executeemailsentimentbotRequest
   extends OrganizationRequest
   implements Executable<msdyn_executeemailsentimentbotResponse>
 {
-  constructor(
-    public environmentId: string,
-    public emailId: string
-  ) {
-    super("msdyn_executeemailsentimentbot");
+  declare readonly Parameters: Readonly<msdyn_executeemailsentimentbotRequestParameters>;
+
+  constructor(parameters: msdyn_executeemailsentimentbotRequestParameters) {
+    super("msdyn_executeemailsentimentbot", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_executeemailsentimentbot`;
 
-    const body: Record<string, unknown> = {
-      environmentId: this.environmentId,
-      emailId: this.emailId,
-    };
+    const body = requestBody({
+      environmentId: this.Parameters.environmentId,
+      emailId: this.Parameters.emailId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_executeemailsentimentbotRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_executeemailsentimentbotResponse> {
-    const data = await response.json();
-    return msdyn_executeemailsentimentbotResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_executeemailsentimentbotResponse.fromResponse({});
+    return msdyn_executeemailsentimentbotResponse.fromResponse(await response.json());
   }
 }
 

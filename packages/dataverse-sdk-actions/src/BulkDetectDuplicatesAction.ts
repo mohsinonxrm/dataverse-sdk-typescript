@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { TypedQueryBase, activityparty } from "./types/index.js";
@@ -12,35 +13,41 @@ export interface BulkDetectDuplicatesResponse {
 }
 
 /**
+ * Parameters of the BulkDetectDuplicates action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface BulkDetectDuplicatesActionParameters {
+  Query?: TypedQueryBase;
+  JobName: string;
+  SendEmailNotification: boolean;
+  TemplateId: string;
+  ToRecipients: (EntityReference | EntityPayload<activityparty>)[];
+  CCRecipients: (EntityReference | EntityPayload<activityparty>)[];
+  RecurrencePattern: string;
+  RecurrenceStartTime: string;
+}
+
+/**
  * BulkDetectDuplicates action
  *
  * Unbound action
  */
 export class BulkDetectDuplicatesAction implements Executable<BulkDetectDuplicatesResponse> {
-  constructor(
-    public readonly query: TypedQueryBase | undefined,
-    public readonly jobName: string,
-    public readonly sendEmailNotification: boolean,
-    public readonly templateId: string,
-    public readonly toRecipients: (EntityReference | EntityPayload<activityparty>)[],
-    public readonly cCRecipients: (EntityReference | EntityPayload<activityparty>)[],
-    public readonly recurrencePattern: string,
-    public readonly recurrenceStartTime: string
-  ) {}
+  constructor(public readonly parameters: BulkDetectDuplicatesActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BulkDetectDuplicates`;
 
-    const body: Record<string, unknown> = {
-      Query: enumBody(this.query, "QueryBase"),
-      JobName: this.jobName,
-      SendEmailNotification: this.sendEmailNotification,
-      TemplateId: this.templateId,
-      ToRecipients: this.toRecipients,
-      CCRecipients: this.cCRecipients,
-      RecurrencePattern: this.recurrencePattern,
-      RecurrenceStartTime: this.recurrenceStartTime,
-    };
+    const body = requestBody({
+      Query: enumBody(this.parameters.Query, "QueryBase"),
+      JobName: this.parameters.JobName,
+      SendEmailNotification: this.parameters.SendEmailNotification,
+      TemplateId: this.parameters.TemplateId,
+      ToRecipients: this.parameters.ToRecipients,
+      CCRecipients: this.parameters.CCRecipients,
+      RecurrencePattern: this.parameters.RecurrencePattern,
+      RecurrenceStartTime: this.parameters.RecurrenceStartTime,
+    });
 
     return {
       method: "POST",
@@ -53,7 +60,8 @@ export class BulkDetectDuplicatesAction implements Executable<BulkDetectDuplicat
   }
 
   async parseResponse(response: Response): Promise<BulkDetectDuplicatesResponse> {
-    const data = await response.json();
-    return data as BulkDetectDuplicatesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as BulkDetectDuplicatesResponse;
+    return (await response.json()) as BulkDetectDuplicatesResponse;
   }
 }

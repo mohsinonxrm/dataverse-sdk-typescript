@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { GetJobStatusResponse as GetJobStatusResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the GetJobStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetJobStatusRequestParameters {
+  istrain: boolean;
+  correlationid?: string;
+  aimodelid?: string;
+}
 
 /**
  * GetJobStatus request message
@@ -12,22 +23,20 @@ export class GetJobStatusRequest
   extends OrganizationRequest
   implements Executable<GetJobStatusResponse>
 {
-  constructor(
-    public istrain: boolean,
-    public correlationid?: string,
-    public aimodelid?: string
-  ) {
-    super("GetJobStatus");
+  declare readonly Parameters: Readonly<GetJobStatusRequestParameters>;
+
+  constructor(parameters: GetJobStatusRequestParameters) {
+    super("GetJobStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetJobStatus`;
 
-    const body: Record<string, unknown> = {
-      istrain: this.istrain,
-      correlationid: this.correlationid,
-      aimodelid: this.aimodelid,
-    };
+    const body = requestBody({
+      istrain: this.Parameters.istrain,
+      correlationid: this.Parameters.correlationid,
+      aimodelid: this.Parameters.aimodelid,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class GetJobStatusRequest
   }
 
   async parseResponse(response: Response): Promise<GetJobStatusResponse> {
-    const data = await response.json();
-    return GetJobStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return GetJobStatusResponse.fromResponse({});
+    return GetJobStatusResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdn_evaluationplanorchestratorResponse as msdn_evaluationplanorchestratorResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdn_evaluationplanorchestrator message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdn_evaluationplanorchestratorRequestParameters {
+  EvalPlanId: string;
+}
 
 /**
  * msdn_evaluationplanorchestrator request message
@@ -12,16 +21,18 @@ export class msdn_evaluationplanorchestratorRequest
   extends OrganizationRequest
   implements Executable<msdn_evaluationplanorchestratorResponse>
 {
-  constructor(public evalPlanId: string) {
-    super("msdn_evaluationplanorchestrator");
+  declare readonly Parameters: Readonly<msdn_evaluationplanorchestratorRequestParameters>;
+
+  constructor(parameters: msdn_evaluationplanorchestratorRequestParameters) {
+    super("msdn_evaluationplanorchestrator", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdn_evaluationplanorchestrator`;
 
-    const body: Record<string, unknown> = {
-      EvalPlanId: this.evalPlanId,
-    };
+    const body = requestBody({
+      EvalPlanId: this.Parameters.EvalPlanId,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdn_evaluationplanorchestratorRequest
   }
 
   async parseResponse(response: Response): Promise<msdn_evaluationplanorchestratorResponse> {
-    const data = await response.json();
-    return msdn_evaluationplanorchestratorResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdn_evaluationplanorchestratorResponse.fromResponse({});
+    return msdn_evaluationplanorchestratorResponse.fromResponse(await response.json());
   }
 }
 

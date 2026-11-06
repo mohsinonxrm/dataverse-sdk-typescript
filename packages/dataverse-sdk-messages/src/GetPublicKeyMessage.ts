@@ -7,6 +7,8 @@ import type { GetPublicKeyResponse as GetPublicKeyResponseData } from "./types/i
  * GetPublicKey request message
  *
  * Web API Action: GetPublicKey
+ *
+ * The first argument is the id of the flowmachinegroup record to call it on.
  */
 export class GetPublicKeyRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class GetPublicKeyRequest
   }
 
   async parseResponse(response: Response): Promise<GetPublicKeyResponse> {
-    const data = await response.json();
-    return GetPublicKeyResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return GetPublicKeyResponse.fromResponse({});
+    return GetPublicKeyResponse.fromResponse(await response.json());
   }
 }
 

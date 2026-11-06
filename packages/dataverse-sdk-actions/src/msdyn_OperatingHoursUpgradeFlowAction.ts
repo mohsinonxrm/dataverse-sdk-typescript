@@ -26,7 +26,8 @@ export class msdyn_OperatingHoursUpgradeFlowAction implements Executable<msdyn_O
   }
 
   async parseResponse(response: Response): Promise<msdyn_OperatingHoursUpgradeFlowResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_OperatingHoursUpgradeFlowResponse;
+    return (await response.json()) as msdyn_OperatingHoursUpgradeFlowResponse;
   }
 }

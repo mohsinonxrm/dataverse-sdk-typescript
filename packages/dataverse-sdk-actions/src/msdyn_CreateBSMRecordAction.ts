@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CreateBSMRecord action
@@ -10,19 +11,27 @@ export interface msdyn_CreateBSMRecordResponse {
 }
 
 /**
+ * Parameters of the msdyn_CreateBSMRecord action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateBSMRecordActionParameters {
+  AnalysisResult: EntityReference;
+}
+
+/**
  * msdyn_CreateBSMRecord action
  *
  * Unbound action
  */
 export class msdyn_CreateBSMRecordAction implements Executable<msdyn_CreateBSMRecordResponse> {
-  constructor(public readonly analysisResult: EntityReference) {}
+  constructor(public readonly parameters: msdyn_CreateBSMRecordActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateBSMRecord`;
 
-    const body: Record<string, unknown> = {
-      AnalysisResult: this.analysisResult,
-    };
+    const body = requestBody({
+      AnalysisResult: this.parameters.AnalysisResult,
+    });
 
     return {
       method: "POST",
@@ -35,7 +44,8 @@ export class msdyn_CreateBSMRecordAction implements Executable<msdyn_CreateBSMRe
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateBSMRecordResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateBSMRecordResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CreateBSMRecordResponse;
+    return (await response.json()) as msdyn_CreateBSMRecordResponse;
   }
 }

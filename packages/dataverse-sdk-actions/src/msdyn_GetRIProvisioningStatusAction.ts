@@ -30,7 +30,8 @@ export class msdyn_GetRIProvisioningStatusAction implements Executable<msdyn_Get
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRIProvisioningStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetRIProvisioningStatusResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetRIProvisioningStatusResponse;
+    return (await response.json()) as msdyn_GetRIProvisioningStatusResponse;
   }
 }

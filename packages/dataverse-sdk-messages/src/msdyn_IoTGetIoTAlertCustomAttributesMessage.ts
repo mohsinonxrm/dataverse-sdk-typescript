@@ -29,8 +29,10 @@ export class msdyn_IoTGetIoTAlertCustomAttributesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTGetIoTAlertCustomAttributesResponse> {
-    const data = await response.json();
-    return msdyn_IoTGetIoTAlertCustomAttributesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_IoTGetIoTAlertCustomAttributesResponse.fromResponse({});
+    return msdyn_IoTGetIoTAlertCustomAttributesResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetEmailAssistStream message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetEmailAssistStreamRequestParameters {
+  Context?: string;
+  RequestPayload: string;
+}
 
 /**
  * msdyn_GetEmailAssistStream request message
@@ -10,20 +20,19 @@ export class msdyn_GetEmailAssistStreamRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetEmailAssistStreamResponse>
 {
-  constructor(
-    public context: string | undefined,
-    public requestPayload: string
-  ) {
-    super("msdyn_GetEmailAssistStream");
+  declare readonly Parameters: Readonly<msdyn_GetEmailAssistStreamRequestParameters>;
+
+  constructor(parameters: msdyn_GetEmailAssistStreamRequestParameters) {
+    super("msdyn_GetEmailAssistStream", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetEmailAssistStream`;
 
-    const body: Record<string, unknown> = {
-      Context: this.context,
-      RequestPayload: this.requestPayload,
-    };
+    const body = requestBody({
+      Context: this.Parameters.Context,
+      RequestPayload: this.Parameters.RequestPayload,
+    });
 
     return {
       method: "POST",

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SuggestPrimaryForMergeAction action
@@ -12,19 +13,29 @@ export interface msdyn_SuggestPrimaryForMergeActionResponse {
 }
 
 /**
+ * Parameters of the msdyn_SuggestPrimaryForMergeAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SuggestPrimaryForMergeActionActionParameters {
+  RecordList?: Record<string, unknown>[];
+}
+
+/**
  * msdyn_SuggestPrimaryForMergeAction action
  *
  * Unbound action
  */
 export class msdyn_SuggestPrimaryForMergeActionAction implements Executable<msdyn_SuggestPrimaryForMergeActionResponse> {
-  constructor(public readonly recordList?: Record<string, unknown>[]) {}
+  constructor(
+    public readonly parameters: msdyn_SuggestPrimaryForMergeActionActionParameters = {}
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SuggestPrimaryForMergeAction`;
 
-    const body: Record<string, unknown> = {
-      RecordList: this.recordList,
-    };
+    const body = requestBody({
+      RecordList: this.parameters.RecordList,
+    });
 
     return {
       method: "POST",
@@ -37,7 +48,8 @@ export class msdyn_SuggestPrimaryForMergeActionAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_SuggestPrimaryForMergeActionResponse> {
-    const data = await response.json();
-    return data as msdyn_SuggestPrimaryForMergeActionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SuggestPrimaryForMergeActionResponse;
+    return (await response.json()) as msdyn_SuggestPrimaryForMergeActionResponse;
   }
 }

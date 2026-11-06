@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AddMembersBatchListResponse as AddMembersBatchListResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the AddMembersBatchList message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddMembersBatchListRequestParameters {
+  ListId?: string;
+  FetchXml?: string;
+  SkipCount?: number;
+}
 
 /**
  * AddMembersBatchList request message
@@ -12,22 +23,20 @@ export class AddMembersBatchListRequest
   extends OrganizationRequest
   implements Executable<AddMembersBatchListResponse>
 {
-  constructor(
-    public listId?: string,
-    public fetchXml?: string,
-    public skipCount?: number
-  ) {
-    super("AddMembersBatchList");
+  declare readonly Parameters: Readonly<AddMembersBatchListRequestParameters>;
+
+  constructor(parameters: AddMembersBatchListRequestParameters = {}) {
+    super("AddMembersBatchList", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AddMembersBatchList`;
 
-    const body: Record<string, unknown> = {
-      ListId: this.listId,
-      FetchXml: this.fetchXml,
-      SkipCount: this.skipCount,
-    };
+    const body = requestBody({
+      ListId: this.Parameters.ListId,
+      FetchXml: this.Parameters.FetchXml,
+      SkipCount: this.Parameters.SkipCount,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class AddMembersBatchListRequest
   }
 
   async parseResponse(response: Response): Promise<AddMembersBatchListResponse> {
-    const data = await response.json();
-    return AddMembersBatchListResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return AddMembersBatchListResponse.fromResponse({});
+    return AddMembersBatchListResponse.fromResponse(await response.json());
   }
 }
 

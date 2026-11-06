@@ -15,7 +15,10 @@ import {
 describe("Business Actions", () => {
   describe("ExecuteWorkflowAction", () => {
     it("should create correct request for bound workflow execution", () => {
-      const action = new ExecuteWorkflowAction("workflow-guid", "entity-guid", {});
+      const action = new ExecuteWorkflowAction("workflow-guid", {
+        EntityId: "entity-guid",
+        InputArguments: {},
+      });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
@@ -31,7 +34,10 @@ describe("Business Actions", () => {
     });
 
     it("should parse the asyncoperation the response body is (#71)", async () => {
-      const action = new ExecuteWorkflowAction("workflow-guid", "entity-guid", {});
+      const action = new ExecuteWorkflowAction("workflow-guid", {
+        EntityId: "entity-guid",
+        InputArguments: {},
+      });
       const mockResponse = new Response(
         JSON.stringify({
           "@odata.context": "$metadata#asyncoperations/$entity",
@@ -52,7 +58,11 @@ describe("Business Actions", () => {
         "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
         subject: "Won - Contoso Deal",
       };
-      const action = new WinOpportunityAction(opportunityClose, "user-guid", 3);
+      const action = new WinOpportunityAction({
+        OpportunityClose: opportunityClose,
+        Caller: "user-guid",
+        Status: 3,
+      });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
@@ -71,7 +81,11 @@ describe("Business Actions", () => {
         "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
         subject: "Won",
       };
-      const action = new WinOpportunityAction(opportunityClose, "user-guid", 5);
+      const action = new WinOpportunityAction({
+        OpportunityClose: opportunityClose,
+        Caller: "user-guid",
+        Status: 5,
+      });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
@@ -86,7 +100,12 @@ describe("Business Actions", () => {
       const target = { logicalName: "account", id: "target-guid" };
       const subordinate = { logicalName: "account", id: "subordinate-guid" };
       const updateContent = { logicalName: "account", id: "target-guid" };
-      const action = new MergeAction(target, subordinate, updateContent, true);
+      const action = new MergeAction({
+        Target: target,
+        Subordinate: subordinate,
+        UpdateContent: updateContent,
+        PerformParentingChecks: true,
+      });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
@@ -105,7 +124,12 @@ describe("Business Actions", () => {
       const target = { logicalName: "contact", id: "target-guid" };
       const subordinate = { logicalName: "contact", id: "subordinate-guid" };
       const updateContent = { logicalName: "contact", id: "target-guid" };
-      const action = new MergeAction(target, subordinate, updateContent, false);
+      const action = new MergeAction({
+        Target: target,
+        Subordinate: subordinate,
+        UpdateContent: updateContent,
+        PerformParentingChecks: false,
+      });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
@@ -125,7 +149,7 @@ describe("Bulk Operations", () => {
         { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Contoso" },
         { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Fabrikam" },
       ];
-      const action = new CreateMultipleAction("accounts", accounts);
+      const action = new CreateMultipleAction("accounts", { Targets: accounts });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
@@ -141,14 +165,14 @@ describe("Bulk Operations", () => {
 
     it("should accept targets array", () => {
       const accounts = [{ "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Test" }];
-      const action = new CreateMultipleAction("accounts", accounts);
+      const action = new CreateMultipleAction("accounts", { Targets: accounts });
 
-      expect(action.targets).toEqual(accounts);
+      expect(action.parameters.Targets).toEqual(accounts);
     });
 
     it("should parse response with Ids", async () => {
       const accounts = [{ "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Contoso" }];
-      const action = new CreateMultipleAction("accounts", accounts);
+      const action = new CreateMultipleAction("accounts", { Targets: accounts });
       const mockResponse = new Response(JSON.stringify({ Ids: ["id1", "id2"] }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -165,7 +189,7 @@ describe("Bulk Operations", () => {
       const updates = [
         { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id1", creditlimit: 50000 },
       ];
-      const action = new UpdateMultipleAction("accounts", updates);
+      const action = new UpdateMultipleAction("accounts", { Targets: updates });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
@@ -181,9 +205,9 @@ describe("Bulk Operations", () => {
 
     it("should accept targets array", () => {
       const updates = [{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id1" }];
-      const action = new UpdateMultipleAction("accounts", updates);
+      const action = new UpdateMultipleAction("accounts", { Targets: updates });
 
-      expect(action.targets).toEqual(updates);
+      expect(action.parameters.Targets).toEqual(updates);
     });
   });
 
@@ -193,7 +217,7 @@ describe("Bulk Operations", () => {
         { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id1", name: "Updated" },
         { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "New" },
       ];
-      const action = new UpsertMultipleAction("accounts", records);
+      const action = new UpsertMultipleAction("accounts", { Targets: records });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
@@ -209,9 +233,9 @@ describe("Bulk Operations", () => {
 
     it("should accept targets array", () => {
       const records = [{ "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Test" }];
-      const action = new UpsertMultipleAction("accounts", records);
+      const action = new UpsertMultipleAction("accounts", { Targets: records });
 
-      expect(action.targets).toEqual(records);
+      expect(action.parameters.Targets).toEqual(records);
     });
   });
 
@@ -221,7 +245,7 @@ describe("Bulk Operations", () => {
         { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id1" },
         { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id2" },
       ];
-      const action = new DeleteMultipleAction("accounts", targets);
+      const action = new DeleteMultipleAction("accounts", { Targets: targets });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
@@ -237,9 +261,9 @@ describe("Bulk Operations", () => {
 
     it("should accept targets array", () => {
       const targets = [{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id1" }];
-      const action = new DeleteMultipleAction("accounts", targets);
+      const action = new DeleteMultipleAction("accounts", { Targets: targets });
 
-      expect(action.targets).toEqual(targets);
+      expect(action.parameters.Targets).toEqual(targets);
     });
   });
 });
@@ -248,7 +272,11 @@ describe("File Operations", () => {
   describe("InitializeFileBlocksUploadAction", () => {
     it("should create correct request", () => {
       const target = { logicalName: "account", id: "account-guid" };
-      const action = new InitializeFileBlocksUploadAction(target, "logo.png", "new_logo");
+      const action = new InitializeFileBlocksUploadAction({
+        Target: target,
+        FileName: "logo.png",
+        FileAttributeName: "new_logo",
+      });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
@@ -266,7 +294,11 @@ describe("File Operations", () => {
 
     it("should parse response with continuation token", async () => {
       const target = { logicalName: "account", id: "account-guid" };
-      const action = new InitializeFileBlocksUploadAction(target, "logo.png", "new_logo");
+      const action = new InitializeFileBlocksUploadAction({
+        Target: target,
+        FileName: "logo.png",
+        FileAttributeName: "new_logo",
+      });
       const mockResponse = new Response(JSON.stringify({ FileContinuationToken: "token-123" }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -280,7 +312,11 @@ describe("File Operations", () => {
 
   describe("UploadBlockAction", () => {
     it("should create correct request", () => {
-      const action = new UploadBlockAction("AAAAAA==", "base64-data", "token-123");
+      const action = new UploadBlockAction({
+        BlockId: "AAAAAA==",
+        BlockData: "base64-data",
+        FileContinuationToken: "token-123",
+      });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
@@ -298,12 +334,12 @@ describe("File Operations", () => {
   describe("CommitFileBlocksUploadAction", () => {
     it("should create correct request", () => {
       const blockList = ["AAAAAA==", "AQAAAA=="];
-      const action = new CommitFileBlocksUploadAction(
-        "logo.png",
-        "image/png",
-        blockList,
-        "token-123"
-      );
+      const action = new CommitFileBlocksUploadAction({
+        FileName: "logo.png",
+        MimeType: "image/png",
+        BlockList: blockList,
+        FileContinuationToken: "token-123",
+      });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);
@@ -322,12 +358,12 @@ describe("File Operations", () => {
 
     it("should include all parameters in body", () => {
       const blockList = ["AAAAAA=="];
-      const action = new CommitFileBlocksUploadAction(
-        "document.pdf",
-        "application/pdf",
-        blockList,
-        "token-456"
-      );
+      const action = new CommitFileBlocksUploadAction({
+        FileName: "document.pdf",
+        MimeType: "application/pdf",
+        BlockList: blockList,
+        FileContinuationToken: "token-456",
+      });
       const baseUrl = "https://org.crm.dynamics.com/api/data/v9.2";
 
       const requestInfo = action.toRequestInformation(baseUrl);

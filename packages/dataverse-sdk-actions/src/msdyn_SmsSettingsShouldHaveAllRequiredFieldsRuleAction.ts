@@ -30,7 +30,9 @@ export class msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleAction implements E
   async parseResponse(
     response: Response
   ): Promise<msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    return (await response.json()) as msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse;
   }
 }

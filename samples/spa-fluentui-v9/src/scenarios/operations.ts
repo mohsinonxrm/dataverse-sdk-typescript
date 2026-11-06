@@ -19,9 +19,12 @@ import type { Account } from "./types";
 export async function counts({ client }: Sdk, input: { tables: string[] }, signal: AbortSignal) {
   // Functions are GETs; typed parameters become OData parameter aliases in the URL.
   const version = await client.execute(new RetrieveVersionFunction(), { signal });
-  const totals = await client.execute(new RetrieveTotalRecordCountFunction(input.tables), {
-    signal,
-  });
+  const totals = await client.execute(
+    new RetrieveTotalRecordCountFunction({ EntityNames: input.tables }),
+    {
+      signal,
+    }
+  );
 
   const { Keys, Values } = totals.EntityRecordCountCollection;
   return {
@@ -43,12 +46,11 @@ export async function newContactFromAccount({ client }: Sdk, signal: AbortSignal
 
   // InitializeFrom: a new contact with the values the account -> contact mapping fills in.
   const template = await client.execute(
-    new InitializeFromFunction(
-      createEntityReference("account", account.accountid),
-      undefined,
-      "contact",
-      "ValidForCreate"
-    ),
+    new InitializeFromFunction({
+      EntityMoniker: createEntityReference("account", account.accountid),
+      TargetEntityName: "contact",
+      TargetFieldType: "ValidForCreate",
+    }),
     { signal }
   );
 
@@ -67,12 +69,12 @@ export async function newContactFromAccount({ client }: Sdk, signal: AbortSignal
 // #region actions-messages
 export async function relationshipChecks({ client }: Sdk, input: { table: string }) {
   // An action class from @mohsinonxrm/dataverse-sdk-actions, run by the client.
-  const manyToMany = await client.execute(new CanManyToManyAction(input.table));
+  const manyToMany = await client.execute(new CanManyToManyAction({ EntityName: input.table }));
 
   // A message from @mohsinonxrm/dataverse-sdk-messages, run by OrganizationService (C# style).
   // The response type comes from the request: CanBeReferencedResponse.
   const service = new OrganizationService(client);
-  const referenced = await service.execute(new CanBeReferencedRequest(input.table));
+  const referenced = await service.execute(new CanBeReferencedRequest({ EntityName: input.table }));
 
   // Any action, including custom APIs, without a generated class: an OrganizationResponse.
   const referencing = await service.execute(

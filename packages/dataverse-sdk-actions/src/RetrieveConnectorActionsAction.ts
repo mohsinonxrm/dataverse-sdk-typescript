@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,19 +11,27 @@ export interface RetrieveConnectorActionsResponse {
 }
 
 /**
+ * Parameters of the RetrieveConnectorActions action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveConnectorActionsActionParameters {
+  ConnectionReference: EntityReference | AnyEntityPayload;
+}
+
+/**
  * RetrieveConnectorActions action
  *
  * Unbound action
  */
 export class RetrieveConnectorActionsAction implements Executable<RetrieveConnectorActionsResponse> {
-  constructor(public readonly connectionReference: EntityReference | AnyEntityPayload) {}
+  constructor(public readonly parameters: RetrieveConnectorActionsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RetrieveConnectorActions`;
 
-    const body: Record<string, unknown> = {
-      ConnectionReference: this.connectionReference,
-    };
+    const body = requestBody({
+      ConnectionReference: this.parameters.ConnectionReference,
+    });
 
     return {
       method: "POST",
@@ -35,7 +44,8 @@ export class RetrieveConnectorActionsAction implements Executable<RetrieveConnec
   }
 
   async parseResponse(response: Response): Promise<RetrieveConnectorActionsResponse> {
-    const data = await response.json();
-    return data as RetrieveConnectorActionsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveConnectorActionsResponse;
+    return (await response.json()) as RetrieveConnectorActionsResponse;
   }
 }

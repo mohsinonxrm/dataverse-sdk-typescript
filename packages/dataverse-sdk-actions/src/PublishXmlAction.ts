@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from PublishXml action
@@ -8,19 +9,27 @@ export interface PublishXmlResponse {
 }
 
 /**
+ * Parameters of the PublishXml action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PublishXmlActionParameters {
+  ParameterXml: string;
+}
+
+/**
  * PublishXml action
  *
  * Unbound action
  */
 export class PublishXmlAction implements Executable<PublishXmlResponse> {
-  constructor(public readonly parameterXml: string) {}
+  constructor(public readonly parameters: PublishXmlActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/PublishXml`;
 
-    const body: Record<string, unknown> = {
-      ParameterXml: this.parameterXml,
-    };
+    const body = requestBody({
+      ParameterXml: this.parameters.ParameterXml,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class PublishXmlAction implements Executable<PublishXmlResponse> {
   }
 
   async parseResponse(response: Response): Promise<PublishXmlResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PublishXmlResponse;
+    return (await response.json()) as PublishXmlResponse;
   }
 }

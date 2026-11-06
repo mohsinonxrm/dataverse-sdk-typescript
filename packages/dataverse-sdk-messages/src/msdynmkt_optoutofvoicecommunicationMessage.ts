@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdynmkt_optoutofvoicecommunication message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_optoutofvoicecommunicationRequestParameters {
+  msdynmkt_trackingcontextid: string;
+}
 
 /**
  * msdynmkt_optoutofvoicecommunication request message
@@ -10,16 +19,18 @@ export class msdynmkt_optoutofvoicecommunicationRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_optoutofvoicecommunicationResponse>
 {
-  constructor(public msdynmkt_trackingcontextid: string) {
-    super("msdynmkt_optoutofvoicecommunication");
+  declare readonly Parameters: Readonly<msdynmkt_optoutofvoicecommunicationRequestParameters>;
+
+  constructor(parameters: msdynmkt_optoutofvoicecommunicationRequestParameters) {
+    super("msdynmkt_optoutofvoicecommunication", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_optoutofvoicecommunication`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_trackingcontextid: this.msdynmkt_trackingcontextid,
-    };
+    const body = requestBody({
+      msdynmkt_trackingcontextid: this.Parameters.msdynmkt_trackingcontextid,
+    });
 
     return {
       method: "POST",

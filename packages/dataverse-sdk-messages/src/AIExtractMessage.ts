@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AIExtractResponse as AIExtractResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the AIExtract message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AIExtractRequestParameters {
+  Text: string;
+  Entity: string;
+}
 
 /**
  * AIExtract request message
@@ -9,20 +19,19 @@ import type { AIExtractResponse as AIExtractResponseData } from "./types/index.j
  * Web API Action: AIExtract
  */
 export class AIExtractRequest extends OrganizationRequest implements Executable<AIExtractResponse> {
-  constructor(
-    public text: string,
-    public entity: string
-  ) {
-    super("AIExtract");
+  declare readonly Parameters: Readonly<AIExtractRequestParameters>;
+
+  constructor(parameters: AIExtractRequestParameters) {
+    super("AIExtract", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AIExtract`;
 
-    const body: Record<string, unknown> = {
-      Text: this.text,
-      Entity: this.entity,
-    };
+    const body = requestBody({
+      Text: this.Parameters.Text,
+      Entity: this.Parameters.Entity,
+    });
 
     return {
       method: "POST",
@@ -35,8 +44,9 @@ export class AIExtractRequest extends OrganizationRequest implements Executable<
   }
 
   async parseResponse(response: Response): Promise<AIExtractResponse> {
-    const data = await response.json();
-    return AIExtractResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return AIExtractResponse.fromResponse({});
+    return AIExtractResponse.fromResponse(await response.json());
   }
 }
 

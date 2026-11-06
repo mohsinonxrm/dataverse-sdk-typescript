@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetOrCreateBookableResourcesResponse as msdyn_GetOrCreateBookableResourcesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetOrCreateBookableResources message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetOrCreateBookableResourcesRequestParameters {
+  Resources: string;
+}
 
 /**
  * msdyn_GetOrCreateBookableResources request message
@@ -12,16 +21,18 @@ export class msdyn_GetOrCreateBookableResourcesRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetOrCreateBookableResourcesResponse>
 {
-  constructor(public resources: string) {
-    super("msdyn_GetOrCreateBookableResources");
+  declare readonly Parameters: Readonly<msdyn_GetOrCreateBookableResourcesRequestParameters>;
+
+  constructor(parameters: msdyn_GetOrCreateBookableResourcesRequestParameters) {
+    super("msdyn_GetOrCreateBookableResources", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetOrCreateBookableResources`;
 
-    const body: Record<string, unknown> = {
-      Resources: this.resources,
-    };
+    const body = requestBody({
+      Resources: this.Parameters.Resources,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetOrCreateBookableResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOrCreateBookableResourcesResponse> {
-    const data = await response.json();
-    return msdyn_GetOrCreateBookableResourcesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetOrCreateBookableResourcesResponse.fromResponse({});
+    return msdyn_GetOrCreateBookableResourcesResponse.fromResponse(await response.json());
   }
 }
 

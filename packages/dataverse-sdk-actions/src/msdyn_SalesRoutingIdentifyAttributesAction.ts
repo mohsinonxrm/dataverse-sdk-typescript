@@ -27,7 +27,8 @@ export class msdyn_SalesRoutingIdentifyAttributesAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesRoutingIdentifyAttributesResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesRoutingIdentifyAttributesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SalesRoutingIdentifyAttributesResponse;
+    return (await response.json()) as msdyn_SalesRoutingIdentifyAttributesResponse;
   }
 }

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_BulkForceClose action
@@ -8,23 +9,29 @@ export interface CCaaS_BulkForceCloseResponse {
 }
 
 /**
+ * Parameters of the CCaaS_BulkForceClose action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_BulkForceCloseActionParameters {
+  ConversationIds: string[];
+  ApiVersion: string;
+}
+
+/**
  * CCaaS_BulkForceClose action
  *
  * Unbound action
  */
 export class CCaaS_BulkForceCloseAction implements Executable<CCaaS_BulkForceCloseResponse> {
-  constructor(
-    public readonly conversationIds: string[],
-    public readonly apiVersion: string
-  ) {}
+  constructor(public readonly parameters: CCaaS_BulkForceCloseActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_BulkForceClose`;
 
-    const body: Record<string, unknown> = {
-      ConversationIds: this.conversationIds,
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      ConversationIds: this.parameters.ConversationIds,
+      ApiVersion: this.parameters.ApiVersion,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class CCaaS_BulkForceCloseAction implements Executable<CCaaS_BulkForceClo
   }
 
   async parseResponse(response: Response): Promise<CCaaS_BulkForceCloseResponse> {
-    const data = await response.json();
-    return data as CCaaS_BulkForceCloseResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_BulkForceCloseResponse;
+    return (await response.json()) as CCaaS_BulkForceCloseResponse;
   }
 }

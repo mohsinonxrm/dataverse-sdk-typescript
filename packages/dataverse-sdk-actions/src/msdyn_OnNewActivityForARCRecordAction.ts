@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,23 +11,29 @@ export interface msdyn_OnNewActivityForARCRecordResponse {
 }
 
 /**
+ * Parameters of the msdyn_OnNewActivityForARCRecord action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_OnNewActivityForARCRecordActionParameters {
+  msdyn_primaryEntityReference: EntityReference | AnyEntityPayload;
+  msdyn_sourceEntityReference: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_OnNewActivityForARCRecord action
  *
  * Unbound action
  */
 export class msdyn_OnNewActivityForARCRecordAction implements Executable<msdyn_OnNewActivityForARCRecordResponse> {
-  constructor(
-    public readonly msdyn_primaryEntityReference: EntityReference | AnyEntityPayload,
-    public readonly msdyn_sourceEntityReference: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: msdyn_OnNewActivityForARCRecordActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OnNewActivityForARCRecord`;
 
-    const body: Record<string, unknown> = {
-      msdyn_primaryEntityReference: this.msdyn_primaryEntityReference,
-      msdyn_sourceEntityReference: this.msdyn_sourceEntityReference,
-    };
+    const body = requestBody({
+      msdyn_primaryEntityReference: this.parameters.msdyn_primaryEntityReference,
+      msdyn_sourceEntityReference: this.parameters.msdyn_sourceEntityReference,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_OnNewActivityForARCRecordAction implements Executable<msdyn_O
   }
 
   async parseResponse(response: Response): Promise<msdyn_OnNewActivityForARCRecordResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_OnNewActivityForARCRecordResponse;
+    return (await response.json()) as msdyn_OnNewActivityForARCRecordResponse;
   }
 }

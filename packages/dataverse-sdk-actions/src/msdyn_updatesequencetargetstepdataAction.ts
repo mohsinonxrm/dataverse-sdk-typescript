@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_updatesequencetargetstepdata action
@@ -8,23 +9,29 @@ export interface msdyn_updatesequencetargetstepdataResponse {
 }
 
 /**
+ * Parameters of the msdyn_updatesequencetargetstepdata action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_updatesequencetargetstepdataActionParameters {
+  msdyn_sequencetargetstepid: string;
+  msdyn_linkedactivityid?: string;
+}
+
+/**
  * msdyn_updatesequencetargetstepdata action
  *
  * Unbound action
  */
 export class msdyn_updatesequencetargetstepdataAction implements Executable<msdyn_updatesequencetargetstepdataResponse> {
-  constructor(
-    public readonly msdyn_sequencetargetstepid: string,
-    public readonly msdyn_linkedactivityid?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_updatesequencetargetstepdataActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_updatesequencetargetstepdata`;
 
-    const body: Record<string, unknown> = {
-      msdyn_sequencetargetstepid: this.msdyn_sequencetargetstepid,
-      msdyn_linkedactivityid: this.msdyn_linkedactivityid,
-    };
+    const body = requestBody({
+      msdyn_sequencetargetstepid: this.parameters.msdyn_sequencetargetstepid,
+      msdyn_linkedactivityid: this.parameters.msdyn_linkedactivityid,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_updatesequencetargetstepdataAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_updatesequencetargetstepdataResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_updatesequencetargetstepdataResponse;
+    return (await response.json()) as msdyn_updatesequencetargetstepdataResponse;
   }
 }

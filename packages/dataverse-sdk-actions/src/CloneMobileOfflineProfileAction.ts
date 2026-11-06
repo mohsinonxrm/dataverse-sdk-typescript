@@ -16,6 +16,8 @@ export interface CloneMobileOfflineProfileResponse extends mobileofflineprofile 
  *
  * Bound action
  * Binding parameter: entity (mscrm.mobileofflineprofile)
+ *
+ * The first argument is the id of the mobileofflineprofile record to call it on.
  */
 export class CloneMobileOfflineProfileAction implements Executable<CloneMobileOfflineProfileResponse> {
   constructor(public readonly mobileofflineprofileId: string) {}
@@ -34,7 +36,8 @@ export class CloneMobileOfflineProfileAction implements Executable<CloneMobileOf
   }
 
   async parseResponse(response: Response): Promise<CloneMobileOfflineProfileResponse> {
-    const data = await response.json();
-    return data as CloneMobileOfflineProfileResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CloneMobileOfflineProfileResponse;
+    return (await response.json()) as CloneMobileOfflineProfileResponse;
   }
 }

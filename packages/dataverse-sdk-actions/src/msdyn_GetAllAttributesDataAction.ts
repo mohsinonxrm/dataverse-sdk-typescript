@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetAllAttributesData action
@@ -8,23 +9,29 @@ export interface msdyn_GetAllAttributesDataResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetAllAttributesData action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAllAttributesDataActionParameters {
+  PredictionName: string;
+  PredictionType: string;
+}
+
+/**
  * msdyn_GetAllAttributesData action
  *
  * Unbound action
  */
 export class msdyn_GetAllAttributesDataAction implements Executable<msdyn_GetAllAttributesDataResponse> {
-  constructor(
-    public readonly predictionName: string,
-    public readonly predictionType: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetAllAttributesDataActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAllAttributesData`;
 
-    const body: Record<string, unknown> = {
-      PredictionName: this.predictionName,
-      PredictionType: this.predictionType,
-    };
+    const body = requestBody({
+      PredictionName: this.parameters.PredictionName,
+      PredictionType: this.parameters.PredictionType,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_GetAllAttributesDataAction implements Executable<msdyn_GetAll
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAllAttributesDataResponse> {
-    const data = await response.json();
-    return data as msdyn_GetAllAttributesDataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetAllAttributesDataResponse;
+    return (await response.json()) as msdyn_GetAllAttributesDataResponse;
   }
 }

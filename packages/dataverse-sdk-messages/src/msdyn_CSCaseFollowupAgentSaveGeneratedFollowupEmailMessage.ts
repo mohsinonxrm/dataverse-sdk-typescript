@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse as msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailRequestParameters {
+  msdyn_payload: string;
+}
 
 /**
  * msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail request message
@@ -12,16 +21,18 @@ export class msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailRequest
   extends OrganizationRequest
   implements Executable<msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse>
 {
-  constructor(public msdyn_payload: string) {
-    super("msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail");
+  declare readonly Parameters: Readonly<msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailRequestParameters>;
+
+  constructor(parameters: msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailRequestParameters) {
+    super("msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail`;
 
-    const body: Record<string, unknown> = {
-      msdyn_payload: this.msdyn_payload,
-    };
+    const body = requestBody({
+      msdyn_payload: this.Parameters.msdyn_payload,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,12 @@ export class msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse> {
-    const data = await response.json();
-    return msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse.fromResponse({});
+    return msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

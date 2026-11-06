@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { FeatureControlStringSettingData } from "./types/index.js";
 
 /**
@@ -9,27 +10,35 @@ export interface GetFeatureControlStringSettingsForNamespaceWithUserContextRespo
 }
 
 /**
+ * Parameters of the GetFeatureControlStringSettingsForNamespaceWithUserContext action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetFeatureControlStringSettingsForNamespaceWithUserContextActionParameters {
+  NamespaceName: string;
+  FeatureControlSettingNames: string[];
+  AdditionalFilterNames: string[];
+  AdditionalFilterValues: string[];
+}
+
+/**
  * GetFeatureControlStringSettingsForNamespaceWithUserContext action
  *
  * Unbound action
  */
 export class GetFeatureControlStringSettingsForNamespaceWithUserContextAction implements Executable<GetFeatureControlStringSettingsForNamespaceWithUserContextResponse> {
   constructor(
-    public readonly namespaceName: string,
-    public readonly featureControlSettingNames: string[],
-    public readonly additionalFilterNames: string[],
-    public readonly additionalFilterValues: string[]
+    public readonly parameters: GetFeatureControlStringSettingsForNamespaceWithUserContextActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetFeatureControlStringSettingsForNamespaceWithUserContext`;
 
-    const body: Record<string, unknown> = {
-      NamespaceName: this.namespaceName,
-      FeatureControlSettingNames: this.featureControlSettingNames,
-      AdditionalFilterNames: this.additionalFilterNames,
-      AdditionalFilterValues: this.additionalFilterValues,
-    };
+    const body = requestBody({
+      NamespaceName: this.parameters.NamespaceName,
+      FeatureControlSettingNames: this.parameters.FeatureControlSettingNames,
+      AdditionalFilterNames: this.parameters.AdditionalFilterNames,
+      AdditionalFilterValues: this.parameters.AdditionalFilterValues,
+    });
 
     return {
       method: "POST",
@@ -44,7 +53,9 @@ export class GetFeatureControlStringSettingsForNamespaceWithUserContextAction im
   async parseResponse(
     response: Response
   ): Promise<GetFeatureControlStringSettingsForNamespaceWithUserContextResponse> {
-    const data = await response.json();
-    return data as GetFeatureControlStringSettingsForNamespaceWithUserContextResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as GetFeatureControlStringSettingsForNamespaceWithUserContextResponse;
+    return (await response.json()) as GetFeatureControlStringSettingsForNamespaceWithUserContextResponse;
   }
 }

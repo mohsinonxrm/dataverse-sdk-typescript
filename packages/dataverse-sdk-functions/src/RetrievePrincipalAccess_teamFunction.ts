@@ -11,15 +11,25 @@ export interface RetrievePrincipalAccess_teamResponse {
 }
 
 /**
+ * Parameters of the RetrievePrincipalAccess function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrievePrincipalAccess_teamFunctionParameters {
+  Target: EntityReference;
+}
+
+/**
  * RetrievePrincipalAccess function
  *
  * Bound function
  * Binding parameter: entity (mscrm.team)
+ *
+ * The first argument is the id of the team record to call it on.
  */
 export class RetrievePrincipalAccess_teamFunction implements Executable<RetrievePrincipalAccess_teamResponse> {
   constructor(
     public readonly teamId: string,
-    public readonly target: EntityReference
+    public readonly parameters: RetrievePrincipalAccess_teamFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -29,9 +39,12 @@ export class RetrievePrincipalAccess_teamFunction implements Executable<Retrieve
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append("@p1", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +60,8 @@ export class RetrievePrincipalAccess_teamFunction implements Executable<Retrieve
   }
 
   async parseResponse(response: Response): Promise<RetrievePrincipalAccess_teamResponse> {
-    const data = await response.json();
-    return data as RetrievePrincipalAccess_teamResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrievePrincipalAccess_teamResponse;
+    return (await response.json()) as RetrievePrincipalAccess_teamResponse;
   }
 }

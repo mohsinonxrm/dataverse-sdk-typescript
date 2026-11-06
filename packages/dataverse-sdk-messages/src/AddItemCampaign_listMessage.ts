@@ -2,32 +2,45 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { campaign, campaignitem } from "./types/index.js";
+
+/**
+ * Parameters of the AddItemCampaign message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddItemCampaign_listRequestParameters {
+  Campaign: EntityReference | EntityPayload<campaign>;
+}
 
 /**
  * AddItemCampaign request message
  *
  * Web API Action: AddItemCampaign
+ *
+ * The first argument is the id of the list record to call it on.
  */
 export class AddItemCampaign_listRequest
   extends OrganizationRequest
   implements Executable<AddItemCampaign_listResponse>
 {
+  declare readonly Parameters: Readonly<AddItemCampaign_listRequestParameters>;
+
   constructor(
     public listId: string,
-    public campaign: EntityReference | EntityPayload<campaign>
+    parameters: AddItemCampaign_listRequestParameters
   ) {
-    super("AddItemCampaign");
+    super("AddItemCampaign", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/lists(${this.listId})/Microsoft.Dynamics.CRM.AddItemCampaign`;
 
-    const body: Record<string, unknown> = {
-      Campaign: this.campaign,
-    };
+    const body = requestBody({
+      Campaign: this.Parameters.Campaign,
+    });
 
     return {
       method: "POST",
@@ -40,8 +53,9 @@ export class AddItemCampaign_listRequest
   }
 
   async parseResponse(response: Response): Promise<AddItemCampaign_listResponse> {
-    const data = await response.json();
-    return AddItemCampaign_listResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return AddItemCampaign_listResponse.fromResponse({});
+    return AddItemCampaign_listResponse.fromResponse(await response.json());
   }
 }
 

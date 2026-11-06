@@ -39,7 +39,7 @@ export function executeInfersTheResponse(): void {
   expectTypeOf(org.execute(new WhoAmIFunction(), { signal })).toEqualTypeOf<
     Promise<WhoAmIResponse>
   >();
-  expectTypeOf(org.execute(new ExecuteWorkflowRequest(ID, ID))).toEqualTypeOf<
+  expectTypeOf(org.execute(new ExecuteWorkflowRequest(ID, { EntityId: ID }))).toEqualTypeOf<
     Promise<ExecuteWorkflowResponse>
   >();
   expectTypeOf(org.execute(new OrganizationRequest("new_Action"))).toEqualTypeOf<

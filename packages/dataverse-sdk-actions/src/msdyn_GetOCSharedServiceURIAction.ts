@@ -26,7 +26,8 @@ export class msdyn_GetOCSharedServiceURIAction implements Executable<msdyn_GetOC
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOCSharedServiceURIResponse> {
-    const data = await response.json();
-    return data as msdyn_GetOCSharedServiceURIResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetOCSharedServiceURIResponse;
+    return (await response.json()) as msdyn_GetOCSharedServiceURIResponse;
   }
 }

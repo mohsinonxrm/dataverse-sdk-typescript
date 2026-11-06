@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from UploadBlock action
@@ -8,25 +9,31 @@ export interface UploadBlockResponse {
 }
 
 /**
+ * Parameters of the UploadBlock action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UploadBlockActionParameters {
+  BlockId: string;
+  BlockData: string;
+  FileContinuationToken: string;
+}
+
+/**
  * UploadBlock action
  *
  * Unbound action
  */
 export class UploadBlockAction implements Executable<UploadBlockResponse> {
-  constructor(
-    public readonly blockId: string,
-    public readonly blockData: string,
-    public readonly fileContinuationToken: string
-  ) {}
+  constructor(public readonly parameters: UploadBlockActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UploadBlock`;
 
-    const body: Record<string, unknown> = {
-      BlockId: this.blockId,
-      BlockData: this.blockData,
-      FileContinuationToken: this.fileContinuationToken,
-    };
+    const body = requestBody({
+      BlockId: this.parameters.BlockId,
+      BlockData: this.parameters.BlockData,
+      FileContinuationToken: this.parameters.FileContinuationToken,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class UploadBlockAction implements Executable<UploadBlockResponse> {
   }
 
   async parseResponse(response: Response): Promise<UploadBlockResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UploadBlockResponse;
+    return (await response.json()) as UploadBlockResponse;
   }
 }

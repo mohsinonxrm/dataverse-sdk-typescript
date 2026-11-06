@@ -1,7 +1,23 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesOpportunitySummaryResponse as msdyn_SalesOpportunitySummaryResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesOpportunitySummary message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesOpportunitySummaryRequestParameters {
+  msdyn_skipHeader?: string;
+  msdyn_lastComputationTime?: string;
+  msdyn_id: string;
+  msdyn_isMergedCatchupAndSummary?: boolean;
+  msdyn_additionalParams?: string;
+  msdyn_sessionId?: string;
+  msdyn_activityId?: string;
+  msdyn_responseFormat?: string;
+}
 
 /**
  * msdyn_SalesOpportunitySummary request message
@@ -12,32 +28,25 @@ export class msdyn_SalesOpportunitySummaryRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesOpportunitySummaryResponse>
 {
-  constructor(
-    public msdyn_skipHeader: string | undefined,
-    public msdyn_lastComputationTime: string | undefined,
-    public msdyn_id: string,
-    public msdyn_isMergedCatchupAndSummary?: boolean,
-    public msdyn_additionalParams?: string,
-    public msdyn_sessionId?: string,
-    public msdyn_activityId?: string,
-    public msdyn_responseFormat?: string
-  ) {
-    super("msdyn_SalesOpportunitySummary");
+  declare readonly Parameters: Readonly<msdyn_SalesOpportunitySummaryRequestParameters>;
+
+  constructor(parameters: msdyn_SalesOpportunitySummaryRequestParameters) {
+    super("msdyn_SalesOpportunitySummary", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesOpportunitySummary`;
 
-    const body: Record<string, unknown> = {
-      msdyn_skipHeader: this.msdyn_skipHeader,
-      msdyn_lastComputationTime: this.msdyn_lastComputationTime,
-      msdyn_id: this.msdyn_id,
-      msdyn_isMergedCatchupAndSummary: this.msdyn_isMergedCatchupAndSummary,
-      msdyn_additionalParams: this.msdyn_additionalParams,
-      msdyn_sessionId: this.msdyn_sessionId,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-    };
+    const body = requestBody({
+      msdyn_skipHeader: this.Parameters.msdyn_skipHeader,
+      msdyn_lastComputationTime: this.Parameters.msdyn_lastComputationTime,
+      msdyn_id: this.Parameters.msdyn_id,
+      msdyn_isMergedCatchupAndSummary: this.Parameters.msdyn_isMergedCatchupAndSummary,
+      msdyn_additionalParams: this.Parameters.msdyn_additionalParams,
+      msdyn_sessionId: this.Parameters.msdyn_sessionId,
+      msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
+    });
 
     return {
       method: "POST",
@@ -50,8 +59,9 @@ export class msdyn_SalesOpportunitySummaryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesOpportunitySummaryResponse> {
-    const data = await response.json();
-    return msdyn_SalesOpportunitySummaryResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SalesOpportunitySummaryResponse.fromResponse({});
+    return msdyn_SalesOpportunitySummaryResponse.fromResponse(await response.json());
   }
 }
 

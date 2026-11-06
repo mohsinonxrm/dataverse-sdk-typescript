@@ -5,9 +5,12 @@
 > **Coverage**: <!-- count:functions -->281<!-- /count --> typed Web API functions, generated from a Dataverse `$metadata`. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
 
 Functions are **GET operations** without side effects. Each function is a class whose constructor
-takes the parameters **positionally, in `$metadata` order**. Run it with `client.execute(fn)`.
-Parameters go in parameter aliases (`WhoAmI()`, `RetrieveTotalRecordCount(EntityNames=@p1)?@p1=…`),
-formatted for their EDM type; an argument left `undefined` is left out.
+takes **one object with the parameters, by their `$metadata` names**
+(`new RetrieveEntityFunction({ EntityFilters, LogicalName: "account", MetadataId, RetrieveAsIfPublished: false })`),
+after the record id for a bound function. A parameter `$metadata` marks `Nullable="false"` is
+required, any other optional. Run it with `client.execute(fn)`. Parameters go in parameter aliases
+(`WhoAmI()`, `RetrieveTotalRecordCount(EntityNames=@p1)?@p1=…`), formatted for their EDM type; a
+parameter left out (or `undefined`) isn't sent.
 
 ## Usage
 
@@ -22,12 +25,11 @@ const { UserId, BusinessUnitId } = await client.execute(new WhoAmIFunction());
 
 // A new contact pre-filled from an account, as the mapping on the account-contact relationship says
 const contact = await client.execute(
-  new InitializeFromFunction(
-    createEntityReference("account", accountId), // EntityMoniker
-    undefined, // SkipParentalRelationshipMapping
-    "contact", // TargetEntityName
-    "ValidForCreate" // TargetFieldType
-  )
+  new InitializeFromFunction({
+    EntityMoniker: createEntityReference("account", accountId),
+    TargetEntityName: "contact",
+    TargetFieldType: "ValidForCreate",
+  })
 );
 ```
 
@@ -56,7 +58,7 @@ RetrieveDeploymentLicenseType: The deployment's license type.
 
 - `new WhoAmIFunction()` (`GET /WhoAmI`): The calling user, business unit and organization.
 - `new RetrieveVersionFunction()` (`GET /RetrieveVersion`): The Dataverse version.
-- `new RetrieveCurrentOrganizationFunction(accessType)` (`GET /RetrieveCurrentOrganization`): Details of the current organization.
+- `new RetrieveCurrentOrganizationFunction({ AccessType })` (`GET /RetrieveCurrentOrganization`): Details of the current organization.
 - `new RetrieveOrganizationInfoFunction()` (`GET /RetrieveOrganizationInfo`): The organization's solutions and settings.
 - `new RetrieveDeploymentLicenseTypeFunction()` (`GET /RetrieveDeploymentLicenseType`): The deployment's license type.
 
@@ -72,10 +74,10 @@ RetrieveDuplicates: Records that duplicate a given record.
 CalculateTotalTimeIncident: Total time spent on a case.
 -->
 
-- `new InitializeFromFunction(entityMoniker, skipParentalRelationshipMapping, targetEntityName, targetFieldType, retrieveConsumableRecord?)` (`GET /InitializeFrom`): A new record pre-filled from an existing one, by the relationship mapping.
-- `new RetrieveTotalRecordCountFunction(entityNames)` (`GET /RetrieveTotalRecordCount`): Approximate row counts for tables.
-- `new CalculateRollupFieldFunction(target, fieldName)` (`GET /CalculateRollupField`): Recalculate a rollup column now.
-- `new RetrieveDuplicatesFunction(businessEntity, matchingEntityName, pagingInfo?)` (`GET /RetrieveDuplicates`): Records that duplicate a given record.
+- `new InitializeFromFunction({ EntityMoniker, SkipParentalRelationshipMapping?, TargetEntityName, TargetFieldType, RetrieveConsumableRecord? })` (`GET /InitializeFrom`): A new record pre-filled from an existing one, by the relationship mapping.
+- `new RetrieveTotalRecordCountFunction({ EntityNames })` (`GET /RetrieveTotalRecordCount`): Approximate row counts for tables.
+- `new CalculateRollupFieldFunction({ Target, FieldName })` (`GET /CalculateRollupField`): Recalculate a rollup column now.
+- `new RetrieveDuplicatesFunction({ BusinessEntity, MatchingEntityName, PagingInfo? })` (`GET /RetrieveDuplicates`): Records that duplicate a given record.
 - `new CalculateTotalTimeIncidentFunction(incidentId)` (`GET /incidents({incidentId})/Microsoft.Dynamics.CRM.CalculateTotalTimeIncident`): Total time spent on a case.
 
 <!-- /operations -->
@@ -88,8 +90,8 @@ RetrievePrincipalAccess_team: The access rights a team has to a record.
 RetrieveUserPrivileges: A user's privileges.
 -->
 
-- `new RetrievePrincipalAccess_systemuserFunction(systemuserId, target)` (`GET /systemusers({systemuserId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess`): The access rights a user has to a record.
-- `new RetrievePrincipalAccess_teamFunction(teamId, target)` (`GET /teams({teamId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess`): The access rights a team has to a record.
+- `new RetrievePrincipalAccess_systemuserFunction(systemuserId, { Target })` (`GET /systemusers({systemuserId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess`): The access rights a user has to a record.
+- `new RetrievePrincipalAccess_teamFunction(teamId, { Target })` (`GET /teams({teamId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess`): The access rights a team has to a record.
 - `new RetrieveUserPrivilegesFunction(systemuserId)` (`GET /systemusers({systemuserId})/Microsoft.Dynamics.CRM.RetrieveUserPrivileges`): A user's privileges.
 
 <!-- /operations -->
@@ -106,13 +108,13 @@ RetrieveFilteredForms: The forms a user can see for a table.
 IsComponentCustomizable: Whether a solution component can be customized.
 -->
 
-- `new RetrieveMetadataChangesFunction(query?, deletedMetadataFilters?, clientVersionStamp?, appModuleId?, retrieveAllSettings?)` (`GET /RetrieveMetadataChanges`): Metadata matching a query, and what changed since a version stamp.
-- `new RetrieveAllEntitiesFunction(entityFilters, retrieveAsIfPublished)` (`GET /RetrieveAllEntities`): All table definitions.
-- `new RetrieveEntityFunction(entityFilters, logicalName, metadataId, retrieveAsIfPublished)` (`GET /RetrieveEntity`): One table definition.
-- `new GetValidReferencedEntitiesFunction(referencingEntityName?)` (`GET /GetValidReferencedEntities`): Tables that can be the primary table of a 1:N relationship.
-- `new GetValidReferencingEntitiesFunction(referencedEntityName?)` (`GET /GetValidReferencingEntities`): Tables that can be the related table of a 1:N relationship.
-- `new RetrieveFilteredFormsFunction(entityLogicalName, formType, user)` (`GET /systemforms/Microsoft.Dynamics.CRM.RetrieveFilteredForms`): The forms a user can see for a table.
-- `new IsComponentCustomizableFunction(componentId, componentType)` (`GET /IsComponentCustomizable`): Whether a solution component can be customized.
+- `new RetrieveMetadataChangesFunction({ Query?, DeletedMetadataFilters?, ClientVersionStamp?, AppModuleId?, RetrieveAllSettings? })` (`GET /RetrieveMetadataChanges`): Metadata matching a query, and what changed since a version stamp.
+- `new RetrieveAllEntitiesFunction({ EntityFilters, RetrieveAsIfPublished })` (`GET /RetrieveAllEntities`): All table definitions.
+- `new RetrieveEntityFunction({ EntityFilters, LogicalName?, MetadataId, RetrieveAsIfPublished })` (`GET /RetrieveEntity`): One table definition.
+- `new GetValidReferencedEntitiesFunction({ ReferencingEntityName? })` (`GET /GetValidReferencedEntities`): Tables that can be the primary table of a 1:N relationship.
+- `new GetValidReferencingEntitiesFunction({ ReferencedEntityName? })` (`GET /GetValidReferencingEntities`): Tables that can be the related table of a 1:N relationship.
+- `new RetrieveFilteredFormsFunction({ EntityLogicalName, FormType, User })` (`GET /systemforms/Microsoft.Dynamics.CRM.RetrieveFilteredForms`): The forms a user can see for a table.
+- `new IsComponentCustomizableFunction({ ComponentId, ComponentType })` (`GET /IsComponentCustomizable`): Whether a solution component can be customized.
 
 <!-- /operations -->
 
@@ -126,10 +128,10 @@ RetrieveAppComponents: The components of an app.
 RetrieveUnpublished_savedquery: The unpublished version of a view (one class per binding).
 -->
 
-- `new RetrieveDependentComponentsFunction(objectId, componentType)` (`GET /RetrieveDependentComponents`): Components that depend on a component.
-- `new RetrieveRequiredComponentsFunction(objectId, componentType)` (`GET /RetrieveRequiredComponents`): Components a component needs.
-- `new RetrieveMissingDependenciesFunction(solutionUniqueName)` (`GET /RetrieveMissingDependencies`): Components a solution needs that the org lacks.
-- `new RetrieveAppComponentsFunction(appModuleId)` (`GET /RetrieveAppComponents`): The components of an app.
+- `new RetrieveDependentComponentsFunction({ ObjectId, ComponentType })` (`GET /RetrieveDependentComponents`): Components that depend on a component.
+- `new RetrieveRequiredComponentsFunction({ ObjectId, ComponentType })` (`GET /RetrieveRequiredComponents`): Components a component needs.
+- `new RetrieveMissingDependenciesFunction({ SolutionUniqueName })` (`GET /RetrieveMissingDependencies`): Components a solution needs that the org lacks.
+- `new RetrieveAppComponentsFunction({ AppModuleId })` (`GET /RetrieveAppComponents`): The components of an app.
 - `new RetrieveUnpublished_savedqueryFunction(savedqueryId)` (`GET /savedqueries({savedqueryId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`): The unpublished version of a view (one class per binding).
 
 <!-- /operations -->
@@ -150,17 +152,17 @@ FormatAddress: Format an address for a country.
 IsValidStateTransition: Whether a record can move to a state and status.
 -->
 
-- `new LocalTimeFromUtcTimeFunction(timeZoneCode, utcTime)` (`GET /LocalTimeFromUtcTime`): Convert UTC to a time zone's local time.
-- `new UtcTimeFromLocalTimeFunction(timeZoneCode, localTime)` (`GET /resourcegroups/Microsoft.Dynamics.CRM.UtcTimeFromLocalTime`): Convert a time zone's local time to UTC.
-- `new GetTimeZoneCodeByLocalizedNameFunction(localizedStandardName, localeId)` (`GET /GetTimeZoneCodeByLocalizedName`): The time zone code for a localized name.
-- `new GetAllTimeZonesWithDisplayNameFunction(localeId)` (`GET /timezonedefinitions/Microsoft.Dynamics.CRM.GetAllTimeZonesWithDisplayName`): All time zones with their display names.
-- `new ExpandCalendarFunction(calendarId, start, end)` (`GET /calendars({calendarId})/Microsoft.Dynamics.CRM.ExpandCalendar`): The time blocks of a calendar in a range.
+- `new LocalTimeFromUtcTimeFunction({ TimeZoneCode, UtcTime })` (`GET /LocalTimeFromUtcTime`): Convert UTC to a time zone's local time.
+- `new UtcTimeFromLocalTimeFunction({ TimeZoneCode, LocalTime })` (`GET /resourcegroups/Microsoft.Dynamics.CRM.UtcTimeFromLocalTime`): Convert a time zone's local time to UTC.
+- `new GetTimeZoneCodeByLocalizedNameFunction({ LocalizedStandardName, LocaleId })` (`GET /GetTimeZoneCodeByLocalizedName`): The time zone code for a localized name.
+- `new GetAllTimeZonesWithDisplayNameFunction({ LocaleId })` (`GET /timezonedefinitions/Microsoft.Dynamics.CRM.GetAllTimeZonesWithDisplayName`): All time zones with their display names.
+- `new ExpandCalendarFunction(calendarId, { Start, End })` (`GET /calendars({calendarId})/Microsoft.Dynamics.CRM.ExpandCalendar`): The time blocks of a calendar in a range.
 - `new RetrieveAvailableLanguagesFunction()` (`GET /RetrieveAvailableLanguages`): Languages that can be provisioned.
 - `new RetrieveProvisionedLanguagesFunction()` (`GET /RetrieveProvisionedLanguages`): Provisioned languages.
-- `new FetchXmlToQueryExpressionFunction(fetchXml)` (`GET /FetchXmlToQueryExpression`): Convert FetchXML to a `QueryExpression`.
-- `new ValidateFetchXmlExpressionFunction(fetchXml)` (`GET /ValidateFetchXmlExpression`): Validate a FetchXML query.
-- `new FormatAddressFunction(line1, city, stateOrProvince, postalCode, country)` (`GET /FormatAddress`): Format an address for a country.
-- `new IsValidStateTransitionFunction(entity, newState, newStatus)` (`GET /IsValidStateTransition`): Whether a record can move to a state and status.
+- `new FetchXmlToQueryExpressionFunction({ FetchXml })` (`GET /FetchXmlToQueryExpression`): Convert FetchXML to a `QueryExpression`.
+- `new ValidateFetchXmlExpressionFunction({ FetchXml })` (`GET /ValidateFetchXmlExpression`): Validate a FetchXML query.
+- `new FormatAddressFunction({ Line1, City, StateOrProvince, PostalCode, Country })` (`GET /FormatAddress`): Format an address for a country.
+- `new IsValidStateTransitionFunction({ Entity, NewState, NewStatus })` (`GET /IsValidStateTransition`): Whether a record can move to a state and status.
 
 <!-- /operations -->
 
@@ -171,8 +173,8 @@ GetDefaultPriceLevel: The default price list for a user.
 SearchByKeywordsKbArticle: Knowledge articles matching keywords.
 -->
 
-- `new GetDefaultPriceLevelFunction(entityName)` (`GET /pricelevels/Microsoft.Dynamics.CRM.GetDefaultPriceLevel`): The default price list for a user.
-- `new SearchByKeywordsKbArticleFunction(searchText, subject, useInflection)` (`GET /kbarticles/Microsoft.Dynamics.CRM.SearchByKeywordsKbArticle`): Knowledge articles matching keywords.
+- `new GetDefaultPriceLevelFunction({ EntityName })` (`GET /pricelevels/Microsoft.Dynamics.CRM.GetDefaultPriceLevel`): The default price list for a user.
+- `new SearchByKeywordsKbArticleFunction({ SearchText, Subject, UseInflection })` (`GET /kbarticles/Microsoft.Dynamics.CRM.SearchByKeywordsKbArticle`): Knowledge articles matching keywords.
 
 <!-- /operations -->
 

@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_IngestAnalyticsDataCustomChannels message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IngestAnalyticsDataCustomChannelsRequestParameters {
+  msdyn_linkedactivityid?: string;
+  msdyn_eventname: string;
+  msdyn_sequencestepid?: string;
+}
 
 /**
  * msdyn_IngestAnalyticsDataCustomChannels request message
@@ -10,22 +21,20 @@ export class msdyn_IngestAnalyticsDataCustomChannelsRequest
   extends OrganizationRequest
   implements Executable<msdyn_IngestAnalyticsDataCustomChannelsResponse>
 {
-  constructor(
-    public msdyn_linkedactivityid: string | undefined,
-    public msdyn_eventname: string,
-    public msdyn_sequencestepid?: string
-  ) {
-    super("msdyn_IngestAnalyticsDataCustomChannels");
+  declare readonly Parameters: Readonly<msdyn_IngestAnalyticsDataCustomChannelsRequestParameters>;
+
+  constructor(parameters: msdyn_IngestAnalyticsDataCustomChannelsRequestParameters) {
+    super("msdyn_IngestAnalyticsDataCustomChannels", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IngestAnalyticsDataCustomChannels`;
 
-    const body: Record<string, unknown> = {
-      msdyn_linkedactivityid: this.msdyn_linkedactivityid,
-      msdyn_eventname: this.msdyn_eventname,
-      msdyn_sequencestepid: this.msdyn_sequencestepid,
-    };
+    const body = requestBody({
+      msdyn_linkedactivityid: this.Parameters.msdyn_linkedactivityid,
+      msdyn_eventname: this.Parameters.msdyn_eventname,
+      msdyn_sequencestepid: this.Parameters.msdyn_sequencestepid,
+    });
 
     return {
       method: "POST",

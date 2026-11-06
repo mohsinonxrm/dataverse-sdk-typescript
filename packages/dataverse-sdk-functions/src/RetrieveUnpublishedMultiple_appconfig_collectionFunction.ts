@@ -31,7 +31,9 @@ export class RetrieveUnpublishedMultiple_appconfig_collectionFunction implements
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_appconfig_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_appconfig_collectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublishedMultiple_appconfig_collectionResponse;
+    return (await response.json()) as RetrieveUnpublishedMultiple_appconfig_collectionResponse;
   }
 }

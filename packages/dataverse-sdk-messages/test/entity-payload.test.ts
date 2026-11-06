@@ -43,12 +43,12 @@ describe("#74: message entity payloads", () => {
     };
 
     await client.execute(
-      new MergeRequest(
-        createEntityReference("lead", "l1"),
-        createEntityReference("lead", "l2"),
-        updateContent,
-        false
-      )
+      new MergeRequest({
+        Target: createEntityReference("lead", "l1"),
+        Subordinate: createEntityReference("lead", "l2"),
+        UpdateContent: updateContent,
+        PerformParentingChecks: false,
+      })
     );
 
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({
@@ -64,15 +64,14 @@ describe("#74: message entity payloads", () => {
     fake.on("POST", "/WinOpportunity", () => noContent());
 
     await client.execute(
-      new WinOpportunityRequest(
-        {
+      new WinOpportunityRequest({
+        OpportunityClose: {
           "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
           subject: "Won",
           "opportunityid@odata.bind": "/opportunities(o1)",
         },
-        undefined,
-        3
-      )
+        Status: 3,
+      })
     );
 
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({
@@ -91,7 +90,7 @@ describe("#74: message entity payloads", () => {
       jsonResponse({ asyncoperationid: "j1" })
     );
 
-    await client.execute(new ExecuteWorkflowRequest("w1", "a1"));
+    await client.execute(new ExecuteWorkflowRequest("w1", { EntityId: "a1" }));
 
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({ EntityId: "a1" });
   });

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CleanupDiagnosticsWrappers action
@@ -8,25 +9,31 @@ export interface msdyn_CleanupDiagnosticsWrappersResponse {
 }
 
 /**
+ * Parameters of the msdyn_CleanupDiagnosticsWrappers action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CleanupDiagnosticsWrappersActionParameters {
+  WorkItemId?: string;
+  TargetId?: string;
+  RunNumber: number;
+}
+
+/**
  * msdyn_CleanupDiagnosticsWrappers action
  *
  * Unbound action
  */
 export class msdyn_CleanupDiagnosticsWrappersAction implements Executable<msdyn_CleanupDiagnosticsWrappersResponse> {
-  constructor(
-    public readonly workItemId: string | undefined,
-    public readonly targetId: string | undefined,
-    public readonly runNumber: number
-  ) {}
+  constructor(public readonly parameters: msdyn_CleanupDiagnosticsWrappersActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CleanupDiagnosticsWrappers`;
 
-    const body: Record<string, unknown> = {
-      WorkItemId: this.workItemId,
-      TargetId: this.targetId,
-      RunNumber: this.runNumber,
-    };
+    const body = requestBody({
+      WorkItemId: this.parameters.WorkItemId,
+      TargetId: this.parameters.TargetId,
+      RunNumber: this.parameters.RunNumber,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_CleanupDiagnosticsWrappersAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_CleanupDiagnosticsWrappersResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CleanupDiagnosticsWrappersResponse;
+    return (await response.json()) as msdyn_CleanupDiagnosticsWrappersResponse;
   }
 }

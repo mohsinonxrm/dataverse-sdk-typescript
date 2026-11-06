@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_CalendarBulkDelete message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CalendarBulkDeleteRequestParameters {
+  CalendarIds: string;
+}
 
 /**
  * msdyn_CalendarBulkDelete request message
@@ -10,16 +19,18 @@ export class msdyn_CalendarBulkDeleteRequest
   extends OrganizationRequest
   implements Executable<msdyn_CalendarBulkDeleteResponse>
 {
-  constructor(public calendarIds: string) {
-    super("msdyn_CalendarBulkDelete");
+  declare readonly Parameters: Readonly<msdyn_CalendarBulkDeleteRequestParameters>;
+
+  constructor(parameters: msdyn_CalendarBulkDeleteRequestParameters) {
+    super("msdyn_CalendarBulkDelete", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CalendarBulkDelete`;
 
-    const body: Record<string, unknown> = {
-      CalendarIds: this.calendarIds,
-    };
+    const body = requestBody({
+      CalendarIds: this.Parameters.CalendarIds,
+    });
 
     return {
       method: "POST",

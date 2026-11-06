@@ -31,8 +31,10 @@ export class msdyn_GeolocationLocationTrackingEnabledRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GeolocationLocationTrackingEnabledResponse> {
-    const data = await response.json();
-    return msdyn_GeolocationLocationTrackingEnabledResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_GeolocationLocationTrackingEnabledResponse.fromResponse({});
+    return msdyn_GeolocationLocationTrackingEnabledResponse.fromResponse(await response.json());
   }
 }
 

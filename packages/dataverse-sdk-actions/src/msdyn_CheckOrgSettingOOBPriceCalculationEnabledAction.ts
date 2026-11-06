@@ -32,7 +32,9 @@ export class msdyn_CheckOrgSettingOOBPriceCalculationEnabledAction implements Ex
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse;
+    return (await response.json()) as msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse;
   }
 }

@@ -29,8 +29,10 @@ export class msdyn_CheckIfSLAStaticFlowIsDisabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfSLAStaticFlowIsDisabledResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfSLAStaticFlowIsDisabledResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckIfSLAStaticFlowIsDisabledResponse.fromResponse({});
+    return msdyn_CheckIfSLAStaticFlowIsDisabledResponse.fromResponse(await response.json());
   }
 }
 

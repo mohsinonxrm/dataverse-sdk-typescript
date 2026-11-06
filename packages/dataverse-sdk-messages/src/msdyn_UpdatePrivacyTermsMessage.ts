@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_UpdatePrivacyTermsResponse as msdyn_UpdatePrivacyTermsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_UpdatePrivacyTerms message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdatePrivacyTermsRequestParameters {
+  StreamSource: number;
+  IsAccepted: boolean;
+}
 
 /**
  * msdyn_UpdatePrivacyTerms request message
@@ -12,20 +22,19 @@ export class msdyn_UpdatePrivacyTermsRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdatePrivacyTermsResponse>
 {
-  constructor(
-    public streamSource: number,
-    public isAccepted: boolean
-  ) {
-    super("msdyn_UpdatePrivacyTerms");
+  declare readonly Parameters: Readonly<msdyn_UpdatePrivacyTermsRequestParameters>;
+
+  constructor(parameters: msdyn_UpdatePrivacyTermsRequestParameters) {
+    super("msdyn_UpdatePrivacyTerms", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdatePrivacyTerms`;
 
-    const body: Record<string, unknown> = {
-      StreamSource: this.streamSource,
-      IsAccepted: this.isAccepted,
-    };
+    const body = requestBody({
+      StreamSource: this.Parameters.StreamSource,
+      IsAccepted: this.Parameters.IsAccepted,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_UpdatePrivacyTermsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdatePrivacyTermsResponse> {
-    const data = await response.json();
-    return msdyn_UpdatePrivacyTermsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_UpdatePrivacyTermsResponse.fromResponse({});
+    return msdyn_UpdatePrivacyTermsResponse.fromResponse(await response.json());
   }
 }
 

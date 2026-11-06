@@ -50,12 +50,12 @@ describe("#254: functions use core's odataLiteral", () => {
     fake.on("GET", /^\/RetrieveEntity\(/, () => jsonResponse({ EntityMetadata: {} }));
 
     await client.execute(
-      new RetrieveEntityFunction(
-        "Entity, Attributes" as unknown as "Entity",
-        "account",
-        EMPTY_GUID,
-        false
-      )
+      new RetrieveEntityFunction({
+        EntityFilters: "Entity, Attributes" as unknown as "Entity",
+        LogicalName: "account",
+        MetadataId: EMPTY_GUID,
+        RetrieveAsIfPublished: false,
+      })
     );
 
     expect(aliasValues(fake.last().url)["@p1"]).toBe(
@@ -69,14 +69,28 @@ describe("#254: functions use core's odataLiteral", () => {
 
     // The old helper wrote NaN as `null`, and passed a GUID that isn't one through (HTTP 500).
     await expect(
-      client.execute(new LocalTimeFromUtcTimeFunction(Number.NaN, "2026-01-01T00:00:00Z"))
+      client.execute(
+        new LocalTimeFromUtcTimeFunction({
+          TimeZoneCode: Number.NaN,
+          UtcTime: "2026-01-01T00:00:00Z",
+        })
+      )
     ).rejects.toThrow(DataverseInvalidRequestError);
     await expect(
-      client.execute(new RetrieveEntityFunction("Entity", "account", "not-a-guid", false))
+      client.execute(
+        new RetrieveEntityFunction({
+          EntityFilters: "Entity",
+          LogicalName: "account",
+          MetadataId: "not-a-guid",
+          RetrieveAsIfPublished: false,
+        })
+      )
     ).rejects.toThrow(DataverseInvalidRequestError);
     // A date-time without a zone: the Web API answers 400.
     await expect(
-      client.execute(new LocalTimeFromUtcTimeFunction(85, "2026-01-01T00:00:00"))
+      client.execute(
+        new LocalTimeFromUtcTimeFunction({ TimeZoneCode: 85, UtcTime: "2026-01-01T00:00:00" })
+      )
     ).rejects.toThrow(DataverseInvalidRequestError);
     expect(fake.requests).toHaveLength(0);
   });

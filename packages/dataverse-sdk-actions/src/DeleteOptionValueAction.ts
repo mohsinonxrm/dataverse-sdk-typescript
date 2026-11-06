@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from DeleteOptionValue action
@@ -8,29 +9,35 @@ export interface DeleteOptionValueResponse {
 }
 
 /**
+ * Parameters of the DeleteOptionValue action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteOptionValueActionParameters {
+  OptionSetName?: string;
+  AttributeLogicalName?: string;
+  EntityLogicalName?: string;
+  Value: number;
+  SolutionUniqueName?: string;
+}
+
+/**
  * DeleteOptionValue action
  *
  * Unbound action
  */
 export class DeleteOptionValueAction implements Executable<DeleteOptionValueResponse> {
-  constructor(
-    public readonly optionSetName: string | undefined,
-    public readonly attributeLogicalName: string | undefined,
-    public readonly entityLogicalName: string | undefined,
-    public readonly value: number,
-    public readonly solutionUniqueName?: string
-  ) {}
+  constructor(public readonly parameters: DeleteOptionValueActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeleteOptionValue`;
 
-    const body: Record<string, unknown> = {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Value: this.value,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      OptionSetName: this.parameters.OptionSetName,
+      AttributeLogicalName: this.parameters.AttributeLogicalName,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      Value: this.parameters.Value,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class DeleteOptionValueAction implements Executable<DeleteOptionValueResp
   }
 
   async parseResponse(response: Response): Promise<DeleteOptionValueResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as DeleteOptionValueResponse;
+    return (await response.json()) as DeleteOptionValueResponse;
   }
 }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,27 +11,33 @@ export interface msdyn_CreateSuggestedNextActionResponse {
 }
 
 /**
+ * Parameters of the msdyn_CreateSuggestedNextAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateSuggestedNextActionActionParameters {
+  SuggestionSubtype: string;
+  Entity?: EntityReference | AnyEntityPayload;
+  DraftEmailId: string;
+  SuggestionType: string;
+}
+
+/**
  * msdyn_CreateSuggestedNextAction action
  *
  * Unbound action
  */
 export class msdyn_CreateSuggestedNextActionAction implements Executable<msdyn_CreateSuggestedNextActionResponse> {
-  constructor(
-    public readonly suggestionSubtype: string,
-    public readonly entity: EntityReference | AnyEntityPayload | undefined,
-    public readonly draftEmailId: string,
-    public readonly suggestionType: string
-  ) {}
+  constructor(public readonly parameters: msdyn_CreateSuggestedNextActionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateSuggestedNextAction`;
 
-    const body: Record<string, unknown> = {
-      SuggestionSubtype: this.suggestionSubtype,
-      Entity: this.entity,
-      DraftEmailId: this.draftEmailId,
-      SuggestionType: this.suggestionType,
-    };
+    const body = requestBody({
+      SuggestionSubtype: this.parameters.SuggestionSubtype,
+      Entity: this.parameters.Entity,
+      DraftEmailId: this.parameters.DraftEmailId,
+      SuggestionType: this.parameters.SuggestionType,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class msdyn_CreateSuggestedNextActionAction implements Executable<msdyn_C
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateSuggestedNextActionResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateSuggestedNextActionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CreateSuggestedNextActionResponse;
+    return (await response.json()) as msdyn_CreateSuggestedNextActionResponse;
   }
 }

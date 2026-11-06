@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetFavoriteArticlesResponse as msdyn_GetFavoriteArticlesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetFavoriteArticles message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetFavoriteArticlesRequestParameters {
+  msdyn_userid: string;
+}
 
 /**
  * msdyn_GetFavoriteArticles request message
@@ -12,16 +21,18 @@ export class msdyn_GetFavoriteArticlesRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetFavoriteArticlesResponse>
 {
-  constructor(public msdyn_userid: string) {
-    super("msdyn_GetFavoriteArticles");
+  declare readonly Parameters: Readonly<msdyn_GetFavoriteArticlesRequestParameters>;
+
+  constructor(parameters: msdyn_GetFavoriteArticlesRequestParameters) {
+    super("msdyn_GetFavoriteArticles", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetFavoriteArticles`;
 
-    const body: Record<string, unknown> = {
-      msdyn_userid: this.msdyn_userid,
-    };
+    const body = requestBody({
+      msdyn_userid: this.Parameters.msdyn_userid,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetFavoriteArticlesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetFavoriteArticlesResponse> {
-    const data = await response.json();
-    return msdyn_GetFavoriteArticlesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetFavoriteArticlesResponse.fromResponse({});
+    return msdyn_GetFavoriteArticlesResponse.fromResponse(await response.json());
   }
 }
 

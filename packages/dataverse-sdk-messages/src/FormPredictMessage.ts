@@ -1,6 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the FormPredict message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface FormPredictRequestParameters {
+  entityName: string;
+  predictorFields: string[];
+  context?: string;
+  requestedFields: string[];
+  recordValues: string;
+  clientPartnerSource?: string;
+}
 
 /**
  * FormPredict request message
@@ -11,28 +25,23 @@ export class FormPredictRequest
   extends OrganizationRequest
   implements Executable<FormPredictResponse>
 {
-  constructor(
-    public entityName: string,
-    public predictorFields: string[],
-    public context: string | undefined,
-    public requestedFields: string[],
-    public recordValues: string,
-    public clientPartnerSource?: string
-  ) {
-    super("FormPredict");
+  declare readonly Parameters: Readonly<FormPredictRequestParameters>;
+
+  constructor(parameters: FormPredictRequestParameters) {
+    super("FormPredict", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/FormPredict`;
 
-    const body: Record<string, unknown> = {
-      entityName: this.entityName,
-      predictorFields: this.predictorFields,
-      context: this.context,
-      requestedFields: this.requestedFields,
-      recordValues: this.recordValues,
-      clientPartnerSource: this.clientPartnerSource,
-    };
+    const body = requestBody({
+      entityName: this.Parameters.entityName,
+      predictorFields: this.Parameters.predictorFields,
+      context: this.Parameters.context,
+      requestedFields: this.Parameters.requestedFields,
+      recordValues: this.Parameters.recordValues,
+      clientPartnerSource: this.Parameters.clientPartnerSource,
+    });
 
     return {
       method: "POST",
@@ -45,8 +54,9 @@ export class FormPredictRequest
   }
 
   async parseResponse(response: Response): Promise<FormPredictResponse> {
-    const data = await response.json();
-    return FormPredictResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return FormPredictResponse.fromResponse({});
+    return FormPredictResponse.fromResponse(await response.json());
   }
 }
 

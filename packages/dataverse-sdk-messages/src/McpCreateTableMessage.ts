@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { McpCreateTableResponse as McpCreateTableResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the McpCreateTable message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface McpCreateTableRequestParameters {
+  displayname?: string;
+  item: string;
+  tablename: string;
+  description?: string;
+}
 
 /**
  * McpCreateTable request message
@@ -12,24 +24,21 @@ export class McpCreateTableRequest
   extends OrganizationRequest
   implements Executable<McpCreateTableResponse>
 {
-  constructor(
-    public displayname: string | undefined,
-    public item: string,
-    public tablename: string,
-    public description?: string
-  ) {
-    super("McpCreateTable");
+  declare readonly Parameters: Readonly<McpCreateTableRequestParameters>;
+
+  constructor(parameters: McpCreateTableRequestParameters) {
+    super("McpCreateTable", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/McpCreateTable`;
 
-    const body: Record<string, unknown> = {
-      displayname: this.displayname,
-      item: this.item,
-      tablename: this.tablename,
-      description: this.description,
-    };
+    const body = requestBody({
+      displayname: this.Parameters.displayname,
+      item: this.Parameters.item,
+      tablename: this.Parameters.tablename,
+      description: this.Parameters.description,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class McpCreateTableRequest
   }
 
   async parseResponse(response: Response): Promise<McpCreateTableResponse> {
-    const data = await response.json();
-    return McpCreateTableResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return McpCreateTableResponse.fromResponse({});
+    return McpCreateTableResponse.fromResponse(await response.json());
   }
 }
 

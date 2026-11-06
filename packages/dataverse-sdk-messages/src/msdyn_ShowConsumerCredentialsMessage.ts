@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ShowConsumerCredentialsResponse as msdyn_ShowConsumerCredentialsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ShowConsumerCredentials message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ShowConsumerCredentialsRequestParameters {
+  ApplicationId: string;
+}
 
 /**
  * msdyn_ShowConsumerCredentials request message
  *
  * Web API Action: msdyn_ShowConsumerCredentials
+ *
+ * The first argument is the id of the msdyn_octwitterapplication record to call it on.
  */
 export class msdyn_ShowConsumerCredentialsRequest
   extends OrganizationRequest
   implements Executable<msdyn_ShowConsumerCredentialsResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_ShowConsumerCredentialsRequestParameters>;
+
   constructor(
     public msdyn_octwitterapplicationId: string,
-    public applicationId: string
+    parameters: msdyn_ShowConsumerCredentialsRequestParameters
   ) {
-    super("msdyn_ShowConsumerCredentials");
+    super("msdyn_ShowConsumerCredentials", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_octwitterapplications(${this.msdyn_octwitterapplicationId})/Microsoft.Dynamics.CRM.msdyn_ShowConsumerCredentials`;
 
-    const body: Record<string, unknown> = {
-      ApplicationId: this.applicationId,
-    };
+    const body = requestBody({
+      ApplicationId: this.Parameters.ApplicationId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +51,9 @@ export class msdyn_ShowConsumerCredentialsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ShowConsumerCredentialsResponse> {
-    const data = await response.json();
-    return msdyn_ShowConsumerCredentialsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ShowConsumerCredentialsResponse.fromResponse({});
+    return msdyn_ShowConsumerCredentialsResponse.fromResponse(await response.json());
   }
 }
 

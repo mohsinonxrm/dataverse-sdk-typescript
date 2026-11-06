@@ -29,8 +29,9 @@ export class msdyn_CheckAlertFieldsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckAlertFieldsResponse> {
-    const data = await response.json();
-    return msdyn_CheckAlertFieldsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckAlertFieldsResponse.fromResponse({});
+    return msdyn_CheckAlertFieldsResponse.fromResponse(await response.json());
   }
 }
 

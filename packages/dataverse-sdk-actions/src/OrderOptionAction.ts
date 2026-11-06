@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from OrderOption action
@@ -8,29 +9,35 @@ export interface OrderOptionResponse {
 }
 
 /**
+ * Parameters of the OrderOption action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface OrderOptionActionParameters {
+  OptionSetName?: string;
+  AttributeLogicalName?: string;
+  EntityLogicalName?: string;
+  Values: number[];
+  SolutionUniqueName?: string;
+}
+
+/**
  * OrderOption action
  *
  * Unbound action
  */
 export class OrderOptionAction implements Executable<OrderOptionResponse> {
-  constructor(
-    public readonly optionSetName: string | undefined,
-    public readonly attributeLogicalName: string | undefined,
-    public readonly entityLogicalName: string | undefined,
-    public readonly values: number[],
-    public readonly solutionUniqueName?: string
-  ) {}
+  constructor(public readonly parameters: OrderOptionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/OrderOption`;
 
-    const body: Record<string, unknown> = {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Values: this.values,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      OptionSetName: this.parameters.OptionSetName,
+      AttributeLogicalName: this.parameters.AttributeLogicalName,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      Values: this.parameters.Values,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class OrderOptionAction implements Executable<OrderOptionResponse> {
   }
 
   async parseResponse(response: Response): Promise<OrderOptionResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as OrderOptionResponse;
+    return (await response.json()) as OrderOptionResponse;
   }
 }

@@ -9,13 +9,16 @@
 ## Overview
 
 Actions are **POST operations** that can change data. Each action is a class whose constructor
-takes the action's parameters **positionally, in `$metadata` order**. Run it with
-`client.execute(action)`; it resolves to the typed response.
+takes **one object with the action's parameters, by their `$metadata` names**
+(`new ImportSolutionAction({ CustomizationFile, ImportJobId, OverwriteUnmanagedCustomizations: true, PublishWorkflows: false })`);
+its type is exported as `<Class>Parameters`. Run it with `client.execute(action)`; it resolves to
+the typed response.
 
 - A bound action takes the record id (or, for a collection-bound action on any table, the entity
-  set name) as its first argument.
-- A parameter that `$metadata` doesn't mark `Nullable="false"` is optional: at the end of the list
-  it can be left out, elsewhere it accepts `undefined`, and either way it isn't sent.
+  set name) as its first argument, before the parameters object.
+- A parameter that `$metadata` marks `Nullable="false"` is required. Any other is optional: leave
+  it out, or set it to `undefined`, and it isn't sent. An action with only optional parameters can
+  be constructed without arguments.
 - Entity-typed parameters take an `EntityReference` (`createEntityReference(table, id)`) or an
   entity payload with column values, `@odata.type` and `<lookup>@odata.bind` values.
 - An operation declared with several bindings has one class per binding, `<Name>_<table>Action`
@@ -33,15 +36,14 @@ takes the action's parameters **positionally, in `$metadata` order**. Run it wit
 import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
 await client.execute(
-  new WinOpportunityAction(
-    {
+  new WinOpportunityAction({
+    OpportunityClose: {
       "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
       subject: "Deal closed",
       "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
     },
-    undefined, // Caller
-    3 // Status: Won
-  )
+    Status: 3,
+  })
 );
 ```
 
@@ -80,11 +82,11 @@ DeleteMultiple: Delete elastic-table records in one request.
 BulkDelete: Start an asynchronous bulk delete job for a query.
 -->
 
-- `new CreateMultipleAction(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`): Create records of one table in one request; returns `{ Ids }`.
-- `new UpdateMultipleAction(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpdateMultiple`): Update records of one table in one request.
-- `new UpsertMultipleAction(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpsertMultiple`): Create or update records of one table in one request.
-- `new DeleteMultipleAction(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.DeleteMultiple`): Delete elastic-table records in one request.
-- `new BulkDeleteAction(querySet, jobName, sendEmailNotification, toRecipients, cCRecipients, recurrencePattern, startDateTime, sourceImportId?, runNow?)` (`POST /BulkDelete`): Start an asynchronous bulk delete job for a query.
+- `new CreateMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`): Create records of one table in one request; returns `{ Ids }`.
+- `new UpdateMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpdateMultiple`): Update records of one table in one request.
+- `new UpsertMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpsertMultiple`): Create or update records of one table in one request.
+- `new DeleteMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.DeleteMultiple`): Delete elastic-table records in one request.
+- `new BulkDeleteAction({ QuerySet?, JobName, SendEmailNotification, ToRecipients, CCRecipients, RecurrencePattern, StartDateTime, SourceImportId?, RunNow? })` (`POST /BulkDelete`): Start an asynchronous bulk delete job for a query.
 
 <!-- /operations -->
 
@@ -96,9 +98,9 @@ Merge: Merge a subordinate record into a target (account, contact, lead or incid
 ExportToExcel: Export a view's rows as an .xlsx file (base64); not in `$metadata`, generated from a supplemental definition.
 -->
 
-- `new ExecuteWorkflowAction(workflowId, entityId, inputArguments?)` (`POST /workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`): Run an on-demand workflow on a record; returns the `asyncoperation`.
-- `new MergeAction(target, subordinate, updateContent, performParentingChecks)` (`POST /Merge`): Merge a subordinate record into a target (account, contact, lead or incident).
-- `new ExportToExcelAction(view, fetchXml, layoutXml, queryApi, queryParameters)` (`POST /ExportToExcel`): Export a view's rows as an .xlsx file (base64); not in `$metadata`, generated from a supplemental definition.
+- `new ExecuteWorkflowAction(workflowId, { EntityId, InputArguments? })` (`POST /workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`): Run an on-demand workflow on a record; returns the `asyncoperation`.
+- `new MergeAction({ Target, Subordinate, UpdateContent?, PerformParentingChecks })` (`POST /Merge`): Merge a subordinate record into a target (account, contact, lead or incident).
+- `new ExportToExcelAction({ View, FetchXml, LayoutXml, QueryApi, QueryParameters })` (`POST /ExportToExcel`): Export a view's rows as an .xlsx file (base64); not in `$metadata`, generated from a supplemental definition.
 
 <!-- /operations -->
 
@@ -118,15 +120,15 @@ InitializeAttachmentBlocksUpload: Start a chunked upload to an email attachment.
 CommitAttachmentBlocksUpload: Commit an attachment's blocks.
 -->
 
-- `new InitializeFileBlocksUploadAction(target, fileName, fileAttributeName)` (`POST /InitializeFileBlocksUpload`): Start a chunked upload to a file column; returns `{ FileContinuationToken }`.
-- `new UploadBlockAction(blockId, blockData, fileContinuationToken)` (`POST /UploadBlock`): Upload one block (base64 `blockData`, base64 `blockId`).
-- `new CommitFileBlocksUploadAction(fileName, mimeType, blockList, fileContinuationToken)` (`POST /CommitFileBlocksUpload`): Commit the uploaded blocks, in order, as the file.
-- `new InitializeFileBlocksDownloadAction(target, fileAttributeName, dataSource?)` (`POST /InitializeFileBlocksDownload`): Start a chunked download of a file column.
-- `new DownloadBlockAction(offset, blockLength, fileContinuationToken)` (`POST /DownloadBlock`): Download one block.
-- `new InitializeAnnotationBlocksUploadAction(target)` (`POST /InitializeAnnotationBlocksUpload`): Start a chunked upload to a note.
-- `new CommitAnnotationBlocksUploadAction(target, blockList, fileContinuationToken)` (`POST /CommitAnnotationBlocksUpload`): Commit a note's blocks.
-- `new InitializeAttachmentBlocksUploadAction(target)` (`POST /InitializeAttachmentBlocksUpload`): Start a chunked upload to an email attachment.
-- `new CommitAttachmentBlocksUploadAction(target, blockList, fileContinuationToken)` (`POST /CommitAttachmentBlocksUpload`): Commit an attachment's blocks.
+- `new InitializeFileBlocksUploadAction({ Target, FileName, FileAttributeName })` (`POST /InitializeFileBlocksUpload`): Start a chunked upload to a file column; returns `{ FileContinuationToken }`.
+- `new UploadBlockAction({ BlockId, BlockData, FileContinuationToken })` (`POST /UploadBlock`): Upload one block (base64 `blockData`, base64 `blockId`).
+- `new CommitFileBlocksUploadAction({ FileName, MimeType, BlockList, FileContinuationToken })` (`POST /CommitFileBlocksUpload`): Commit the uploaded blocks, in order, as the file.
+- `new InitializeFileBlocksDownloadAction({ Target, FileAttributeName, DataSource? })` (`POST /InitializeFileBlocksDownload`): Start a chunked download of a file column.
+- `new DownloadBlockAction({ Offset, BlockLength, FileContinuationToken })` (`POST /DownloadBlock`): Download one block.
+- `new InitializeAnnotationBlocksUploadAction({ Target })` (`POST /InitializeAnnotationBlocksUpload`): Start a chunked upload to a note.
+- `new CommitAnnotationBlocksUploadAction({ Target, BlockList, FileContinuationToken })` (`POST /CommitAnnotationBlocksUpload`): Commit a note's blocks.
+- `new InitializeAttachmentBlocksUploadAction({ Target })` (`POST /InitializeAttachmentBlocksUpload`): Start a chunked upload to an email attachment.
+- `new CommitAttachmentBlocksUploadAction({ Target, BlockList, FileContinuationToken })` (`POST /CommitAttachmentBlocksUpload`): Commit an attachment's blocks.
 
 <!-- /operations -->
 
@@ -145,16 +147,16 @@ ConvertSalesOrderToInvoice: Create an invoice from an order.
 AddItemCampaign_list: Add a marketing list to a campaign (one class per binding; see `AddItemCampaign_campaignAction`, …).
 -->
 
-- `new WinOpportunityAction(opportunityClose, caller, status)` (`POST /WinOpportunity`): Close an opportunity as won.
-- `new LoseOpportunityAction(caller, opportunityClose, status)` (`POST /LoseOpportunity`): Close an opportunity as lost.
-- `new QualifyLeadAction(leadId, createAccount, createContact, createOpportunity, opportunityCurrencyId, opportunityCustomerId, sourceCampaignId, status, processInstanceId?, leadQualificationV2Param?)` (`POST /leads({leadId})/Microsoft.Dynamics.CRM.QualifyLead`): Qualify a lead into an account, contact and/or opportunity.
-- `new WinQuoteAction(quoteClose, status)` (`POST /WinQuote`): Close a quote as won.
-- `new CloseQuoteAction(quoteClose, status)` (`POST /CloseQuote`): Close a quote.
-- `new GetQuoteProductsFromOpportunityAction(quoteId, opportunity)` (`POST /quotes({quoteId})/Microsoft.Dynamics.CRM.GetQuoteProductsFromOpportunity`): Copy an opportunity's products to a quote.
-- `new ConvertQuoteToSalesOrderAction(quoteId, columnSet?, quoteCloseDate?, quoteCloseStatus?, quoteCloseSubject?, quoteCloseDescription?, processInstanceId?)` (`POST /ConvertQuoteToSalesOrder`): Create an order from a quote.
-- `new FulfillSalesOrderAction(orderClose, status)` (`POST /salesorders/Microsoft.Dynamics.CRM.FulfillSalesOrder`): Fulfill an order.
-- `new ConvertSalesOrderToInvoiceAction(salesOrderId, columnSet?, processInstanceId?)` (`POST /ConvertSalesOrderToInvoice`): Create an invoice from an order.
-- `new AddItemCampaign_listAction(listId, campaign)` (`POST /lists({listId})/Microsoft.Dynamics.CRM.AddItemCampaign`): Add a marketing list to a campaign (one class per binding; see `AddItemCampaign_campaignAction`, …).
+- `new WinOpportunityAction({ OpportunityClose, Caller?, Status })` (`POST /WinOpportunity`): Close an opportunity as won.
+- `new LoseOpportunityAction({ Caller?, OpportunityClose, Status })` (`POST /LoseOpportunity`): Close an opportunity as lost.
+- `new QualifyLeadAction(leadId, { CreateAccount, CreateContact, CreateOpportunity, OpportunityCurrencyId?, OpportunityCustomerId?, SourceCampaignId?, Status, ProcessInstanceId?, LeadQualificationV2Param? })` (`POST /leads({leadId})/Microsoft.Dynamics.CRM.QualifyLead`): Qualify a lead into an account, contact and/or opportunity.
+- `new WinQuoteAction({ QuoteClose, Status })` (`POST /WinQuote`): Close a quote as won.
+- `new CloseQuoteAction({ QuoteClose, Status })` (`POST /CloseQuote`): Close a quote.
+- `new GetQuoteProductsFromOpportunityAction(quoteId, { Opportunity })` (`POST /quotes({quoteId})/Microsoft.Dynamics.CRM.GetQuoteProductsFromOpportunity`): Copy an opportunity's products to a quote.
+- `new ConvertQuoteToSalesOrderAction({ QuoteId, ColumnSet?, QuoteCloseDate?, QuoteCloseStatus?, QuoteCloseSubject?, QuoteCloseDescription?, ProcessInstanceId? })` (`POST /ConvertQuoteToSalesOrder`): Create an order from a quote.
+- `new FulfillSalesOrderAction({ OrderClose, Status })` (`POST /salesorders/Microsoft.Dynamics.CRM.FulfillSalesOrder`): Fulfill an order.
+- `new ConvertSalesOrderToInvoiceAction({ SalesOrderId, ColumnSet?, ProcessInstanceId? })` (`POST /ConvertSalesOrderToInvoice`): Create an invoice from an order.
+- `new AddItemCampaign_listAction(listId, { Campaign })` (`POST /lists({listId})/Microsoft.Dynamics.CRM.AddItemCampaign`): Add a marketing list to a campaign (one class per binding; see `AddItemCampaign_campaignAction`, …).
 
 <!-- /operations -->
 
@@ -170,13 +172,13 @@ RouteTo: Route a queue item with routing rules.
 AddPrincipalToQueue: Add a user or team to a queue.
 -->
 
-- `new CloseIncidentAction(incidentResolution, status)` (`POST /CloseIncident`): Resolve a case with an `incidentresolution`.
-- `new AddToQueueAction(queueId, target, sourceQueue?, queueItemProperties?)` (`POST /queues({queueId})/Microsoft.Dynamics.CRM.AddToQueue`): Move a record into a queue.
+- `new CloseIncidentAction({ IncidentResolution, Status })` (`POST /CloseIncident`): Resolve a case with an `incidentresolution`.
+- `new AddToQueueAction(queueId, { Target, SourceQueue?, QueueItemProperties? })` (`POST /queues({queueId})/Microsoft.Dynamics.CRM.AddToQueue`): Move a record into a queue.
 - `new RemoveFromQueueAction(queueitemId)` (`POST /queueitems({queueitemId})/Microsoft.Dynamics.CRM.RemoveFromQueue`): Remove a queue item.
-- `new PickFromQueueAction(queueitemId, systemUser, removeQueueItem)` (`POST /queueitems({queueitemId})/Microsoft.Dynamics.CRM.PickFromQueue`): Assign a queue item to a user.
+- `new PickFromQueueAction(queueitemId, { SystemUser, RemoveQueueItem })` (`POST /queueitems({queueitemId})/Microsoft.Dynamics.CRM.PickFromQueue`): Assign a queue item to a user.
 - `new ReleaseToQueueAction(queueitemId)` (`POST /queueitems({queueitemId})/Microsoft.Dynamics.CRM.ReleaseToQueue`): Release a queue item back to its queue.
-- `new RouteToAction(target, queueItem?)` (`POST /RouteTo`): Route a queue item with routing rules.
-- `new AddPrincipalToQueueAction(queueId, principal)` (`POST /queues({queueId})/Microsoft.Dynamics.CRM.AddPrincipalToQueue`): Add a user or team to a queue.
+- `new RouteToAction({ Target, QueueItem? })` (`POST /RouteTo`): Route a queue item with routing rules.
+- `new AddPrincipalToQueueAction(queueId, { Principal })` (`POST /queues({queueId})/Microsoft.Dynamics.CRM.AddPrincipalToQueue`): Add a user or team to a queue.
 
 <!-- /operations -->
 
@@ -190,11 +192,11 @@ AddMembersTeam: Add users to a team.
 RemoveMembersTeam: Remove users from a team.
 -->
 
-- `new GrantAccessAction(target, principalAccess?)` (`POST /GrantAccess`): Share a record with a user or team.
-- `new ModifyAccessAction(target, principalAccess?)` (`POST /ModifyAccess`): Change the access a user or team has to a shared record.
-- `new RevokeAccessAction(target, revokee)` (`POST /RevokeAccess`): Stop sharing a record with a user or team.
-- `new AddMembersTeamAction(teamId, members)` (`POST /teams({teamId})/Microsoft.Dynamics.CRM.AddMembersTeam`): Add users to a team.
-- `new RemoveMembersTeamAction(teamId, members)` (`POST /teams({teamId})/Microsoft.Dynamics.CRM.RemoveMembersTeam`): Remove users from a team.
+- `new GrantAccessAction({ Target, PrincipalAccess? })` (`POST /GrantAccess`): Share a record with a user or team.
+- `new ModifyAccessAction({ Target, PrincipalAccess? })` (`POST /ModifyAccess`): Change the access a user or team has to a shared record.
+- `new RevokeAccessAction({ Target, Revokee })` (`POST /RevokeAccess`): Stop sharing a record with a user or team.
+- `new AddMembersTeamAction(teamId, { Members })` (`POST /teams({teamId})/Microsoft.Dynamics.CRM.AddMembersTeam`): Add users to a team.
+- `new RemoveMembersTeamAction(teamId, { Members })` (`POST /teams({teamId})/Microsoft.Dynamics.CRM.RemoveMembersTeam`): Remove users from a team.
 
 <!-- /operations -->
 
@@ -213,16 +215,16 @@ StageAndUpgrade: Import a solution upgrade and apply it.
 DeleteAndPromote: Replace a managed solution with its staged upgrade.
 -->
 
-- `new ImportSolutionAction(overwriteUnmanagedCustomizations, publishWorkflows, customizationFile, importJobId, convertToManaged?, skipProductUpdateDependencies?, holdingSolution?, skipQueueRibbonJob?, layerDesiredOrder?, asyncRibbonProcessing?, componentParameters?, isTemplateMode?, templateSuffix?, solutionParameters?, templateDisplayNamePrefix?, stageAndUpgrade?, schemaUpdatesOnly?)` (`POST /ImportSolution`): Import a solution file (base64).
-- `new ExportSolutionAction(solutionName, managed, targetVersion?, exportAutoNumberingSettings?, exportCalendarSettings?, exportCustomizationSettings?, exportEmailTrackingSettings?, exportGeneralSettings?, exportMarketingSettings?, exportOutlookSynchronizationSettings?, exportRelationshipRoles?, exportIsvConfig?, exportSales?, exportExternalApplications?, exportComponentsParams?)` (`POST /ExportSolution`): Export a solution; returns `{ ExportSolutionFile }` (base64).
-- `new PublishXmlAction(parameterXml)` (`POST /PublishXml`): Publish the customizations named in `parameterXml`.
+- `new ImportSolutionAction({ OverwriteUnmanagedCustomizations, PublishWorkflows, CustomizationFile, ImportJobId, ConvertToManaged?, SkipProductUpdateDependencies?, HoldingSolution?, SkipQueueRibbonJob?, LayerDesiredOrder?, AsyncRibbonProcessing?, ComponentParameters?, IsTemplateMode?, TemplateSuffix?, SolutionParameters?, TemplateDisplayNamePrefix?, StageAndUpgrade?, SchemaUpdatesOnly? })` (`POST /ImportSolution`): Import a solution file (base64).
+- `new ExportSolutionAction({ SolutionName, Managed, TargetVersion?, ExportAutoNumberingSettings?, ExportCalendarSettings?, ExportCustomizationSettings?, ExportEmailTrackingSettings?, ExportGeneralSettings?, ExportMarketingSettings?, ExportOutlookSynchronizationSettings?, ExportRelationshipRoles?, ExportIsvConfig?, ExportSales?, ExportExternalApplications?, ExportComponentsParams? })` (`POST /ExportSolution`): Export a solution; returns `{ ExportSolutionFile }` (base64).
+- `new PublishXmlAction({ ParameterXml })` (`POST /PublishXml`): Publish the customizations named in `parameterXml`.
 - `new PublishAllXmlAction()` (`POST /PublishAllXml`): Publish all customizations.
-- `new AddSolutionComponentAction(componentId, componentType, solutionUniqueName, addRequiredComponents, doNotIncludeSubcomponents?, includedComponentSettingsValues?)` (`POST /AddSolutionComponent`): Add a component to an unmanaged solution.
-- `new RemoveSolutionComponentAction(solutionComponent, componentType, solutionUniqueName)` (`POST /RemoveSolutionComponent`): Remove a component from an unmanaged solution.
-- `new CloneAsPatchAction(parentSolutionUniqueName, displayName, versionNumber)` (`POST /CloneAsPatch`): Create a patch of a solution.
-- `new CloneAsSolutionAction(parentSolutionUniqueName, displayName, versionNumber)` (`POST /CloneAsSolution`): Roll patches into a new solution version.
-- `new StageAndUpgradeAction(overwriteUnmanagedCustomizations, publishWorkflows, customizationFile, importJobId, convertToManaged?, skipProductUpdateDependencies?, skipQueueRibbonJob?, asyncRibbonProcessing?, componentParameters?, solutionParameters?, layerDesiredOrder?, schemaUpdatesOnly?)` (`POST /StageAndUpgrade`): Import a solution upgrade and apply it.
-- `new DeleteAndPromoteAction(uniqueName)` (`POST /DeleteAndPromote`): Replace a managed solution with its staged upgrade.
+- `new AddSolutionComponentAction({ ComponentId, ComponentType, SolutionUniqueName, AddRequiredComponents, DoNotIncludeSubcomponents?, IncludedComponentSettingsValues? })` (`POST /AddSolutionComponent`): Add a component to an unmanaged solution.
+- `new RemoveSolutionComponentAction({ SolutionComponent, ComponentType, SolutionUniqueName })` (`POST /RemoveSolutionComponent`): Remove a component from an unmanaged solution.
+- `new CloneAsPatchAction({ ParentSolutionUniqueName, DisplayName, VersionNumber })` (`POST /CloneAsPatch`): Create a patch of a solution.
+- `new CloneAsSolutionAction({ ParentSolutionUniqueName, DisplayName, VersionNumber })` (`POST /CloneAsSolution`): Roll patches into a new solution version.
+- `new StageAndUpgradeAction({ OverwriteUnmanagedCustomizations, PublishWorkflows, CustomizationFile, ImportJobId, ConvertToManaged?, SkipProductUpdateDependencies?, SkipQueueRibbonJob?, AsyncRibbonProcessing?, ComponentParameters?, SolutionParameters?, LayerDesiredOrder?, SchemaUpdatesOnly? })` (`POST /StageAndUpgrade`): Import a solution upgrade and apply it.
+- `new DeleteAndPromoteAction({ UniqueName })` (`POST /DeleteAndPromote`): Replace a managed solution with its staged upgrade.
 
 <!-- /operations -->
 
@@ -233,8 +235,8 @@ SendEmail: Send an email activity.
 SendEmailFromTemplate: Create and send an email from a template.
 -->
 
-- `new SendEmailAction(emailId, issueSend, trackingToken?)` (`POST /emails({emailId})/Microsoft.Dynamics.CRM.SendEmail`): Send an email activity.
-- `new SendEmailFromTemplateAction(templateId, regarding, target)` (`POST /SendEmailFromTemplate`): Create and send an email from a template.
+- `new SendEmailAction(emailId, { IssueSend, TrackingToken? })` (`POST /emails({emailId})/Microsoft.Dynamics.CRM.SendEmail`): Send an email activity.
+- `new SendEmailFromTemplateAction({ TemplateId, Regarding, Target })` (`POST /SendEmailFromTemplate`): Create and send an email from a template.
 
 <!-- /operations -->
 
@@ -260,10 +262,9 @@ tables, or a change set that must succeed or fail as a whole.
 import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
 const { Ids } = await client.execute(
-  new CreateMultipleAction(
-    "accounts",
-    names.map((name) => ({ "@odata.type": "Microsoft.Dynamics.CRM.account", name }))
-  )
+  new CreateMultipleAction("accounts", {
+    Targets: names.map((name) => ({ "@odata.type": "Microsoft.Dynamics.CRM.account", name })),
+  })
 );
 console.log(`Created ${String(Ids.length)} accounts`);
 ```
@@ -279,11 +280,11 @@ import {
 } from "@mohsinonxrm/dataverse-sdk-actions";
 
 const { FileContinuationToken } = await client.execute(
-  new InitializeFileBlocksUploadAction(
-    createEntityReference("account", accountId), // Target
-    "contract.pdf", // FileName
-    "new_contract" // FileAttributeName: the file column
-  )
+  new InitializeFileBlocksUploadAction({
+    Target: createEntityReference("account", accountId),
+    FileName: "contract.pdf",
+    FileAttributeName: "new_contract",
+  })
 );
 
 const blockSize = 4 * 1024 * 1024;
@@ -292,21 +293,21 @@ for (let offset = 0, n = 0; offset < file.length; offset += blockSize, n++) {
   const blockId = btoa(String(n).padStart(6, "0"));
   blockIds.push(blockId);
   await client.execute(
-    new UploadBlockAction(
-      blockId,
-      Buffer.from(file.subarray(offset, offset + blockSize)).toString("base64"),
-      FileContinuationToken
-    )
+    new UploadBlockAction({
+      BlockId: blockId,
+      BlockData: Buffer.from(file.subarray(offset, offset + blockSize)).toString("base64"),
+      FileContinuationToken: FileContinuationToken,
+    })
   );
 }
 
 await client.execute(
-  new CommitFileBlocksUploadAction(
-    "contract.pdf",
-    "application/pdf",
-    blockIds,
-    FileContinuationToken
-  )
+  new CommitFileBlocksUploadAction({
+    FileName: "contract.pdf",
+    MimeType: "application/pdf",
+    BlockList: blockIds,
+    FileContinuationToken: FileContinuationToken,
+  })
 );
 ```
 

@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * ComputeSlaWorkQueueItem request message
  *
  * Web API Action: ComputeSlaWorkQueueItem
+ *
+ * The first argument is the id of the workqueue record to call it on.
  */
 export class ComputeSlaWorkQueueItemRequest
   extends OrganizationRequest

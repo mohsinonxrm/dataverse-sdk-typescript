@@ -31,8 +31,12 @@ export class msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponse.fromResponse({});
+    return msdyn_CheckIfRecurrenceSettingIsPresentAndValidForABSResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

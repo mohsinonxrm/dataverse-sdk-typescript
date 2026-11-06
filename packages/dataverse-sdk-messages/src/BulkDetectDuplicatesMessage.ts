@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
@@ -9,6 +10,21 @@ import type {
   TypedQueryBase,
   activityparty,
 } from "./types/index.js";
+
+/**
+ * Parameters of the BulkDetectDuplicates message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface BulkDetectDuplicatesRequestParameters {
+  Query?: TypedQueryBase;
+  JobName: string;
+  SendEmailNotification: boolean;
+  TemplateId: string;
+  ToRecipients: (EntityReference | EntityPayload<activityparty>)[];
+  CCRecipients: (EntityReference | EntityPayload<activityparty>)[];
+  RecurrencePattern: string;
+  RecurrenceStartTime: string;
+}
 
 /**
  * BulkDetectDuplicates request message
@@ -19,32 +35,25 @@ export class BulkDetectDuplicatesRequest
   extends OrganizationRequest
   implements Executable<BulkDetectDuplicatesResponse>
 {
-  constructor(
-    public query: TypedQueryBase | undefined,
-    public jobName: string,
-    public sendEmailNotification: boolean,
-    public templateId: string,
-    public toRecipients: (EntityReference | EntityPayload<activityparty>)[],
-    public cCRecipients: (EntityReference | EntityPayload<activityparty>)[],
-    public recurrencePattern: string,
-    public recurrenceStartTime: string
-  ) {
-    super("BulkDetectDuplicates");
+  declare readonly Parameters: Readonly<BulkDetectDuplicatesRequestParameters>;
+
+  constructor(parameters: BulkDetectDuplicatesRequestParameters) {
+    super("BulkDetectDuplicates", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BulkDetectDuplicates`;
 
-    const body: Record<string, unknown> = {
-      Query: enumBody(this.query, "QueryBase"),
-      JobName: this.jobName,
-      SendEmailNotification: this.sendEmailNotification,
-      TemplateId: this.templateId,
-      ToRecipients: this.toRecipients,
-      CCRecipients: this.cCRecipients,
-      RecurrencePattern: this.recurrencePattern,
-      RecurrenceStartTime: this.recurrenceStartTime,
-    };
+    const body = requestBody({
+      Query: enumBody(this.Parameters.Query, "QueryBase"),
+      JobName: this.Parameters.JobName,
+      SendEmailNotification: this.Parameters.SendEmailNotification,
+      TemplateId: this.Parameters.TemplateId,
+      ToRecipients: this.Parameters.ToRecipients,
+      CCRecipients: this.Parameters.CCRecipients,
+      RecurrencePattern: this.Parameters.RecurrencePattern,
+      RecurrenceStartTime: this.Parameters.RecurrenceStartTime,
+    });
 
     return {
       method: "POST",
@@ -57,8 +66,9 @@ export class BulkDetectDuplicatesRequest
   }
 
   async parseResponse(response: Response): Promise<BulkDetectDuplicatesResponse> {
-    const data = await response.json();
-    return BulkDetectDuplicatesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return BulkDetectDuplicatesResponse.fromResponse({});
+    return BulkDetectDuplicatesResponse.fromResponse(await response.json());
   }
 }
 

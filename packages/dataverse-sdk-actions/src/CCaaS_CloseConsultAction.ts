@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_CloseConsult action
@@ -8,24 +9,34 @@ export interface CCaaS_CloseConsultResponse {
 }
 
 /**
+ * Parameters of the CCaaS_CloseConsult action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_CloseConsultActionParameters {
+  ApiVersion: string;
+}
+
+/**
  * CCaaS_CloseConsult action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_ocliveworkitem)
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_CloseConsultAction implements Executable<CCaaS_CloseConsultResponse> {
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
-    public readonly apiVersion: string
+    public readonly parameters: CCaaS_CloseConsultActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_CloseConsult`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      ApiVersion: this.parameters.ApiVersion,
+    });
 
     return {
       method: "POST",
@@ -38,7 +49,8 @@ export class CCaaS_CloseConsultAction implements Executable<CCaaS_CloseConsultRe
   }
 
   async parseResponse(response: Response): Promise<CCaaS_CloseConsultResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_CloseConsultResponse;
+    return (await response.json()) as CCaaS_CloseConsultResponse;
   }
 }

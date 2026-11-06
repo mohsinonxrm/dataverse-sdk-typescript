@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CopilotCreateOutlookMessageOrAppointment action
@@ -10,27 +11,35 @@ export interface msdyn_CopilotCreateOutlookMessageOrAppointmentResponse {
 }
 
 /**
+ * Parameters of the msdyn_CopilotCreateOutlookMessageOrAppointment action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CopilotCreateOutlookMessageOrAppointmentActionParameters {
+  msdyn_messageId?: string;
+  msdyn_correlationId?: string;
+  msdyn_outlookItemType: string;
+  msdyn_outlookPayload: string;
+}
+
+/**
  * msdyn_CopilotCreateOutlookMessageOrAppointment action
  *
  * Unbound action
  */
 export class msdyn_CopilotCreateOutlookMessageOrAppointmentAction implements Executable<msdyn_CopilotCreateOutlookMessageOrAppointmentResponse> {
   constructor(
-    public readonly msdyn_messageId: string | undefined,
-    public readonly msdyn_correlationId: string | undefined,
-    public readonly msdyn_outlookItemType: string,
-    public readonly msdyn_outlookPayload: string
+    public readonly parameters: msdyn_CopilotCreateOutlookMessageOrAppointmentActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CopilotCreateOutlookMessageOrAppointment`;
 
-    const body: Record<string, unknown> = {
-      msdyn_messageId: this.msdyn_messageId,
-      msdyn_correlationId: this.msdyn_correlationId,
-      msdyn_outlookItemType: this.msdyn_outlookItemType,
-      msdyn_outlookPayload: this.msdyn_outlookPayload,
-    };
+    const body = requestBody({
+      msdyn_messageId: this.parameters.msdyn_messageId,
+      msdyn_correlationId: this.parameters.msdyn_correlationId,
+      msdyn_outlookItemType: this.parameters.msdyn_outlookItemType,
+      msdyn_outlookPayload: this.parameters.msdyn_outlookPayload,
+    });
 
     return {
       method: "POST",
@@ -45,7 +54,9 @@ export class msdyn_CopilotCreateOutlookMessageOrAppointmentAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<msdyn_CopilotCreateOutlookMessageOrAppointmentResponse> {
-    const data = await response.json();
-    return data as msdyn_CopilotCreateOutlookMessageOrAppointmentResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_CopilotCreateOutlookMessageOrAppointmentResponse;
+    return (await response.json()) as msdyn_CopilotCreateOutlookMessageOrAppointmentResponse;
   }
 }

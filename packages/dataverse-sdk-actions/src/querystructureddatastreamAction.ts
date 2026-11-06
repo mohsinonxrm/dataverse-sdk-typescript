@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from querystructureddatastream action
@@ -8,29 +9,35 @@ export interface querystructureddatastreamResponse {
 }
 
 /**
+ * Parameters of the querystructureddatastream action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface querystructureddatastreamActionParameters {
+  maxRows: number;
+  options: string[];
+  additionalProperties: string;
+  skill: string;
+  queryText: string;
+}
+
+/**
  * querystructureddatastream action
  *
  * Unbound action
  */
 export class querystructureddatastreamAction implements Executable<querystructureddatastreamResponse> {
-  constructor(
-    public readonly maxRows: number,
-    public readonly options: string[],
-    public readonly additionalProperties: string,
-    public readonly skill: string,
-    public readonly queryText: string
-  ) {}
+  constructor(public readonly parameters: querystructureddatastreamActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/querystructureddatastream`;
 
-    const body: Record<string, unknown> = {
-      maxRows: this.maxRows,
-      options: this.options,
-      additionalProperties: this.additionalProperties,
-      skill: this.skill,
-      queryText: this.queryText,
-    };
+    const body = requestBody({
+      maxRows: this.parameters.maxRows,
+      options: this.parameters.options,
+      additionalProperties: this.parameters.additionalProperties,
+      skill: this.parameters.skill,
+      queryText: this.parameters.queryText,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class querystructureddatastreamAction implements Executable<querystructur
   }
 
   async parseResponse(response: Response): Promise<querystructureddatastreamResponse> {
-    const data = await response.json();
-    return data as querystructureddatastreamResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as querystructureddatastreamResponse;
+    return (await response.json()) as querystructureddatastreamResponse;
   }
 }

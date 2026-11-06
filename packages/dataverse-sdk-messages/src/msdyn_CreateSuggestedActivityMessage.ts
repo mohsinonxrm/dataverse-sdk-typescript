@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CreateSuggestedActivityResponse as msdyn_CreateSuggestedActivityResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CreateSuggestedActivity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateSuggestedActivityRequestParameters {
+  SuggestedActivityId: string;
+  RegardingObjectId: string;
+  RegardingObjectEntity: string;
+  IsAdminConsented?: boolean;
+}
 
 /**
  * msdyn_CreateSuggestedActivity request message
@@ -12,24 +24,21 @@ export class msdyn_CreateSuggestedActivityRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateSuggestedActivityResponse>
 {
-  constructor(
-    public suggestedActivityId: string,
-    public regardingObjectId: string,
-    public regardingObjectEntity: string,
-    public isAdminConsented?: boolean
-  ) {
-    super("msdyn_CreateSuggestedActivity");
+  declare readonly Parameters: Readonly<msdyn_CreateSuggestedActivityRequestParameters>;
+
+  constructor(parameters: msdyn_CreateSuggestedActivityRequestParameters) {
+    super("msdyn_CreateSuggestedActivity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateSuggestedActivity`;
 
-    const body: Record<string, unknown> = {
-      SuggestedActivityId: this.suggestedActivityId,
-      RegardingObjectId: this.regardingObjectId,
-      RegardingObjectEntity: this.regardingObjectEntity,
-      IsAdminConsented: this.isAdminConsented,
-    };
+    const body = requestBody({
+      SuggestedActivityId: this.Parameters.SuggestedActivityId,
+      RegardingObjectId: this.Parameters.RegardingObjectId,
+      RegardingObjectEntity: this.Parameters.RegardingObjectEntity,
+      IsAdminConsented: this.Parameters.IsAdminConsented,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_CreateSuggestedActivityRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateSuggestedActivityResponse> {
-    const data = await response.json();
-    return msdyn_CreateSuggestedActivityResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CreateSuggestedActivityResponse.fromResponse({});
+    return msdyn_CreateSuggestedActivityResponse.fromResponse(await response.json());
   }
 }
 

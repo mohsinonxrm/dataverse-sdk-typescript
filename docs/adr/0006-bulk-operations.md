@@ -43,16 +43,12 @@ Microsoft introduced bulk operations as a simpler alternative to $batch for comm
    import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
    const response = await client.execute(
-     new CreateMultipleAction(
-       "accounts",
-       [
+     new CreateMultipleAction("accounts", {
+       Targets: [
          { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Contoso" },
          { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Fabrikam" },
        ],
-       {
-         concurrencyBehavior: "Default", // or "IfRowVersionMatches"
-       }
-     )
+     })
    );
    // response.Ids: string[]
    ```

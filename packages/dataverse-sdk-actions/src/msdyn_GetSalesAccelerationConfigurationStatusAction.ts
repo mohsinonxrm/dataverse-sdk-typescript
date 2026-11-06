@@ -30,7 +30,8 @@ export class msdyn_GetSalesAccelerationConfigurationStatusAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetSalesAccelerationConfigurationStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetSalesAccelerationConfigurationStatusResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetSalesAccelerationConfigurationStatusResponse;
+    return (await response.json()) as msdyn_GetSalesAccelerationConfigurationStatusResponse;
   }
 }

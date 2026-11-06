@@ -26,7 +26,8 @@ export class msdyn_CopyEventSMSChannelsCleanupAction implements Executable<msdyn
   }
 
   async parseResponse(response: Response): Promise<msdyn_CopyEventSMSChannelsCleanupResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CopyEventSMSChannelsCleanupResponse;
+    return (await response.json()) as msdyn_CopyEventSMSChannelsCleanupResponse;
   }
 }

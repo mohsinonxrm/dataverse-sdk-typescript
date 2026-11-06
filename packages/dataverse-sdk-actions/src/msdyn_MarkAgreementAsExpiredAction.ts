@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_MarkAgreementAsExpired action
@@ -10,19 +11,27 @@ export interface msdyn_MarkAgreementAsExpiredResponse {
 }
 
 /**
+ * Parameters of the msdyn_MarkAgreementAsExpired action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_MarkAgreementAsExpiredActionParameters {
+  AnalysisResult: EntityReference;
+}
+
+/**
  * msdyn_MarkAgreementAsExpired action
  *
  * Unbound action
  */
 export class msdyn_MarkAgreementAsExpiredAction implements Executable<msdyn_MarkAgreementAsExpiredResponse> {
-  constructor(public readonly analysisResult: EntityReference) {}
+  constructor(public readonly parameters: msdyn_MarkAgreementAsExpiredActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_MarkAgreementAsExpired`;
 
-    const body: Record<string, unknown> = {
-      AnalysisResult: this.analysisResult,
-    };
+    const body = requestBody({
+      AnalysisResult: this.parameters.AnalysisResult,
+    });
 
     return {
       method: "POST",
@@ -35,7 +44,8 @@ export class msdyn_MarkAgreementAsExpiredAction implements Executable<msdyn_Mark
   }
 
   async parseResponse(response: Response): Promise<msdyn_MarkAgreementAsExpiredResponse> {
-    const data = await response.json();
-    return data as msdyn_MarkAgreementAsExpiredResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_MarkAgreementAsExpiredResponse;
+    return (await response.json()) as msdyn_MarkAgreementAsExpiredResponse;
   }
 }

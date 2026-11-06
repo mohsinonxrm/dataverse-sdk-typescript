@@ -1,32 +1,45 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { privilege } from "./types/index.js";
+
+/**
+ * Parameters of the RemovePrivilegeRole message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemovePrivilegeRoleRequestParameters {
+  Privilege: EntityReference | EntityPayload<privilege>;
+}
 
 /**
  * RemovePrivilegeRole request message
  *
  * Web API Action: RemovePrivilegeRole
+ *
+ * The first argument is the id of the role record to call it on.
  */
 export class RemovePrivilegeRoleRequest
   extends OrganizationRequest
   implements Executable<RemovePrivilegeRoleResponse>
 {
+  declare readonly Parameters: Readonly<RemovePrivilegeRoleRequestParameters>;
+
   constructor(
     public roleId: string,
-    public privilege: EntityReference | EntityPayload<privilege>
+    parameters: RemovePrivilegeRoleRequestParameters
   ) {
-    super("RemovePrivilegeRole");
+    super("RemovePrivilegeRole", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/roles(${this.roleId})/Microsoft.Dynamics.CRM.RemovePrivilegeRole`;
 
-    const body: Record<string, unknown> = {
-      Privilege: this.privilege,
-    };
+    const body = requestBody({
+      Privilege: this.Parameters.Privilege,
+    });
 
     return {
       method: "POST",

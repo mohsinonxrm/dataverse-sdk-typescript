@@ -26,7 +26,8 @@ export class RetrieveDataEncryptionKeyFunction implements Executable<RetrieveDat
   }
 
   async parseResponse(response: Response): Promise<RetrieveDataEncryptionKeyResponse> {
-    const data = await response.json();
-    return data as RetrieveDataEncryptionKeyResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveDataEncryptionKeyResponse;
+    return (await response.json()) as RetrieveDataEncryptionKeyResponse;
   }
 }

@@ -29,8 +29,9 @@ export class msdyn_CheckIfTerritoryRecordsExistRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfTerritoryRecordsExistResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfTerritoryRecordsExistResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckIfTerritoryRecordsExistResponse.fromResponse({});
+    return msdyn_CheckIfTerritoryRecordsExistResponse.fromResponse(await response.json());
   }
 }
 

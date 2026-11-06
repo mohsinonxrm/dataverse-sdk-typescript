@@ -12,6 +12,8 @@ export interface AddRequiredDesktopFlowComponentsToSolutionsResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.workflow)
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class AddRequiredDesktopFlowComponentsToSolutionsAction implements Executable<AddRequiredDesktopFlowComponentsToSolutionsResponse> {
   constructor(public readonly workflowId: string) {}
@@ -32,7 +34,8 @@ export class AddRequiredDesktopFlowComponentsToSolutionsAction implements Execut
   async parseResponse(
     response: Response
   ): Promise<AddRequiredDesktopFlowComponentsToSolutionsResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AddRequiredDesktopFlowComponentsToSolutionsResponse;
+    return (await response.json()) as AddRequiredDesktopFlowComponentsToSolutionsResponse;
   }
 }

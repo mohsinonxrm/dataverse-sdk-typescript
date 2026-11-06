@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_DCA_SendOutreachEmailResponse as msdyn_DCA_SendOutreachEmailResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_DCA_SendOutreachEmail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DCA_SendOutreachEmailRequestParameters {
+  msdyn_TrackingId?: string;
+  msdyn_SalesAgentRun: string;
+}
 
 /**
  * msdyn_DCA_SendOutreachEmail request message
@@ -12,20 +22,19 @@ export class msdyn_DCA_SendOutreachEmailRequest
   extends OrganizationRequest
   implements Executable<msdyn_DCA_SendOutreachEmailResponse>
 {
-  constructor(
-    public msdyn_TrackingId: string | undefined,
-    public msdyn_SalesAgentRun: string
-  ) {
-    super("msdyn_DCA_SendOutreachEmail");
+  declare readonly Parameters: Readonly<msdyn_DCA_SendOutreachEmailRequestParameters>;
+
+  constructor(parameters: msdyn_DCA_SendOutreachEmailRequestParameters) {
+    super("msdyn_DCA_SendOutreachEmail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DCA_SendOutreachEmail`;
 
-    const body: Record<string, unknown> = {
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-    };
+    const body = requestBody({
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_DCA_SendOutreachEmailRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DCA_SendOutreachEmailResponse> {
-    const data = await response.json();
-    return msdyn_DCA_SendOutreachEmailResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_DCA_SendOutreachEmailResponse.fromResponse({});
+    return msdyn_DCA_SendOutreachEmailResponse.fromResponse(await response.json());
   }
 }
 

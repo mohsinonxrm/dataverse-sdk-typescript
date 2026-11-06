@@ -10,12 +10,20 @@ export interface RetrieveDependenciesForUninstallResponse {
 }
 
 /**
+ * Parameters of the RetrieveDependenciesForUninstall function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveDependenciesForUninstallFunctionParameters {
+  SolutionUniqueName: string;
+}
+
+/**
  * RetrieveDependenciesForUninstall function
  *
  * Unbound function
  */
 export class RetrieveDependenciesForUninstallFunction implements Executable<RetrieveDependenciesForUninstallResponse> {
-  constructor(public readonly solutionUniqueName: string) {}
+  constructor(public readonly parameters: RetrieveDependenciesForUninstallFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveDependenciesForUninstall`;
@@ -23,9 +31,9 @@ export class RetrieveDependenciesForUninstallFunction implements Executable<Retr
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.solutionUniqueName !== undefined) {
+    if (this.parameters.SolutionUniqueName !== undefined) {
       aliases.push(`SolutionUniqueName=@p1`);
-      params.append("@p1", formatParameterAlias(this.solutionUniqueName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.SolutionUniqueName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class RetrieveDependenciesForUninstallFunction implements Executable<Retr
   }
 
   async parseResponse(response: Response): Promise<RetrieveDependenciesForUninstallResponse> {
-    const data = await response.json();
-    return data as RetrieveDependenciesForUninstallResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveDependenciesForUninstallResponse;
+    return (await response.json()) as RetrieveDependenciesForUninstallResponse;
   }
 }

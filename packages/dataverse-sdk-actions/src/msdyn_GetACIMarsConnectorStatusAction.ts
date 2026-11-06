@@ -26,7 +26,8 @@ export class msdyn_GetACIMarsConnectorStatusAction implements Executable<msdyn_G
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetACIMarsConnectorStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetACIMarsConnectorStatusResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetACIMarsConnectorStatusResponse;
+    return (await response.json()) as msdyn_GetACIMarsConnectorStatusResponse;
   }
 }

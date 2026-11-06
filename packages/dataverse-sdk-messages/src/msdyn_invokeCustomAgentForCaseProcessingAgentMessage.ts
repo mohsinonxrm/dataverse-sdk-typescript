@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_invokeCustomAgentForCaseProcessingAgent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_invokeCustomAgentForCaseProcessingAgentRequestParameters {
+  msdyn_caseProcessingAgentDetails: string;
+  msdyn_customAgentDetails: string;
+}
 
 /**
  * msdyn_invokeCustomAgentForCaseProcessingAgent request message
@@ -10,20 +20,19 @@ export class msdyn_invokeCustomAgentForCaseProcessingAgentRequest
   extends OrganizationRequest
   implements Executable<msdyn_invokeCustomAgentForCaseProcessingAgentResponse>
 {
-  constructor(
-    public msdyn_caseProcessingAgentDetails: string,
-    public msdyn_customAgentDetails: string
-  ) {
-    super("msdyn_invokeCustomAgentForCaseProcessingAgent");
+  declare readonly Parameters: Readonly<msdyn_invokeCustomAgentForCaseProcessingAgentRequestParameters>;
+
+  constructor(parameters: msdyn_invokeCustomAgentForCaseProcessingAgentRequestParameters) {
+    super("msdyn_invokeCustomAgentForCaseProcessingAgent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_invokeCustomAgentForCaseProcessingAgent`;
 
-    const body: Record<string, unknown> = {
-      msdyn_caseProcessingAgentDetails: this.msdyn_caseProcessingAgentDetails,
-      msdyn_customAgentDetails: this.msdyn_customAgentDetails,
-    };
+    const body = requestBody({
+      msdyn_caseProcessingAgentDetails: this.Parameters.msdyn_caseProcessingAgentDetails,
+      msdyn_customAgentDetails: this.Parameters.msdyn_customAgentDetails,
+    });
 
     return {
       method: "POST",

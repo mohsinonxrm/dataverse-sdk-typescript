@@ -9,12 +9,20 @@ export interface NextFiscalPeriodResponse {
 }
 
 /**
+ * Parameters of the NextFiscalPeriod function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface NextFiscalPeriodFunctionParameters {
+  PropertyName: string;
+}
+
+/**
  * NextFiscalPeriod function
  *
  * Unbound function
  */
 export class NextFiscalPeriodFunction implements Executable<NextFiscalPeriodResponse> {
-  constructor(public readonly propertyName: string) {}
+  constructor(public readonly parameters: NextFiscalPeriodFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/NextFiscalPeriod`;
@@ -22,9 +30,9 @@ export class NextFiscalPeriodFunction implements Executable<NextFiscalPeriodResp
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class NextFiscalPeriodFunction implements Executable<NextFiscalPeriodResp
   }
 
   async parseResponse(response: Response): Promise<NextFiscalPeriodResponse> {
-    const data = await response.json();
-    return data as NextFiscalPeriodResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as NextFiscalPeriodResponse;
+    return (await response.json()) as NextFiscalPeriodResponse;
   }
 }

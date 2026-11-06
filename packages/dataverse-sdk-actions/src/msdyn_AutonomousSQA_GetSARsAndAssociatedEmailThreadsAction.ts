@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreads action
@@ -9,23 +10,31 @@ export interface msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse {
 }
 
 /**
+ * Parameters of the msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreads action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsActionParameters {
+  msdyn_SalesMacroAgentType: number;
+  msdyn_TrackingId: string;
+}
+
+/**
  * msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreads action
  *
  * Unbound action
  */
 export class msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsAction implements Executable<msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse> {
   constructor(
-    public readonly msdyn_SalesMacroAgentType: number,
-    public readonly msdyn_TrackingId: string
+    public readonly parameters: msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreads`;
 
-    const body: Record<string, unknown> = {
-      msdyn_SalesMacroAgentType: this.msdyn_SalesMacroAgentType,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_SalesMacroAgentType: this.parameters.msdyn_SalesMacroAgentType,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
@@ -40,7 +49,9 @@ export class msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsAction implemen
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse> {
-    const data = await response.json();
-    return data as msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse;
+    return (await response.json()) as msdyn_AutonomousSQA_GetSARsAndAssociatedEmailThreadsResponse;
   }
 }

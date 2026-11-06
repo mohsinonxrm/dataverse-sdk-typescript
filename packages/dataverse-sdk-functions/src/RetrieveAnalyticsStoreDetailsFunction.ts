@@ -27,7 +27,8 @@ export class RetrieveAnalyticsStoreDetailsFunction implements Executable<Retriev
   }
 
   async parseResponse(response: Response): Promise<RetrieveAnalyticsStoreDetailsResponse> {
-    const data = await response.json();
-    return data as RetrieveAnalyticsStoreDetailsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveAnalyticsStoreDetailsResponse;
+    return (await response.json()) as RetrieveAnalyticsStoreDetailsResponse;
   }
 }

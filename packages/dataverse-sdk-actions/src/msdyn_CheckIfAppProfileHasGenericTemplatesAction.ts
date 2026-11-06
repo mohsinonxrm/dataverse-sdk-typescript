@@ -30,7 +30,8 @@ export class msdyn_CheckIfAppProfileHasGenericTemplatesAction implements Executa
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfAppProfileHasGenericTemplatesResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfAppProfileHasGenericTemplatesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckIfAppProfileHasGenericTemplatesResponse;
+    return (await response.json()) as msdyn_CheckIfAppProfileHasGenericTemplatesResponse;
   }
 }

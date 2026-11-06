@@ -9,12 +9,20 @@ export interface RetrieveEnvironmentVariablesResponse {
 }
 
 /**
+ * Parameters of the RetrieveEnvironmentVariables function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveEnvironmentVariablesFunctionParameters {
+  SchemaNames?: string[];
+}
+
+/**
  * RetrieveEnvironmentVariables function
  *
  * Unbound function
  */
 export class RetrieveEnvironmentVariablesFunction implements Executable<RetrieveEnvironmentVariablesResponse> {
-  constructor(public readonly schemaNames?: string[]) {}
+  constructor(public readonly parameters: RetrieveEnvironmentVariablesFunctionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveEnvironmentVariables`;
@@ -22,9 +30,9 @@ export class RetrieveEnvironmentVariablesFunction implements Executable<Retrieve
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.schemaNames !== undefined) {
+    if (this.parameters.SchemaNames !== undefined) {
       aliases.push(`SchemaNames=@p1`);
-      params.append("@p1", JSON.stringify(this.schemaNames));
+      params.append("@p1", JSON.stringify(this.parameters.SchemaNames));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class RetrieveEnvironmentVariablesFunction implements Executable<Retrieve
   }
 
   async parseResponse(response: Response): Promise<RetrieveEnvironmentVariablesResponse> {
-    const data = await response.json();
-    return data as RetrieveEnvironmentVariablesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveEnvironmentVariablesResponse;
+    return (await response.json()) as RetrieveEnvironmentVariablesResponse;
   }
 }

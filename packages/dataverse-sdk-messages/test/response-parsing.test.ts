@@ -30,8 +30,10 @@ describe("#70: message responses", () => {
 
     const res = await client.execute(
       new QueryExpressionToFetchXmlRequest({
-        "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
-        EntityName: "account",
+        Query: {
+          "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+          EntityName: "account",
+        },
       })
     );
 
@@ -49,7 +51,9 @@ describe("#70: message responses", () => {
       })
     );
 
-    const res = await client.execute(new ExecuteWorkflowRequest(WORKFLOW, ACCOUNT, {}));
+    const res = await client.execute(
+      new ExecuteWorkflowRequest(WORKFLOW, { EntityId: ACCOUNT, InputArguments: {} })
+    );
 
     expect(res.result.asyncoperationid).toBe("33333333-3333-3333-3333-333333333333");
   });
@@ -58,23 +62,23 @@ describe("#70: message responses", () => {
     const { client, fake } = createTestClient();
     fake.on("POST", "/ExportSolution", () => jsonResponse({ ExportSolutionFile: "UEsDBA==" }));
     const res = await client.execute(
-      new ExportSolutionRequest(
-        "Contoso",
-        false,
-        "",
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        {}
-      )
+      new ExportSolutionRequest({
+        SolutionName: "Contoso",
+        Managed: false,
+        TargetVersion: "",
+        ExportAutoNumberingSettings: false,
+        ExportCalendarSettings: false,
+        ExportCustomizationSettings: false,
+        ExportEmailTrackingSettings: false,
+        ExportGeneralSettings: false,
+        ExportMarketingSettings: false,
+        ExportOutlookSynchronizationSettings: false,
+        ExportRelationshipRoles: false,
+        ExportIsvConfig: false,
+        ExportSales: false,
+        ExportExternalApplications: false,
+        ExportComponentsParams: {},
+      })
     );
 
     expect(res.result.ExportSolutionFile).toBe("UEsDBA==");
@@ -86,7 +90,13 @@ describe("#70: message responses", () => {
       jsonResponse({ value: [{ subject: "Welcome", description: "Hi" }] })
     );
 
-    const res = await client.execute(new InstantiateTemplateRequest(WORKFLOW, "account", ACCOUNT));
+    const res = await client.execute(
+      new InstantiateTemplateRequest({
+        TemplateId: WORKFLOW,
+        ObjectType: "account",
+        ObjectId: ACCOUNT,
+      })
+    );
 
     expect(res.result).toEqual([{ subject: "Welcome", description: "Hi" }]);
   });

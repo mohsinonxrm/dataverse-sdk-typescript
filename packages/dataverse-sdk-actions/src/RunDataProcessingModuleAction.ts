@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from RunDataProcessingModule action
@@ -9,31 +10,37 @@ export interface RunDataProcessingModuleResponse {
 }
 
 /**
+ * Parameters of the RunDataProcessingModule action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RunDataProcessingModuleActionParameters {
+  EndPoints?: string[];
+  JobArguments?: string[];
+  ScalarInputs?: string[];
+  CallbackUri?: string;
+  DataProcessingConfigurationId: string;
+  UpstreamResults?: string[];
+}
+
+/**
  * RunDataProcessingModule action
  *
  * Unbound action
  */
 export class RunDataProcessingModuleAction implements Executable<RunDataProcessingModuleResponse> {
-  constructor(
-    public readonly endPoints: string[] | undefined,
-    public readonly jobArguments: string[] | undefined,
-    public readonly scalarInputs: string[] | undefined,
-    public readonly callbackUri: string | undefined,
-    public readonly dataProcessingConfigurationId: string,
-    public readonly upstreamResults?: string[]
-  ) {}
+  constructor(public readonly parameters: RunDataProcessingModuleActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RunDataProcessingModule`;
 
-    const body: Record<string, unknown> = {
-      EndPoints: this.endPoints,
-      JobArguments: this.jobArguments,
-      ScalarInputs: this.scalarInputs,
-      CallbackUri: this.callbackUri,
-      DataProcessingConfigurationId: this.dataProcessingConfigurationId,
-      UpstreamResults: this.upstreamResults,
-    };
+    const body = requestBody({
+      EndPoints: this.parameters.EndPoints,
+      JobArguments: this.parameters.JobArguments,
+      ScalarInputs: this.parameters.ScalarInputs,
+      CallbackUri: this.parameters.CallbackUri,
+      DataProcessingConfigurationId: this.parameters.DataProcessingConfigurationId,
+      UpstreamResults: this.parameters.UpstreamResults,
+    });
 
     return {
       method: "POST",
@@ -46,7 +53,8 @@ export class RunDataProcessingModuleAction implements Executable<RunDataProcessi
   }
 
   async parseResponse(response: Response): Promise<RunDataProcessingModuleResponse> {
-    const data = await response.json();
-    return data as RunDataProcessingModuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RunDataProcessingModuleResponse;
+    return (await response.json()) as RunDataProcessingModuleResponse;
   }
 }

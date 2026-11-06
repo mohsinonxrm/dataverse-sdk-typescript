@@ -29,8 +29,9 @@ export class adx_AzureBlobStorageEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<adx_AzureBlobStorageEnabledResponse> {
-    const data = await response.json();
-    return adx_AzureBlobStorageEnabledResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return adx_AzureBlobStorageEnabledResponse.fromResponse({});
+    return adx_AzureBlobStorageEnabledResponse.fromResponse(await response.json());
   }
 }
 

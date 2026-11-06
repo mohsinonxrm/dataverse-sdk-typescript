@@ -1,33 +1,46 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponse as msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionRequestParameters {
+  Type: number;
+  InputParameter: string;
+}
 
 /**
  * msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsAction request message
  *
  * Web API Action: msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsAction
+ *
+ * The first argument is the id of the msdyn_workorderincident record to call it on.
  */
 export class msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionRequestParameters>;
+
   constructor(
     public msdyn_workorderincidentId: string,
-    public type: number,
-    public inputParameter: string
+    parameters: msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionRequestParameters
   ) {
-    super("msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsAction");
+    super("msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_workorderincidents(${this.msdyn_workorderincidentId})/Microsoft.Dynamics.CRM.msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsAction`;
 
-    const body: Record<string, unknown> = {
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
+    const body = requestBody({
+      Type: this.Parameters.Type,
+      InputParameter: this.Parameters.InputParameter,
+    });
 
     return {
       method: "POST",
@@ -42,9 +55,13 @@ export class msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsAction
   async parseResponse(
     response: Response
   ): Promise<msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponse> {
-    const data = await response.json();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponse.fromResponse(
+        {}
+      );
     return msdyn_FieldServiceUpdateCustomerAssetonWorkOrderIncidentItemsActionResponse.fromResponse(
-      data
+      await response.json()
     );
   }
 }

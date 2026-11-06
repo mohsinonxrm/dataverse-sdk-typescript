@@ -1323,7 +1323,9 @@ import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
 const whoami = await client.execute(new WhoAmIFunction());
 
 // Execute action (POST)
-const result = await client.execute(new WinOpportunityAction(/* params */));
+const result = await client.execute(
+  new WinOpportunityAction({ OpportunityClose: opportunityClose, Status: 3 })
+);
 ```
 
 ## Testing

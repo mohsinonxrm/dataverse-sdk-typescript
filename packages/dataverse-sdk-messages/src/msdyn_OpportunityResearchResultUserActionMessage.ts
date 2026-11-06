@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_OpportunityResearchResultUserActionResponse as msdyn_OpportunityResearchResultUserActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_OpportunityResearchResultUserAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_OpportunityResearchResultUserActionRequestParameters {
+  Id: string;
+  Action: string;
+  Topic: string;
+  MacroAgentOrchestrationId: string;
+  OpportunityId: string;
+}
 
 /**
  * msdyn_OpportunityResearchResultUserAction request message
@@ -12,26 +25,22 @@ export class msdyn_OpportunityResearchResultUserActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_OpportunityResearchResultUserActionResponse>
 {
-  constructor(
-    public id: string,
-    public action: string,
-    public topic: string,
-    public macroAgentOrchestrationId: string,
-    public opportunityId: string
-  ) {
-    super("msdyn_OpportunityResearchResultUserAction");
+  declare readonly Parameters: Readonly<msdyn_OpportunityResearchResultUserActionRequestParameters>;
+
+  constructor(parameters: msdyn_OpportunityResearchResultUserActionRequestParameters) {
+    super("msdyn_OpportunityResearchResultUserAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OpportunityResearchResultUserAction`;
 
-    const body: Record<string, unknown> = {
-      Id: this.id,
-      Action: this.action,
-      Topic: this.topic,
-      MacroAgentOrchestrationId: this.macroAgentOrchestrationId,
-      OpportunityId: this.opportunityId,
-    };
+    const body = requestBody({
+      Id: this.Parameters.Id,
+      Action: this.Parameters.Action,
+      Topic: this.Parameters.Topic,
+      MacroAgentOrchestrationId: this.Parameters.MacroAgentOrchestrationId,
+      OpportunityId: this.Parameters.OpportunityId,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,10 @@ export class msdyn_OpportunityResearchResultUserActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_OpportunityResearchResultUserActionResponse> {
-    const data = await response.json();
-    return msdyn_OpportunityResearchResultUserActionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_OpportunityResearchResultUserActionResponse.fromResponse({});
+    return msdyn_OpportunityResearchResultUserActionResponse.fromResponse(await response.json());
   }
 }
 

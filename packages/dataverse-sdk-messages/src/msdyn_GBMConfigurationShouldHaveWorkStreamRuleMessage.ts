@@ -31,8 +31,12 @@ export class msdyn_GBMConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse> {
-    const data = await response.json();
-    return msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    return msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

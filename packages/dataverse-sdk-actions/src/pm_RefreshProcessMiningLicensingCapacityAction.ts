@@ -28,7 +28,8 @@ export class pm_RefreshProcessMiningLicensingCapacityAction implements Executabl
   async parseResponse(
     response: Response
   ): Promise<pm_RefreshProcessMiningLicensingCapacityResponse> {
-    const data = await response.json();
-    return data as pm_RefreshProcessMiningLicensingCapacityResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as pm_RefreshProcessMiningLicensingCapacityResponse;
+    return (await response.json()) as pm_RefreshProcessMiningLicensingCapacityResponse;
   }
 }

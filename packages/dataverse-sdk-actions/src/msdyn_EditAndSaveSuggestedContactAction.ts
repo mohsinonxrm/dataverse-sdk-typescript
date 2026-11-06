@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_EditAndSaveSuggestedContact action
@@ -8,35 +9,41 @@ export interface msdyn_EditAndSaveSuggestedContactResponse {
 }
 
 /**
+ * Parameters of the msdyn_EditAndSaveSuggestedContact action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_EditAndSaveSuggestedContactActionParameters {
+  SuggestedContactId: string;
+  FirstName: string;
+  LastName: string;
+  Email: string;
+  BusinessPhone: string;
+  Address: string;
+  MobilePhone: string;
+  AccountId: string;
+}
+
+/**
  * msdyn_EditAndSaveSuggestedContact action
  *
  * Unbound action
  */
 export class msdyn_EditAndSaveSuggestedContactAction implements Executable<msdyn_EditAndSaveSuggestedContactResponse> {
-  constructor(
-    public readonly suggestedContactId: string,
-    public readonly firstName: string,
-    public readonly lastName: string,
-    public readonly email: string,
-    public readonly businessPhone: string,
-    public readonly address: string,
-    public readonly mobilePhone: string,
-    public readonly accountId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_EditAndSaveSuggestedContactActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_EditAndSaveSuggestedContact`;
 
-    const body: Record<string, unknown> = {
-      SuggestedContactId: this.suggestedContactId,
-      FirstName: this.firstName,
-      LastName: this.lastName,
-      Email: this.email,
-      BusinessPhone: this.businessPhone,
-      Address: this.address,
-      MobilePhone: this.mobilePhone,
-      AccountId: this.accountId,
-    };
+    const body = requestBody({
+      SuggestedContactId: this.parameters.SuggestedContactId,
+      FirstName: this.parameters.FirstName,
+      LastName: this.parameters.LastName,
+      Email: this.parameters.Email,
+      BusinessPhone: this.parameters.BusinessPhone,
+      Address: this.parameters.Address,
+      MobilePhone: this.parameters.MobilePhone,
+      AccountId: this.parameters.AccountId,
+    });
 
     return {
       method: "POST",
@@ -49,7 +56,8 @@ export class msdyn_EditAndSaveSuggestedContactAction implements Executable<msdyn
   }
 
   async parseResponse(response: Response): Promise<msdyn_EditAndSaveSuggestedContactResponse> {
-    const data = await response.json();
-    return data as msdyn_EditAndSaveSuggestedContactResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_EditAndSaveSuggestedContactResponse;
+    return (await response.json()) as msdyn_EditAndSaveSuggestedContactResponse;
   }
 }

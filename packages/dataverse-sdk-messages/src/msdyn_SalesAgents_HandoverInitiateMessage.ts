@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAgents_HandoverInitiateResponse as msdyn_SalesAgents_HandoverInitiateResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_HandoverInitiate message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_HandoverInitiateRequestParameters {
+  msdyn_AssignTo?: number;
+  msdyn_HandoverIntent?: number;
+  msdyn_GetHandoverDetailsInfo?: string;
+  msdyn_SalesAgentRun: string;
+  msdyn_HandoverTarget?: number;
+  msdyn_TrackingId?: string;
+}
 
 /**
  * msdyn_SalesAgents_HandoverInitiate request message
@@ -12,28 +26,23 @@ export class msdyn_SalesAgents_HandoverInitiateRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_HandoverInitiateResponse>
 {
-  constructor(
-    public msdyn_AssignTo: number | undefined,
-    public msdyn_HandoverIntent: number | undefined,
-    public msdyn_GetHandoverDetailsInfo: string | undefined,
-    public msdyn_SalesAgentRun: string,
-    public msdyn_HandoverTarget?: number,
-    public msdyn_TrackingId?: string
-  ) {
-    super("msdyn_SalesAgents_HandoverInitiate");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_HandoverInitiateRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_HandoverInitiateRequestParameters) {
+    super("msdyn_SalesAgents_HandoverInitiate", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_HandoverInitiate`;
 
-    const body: Record<string, unknown> = {
-      msdyn_AssignTo: this.msdyn_AssignTo,
-      msdyn_HandoverIntent: this.msdyn_HandoverIntent,
-      msdyn_GetHandoverDetailsInfo: this.msdyn_GetHandoverDetailsInfo,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_HandoverTarget: this.msdyn_HandoverTarget,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_AssignTo: this.Parameters.msdyn_AssignTo,
+      msdyn_HandoverIntent: this.Parameters.msdyn_HandoverIntent,
+      msdyn_GetHandoverDetailsInfo: this.Parameters.msdyn_GetHandoverDetailsInfo,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_HandoverTarget: this.Parameters.msdyn_HandoverTarget,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class msdyn_SalesAgents_HandoverInitiateRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_HandoverInitiateResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_HandoverInitiateResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SalesAgents_HandoverInitiateResponse.fromResponse({});
+    return msdyn_SalesAgents_HandoverInitiateResponse.fromResponse(await response.json());
   }
 }
 

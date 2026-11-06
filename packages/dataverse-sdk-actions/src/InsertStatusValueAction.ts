@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { Label } from "./types/index.js";
 
 /**
@@ -9,37 +10,43 @@ export interface InsertStatusValueResponse {
 }
 
 /**
+ * Parameters of the InsertStatusValue action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InsertStatusValueActionParameters {
+  Color?: string;
+  OptionSetName?: string;
+  AttributeLogicalName?: string;
+  EntityLogicalName?: string;
+  Value?: number;
+  Label?: Label;
+  Description?: Label;
+  StateCode: number;
+  SolutionUniqueName?: string;
+}
+
+/**
  * InsertStatusValue action
  *
  * Unbound action
  */
 export class InsertStatusValueAction implements Executable<InsertStatusValueResponse> {
-  constructor(
-    public readonly color: string | undefined,
-    public readonly optionSetName: string | undefined,
-    public readonly attributeLogicalName: string | undefined,
-    public readonly entityLogicalName: string | undefined,
-    public readonly value: number | undefined,
-    public readonly label: Label | undefined,
-    public readonly description: Label | undefined,
-    public readonly stateCode: number,
-    public readonly solutionUniqueName?: string
-  ) {}
+  constructor(public readonly parameters: InsertStatusValueActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/InsertStatusValue`;
 
-    const body: Record<string, unknown> = {
-      Color: this.color,
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Value: this.value,
-      Label: this.label,
-      Description: this.description,
-      StateCode: this.stateCode,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      Color: this.parameters.Color,
+      OptionSetName: this.parameters.OptionSetName,
+      AttributeLogicalName: this.parameters.AttributeLogicalName,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      Value: this.parameters.Value,
+      Label: this.parameters.Label,
+      Description: this.parameters.Description,
+      StateCode: this.parameters.StateCode,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -52,7 +59,8 @@ export class InsertStatusValueAction implements Executable<InsertStatusValueResp
   }
 
   async parseResponse(response: Response): Promise<InsertStatusValueResponse> {
-    const data = await response.json();
-    return data as InsertStatusValueResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InsertStatusValueResponse;
+    return (await response.json()) as InsertStatusValueResponse;
   }
 }

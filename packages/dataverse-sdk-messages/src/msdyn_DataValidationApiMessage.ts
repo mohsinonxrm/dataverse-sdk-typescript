@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_DataValidationApiResponse as msdyn_DataValidationApiResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_DataValidationApi message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DataValidationApiRequestParameters {
+  ApiType: number;
+  ApiPayLoad?: string;
+}
 
 /**
  * msdyn_DataValidationApi request message
@@ -12,20 +22,19 @@ export class msdyn_DataValidationApiRequest
   extends OrganizationRequest
   implements Executable<msdyn_DataValidationApiResponse>
 {
-  constructor(
-    public apiType: number,
-    public apiPayLoad?: string
-  ) {
-    super("msdyn_DataValidationApi");
+  declare readonly Parameters: Readonly<msdyn_DataValidationApiRequestParameters>;
+
+  constructor(parameters: msdyn_DataValidationApiRequestParameters) {
+    super("msdyn_DataValidationApi", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DataValidationApi`;
 
-    const body: Record<string, unknown> = {
-      ApiType: this.apiType,
-      ApiPayLoad: this.apiPayLoad,
-    };
+    const body = requestBody({
+      ApiType: this.Parameters.ApiType,
+      ApiPayLoad: this.Parameters.ApiPayLoad,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_DataValidationApiRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DataValidationApiResponse> {
-    const data = await response.json();
-    return msdyn_DataValidationApiResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_DataValidationApiResponse.fromResponse({});
+    return msdyn_DataValidationApiResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_UpdateODOSFeatureEnabledRoles message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateODOSFeatureEnabledRolesRequestParameters {
+  FeatureName: string;
+  Roles: string;
+}
 
 /**
  * msdyn_UpdateODOSFeatureEnabledRoles request message
@@ -10,20 +20,19 @@ export class msdyn_UpdateODOSFeatureEnabledRolesRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdateODOSFeatureEnabledRolesResponse>
 {
-  constructor(
-    public featureName: string,
-    public roles: string
-  ) {
-    super("msdyn_UpdateODOSFeatureEnabledRoles");
+  declare readonly Parameters: Readonly<msdyn_UpdateODOSFeatureEnabledRolesRequestParameters>;
+
+  constructor(parameters: msdyn_UpdateODOSFeatureEnabledRolesRequestParameters) {
+    super("msdyn_UpdateODOSFeatureEnabledRoles", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateODOSFeatureEnabledRoles`;
 
-    const body: Record<string, unknown> = {
-      FeatureName: this.featureName,
-      Roles: this.roles,
-    };
+    const body = requestBody({
+      FeatureName: this.Parameters.FeatureName,
+      Roles: this.Parameters.Roles,
+    });
 
     return {
       method: "POST",

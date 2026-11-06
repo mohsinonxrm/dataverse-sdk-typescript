@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_AcquireTokenResponse as msdyn_AcquireTokenResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_AcquireToken message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AcquireTokenRequestParameters {
+  InputParameter: string;
+}
 
 /**
  * msdyn_AcquireToken request message
@@ -12,16 +21,18 @@ export class msdyn_AcquireTokenRequest
   extends OrganizationRequest
   implements Executable<msdyn_AcquireTokenResponse>
 {
-  constructor(public inputParameter: string) {
-    super("msdyn_AcquireToken");
+  declare readonly Parameters: Readonly<msdyn_AcquireTokenRequestParameters>;
+
+  constructor(parameters: msdyn_AcquireTokenRequestParameters) {
+    super("msdyn_AcquireToken", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AcquireToken`;
 
-    const body: Record<string, unknown> = {
-      InputParameter: this.inputParameter,
-    };
+    const body = requestBody({
+      InputParameter: this.Parameters.InputParameter,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_AcquireTokenRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AcquireTokenResponse> {
-    const data = await response.json();
-    return msdyn_AcquireTokenResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_AcquireTokenResponse.fromResponse({});
+    return msdyn_AcquireTokenResponse.fromResponse(await response.json());
   }
 }
 

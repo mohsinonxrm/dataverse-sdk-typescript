@@ -9,12 +9,20 @@ export interface RetrieveEnvironmentVariableValueResponse {
 }
 
 /**
+ * Parameters of the RetrieveEnvironmentVariableValue function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveEnvironmentVariableValueFunctionParameters {
+  DefinitionSchemaName: string;
+}
+
+/**
  * RetrieveEnvironmentVariableValue function
  *
  * Unbound function
  */
 export class RetrieveEnvironmentVariableValueFunction implements Executable<RetrieveEnvironmentVariableValueResponse> {
-  constructor(public readonly definitionSchemaName: string) {}
+  constructor(public readonly parameters: RetrieveEnvironmentVariableValueFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveEnvironmentVariableValue`;
@@ -22,9 +30,12 @@ export class RetrieveEnvironmentVariableValueFunction implements Executable<Retr
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.definitionSchemaName !== undefined) {
+    if (this.parameters.DefinitionSchemaName !== undefined) {
       aliases.push(`DefinitionSchemaName=@p1`);
-      params.append("@p1", formatParameterAlias(this.definitionSchemaName, "Edm.String"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.DefinitionSchemaName, "Edm.String")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +51,8 @@ export class RetrieveEnvironmentVariableValueFunction implements Executable<Retr
   }
 
   async parseResponse(response: Response): Promise<RetrieveEnvironmentVariableValueResponse> {
-    const data = await response.json();
-    return data as RetrieveEnvironmentVariableValueResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveEnvironmentVariableValueResponse;
+    return (await response.json()) as RetrieveEnvironmentVariableValueResponse;
   }
 }

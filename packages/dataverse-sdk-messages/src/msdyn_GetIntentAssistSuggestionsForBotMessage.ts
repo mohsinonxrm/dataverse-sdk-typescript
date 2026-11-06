@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetIntentAssistSuggestionsForBotResponse as msdyn_GetIntentAssistSuggestionsForBotResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetIntentAssistSuggestionsForBot message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetIntentAssistSuggestionsForBotRequestParameters {
+  slot__conversation?: string[];
+  IntentAssistForBotRequest: string;
+}
 
 /**
  * msdyn_GetIntentAssistSuggestionsForBot request message
@@ -12,20 +22,19 @@ export class msdyn_GetIntentAssistSuggestionsForBotRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetIntentAssistSuggestionsForBotResponse>
 {
-  constructor(
-    public slot__conversation: string[] | undefined,
-    public intentAssistForBotRequest: string
-  ) {
-    super("msdyn_GetIntentAssistSuggestionsForBot");
+  declare readonly Parameters: Readonly<msdyn_GetIntentAssistSuggestionsForBotRequestParameters>;
+
+  constructor(parameters: msdyn_GetIntentAssistSuggestionsForBotRequestParameters) {
+    super("msdyn_GetIntentAssistSuggestionsForBot", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetIntentAssistSuggestionsForBot`;
 
-    const body: Record<string, unknown> = {
-      slot__conversation: this.slot__conversation,
-      IntentAssistForBotRequest: this.intentAssistForBotRequest,
-    };
+    const body = requestBody({
+      slot__conversation: this.Parameters.slot__conversation,
+      IntentAssistForBotRequest: this.Parameters.IntentAssistForBotRequest,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,10 @@ export class msdyn_GetIntentAssistSuggestionsForBotRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetIntentAssistSuggestionsForBotResponse> {
-    const data = await response.json();
-    return msdyn_GetIntentAssistSuggestionsForBotResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_GetIntentAssistSuggestionsForBotResponse.fromResponse({});
+    return msdyn_GetIntentAssistSuggestionsForBotResponse.fromResponse(await response.json());
   }
 }
 

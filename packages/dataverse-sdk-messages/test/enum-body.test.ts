@@ -19,8 +19,11 @@ describe("#232: enum values in message bodies", () => {
     fake.on("POST", "/GrantAccess", () => noContent());
 
     await client.execute(
-      new GrantAccessRequest(createEntityReference("account", "a1"), {
-        AccessMask: AccessRights.ReadAccess | AccessRights.AppendToAccess,
+      new GrantAccessRequest({
+        Target: createEntityReference("account", "a1"),
+        PrincipalAccess: {
+          AccessMask: AccessRights.ReadAccess | AccessRights.AppendToAccess,
+        },
       })
     );
 
@@ -36,11 +39,13 @@ describe("#232: enum values in message bodies", () => {
 
     await client.execute(
       new QueryExpressionToFetchXmlRequest({
-        "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
-        EntityName: "account",
-        Criteria: {
-          FilterOperator: LogicalOperator.And,
-          Conditions: [{ AttributeName: "name", Operator: ConditionOperator.Null }],
+        Query: {
+          "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+          EntityName: "account",
+          Criteria: {
+            FilterOperator: LogicalOperator.And,
+            Conditions: [{ AttributeName: "name", Operator: ConditionOperator.Null }],
+          },
         },
       })
     );

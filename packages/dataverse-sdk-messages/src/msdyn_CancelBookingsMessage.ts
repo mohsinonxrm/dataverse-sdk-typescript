@@ -2,8 +2,20 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CancelBookingsResponse as msdyn_CancelBookingsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CancelBookings message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CancelBookingsRequestParameters {
+  BookingIds?: string;
+  DefaultBookingDetail?: EntityReference | AnyEntityPayload;
+  BookingCancelContext?: string;
+  ConsiderAppointments?: boolean;
+}
 
 /**
  * msdyn_CancelBookings request message
@@ -14,24 +26,21 @@ export class msdyn_CancelBookingsRequest
   extends OrganizationRequest
   implements Executable<msdyn_CancelBookingsResponse>
 {
-  constructor(
-    public bookingIds?: string,
-    public defaultBookingDetail?: EntityReference | AnyEntityPayload,
-    public bookingCancelContext?: string,
-    public considerAppointments?: boolean
-  ) {
-    super("msdyn_CancelBookings");
+  declare readonly Parameters: Readonly<msdyn_CancelBookingsRequestParameters>;
+
+  constructor(parameters: msdyn_CancelBookingsRequestParameters = {}) {
+    super("msdyn_CancelBookings", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CancelBookings`;
 
-    const body: Record<string, unknown> = {
-      BookingIds: this.bookingIds,
-      DefaultBookingDetail: this.defaultBookingDetail,
-      BookingCancelContext: this.bookingCancelContext,
-      ConsiderAppointments: this.considerAppointments,
-    };
+    const body = requestBody({
+      BookingIds: this.Parameters.BookingIds,
+      DefaultBookingDetail: this.Parameters.DefaultBookingDetail,
+      BookingCancelContext: this.Parameters.BookingCancelContext,
+      ConsiderAppointments: this.Parameters.ConsiderAppointments,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class msdyn_CancelBookingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CancelBookingsResponse> {
-    const data = await response.json();
-    return msdyn_CancelBookingsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CancelBookingsResponse.fromResponse({});
+    return msdyn_CancelBookingsResponse.fromResponse(await response.json());
   }
 }
 

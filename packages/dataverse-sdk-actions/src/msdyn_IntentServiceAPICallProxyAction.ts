@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_IntentServiceAPICallProxy action
@@ -8,25 +9,32 @@ export interface msdyn_IntentServiceAPICallProxyResponse {
 }
 
 /**
+ * Parameters of the msdyn_IntentServiceAPICallProxy action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IntentServiceAPICallProxyActionParameters {
+  IntentServiceEntityType?: string;
+  IntentServiceRequestPayload?: string;
+  IntentServiceRequestPayloadForTelemetry: string;
+}
+
+/**
  * msdyn_IntentServiceAPICallProxy action
  *
  * Unbound action
  */
 export class msdyn_IntentServiceAPICallProxyAction implements Executable<msdyn_IntentServiceAPICallProxyResponse> {
-  constructor(
-    public readonly intentServiceEntityType: string | undefined,
-    public readonly intentServiceRequestPayload: string | undefined,
-    public readonly intentServiceRequestPayloadForTelemetry: string
-  ) {}
+  constructor(public readonly parameters: msdyn_IntentServiceAPICallProxyActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IntentServiceAPICallProxy`;
 
-    const body: Record<string, unknown> = {
-      IntentServiceEntityType: this.intentServiceEntityType,
-      IntentServiceRequestPayload: this.intentServiceRequestPayload,
-      IntentServiceRequestPayloadForTelemetry: this.intentServiceRequestPayloadForTelemetry,
-    };
+    const body = requestBody({
+      IntentServiceEntityType: this.parameters.IntentServiceEntityType,
+      IntentServiceRequestPayload: this.parameters.IntentServiceRequestPayload,
+      IntentServiceRequestPayloadForTelemetry:
+        this.parameters.IntentServiceRequestPayloadForTelemetry,
+    });
 
     return {
       method: "POST",
@@ -39,7 +47,8 @@ export class msdyn_IntentServiceAPICallProxyAction implements Executable<msdyn_I
   }
 
   async parseResponse(response: Response): Promise<msdyn_IntentServiceAPICallProxyResponse> {
-    const data = await response.json();
-    return data as msdyn_IntentServiceAPICallProxyResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_IntentServiceAPICallProxyResponse;
+    return (await response.json()) as msdyn_IntentServiceAPICallProxyResponse;
   }
 }

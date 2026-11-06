@@ -122,11 +122,13 @@ The sample will:
 Every action and function is an object that describes a request. You pass it to the client:
 
 ```typescript
-const result = await client.execute(new SomeAction(/* positional arguments */));
+const result = await client.execute(new SomeAction({/* parameters, by their Web API names */}));
 ```
 
-The objects have no `execute()` method of their own. Constructor arguments are positional and
-follow the Web API parameter order. A parameter that is a record reference is made with
+The objects have no `execute()` method of their own. A constructor takes one object with the
+operation's parameters, named as in the Web API (`Targets`, `EntityId`, …); a bound operation takes
+the record id (or entity set) first. Parameters that `$metadata` marks `Nullable="false"` are
+required, the others can be left out. A parameter that is a record reference is made with
 `createEntityReference(logicalName, id)` from `@mohsinonxrm/dataverse-sdk-actions`, which gives the
 Web API shape `{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "<id>" }`.
 
@@ -166,7 +168,7 @@ console.log(`Organization ID: ${result.OrganizationId}`);
 ## Demo 2: CreateMultiple Action (Bulk Create)
 
 **Action**: Creates multiple records of the same entity type in a single request. The constructor
-takes the entity set name and the targets: `new CreateMultipleAction(entitySetName, targets)`.
+takes the entity set name and the targets: `new CreateMultipleAction(entitySetName, { Targets })`.
 
 ```typescript
 import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
@@ -192,7 +194,7 @@ const accounts = [
   },
 ];
 
-const result = await client.execute(new CreateMultipleAction("accounts", accounts));
+const result = await client.execute(new CreateMultipleAction("accounts", { Targets: accounts }));
 
 console.log(`Created IDs: ${result.Ids.join(", ")}`);
 ```
@@ -242,7 +244,7 @@ const updates = [
   },
 ];
 
-await client.execute(new UpdateMultipleAction("accounts", updates));
+await client.execute(new UpdateMultipleAction("accounts", { Targets: updates }));
 // No response body - 204 No Content
 ```
 
@@ -276,13 +278,13 @@ const accounts = [
   },
 ];
 
-await client.execute(new UpsertMultipleAction("accounts", accounts));
+await client.execute(new UpsertMultipleAction("accounts", { Targets: accounts }));
 
 // Run again with the same alternate keys - updates instead of creates
 accounts[0].revenue = 320000;
 accounts[1].revenue = 370000;
 
-await client.execute(new UpsertMultipleAction("accounts", accounts));
+await client.execute(new UpsertMultipleAction("accounts", { Targets: accounts }));
 ```
 
 **Alternate Keys:**
@@ -301,7 +303,7 @@ await client.execute(new UpsertMultipleAction("accounts", accounts));
 ## Demo 5: ExecuteWorkflow Action (Bound to workflow)
 
 **Action**: Executes an on-demand workflow against a record. Returns the async operation ID.
-`new ExecuteWorkflowAction(workflowId, entityId, inputArguments)`:
+`new ExecuteWorkflowAction(workflowId, { EntityId, InputArguments? })`:
 
 ```typescript
 import { ExecuteWorkflowAction } from "@mohsinonxrm/dataverse-sdk-actions";
@@ -310,8 +312,11 @@ const workflowId = "12345678-1234-1234-1234-123456789abc";
 const targetAccountId = "11111111-1111-1111-1111-111111111111";
 
 const result = await client.execute(
-  new ExecuteWorkflowAction(workflowId, targetAccountId, {
-    Arguments: { Count: 0, IsReadOnly: false, Keys: [], Values: [] },
+  new ExecuteWorkflowAction(workflowId, {
+    EntityId: targetAccountId,
+    InputArguments: {
+      Arguments: { Count: 0, IsReadOnly: false, Keys: [], Values: [] },
+    },
   })
 );
 
@@ -343,7 +348,7 @@ console.log(`Async Operation ID: ${result.asyncoperationid}`);
 ## Demo 6: WinOpportunity Action (Unbound)
 
 **Action**: Marks an opportunity as won and creates an opportunity close record.
-`new WinOpportunityAction(opportunityClose, caller, status)`:
+`new WinOpportunityAction({ OpportunityClose, Caller?, Status })`:
 
 ```typescript
 import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
@@ -358,8 +363,8 @@ const opportunityClose = {
   actualend: new Date().toISOString(),
 };
 
-// status 3 = Won (a statuscode of the Won state); "" = no caller override
-await client.execute(new WinOpportunityAction(opportunityClose, "", 3));
+// Status 3 = Won (a statuscode of the Won state); Caller is optional and left out
+await client.execute(new WinOpportunityAction({ OpportunityClose: opportunityClose, Status: 3 }));
 ```
 
 **Result:**
@@ -386,7 +391,7 @@ await client.execute(new WinOpportunityAction(opportunityClose, "", 3));
 ## Demo 7: Merge Action (Unbound)
 
 **Action**: Merges two records of the same entity type. Moves related data to the target and
-deletes the subordinate. `new MergeAction(target, subordinate, updateContent, performParentingChecks)`,
+deletes the subordinate. `new MergeAction({ Target, Subordinate, UpdateContent?, PerformParentingChecks })`,
 where the first three are references to records:
 
 ```typescript
@@ -395,12 +400,12 @@ import { MergeAction, createEntityReference } from "@mohsinonxrm/dataverse-sdk-a
 const targetId = "11111111-1111-1111-1111-111111111111";
 const subordinateId = "22222222-2222-2222-2222-222222222222";
 
-const merge = new MergeAction(
-  createEntityReference("account", targetId),
-  createEntityReference("account", subordinateId),
-  createEntityReference("account", targetId), // UpdateContent, as the sample passes it
-  false // PerformParentingChecks
-);
+const merge = new MergeAction({
+  Target: createEntityReference("account", targetId),
+  Subordinate: createEntityReference("account", subordinateId),
+  UpdateContent: createEntityReference("account", targetId),
+  PerformParentingChecks: false,
+});
 
 await client.execute(merge);
 ```
@@ -448,12 +453,11 @@ import {
   createEntityReference,
 } from "@mohsinonxrm/dataverse-sdk-actions";
 
-// new InitializeFileBlocksUploadAction(target, fileName, fileAttributeName)
-const initialize = new InitializeFileBlocksUploadAction(
-  createEntityReference("account", accountId),
-  "document.pdf",
-  "entityimage" // or a custom file column
-);
+const initialize = new InitializeFileBlocksUploadAction({
+  Target: createEntityReference("account", accountId),
+  FileName: "document.pdf",
+  FileAttributeName: "entityimage",
+});
 
 const initResult = await client.execute(initialize);
 
@@ -475,9 +479,12 @@ for (let i = 0; i < blockCount; i++) {
   const blockId = Buffer.from(`block-${i.toString().padStart(6, "0")}`).toString("base64");
   blockIds.push(blockId);
 
-  // new UploadBlockAction(blockId, blockData, fileContinuationToken)
   await client.execute(
-    new UploadBlockAction(blockId, blockData.toString("base64"), initResult.FileContinuationToken)
+    new UploadBlockAction({
+      BlockId: blockId,
+      BlockData: blockData.toString("base64"),
+      FileContinuationToken: initResult.FileContinuationToken,
+    })
   );
 
   console.log(`Uploaded block ${i + 1}/${blockCount}`);
@@ -489,14 +496,13 @@ for (let i = 0; i < blockCount; i++) {
 ```typescript
 import { CommitFileBlocksUploadAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
-// new CommitFileBlocksUploadAction(fileName, mimeType, blockList, fileContinuationToken)
 await client.execute(
-  new CommitFileBlocksUploadAction(
-    "document.pdf",
-    "application/pdf",
-    blockIds,
-    initResult.FileContinuationToken
-  )
+  new CommitFileBlocksUploadAction({
+    FileName: "document.pdf",
+    MimeType: "application/pdf",
+    BlockList: blockIds,
+    FileContinuationToken: initResult.FileContinuationToken,
+  })
 );
 
 console.log("File upload complete!");
@@ -540,7 +546,7 @@ console.log("File upload complete!");
 
 ```typescript
 // Creating 50 accounts - simple, get all IDs back
-const result = await client.execute(new CreateMultipleAction("accounts", accounts));
+const result = await client.execute(new CreateMultipleAction("accounts", { Targets: accounts }));
 console.log(result.Ids); // All 50 IDs
 ```
 
@@ -675,7 +681,7 @@ For thousands of records, split into chunks:
 const chunkSize = 100;
 for (let i = 0; i < accounts.length; i += chunkSize) {
   const chunk = accounts.slice(i, i + chunkSize);
-  const result = await client.execute(new CreateMultipleAction("accounts", chunk));
+  const result = await client.execute(new CreateMultipleAction("accounts", { Targets: chunk }));
   console.log(`Created ${result.Ids.length} accounts`);
 }
 ```
@@ -687,7 +693,7 @@ records is created. The error says what was wrong:
 
 ```typescript
 try {
-  const result = await client.execute(new CreateMultipleAction("accounts", accounts));
+  const result = await client.execute(new CreateMultipleAction("accounts", { Targets: accounts }));
   console.log(`Created ${result.Ids.length} records`);
 } catch (error) {
   // Nothing was created. Fix the data, or create the records one by one to find the bad one.
@@ -707,7 +713,7 @@ const accounts = externalAccounts.map((ext) => ({
   name: ext.name,
 }));
 
-await client.execute(new UpsertMultipleAction("accounts", accounts)); // Creates or updates
+await client.execute(new UpsertMultipleAction("accounts", { Targets: accounts })); // Creates or updates
 ```
 
 ### 5. Monitor Async Operations
@@ -763,7 +769,9 @@ const accounts = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Parent 2" },
 ];
 
-const accountResult = await client.execute(new CreateMultipleAction("accounts", accounts));
+const accountResult = await client.execute(
+  new CreateMultipleAction("accounts", { Targets: accounts })
+);
 
 // Step 2: Create child contacts bound to their parent
 const contacts = accountResult.Ids.map((accountId) => ({
@@ -773,7 +781,7 @@ const contacts = accountResult.Ids.map((accountId) => ({
   "parentcustomerid_account@odata.bind": `/accounts(${accountId})`,
 }));
 
-await client.execute(new CreateMultipleAction("contacts", contacts));
+await client.execute(new CreateMultipleAction("contacts", { Targets: contacts }));
 ```
 
 ### Pattern 2: Conditional Bulk Update
@@ -795,7 +803,7 @@ const updates = accountsToUpdate.map((account) => ({
   description: "Low revenue account - needs attention",
 }));
 
-await client.execute(new UpdateMultipleAction("accounts", updates));
+await client.execute(new UpdateMultipleAction("accounts", { Targets: updates }));
 
 console.log(`Updated ${updates.length} low-revenue accounts`);
 ```
@@ -846,12 +854,12 @@ await client.api(`/accounts(${targetId})`).patch({
 
 // Then merge
 await client.execute(
-  new MergeAction(
-    createEntityReference("account", targetId),
-    createEntityReference("account", subordinateId),
-    createEntityReference("account", targetId),
-    false
-  )
+  new MergeAction({
+    Target: createEntityReference("account", targetId),
+    Subordinate: createEntityReference("account", subordinateId),
+    UpdateContent: createEntityReference("account", targetId),
+    PerformParentingChecks: false,
+  })
 );
 ```
 
@@ -873,7 +881,7 @@ This sample demonstrated:
 
 1. **Functions** are GET operations with no side effects
 2. **Actions** are POST operations that modify data
-3. Both run with `client.execute(new XxxAction(...))`; the constructor arguments are positional
+3. Both run with `client.execute(new XxxAction({ ... }))`; the constructor takes the parameters by name
 4. **Bulk operations** are faster than individual calls; each request is all or nothing
 5. **$batch changesets** provide transactions across entity types
 6. **@odata.type** is required for all bulk operation targets

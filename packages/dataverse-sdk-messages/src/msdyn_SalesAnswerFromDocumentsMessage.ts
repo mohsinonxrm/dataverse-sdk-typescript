@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAnswerFromDocumentsResponse as msdyn_SalesAnswerFromDocumentsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAnswerFromDocuments message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAnswerFromDocumentsRequestParameters {
+  msdyn_queryLocale?: string;
+  msdyn_responseFormat?: string;
+  msdyn_userQuery: string;
+  msdyn_additionalParameters?: string;
+  msdyn_activityId?: string;
+}
 
 /**
  * msdyn_SalesAnswerFromDocuments request message
@@ -12,26 +25,22 @@ export class msdyn_SalesAnswerFromDocumentsRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAnswerFromDocumentsResponse>
 {
-  constructor(
-    public msdyn_queryLocale: string | undefined,
-    public msdyn_responseFormat: string | undefined,
-    public msdyn_userQuery: string,
-    public msdyn_additionalParameters?: string,
-    public msdyn_activityId?: string
-  ) {
-    super("msdyn_SalesAnswerFromDocuments");
+  declare readonly Parameters: Readonly<msdyn_SalesAnswerFromDocumentsRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAnswerFromDocumentsRequestParameters) {
+    super("msdyn_SalesAnswerFromDocuments", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAnswerFromDocuments`;
 
-    const body: Record<string, unknown> = {
-      msdyn_queryLocale: this.msdyn_queryLocale,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-      msdyn_userQuery: this.msdyn_userQuery,
-      msdyn_additionalParameters: this.msdyn_additionalParameters,
-      msdyn_activityId: this.msdyn_activityId,
-    };
+    const body = requestBody({
+      msdyn_queryLocale: this.Parameters.msdyn_queryLocale,
+      msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
+      msdyn_userQuery: this.Parameters.msdyn_userQuery,
+      msdyn_additionalParameters: this.Parameters.msdyn_additionalParameters,
+      msdyn_activityId: this.Parameters.msdyn_activityId,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class msdyn_SalesAnswerFromDocumentsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAnswerFromDocumentsResponse> {
-    const data = await response.json();
-    return msdyn_SalesAnswerFromDocumentsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SalesAnswerFromDocumentsResponse.fromResponse({});
+    return msdyn_SalesAnswerFromDocumentsResponse.fromResponse(await response.json());
   }
 }
 

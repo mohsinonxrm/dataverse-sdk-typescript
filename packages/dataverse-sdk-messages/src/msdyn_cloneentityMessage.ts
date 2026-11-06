@@ -2,7 +2,19 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_cloneentity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_cloneentityRequestParameters {
+  SourceEntity: EntityReference | AnyEntityPayload;
+  QueryReference?: EntityReference | AnyEntityPayload;
+  TransformAction?: string;
+  TransformParams?: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_cloneentity request message
@@ -13,24 +25,21 @@ export class msdyn_cloneentityRequest
   extends OrganizationRequest
   implements Executable<msdyn_cloneentityResponse>
 {
-  constructor(
-    public sourceEntity: EntityReference | AnyEntityPayload,
-    public queryReference?: EntityReference | AnyEntityPayload,
-    public transformAction?: string,
-    public transformParams?: EntityReference | AnyEntityPayload
-  ) {
-    super("msdyn_cloneentity");
+  declare readonly Parameters: Readonly<msdyn_cloneentityRequestParameters>;
+
+  constructor(parameters: msdyn_cloneentityRequestParameters) {
+    super("msdyn_cloneentity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_cloneentity`;
 
-    const body: Record<string, unknown> = {
-      SourceEntity: this.sourceEntity,
-      QueryReference: this.queryReference,
-      TransformAction: this.transformAction,
-      TransformParams: this.transformParams,
-    };
+    const body = requestBody({
+      SourceEntity: this.Parameters.SourceEntity,
+      QueryReference: this.Parameters.QueryReference,
+      TransformAction: this.Parameters.TransformAction,
+      TransformParams: this.Parameters.TransformParams,
+    });
 
     return {
       method: "POST",
@@ -43,8 +52,9 @@ export class msdyn_cloneentityRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_cloneentityResponse> {
-    const data = await response.json();
-    return msdyn_cloneentityResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_cloneentityResponse.fromResponse({});
+    return msdyn_cloneentityResponse.fromResponse(await response.json());
   }
 }
 

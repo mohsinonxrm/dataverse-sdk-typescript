@@ -27,7 +27,8 @@ export class RetrieveAuditPartitionListFunction implements Executable<RetrieveAu
   }
 
   async parseResponse(response: Response): Promise<RetrieveAuditPartitionListResponse> {
-    const data = await response.json();
-    return data as RetrieveAuditPartitionListResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveAuditPartitionListResponse;
+    return (await response.json()) as RetrieveAuditPartitionListResponse;
   }
 }

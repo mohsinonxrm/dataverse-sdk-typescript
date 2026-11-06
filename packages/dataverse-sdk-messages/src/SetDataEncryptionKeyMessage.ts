@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the SetDataEncryptionKey message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetDataEncryptionKeyRequestParameters {
+  EncryptionKey: string;
+  ChangeEncryptionKey: boolean;
+}
 
 /**
  * SetDataEncryptionKey request message
@@ -10,20 +20,19 @@ export class SetDataEncryptionKeyRequest
   extends OrganizationRequest
   implements Executable<SetDataEncryptionKeyResponse>
 {
-  constructor(
-    public encryptionKey: string,
-    public changeEncryptionKey: boolean
-  ) {
-    super("SetDataEncryptionKey");
+  declare readonly Parameters: Readonly<SetDataEncryptionKeyRequestParameters>;
+
+  constructor(parameters: SetDataEncryptionKeyRequestParameters) {
+    super("SetDataEncryptionKey", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SetDataEncryptionKey`;
 
-    const body: Record<string, unknown> = {
-      EncryptionKey: this.encryptionKey,
-      ChangeEncryptionKey: this.changeEncryptionKey,
-    };
+    const body = requestBody({
+      EncryptionKey: this.Parameters.EncryptionKey,
+      ChangeEncryptionKey: this.Parameters.ChangeEncryptionKey,
+    });
 
     return {
       method: "POST",

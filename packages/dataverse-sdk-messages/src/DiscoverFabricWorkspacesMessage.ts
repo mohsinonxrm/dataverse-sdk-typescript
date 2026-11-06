@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { DiscoverFabricWorkspacesResponse as DiscoverFabricWorkspacesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the DiscoverFabricWorkspaces message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DiscoverFabricWorkspacesRequestParameters {
+  fabricEnvironment?: string;
+}
 
 /**
  * DiscoverFabricWorkspaces request message
@@ -12,16 +21,18 @@ export class DiscoverFabricWorkspacesRequest
   extends OrganizationRequest
   implements Executable<DiscoverFabricWorkspacesResponse>
 {
-  constructor(public fabricEnvironment?: string) {
-    super("DiscoverFabricWorkspaces");
+  declare readonly Parameters: Readonly<DiscoverFabricWorkspacesRequestParameters>;
+
+  constructor(parameters: DiscoverFabricWorkspacesRequestParameters = {}) {
+    super("DiscoverFabricWorkspaces", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DiscoverFabricWorkspaces`;
 
-    const body: Record<string, unknown> = {
-      fabricEnvironment: this.fabricEnvironment,
-    };
+    const body = requestBody({
+      fabricEnvironment: this.Parameters.fabricEnvironment,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class DiscoverFabricWorkspacesRequest
   }
 
   async parseResponse(response: Response): Promise<DiscoverFabricWorkspacesResponse> {
-    const data = await response.json();
-    return DiscoverFabricWorkspacesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return DiscoverFabricWorkspacesResponse.fromResponse({});
+    return DiscoverFabricWorkspacesResponse.fromResponse(await response.json());
   }
 }
 

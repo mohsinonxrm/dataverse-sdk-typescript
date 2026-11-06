@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SalesAnswerFromDocuments action
@@ -8,29 +9,35 @@ export interface msdyn_SalesAnswerFromDocumentsResponse {
 }
 
 /**
+ * Parameters of the msdyn_SalesAnswerFromDocuments action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAnswerFromDocumentsActionParameters {
+  msdyn_queryLocale?: string;
+  msdyn_responseFormat?: string;
+  msdyn_userQuery: string;
+  msdyn_additionalParameters?: string;
+  msdyn_activityId?: string;
+}
+
+/**
  * msdyn_SalesAnswerFromDocuments action
  *
  * Unbound action
  */
 export class msdyn_SalesAnswerFromDocumentsAction implements Executable<msdyn_SalesAnswerFromDocumentsResponse> {
-  constructor(
-    public readonly msdyn_queryLocale: string | undefined,
-    public readonly msdyn_responseFormat: string | undefined,
-    public readonly msdyn_userQuery: string,
-    public readonly msdyn_additionalParameters?: string,
-    public readonly msdyn_activityId?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_SalesAnswerFromDocumentsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAnswerFromDocuments`;
 
-    const body: Record<string, unknown> = {
-      msdyn_queryLocale: this.msdyn_queryLocale,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-      msdyn_userQuery: this.msdyn_userQuery,
-      msdyn_additionalParameters: this.msdyn_additionalParameters,
-      msdyn_activityId: this.msdyn_activityId,
-    };
+    const body = requestBody({
+      msdyn_queryLocale: this.parameters.msdyn_queryLocale,
+      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
+      msdyn_userQuery: this.parameters.msdyn_userQuery,
+      msdyn_additionalParameters: this.parameters.msdyn_additionalParameters,
+      msdyn_activityId: this.parameters.msdyn_activityId,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class msdyn_SalesAnswerFromDocumentsAction implements Executable<msdyn_Sa
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAnswerFromDocumentsResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAnswerFromDocumentsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SalesAnswerFromDocumentsResponse;
+    return (await response.json()) as msdyn_SalesAnswerFromDocumentsResponse;
   }
 }

@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_ManageSLAInstances message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ManageSLAInstancesRequestParameters {
+  SLAId: string;
+  RegardingId: string;
+  EntityLogicalName: string;
+  Recalculate?: number;
+}
 
 /**
  * msdyn_ManageSLAInstances request message
@@ -10,24 +22,21 @@ export class msdyn_ManageSLAInstancesRequest
   extends OrganizationRequest
   implements Executable<msdyn_ManageSLAInstancesResponse>
 {
-  constructor(
-    public sLAId: string,
-    public regardingId: string,
-    public entityLogicalName: string,
-    public recalculate?: number
-  ) {
-    super("msdyn_ManageSLAInstances");
+  declare readonly Parameters: Readonly<msdyn_ManageSLAInstancesRequestParameters>;
+
+  constructor(parameters: msdyn_ManageSLAInstancesRequestParameters) {
+    super("msdyn_ManageSLAInstances", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ManageSLAInstances`;
 
-    const body: Record<string, unknown> = {
-      SLAId: this.sLAId,
-      RegardingId: this.regardingId,
-      EntityLogicalName: this.entityLogicalName,
-      Recalculate: this.recalculate,
-    };
+    const body = requestBody({
+      SLAId: this.Parameters.SLAId,
+      RegardingId: this.Parameters.RegardingId,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Recalculate: this.Parameters.Recalculate,
+    });
 
     return {
       method: "POST",

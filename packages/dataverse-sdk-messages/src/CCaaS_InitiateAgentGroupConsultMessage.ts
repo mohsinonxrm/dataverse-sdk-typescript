@@ -1,41 +1,54 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_InitiateAgentGroupConsult message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_InitiateAgentGroupConsultRequestParameters {
+  IntentId: string;
+  IntentGroupId: string;
+  ApiVersion: string;
+  ConversationAccess: string;
+  AgentGroupId?: string;
+  IntentFamilyId: string;
+  ConsultType: string;
+}
 
 /**
  * CCaaS_InitiateAgentGroupConsult request message
  *
  * Web API Action: CCaaS_InitiateAgentGroupConsult
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_InitiateAgentGroupConsultRequest
   extends OrganizationRequest
   implements Executable<CCaaS_InitiateAgentGroupConsultResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_InitiateAgentGroupConsultRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public intentId: string,
-    public intentGroupId: string,
-    public apiVersion: string,
-    public conversationAccess: string,
-    public agentGroupId: string | undefined,
-    public intentFamilyId: string,
-    public consultType: string
+    parameters: CCaaS_InitiateAgentGroupConsultRequestParameters
   ) {
-    super("CCaaS_InitiateAgentGroupConsult");
+    super("CCaaS_InitiateAgentGroupConsult", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentGroupConsult`;
 
-    const body: Record<string, unknown> = {
-      IntentId: this.intentId,
-      IntentGroupId: this.intentGroupId,
-      ApiVersion: this.apiVersion,
-      ConversationAccess: this.conversationAccess,
-      AgentGroupId: this.agentGroupId,
-      IntentFamilyId: this.intentFamilyId,
-      ConsultType: this.consultType,
-    };
+    const body = requestBody({
+      IntentId: this.Parameters.IntentId,
+      IntentGroupId: this.Parameters.IntentGroupId,
+      ApiVersion: this.Parameters.ApiVersion,
+      ConversationAccess: this.Parameters.ConversationAccess,
+      AgentGroupId: this.Parameters.AgentGroupId,
+      IntentFamilyId: this.Parameters.IntentFamilyId,
+      ConsultType: this.Parameters.ConsultType,
+    });
 
     return {
       method: "POST",

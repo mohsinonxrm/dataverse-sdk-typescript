@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_RouteToOperation action
@@ -8,19 +9,27 @@ export interface msdyn_RouteToOperationResponse {
 }
 
 /**
+ * Parameters of the msdyn_RouteToOperation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RouteToOperationActionParameters {
+  LiveWorkItemId: string;
+}
+
+/**
  * msdyn_RouteToOperation action
  *
  * Unbound action
  */
 export class msdyn_RouteToOperationAction implements Executable<msdyn_RouteToOperationResponse> {
-  constructor(public readonly liveWorkItemId: string) {}
+  constructor(public readonly parameters: msdyn_RouteToOperationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RouteToOperation`;
 
-    const body: Record<string, unknown> = {
-      LiveWorkItemId: this.liveWorkItemId,
-    };
+    const body = requestBody({
+      LiveWorkItemId: this.parameters.LiveWorkItemId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_RouteToOperationAction implements Executable<msdyn_RouteToOpe
   }
 
   async parseResponse(response: Response): Promise<msdyn_RouteToOperationResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_RouteToOperationResponse;
+    return (await response.json()) as msdyn_RouteToOperationResponse;
   }
 }

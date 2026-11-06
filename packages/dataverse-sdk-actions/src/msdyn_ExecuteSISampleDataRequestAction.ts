@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ExecuteSISampleDataRequest action
@@ -8,25 +9,31 @@ export interface msdyn_ExecuteSISampleDataRequestResponse {
 }
 
 /**
+ * Parameters of the msdyn_ExecuteSISampleDataRequest action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecuteSISampleDataRequestActionParameters {
+  Operation: string;
+  Version?: string;
+  Lcid?: string;
+}
+
+/**
  * msdyn_ExecuteSISampleDataRequest action
  *
  * Unbound action
  */
 export class msdyn_ExecuteSISampleDataRequestAction implements Executable<msdyn_ExecuteSISampleDataRequestResponse> {
-  constructor(
-    public readonly operation: string,
-    public readonly version?: string,
-    public readonly lcid?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_ExecuteSISampleDataRequestActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecuteSISampleDataRequest`;
 
-    const body: Record<string, unknown> = {
-      Operation: this.operation,
-      Version: this.version,
-      Lcid: this.lcid,
-    };
+    const body = requestBody({
+      Operation: this.parameters.Operation,
+      Version: this.parameters.Version,
+      Lcid: this.parameters.Lcid,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_ExecuteSISampleDataRequestAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteSISampleDataRequestResponse> {
-    const data = await response.json();
-    return data as msdyn_ExecuteSISampleDataRequestResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ExecuteSISampleDataRequestResponse;
+    return (await response.json()) as msdyn_ExecuteSISampleDataRequestResponse;
   }
 }

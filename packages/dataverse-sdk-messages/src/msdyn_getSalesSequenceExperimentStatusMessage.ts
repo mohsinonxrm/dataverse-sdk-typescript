@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_getSalesSequenceExperimentStatusResponse as msdyn_getSalesSequenceExperimentStatusResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_getSalesSequenceExperimentStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_getSalesSequenceExperimentStatusRequestParameters {
+  msdyn_experimentKey: string;
+  msdyn_experimentVersionRecordId: string;
+}
 
 /**
  * msdyn_getSalesSequenceExperimentStatus request message
@@ -12,20 +22,19 @@ export class msdyn_getSalesSequenceExperimentStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_getSalesSequenceExperimentStatusResponse>
 {
-  constructor(
-    public msdyn_experimentKey: string,
-    public msdyn_experimentVersionRecordId: string
-  ) {
-    super("msdyn_getSalesSequenceExperimentStatus");
+  declare readonly Parameters: Readonly<msdyn_getSalesSequenceExperimentStatusRequestParameters>;
+
+  constructor(parameters: msdyn_getSalesSequenceExperimentStatusRequestParameters) {
+    super("msdyn_getSalesSequenceExperimentStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_getSalesSequenceExperimentStatus`;
 
-    const body: Record<string, unknown> = {
-      msdyn_experimentKey: this.msdyn_experimentKey,
-      msdyn_experimentVersionRecordId: this.msdyn_experimentVersionRecordId,
-    };
+    const body = requestBody({
+      msdyn_experimentKey: this.Parameters.msdyn_experimentKey,
+      msdyn_experimentVersionRecordId: this.Parameters.msdyn_experimentVersionRecordId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,10 @@ export class msdyn_getSalesSequenceExperimentStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_getSalesSequenceExperimentStatusResponse> {
-    const data = await response.json();
-    return msdyn_getSalesSequenceExperimentStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_getSalesSequenceExperimentStatusResponse.fromResponse({});
+    return msdyn_getSalesSequenceExperimentStatusResponse.fromResponse(await response.json());
   }
 }
 

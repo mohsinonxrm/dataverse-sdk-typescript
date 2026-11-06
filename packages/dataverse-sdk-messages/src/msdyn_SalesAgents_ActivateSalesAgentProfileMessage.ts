@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAgents_ActivateSalesAgentProfileResponse as msdyn_SalesAgents_ActivateSalesAgentProfileResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_ActivateSalesAgentProfile message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_ActivateSalesAgentProfileRequestParameters {
+  RequestJson: string;
+}
 
 /**
  * msdyn_SalesAgents_ActivateSalesAgentProfile request message
@@ -12,16 +21,18 @@ export class msdyn_SalesAgents_ActivateSalesAgentProfileRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_ActivateSalesAgentProfileResponse>
 {
-  constructor(public requestJson: string) {
-    super("msdyn_SalesAgents_ActivateSalesAgentProfile");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_ActivateSalesAgentProfileRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_ActivateSalesAgentProfileRequestParameters) {
+    super("msdyn_SalesAgents_ActivateSalesAgentProfile", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_ActivateSalesAgentProfile`;
 
-    const body: Record<string, unknown> = {
-      RequestJson: this.requestJson,
-    };
+    const body = requestBody({
+      RequestJson: this.Parameters.RequestJson,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,10 @@ export class msdyn_SalesAgents_ActivateSalesAgentProfileRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_ActivateSalesAgentProfileResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_ActivateSalesAgentProfileResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_SalesAgents_ActivateSalesAgentProfileResponse.fromResponse({});
+    return msdyn_SalesAgents_ActivateSalesAgentProfileResponse.fromResponse(await response.json());
   }
 }
 

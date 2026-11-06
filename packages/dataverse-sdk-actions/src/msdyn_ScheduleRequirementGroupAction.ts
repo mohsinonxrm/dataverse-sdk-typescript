@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ScheduleRequirementGroup action
@@ -8,56 +9,66 @@ export interface msdyn_ScheduleRequirementGroupResponse {
 }
 
 /**
+ * Parameters of the msdyn_ScheduleRequirementGroup action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ScheduleRequirementGroupActionParameters {
+  Start: string;
+  End: string;
+  Duration?: number;
+  Interval?: number;
+  ResultsPerInterval?: number;
+  TeamsPerInterval?: number;
+  SortOption?: number;
+  PageSize?: number;
+  PageNumber?: number;
+  PagingCookie?: string;
+  ResourceIdsFilter?: string;
+  TeamIdsFilter?: string;
+  IntervalsFilter?: string;
+  GetCandidates?: boolean;
+  OmitPositions?: boolean;
+  ConstraintBag?: string;
+  RemoveRedundantCrewCombinations?: boolean;
+}
+
+/**
  * msdyn_ScheduleRequirementGroup action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_requirementgroup)
+ *
+ * The first argument is the id of the msdyn_requirementgroup record to call it on.
  */
 export class msdyn_ScheduleRequirementGroupAction implements Executable<msdyn_ScheduleRequirementGroupResponse> {
   constructor(
     public readonly msdyn_requirementgroupId: string,
-    public readonly start: string,
-    public readonly end: string,
-    public readonly duration?: number,
-    public readonly interval?: number,
-    public readonly resultsPerInterval?: number,
-    public readonly teamsPerInterval?: number,
-    public readonly sortOption?: number,
-    public readonly pageSize?: number,
-    public readonly pageNumber?: number,
-    public readonly pagingCookie?: string,
-    public readonly resourceIdsFilter?: string,
-    public readonly teamIdsFilter?: string,
-    public readonly intervalsFilter?: string,
-    public readonly getCandidates?: boolean,
-    public readonly omitPositions?: boolean,
-    public readonly constraintBag?: string,
-    public readonly removeRedundantCrewCombinations?: boolean
+    public readonly parameters: msdyn_ScheduleRequirementGroupActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_requirementgroups(${this.msdyn_requirementgroupId})/Microsoft.Dynamics.CRM.msdyn_ScheduleRequirementGroup`;
 
-    const body: Record<string, unknown> = {
-      Start: this.start,
-      End: this.end,
-      Duration: this.duration,
-      Interval: this.interval,
-      ResultsPerInterval: this.resultsPerInterval,
-      TeamsPerInterval: this.teamsPerInterval,
-      SortOption: this.sortOption,
-      PageSize: this.pageSize,
-      PageNumber: this.pageNumber,
-      PagingCookie: this.pagingCookie,
-      ResourceIdsFilter: this.resourceIdsFilter,
-      TeamIdsFilter: this.teamIdsFilter,
-      IntervalsFilter: this.intervalsFilter,
-      GetCandidates: this.getCandidates,
-      OmitPositions: this.omitPositions,
-      ConstraintBag: this.constraintBag,
-      RemoveRedundantCrewCombinations: this.removeRedundantCrewCombinations,
-    };
+    const body = requestBody({
+      Start: this.parameters.Start,
+      End: this.parameters.End,
+      Duration: this.parameters.Duration,
+      Interval: this.parameters.Interval,
+      ResultsPerInterval: this.parameters.ResultsPerInterval,
+      TeamsPerInterval: this.parameters.TeamsPerInterval,
+      SortOption: this.parameters.SortOption,
+      PageSize: this.parameters.PageSize,
+      PageNumber: this.parameters.PageNumber,
+      PagingCookie: this.parameters.PagingCookie,
+      ResourceIdsFilter: this.parameters.ResourceIdsFilter,
+      TeamIdsFilter: this.parameters.TeamIdsFilter,
+      IntervalsFilter: this.parameters.IntervalsFilter,
+      GetCandidates: this.parameters.GetCandidates,
+      OmitPositions: this.parameters.OmitPositions,
+      ConstraintBag: this.parameters.ConstraintBag,
+      RemoveRedundantCrewCombinations: this.parameters.RemoveRedundantCrewCombinations,
+    });
 
     return {
       method: "POST",
@@ -70,7 +81,8 @@ export class msdyn_ScheduleRequirementGroupAction implements Executable<msdyn_Sc
   }
 
   async parseResponse(response: Response): Promise<msdyn_ScheduleRequirementGroupResponse> {
-    const data = await response.json();
-    return data as msdyn_ScheduleRequirementGroupResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ScheduleRequirementGroupResponse;
+    return (await response.json()) as msdyn_ScheduleRequirementGroupResponse;
   }
 }

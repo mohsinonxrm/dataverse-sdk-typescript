@@ -1,7 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_AddBotUserResponse as msdyn_AddBotUserResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_AddBotUser message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AddBotUserRequestParameters {
+  BotApplicationId: string;
+  ApplicationId?: string;
+  FirstName: string;
+  LastName: string;
+  BotHandle?: string;
+  OwningEnvironmentId?: string;
+  Properties?: string;
+}
 
 /**
  * msdyn_AddBotUser request message
@@ -12,30 +27,24 @@ export class msdyn_AddBotUserRequest
   extends OrganizationRequest
   implements Executable<msdyn_AddBotUserResponse>
 {
-  constructor(
-    public botApplicationId: string,
-    public applicationId: string | undefined,
-    public firstName: string,
-    public lastName: string,
-    public botHandle?: string,
-    public owningEnvironmentId?: string,
-    public properties?: string
-  ) {
-    super("msdyn_AddBotUser");
+  declare readonly Parameters: Readonly<msdyn_AddBotUserRequestParameters>;
+
+  constructor(parameters: msdyn_AddBotUserRequestParameters) {
+    super("msdyn_AddBotUser", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AddBotUser`;
 
-    const body: Record<string, unknown> = {
-      BotApplicationId: this.botApplicationId,
-      ApplicationId: this.applicationId,
-      FirstName: this.firstName,
-      LastName: this.lastName,
-      BotHandle: this.botHandle,
-      OwningEnvironmentId: this.owningEnvironmentId,
-      Properties: this.properties,
-    };
+    const body = requestBody({
+      BotApplicationId: this.Parameters.BotApplicationId,
+      ApplicationId: this.Parameters.ApplicationId,
+      FirstName: this.Parameters.FirstName,
+      LastName: this.Parameters.LastName,
+      BotHandle: this.Parameters.BotHandle,
+      OwningEnvironmentId: this.Parameters.OwningEnvironmentId,
+      Properties: this.Parameters.Properties,
+    });
 
     return {
       method: "POST",
@@ -48,8 +57,9 @@ export class msdyn_AddBotUserRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AddBotUserResponse> {
-    const data = await response.json();
-    return msdyn_AddBotUserResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_AddBotUserResponse.fromResponse({});
+    return msdyn_AddBotUserResponse.fromResponse(await response.json());
   }
 }
 

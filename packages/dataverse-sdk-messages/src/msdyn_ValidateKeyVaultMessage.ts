@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ValidateKeyVaultResponse as msdyn_ValidateKeyVaultResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ValidateKeyVault message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ValidateKeyVaultRequestParameters {
+  KeyVaultUri?: string;
+  PlatformType?: string;
+  IsAppSigningEnabled?: boolean;
+  BundleIdentifier?: string;
+  StorageTypeForUpload?: string;
+}
 
 /**
  * msdyn_ValidateKeyVault request message
@@ -12,26 +25,22 @@ export class msdyn_ValidateKeyVaultRequest
   extends OrganizationRequest
   implements Executable<msdyn_ValidateKeyVaultResponse>
 {
-  constructor(
-    public keyVaultUri?: string,
-    public platformType?: string,
-    public isAppSigningEnabled?: boolean,
-    public bundleIdentifier?: string,
-    public storageTypeForUpload?: string
-  ) {
-    super("msdyn_ValidateKeyVault");
+  declare readonly Parameters: Readonly<msdyn_ValidateKeyVaultRequestParameters>;
+
+  constructor(parameters: msdyn_ValidateKeyVaultRequestParameters = {}) {
+    super("msdyn_ValidateKeyVault", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ValidateKeyVault`;
 
-    const body: Record<string, unknown> = {
-      KeyVaultUri: this.keyVaultUri,
-      PlatformType: this.platformType,
-      IsAppSigningEnabled: this.isAppSigningEnabled,
-      BundleIdentifier: this.bundleIdentifier,
-      StorageTypeForUpload: this.storageTypeForUpload,
-    };
+    const body = requestBody({
+      KeyVaultUri: this.Parameters.KeyVaultUri,
+      PlatformType: this.Parameters.PlatformType,
+      IsAppSigningEnabled: this.Parameters.IsAppSigningEnabled,
+      BundleIdentifier: this.Parameters.BundleIdentifier,
+      StorageTypeForUpload: this.Parameters.StorageTypeForUpload,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class msdyn_ValidateKeyVaultRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ValidateKeyVaultResponse> {
-    const data = await response.json();
-    return msdyn_ValidateKeyVaultResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ValidateKeyVaultResponse.fromResponse({});
+    return msdyn_ValidateKeyVaultResponse.fromResponse(await response.json());
   }
 }
 

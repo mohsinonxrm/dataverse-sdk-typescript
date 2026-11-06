@@ -30,7 +30,8 @@ export class msdyn_OcServiceEndpointShouldBeConfiguredRuleAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse;
+    return (await response.json()) as msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse;
   }
 }

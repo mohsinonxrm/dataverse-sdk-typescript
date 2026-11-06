@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_GetRepresentativeAvailabilityForConversationResponse as CCaaS_GetRepresentativeAvailabilityForConversationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_GetRepresentativeAvailabilityForConversation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_GetRepresentativeAvailabilityForConversationRequestParameters {
+  ConversationId?: string;
+  ApiVersion: string;
+  CustomContextItems?: string;
+}
 
 /**
  * CCaaS_GetRepresentativeAvailabilityForConversation request message
@@ -12,22 +23,20 @@ export class CCaaS_GetRepresentativeAvailabilityForConversationRequest
   extends OrganizationRequest
   implements Executable<CCaaS_GetRepresentativeAvailabilityForConversationResponse>
 {
-  constructor(
-    public conversationId: string | undefined,
-    public apiVersion: string,
-    public customContextItems?: string
-  ) {
-    super("CCaaS_GetRepresentativeAvailabilityForConversation");
+  declare readonly Parameters: Readonly<CCaaS_GetRepresentativeAvailabilityForConversationRequestParameters>;
+
+  constructor(parameters: CCaaS_GetRepresentativeAvailabilityForConversationRequestParameters) {
+    super("CCaaS_GetRepresentativeAvailabilityForConversation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_GetRepresentativeAvailabilityForConversation`;
 
-    const body: Record<string, unknown> = {
-      ConversationId: this.conversationId,
-      ApiVersion: this.apiVersion,
-      CustomContextItems: this.customContextItems,
-    };
+    const body = requestBody({
+      ConversationId: this.Parameters.ConversationId,
+      ApiVersion: this.Parameters.ApiVersion,
+      CustomContextItems: this.Parameters.CustomContextItems,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,12 @@ export class CCaaS_GetRepresentativeAvailabilityForConversationRequest
   async parseResponse(
     response: Response
   ): Promise<CCaaS_GetRepresentativeAvailabilityForConversationResponse> {
-    const data = await response.json();
-    return CCaaS_GetRepresentativeAvailabilityForConversationResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return CCaaS_GetRepresentativeAvailabilityForConversationResponse.fromResponse({});
+    return CCaaS_GetRepresentativeAvailabilityForConversationResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

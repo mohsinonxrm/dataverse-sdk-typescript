@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,25 +11,31 @@ export interface OnExternalUpdatedResponse {
 }
 
 /**
+ * Parameters of the OnExternalUpdated action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface OnExternalUpdatedActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  PreImage?: EntityReference | AnyEntityPayload;
+  ChangedFields?: string[];
+}
+
+/**
  * OnExternalUpdated action
  *
  * Unbound action
  */
 export class OnExternalUpdatedAction implements Executable<OnExternalUpdatedResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly preImage?: EntityReference | AnyEntityPayload,
-    public readonly changedFields?: string[]
-  ) {}
+  constructor(public readonly parameters: OnExternalUpdatedActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/OnExternalUpdated`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      PreImage: this.preImage,
-      ChangedFields: this.changedFields,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      PreImage: this.parameters.PreImage,
+      ChangedFields: this.parameters.ChangedFields,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class OnExternalUpdatedAction implements Executable<OnExternalUpdatedResp
   }
 
   async parseResponse(response: Response): Promise<OnExternalUpdatedResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as OnExternalUpdatedResponse;
+    return (await response.json()) as OnExternalUpdatedResponse;
   }
 }

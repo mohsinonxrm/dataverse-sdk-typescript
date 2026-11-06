@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from UnpublishAIConfiguration action
@@ -8,24 +9,34 @@ export interface UnpublishAIConfigurationResponse {
 }
 
 /**
+ * Parameters of the UnpublishAIConfiguration action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UnpublishAIConfigurationActionParameters {
+  version: string;
+}
+
+/**
  * UnpublishAIConfiguration action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_aiconfiguration)
+ *
+ * The first argument is the id of the msdyn_aiconfiguration record to call it on.
  */
 export class UnpublishAIConfigurationAction implements Executable<UnpublishAIConfigurationResponse> {
   constructor(
     public readonly msdyn_aiconfigurationId: string,
-    public readonly version: string
+    public readonly parameters: UnpublishAIConfigurationActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_aiconfigurations(${this.msdyn_aiconfigurationId})/Microsoft.Dynamics.CRM.UnpublishAIConfiguration`;
 
-    const body: Record<string, unknown> = {
-      version: this.version,
-    };
+    const body = requestBody({
+      version: this.parameters.version,
+    });
 
     return {
       method: "POST",
@@ -38,7 +49,8 @@ export class UnpublishAIConfigurationAction implements Executable<UnpublishAICon
   }
 
   async parseResponse(response: Response): Promise<UnpublishAIConfigurationResponse> {
-    const data = await response.json();
-    return data as UnpublishAIConfigurationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UnpublishAIConfigurationResponse;
+    return (await response.json()) as UnpublishAIConfigurationResponse;
   }
 }

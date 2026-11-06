@@ -10,12 +10,20 @@ export interface ValidateAppResponse {
 }
 
 /**
+ * Parameters of the ValidateApp function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ValidateAppFunctionParameters {
+  AppModuleId: string;
+}
+
+/**
  * ValidateApp function
  *
  * Unbound function
  */
 export class ValidateAppFunction implements Executable<ValidateAppResponse> {
-  constructor(public readonly appModuleId: string) {}
+  constructor(public readonly parameters: ValidateAppFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/ValidateApp`;
@@ -23,9 +31,9 @@ export class ValidateAppFunction implements Executable<ValidateAppResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.appModuleId !== undefined) {
+    if (this.parameters.AppModuleId !== undefined) {
       aliases.push(`AppModuleId=@p1`);
-      params.append("@p1", formatParameterAlias(this.appModuleId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.AppModuleId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class ValidateAppFunction implements Executable<ValidateAppResponse> {
   }
 
   async parseResponse(response: Response): Promise<ValidateAppResponse> {
-    const data = await response.json();
-    return data as ValidateAppResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ValidateAppResponse;
+    return (await response.json()) as ValidateAppResponse;
   }
 }

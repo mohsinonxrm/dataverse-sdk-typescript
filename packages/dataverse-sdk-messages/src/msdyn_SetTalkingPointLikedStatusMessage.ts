@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SetTalkingPointLikedStatusResponse as msdyn_SetTalkingPointLikedStatusResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SetTalkingPointLikedStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SetTalkingPointLikedStatusRequestParameters {
+  MessageId?: string;
+  InferredMessageId?: string;
+  IsLiked?: boolean;
+}
 
 /**
  * msdyn_SetTalkingPointLikedStatus request message
@@ -12,22 +23,20 @@ export class msdyn_SetTalkingPointLikedStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_SetTalkingPointLikedStatusResponse>
 {
-  constructor(
-    public messageId?: string,
-    public inferredMessageId?: string,
-    public isLiked?: boolean
-  ) {
-    super("msdyn_SetTalkingPointLikedStatus");
+  declare readonly Parameters: Readonly<msdyn_SetTalkingPointLikedStatusRequestParameters>;
+
+  constructor(parameters: msdyn_SetTalkingPointLikedStatusRequestParameters = {}) {
+    super("msdyn_SetTalkingPointLikedStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SetTalkingPointLikedStatus`;
 
-    const body: Record<string, unknown> = {
-      MessageId: this.messageId,
-      InferredMessageId: this.inferredMessageId,
-      IsLiked: this.isLiked,
-    };
+    const body = requestBody({
+      MessageId: this.Parameters.MessageId,
+      InferredMessageId: this.Parameters.InferredMessageId,
+      IsLiked: this.Parameters.IsLiked,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_SetTalkingPointLikedStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SetTalkingPointLikedStatusResponse> {
-    const data = await response.json();
-    return msdyn_SetTalkingPointLikedStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SetTalkingPointLikedStatusResponse.fromResponse({});
+    return msdyn_SetTalkingPointLikedStatusResponse.fromResponse(await response.json());
   }
 }
 

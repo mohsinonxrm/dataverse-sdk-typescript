@@ -26,7 +26,8 @@ export class _InvokeHideReserveEntitiesAction implements Executable<_InvokeHideR
   }
 
   async parseResponse(response: Response): Promise<_InvokeHideReserveEntitiesResponse> {
-    const data = await response.json();
-    return data as _InvokeHideReserveEntitiesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as _InvokeHideReserveEntitiesResponse;
+    return (await response.json()) as _InvokeHideReserveEntitiesResponse;
   }
 }

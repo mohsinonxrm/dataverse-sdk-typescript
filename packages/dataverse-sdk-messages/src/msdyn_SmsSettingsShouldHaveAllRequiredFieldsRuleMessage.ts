@@ -31,8 +31,12 @@ export class msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    const data = await response.json();
-    return msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    return msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

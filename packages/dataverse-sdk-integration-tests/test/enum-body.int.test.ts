@@ -28,7 +28,9 @@ let teamId = "";
 async function teamAccess(): Promise<string> {
   const { client } = liveClient();
   const result = await client.execute(
-    new RetrievePrincipalAccess_teamFunction(teamId, functionReference("account", accountId))
+    new RetrievePrincipalAccess_teamFunction(teamId, {
+      Target: functionReference("account", accountId),
+    })
   );
   return String(result.AccessRights);
 }
@@ -80,22 +82,28 @@ describe.skipIf(!live)("live: enum values in action bodies (#232)", () => {
     const target = createEntityReference("account", accountId);
     const team = createEntityReference("team", teamId);
     await client.execute(
-      new GrantAccessAction(target, {
-        Principal: team,
-        AccessMask: AccessRights.ReadAccess | AccessRights.AppendAccess,
+      new GrantAccessAction({
+        Target: target,
+        PrincipalAccess: {
+          Principal: team,
+          AccessMask: AccessRights.ReadAccess | AccessRights.AppendAccess,
+        },
       })
     );
     expect(await teamAccess()).toBe("ReadAccess, AppendAccess");
 
     await client.execute(
-      new ModifyAccessAction(target, {
-        Principal: team,
-        AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess | AccessRights.ShareAccess,
+      new ModifyAccessAction({
+        Target: target,
+        PrincipalAccess: {
+          Principal: team,
+          AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess | AccessRights.ShareAccess,
+        },
       })
     );
     expect(await teamAccess()).toBe("ReadAccess, WriteAccess, ShareAccess");
 
-    await client.execute(new RevokeAccessAction(target, team));
+    await client.execute(new RevokeAccessAction({ Target: target, Revokee: team }));
     expect(await teamAccess()).toBe("None");
   });
 
@@ -103,11 +111,13 @@ describe.skipIf(!live)("live: enum values in action bodies (#232)", () => {
     const { client } = liveClient();
     const result = await client.execute(
       new QueryExpressionToFetchXmlAction({
-        "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
-        EntityName: "account",
-        Criteria: {
-          FilterOperator: LogicalOperator.Or,
-          Conditions: [{ AttributeName: "name", Operator: ConditionOperator.NotNull }],
+        Query: {
+          "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+          EntityName: "account",
+          Criteria: {
+            FilterOperator: LogicalOperator.Or,
+            Conditions: [{ AttributeName: "name", Operator: ConditionOperator.NotNull }],
+          },
         },
       })
     );

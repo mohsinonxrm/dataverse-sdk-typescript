@@ -10,17 +10,23 @@ export interface SearchByTitleKbArticleResponse {
 }
 
 /**
+ * Parameters of the SearchByTitleKbArticle function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SearchByTitleKbArticleFunctionParameters {
+  SearchText: string;
+  Subject: subject;
+  UseInflection: boolean;
+}
+
+/**
  * SearchByTitleKbArticle function
  *
  * Bound function
  * Binding parameter: entityset (Collection(mscrm.kbarticle))
  */
 export class SearchByTitleKbArticleFunction implements Executable<SearchByTitleKbArticleResponse> {
-  constructor(
-    public readonly searchText: string,
-    public readonly subject: subject,
-    public readonly useInflection: boolean
-  ) {}
+  constructor(public readonly parameters: SearchByTitleKbArticleFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function (entity collection)
@@ -29,17 +35,17 @@ export class SearchByTitleKbArticleFunction implements Executable<SearchByTitleK
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.searchText !== undefined) {
+    if (this.parameters.SearchText !== undefined) {
       aliases.push(`SearchText=@p1`);
-      params.append("@p1", formatParameterAlias(this.searchText, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.SearchText, "Edm.String"));
     }
-    if (this.subject !== undefined) {
+    if (this.parameters.Subject !== undefined) {
       aliases.push(`Subject=@p2`);
-      params.append("@p2", JSON.stringify(this.subject));
+      params.append("@p2", JSON.stringify(this.parameters.Subject));
     }
-    if (this.useInflection !== undefined) {
+    if (this.parameters.UseInflection !== undefined) {
       aliases.push(`UseInflection=@p3`);
-      params.append("@p3", formatParameterAlias(this.useInflection, "Edm.Boolean"));
+      params.append("@p3", formatParameterAlias(this.parameters.UseInflection, "Edm.Boolean"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -55,7 +61,8 @@ export class SearchByTitleKbArticleFunction implements Executable<SearchByTitleK
   }
 
   async parseResponse(response: Response): Promise<SearchByTitleKbArticleResponse> {
-    const data = await response.json();
-    return data as SearchByTitleKbArticleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SearchByTitleKbArticleResponse;
+    return (await response.json()) as SearchByTitleKbArticleResponse;
   }
 }

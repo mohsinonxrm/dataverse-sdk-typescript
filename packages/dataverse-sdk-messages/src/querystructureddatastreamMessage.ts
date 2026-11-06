@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { querystructureddatastreamResponse as querystructureddatastreamResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the querystructureddatastream message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface querystructureddatastreamRequestParameters {
+  maxRows: number;
+  options: string[];
+  additionalProperties: string;
+  skill: string;
+  queryText: string;
+}
 
 /**
  * querystructureddatastream request message
@@ -12,26 +25,22 @@ export class querystructureddatastreamRequest
   extends OrganizationRequest
   implements Executable<querystructureddatastreamResponse>
 {
-  constructor(
-    public maxRows: number,
-    public options: string[],
-    public additionalProperties: string,
-    public skill: string,
-    public queryText: string
-  ) {
-    super("querystructureddatastream");
+  declare readonly Parameters: Readonly<querystructureddatastreamRequestParameters>;
+
+  constructor(parameters: querystructureddatastreamRequestParameters) {
+    super("querystructureddatastream", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/querystructureddatastream`;
 
-    const body: Record<string, unknown> = {
-      maxRows: this.maxRows,
-      options: this.options,
-      additionalProperties: this.additionalProperties,
-      skill: this.skill,
-      queryText: this.queryText,
-    };
+    const body = requestBody({
+      maxRows: this.Parameters.maxRows,
+      options: this.Parameters.options,
+      additionalProperties: this.Parameters.additionalProperties,
+      skill: this.Parameters.skill,
+      queryText: this.Parameters.queryText,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class querystructureddatastreamRequest
   }
 
   async parseResponse(response: Response): Promise<querystructureddatastreamResponse> {
-    const data = await response.json();
-    return querystructureddatastreamResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return querystructureddatastreamResponse.fromResponse({});
+    return querystructureddatastreamResponse.fromResponse(await response.json());
   }
 }
 

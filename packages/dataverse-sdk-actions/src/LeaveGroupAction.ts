@@ -12,6 +12,8 @@ export interface LeaveGroupResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.flowmachine)
+ *
+ * The first argument is the id of the flowmachine record to call it on.
  */
 export class LeaveGroupAction implements Executable<LeaveGroupResponse> {
   constructor(public readonly flowmachineId: string) {}
@@ -30,7 +32,8 @@ export class LeaveGroupAction implements Executable<LeaveGroupResponse> {
   }
 
   async parseResponse(response: Response): Promise<LeaveGroupResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as LeaveGroupResponse;
+    return (await response.json()) as LeaveGroupResponse;
   }
 }

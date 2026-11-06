@@ -31,8 +31,12 @@ export class msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    const data = await response.json();
-    return msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    return msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

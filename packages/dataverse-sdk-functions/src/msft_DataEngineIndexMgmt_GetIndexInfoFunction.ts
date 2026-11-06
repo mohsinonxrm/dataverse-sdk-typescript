@@ -11,14 +11,22 @@ export interface msft_DataEngineIndexMgmt_GetIndexInfoResponse {
 }
 
 /**
+ * Parameters of the msft_DataEngineIndexMgmt_GetIndexInfo function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msft_DataEngineIndexMgmt_GetIndexInfoFunctionParameters {
+  GetIndexInfo_KeyColumnsJson: string;
+  GetIndexInfo_LogicalTableName: string;
+}
+
+/**
  * msft_DataEngineIndexMgmt_GetIndexInfo function
  *
  * Unbound function
  */
 export class msft_DataEngineIndexMgmt_GetIndexInfoFunction implements Executable<msft_DataEngineIndexMgmt_GetIndexInfoResponse> {
   constructor(
-    public readonly getIndexInfo_KeyColumnsJson: string,
-    public readonly getIndexInfo_LogicalTableName: string
+    public readonly parameters: msft_DataEngineIndexMgmt_GetIndexInfoFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -27,13 +35,19 @@ export class msft_DataEngineIndexMgmt_GetIndexInfoFunction implements Executable
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.getIndexInfo_KeyColumnsJson !== undefined) {
+    if (this.parameters.GetIndexInfo_KeyColumnsJson !== undefined) {
       aliases.push(`GetIndexInfo_KeyColumnsJson=@p1`);
-      params.append("@p1", formatParameterAlias(this.getIndexInfo_KeyColumnsJson, "Edm.String"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.GetIndexInfo_KeyColumnsJson, "Edm.String")
+      );
     }
-    if (this.getIndexInfo_LogicalTableName !== undefined) {
+    if (this.parameters.GetIndexInfo_LogicalTableName !== undefined) {
       aliases.push(`GetIndexInfo_LogicalTableName=@p2`);
-      params.append("@p2", formatParameterAlias(this.getIndexInfo_LogicalTableName, "Edm.String"));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.GetIndexInfo_LogicalTableName, "Edm.String")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -49,7 +63,8 @@ export class msft_DataEngineIndexMgmt_GetIndexInfoFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<msft_DataEngineIndexMgmt_GetIndexInfoResponse> {
-    const data = await response.json();
-    return data as msft_DataEngineIndexMgmt_GetIndexInfoResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msft_DataEngineIndexMgmt_GetIndexInfoResponse;
+    return (await response.json()) as msft_DataEngineIndexMgmt_GetIndexInfoResponse;
   }
 }

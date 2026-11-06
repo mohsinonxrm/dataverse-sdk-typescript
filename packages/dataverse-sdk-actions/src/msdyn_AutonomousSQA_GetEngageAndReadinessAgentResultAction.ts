@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,23 +11,31 @@ export interface msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse {
 }
 
 /**
+ * Parameters of the msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultActionParameters {
+  msdyn_RegardingObjectId: EntityReference | AnyEntityPayload;
+  msdyn_TrackingId: string;
+}
+
+/**
  * msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult action
  *
  * Unbound action
  */
 export class msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultAction implements Executable<msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse> {
   constructor(
-    public readonly msdyn_RegardingObjectId: EntityReference | AnyEntityPayload,
-    public readonly msdyn_TrackingId: string
+    public readonly parameters: msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult`;
 
-    const body: Record<string, unknown> = {
-      msdyn_RegardingObjectId: this.msdyn_RegardingObjectId,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_RegardingObjectId: this.parameters.msdyn_RegardingObjectId,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
@@ -41,7 +50,9 @@ export class msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultAction implemen
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse> {
-    const data = await response.json();
-    return data as msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse;
+    return (await response.json()) as msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse;
   }
 }

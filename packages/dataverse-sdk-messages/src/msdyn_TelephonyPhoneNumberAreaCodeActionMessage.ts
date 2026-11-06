@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_TelephonyPhoneNumberAreaCodeActionResponse as msdyn_TelephonyPhoneNumberAreaCodeActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_TelephonyPhoneNumberAreaCodeAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TelephonyPhoneNumberAreaCodeActionRequestParameters {
+  ActionRequest: string;
+}
 
 /**
  * msdyn_TelephonyPhoneNumberAreaCodeAction request message
@@ -12,16 +21,18 @@ export class msdyn_TelephonyPhoneNumberAreaCodeActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_TelephonyPhoneNumberAreaCodeActionResponse>
 {
-  constructor(public actionRequest: string) {
-    super("msdyn_TelephonyPhoneNumberAreaCodeAction");
+  declare readonly Parameters: Readonly<msdyn_TelephonyPhoneNumberAreaCodeActionRequestParameters>;
+
+  constructor(parameters: msdyn_TelephonyPhoneNumberAreaCodeActionRequestParameters) {
+    super("msdyn_TelephonyPhoneNumberAreaCodeAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TelephonyPhoneNumberAreaCodeAction`;
 
-    const body: Record<string, unknown> = {
-      ActionRequest: this.actionRequest,
-    };
+    const body = requestBody({
+      ActionRequest: this.Parameters.ActionRequest,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,10 @@ export class msdyn_TelephonyPhoneNumberAreaCodeActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TelephonyPhoneNumberAreaCodeActionResponse> {
-    const data = await response.json();
-    return msdyn_TelephonyPhoneNumberAreaCodeActionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_TelephonyPhoneNumberAreaCodeActionResponse.fromResponse({});
+    return msdyn_TelephonyPhoneNumberAreaCodeActionResponse.fromResponse(await response.json());
   }
 }
 

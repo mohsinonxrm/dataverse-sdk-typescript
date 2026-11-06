@@ -26,7 +26,8 @@ export class msdyn_EnableSharePointAction implements Executable<msdyn_EnableShar
   }
 
   async parseResponse(response: Response): Promise<msdyn_EnableSharePointResponse> {
-    const data = await response.json();
-    return data as msdyn_EnableSharePointResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_EnableSharePointResponse;
+    return (await response.json()) as msdyn_EnableSharePointResponse;
   }
 }

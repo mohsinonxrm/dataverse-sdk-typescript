@@ -111,11 +111,11 @@ describe("entity reference shape (#251)", () => {
       "use-web-api-reference.ts",
       `${HEADER}
 const target: WebApiEntityReference = { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a1" };
-export const merge = new MergeAction(target, createEntityReference("account", "a2"), undefined, false);
+export const merge = new MergeAction({ Target: target, Subordinate: createEntityReference("account", "a2"), PerformParentingChecks: false });
 const messageTarget: MessageWebApiReference = { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a1" };
-export const mergeRequest = new MergeRequest(messageTarget, messageReference("account", "a2"), undefined, false);
-export const win = new WinOpportunityAction({ "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose", subject: "Won" }, 3);
-export const add = new AddPrincipalToQueueAction("q1", createEntityReference("systemuser", "u1"));
+export const mergeRequest = new MergeRequest({ Target: messageTarget, Subordinate: messageReference("account", "a2"), PerformParentingChecks: false });
+export const win = new WinOpportunityAction({ OpportunityClose: { "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose", subject: "Won" }, Status: 3 });
+export const add = new AddPrincipalToQueueAction("q1", { Principal: createEntityReference("systemuser", "u1") });
 export const unused = wrong;
 `
     );
@@ -128,13 +128,13 @@ export const unused = wrong;
       "use-wrong-action-reference.ts",
       `${HEADER}
 // @ts-expect-error a variable: neither an EntityReference nor a payload
-export const a = new MergeAction(wrong, createEntityReference("account", "a2"), undefined, false);
+export const a = new MergeAction({ Target: wrong, Subordinate: createEntityReference("account", "a2"), PerformParentingChecks: false });
 // @ts-expect-error an inline literal, as a crmbaseentity parameter
-export const b = new MergeAction({ "@odata.type": "Microsoft.Dynamics.CRM.account", logicalName: "account", id: "a1" }, createEntityReference("account", "a2"), undefined, false);
+export const b = new MergeAction({ Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", logicalName: "account", id: "a1" }, Subordinate: createEntityReference("account", "a2"), PerformParentingChecks: false });
 // @ts-expect-error as a table parameter
-export const c = new WinOpportunityAction({ "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose", logicalName: "opportunityclose", id: "o1" }, 3);
+export const c = new WinOpportunityAction({ OpportunityClose: { "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose", logicalName: "opportunityclose", id: "o1" }, Status: 3 });
 // @ts-expect-error as a principal parameter, which takes only an EntityReference
-export const d = new AddPrincipalToQueueAction("q1", { "@odata.type": "Microsoft.Dynamics.CRM.systemuser", logicalName: "systemuser", id: "u1" });
+export const d = new AddPrincipalToQueueAction("q1", { Principal: { "@odata.type": "Microsoft.Dynamics.CRM.systemuser", logicalName: "systemuser", id: "u1" } });
 // @ts-expect-error only createEntityReference makes an EntityReference
 export const e: EntityReference = wrong;
 // @ts-expect-error the JSON shape has no logicalName or id
@@ -150,9 +150,9 @@ export const f: WebApiEntityReference = wrong;
       "use-wrong-message-reference.ts",
       `${HEADER}
 // @ts-expect-error neither an EntityReference nor a payload
-export const a = new MergeRequest(wrong, messageReference("account", "a2"), undefined, false);
+export const a = new MergeRequest({ Target: wrong, Subordinate: messageReference("account", "a2"), PerformParentingChecks: false });
 // @ts-expect-error UpdateContent is a payload, and logicalName isn't a column
-export const b = new MergeRequest(messageReference("account", "a1"), messageReference("account", "a2"), wrong, false);
+export const b = new MergeRequest({ Target: messageReference("account", "a1"), Subordinate: messageReference("account", "a2"), UpdateContent: wrong, PerformParentingChecks: false });
 `
     );
     expect(errors).toEqual([]);
@@ -163,7 +163,7 @@ export const b = new MergeRequest(messageReference("account", "a1"), messageRefe
       dir,
       "use-function-reference.ts",
       `${HEADER}
-export const init = new InitializeFromFunction({ ...wrong, entitySetName: "accounts" }, "contact");
+export const init = new InitializeFromFunction({ EntityMoniker: { ...wrong, entitySetName: "accounts" }, TargetEntityName: "contact" });
 `
     );
     expect(errors).toEqual([]);

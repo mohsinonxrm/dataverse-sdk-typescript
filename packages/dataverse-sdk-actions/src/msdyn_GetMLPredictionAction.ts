@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetMLPrediction action
@@ -9,23 +10,29 @@ export interface msdyn_GetMLPredictionResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetMLPrediction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetMLPredictionActionParameters {
+  msdyn_predictiontype: number;
+  msdyn_input: string;
+}
+
+/**
  * msdyn_GetMLPrediction action
  *
  * Unbound action
  */
 export class msdyn_GetMLPredictionAction implements Executable<msdyn_GetMLPredictionResponse> {
-  constructor(
-    public readonly msdyn_predictiontype: number,
-    public readonly msdyn_input: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetMLPredictionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetMLPrediction`;
 
-    const body: Record<string, unknown> = {
-      msdyn_predictiontype: this.msdyn_predictiontype,
-      msdyn_input: this.msdyn_input,
-    };
+    const body = requestBody({
+      msdyn_predictiontype: this.parameters.msdyn_predictiontype,
+      msdyn_input: this.parameters.msdyn_input,
+    });
 
     return {
       method: "POST",
@@ -38,7 +45,8 @@ export class msdyn_GetMLPredictionAction implements Executable<msdyn_GetMLPredic
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetMLPredictionResponse> {
-    const data = await response.json();
-    return data as msdyn_GetMLPredictionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetMLPredictionResponse;
+    return (await response.json()) as msdyn_GetMLPredictionResponse;
   }
 }

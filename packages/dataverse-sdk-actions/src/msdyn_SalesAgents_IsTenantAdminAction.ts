@@ -26,7 +26,8 @@ export class msdyn_SalesAgents_IsTenantAdminAction implements Executable<msdyn_S
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_IsTenantAdminResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_IsTenantAdminResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SalesAgents_IsTenantAdminResponse;
+    return (await response.json()) as msdyn_SalesAgents_IsTenantAdminResponse;
   }
 }

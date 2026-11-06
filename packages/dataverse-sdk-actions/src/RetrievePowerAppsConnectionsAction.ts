@@ -27,7 +27,8 @@ export class RetrievePowerAppsConnectionsAction implements Executable<RetrievePo
   }
 
   async parseResponse(response: Response): Promise<RetrievePowerAppsConnectionsResponse> {
-    const data = await response.json();
-    return data as RetrievePowerAppsConnectionsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrievePowerAppsConnectionsResponse;
+    return (await response.json()) as RetrievePowerAppsConnectionsResponse;
   }
 }

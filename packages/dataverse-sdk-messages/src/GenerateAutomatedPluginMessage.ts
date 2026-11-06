@@ -1,7 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { GenerateAutomatedPluginResponse as GenerateAutomatedPluginResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the GenerateAutomatedPlugin message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GenerateAutomatedPluginRequestParameters {
+  Stage: number;
+  Context?: string;
+  SolutionUniqueName?: string;
+  Expression: string;
+  EntityLogicalName: string;
+  MessageName: string;
+  Name: string;
+}
 
 /**
  * GenerateAutomatedPlugin request message
@@ -12,30 +27,24 @@ export class GenerateAutomatedPluginRequest
   extends OrganizationRequest
   implements Executable<GenerateAutomatedPluginResponse>
 {
-  constructor(
-    public stage: number,
-    public context: string | undefined,
-    public solutionUniqueName: string | undefined,
-    public expression: string,
-    public entityLogicalName: string,
-    public messageName: string,
-    public name: string
-  ) {
-    super("GenerateAutomatedPlugin");
+  declare readonly Parameters: Readonly<GenerateAutomatedPluginRequestParameters>;
+
+  constructor(parameters: GenerateAutomatedPluginRequestParameters) {
+    super("GenerateAutomatedPlugin", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GenerateAutomatedPlugin`;
 
-    const body: Record<string, unknown> = {
-      Stage: this.stage,
-      Context: this.context,
-      SolutionUniqueName: this.solutionUniqueName,
-      Expression: this.expression,
-      EntityLogicalName: this.entityLogicalName,
-      MessageName: this.messageName,
-      Name: this.name,
-    };
+    const body = requestBody({
+      Stage: this.Parameters.Stage,
+      Context: this.Parameters.Context,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      Expression: this.Parameters.Expression,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      MessageName: this.Parameters.MessageName,
+      Name: this.Parameters.Name,
+    });
 
     return {
       method: "POST",
@@ -48,8 +57,9 @@ export class GenerateAutomatedPluginRequest
   }
 
   async parseResponse(response: Response): Promise<GenerateAutomatedPluginResponse> {
-    const data = await response.json();
-    return GenerateAutomatedPluginResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return GenerateAutomatedPluginResponse.fromResponse({});
+    return GenerateAutomatedPluginResponse.fromResponse(await response.json());
   }
 }
 

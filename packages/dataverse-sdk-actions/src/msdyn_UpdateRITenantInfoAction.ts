@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_UpdateRITenantInfo action
@@ -8,23 +9,29 @@ export interface msdyn_UpdateRITenantInfoResponse {
 }
 
 /**
+ * Parameters of the msdyn_UpdateRITenantInfo action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateRITenantInfoActionParameters {
+  HubName?: string;
+  PrimaryKey?: string;
+}
+
+/**
  * msdyn_UpdateRITenantInfo action
  *
  * Unbound action
  */
 export class msdyn_UpdateRITenantInfoAction implements Executable<msdyn_UpdateRITenantInfoResponse> {
-  constructor(
-    public readonly hubName?: string,
-    public readonly primaryKey?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_UpdateRITenantInfoActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateRITenantInfo`;
 
-    const body: Record<string, unknown> = {
-      HubName: this.hubName,
-      PrimaryKey: this.primaryKey,
-    };
+    const body = requestBody({
+      HubName: this.parameters.HubName,
+      PrimaryKey: this.parameters.PrimaryKey,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_UpdateRITenantInfoAction implements Executable<msdyn_UpdateRI
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateRITenantInfoResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_UpdateRITenantInfoResponse;
+    return (await response.json()) as msdyn_UpdateRITenantInfoResponse;
   }
 }

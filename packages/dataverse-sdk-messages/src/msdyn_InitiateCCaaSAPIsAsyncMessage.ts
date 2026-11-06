@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_InitiateCCaaSAPIsAsyncResponse as msdyn_InitiateCCaaSAPIsAsyncResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_InitiateCCaaSAPIsAsync message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_InitiateCCaaSAPIsAsyncRequestParameters {
+  Payload: string;
+  LiveWorkItemId: string;
+  CCaaSAPI: string;
+  InitiatingUser: string;
+}
 
 /**
  * msdyn_InitiateCCaaSAPIsAsync request message
@@ -12,24 +24,21 @@ export class msdyn_InitiateCCaaSAPIsAsyncRequest
   extends OrganizationRequest
   implements Executable<msdyn_InitiateCCaaSAPIsAsyncResponse>
 {
-  constructor(
-    public payload: string,
-    public liveWorkItemId: string,
-    public cCaaSAPI: string,
-    public initiatingUser: string
-  ) {
-    super("msdyn_InitiateCCaaSAPIsAsync");
+  declare readonly Parameters: Readonly<msdyn_InitiateCCaaSAPIsAsyncRequestParameters>;
+
+  constructor(parameters: msdyn_InitiateCCaaSAPIsAsyncRequestParameters) {
+    super("msdyn_InitiateCCaaSAPIsAsync", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_InitiateCCaaSAPIsAsync`;
 
-    const body: Record<string, unknown> = {
-      Payload: this.payload,
-      LiveWorkItemId: this.liveWorkItemId,
-      CCaaSAPI: this.cCaaSAPI,
-      InitiatingUser: this.initiatingUser,
-    };
+    const body = requestBody({
+      Payload: this.Parameters.Payload,
+      LiveWorkItemId: this.Parameters.LiveWorkItemId,
+      CCaaSAPI: this.Parameters.CCaaSAPI,
+      InitiatingUser: this.Parameters.InitiatingUser,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_InitiateCCaaSAPIsAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InitiateCCaaSAPIsAsyncResponse> {
-    const data = await response.json();
-    return msdyn_InitiateCCaaSAPIsAsyncResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_InitiateCCaaSAPIsAsyncResponse.fromResponse({});
+    return msdyn_InitiateCCaaSAPIsAsyncResponse.fromResponse(await response.json());
   }
 }
 

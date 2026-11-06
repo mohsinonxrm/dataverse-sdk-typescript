@@ -26,7 +26,8 @@ export class RetrieveVersionFunction implements Executable<RetrieveVersionRespon
   }
 
   async parseResponse(response: Response): Promise<RetrieveVersionResponse> {
-    const data = await response.json();
-    return data as RetrieveVersionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveVersionResponse;
+    return (await response.json()) as RetrieveVersionResponse;
   }
 }

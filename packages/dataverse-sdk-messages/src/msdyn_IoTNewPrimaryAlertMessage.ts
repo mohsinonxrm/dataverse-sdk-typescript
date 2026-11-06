@@ -1,8 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_iotalert } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_IoTNewPrimaryAlert message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IoTNewPrimaryAlertRequestParameters {
+  PrimaryAlert: EntityReference | EntityPayload<msdyn_iotalert>;
+}
 
 /**
  * msdyn_IoTNewPrimaryAlert request message
@@ -13,16 +22,18 @@ export class msdyn_IoTNewPrimaryAlertRequest
   extends OrganizationRequest
   implements Executable<msdyn_IoTNewPrimaryAlertResponse>
 {
-  constructor(public primaryAlert: EntityReference | EntityPayload<msdyn_iotalert>) {
-    super("msdyn_IoTNewPrimaryAlert");
+  declare readonly Parameters: Readonly<msdyn_IoTNewPrimaryAlertRequestParameters>;
+
+  constructor(parameters: msdyn_IoTNewPrimaryAlertRequestParameters) {
+    super("msdyn_IoTNewPrimaryAlert", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTNewPrimaryAlert`;
 
-    const body: Record<string, unknown> = {
-      PrimaryAlert: this.primaryAlert,
-    };
+    const body = requestBody({
+      PrimaryAlert: this.Parameters.PrimaryAlert,
+    });
 
     return {
       method: "POST",

@@ -31,8 +31,12 @@ export class msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    const data = await response.json();
-    return msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    return msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

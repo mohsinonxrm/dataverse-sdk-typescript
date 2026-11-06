@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from _EvaluateSearchRequest action
@@ -9,51 +10,57 @@ export interface _EvaluateSearchRequestResponse {
 }
 
 /**
+ * Parameters of the _EvaluateSearchRequest action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _EvaluateSearchRequestActionParameters {
+  ServiceAppointmentId?: string;
+  ServiceId: string;
+  DateOptionSet?: number;
+  TimeOptionSet?: number;
+  DayList?: string;
+  RequiredResources?: Record<string, unknown>[];
+  SearchWindowStart?: string;
+  SearchWindowEnd?: string;
+  SearchRecurrenceStart?: number;
+  TimeRangeEnd?: number;
+  Duration: number;
+  Direction?: number;
+  Sites?: Record<string, unknown>[];
+  NumberOfResults?: number;
+  _SearchWindowStart?: string;
+  _SearchWindowEnd?: string;
+}
+
+/**
  * _EvaluateSearchRequest action
  *
  * Unbound action
  */
 export class _EvaluateSearchRequestAction implements Executable<_EvaluateSearchRequestResponse> {
-  constructor(
-    public readonly serviceAppointmentId: string | undefined,
-    public readonly serviceId: string,
-    public readonly dateOptionSet: number | undefined,
-    public readonly timeOptionSet: number | undefined,
-    public readonly dayList: string | undefined,
-    public readonly requiredResources: Record<string, unknown>[] | undefined,
-    public readonly searchWindowStart: string | undefined,
-    public readonly searchWindowEnd: string | undefined,
-    public readonly searchRecurrenceStart: number | undefined,
-    public readonly timeRangeEnd: number | undefined,
-    public readonly duration: number,
-    public readonly direction?: number,
-    public readonly sites?: Record<string, unknown>[],
-    public readonly numberOfResults?: number,
-    public readonly _SearchWindowStart?: string,
-    public readonly _SearchWindowEnd?: string
-  ) {}
+  constructor(public readonly parameters: _EvaluateSearchRequestActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_EvaluateSearchRequest`;
 
-    const body: Record<string, unknown> = {
-      ServiceAppointmentId: this.serviceAppointmentId,
-      ServiceId: this.serviceId,
-      DateOptionSet: this.dateOptionSet,
-      TimeOptionSet: this.timeOptionSet,
-      DayList: this.dayList,
-      RequiredResources: this.requiredResources,
-      SearchWindowStart: this.searchWindowStart,
-      SearchWindowEnd: this.searchWindowEnd,
-      SearchRecurrenceStart: this.searchRecurrenceStart,
-      TimeRangeEnd: this.timeRangeEnd,
-      Duration: this.duration,
-      Direction: this.direction,
-      Sites: this.sites,
-      NumberOfResults: this.numberOfResults,
-      _SearchWindowStart: this._SearchWindowStart,
-      _SearchWindowEnd: this._SearchWindowEnd,
-    };
+    const body = requestBody({
+      ServiceAppointmentId: this.parameters.ServiceAppointmentId,
+      ServiceId: this.parameters.ServiceId,
+      DateOptionSet: this.parameters.DateOptionSet,
+      TimeOptionSet: this.parameters.TimeOptionSet,
+      DayList: this.parameters.DayList,
+      RequiredResources: this.parameters.RequiredResources,
+      SearchWindowStart: this.parameters.SearchWindowStart,
+      SearchWindowEnd: this.parameters.SearchWindowEnd,
+      SearchRecurrenceStart: this.parameters.SearchRecurrenceStart,
+      TimeRangeEnd: this.parameters.TimeRangeEnd,
+      Duration: this.parameters.Duration,
+      Direction: this.parameters.Direction,
+      Sites: this.parameters.Sites,
+      NumberOfResults: this.parameters.NumberOfResults,
+      _SearchWindowStart: this.parameters._SearchWindowStart,
+      _SearchWindowEnd: this.parameters._SearchWindowEnd,
+    });
 
     return {
       method: "POST",
@@ -66,7 +73,8 @@ export class _EvaluateSearchRequestAction implements Executable<_EvaluateSearchR
   }
 
   async parseResponse(response: Response): Promise<_EvaluateSearchRequestResponse> {
-    const data = await response.json();
-    return data as _EvaluateSearchRequestResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as _EvaluateSearchRequestResponse;
+    return (await response.json()) as _EvaluateSearchRequestResponse;
   }
 }

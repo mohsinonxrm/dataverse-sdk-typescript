@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetResourceWorkHoursForTimeFrame action
@@ -8,25 +9,31 @@ export interface msdyn_GetResourceWorkHoursForTimeFrameResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetResourceWorkHoursForTimeFrame action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetResourceWorkHoursForTimeFrameActionParameters {
+  End: string;
+  Start: string;
+  ResourceIds: string;
+}
+
+/**
  * msdyn_GetResourceWorkHoursForTimeFrame action
  *
  * Unbound action
  */
 export class msdyn_GetResourceWorkHoursForTimeFrameAction implements Executable<msdyn_GetResourceWorkHoursForTimeFrameResponse> {
-  constructor(
-    public readonly end: string,
-    public readonly start: string,
-    public readonly resourceIds: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetResourceWorkHoursForTimeFrameActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetResourceWorkHoursForTimeFrame`;
 
-    const body: Record<string, unknown> = {
-      End: this.end,
-      Start: this.start,
-      ResourceIds: this.resourceIds,
-    };
+    const body = requestBody({
+      End: this.parameters.End,
+      Start: this.parameters.Start,
+      ResourceIds: this.parameters.ResourceIds,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_GetResourceWorkHoursForTimeFrameAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourceWorkHoursForTimeFrameResponse> {
-    const data = await response.json();
-    return data as msdyn_GetResourceWorkHoursForTimeFrameResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetResourceWorkHoursForTimeFrameResponse;
+    return (await response.json()) as msdyn_GetResourceWorkHoursForTimeFrameResponse;
   }
 }

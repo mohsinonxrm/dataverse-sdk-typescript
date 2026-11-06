@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from QueryDvUnstructuredData action
@@ -8,19 +9,27 @@ export interface QueryDvUnstructuredDataResponse {
 }
 
 /**
+ * Parameters of the QueryDvUnstructuredData action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface QueryDvUnstructuredDataActionParameters {
+  userQueryText?: string;
+}
+
+/**
  * QueryDvUnstructuredData action
  *
  * Unbound action
  */
 export class QueryDvUnstructuredDataAction implements Executable<QueryDvUnstructuredDataResponse> {
-  constructor(public readonly userQueryText?: string) {}
+  constructor(public readonly parameters: QueryDvUnstructuredDataActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/QueryDvUnstructuredData`;
 
-    const body: Record<string, unknown> = {
-      userQueryText: this.userQueryText,
-    };
+    const body = requestBody({
+      userQueryText: this.parameters.userQueryText,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class QueryDvUnstructuredDataAction implements Executable<QueryDvUnstruct
   }
 
   async parseResponse(response: Response): Promise<QueryDvUnstructuredDataResponse> {
-    const data = await response.json();
-    return data as QueryDvUnstructuredDataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as QueryDvUnstructuredDataResponse;
+    return (await response.json()) as QueryDvUnstructuredDataResponse;
   }
 }

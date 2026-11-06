@@ -2,6 +2,7 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_liveworkstream,
@@ -9,6 +10,17 @@ import type {
   msdyn_ocphonenumber,
   msdyn_smsnumber,
 } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_msdyn_ValidateWorkStreamSMSConnection message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_msdyn_ValidateWorkStreamSMSConnectionRequestParameters {
+  OcPhoneNumberEntityReference?: EntityReference | EntityPayload<msdyn_ocphonenumber>;
+  WorkStreamEntityReference?: EntityReference | EntityPayload<msdyn_liveworkstream>;
+  SMSNumberEntityReference?: EntityReference | EntityPayload<msdyn_smsnumber>;
+  Input?: string;
+}
 
 /**
  * msdyn_msdyn_ValidateWorkStreamSMSConnection request message
@@ -19,24 +31,21 @@ export class msdyn_msdyn_ValidateWorkStreamSMSConnectionRequest
   extends OrganizationRequest
   implements Executable<msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse>
 {
-  constructor(
-    public ocPhoneNumberEntityReference?: EntityReference | EntityPayload<msdyn_ocphonenumber>,
-    public workStreamEntityReference?: EntityReference | EntityPayload<msdyn_liveworkstream>,
-    public sMSNumberEntityReference?: EntityReference | EntityPayload<msdyn_smsnumber>,
-    public input?: string
-  ) {
-    super("msdyn_msdyn_ValidateWorkStreamSMSConnection");
+  declare readonly Parameters: Readonly<msdyn_msdyn_ValidateWorkStreamSMSConnectionRequestParameters>;
+
+  constructor(parameters: msdyn_msdyn_ValidateWorkStreamSMSConnectionRequestParameters = {}) {
+    super("msdyn_msdyn_ValidateWorkStreamSMSConnection", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_msdyn_ValidateWorkStreamSMSConnection`;
 
-    const body: Record<string, unknown> = {
-      OcPhoneNumberEntityReference: this.ocPhoneNumberEntityReference,
-      WorkStreamEntityReference: this.workStreamEntityReference,
-      SMSNumberEntityReference: this.sMSNumberEntityReference,
-      Input: this.input,
-    };
+    const body = requestBody({
+      OcPhoneNumberEntityReference: this.Parameters.OcPhoneNumberEntityReference,
+      WorkStreamEntityReference: this.Parameters.WorkStreamEntityReference,
+      SMSNumberEntityReference: this.Parameters.SMSNumberEntityReference,
+      Input: this.Parameters.Input,
+    });
 
     return {
       method: "POST",
@@ -51,8 +60,10 @@ export class msdyn_msdyn_ValidateWorkStreamSMSConnectionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse> {
-    const data = await response.json();
-    return msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse.fromResponse({});
+    return msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse.fromResponse(await response.json());
   }
 }
 

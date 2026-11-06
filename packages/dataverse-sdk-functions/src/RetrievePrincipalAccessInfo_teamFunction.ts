@@ -9,16 +9,26 @@ export interface RetrievePrincipalAccessInfo_teamResponse {
 }
 
 /**
+ * Parameters of the RetrievePrincipalAccessInfo function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrievePrincipalAccessInfo_teamFunctionParameters {
+  ObjectId: string;
+  EntityName: string;
+}
+
+/**
  * RetrievePrincipalAccessInfo function
  *
  * Bound function
  * Binding parameter: entity (mscrm.team)
+ *
+ * The first argument is the id of the team record to call it on.
  */
 export class RetrievePrincipalAccessInfo_teamFunction implements Executable<RetrievePrincipalAccessInfo_teamResponse> {
   constructor(
     public readonly teamId: string,
-    public readonly objectId: string,
-    public readonly entityName: string
+    public readonly parameters: RetrievePrincipalAccessInfo_teamFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -28,13 +38,13 @@ export class RetrievePrincipalAccessInfo_teamFunction implements Executable<Retr
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.objectId !== undefined) {
+    if (this.parameters.ObjectId !== undefined) {
       aliases.push(`ObjectId=@p1`);
-      params.append("@p1", formatParameterAlias(this.objectId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.ObjectId, "Edm.Guid"));
     }
-    if (this.entityName !== undefined) {
+    if (this.parameters.EntityName !== undefined) {
       aliases.push(`EntityName=@p2`);
-      params.append("@p2", formatParameterAlias(this.entityName, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.EntityName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -50,7 +60,8 @@ export class RetrievePrincipalAccessInfo_teamFunction implements Executable<Retr
   }
 
   async parseResponse(response: Response): Promise<RetrievePrincipalAccessInfo_teamResponse> {
-    const data = await response.json();
-    return data as RetrievePrincipalAccessInfo_teamResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrievePrincipalAccessInfo_teamResponse;
+    return (await response.json()) as RetrievePrincipalAccessInfo_teamResponse;
   }
 }

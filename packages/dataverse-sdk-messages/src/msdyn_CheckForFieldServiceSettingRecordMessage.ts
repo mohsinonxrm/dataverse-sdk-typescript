@@ -31,8 +31,10 @@ export class msdyn_CheckForFieldServiceSettingRecordRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckForFieldServiceSettingRecordResponse> {
-    const data = await response.json();
-    return msdyn_CheckForFieldServiceSettingRecordResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckForFieldServiceSettingRecordResponse.fromResponse({});
+    return msdyn_CheckForFieldServiceSettingRecordResponse.fromResponse(await response.json());
   }
 }
 

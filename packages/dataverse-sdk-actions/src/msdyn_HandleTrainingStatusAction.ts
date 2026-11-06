@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_HandleTrainingStatus action
@@ -8,27 +9,33 @@ export interface msdyn_HandleTrainingStatusResponse {
 }
 
 /**
+ * Parameters of the msdyn_HandleTrainingStatus action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_HandleTrainingStatusActionParameters {
+  CurentModel: string;
+  PreviousModel?: string;
+  PredictionScheduledOperation?: string;
+  TrainingResult: string;
+}
+
+/**
  * msdyn_HandleTrainingStatus action
  *
  * Unbound action
  */
 export class msdyn_HandleTrainingStatusAction implements Executable<msdyn_HandleTrainingStatusResponse> {
-  constructor(
-    public readonly curentModel: string,
-    public readonly previousModel: string | undefined,
-    public readonly predictionScheduledOperation: string | undefined,
-    public readonly trainingResult: string
-  ) {}
+  constructor(public readonly parameters: msdyn_HandleTrainingStatusActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_HandleTrainingStatus`;
 
-    const body: Record<string, unknown> = {
-      CurentModel: this.curentModel,
-      PreviousModel: this.previousModel,
-      PredictionScheduledOperation: this.predictionScheduledOperation,
-      TrainingResult: this.trainingResult,
-    };
+    const body = requestBody({
+      CurentModel: this.parameters.CurentModel,
+      PreviousModel: this.parameters.PreviousModel,
+      PredictionScheduledOperation: this.parameters.PredictionScheduledOperation,
+      TrainingResult: this.parameters.TrainingResult,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_HandleTrainingStatusAction implements Executable<msdyn_Handle
   }
 
   async parseResponse(response: Response): Promise<msdyn_HandleTrainingStatusResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_HandleTrainingStatusResponse;
+    return (await response.json()) as msdyn_HandleTrainingStatusResponse;
   }
 }

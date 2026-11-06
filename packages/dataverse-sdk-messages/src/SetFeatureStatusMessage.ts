@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the SetFeatureStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetFeatureStatusRequestParameters {
+  FeatureType: number;
+  Status: boolean;
+  ConfigData?: string;
+  IsSolutionUninstall?: boolean;
+}
 
 /**
  * SetFeatureStatus request message
@@ -10,24 +22,21 @@ export class SetFeatureStatusRequest
   extends OrganizationRequest
   implements Executable<SetFeatureStatusResponse>
 {
-  constructor(
-    public featureType: number,
-    public status: boolean,
-    public configData?: string,
-    public isSolutionUninstall?: boolean
-  ) {
-    super("SetFeatureStatus");
+  declare readonly Parameters: Readonly<SetFeatureStatusRequestParameters>;
+
+  constructor(parameters: SetFeatureStatusRequestParameters) {
+    super("SetFeatureStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SetFeatureStatus`;
 
-    const body: Record<string, unknown> = {
-      FeatureType: this.featureType,
-      Status: this.status,
-      ConfigData: this.configData,
-      IsSolutionUninstall: this.isSolutionUninstall,
-    };
+    const body = requestBody({
+      FeatureType: this.Parameters.FeatureType,
+      Status: this.Parameters.Status,
+      ConfigData: this.Parameters.ConfigData,
+      IsSolutionUninstall: this.Parameters.IsSolutionUninstall,
+    });
 
     return {
       method: "POST",

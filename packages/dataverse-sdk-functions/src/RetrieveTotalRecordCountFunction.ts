@@ -9,12 +9,20 @@ export interface RetrieveTotalRecordCountResponse {
 }
 
 /**
+ * Parameters of the RetrieveTotalRecordCount function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveTotalRecordCountFunctionParameters {
+  EntityNames: string[];
+}
+
+/**
  * RetrieveTotalRecordCount function
  *
  * Unbound function
  */
 export class RetrieveTotalRecordCountFunction implements Executable<RetrieveTotalRecordCountResponse> {
-  constructor(public readonly entityNames: string[]) {}
+  constructor(public readonly parameters: RetrieveTotalRecordCountFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveTotalRecordCount`;
@@ -22,9 +30,9 @@ export class RetrieveTotalRecordCountFunction implements Executable<RetrieveTota
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityNames !== undefined) {
+    if (this.parameters.EntityNames !== undefined) {
       aliases.push(`EntityNames=@p1`);
-      params.append("@p1", JSON.stringify(this.entityNames));
+      params.append("@p1", JSON.stringify(this.parameters.EntityNames));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class RetrieveTotalRecordCountFunction implements Executable<RetrieveTota
   }
 
   async parseResponse(response: Response): Promise<RetrieveTotalRecordCountResponse> {
-    const data = await response.json();
-    return data as RetrieveTotalRecordCountResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveTotalRecordCountResponse;
+    return (await response.json()) as RetrieveTotalRecordCountResponse;
   }
 }

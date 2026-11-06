@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_SendHeartbeat action
@@ -15,23 +16,29 @@ export interface CCaaS_SendHeartbeatResponse {
 }
 
 /**
+ * Parameters of the CCaaS_SendHeartbeat action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_SendHeartbeatActionParameters {
+  ApiVersion: string;
+  ClientSessionId: string;
+}
+
+/**
  * CCaaS_SendHeartbeat action
  *
  * Unbound action
  */
 export class CCaaS_SendHeartbeatAction implements Executable<CCaaS_SendHeartbeatResponse> {
-  constructor(
-    public readonly apiVersion: string,
-    public readonly clientSessionId: string
-  ) {}
+  constructor(public readonly parameters: CCaaS_SendHeartbeatActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_SendHeartbeat`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      ClientSessionId: this.clientSessionId,
-    };
+    const body = requestBody({
+      ApiVersion: this.parameters.ApiVersion,
+      ClientSessionId: this.parameters.ClientSessionId,
+    });
 
     return {
       method: "POST",
@@ -44,7 +51,8 @@ export class CCaaS_SendHeartbeatAction implements Executable<CCaaS_SendHeartbeat
   }
 
   async parseResponse(response: Response): Promise<CCaaS_SendHeartbeatResponse> {
-    const data = await response.json();
-    return data as CCaaS_SendHeartbeatResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_SendHeartbeatResponse;
+    return (await response.json()) as CCaaS_SendHeartbeatResponse;
   }
 }

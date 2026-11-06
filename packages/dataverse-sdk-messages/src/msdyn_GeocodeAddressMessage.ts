@@ -2,8 +2,24 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_GeocodeAddressResponse as msdyn_GeocodeAddressResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GeocodeAddress message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GeocodeAddressRequestParameters {
+  Target?: EntityReference | AnyEntityPayload;
+  Version?: string;
+  Line1: string;
+  City: string;
+  StateOrProvince: string;
+  PostalCode: string;
+  Country: string;
+  Lcid?: number;
+}
 
 /**
  * msdyn_GeocodeAddress request message
@@ -14,32 +30,25 @@ export class msdyn_GeocodeAddressRequest
   extends OrganizationRequest
   implements Executable<msdyn_GeocodeAddressResponse>
 {
-  constructor(
-    public target: EntityReference | AnyEntityPayload | undefined,
-    public version: string | undefined,
-    public line1: string,
-    public city: string,
-    public stateOrProvince: string,
-    public postalCode: string,
-    public country: string,
-    public lcid?: number
-  ) {
-    super("msdyn_GeocodeAddress");
+  declare readonly Parameters: Readonly<msdyn_GeocodeAddressRequestParameters>;
+
+  constructor(parameters: msdyn_GeocodeAddressRequestParameters) {
+    super("msdyn_GeocodeAddress", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GeocodeAddress`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      Version: this.version,
-      Line1: this.line1,
-      City: this.city,
-      StateOrProvince: this.stateOrProvince,
-      PostalCode: this.postalCode,
-      Country: this.country,
-      Lcid: this.lcid,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      Version: this.Parameters.Version,
+      Line1: this.Parameters.Line1,
+      City: this.Parameters.City,
+      StateOrProvince: this.Parameters.StateOrProvince,
+      PostalCode: this.Parameters.PostalCode,
+      Country: this.Parameters.Country,
+      Lcid: this.Parameters.Lcid,
+    });
 
     return {
       method: "POST",
@@ -52,8 +61,9 @@ export class msdyn_GeocodeAddressRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GeocodeAddressResponse> {
-    const data = await response.json();
-    return msdyn_GeocodeAddressResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GeocodeAddressResponse.fromResponse({});
+    return msdyn_GeocodeAddressResponse.fromResponse(await response.json());
   }
 }
 

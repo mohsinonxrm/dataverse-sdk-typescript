@@ -31,8 +31,12 @@ export class msdyn_WorkstreamShouldHaveNotificationTemplatesRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse> {
-    const data = await response.json();
-    return msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse.fromResponse({});
+    return msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

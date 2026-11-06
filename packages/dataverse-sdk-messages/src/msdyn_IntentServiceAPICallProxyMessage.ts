@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_IntentServiceAPICallProxyResponse as msdyn_IntentServiceAPICallProxyResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_IntentServiceAPICallProxy message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IntentServiceAPICallProxyRequestParameters {
+  IntentServiceEntityType?: string;
+  IntentServiceRequestPayload?: string;
+  IntentServiceRequestPayloadForTelemetry: string;
+}
 
 /**
  * msdyn_IntentServiceAPICallProxy request message
@@ -12,22 +23,21 @@ export class msdyn_IntentServiceAPICallProxyRequest
   extends OrganizationRequest
   implements Executable<msdyn_IntentServiceAPICallProxyResponse>
 {
-  constructor(
-    public intentServiceEntityType: string | undefined,
-    public intentServiceRequestPayload: string | undefined,
-    public intentServiceRequestPayloadForTelemetry: string
-  ) {
-    super("msdyn_IntentServiceAPICallProxy");
+  declare readonly Parameters: Readonly<msdyn_IntentServiceAPICallProxyRequestParameters>;
+
+  constructor(parameters: msdyn_IntentServiceAPICallProxyRequestParameters) {
+    super("msdyn_IntentServiceAPICallProxy", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IntentServiceAPICallProxy`;
 
-    const body: Record<string, unknown> = {
-      IntentServiceEntityType: this.intentServiceEntityType,
-      IntentServiceRequestPayload: this.intentServiceRequestPayload,
-      IntentServiceRequestPayloadForTelemetry: this.intentServiceRequestPayloadForTelemetry,
-    };
+    const body = requestBody({
+      IntentServiceEntityType: this.Parameters.IntentServiceEntityType,
+      IntentServiceRequestPayload: this.Parameters.IntentServiceRequestPayload,
+      IntentServiceRequestPayloadForTelemetry:
+        this.Parameters.IntentServiceRequestPayloadForTelemetry,
+    });
 
     return {
       method: "POST",
@@ -40,8 +50,9 @@ export class msdyn_IntentServiceAPICallProxyRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IntentServiceAPICallProxyResponse> {
-    const data = await response.json();
-    return msdyn_IntentServiceAPICallProxyResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_IntentServiceAPICallProxyResponse.fromResponse({});
+    return msdyn_IntentServiceAPICallProxyResponse.fromResponse(await response.json());
   }
 }
 

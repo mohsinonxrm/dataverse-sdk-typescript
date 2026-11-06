@@ -31,8 +31,10 @@ export class msdyn_GetCecCompatibilityForOmniChannelRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetCecCompatibilityForOmniChannelResponse> {
-    const data = await response.json();
-    return msdyn_GetCecCompatibilityForOmniChannelResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_GetCecCompatibilityForOmniChannelResponse.fromResponse({});
+    return msdyn_GetCecCompatibilityForOmniChannelResponse.fromResponse(await response.json());
   }
 }
 

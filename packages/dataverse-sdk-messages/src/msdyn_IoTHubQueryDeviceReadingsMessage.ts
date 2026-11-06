@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_IoTHubQueryDeviceReadingsResponse as msdyn_IoTHubQueryDeviceReadingsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_IoTHubQueryDeviceReadings message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IoTHubQueryDeviceReadingsRequestParameters {
+  From: string;
+  To: string;
+  Interval: string;
+  IotDeviceId: string;
+}
 
 /**
  * msdyn_IoTHubQueryDeviceReadings request message
@@ -12,24 +24,21 @@ export class msdyn_IoTHubQueryDeviceReadingsRequest
   extends OrganizationRequest
   implements Executable<msdyn_IoTHubQueryDeviceReadingsResponse>
 {
-  constructor(
-    public from: string,
-    public to: string,
-    public interval: string,
-    public iotDeviceId: string
-  ) {
-    super("msdyn_IoTHubQueryDeviceReadings");
+  declare readonly Parameters: Readonly<msdyn_IoTHubQueryDeviceReadingsRequestParameters>;
+
+  constructor(parameters: msdyn_IoTHubQueryDeviceReadingsRequestParameters) {
+    super("msdyn_IoTHubQueryDeviceReadings", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTHubQueryDeviceReadings`;
 
-    const body: Record<string, unknown> = {
-      From: this.from,
-      To: this.to,
-      Interval: this.interval,
-      IotDeviceId: this.iotDeviceId,
-    };
+    const body = requestBody({
+      From: this.Parameters.From,
+      To: this.Parameters.To,
+      Interval: this.Parameters.Interval,
+      IotDeviceId: this.Parameters.IotDeviceId,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_IoTHubQueryDeviceReadingsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTHubQueryDeviceReadingsResponse> {
-    const data = await response.json();
-    return msdyn_IoTHubQueryDeviceReadingsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_IoTHubQueryDeviceReadingsResponse.fromResponse({});
+    return msdyn_IoTHubQueryDeviceReadingsResponse.fromResponse(await response.json());
   }
 }
 

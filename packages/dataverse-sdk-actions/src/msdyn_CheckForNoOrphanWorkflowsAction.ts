@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CheckForNoOrphanWorkflows action
@@ -12,19 +13,27 @@ export interface msdyn_CheckForNoOrphanWorkflowsResponse {
 }
 
 /**
+ * Parameters of the msdyn_CheckForNoOrphanWorkflows action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForNoOrphanWorkflowsActionParameters {
+  SolutionId?: string;
+}
+
+/**
  * msdyn_CheckForNoOrphanWorkflows action
  *
  * Unbound action
  */
 export class msdyn_CheckForNoOrphanWorkflowsAction implements Executable<msdyn_CheckForNoOrphanWorkflowsResponse> {
-  constructor(public readonly solutionId?: string) {}
+  constructor(public readonly parameters: msdyn_CheckForNoOrphanWorkflowsActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForNoOrphanWorkflows`;
 
-    const body: Record<string, unknown> = {
-      SolutionId: this.solutionId,
-    };
+    const body = requestBody({
+      SolutionId: this.parameters.SolutionId,
+    });
 
     return {
       method: "POST",
@@ -37,7 +46,8 @@ export class msdyn_CheckForNoOrphanWorkflowsAction implements Executable<msdyn_C
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForNoOrphanWorkflowsResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForNoOrphanWorkflowsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckForNoOrphanWorkflowsResponse;
+    return (await response.json()) as msdyn_CheckForNoOrphanWorkflowsResponse;
   }
 }

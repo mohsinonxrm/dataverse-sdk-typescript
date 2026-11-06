@@ -31,8 +31,12 @@ export class msdyn_SalesAgents_CreateDefaultTemplateInSharepointRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse.fromResponse({});
+    return msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

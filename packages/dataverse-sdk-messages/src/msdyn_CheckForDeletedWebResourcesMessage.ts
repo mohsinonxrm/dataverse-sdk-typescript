@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckForDeletedWebResourcesResponse as msdyn_CheckForDeletedWebResourcesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckForDeletedWebResources message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForDeletedWebResourcesRequestParameters {
+  EntityIds?: string;
+  SolutionId?: string;
+  ExcludeSolutionIds?: string;
+}
 
 /**
  * msdyn_CheckForDeletedWebResources request message
@@ -12,22 +23,20 @@ export class msdyn_CheckForDeletedWebResourcesRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckForDeletedWebResourcesResponse>
 {
-  constructor(
-    public entityIds?: string,
-    public solutionId?: string,
-    public excludeSolutionIds?: string
-  ) {
-    super("msdyn_CheckForDeletedWebResources");
+  declare readonly Parameters: Readonly<msdyn_CheckForDeletedWebResourcesRequestParameters>;
+
+  constructor(parameters: msdyn_CheckForDeletedWebResourcesRequestParameters = {}) {
+    super("msdyn_CheckForDeletedWebResources", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForDeletedWebResources`;
 
-    const body: Record<string, unknown> = {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-      ExcludeSolutionIds: this.excludeSolutionIds,
-    };
+    const body = requestBody({
+      EntityIds: this.Parameters.EntityIds,
+      SolutionId: this.Parameters.SolutionId,
+      ExcludeSolutionIds: this.Parameters.ExcludeSolutionIds,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_CheckForDeletedWebResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForDeletedWebResourcesResponse> {
-    const data = await response.json();
-    return msdyn_CheckForDeletedWebResourcesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckForDeletedWebResourcesResponse.fromResponse({});
+    return msdyn_CheckForDeletedWebResourcesResponse.fromResponse(await response.json());
   }
 }
 

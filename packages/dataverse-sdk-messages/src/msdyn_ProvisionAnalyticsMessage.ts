@@ -29,8 +29,9 @@ export class msdyn_ProvisionAnalyticsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ProvisionAnalyticsResponse> {
-    const data = await response.json();
-    return msdyn_ProvisionAnalyticsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ProvisionAnalyticsResponse.fromResponse({});
+    return msdyn_ProvisionAnalyticsResponse.fromResponse(await response.json());
   }
 }
 

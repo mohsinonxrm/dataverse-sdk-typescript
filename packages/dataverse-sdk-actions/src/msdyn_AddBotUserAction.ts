@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_AddBotUser action
@@ -9,33 +10,39 @@ export interface msdyn_AddBotUserResponse {
 }
 
 /**
+ * Parameters of the msdyn_AddBotUser action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AddBotUserActionParameters {
+  BotApplicationId: string;
+  ApplicationId?: string;
+  FirstName: string;
+  LastName: string;
+  BotHandle?: string;
+  OwningEnvironmentId?: string;
+  Properties?: string;
+}
+
+/**
  * msdyn_AddBotUser action
  *
  * Unbound action
  */
 export class msdyn_AddBotUserAction implements Executable<msdyn_AddBotUserResponse> {
-  constructor(
-    public readonly botApplicationId: string,
-    public readonly applicationId: string | undefined,
-    public readonly firstName: string,
-    public readonly lastName: string,
-    public readonly botHandle?: string,
-    public readonly owningEnvironmentId?: string,
-    public readonly properties?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_AddBotUserActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AddBotUser`;
 
-    const body: Record<string, unknown> = {
-      BotApplicationId: this.botApplicationId,
-      ApplicationId: this.applicationId,
-      FirstName: this.firstName,
-      LastName: this.lastName,
-      BotHandle: this.botHandle,
-      OwningEnvironmentId: this.owningEnvironmentId,
-      Properties: this.properties,
-    };
+    const body = requestBody({
+      BotApplicationId: this.parameters.BotApplicationId,
+      ApplicationId: this.parameters.ApplicationId,
+      FirstName: this.parameters.FirstName,
+      LastName: this.parameters.LastName,
+      BotHandle: this.parameters.BotHandle,
+      OwningEnvironmentId: this.parameters.OwningEnvironmentId,
+      Properties: this.parameters.Properties,
+    });
 
     return {
       method: "POST",
@@ -48,7 +55,8 @@ export class msdyn_AddBotUserAction implements Executable<msdyn_AddBotUserRespon
   }
 
   async parseResponse(response: Response): Promise<msdyn_AddBotUserResponse> {
-    const data = await response.json();
-    return data as msdyn_AddBotUserResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_AddBotUserResponse;
+    return (await response.json()) as msdyn_AddBotUserResponse;
   }
 }

@@ -2,47 +2,60 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { PropagationOwnershipOptions, bulkoperation, queue, template } from "./types/index.js";
 
 /**
+ * Parameters of the DistributeCampaignActivity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DistributeCampaignActivityRequestParameters {
+  Propagate: boolean;
+  Activity?: EntityReference | AnyEntityPayload;
+  Template: EntityReference | EntityPayload<template>;
+  OwnershipOptions: PropagationOwnershipOptions;
+  Owner: EntityReference | AnyEntityPayload;
+  SendEmail: boolean;
+  Queue?: EntityReference | EntityPayload<queue>;
+  PostWorkflowEvent: boolean;
+}
+
+/**
  * DistributeCampaignActivity request message
  *
  * Web API Action: DistributeCampaignActivity
+ *
+ * The first argument is the id of the campaignactivity record to call it on.
  */
 export class DistributeCampaignActivityRequest
   extends OrganizationRequest
   implements Executable<DistributeCampaignActivityResponse>
 {
+  declare readonly Parameters: Readonly<DistributeCampaignActivityRequestParameters>;
+
   constructor(
     public campaignactivityId: string,
-    public propagate: boolean,
-    public activity: EntityReference | AnyEntityPayload | undefined,
-    public template: EntityReference | EntityPayload<template>,
-    public ownershipOptions: PropagationOwnershipOptions,
-    public owner: EntityReference | AnyEntityPayload,
-    public sendEmail: boolean,
-    public queue: EntityReference | EntityPayload<queue> | undefined,
-    public postWorkflowEvent: boolean
+    parameters: DistributeCampaignActivityRequestParameters
   ) {
-    super("DistributeCampaignActivity");
+    super("DistributeCampaignActivity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/campaignactivities(${this.campaignactivityId})/Microsoft.Dynamics.CRM.DistributeCampaignActivity`;
 
-    const body: Record<string, unknown> = {
-      Propagate: this.propagate,
-      Activity: this.activity,
-      Template: this.template,
-      OwnershipOptions: enumBody(this.ownershipOptions, "PropagationOwnershipOptions"),
-      Owner: this.owner,
-      SendEmail: this.sendEmail,
-      Queue: this.queue,
-      PostWorkflowEvent: this.postWorkflowEvent,
-    };
+    const body = requestBody({
+      Propagate: this.Parameters.Propagate,
+      Activity: this.Parameters.Activity,
+      Template: this.Parameters.Template,
+      OwnershipOptions: enumBody(this.Parameters.OwnershipOptions, "PropagationOwnershipOptions"),
+      Owner: this.Parameters.Owner,
+      SendEmail: this.Parameters.SendEmail,
+      Queue: this.Parameters.Queue,
+      PostWorkflowEvent: this.Parameters.PostWorkflowEvent,
+    });
 
     return {
       method: "POST",
@@ -55,8 +68,9 @@ export class DistributeCampaignActivityRequest
   }
 
   async parseResponse(response: Response): Promise<DistributeCampaignActivityResponse> {
-    const data = await response.json();
-    return DistributeCampaignActivityResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return DistributeCampaignActivityResponse.fromResponse({});
+    return DistributeCampaignActivityResponse.fromResponse(await response.json());
   }
 }
 

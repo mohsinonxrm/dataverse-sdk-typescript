@@ -31,7 +31,9 @@ export class RetrieveUnpublishedMultiple_sitemap_collectionFunction implements E
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_sitemap_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_sitemap_collectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublishedMultiple_sitemap_collectionResponse;
+    return (await response.json()) as RetrieveUnpublishedMultiple_sitemap_collectionResponse;
   }
 }

@@ -9,12 +9,20 @@ export interface RetrieveCascadeDeleteAsyncJobIdResponse {
 }
 
 /**
+ * Parameters of the RetrieveCascadeDeleteAsyncJobId function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveCascadeDeleteAsyncJobIdFunctionParameters {
+  ParentEntityIds: string[];
+}
+
+/**
  * RetrieveCascadeDeleteAsyncJobId function
  *
  * Unbound function
  */
 export class RetrieveCascadeDeleteAsyncJobIdFunction implements Executable<RetrieveCascadeDeleteAsyncJobIdResponse> {
-  constructor(public readonly parentEntityIds: string[]) {}
+  constructor(public readonly parameters: RetrieveCascadeDeleteAsyncJobIdFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveCascadeDeleteAsyncJobId`;
@@ -22,9 +30,9 @@ export class RetrieveCascadeDeleteAsyncJobIdFunction implements Executable<Retri
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.parentEntityIds !== undefined) {
+    if (this.parameters.ParentEntityIds !== undefined) {
       aliases.push(`ParentEntityIds=@p1`);
-      params.append("@p1", JSON.stringify(this.parentEntityIds));
+      params.append("@p1", JSON.stringify(this.parameters.ParentEntityIds));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class RetrieveCascadeDeleteAsyncJobIdFunction implements Executable<Retri
   }
 
   async parseResponse(response: Response): Promise<RetrieveCascadeDeleteAsyncJobIdResponse> {
-    const data = await response.json();
-    return data as RetrieveCascadeDeleteAsyncJobIdResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveCascadeDeleteAsyncJobIdResponse;
+    return (await response.json()) as RetrieveCascadeDeleteAsyncJobIdResponse;
   }
 }

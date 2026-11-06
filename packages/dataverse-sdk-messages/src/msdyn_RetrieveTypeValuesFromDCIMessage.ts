@@ -2,8 +2,21 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_RetrieveTypeValuesFromDCIResponse as msdyn_RetrieveTypeValuesFromDCIResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrieveTypeValuesFromDCI message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveTypeValuesFromDCIRequestParameters {
+  CrmRecord: EntityReference | AnyEntityPayload;
+  ResourceType: number;
+  ResourceTypeName: string;
+  StartDate?: string;
+  EndDate?: string;
+}
 
 /**
  * msdyn_RetrieveTypeValuesFromDCI request message
@@ -14,26 +27,22 @@ export class msdyn_RetrieveTypeValuesFromDCIRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveTypeValuesFromDCIResponse>
 {
-  constructor(
-    public crmRecord: EntityReference | AnyEntityPayload,
-    public resourceType: number,
-    public resourceTypeName: string,
-    public startDate?: string,
-    public endDate?: string
-  ) {
-    super("msdyn_RetrieveTypeValuesFromDCI");
+  declare readonly Parameters: Readonly<msdyn_RetrieveTypeValuesFromDCIRequestParameters>;
+
+  constructor(parameters: msdyn_RetrieveTypeValuesFromDCIRequestParameters) {
+    super("msdyn_RetrieveTypeValuesFromDCI", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveTypeValuesFromDCI`;
 
-    const body: Record<string, unknown> = {
-      CrmRecord: this.crmRecord,
-      ResourceType: this.resourceType,
-      ResourceTypeName: this.resourceTypeName,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-    };
+    const body = requestBody({
+      CrmRecord: this.Parameters.CrmRecord,
+      ResourceType: this.Parameters.ResourceType,
+      ResourceTypeName: this.Parameters.ResourceTypeName,
+      StartDate: this.Parameters.StartDate,
+      EndDate: this.Parameters.EndDate,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class msdyn_RetrieveTypeValuesFromDCIRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveTypeValuesFromDCIResponse> {
-    const data = await response.json();
-    return msdyn_RetrieveTypeValuesFromDCIResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_RetrieveTypeValuesFromDCIResponse.fromResponse({});
+    return msdyn_RetrieveTypeValuesFromDCIResponse.fromResponse(await response.json());
   }
 }
 

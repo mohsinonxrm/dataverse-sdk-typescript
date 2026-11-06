@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CloneAsSolutionResponse as CloneAsSolutionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CloneAsSolution message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CloneAsSolutionRequestParameters {
+  ParentSolutionUniqueName: string;
+  DisplayName: string;
+  VersionNumber: string;
+}
 
 /**
  * CloneAsSolution request message
@@ -12,22 +23,20 @@ export class CloneAsSolutionRequest
   extends OrganizationRequest
   implements Executable<CloneAsSolutionResponse>
 {
-  constructor(
-    public parentSolutionUniqueName: string,
-    public displayName: string,
-    public versionNumber: string
-  ) {
-    super("CloneAsSolution");
+  declare readonly Parameters: Readonly<CloneAsSolutionRequestParameters>;
+
+  constructor(parameters: CloneAsSolutionRequestParameters) {
+    super("CloneAsSolution", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CloneAsSolution`;
 
-    const body: Record<string, unknown> = {
-      ParentSolutionUniqueName: this.parentSolutionUniqueName,
-      DisplayName: this.displayName,
-      VersionNumber: this.versionNumber,
-    };
+    const body = requestBody({
+      ParentSolutionUniqueName: this.Parameters.ParentSolutionUniqueName,
+      DisplayName: this.Parameters.DisplayName,
+      VersionNumber: this.Parameters.VersionNumber,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class CloneAsSolutionRequest
   }
 
   async parseResponse(response: Response): Promise<CloneAsSolutionResponse> {
-    const data = await response.json();
-    return CloneAsSolutionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CloneAsSolutionResponse.fromResponse({});
+    return CloneAsSolutionResponse.fromResponse(await response.json());
   }
 }
 

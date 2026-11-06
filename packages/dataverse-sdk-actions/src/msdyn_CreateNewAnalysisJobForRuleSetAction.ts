@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_analysisjob, msdyn_solutionhealthruleset } from "./types/index.js";
 
@@ -14,26 +15,31 @@ export interface msdyn_CreateNewAnalysisJobForRuleSetResponse extends msdyn_anal
 }
 
 /**
+ * Parameters of the msdyn_CreateNewAnalysisJobForRuleSet action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateNewAnalysisJobForRuleSetActionParameters {
+  SolutionHealthRuleSet: EntityReference | EntityPayload<msdyn_solutionhealthruleset>;
+  TriggerType?: string;
+  InAppNotificationEnabled?: boolean;
+}
+
+/**
  * msdyn_CreateNewAnalysisJobForRuleSet action
  *
  * Unbound action
  */
 export class msdyn_CreateNewAnalysisJobForRuleSetAction implements Executable<msdyn_CreateNewAnalysisJobForRuleSetResponse> {
-  constructor(
-    public readonly solutionHealthRuleSet:
-      EntityReference | EntityPayload<msdyn_solutionhealthruleset>,
-    public readonly triggerType?: string,
-    public readonly inAppNotificationEnabled?: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_CreateNewAnalysisJobForRuleSetActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateNewAnalysisJobForRuleSet`;
 
-    const body: Record<string, unknown> = {
-      SolutionHealthRuleSet: this.solutionHealthRuleSet,
-      TriggerType: this.triggerType,
-      InAppNotificationEnabled: this.inAppNotificationEnabled,
-    };
+    const body = requestBody({
+      SolutionHealthRuleSet: this.parameters.SolutionHealthRuleSet,
+      TriggerType: this.parameters.TriggerType,
+      InAppNotificationEnabled: this.parameters.InAppNotificationEnabled,
+    });
 
     return {
       method: "POST",
@@ -46,7 +52,8 @@ export class msdyn_CreateNewAnalysisJobForRuleSetAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateNewAnalysisJobForRuleSetResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateNewAnalysisJobForRuleSetResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CreateNewAnalysisJobForRuleSetResponse;
+    return (await response.json()) as msdyn_CreateNewAnalysisJobForRuleSetResponse;
   }
 }

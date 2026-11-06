@@ -30,7 +30,9 @@ export class msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleAction implem
   async parseResponse(
     response: Response
   ): Promise<msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse;
+    return (await response.json()) as msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse;
   }
 }

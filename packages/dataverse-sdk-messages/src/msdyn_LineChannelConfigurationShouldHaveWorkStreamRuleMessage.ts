@@ -31,8 +31,12 @@ export class msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse> {
-    const data = await response.json();
-    return msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    return msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

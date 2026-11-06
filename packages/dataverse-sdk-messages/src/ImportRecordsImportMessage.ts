@@ -7,6 +7,8 @@ import type { asyncoperation } from "./types/index.js";
  * ImportRecordsImport request message
  *
  * Web API Action: ImportRecordsImport
+ *
+ * The first argument is the id of the import record to call it on.
  */
 export class ImportRecordsImportRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class ImportRecordsImportRequest
   }
 
   async parseResponse(response: Response): Promise<ImportRecordsImportResponse> {
-    const data = await response.json();
-    return ImportRecordsImportResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return ImportRecordsImportResponse.fromResponse({});
+    return ImportRecordsImportResponse.fromResponse(await response.json());
   }
 }
 

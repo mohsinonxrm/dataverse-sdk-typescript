@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from SetPreferredSolution action
@@ -8,19 +9,27 @@ export interface SetPreferredSolutionResponse {
 }
 
 /**
+ * Parameters of the SetPreferredSolution action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetPreferredSolutionActionParameters {
+  SolutionId: string;
+}
+
+/**
  * SetPreferredSolution action
  *
  * Unbound action
  */
 export class SetPreferredSolutionAction implements Executable<SetPreferredSolutionResponse> {
-  constructor(public readonly solutionId: string) {}
+  constructor(public readonly parameters: SetPreferredSolutionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SetPreferredSolution`;
 
-    const body: Record<string, unknown> = {
-      SolutionId: this.solutionId,
-    };
+    const body = requestBody({
+      SolutionId: this.parameters.SolutionId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class SetPreferredSolutionAction implements Executable<SetPreferredSoluti
   }
 
   async parseResponse(response: Response): Promise<SetPreferredSolutionResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SetPreferredSolutionResponse;
+    return (await response.json()) as SetPreferredSolutionResponse;
   }
 }

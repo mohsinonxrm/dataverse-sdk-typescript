@@ -30,7 +30,8 @@ export class GetPreferredSolutionFunction implements Executable<GetPreferredSolu
   }
 
   async parseResponse(response: Response): Promise<GetPreferredSolutionResponse> {
-    const data = await response.json();
-    return data as GetPreferredSolutionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetPreferredSolutionResponse;
+    return (await response.json()) as GetPreferredSolutionResponse;
   }
 }

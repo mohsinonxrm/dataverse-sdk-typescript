@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CreateApmEventHandler action
@@ -8,19 +9,27 @@ export interface msdyn_CreateApmEventHandlerResponse {
 }
 
 /**
+ * Parameters of the msdyn_CreateApmEventHandler action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateApmEventHandlerActionParameters {
+  AppModuleId: string;
+}
+
+/**
  * msdyn_CreateApmEventHandler action
  *
  * Unbound action
  */
 export class msdyn_CreateApmEventHandlerAction implements Executable<msdyn_CreateApmEventHandlerResponse> {
-  constructor(public readonly appModuleId: string) {}
+  constructor(public readonly parameters: msdyn_CreateApmEventHandlerActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateApmEventHandler`;
 
-    const body: Record<string, unknown> = {
-      AppModuleId: this.appModuleId,
-    };
+    const body = requestBody({
+      AppModuleId: this.parameters.AppModuleId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_CreateApmEventHandlerAction implements Executable<msdyn_Creat
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateApmEventHandlerResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateApmEventHandlerResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CreateApmEventHandlerResponse;
+    return (await response.json()) as msdyn_CreateApmEventHandlerResponse;
   }
 }

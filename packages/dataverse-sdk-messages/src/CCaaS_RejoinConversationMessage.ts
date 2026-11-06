@@ -1,33 +1,46 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_RejoinConversation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_RejoinConversationRequestParameters {
+  ClientId?: string;
+  ApiVersion: string;
+  SessionId?: string;
+}
 
 /**
  * CCaaS_RejoinConversation request message
  *
  * Web API Action: CCaaS_RejoinConversation
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_RejoinConversationRequest
   extends OrganizationRequest
   implements Executable<CCaaS_RejoinConversationResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_RejoinConversationRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public clientId: string | undefined,
-    public apiVersion: string,
-    public sessionId?: string
+    parameters: CCaaS_RejoinConversationRequestParameters
   ) {
-    super("CCaaS_RejoinConversation");
+    super("CCaaS_RejoinConversation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_RejoinConversation`;
 
-    const body: Record<string, unknown> = {
-      ClientId: this.clientId,
-      ApiVersion: this.apiVersion,
-      SessionId: this.sessionId,
-    };
+    const body = requestBody({
+      ClientId: this.Parameters.ClientId,
+      ApiVersion: this.Parameters.ApiVersion,
+      SessionId: this.Parameters.SessionId,
+    });
 
     return {
       method: "POST",

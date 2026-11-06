@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from AIModelPublish action
@@ -12,33 +13,39 @@ export interface AIModelPublishResponse {
 }
 
 /**
+ * Parameters of the AIModelPublish action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AIModelPublishActionParameters {
+  ModelId: string;
+  ModelName: string;
+  Source?: string;
+  RunConfigurationId: string;
+  TemplateId: string;
+  RunConfiguration: string;
+  CustomConfiguration: string;
+}
+
+/**
  * AIModelPublish action
  *
  * Unbound action
  */
 export class AIModelPublishAction implements Executable<AIModelPublishResponse> {
-  constructor(
-    public readonly modelId: string,
-    public readonly modelName: string,
-    public readonly source: string | undefined,
-    public readonly runConfigurationId: string,
-    public readonly templateId: string,
-    public readonly runConfiguration: string,
-    public readonly customConfiguration: string
-  ) {}
+  constructor(public readonly parameters: AIModelPublishActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AIModelPublish`;
 
-    const body: Record<string, unknown> = {
-      ModelId: this.modelId,
-      ModelName: this.modelName,
-      Source: this.source,
-      RunConfigurationId: this.runConfigurationId,
-      TemplateId: this.templateId,
-      RunConfiguration: this.runConfiguration,
-      CustomConfiguration: this.customConfiguration,
-    };
+    const body = requestBody({
+      ModelId: this.parameters.ModelId,
+      ModelName: this.parameters.ModelName,
+      Source: this.parameters.Source,
+      RunConfigurationId: this.parameters.RunConfigurationId,
+      TemplateId: this.parameters.TemplateId,
+      RunConfiguration: this.parameters.RunConfiguration,
+      CustomConfiguration: this.parameters.CustomConfiguration,
+    });
 
     return {
       method: "POST",
@@ -51,7 +58,8 @@ export class AIModelPublishAction implements Executable<AIModelPublishResponse> 
   }
 
   async parseResponse(response: Response): Promise<AIModelPublishResponse> {
-    const data = await response.json();
-    return data as AIModelPublishResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AIModelPublishResponse;
+    return (await response.json()) as AIModelPublishResponse;
   }
 }

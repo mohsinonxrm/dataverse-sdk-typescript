@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from SetDataEncryptionKey action
@@ -8,23 +9,29 @@ export interface SetDataEncryptionKeyResponse {
 }
 
 /**
+ * Parameters of the SetDataEncryptionKey action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetDataEncryptionKeyActionParameters {
+  EncryptionKey: string;
+  ChangeEncryptionKey: boolean;
+}
+
+/**
  * SetDataEncryptionKey action
  *
  * Unbound action
  */
 export class SetDataEncryptionKeyAction implements Executable<SetDataEncryptionKeyResponse> {
-  constructor(
-    public readonly encryptionKey: string,
-    public readonly changeEncryptionKey: boolean
-  ) {}
+  constructor(public readonly parameters: SetDataEncryptionKeyActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SetDataEncryptionKey`;
 
-    const body: Record<string, unknown> = {
-      EncryptionKey: this.encryptionKey,
-      ChangeEncryptionKey: this.changeEncryptionKey,
-    };
+    const body = requestBody({
+      EncryptionKey: this.parameters.EncryptionKey,
+      ChangeEncryptionKey: this.parameters.ChangeEncryptionKey,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class SetDataEncryptionKeyAction implements Executable<SetDataEncryptionK
   }
 
   async parseResponse(response: Response): Promise<SetDataEncryptionKeyResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SetDataEncryptionKeyResponse;
+    return (await response.json()) as SetDataEncryptionKeyResponse;
   }
 }

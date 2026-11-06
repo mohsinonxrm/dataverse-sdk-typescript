@@ -29,8 +29,9 @@ export class _InvokeHideReserveEntitiesRequest
   }
 
   async parseResponse(response: Response): Promise<_InvokeHideReserveEntitiesResponse> {
-    const data = await response.json();
-    return _InvokeHideReserveEntitiesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return _InvokeHideReserveEntitiesResponse.fromResponse({});
+    return _InvokeHideReserveEntitiesResponse.fromResponse(await response.json());
   }
 }
 

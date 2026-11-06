@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * CancelDesktopFlowRun request message
  *
  * Web API Action: CancelDesktopFlowRun
+ *
+ * The first argument is the id of the flowsession record to call it on.
  */
 export class CancelDesktopFlowRunRequest
   extends OrganizationRequest

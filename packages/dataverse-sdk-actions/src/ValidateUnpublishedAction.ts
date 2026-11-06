@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,19 +11,27 @@ export interface ValidateUnpublishedResponse {
 }
 
 /**
+ * Parameters of the ValidateUnpublished action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ValidateUnpublishedActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
+
+/**
  * ValidateUnpublished action
  *
  * Unbound action
  */
 export class ValidateUnpublishedAction implements Executable<ValidateUnpublishedResponse> {
-  constructor(public readonly target: EntityReference | AnyEntityPayload) {}
+  constructor(public readonly parameters: ValidateUnpublishedActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ValidateUnpublished`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -35,7 +44,8 @@ export class ValidateUnpublishedAction implements Executable<ValidateUnpublished
   }
 
   async parseResponse(response: Response): Promise<ValidateUnpublishedResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ValidateUnpublishedResponse;
+    return (await response.json()) as ValidateUnpublishedResponse;
   }
 }

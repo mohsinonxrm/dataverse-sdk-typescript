@@ -26,7 +26,8 @@ export class searchstatusFunction implements Executable<searchstatusResponse> {
   }
 
   async parseResponse(response: Response): Promise<searchstatusResponse> {
-    const data = await response.json();
-    return data as searchstatusResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as searchstatusResponse;
+    return (await response.json()) as searchstatusResponse;
   }
 }

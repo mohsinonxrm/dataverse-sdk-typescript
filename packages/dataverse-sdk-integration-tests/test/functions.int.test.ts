@@ -23,9 +23,9 @@ interface QueryExpressionShape {
 describe.skipIf(!live)("live: generated functions", () => {
   it("#22: FetchXmlToQueryExpression accepts FetchXML that contains single quotes", async () => {
     const { client } = liveClient();
-    const info = new FetchXmlToQueryExpressionFunction(FETCH_XML).toRequestInformation(
-      client.getBaseUrl()
-    );
+    const info = new FetchXmlToQueryExpressionFunction({
+      FetchXml: FETCH_XML,
+    }).toRequestInformation(client.getBaseUrl());
     const res = await client.send(info);
     expect(res.status).toBe(200);
 
@@ -39,7 +39,9 @@ describe.skipIf(!live)("live: generated functions", () => {
 
   it("#22: ValidateFetchXmlExpression accepts FetchXML that contains single quotes", async () => {
     const { client } = liveClient();
-    const result = await client.execute(new ValidateFetchXmlExpressionFunction(FETCH_XML));
+    const result = await client.execute(
+      new ValidateFetchXmlExpressionFunction({ FetchXml: FETCH_XML })
+    );
     expect(result).toBeTypeOf("object");
   });
 });

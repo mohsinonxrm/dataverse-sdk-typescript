@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { queue, queueitem } from "./types/index.js";
 
@@ -11,28 +12,38 @@ export interface AddToQueueResponse {
 }
 
 /**
+ * Parameters of the AddToQueue action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddToQueueActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  SourceQueue?: EntityReference | EntityPayload<queue>;
+  QueueItemProperties?: EntityReference | EntityPayload<queueitem>;
+}
+
+/**
  * AddToQueue action
  *
  * Bound action
  * Binding parameter: entity (mscrm.queue)
+ *
+ * The first argument is the id of the queue record to call it on.
  */
 export class AddToQueueAction implements Executable<AddToQueueResponse> {
   constructor(
     public readonly queueId: string,
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly sourceQueue?: EntityReference | EntityPayload<queue>,
-    public readonly queueItemProperties?: EntityReference | EntityPayload<queueitem>
+    public readonly parameters: AddToQueueActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/queues(${this.queueId})/Microsoft.Dynamics.CRM.AddToQueue`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      SourceQueue: this.sourceQueue,
-      QueueItemProperties: this.queueItemProperties,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      SourceQueue: this.parameters.SourceQueue,
+      QueueItemProperties: this.parameters.QueueItemProperties,
+    });
 
     return {
       method: "POST",
@@ -45,7 +56,8 @@ export class AddToQueueAction implements Executable<AddToQueueResponse> {
   }
 
   async parseResponse(response: Response): Promise<AddToQueueResponse> {
-    const data = await response.json();
-    return data as AddToQueueResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AddToQueueResponse;
+    return (await response.json()) as AddToQueueResponse;
   }
 }

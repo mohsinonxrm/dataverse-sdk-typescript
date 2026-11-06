@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { listmember } from "./types/index.js";
 
@@ -11,24 +12,34 @@ export interface RemoveMemberListResponse {
 }
 
 /**
+ * Parameters of the RemoveMemberList action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveMemberListActionParameters {
+  ListMember: EntityReference | EntityPayload<listmember>;
+}
+
+/**
  * RemoveMemberList action
  *
  * Bound action
  * Binding parameter: entity (mscrm.list)
+ *
+ * The first argument is the id of the list record to call it on.
  */
 export class RemoveMemberListAction implements Executable<RemoveMemberListResponse> {
   constructor(
     public readonly listId: string,
-    public readonly listMember: EntityReference | EntityPayload<listmember>
+    public readonly parameters: RemoveMemberListActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/lists(${this.listId})/Microsoft.Dynamics.CRM.RemoveMemberList`;
 
-    const body: Record<string, unknown> = {
-      ListMember: this.listMember,
-    };
+    const body = requestBody({
+      ListMember: this.parameters.ListMember,
+    });
 
     return {
       method: "POST",
@@ -41,7 +52,8 @@ export class RemoveMemberListAction implements Executable<RemoveMemberListRespon
   }
 
   async parseResponse(response: Response): Promise<RemoveMemberListResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RemoveMemberListResponse;
+    return (await response.json()) as RemoveMemberListResponse;
   }
 }

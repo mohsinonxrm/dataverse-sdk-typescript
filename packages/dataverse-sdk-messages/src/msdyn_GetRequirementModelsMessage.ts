@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetRequirementModelsResponse as msdyn_GetRequirementModelsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetRequirementModels message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetRequirementModelsRequestParameters {
+  Attributes: string;
+}
 
 /**
  * msdyn_GetRequirementModels request message
@@ -12,16 +21,18 @@ export class msdyn_GetRequirementModelsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetRequirementModelsResponse>
 {
-  constructor(public attributes: string) {
-    super("msdyn_GetRequirementModels");
+  declare readonly Parameters: Readonly<msdyn_GetRequirementModelsRequestParameters>;
+
+  constructor(parameters: msdyn_GetRequirementModelsRequestParameters) {
+    super("msdyn_GetRequirementModels", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetRequirementModels`;
 
-    const body: Record<string, unknown> = {
-      Attributes: this.attributes,
-    };
+    const body = requestBody({
+      Attributes: this.Parameters.Attributes,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetRequirementModelsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRequirementModelsResponse> {
-    const data = await response.json();
-    return msdyn_GetRequirementModelsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetRequirementModelsResponse.fromResponse({});
+    return msdyn_GetRequirementModelsResponse.fromResponse(await response.json());
   }
 }
 

@@ -10,15 +10,21 @@ export interface RetrieveParsedDataImportFileResponse {
 }
 
 /**
+ * Parameters of the RetrieveParsedDataImportFile function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveParsedDataImportFileFunctionParameters {
+  ImportFileId: string;
+  PagingInfo?: PagingInfo;
+}
+
+/**
  * RetrieveParsedDataImportFile function
  *
  * Unbound function
  */
 export class RetrieveParsedDataImportFileFunction implements Executable<RetrieveParsedDataImportFileResponse> {
-  constructor(
-    public readonly importFileId: string,
-    public readonly pagingInfo?: PagingInfo
-  ) {}
+  constructor(public readonly parameters: RetrieveParsedDataImportFileFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveParsedDataImportFile`;
@@ -26,13 +32,13 @@ export class RetrieveParsedDataImportFileFunction implements Executable<Retrieve
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.importFileId !== undefined) {
+    if (this.parameters.ImportFileId !== undefined) {
       aliases.push(`ImportFileId=@p1`);
-      params.append("@p1", formatParameterAlias(this.importFileId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.ImportFileId, "Edm.Guid"));
     }
-    if (this.pagingInfo !== undefined) {
+    if (this.parameters.PagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p2`);
-      params.append("@p2", JSON.stringify(this.pagingInfo));
+      params.append("@p2", JSON.stringify(this.parameters.PagingInfo));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -48,7 +54,8 @@ export class RetrieveParsedDataImportFileFunction implements Executable<Retrieve
   }
 
   async parseResponse(response: Response): Promise<RetrieveParsedDataImportFileResponse> {
-    const data = await response.json();
-    return data as RetrieveParsedDataImportFileResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveParsedDataImportFileResponse;
+    return (await response.json()) as RetrieveParsedDataImportFileResponse;
   }
 }

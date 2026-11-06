@@ -9,15 +9,25 @@ export interface FindParentResourceGroupResponse {
 }
 
 /**
+ * Parameters of the FindParentResourceGroup function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface FindParentResourceGroupFunctionParameters {
+  Children: resourcegroup[];
+}
+
+/**
  * FindParentResourceGroup function
  *
  * Bound function
  * Binding parameter: entity (mscrm.resourcegroup)
+ *
+ * The first argument is the id of the resourcegroup record to call it on.
  */
 export class FindParentResourceGroupFunction implements Executable<FindParentResourceGroupResponse> {
   constructor(
     public readonly resourcegroupId: string,
-    public readonly children: resourcegroup[]
+    public readonly parameters: FindParentResourceGroupFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -27,9 +37,9 @@ export class FindParentResourceGroupFunction implements Executable<FindParentRes
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.children !== undefined) {
+    if (this.parameters.Children !== undefined) {
       aliases.push(`Children=@p1`);
-      params.append("@p1", JSON.stringify(this.children));
+      params.append("@p1", JSON.stringify(this.parameters.Children));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -45,7 +55,8 @@ export class FindParentResourceGroupFunction implements Executable<FindParentRes
   }
 
   async parseResponse(response: Response): Promise<FindParentResourceGroupResponse> {
-    const data = await response.json();
-    return data as FindParentResourceGroupResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as FindParentResourceGroupResponse;
+    return (await response.json()) as FindParentResourceGroupResponse;
   }
 }

@@ -12,6 +12,8 @@ export interface msdyn_StartCaseFollowupMonitoringResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.incident)
+ *
+ * The first argument is the id of the incident record to call it on.
  */
 export class msdyn_StartCaseFollowupMonitoringAction implements Executable<msdyn_StartCaseFollowupMonitoringResponse> {
   constructor(public readonly incidentId: string) {}
@@ -30,7 +32,8 @@ export class msdyn_StartCaseFollowupMonitoringAction implements Executable<msdyn
   }
 
   async parseResponse(response: Response): Promise<msdyn_StartCaseFollowupMonitoringResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_StartCaseFollowupMonitoringResponse;
+    return (await response.json()) as msdyn_StartCaseFollowupMonitoringResponse;
   }
 }

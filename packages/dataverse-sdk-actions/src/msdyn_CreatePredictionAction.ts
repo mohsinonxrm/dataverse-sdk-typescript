@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CreatePrediction action
@@ -8,19 +9,27 @@ export interface msdyn_CreatePredictionResponse {
 }
 
 /**
+ * Parameters of the msdyn_CreatePrediction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreatePredictionActionParameters {
+  ModelState?: string;
+}
+
+/**
  * msdyn_CreatePrediction action
  *
  * Unbound action
  */
 export class msdyn_CreatePredictionAction implements Executable<msdyn_CreatePredictionResponse> {
-  constructor(public readonly modelState?: string) {}
+  constructor(public readonly parameters: msdyn_CreatePredictionActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreatePrediction`;
 
-    const body: Record<string, unknown> = {
-      ModelState: this.modelState,
-    };
+    const body = requestBody({
+      ModelState: this.parameters.ModelState,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_CreatePredictionAction implements Executable<msdyn_CreatePred
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreatePredictionResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CreatePredictionResponse;
+    return (await response.json()) as msdyn_CreatePredictionResponse;
   }
 }

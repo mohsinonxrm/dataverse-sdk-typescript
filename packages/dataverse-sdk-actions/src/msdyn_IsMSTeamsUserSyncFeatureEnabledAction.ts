@@ -27,7 +27,8 @@ export class msdyn_IsMSTeamsUserSyncFeatureEnabledAction implements Executable<m
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsMSTeamsUserSyncFeatureEnabledResponse> {
-    const data = await response.json();
-    return data as msdyn_IsMSTeamsUserSyncFeatureEnabledResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_IsMSTeamsUserSyncFeatureEnabledResponse;
+    return (await response.json()) as msdyn_IsMSTeamsUserSyncFeatureEnabledResponse;
   }
 }

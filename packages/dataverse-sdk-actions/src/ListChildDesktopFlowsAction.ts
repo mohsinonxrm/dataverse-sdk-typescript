@@ -12,6 +12,8 @@ export interface ListChildDesktopFlowsResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.workflow)
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class ListChildDesktopFlowsAction implements Executable<ListChildDesktopFlowsResponse> {
   constructor(public readonly workflowId: string) {}
@@ -30,7 +32,8 @@ export class ListChildDesktopFlowsAction implements Executable<ListChildDesktopF
   }
 
   async parseResponse(response: Response): Promise<ListChildDesktopFlowsResponse> {
-    const data = await response.json();
-    return data as ListChildDesktopFlowsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ListChildDesktopFlowsResponse;
+    return (await response.json()) as ListChildDesktopFlowsResponse;
   }
 }

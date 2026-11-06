@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the RevokeAccess message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RevokeAccessRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+  Revokee: EntityReference | AnyEntityPayload;
+}
 
 /**
  * RevokeAccess request message
@@ -12,20 +22,19 @@ export class RevokeAccessRequest
   extends OrganizationRequest
   implements Executable<RevokeAccessResponse>
 {
-  constructor(
-    public target: EntityReference | AnyEntityPayload,
-    public revokee: EntityReference | AnyEntityPayload
-  ) {
-    super("RevokeAccess");
+  declare readonly Parameters: Readonly<RevokeAccessRequestParameters>;
+
+  constructor(parameters: RevokeAccessRequestParameters) {
+    super("RevokeAccess", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RevokeAccess`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      Revokee: this.revokee,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      Revokee: this.Parameters.Revokee,
+    });
 
     return {
       method: "POST",

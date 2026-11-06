@@ -30,7 +30,9 @@ export class msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleAction impleme
   async parseResponse(
     response: Response
   ): Promise<msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse;
+    return (await response.json()) as msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse;
   }
 }

@@ -7,6 +7,8 @@ import type { msdyn_ocsimltraining } from "./types/index.js";
  * msdyn_CreateTrainConfig request message
  *
  * Web API Action: msdyn_CreateTrainConfig
+ *
+ * The first argument is the id of the msdyn_ocskillidentmlmodel record to call it on.
  */
 export class msdyn_CreateTrainConfigRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class msdyn_CreateTrainConfigRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateTrainConfigResponse> {
-    const data = await response.json();
-    return msdyn_CreateTrainConfigResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CreateTrainConfigResponse.fromResponse({});
+    return msdyn_CreateTrainConfigResponse.fromResponse(await response.json());
   }
 }
 

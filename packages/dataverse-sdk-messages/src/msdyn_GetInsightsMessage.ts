@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetInsightsResponse as msdyn_GetInsightsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetInsights message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetInsightsRequestParameters {
+  msdyn_payload: string;
+  msdyn_insighttype: string;
+  msdyn_responseFormat?: string;
+}
 
 /**
  * msdyn_GetInsights request message
@@ -12,22 +23,20 @@ export class msdyn_GetInsightsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetInsightsResponse>
 {
-  constructor(
-    public msdyn_payload: string,
-    public msdyn_insighttype: string,
-    public msdyn_responseFormat?: string
-  ) {
-    super("msdyn_GetInsights");
+  declare readonly Parameters: Readonly<msdyn_GetInsightsRequestParameters>;
+
+  constructor(parameters: msdyn_GetInsightsRequestParameters) {
+    super("msdyn_GetInsights", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetInsights`;
 
-    const body: Record<string, unknown> = {
-      msdyn_payload: this.msdyn_payload,
-      msdyn_insighttype: this.msdyn_insighttype,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-    };
+    const body = requestBody({
+      msdyn_payload: this.Parameters.msdyn_payload,
+      msdyn_insighttype: this.Parameters.msdyn_insighttype,
+      msdyn_responseFormat: this.Parameters.msdyn_responseFormat,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_GetInsightsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetInsightsResponse> {
-    const data = await response.json();
-    return msdyn_GetInsightsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetInsightsResponse.fromResponse({});
+    return msdyn_GetInsightsResponse.fromResponse(await response.json());
   }
 }
 

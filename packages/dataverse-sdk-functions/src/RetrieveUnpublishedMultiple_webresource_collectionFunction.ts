@@ -31,7 +31,9 @@ export class RetrieveUnpublishedMultiple_webresource_collectionFunction implemen
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_webresource_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_webresource_collectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublishedMultiple_webresource_collectionResponse;
+    return (await response.json()) as RetrieveUnpublishedMultiple_webresource_collectionResponse;
   }
 }

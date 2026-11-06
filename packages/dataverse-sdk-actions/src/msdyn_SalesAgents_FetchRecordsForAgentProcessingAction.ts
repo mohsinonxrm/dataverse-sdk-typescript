@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SalesAgents_FetchRecordsForAgentProcessing action
@@ -9,27 +10,35 @@ export interface msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse {
 }
 
 /**
+ * Parameters of the msdyn_SalesAgents_FetchRecordsForAgentProcessing action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_FetchRecordsForAgentProcessingActionParameters {
+  msdyn_Top?: number;
+  msdyn_SalesAgentType: number;
+  msdyn_NextLink?: string;
+  msdyn_TrackingId?: string;
+}
+
+/**
  * msdyn_SalesAgents_FetchRecordsForAgentProcessing action
  *
  * Unbound action
  */
 export class msdyn_SalesAgents_FetchRecordsForAgentProcessingAction implements Executable<msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse> {
   constructor(
-    public readonly msdyn_Top: number | undefined,
-    public readonly msdyn_SalesAgentType: number,
-    public readonly msdyn_NextLink?: string,
-    public readonly msdyn_TrackingId?: string
+    public readonly parameters: msdyn_SalesAgents_FetchRecordsForAgentProcessingActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_FetchRecordsForAgentProcessing`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Top: this.msdyn_Top,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-      msdyn_NextLink: this.msdyn_NextLink,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_Top: this.parameters.msdyn_Top,
+      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
+      msdyn_NextLink: this.parameters.msdyn_NextLink,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
@@ -44,7 +53,9 @@ export class msdyn_SalesAgents_FetchRecordsForAgentProcessingAction implements E
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse;
+    return (await response.json()) as msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse;
   }
 }

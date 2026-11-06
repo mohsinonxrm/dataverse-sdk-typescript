@@ -28,7 +28,8 @@ export class msdynmkt_getObmDeprecationConfigurationAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_getObmDeprecationConfigurationResponse> {
-    const data = await response.json();
-    return data as msdynmkt_getObmDeprecationConfigurationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_getObmDeprecationConfigurationResponse;
+    return (await response.json()) as msdynmkt_getObmDeprecationConfigurationResponse;
   }
 }

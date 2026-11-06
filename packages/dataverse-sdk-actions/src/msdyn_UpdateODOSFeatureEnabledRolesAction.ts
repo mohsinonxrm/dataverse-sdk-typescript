@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_UpdateODOSFeatureEnabledRoles action
@@ -8,23 +9,29 @@ export interface msdyn_UpdateODOSFeatureEnabledRolesResponse {
 }
 
 /**
+ * Parameters of the msdyn_UpdateODOSFeatureEnabledRoles action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateODOSFeatureEnabledRolesActionParameters {
+  FeatureName: string;
+  Roles: string;
+}
+
+/**
  * msdyn_UpdateODOSFeatureEnabledRoles action
  *
  * Unbound action
  */
 export class msdyn_UpdateODOSFeatureEnabledRolesAction implements Executable<msdyn_UpdateODOSFeatureEnabledRolesResponse> {
-  constructor(
-    public readonly featureName: string,
-    public readonly roles: string
-  ) {}
+  constructor(public readonly parameters: msdyn_UpdateODOSFeatureEnabledRolesActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateODOSFeatureEnabledRoles`;
 
-    const body: Record<string, unknown> = {
-      FeatureName: this.featureName,
-      Roles: this.roles,
-    };
+    const body = requestBody({
+      FeatureName: this.parameters.FeatureName,
+      Roles: this.parameters.Roles,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_UpdateODOSFeatureEnabledRolesAction implements Executable<msd
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateODOSFeatureEnabledRolesResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_UpdateODOSFeatureEnabledRolesResponse;
+    return (await response.json()) as msdyn_UpdateODOSFeatureEnabledRolesResponse;
   }
 }

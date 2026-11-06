@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_FetchDiagnosticEntitiesAndCountResponse as msdyn_FetchDiagnosticEntitiesAndCountResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_FetchDiagnosticEntitiesAndCount message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FetchDiagnosticEntitiesAndCountRequestParameters {
+  msdyn_RunId: string;
+  msdyn_Filter: string;
+}
 
 /**
  * msdyn_FetchDiagnosticEntitiesAndCount request message
@@ -12,20 +22,19 @@ export class msdyn_FetchDiagnosticEntitiesAndCountRequest
   extends OrganizationRequest
   implements Executable<msdyn_FetchDiagnosticEntitiesAndCountResponse>
 {
-  constructor(
-    public msdyn_RunId: string,
-    public msdyn_Filter: string
-  ) {
-    super("msdyn_FetchDiagnosticEntitiesAndCount");
+  declare readonly Parameters: Readonly<msdyn_FetchDiagnosticEntitiesAndCountRequestParameters>;
+
+  constructor(parameters: msdyn_FetchDiagnosticEntitiesAndCountRequestParameters) {
+    super("msdyn_FetchDiagnosticEntitiesAndCount", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FetchDiagnosticEntitiesAndCount`;
 
-    const body: Record<string, unknown> = {
-      msdyn_RunId: this.msdyn_RunId,
-      msdyn_Filter: this.msdyn_Filter,
-    };
+    const body = requestBody({
+      msdyn_RunId: this.Parameters.msdyn_RunId,
+      msdyn_Filter: this.Parameters.msdyn_Filter,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,10 @@ export class msdyn_FetchDiagnosticEntitiesAndCountRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchDiagnosticEntitiesAndCountResponse> {
-    const data = await response.json();
-    return msdyn_FetchDiagnosticEntitiesAndCountResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_FetchDiagnosticEntitiesAndCountResponse.fromResponse({});
+    return msdyn_FetchDiagnosticEntitiesAndCountResponse.fromResponse(await response.json());
   }
 }
 

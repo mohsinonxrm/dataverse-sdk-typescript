@@ -26,7 +26,8 @@ export class RetrieveDeprovisionedLanguagesFunction implements Executable<Retrie
   }
 
   async parseResponse(response: Response): Promise<RetrieveDeprovisionedLanguagesResponse> {
-    const data = await response.json();
-    return data as RetrieveDeprovisionedLanguagesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveDeprovisionedLanguagesResponse;
+    return (await response.json()) as RetrieveDeprovisionedLanguagesResponse;
   }
 }

@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_KnowledgeHarvestFetchDataResponse as msdyn_KnowledgeHarvestFetchDataResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_KnowledgeHarvestFetchData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_KnowledgeHarvestFetchDataRequestParameters {
+  msdyn_entityId: string;
+  msdyn_entityName: string;
+}
 
 /**
  * msdyn_KnowledgeHarvestFetchData request message
@@ -12,20 +22,19 @@ export class msdyn_KnowledgeHarvestFetchDataRequest
   extends OrganizationRequest
   implements Executable<msdyn_KnowledgeHarvestFetchDataResponse>
 {
-  constructor(
-    public msdyn_entityId: string,
-    public msdyn_entityName: string
-  ) {
-    super("msdyn_KnowledgeHarvestFetchData");
+  declare readonly Parameters: Readonly<msdyn_KnowledgeHarvestFetchDataRequestParameters>;
+
+  constructor(parameters: msdyn_KnowledgeHarvestFetchDataRequestParameters) {
+    super("msdyn_KnowledgeHarvestFetchData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_KnowledgeHarvestFetchData`;
 
-    const body: Record<string, unknown> = {
-      msdyn_entityId: this.msdyn_entityId,
-      msdyn_entityName: this.msdyn_entityName,
-    };
+    const body = requestBody({
+      msdyn_entityId: this.Parameters.msdyn_entityId,
+      msdyn_entityName: this.Parameters.msdyn_entityName,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_KnowledgeHarvestFetchDataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_KnowledgeHarvestFetchDataResponse> {
-    const data = await response.json();
-    return msdyn_KnowledgeHarvestFetchDataResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_KnowledgeHarvestFetchDataResponse.fromResponse({});
+    return msdyn_KnowledgeHarvestFetchDataResponse.fromResponse(await response.json());
   }
 }
 

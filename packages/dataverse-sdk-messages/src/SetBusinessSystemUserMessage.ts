@@ -1,36 +1,49 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { businessunit } from "./types/index.js";
+
+/**
+ * Parameters of the SetBusinessSystemUser message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetBusinessSystemUserRequestParameters {
+  BusinessUnit: EntityReference | EntityPayload<businessunit>;
+  ReassignPrincipal: EntityReference | AnyEntityPayload;
+  DoNotMoveAllRecords?: boolean;
+}
 
 /**
  * SetBusinessSystemUser request message
  *
  * Web API Action: SetBusinessSystemUser
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class SetBusinessSystemUserRequest
   extends OrganizationRequest
   implements Executable<SetBusinessSystemUserResponse>
 {
+  declare readonly Parameters: Readonly<SetBusinessSystemUserRequestParameters>;
+
   constructor(
     public systemuserId: string,
-    public businessUnit: EntityReference | EntityPayload<businessunit>,
-    public reassignPrincipal: EntityReference | AnyEntityPayload,
-    public doNotMoveAllRecords?: boolean
+    parameters: SetBusinessSystemUserRequestParameters
   ) {
-    super("SetBusinessSystemUser");
+    super("SetBusinessSystemUser", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/systemusers(${this.systemuserId})/Microsoft.Dynamics.CRM.SetBusinessSystemUser`;
 
-    const body: Record<string, unknown> = {
-      BusinessUnit: this.businessUnit,
-      ReassignPrincipal: this.reassignPrincipal,
-      DoNotMoveAllRecords: this.doNotMoveAllRecords,
-    };
+    const body = requestBody({
+      BusinessUnit: this.Parameters.BusinessUnit,
+      ReassignPrincipal: this.Parameters.ReassignPrincipal,
+      DoNotMoveAllRecords: this.Parameters.DoNotMoveAllRecords,
+    });
 
     return {
       method: "POST",

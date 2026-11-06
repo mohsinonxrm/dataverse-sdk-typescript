@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_knowledgeHarvestAgentTrigger message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_knowledgeHarvestAgentTriggerRequestParameters {
+  Payload: string;
+}
 
 /**
  * msdyn_knowledgeHarvestAgentTrigger request message
@@ -10,16 +19,18 @@ export class msdyn_knowledgeHarvestAgentTriggerRequest
   extends OrganizationRequest
   implements Executable<msdyn_knowledgeHarvestAgentTriggerResponse>
 {
-  constructor(public payload: string) {
-    super("msdyn_knowledgeHarvestAgentTrigger");
+  declare readonly Parameters: Readonly<msdyn_knowledgeHarvestAgentTriggerRequestParameters>;
+
+  constructor(parameters: msdyn_knowledgeHarvestAgentTriggerRequestParameters) {
+    super("msdyn_knowledgeHarvestAgentTrigger", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_knowledgeHarvestAgentTrigger`;
 
-    const body: Record<string, unknown> = {
-      Payload: this.payload,
-    };
+    const body = requestBody({
+      Payload: this.Parameters.Payload,
+    });
 
     return {
       method: "POST",

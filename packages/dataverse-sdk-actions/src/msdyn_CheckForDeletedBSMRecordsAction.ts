@@ -29,7 +29,8 @@ export class msdyn_CheckForDeletedBSMRecordsAction implements Executable<msdyn_C
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForDeletedBSMRecordsResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForDeletedBSMRecordsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckForDeletedBSMRecordsResponse;
+    return (await response.json()) as msdyn_CheckForDeletedBSMRecordsResponse;
   }
 }

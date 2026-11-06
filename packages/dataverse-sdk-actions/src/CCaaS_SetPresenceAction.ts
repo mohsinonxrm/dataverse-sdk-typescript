@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_SetPresence action
@@ -8,23 +9,29 @@ export interface CCaaS_SetPresenceResponse {
 }
 
 /**
+ * Parameters of the CCaaS_SetPresence action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_SetPresenceActionParameters {
+  ApiVersion: string;
+  PresenceId: string;
+}
+
+/**
  * CCaaS_SetPresence action
  *
  * Unbound action
  */
 export class CCaaS_SetPresenceAction implements Executable<CCaaS_SetPresenceResponse> {
-  constructor(
-    public readonly apiVersion: string,
-    public readonly presenceId: string
-  ) {}
+  constructor(public readonly parameters: CCaaS_SetPresenceActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_SetPresence`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      PresenceId: this.presenceId,
-    };
+    const body = requestBody({
+      ApiVersion: this.parameters.ApiVersion,
+      PresenceId: this.parameters.PresenceId,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class CCaaS_SetPresenceAction implements Executable<CCaaS_SetPresenceResp
   }
 
   async parseResponse(response: Response): Promise<CCaaS_SetPresenceResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_SetPresenceResponse;
+    return (await response.json()) as CCaaS_SetPresenceResponse;
   }
 }

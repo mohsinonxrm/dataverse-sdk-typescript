@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { _RetrieveActivitiesByResourcesResponse as _RetrieveActivitiesByResourcesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the _RetrieveActivitiesByResources message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _RetrieveActivitiesByResourcesRequestParameters {
+  StartDate: string;
+  EndDate: string;
+  ResourceIds: string;
+  ActivityType: number;
+}
 
 /**
  * _RetrieveActivitiesByResources request message
@@ -12,24 +24,21 @@ export class _RetrieveActivitiesByResourcesRequest
   extends OrganizationRequest
   implements Executable<_RetrieveActivitiesByResourcesResponse>
 {
-  constructor(
-    public startDate: string,
-    public endDate: string,
-    public resourceIds: string,
-    public activityType: number
-  ) {
-    super("_RetrieveActivitiesByResources");
+  declare readonly Parameters: Readonly<_RetrieveActivitiesByResourcesRequestParameters>;
+
+  constructor(parameters: _RetrieveActivitiesByResourcesRequestParameters) {
+    super("_RetrieveActivitiesByResources", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_RetrieveActivitiesByResources`;
 
-    const body: Record<string, unknown> = {
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      ResourceIds: this.resourceIds,
-      ActivityType: this.activityType,
-    };
+    const body = requestBody({
+      StartDate: this.Parameters.StartDate,
+      EndDate: this.Parameters.EndDate,
+      ResourceIds: this.Parameters.ResourceIds,
+      ActivityType: this.Parameters.ActivityType,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class _RetrieveActivitiesByResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<_RetrieveActivitiesByResourcesResponse> {
-    const data = await response.json();
-    return _RetrieveActivitiesByResourcesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return _RetrieveActivitiesByResourcesResponse.fromResponse({});
+    return _RetrieveActivitiesByResourcesResponse.fromResponse(await response.json());
   }
 }
 

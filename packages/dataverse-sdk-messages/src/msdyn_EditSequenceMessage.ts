@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_EditSequenceResponse as msdyn_EditSequenceResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_EditSequence message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_EditSequenceRequestParameters {
+  SequenceId?: string;
+  DiscardChanges?: boolean;
+}
 
 /**
  * msdyn_EditSequence request message
@@ -12,20 +22,19 @@ export class msdyn_EditSequenceRequest
   extends OrganizationRequest
   implements Executable<msdyn_EditSequenceResponse>
 {
-  constructor(
-    public sequenceId?: string,
-    public discardChanges?: boolean
-  ) {
-    super("msdyn_EditSequence");
+  declare readonly Parameters: Readonly<msdyn_EditSequenceRequestParameters>;
+
+  constructor(parameters: msdyn_EditSequenceRequestParameters = {}) {
+    super("msdyn_EditSequence", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_EditSequence`;
 
-    const body: Record<string, unknown> = {
-      SequenceId: this.sequenceId,
-      DiscardChanges: this.discardChanges,
-    };
+    const body = requestBody({
+      SequenceId: this.Parameters.SequenceId,
+      DiscardChanges: this.Parameters.DiscardChanges,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_EditSequenceRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_EditSequenceResponse> {
-    const data = await response.json();
-    return msdyn_EditSequenceResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_EditSequenceResponse.fromResponse({});
+    return msdyn_EditSequenceResponse.fromResponse(await response.json());
   }
 }
 

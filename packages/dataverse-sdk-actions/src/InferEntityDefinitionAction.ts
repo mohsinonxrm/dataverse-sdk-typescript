@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from InferEntityDefinition action
@@ -12,41 +13,47 @@ export interface InferEntityDefinitionResponse {
 }
 
 /**
+ * Parameters of the InferEntityDefinition action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InferEntityDefinitionActionParameters {
+  LanguageCode?: number;
+  UseUserSettings?: boolean;
+  UserContext?: string;
+  SolutionPrefix: string;
+  PreviewData?: string;
+  SourceTimeZone?: string;
+  ParseSampleData?: boolean;
+  FileInfo?: string;
+  RecordId: string;
+  EntityDefinition?: string;
+  EntitiesCollection?: string;
+}
+
+/**
  * InferEntityDefinition action
  *
  * Unbound action
  */
 export class InferEntityDefinitionAction implements Executable<InferEntityDefinitionResponse> {
-  constructor(
-    public readonly languageCode: number | undefined,
-    public readonly useUserSettings: boolean | undefined,
-    public readonly userContext: string | undefined,
-    public readonly solutionPrefix: string,
-    public readonly previewData: string | undefined,
-    public readonly sourceTimeZone: string | undefined,
-    public readonly parseSampleData: boolean | undefined,
-    public readonly fileInfo: string | undefined,
-    public readonly recordId: string,
-    public readonly entityDefinition?: string,
-    public readonly entitiesCollection?: string
-  ) {}
+  constructor(public readonly parameters: InferEntityDefinitionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/InferEntityDefinition`;
 
-    const body: Record<string, unknown> = {
-      LanguageCode: this.languageCode,
-      UseUserSettings: this.useUserSettings,
-      UserContext: this.userContext,
-      SolutionPrefix: this.solutionPrefix,
-      PreviewData: this.previewData,
-      SourceTimeZone: this.sourceTimeZone,
-      ParseSampleData: this.parseSampleData,
-      FileInfo: this.fileInfo,
-      RecordId: this.recordId,
-      EntityDefinition: this.entityDefinition,
-      EntitiesCollection: this.entitiesCollection,
-    };
+    const body = requestBody({
+      LanguageCode: this.parameters.LanguageCode,
+      UseUserSettings: this.parameters.UseUserSettings,
+      UserContext: this.parameters.UserContext,
+      SolutionPrefix: this.parameters.SolutionPrefix,
+      PreviewData: this.parameters.PreviewData,
+      SourceTimeZone: this.parameters.SourceTimeZone,
+      ParseSampleData: this.parameters.ParseSampleData,
+      FileInfo: this.parameters.FileInfo,
+      RecordId: this.parameters.RecordId,
+      EntityDefinition: this.parameters.EntityDefinition,
+      EntitiesCollection: this.parameters.EntitiesCollection,
+    });
 
     return {
       method: "POST",
@@ -59,7 +66,8 @@ export class InferEntityDefinitionAction implements Executable<InferEntityDefini
   }
 
   async parseResponse(response: Response): Promise<InferEntityDefinitionResponse> {
-    const data = await response.json();
-    return data as InferEntityDefinitionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InferEntityDefinitionResponse;
+    return (await response.json()) as InferEntityDefinitionResponse;
   }
 }

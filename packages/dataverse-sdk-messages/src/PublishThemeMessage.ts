@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * PublishTheme request message
  *
  * Web API Action: PublishTheme
+ *
+ * The first argument is the id of the theme record to call it on.
  */
 export class PublishThemeRequest
   extends OrganizationRequest

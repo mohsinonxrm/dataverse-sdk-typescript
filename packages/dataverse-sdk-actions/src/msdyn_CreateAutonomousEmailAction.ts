@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,41 +11,47 @@ export interface msdyn_CreateAutonomousEmailResponse {
 }
 
 /**
+ * Parameters of the msdyn_CreateAutonomousEmail action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateAutonomousEmailActionParameters {
+  SourceContextEntity?: EntityReference | AnyEntityPayload;
+  Entity?: EntityReference | AnyEntityPayload;
+  StandardizedIntent?: string;
+  IntentFamilyId?: string;
+  FallbackEmailTemplateId?: string;
+  SuggestionType: string;
+  SenderEntity: EntityReference | AnyEntityPayload;
+  SuggestionSubtype: string;
+  UseCopilotRecommendedTemplate?: boolean;
+  SuggestionResponse?: string;
+  AutomationLevel?: string;
+}
+
+/**
  * msdyn_CreateAutonomousEmail action
  *
  * Unbound action
  */
 export class msdyn_CreateAutonomousEmailAction implements Executable<msdyn_CreateAutonomousEmailResponse> {
-  constructor(
-    public readonly sourceContextEntity: EntityReference | AnyEntityPayload | undefined,
-    public readonly entity: EntityReference | AnyEntityPayload | undefined,
-    public readonly standardizedIntent: string | undefined,
-    public readonly intentFamilyId: string | undefined,
-    public readonly fallbackEmailTemplateId: string | undefined,
-    public readonly suggestionType: string,
-    public readonly senderEntity: EntityReference | AnyEntityPayload,
-    public readonly suggestionSubtype: string,
-    public readonly useCopilotRecommendedTemplate?: boolean,
-    public readonly suggestionResponse?: string,
-    public readonly automationLevel?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_CreateAutonomousEmailActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateAutonomousEmail`;
 
-    const body: Record<string, unknown> = {
-      SourceContextEntity: this.sourceContextEntity,
-      Entity: this.entity,
-      StandardizedIntent: this.standardizedIntent,
-      IntentFamilyId: this.intentFamilyId,
-      FallbackEmailTemplateId: this.fallbackEmailTemplateId,
-      SuggestionType: this.suggestionType,
-      SenderEntity: this.senderEntity,
-      SuggestionSubtype: this.suggestionSubtype,
-      UseCopilotRecommendedTemplate: this.useCopilotRecommendedTemplate,
-      SuggestionResponse: this.suggestionResponse,
-      AutomationLevel: this.automationLevel,
-    };
+    const body = requestBody({
+      SourceContextEntity: this.parameters.SourceContextEntity,
+      Entity: this.parameters.Entity,
+      StandardizedIntent: this.parameters.StandardizedIntent,
+      IntentFamilyId: this.parameters.IntentFamilyId,
+      FallbackEmailTemplateId: this.parameters.FallbackEmailTemplateId,
+      SuggestionType: this.parameters.SuggestionType,
+      SenderEntity: this.parameters.SenderEntity,
+      SuggestionSubtype: this.parameters.SuggestionSubtype,
+      UseCopilotRecommendedTemplate: this.parameters.UseCopilotRecommendedTemplate,
+      SuggestionResponse: this.parameters.SuggestionResponse,
+      AutomationLevel: this.parameters.AutomationLevel,
+    });
 
     return {
       method: "POST",
@@ -57,7 +64,8 @@ export class msdyn_CreateAutonomousEmailAction implements Executable<msdyn_Creat
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateAutonomousEmailResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateAutonomousEmailResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CreateAutonomousEmailResponse;
+    return (await response.json()) as msdyn_CreateAutonomousEmailResponse;
   }
 }

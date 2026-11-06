@@ -30,7 +30,9 @@ export class msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleAction impl
   async parseResponse(
     response: Response
   ): Promise<msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse;
+    return (await response.json()) as msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse;
   }
 }

@@ -10,15 +10,21 @@ export interface RetrieveExchangeAppointmentsResponse {
 }
 
 /**
+ * Parameters of the RetrieveExchangeAppointments function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveExchangeAppointmentsFunctionParameters {
+  StartDate: string | Date;
+  EndDate: string | Date;
+}
+
+/**
  * RetrieveExchangeAppointments function
  *
  * Unbound function
  */
 export class RetrieveExchangeAppointmentsFunction implements Executable<RetrieveExchangeAppointmentsResponse> {
-  constructor(
-    public readonly startDate: string | Date,
-    public readonly endDate: string | Date
-  ) {}
+  constructor(public readonly parameters: RetrieveExchangeAppointmentsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveExchangeAppointments`;
@@ -26,13 +32,13 @@ export class RetrieveExchangeAppointmentsFunction implements Executable<Retrieve
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.startDate !== undefined) {
+    if (this.parameters.StartDate !== undefined) {
       aliases.push(`StartDate=@p1`);
-      params.append("@p1", formatParameterAlias(this.startDate, "Edm.DateTimeOffset"));
+      params.append("@p1", formatParameterAlias(this.parameters.StartDate, "Edm.DateTimeOffset"));
     }
-    if (this.endDate !== undefined) {
+    if (this.parameters.EndDate !== undefined) {
       aliases.push(`EndDate=@p2`);
-      params.append("@p2", formatParameterAlias(this.endDate, "Edm.DateTimeOffset"));
+      params.append("@p2", formatParameterAlias(this.parameters.EndDate, "Edm.DateTimeOffset"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -48,7 +54,8 @@ export class RetrieveExchangeAppointmentsFunction implements Executable<Retrieve
   }
 
   async parseResponse(response: Response): Promise<RetrieveExchangeAppointmentsResponse> {
-    const data = await response.json();
-    return data as RetrieveExchangeAppointmentsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveExchangeAppointmentsResponse;
+    return (await response.json()) as RetrieveExchangeAppointmentsResponse;
   }
 }

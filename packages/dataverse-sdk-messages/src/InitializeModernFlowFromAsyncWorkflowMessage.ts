@@ -7,6 +7,8 @@ import type { workflow } from "./types/index.js";
  * InitializeModernFlowFromAsyncWorkflow request message
  *
  * Web API Action: InitializeModernFlowFromAsyncWorkflow
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class InitializeModernFlowFromAsyncWorkflowRequest
   extends OrganizationRequest
@@ -30,8 +32,10 @@ export class InitializeModernFlowFromAsyncWorkflowRequest
   }
 
   async parseResponse(response: Response): Promise<InitializeModernFlowFromAsyncWorkflowResponse> {
-    const data = await response.json();
-    return InitializeModernFlowFromAsyncWorkflowResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return InitializeModernFlowFromAsyncWorkflowResponse.fromResponse({});
+    return InitializeModernFlowFromAsyncWorkflowResponse.fromResponse(await response.json());
   }
 }
 

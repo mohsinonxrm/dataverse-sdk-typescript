@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdynmkt_DiscoverPlaceholders action
@@ -8,19 +9,27 @@ export interface msdynmkt_DiscoverPlaceholdersResponse {
 }
 
 /**
+ * Parameters of the msdynmkt_DiscoverPlaceholders action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_DiscoverPlaceholdersActionParameters {
+  DiscoverPlaceholdersRequest?: string;
+}
+
+/**
  * msdynmkt_DiscoverPlaceholders action
  *
  * Unbound action
  */
 export class msdynmkt_DiscoverPlaceholdersAction implements Executable<msdynmkt_DiscoverPlaceholdersResponse> {
-  constructor(public readonly discoverPlaceholdersRequest?: string) {}
+  constructor(public readonly parameters: msdynmkt_DiscoverPlaceholdersActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_DiscoverPlaceholders`;
 
-    const body: Record<string, unknown> = {
-      DiscoverPlaceholdersRequest: this.discoverPlaceholdersRequest,
-    };
+    const body = requestBody({
+      DiscoverPlaceholdersRequest: this.parameters.DiscoverPlaceholdersRequest,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdynmkt_DiscoverPlaceholdersAction implements Executable<msdynmkt_
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_DiscoverPlaceholdersResponse> {
-    const data = await response.json();
-    return data as msdynmkt_DiscoverPlaceholdersResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_DiscoverPlaceholdersResponse;
+    return (await response.json()) as msdynmkt_DiscoverPlaceholdersResponse;
   }
 }

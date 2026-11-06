@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,27 +11,33 @@ export interface msdyn_CreateAutonomousEmailWrapperResponse {
 }
 
 /**
+ * Parameters of the msdyn_CreateAutonomousEmailWrapper action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateAutonomousEmailWrapperActionParameters {
+  SenderEntity?: EntityReference | AnyEntityPayload;
+  Entity: EntityReference | AnyEntityPayload;
+  NextSuggestion: string;
+  SourceContextEntity?: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_CreateAutonomousEmailWrapper action
  *
  * Unbound action
  */
 export class msdyn_CreateAutonomousEmailWrapperAction implements Executable<msdyn_CreateAutonomousEmailWrapperResponse> {
-  constructor(
-    public readonly senderEntity: EntityReference | AnyEntityPayload | undefined,
-    public readonly entity: EntityReference | AnyEntityPayload,
-    public readonly nextSuggestion: string,
-    public readonly sourceContextEntity?: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: msdyn_CreateAutonomousEmailWrapperActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateAutonomousEmailWrapper`;
 
-    const body: Record<string, unknown> = {
-      SenderEntity: this.senderEntity,
-      Entity: this.entity,
-      NextSuggestion: this.nextSuggestion,
-      SourceContextEntity: this.sourceContextEntity,
-    };
+    const body = requestBody({
+      SenderEntity: this.parameters.SenderEntity,
+      Entity: this.parameters.Entity,
+      NextSuggestion: this.parameters.NextSuggestion,
+      SourceContextEntity: this.parameters.SourceContextEntity,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class msdyn_CreateAutonomousEmailWrapperAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateAutonomousEmailWrapperResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateAutonomousEmailWrapperResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CreateAutonomousEmailWrapperResponse;
+    return (await response.json()) as msdyn_CreateAutonomousEmailWrapperResponse;
   }
 }

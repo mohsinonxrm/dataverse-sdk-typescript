@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CheckForConditionXmlFormat action
@@ -12,19 +13,27 @@ export interface msdyn_CheckForConditionXmlFormatResponse {
 }
 
 /**
+ * Parameters of the msdyn_CheckForConditionXmlFormat action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForConditionXmlFormatActionParameters {
+  SolutionId?: string;
+}
+
+/**
  * msdyn_CheckForConditionXmlFormat action
  *
  * Unbound action
  */
 export class msdyn_CheckForConditionXmlFormatAction implements Executable<msdyn_CheckForConditionXmlFormatResponse> {
-  constructor(public readonly solutionId?: string) {}
+  constructor(public readonly parameters: msdyn_CheckForConditionXmlFormatActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForConditionXmlFormat`;
 
-    const body: Record<string, unknown> = {
-      SolutionId: this.solutionId,
-    };
+    const body = requestBody({
+      SolutionId: this.parameters.SolutionId,
+    });
 
     return {
       method: "POST",
@@ -37,7 +46,8 @@ export class msdyn_CheckForConditionXmlFormatAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForConditionXmlFormatResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForConditionXmlFormatResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckForConditionXmlFormatResponse;
+    return (await response.json()) as msdyn_CheckForConditionXmlFormatResponse;
   }
 }

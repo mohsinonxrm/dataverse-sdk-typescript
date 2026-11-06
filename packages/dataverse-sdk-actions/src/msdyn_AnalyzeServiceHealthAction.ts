@@ -26,7 +26,8 @@ export class msdyn_AnalyzeServiceHealthAction implements Executable<msdyn_Analyz
   }
 
   async parseResponse(response: Response): Promise<msdyn_AnalyzeServiceHealthResponse> {
-    const data = await response.json();
-    return data as msdyn_AnalyzeServiceHealthResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_AnalyzeServiceHealthResponse;
+    return (await response.json()) as msdyn_AnalyzeServiceHealthResponse;
   }
 }

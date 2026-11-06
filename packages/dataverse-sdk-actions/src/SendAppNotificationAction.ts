@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,37 +11,43 @@ export interface SendAppNotificationResponse {
 }
 
 /**
+ * Parameters of the SendAppNotification action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendAppNotificationActionParameters {
+  Recipient: EntityReference | AnyEntityPayload;
+  Expiry?: number;
+  Priority?: number;
+  OverrideContent?: EntityReference | AnyEntityPayload;
+  Title: string;
+  IconType?: number;
+  Body?: string;
+  Actions?: EntityReference | AnyEntityPayload;
+  ToastType?: number;
+}
+
+/**
  * SendAppNotification action
  *
  * Unbound action
  */
 export class SendAppNotificationAction implements Executable<SendAppNotificationResponse> {
-  constructor(
-    public readonly recipient: EntityReference | AnyEntityPayload,
-    public readonly expiry: number | undefined,
-    public readonly priority: number | undefined,
-    public readonly overrideContent: EntityReference | AnyEntityPayload | undefined,
-    public readonly title: string,
-    public readonly iconType?: number,
-    public readonly body?: string,
-    public readonly actions?: EntityReference | AnyEntityPayload,
-    public readonly toastType?: number
-  ) {}
+  constructor(public readonly parameters: SendAppNotificationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SendAppNotification`;
 
-    const body: Record<string, unknown> = {
-      Recipient: this.recipient,
-      Expiry: this.expiry,
-      Priority: this.priority,
-      OverrideContent: this.overrideContent,
-      Title: this.title,
-      IconType: this.iconType,
-      Body: this.body,
-      Actions: this.actions,
-      ToastType: this.toastType,
-    };
+    const body = requestBody({
+      Recipient: this.parameters.Recipient,
+      Expiry: this.parameters.Expiry,
+      Priority: this.parameters.Priority,
+      OverrideContent: this.parameters.OverrideContent,
+      Title: this.parameters.Title,
+      IconType: this.parameters.IconType,
+      Body: this.parameters.Body,
+      Actions: this.parameters.Actions,
+      ToastType: this.parameters.ToastType,
+    });
 
     return {
       method: "POST",
@@ -53,7 +60,8 @@ export class SendAppNotificationAction implements Executable<SendAppNotification
   }
 
   async parseResponse(response: Response): Promise<SendAppNotificationResponse> {
-    const data = await response.json();
-    return data as SendAppNotificationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SendAppNotificationResponse;
+    return (await response.json()) as SendAppNotificationResponse;
   }
 }

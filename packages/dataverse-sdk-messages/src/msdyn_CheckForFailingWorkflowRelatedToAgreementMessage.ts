@@ -31,8 +31,12 @@ export class msdyn_CheckForFailingWorkflowRelatedToAgreementRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckForFailingWorkflowRelatedToAgreementResponse> {
-    const data = await response.json();
-    return msdyn_CheckForFailingWorkflowRelatedToAgreementResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckForFailingWorkflowRelatedToAgreementResponse.fromResponse({});
+    return msdyn_CheckForFailingWorkflowRelatedToAgreementResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

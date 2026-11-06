@@ -2,8 +2,20 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_timetrackerapiResponse as msdyn_timetrackerapiResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_timetrackerapi message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_timetrackerapiRequestParameters {
+  timeTrackerRecordId?: string;
+  entitylogicalname: string;
+  entityid: string;
+  timeTrackerRecord?: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_timetrackerapi request message
@@ -14,24 +26,21 @@ export class msdyn_timetrackerapiRequest
   extends OrganizationRequest
   implements Executable<msdyn_timetrackerapiResponse>
 {
-  constructor(
-    public timeTrackerRecordId: string | undefined,
-    public entitylogicalname: string,
-    public entityid: string,
-    public timeTrackerRecord?: EntityReference | AnyEntityPayload
-  ) {
-    super("msdyn_timetrackerapi");
+  declare readonly Parameters: Readonly<msdyn_timetrackerapiRequestParameters>;
+
+  constructor(parameters: msdyn_timetrackerapiRequestParameters) {
+    super("msdyn_timetrackerapi", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_timetrackerapi`;
 
-    const body: Record<string, unknown> = {
-      timeTrackerRecordId: this.timeTrackerRecordId,
-      entitylogicalname: this.entitylogicalname,
-      entityid: this.entityid,
-      timeTrackerRecord: this.timeTrackerRecord,
-    };
+    const body = requestBody({
+      timeTrackerRecordId: this.Parameters.timeTrackerRecordId,
+      entitylogicalname: this.Parameters.entitylogicalname,
+      entityid: this.Parameters.entityid,
+      timeTrackerRecord: this.Parameters.timeTrackerRecord,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class msdyn_timetrackerapiRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_timetrackerapiResponse> {
-    const data = await response.json();
-    return msdyn_timetrackerapiResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_timetrackerapiResponse.fromResponse({});
+    return msdyn_timetrackerapiResponse.fromResponse(await response.json());
   }
 }
 

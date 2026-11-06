@@ -26,7 +26,8 @@ export class msdyn_ValidateTSIKeyAction implements Executable<msdyn_ValidateTSIK
   }
 
   async parseResponse(response: Response): Promise<msdyn_ValidateTSIKeyResponse> {
-    const data = await response.json();
-    return data as msdyn_ValidateTSIKeyResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ValidateTSIKeyResponse;
+    return (await response.json()) as msdyn_ValidateTSIKeyResponse;
   }
 }

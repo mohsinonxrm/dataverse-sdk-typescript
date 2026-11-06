@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * LockInvoicePricing request message
  *
  * Web API Action: LockInvoicePricing
+ *
+ * The first argument is the id of the invoice record to call it on.
  */
 export class LockInvoicePricingRequest
   extends OrganizationRequest

@@ -31,8 +31,12 @@ export class msdyn_GetSalesAccelerationConfigurationStatusRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetSalesAccelerationConfigurationStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetSalesAccelerationConfigurationStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_GetSalesAccelerationConfigurationStatusResponse.fromResponse({});
+    return msdyn_GetSalesAccelerationConfigurationStatusResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

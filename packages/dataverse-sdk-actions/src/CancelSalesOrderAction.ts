@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,23 +11,29 @@ export interface CancelSalesOrderResponse {
 }
 
 /**
+ * Parameters of the CancelSalesOrder action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CancelSalesOrderActionParameters {
+  OrderClose: EntityReference | AnyEntityPayload;
+  Status: number;
+}
+
+/**
  * CancelSalesOrder action
  *
  * Unbound action
  */
 export class CancelSalesOrderAction implements Executable<CancelSalesOrderResponse> {
-  constructor(
-    public readonly orderClose: EntityReference | AnyEntityPayload,
-    public readonly status: number
-  ) {}
+  constructor(public readonly parameters: CancelSalesOrderActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CancelSalesOrder`;
 
-    const body: Record<string, unknown> = {
-      OrderClose: this.orderClose,
-      Status: this.status,
-    };
+    const body = requestBody({
+      OrderClose: this.parameters.OrderClose,
+      Status: this.parameters.Status,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class CancelSalesOrderAction implements Executable<CancelSalesOrderRespon
   }
 
   async parseResponse(response: Response): Promise<CancelSalesOrderResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CancelSalesOrderResponse;
+    return (await response.json()) as CancelSalesOrderResponse;
   }
 }

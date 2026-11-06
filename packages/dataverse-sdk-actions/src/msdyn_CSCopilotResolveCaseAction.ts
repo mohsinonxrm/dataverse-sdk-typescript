@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -12,27 +13,33 @@ export interface msdyn_CSCopilotResolveCaseResponse {
 }
 
 /**
+ * Parameters of the msdyn_CSCopilotResolveCase action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CSCopilotResolveCaseActionParameters {
+  Incident: EntityReference | AnyEntityPayload;
+  ResolutionReason: number;
+  CallerIdentifier: string;
+  StatusReason: number;
+}
+
+/**
  * msdyn_CSCopilotResolveCase action
  *
  * Unbound action
  */
 export class msdyn_CSCopilotResolveCaseAction implements Executable<msdyn_CSCopilotResolveCaseResponse> {
-  constructor(
-    public readonly incident: EntityReference | AnyEntityPayload,
-    public readonly resolutionReason: number,
-    public readonly callerIdentifier: string,
-    public readonly statusReason: number
-  ) {}
+  constructor(public readonly parameters: msdyn_CSCopilotResolveCaseActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CSCopilotResolveCase`;
 
-    const body: Record<string, unknown> = {
-      Incident: this.incident,
-      ResolutionReason: this.resolutionReason,
-      CallerIdentifier: this.callerIdentifier,
-      StatusReason: this.statusReason,
-    };
+    const body = requestBody({
+      Incident: this.parameters.Incident,
+      ResolutionReason: this.parameters.ResolutionReason,
+      CallerIdentifier: this.parameters.CallerIdentifier,
+      StatusReason: this.parameters.StatusReason,
+    });
 
     return {
       method: "POST",
@@ -45,7 +52,8 @@ export class msdyn_CSCopilotResolveCaseAction implements Executable<msdyn_CSCopi
   }
 
   async parseResponse(response: Response): Promise<msdyn_CSCopilotResolveCaseResponse> {
-    const data = await response.json();
-    return data as msdyn_CSCopilotResolveCaseResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CSCopilotResolveCaseResponse;
+    return (await response.json()) as msdyn_CSCopilotResolveCaseResponse;
   }
 }

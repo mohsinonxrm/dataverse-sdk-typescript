@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunity } from "./types/index.js";
 
@@ -11,24 +12,34 @@ export interface GetSalesOrderProductsFromOpportunityResponse {
 }
 
 /**
+ * Parameters of the GetSalesOrderProductsFromOpportunity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetSalesOrderProductsFromOpportunityActionParameters {
+  Opportunity: EntityReference | EntityPayload<opportunity>;
+}
+
+/**
  * GetSalesOrderProductsFromOpportunity action
  *
  * Bound action
  * Binding parameter: entity (mscrm.salesorder)
+ *
+ * The first argument is the id of the salesorder record to call it on.
  */
 export class GetSalesOrderProductsFromOpportunityAction implements Executable<GetSalesOrderProductsFromOpportunityResponse> {
   constructor(
     public readonly salesorderId: string,
-    public readonly opportunity: EntityReference | EntityPayload<opportunity>
+    public readonly parameters: GetSalesOrderProductsFromOpportunityActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/salesorders(${this.salesorderId})/Microsoft.Dynamics.CRM.GetSalesOrderProductsFromOpportunity`;
 
-    const body: Record<string, unknown> = {
-      Opportunity: this.opportunity,
-    };
+    const body = requestBody({
+      Opportunity: this.parameters.Opportunity,
+    });
 
     return {
       method: "POST",
@@ -41,7 +52,8 @@ export class GetSalesOrderProductsFromOpportunityAction implements Executable<Ge
   }
 
   async parseResponse(response: Response): Promise<GetSalesOrderProductsFromOpportunityResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetSalesOrderProductsFromOpportunityResponse;
+    return (await response.json()) as GetSalesOrderProductsFromOpportunityResponse;
   }
 }

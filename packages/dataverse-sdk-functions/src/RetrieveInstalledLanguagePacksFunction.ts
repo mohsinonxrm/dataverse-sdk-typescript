@@ -26,7 +26,8 @@ export class RetrieveInstalledLanguagePacksFunction implements Executable<Retrie
   }
 
   async parseResponse(response: Response): Promise<RetrieveInstalledLanguagePacksResponse> {
-    const data = await response.json();
-    return data as RetrieveInstalledLanguagePacksResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveInstalledLanguagePacksResponse;
+    return (await response.json()) as RetrieveInstalledLanguagePacksResponse;
   }
 }

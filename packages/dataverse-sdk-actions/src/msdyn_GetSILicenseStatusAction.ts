@@ -26,7 +26,8 @@ export class msdyn_GetSILicenseStatusAction implements Executable<msdyn_GetSILic
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSILicenseStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetSILicenseStatusResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetSILicenseStatusResponse;
+    return (await response.json()) as msdyn_GetSILicenseStatusResponse;
   }
 }

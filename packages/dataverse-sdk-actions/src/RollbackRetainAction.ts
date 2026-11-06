@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { EntityRecordCountCollection } from "./types/index.js";
 
@@ -11,23 +12,29 @@ export interface RollbackRetainResponse {
 }
 
 /**
+ * Parameters of the RollbackRetain action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RollbackRetainActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  OperationId?: string;
+}
+
+/**
  * RollbackRetain action
  *
  * Unbound action
  */
 export class RollbackRetainAction implements Executable<RollbackRetainResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly operationId?: string
-  ) {}
+  constructor(public readonly parameters: RollbackRetainActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RollbackRetain`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      OperationId: this.operationId,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      OperationId: this.parameters.OperationId,
+    });
 
     return {
       method: "POST",
@@ -40,7 +47,8 @@ export class RollbackRetainAction implements Executable<RollbackRetainResponse> 
   }
 
   async parseResponse(response: Response): Promise<RollbackRetainResponse> {
-    const data = await response.json();
-    return data as RollbackRetainResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RollbackRetainResponse;
+    return (await response.json()) as RollbackRetainResponse;
   }
 }

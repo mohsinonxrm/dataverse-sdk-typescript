@@ -1,8 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { ColumnSet, quote } from "./types/index.js";
+
+/**
+ * Parameters of the ReviseQuote message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ReviseQuoteRequestParameters {
+  QuoteId: string;
+  ColumnSet?: ColumnSet;
+}
 
 /**
  * ReviseQuote request message
@@ -13,20 +23,19 @@ export class ReviseQuoteRequest
   extends OrganizationRequest
   implements Executable<ReviseQuoteResponse>
 {
-  constructor(
-    public quoteId: string,
-    public columnSet?: ColumnSet
-  ) {
-    super("ReviseQuote");
+  declare readonly Parameters: Readonly<ReviseQuoteRequestParameters>;
+
+  constructor(parameters: ReviseQuoteRequestParameters) {
+    super("ReviseQuote", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ReviseQuote`;
 
-    const body: Record<string, unknown> = {
-      QuoteId: this.quoteId,
-      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
-    };
+    const body = requestBody({
+      QuoteId: this.Parameters.QuoteId,
+      ColumnSet: enumBody(this.Parameters.ColumnSet, "ColumnSet"),
+    });
 
     return {
       method: "POST",
@@ -39,8 +48,9 @@ export class ReviseQuoteRequest
   }
 
   async parseResponse(response: Response): Promise<ReviseQuoteResponse> {
-    const data = await response.json();
-    return ReviseQuoteResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return ReviseQuoteResponse.fromResponse({});
+    return ReviseQuoteResponse.fromResponse(await response.json());
   }
 }
 

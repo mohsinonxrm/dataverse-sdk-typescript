@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CreateKBArticleResponse as msdyn_CreateKBArticleResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CreateKBArticle message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateKBArticleRequestParameters {
+  CSCopilotRequest2: string;
+}
 
 /**
  * msdyn_CreateKBArticle request message
@@ -12,16 +21,18 @@ export class msdyn_CreateKBArticleRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateKBArticleResponse>
 {
-  constructor(public cSCopilotRequest2: string) {
-    super("msdyn_CreateKBArticle");
+  declare readonly Parameters: Readonly<msdyn_CreateKBArticleRequestParameters>;
+
+  constructor(parameters: msdyn_CreateKBArticleRequestParameters) {
+    super("msdyn_CreateKBArticle", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateKBArticle`;
 
-    const body: Record<string, unknown> = {
-      CSCopilotRequest2: this.cSCopilotRequest2,
-    };
+    const body = requestBody({
+      CSCopilotRequest2: this.Parameters.CSCopilotRequest2,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_CreateKBArticleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateKBArticleResponse> {
-    const data = await response.json();
-    return msdyn_CreateKBArticleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CreateKBArticleResponse.fromResponse({});
+    return msdyn_CreateKBArticleResponse.fromResponse(await response.json());
   }
 }
 

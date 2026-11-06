@@ -113,16 +113,16 @@ describe("enum values in bodies (#232)", () => {
 
   it("passes the parameters that can hold an enum through enumBody", async () => {
     expect(await read("actions/GrantAccessAction.ts")).toContain(
-      'PrincipalAccess: enumBody(this.principalAccess, "PrincipalAccess"),'
+      'PrincipalAccess: enumBody(this.parameters.PrincipalAccess, "PrincipalAccess"),'
     );
     expect(await read("actions/GenerateSharedLinkAction.ts")).toContain(
-      'SharedRights: enumBody(this.sharedRights, "AccessRights"),'
+      'SharedRights: enumBody(this.parameters.SharedRights, "AccessRights"),'
     );
     const run = await read("actions/RunQueriesAction.ts");
-    expect(run).toContain('Query: enumBody(this.query, "QueryBase"),');
-    expect(run).toContain('QuerySet: enumBody(this.querySet, "QueryExpression"),');
+    expect(run).toContain('Query: enumBody(this.parameters.Query, "QueryBase"),');
+    expect(run).toContain('QuerySet: enumBody(this.parameters.QuerySet, "QueryExpression"),');
     expect(await read("messages/RunQueriesMessage.ts")).toContain(
-      'QuerySet: enumBody(this.querySet, "QueryExpression"),'
+      'QuerySet: enumBody(this.Parameters.QuerySet, "QueryExpression"),'
     );
     expect(await read("actions/EchoAction.ts")).not.toContain("enumBody");
   });
@@ -171,9 +171,9 @@ describe("enum values in bodies (#232)", () => {
       "use-enums.ts",
       `import { AccessRights, GrantAccessAction, GenerateSharedLinkAction, createEntityReference } from "./actions/index.js";
 import { AccessRights as MessageAccessRights, GrantAccessRequest } from "./messages/index.js";
-export const a = new GrantAccessAction(createEntityReference("account", "a1"), { AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess });
-export const b = new GenerateSharedLinkAction(AccessRights.ReadAccess);
-export const c = new GrantAccessRequest({ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a1" }, { AccessMask: MessageAccessRights.ReadAccess });
+export const a = new GrantAccessAction({ Target: createEntityReference("account", "a1"), PrincipalAccess: { AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess } });
+export const b = new GenerateSharedLinkAction({ SharedRights: AccessRights.ReadAccess });
+export const c = new GrantAccessRequest({ Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a1" }, PrincipalAccess: { AccessMask: MessageAccessRights.ReadAccess } });
 `
     );
     expect(errors).toEqual([]);

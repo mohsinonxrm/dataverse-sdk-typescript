@@ -30,8 +30,10 @@ export class msdynmkt_RetrieveAllFeatureConfigurationsRequest
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_RetrieveAllFeatureConfigurationsResponse> {
-    const data = await response.json();
-    return msdynmkt_RetrieveAllFeatureConfigurationsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdynmkt_RetrieveAllFeatureConfigurationsResponse.fromResponse({});
+    return msdynmkt_RetrieveAllFeatureConfigurationsResponse.fromResponse(await response.json());
   }
 }
 

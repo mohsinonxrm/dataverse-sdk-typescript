@@ -10,12 +10,20 @@ export interface RetrieveParentGroupsResourceGroupResponse {
 }
 
 /**
+ * Parameters of the RetrieveParentGroupsResourceGroup function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveParentGroupsResourceGroupFunctionParameters {
+  ResourceGroupId: string;
+}
+
+/**
  * RetrieveParentGroupsResourceGroup function
  *
  * Unbound function
  */
 export class RetrieveParentGroupsResourceGroupFunction implements Executable<RetrieveParentGroupsResourceGroupResponse> {
-  constructor(public readonly resourceGroupId: string) {}
+  constructor(public readonly parameters: RetrieveParentGroupsResourceGroupFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveParentGroupsResourceGroup`;
@@ -23,9 +31,9 @@ export class RetrieveParentGroupsResourceGroupFunction implements Executable<Ret
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.resourceGroupId !== undefined) {
+    if (this.parameters.ResourceGroupId !== undefined) {
       aliases.push(`ResourceGroupId=@p1`);
-      params.append("@p1", formatParameterAlias(this.resourceGroupId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.ResourceGroupId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class RetrieveParentGroupsResourceGroupFunction implements Executable<Ret
   }
 
   async parseResponse(response: Response): Promise<RetrieveParentGroupsResourceGroupResponse> {
-    const data = await response.json();
-    return data as RetrieveParentGroupsResourceGroupResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveParentGroupsResourceGroupResponse;
+    return (await response.json()) as RetrieveParentGroupsResourceGroupResponse;
   }
 }

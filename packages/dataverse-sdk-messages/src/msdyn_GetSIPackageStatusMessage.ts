@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetSIPackageStatusResponse as msdyn_GetSIPackageStatusResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetSIPackageStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSIPackageStatusRequestParameters {
+  ApiVersion?: string;
+}
 
 /**
  * msdyn_GetSIPackageStatus request message
@@ -12,16 +21,18 @@ export class msdyn_GetSIPackageStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSIPackageStatusResponse>
 {
-  constructor(public apiVersion?: string) {
-    super("msdyn_GetSIPackageStatus");
+  declare readonly Parameters: Readonly<msdyn_GetSIPackageStatusRequestParameters>;
+
+  constructor(parameters: msdyn_GetSIPackageStatusRequestParameters = {}) {
+    super("msdyn_GetSIPackageStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSIPackageStatus`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetSIPackageStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSIPackageStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetSIPackageStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetSIPackageStatusResponse.fromResponse({});
+    return msdyn_GetSIPackageStatusResponse.fromResponse(await response.json());
   }
 }
 

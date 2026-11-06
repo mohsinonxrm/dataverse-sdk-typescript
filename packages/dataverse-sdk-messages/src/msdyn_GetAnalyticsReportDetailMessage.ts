@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetAnalyticsReportDetailResponse as msdyn_GetAnalyticsReportDetailResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetAnalyticsReportDetail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAnalyticsReportDetailRequestParameters {
+  AnalyticsRecordId: string;
+  GetAnalyticsReportAction?: string;
+}
 
 /**
  * msdyn_GetAnalyticsReportDetail request message
@@ -12,20 +22,19 @@ export class msdyn_GetAnalyticsReportDetailRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetAnalyticsReportDetailResponse>
 {
-  constructor(
-    public analyticsRecordId: string,
-    public getAnalyticsReportAction?: string
-  ) {
-    super("msdyn_GetAnalyticsReportDetail");
+  declare readonly Parameters: Readonly<msdyn_GetAnalyticsReportDetailRequestParameters>;
+
+  constructor(parameters: msdyn_GetAnalyticsReportDetailRequestParameters) {
+    super("msdyn_GetAnalyticsReportDetail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAnalyticsReportDetail`;
 
-    const body: Record<string, unknown> = {
-      AnalyticsRecordId: this.analyticsRecordId,
-      GetAnalyticsReportAction: this.getAnalyticsReportAction,
-    };
+    const body = requestBody({
+      AnalyticsRecordId: this.Parameters.AnalyticsRecordId,
+      GetAnalyticsReportAction: this.Parameters.GetAnalyticsReportAction,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_GetAnalyticsReportDetailRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAnalyticsReportDetailResponse> {
-    const data = await response.json();
-    return msdyn_GetAnalyticsReportDetailResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetAnalyticsReportDetailResponse.fromResponse({});
+    return msdyn_GetAnalyticsReportDetailResponse.fromResponse(await response.json());
   }
 }
 

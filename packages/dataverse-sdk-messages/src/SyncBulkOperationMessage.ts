@@ -1,11 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type {
   QueryExpression,
   SyncBulkOperationResponse as SyncBulkOperationResponseData,
 } from "./types/index.js";
+
+/**
+ * Parameters of the SyncBulkOperation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SyncBulkOperationRequestParameters {
+  QuerySet?: QueryExpression[];
+  OperationType: number;
+}
 
 /**
  * SyncBulkOperation request message
@@ -16,20 +26,19 @@ export class SyncBulkOperationRequest
   extends OrganizationRequest
   implements Executable<SyncBulkOperationResponse>
 {
-  constructor(
-    public querySet: QueryExpression[] | undefined,
-    public operationType: number
-  ) {
-    super("SyncBulkOperation");
+  declare readonly Parameters: Readonly<SyncBulkOperationRequestParameters>;
+
+  constructor(parameters: SyncBulkOperationRequestParameters) {
+    super("SyncBulkOperation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SyncBulkOperation`;
 
-    const body: Record<string, unknown> = {
-      QuerySet: enumBody(this.querySet, "QueryExpression"),
-      OperationType: this.operationType,
-    };
+    const body = requestBody({
+      QuerySet: enumBody(this.Parameters.QuerySet, "QueryExpression"),
+      OperationType: this.Parameters.OperationType,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class SyncBulkOperationRequest
   }
 
   async parseResponse(response: Response): Promise<SyncBulkOperationResponse> {
-    const data = await response.json();
-    return SyncBulkOperationResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return SyncBulkOperationResponse.fromResponse({});
+    return SyncBulkOperationResponse.fromResponse(await response.json());
   }
 }
 

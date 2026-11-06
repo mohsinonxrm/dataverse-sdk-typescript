@@ -31,8 +31,12 @@ export class msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse> {
-    const data = await response.json();
-    return msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    return msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

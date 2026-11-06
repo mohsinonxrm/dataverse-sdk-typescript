@@ -26,7 +26,8 @@ export class msdyn_ScheduleRolloutsOrchestrationAction implements Executable<msd
   }
 
   async parseResponse(response: Response): Promise<msdyn_ScheduleRolloutsOrchestrationResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ScheduleRolloutsOrchestrationResponse;
+    return (await response.json()) as msdyn_ScheduleRolloutsOrchestrationResponse;
   }
 }

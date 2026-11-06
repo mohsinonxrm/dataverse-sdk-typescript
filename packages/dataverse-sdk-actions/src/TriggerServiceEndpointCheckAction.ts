@@ -12,6 +12,8 @@ export interface TriggerServiceEndpointCheckResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.serviceendpoint)
+ *
+ * The first argument is the id of the serviceendpoint record to call it on.
  */
 export class TriggerServiceEndpointCheckAction implements Executable<TriggerServiceEndpointCheckResponse> {
   constructor(public readonly serviceendpointId: string) {}
@@ -30,7 +32,8 @@ export class TriggerServiceEndpointCheckAction implements Executable<TriggerServ
   }
 
   async parseResponse(response: Response): Promise<TriggerServiceEndpointCheckResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as TriggerServiceEndpointCheckResponse;
+    return (await response.json()) as TriggerServiceEndpointCheckResponse;
   }
 }

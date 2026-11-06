@@ -11,16 +11,22 @@ export interface RetrieveAttributeChangeHistoryResponse {
 }
 
 /**
+ * Parameters of the RetrieveAttributeChangeHistory function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAttributeChangeHistoryFunctionParameters {
+  Target: EntityReference;
+  AttributeLogicalName: string;
+  PagingInfo?: PagingInfo;
+}
+
+/**
  * RetrieveAttributeChangeHistory function
  *
  * Unbound function
  */
 export class RetrieveAttributeChangeHistoryFunction implements Executable<RetrieveAttributeChangeHistoryResponse> {
-  constructor(
-    public readonly target: EntityReference,
-    public readonly attributeLogicalName: string,
-    public readonly pagingInfo?: PagingInfo
-  ) {}
+  constructor(public readonly parameters: RetrieveAttributeChangeHistoryFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveAttributeChangeHistory`;
@@ -28,17 +34,23 @@ export class RetrieveAttributeChangeHistoryFunction implements Executable<Retrie
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append("@p1", formatParameterAlias(this.target, "mscrm.crmbaseentity", "EntityType"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
+      );
     }
-    if (this.attributeLogicalName !== undefined) {
+    if (this.parameters.AttributeLogicalName !== undefined) {
       aliases.push(`AttributeLogicalName=@p2`);
-      params.append("@p2", formatParameterAlias(this.attributeLogicalName, "Edm.String"));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.AttributeLogicalName, "Edm.String")
+      );
     }
-    if (this.pagingInfo !== undefined) {
+    if (this.parameters.PagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p3`);
-      params.append("@p3", JSON.stringify(this.pagingInfo));
+      params.append("@p3", JSON.stringify(this.parameters.PagingInfo));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -54,7 +66,8 @@ export class RetrieveAttributeChangeHistoryFunction implements Executable<Retrie
   }
 
   async parseResponse(response: Response): Promise<RetrieveAttributeChangeHistoryResponse> {
-    const data = await response.json();
-    return data as RetrieveAttributeChangeHistoryResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveAttributeChangeHistoryResponse;
+    return (await response.json()) as RetrieveAttributeChangeHistoryResponse;
   }
 }

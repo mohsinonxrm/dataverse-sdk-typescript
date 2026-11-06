@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_FSDemoDataRequestResponse as msdyn_FSDemoDataRequestResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_FSDemoDataRequest message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FSDemoDataRequestRequestParameters {
+  Operation: string;
+}
 
 /**
  * msdyn_FSDemoDataRequest request message
@@ -12,16 +21,18 @@ export class msdyn_FSDemoDataRequestRequest
   extends OrganizationRequest
   implements Executable<msdyn_FSDemoDataRequestResponse>
 {
-  constructor(public operation: string) {
-    super("msdyn_FSDemoDataRequest");
+  declare readonly Parameters: Readonly<msdyn_FSDemoDataRequestRequestParameters>;
+
+  constructor(parameters: msdyn_FSDemoDataRequestRequestParameters) {
+    super("msdyn_FSDemoDataRequest", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FSDemoDataRequest`;
 
-    const body: Record<string, unknown> = {
-      Operation: this.operation,
-    };
+    const body = requestBody({
+      Operation: this.Parameters.Operation,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_FSDemoDataRequestRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FSDemoDataRequestResponse> {
-    const data = await response.json();
-    return msdyn_FSDemoDataRequestResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_FSDemoDataRequestResponse.fromResponse({});
+    return msdyn_FSDemoDataRequestResponse.fromResponse(await response.json());
   }
 }
 

@@ -31,8 +31,12 @@ export class msdyn_UpdateIsCustomFieldForOrganizationEntityRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_UpdateIsCustomFieldForOrganizationEntityResponse> {
-    const data = await response.json();
-    return msdyn_UpdateIsCustomFieldForOrganizationEntityResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_UpdateIsCustomFieldForOrganizationEntityResponse.fromResponse({});
+    return msdyn_UpdateIsCustomFieldForOrganizationEntityResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

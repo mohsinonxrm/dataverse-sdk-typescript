@@ -28,7 +28,8 @@ export class msdyn_CheckIfHasLegacySlaRulesAction implements Executable<msdyn_Ch
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfHasLegacySlaRulesResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfHasLegacySlaRulesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckIfHasLegacySlaRulesResponse;
+    return (await response.json()) as msdyn_CheckIfHasLegacySlaRulesResponse;
   }
 }

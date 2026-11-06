@@ -26,7 +26,8 @@ export class msdyncrm_MigrateFilesCustomActionAction implements Executable<msdyn
   }
 
   async parseResponse(response: Response): Promise<msdyncrm_MigrateFilesCustomActionResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyncrm_MigrateFilesCustomActionResponse;
+    return (await response.json()) as msdyncrm_MigrateFilesCustomActionResponse;
   }
 }

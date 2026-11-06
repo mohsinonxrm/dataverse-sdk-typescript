@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_CancelConsult message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_CancelConsultRequestParameters {
+  ApiVersion: string;
+  SessionId: string;
+}
 
 /**
  * CCaaS_CancelConsult request message
  *
  * Web API Action: CCaaS_CancelConsult
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_CancelConsultRequest
   extends OrganizationRequest
   implements Executable<CCaaS_CancelConsultResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_CancelConsultRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public apiVersion: string,
-    public sessionId: string
+    parameters: CCaaS_CancelConsultRequestParameters
   ) {
-    super("CCaaS_CancelConsult");
+    super("CCaaS_CancelConsult", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_CancelConsult`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      SessionId: this.sessionId,
-    };
+    const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
+      SessionId: this.Parameters.SessionId,
+    });
 
     return {
       method: "POST",

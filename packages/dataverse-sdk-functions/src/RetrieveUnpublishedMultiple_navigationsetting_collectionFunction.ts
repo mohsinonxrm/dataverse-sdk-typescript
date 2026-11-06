@@ -31,7 +31,9 @@ export class RetrieveUnpublishedMultiple_navigationsetting_collectionFunction im
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_navigationsetting_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_navigationsetting_collectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublishedMultiple_navigationsetting_collectionResponse;
+    return (await response.json()) as RetrieveUnpublishedMultiple_navigationsetting_collectionResponse;
   }
 }

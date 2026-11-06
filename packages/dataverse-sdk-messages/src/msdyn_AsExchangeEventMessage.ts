@@ -1,6 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_AsExchangeEvent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AsExchangeEventRequestParameters {
+  msdyn_Bookings: Record<string, unknown>[];
+}
 
 /**
  * msdyn_AsExchangeEvent request message
@@ -11,17 +20,19 @@ export class msdyn_AsExchangeEventRequest
   extends OrganizationRequest
   implements Executable<msdyn_AsExchangeEventResponse>
 {
-  constructor(public msdyn_Bookings: Record<string, unknown>[]) {
-    super("msdyn_AsExchangeEvent");
+  declare readonly Parameters: Readonly<msdyn_AsExchangeEventRequestParameters>;
+
+  constructor(parameters: msdyn_AsExchangeEventRequestParameters) {
+    super("msdyn_AsExchangeEvent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action (entity collection)
     const url = `${baseUrl}/bookableresourcebookings/Microsoft.Dynamics.CRM.msdyn_AsExchangeEvent`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Bookings: this.msdyn_Bookings,
-    };
+    const body = requestBody({
+      msdyn_Bookings: this.Parameters.msdyn_Bookings,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_AsExchangeEventRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AsExchangeEventResponse> {
-    const data = await response.json();
-    return msdyn_AsExchangeEventResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_AsExchangeEventResponse.fromResponse({});
+    return msdyn_AsExchangeEventResponse.fromResponse(await response.json());
   }
 }
 

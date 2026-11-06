@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { BulkRetainResponse as BulkRetainResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the BulkRetain message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface BulkRetainRequestParameters {
+  EntityName?: string;
+  FetchXml: string;
+  PageSize?: number;
+  OperationId?: string;
+  PagingCookie?: string;
+}
 
 /**
  * BulkRetain request message
@@ -12,26 +25,22 @@ export class BulkRetainRequest
   extends OrganizationRequest
   implements Executable<BulkRetainResponse>
 {
-  constructor(
-    public entityName: string | undefined,
-    public fetchXml: string,
-    public pageSize?: number,
-    public operationId?: string,
-    public pagingCookie?: string
-  ) {
-    super("BulkRetain");
+  declare readonly Parameters: Readonly<BulkRetainRequestParameters>;
+
+  constructor(parameters: BulkRetainRequestParameters) {
+    super("BulkRetain", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BulkRetain`;
 
-    const body: Record<string, unknown> = {
-      EntityName: this.entityName,
-      FetchXml: this.fetchXml,
-      PageSize: this.pageSize,
-      OperationId: this.operationId,
-      PagingCookie: this.pagingCookie,
-    };
+    const body = requestBody({
+      EntityName: this.Parameters.EntityName,
+      FetchXml: this.Parameters.FetchXml,
+      PageSize: this.Parameters.PageSize,
+      OperationId: this.Parameters.OperationId,
+      PagingCookie: this.Parameters.PagingCookie,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class BulkRetainRequest
   }
 
   async parseResponse(response: Response): Promise<BulkRetainResponse> {
-    const data = await response.json();
-    return BulkRetainResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return BulkRetainResponse.fromResponse({});
+    return BulkRetainResponse.fromResponse(await response.json());
   }
 }
 

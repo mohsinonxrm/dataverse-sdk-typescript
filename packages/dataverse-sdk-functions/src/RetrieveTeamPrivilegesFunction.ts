@@ -13,6 +13,8 @@ export interface RetrieveTeamPrivilegesResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.team)
+ *
+ * The first argument is the id of the team record to call it on.
  */
 export class RetrieveTeamPrivilegesFunction implements Executable<RetrieveTeamPrivilegesResponse> {
   constructor(public readonly teamId: string) {}
@@ -31,7 +33,8 @@ export class RetrieveTeamPrivilegesFunction implements Executable<RetrieveTeamPr
   }
 
   async parseResponse(response: Response): Promise<RetrieveTeamPrivilegesResponse> {
-    const data = await response.json();
-    return data as RetrieveTeamPrivilegesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveTeamPrivilegesResponse;
+    return (await response.json()) as RetrieveTeamPrivilegesResponse;
   }
 }

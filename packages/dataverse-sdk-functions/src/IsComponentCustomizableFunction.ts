@@ -9,15 +9,21 @@ export interface IsComponentCustomizableResponse {
 }
 
 /**
+ * Parameters of the IsComponentCustomizable function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface IsComponentCustomizableFunctionParameters {
+  ComponentId: string;
+  ComponentType: number;
+}
+
+/**
  * IsComponentCustomizable function
  *
  * Unbound function
  */
 export class IsComponentCustomizableFunction implements Executable<IsComponentCustomizableResponse> {
-  constructor(
-    public readonly componentId: string,
-    public readonly componentType: number
-  ) {}
+  constructor(public readonly parameters: IsComponentCustomizableFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/IsComponentCustomizable`;
@@ -25,13 +31,13 @@ export class IsComponentCustomizableFunction implements Executable<IsComponentCu
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.componentId !== undefined) {
+    if (this.parameters.ComponentId !== undefined) {
       aliases.push(`ComponentId=@p1`);
-      params.append("@p1", formatParameterAlias(this.componentId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.ComponentId, "Edm.Guid"));
     }
-    if (this.componentType !== undefined) {
+    if (this.parameters.ComponentType !== undefined) {
       aliases.push(`ComponentType=@p2`);
-      params.append("@p2", formatParameterAlias(this.componentType, "Edm.Int32"));
+      params.append("@p2", formatParameterAlias(this.parameters.ComponentType, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +53,8 @@ export class IsComponentCustomizableFunction implements Executable<IsComponentCu
   }
 
   async parseResponse(response: Response): Promise<IsComponentCustomizableResponse> {
-    const data = await response.json();
-    return data as IsComponentCustomizableResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as IsComponentCustomizableResponse;
+    return (await response.json()) as IsComponentCustomizableResponse;
   }
 }

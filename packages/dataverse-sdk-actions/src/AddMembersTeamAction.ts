@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
 
@@ -11,24 +12,34 @@ export interface AddMembersTeamResponse {
 }
 
 /**
+ * Parameters of the AddMembersTeam action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddMembersTeamActionParameters {
+  Members: (EntityReference | EntityPayload<systemuser>)[];
+}
+
+/**
  * AddMembersTeam action
  *
  * Bound action
  * Binding parameter: entity (mscrm.team)
+ *
+ * The first argument is the id of the team record to call it on.
  */
 export class AddMembersTeamAction implements Executable<AddMembersTeamResponse> {
   constructor(
     public readonly teamId: string,
-    public readonly members: (EntityReference | EntityPayload<systemuser>)[]
+    public readonly parameters: AddMembersTeamActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/teams(${this.teamId})/Microsoft.Dynamics.CRM.AddMembersTeam`;
 
-    const body: Record<string, unknown> = {
-      Members: this.members,
-    };
+    const body = requestBody({
+      Members: this.parameters.Members,
+    });
 
     return {
       method: "POST",
@@ -41,7 +52,8 @@ export class AddMembersTeamAction implements Executable<AddMembersTeamResponse> 
   }
 
   async parseResponse(response: Response): Promise<AddMembersTeamResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AddMembersTeamResponse;
+    return (await response.json()) as AddMembersTeamResponse;
   }
 }

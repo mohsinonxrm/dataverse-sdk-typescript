@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from RefreshChangesFromGit action
@@ -8,19 +9,27 @@ export interface RefreshChangesFromGitResponse {
 }
 
 /**
+ * Parameters of the RefreshChangesFromGit action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RefreshChangesFromGitActionParameters {
+  SolutionUniqueName: string;
+}
+
+/**
  * RefreshChangesFromGit action
  *
  * Unbound action
  */
 export class RefreshChangesFromGitAction implements Executable<RefreshChangesFromGitResponse> {
-  constructor(public readonly solutionUniqueName: string) {}
+  constructor(public readonly parameters: RefreshChangesFromGitActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RefreshChangesFromGit`;
 
-    const body: Record<string, unknown> = {
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class RefreshChangesFromGitAction implements Executable<RefreshChangesFro
   }
 
   async parseResponse(response: Response): Promise<RefreshChangesFromGitResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RefreshChangesFromGitResponse;
+    return (await response.json()) as RefreshChangesFromGitResponse;
   }
 }

@@ -12,8 +12,16 @@ import {
   getEntitySetName,
   isCollectionType,
   extractEntityTypeName,
-  constructorParameterList,
 } from "../utils/typescript-writer.js";
+import {
+  bindingDoc,
+  parametersArgument,
+  parametersInterface,
+  parametersInterfaceName,
+  REQUEST_BODY_MODULE,
+  REQUEST_BODY_SOURCE,
+  requestBodyExpression,
+} from "../utils/operation-parameters.js";
 import { writeTypeScriptFile, purgeDirectory } from "../utils/file-writer.js";
 import { bodyEnumType, ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
 import { exportedEnumNames } from "./complex-types-generator.js";
@@ -194,6 +202,8 @@ export async function generateMessages(
     join(absolutePath, "internal", `${ENUM_BODY_MODULE}.ts`),
     enumBodySource(csdl)
   );
+  // Bodies leave out undefined parameters (#96)
+  await writeTypeScriptFile(join(absolutePath, `${REQUEST_BODY_MODULE}.ts`), REQUEST_BODY_SOURCE);
 
   // Entity references with the CSDL's primary keys, as in the actions package: a reference in a
   // body is {"@odata.type", <primary key>}; the hand-written one sent "id", which the Web API
@@ -293,6 +303,9 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction, stem = actio
   if (needsEntityReference) {
     code += `import type { EntityReference } from './EntityReference.js';\n`;
   }
+  if (action.parameters.some((p) => p.name)) {
+    code += `import { requestBody } from './${REQUEST_BODY_MODULE}.js';\n`;
+  }
   if (action.parameters.some((p) => bodyEnumType(csdl, p.type))) {
     code += `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n`;
   }
@@ -308,26 +321,14 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction, stem = actio
 
   code += `\n`;
 
-  // Generate request class
-  code += `/**\n`;
-  code += ` * ${action.name} request message\n`;
-  code += ` *\n`;
-  code += ` * Web API Action: ${action.name}\n`;
   // Collection-bound: called on an entity set (#69)
   const collection =
     action.isBound && action.bindingParameter && isCollectionType(action.bindingParameter.type)
       ? collectionBinding(csdl, action.bindingParameter.type)
       : undefined;
-  if (collection?.needsEntitySetName) {
-    code += ` *\n`;
-    code += ` * The first argument is the entity set to call it on, for example "accounts".\n`;
-  }
-  code += ` */\n`;
-  code += `export class ${requestClassName} extends OrganizationRequest implements Executable<${responseClassName}> {\n`;
 
-  // Generate constructor parameters
-  // For bound actions, the binding parameter becomes entityId: string (just the GUID)
-  // All other parameters stay as-is
+  // Constructor arguments: the record or entity set a bound action runs on (in the URL), then
+  // one object with the CSDL parameters, which becomes the request's `Parameters` (#96)
   const constructorParams: Array<{
     name: string;
     type: string;
@@ -376,7 +377,7 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction, stem = actio
     }
 
     constructorParams.push({
-      name: toCamelCase(param.name),
+      name: param.name,
       type:
         polymorphicParameterType(csdl, param.type)?.tsType ??
         entityParameterType(csdl, param.type)?.tsType ??
@@ -384,17 +385,47 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction, stem = actio
       tsName: param.name,
       isBinding: false,
       nullable: param.nullable ?? false,
-      // In CSDL a parameter without Nullable="false" may be left out (#74, as #68 for functions)
-      // A `MessageName` parameter shadows OrganizationRequest.messageName (a string), so it stays
-      // required.
-      optional: param.nullable !== false && toCamelCase(param.name) !== "messageName",
+      // In CSDL a parameter without Nullable="false" may be left out (#74, as #68 for functions).
+      // A `MessageName` parameter is a property of `Parameters`, so it no longer shadows
+      // OrganizationRequest.messageName.
+      optional: param.nullable !== false,
     });
   }
 
+  const bindingParams = constructorParams.filter((p) => p.isBinding);
+  const bodyParams = constructorParams
+    .filter((p) => !p.isBinding)
+    .map((p) => ({ name: p.tsName, type: p.type, optional: p.optional === true }));
+  const parametersName = parametersInterfaceName(requestClassName);
+  if (bodyParams.length > 0) {
+    code += parametersInterface(parametersName, `${action.name} message`, bodyParams);
+    code += `\n`;
+  }
+
+  // Generate request class
+  code += `/**\n`;
+  code += ` * ${action.name} request message\n`;
+  code += ` *\n`;
+  code += ` * Web API Action: ${action.name}\n`;
+  code += bindingDoc(bindingParams[0]?.name, action.bindingParameter?.type);
+  code += ` */\n`;
+  code += `export class ${requestClassName} extends OrganizationRequest implements Executable<${responseClassName}> {\n`;
+
+  if (bodyParams.length > 0) {
+    // The parameters by their CSDL names, as OrganizationRequest.Parameters (#96)
+    code += `  declare readonly Parameters: Readonly<${parametersName}>;\n\n`;
+  }
+  const ctorArgs = [
+    ...bindingParams.map((p) => `public ${p.name}: ${p.type}`),
+    ...(bodyParams.length > 0 ? [parametersArgument("", parametersName, bodyParams)] : []),
+  ];
   code += `  constructor(\n`;
-  code += constructorParameterList(constructorParams, "public");
+  for (const arg of ctorArgs) code += `    ${arg},\n`;
   code += `  ) {\n`;
-  code += `    super('${action.name}');\n`;
+  code +=
+    bodyParams.length > 0
+      ? `    super('${action.name}', { ...parameters });\n`
+      : `    super('${action.name}');\n`;
   code += `  }\n\n`;
 
   // Generate toRequestInformation method (for Executable<T> interface)
@@ -487,25 +518,18 @@ function generateToRequestInformation(
     code += `    const url = \`\${baseUrl}/${action.name}\`;\n\n`;
   }
 
-  // Build request body - exclude binding parameter
-  const bodyParams = constructorParams.filter((p) => !p.isBinding);
+  // Build request body: the parameters by their CSDL names, without the undefined ones (#96)
+  const bodyParams = constructorParams
+    .filter((p) => !p.isBinding)
+    .map((p) => ({ name: p.tsName, type: p.type, optional: !p.nullable }));
 
   if (bodyParams.length > 0) {
-    code += `    const body: Record<string, unknown> = {\n`;
-    for (const param of bodyParams) {
-      // Enum values are sent as member names (#232)
-      const csdlType = action.parameters.find((p) => p.name === param.tsName)?.type;
-      const enumType = csdlType ? bodyEnumType(csdl, csdlType) : undefined;
-      const value = enumType
-        ? `enumBody(this.${param.name}, ${JSON.stringify(enumType)})`
-        : `this.${param.name}`;
-      if (param.nullable) {
-        code += `      ...(this.${param.name} !== undefined && { ${param.tsName}: ${value} }),\n`;
-      } else {
-        code += `      ${param.tsName}: ${value},\n`;
-      }
-    }
-    code += `    };\n\n`;
+    // Enum values are sent as member names (#232)
+    const enumTypeOf = (name: string) => {
+      const csdlType = action.parameters.find((p) => p.name === name)?.type;
+      return csdlType ? bodyEnumType(csdl, csdlType) : undefined;
+    };
+    code += `    const body = ${requestBodyExpression("this.Parameters", bodyParams, enumTypeOf)};\n\n`;
   }
 
   code += `    return {\n`;
@@ -531,8 +555,9 @@ function generateParseResponse(action: CsdlAction, responseClassName: string): s
   let code = `  async parseResponse(response: Response): Promise<${responseClassName}> {\n`;
 
   if (action.returnType) {
-    code += `    const data = await response.json();\n`;
-    code += `    return ${responseClassName}.fromResponse(data);\n`;
+    code += `    // 204 No Content is an empty result\n`;
+    code += `    if (response.status === 204) return ${responseClassName}.fromResponse({});\n`;
+    code += `    return ${responseClassName}.fromResponse(await response.json());\n`;
   } else {
     code += `    // No return value (204 No Content)\n`;
     code += `    return new ${responseClassName}();\n`;
@@ -573,10 +598,15 @@ function generateMessagesIndex(
   // One export per class: overloads have their own (#75), and a name with no unbound overload
   // has no plain-name export (#286)
   const entries = operations
-    .map((op) => stems.get(op) ?? op.name)
-    .sort((a, b) => a.localeCompare(b));
-  for (const stem of entries) {
-    code += `export { ${stem}Request, ${stem}Response } from './${stem}Message.js';\n`;
+    .map((op) => ({
+      stem: stems.get(op) ?? op.name,
+      hasParameters: op.parameters.some((p) => p.name),
+    }))
+    .sort((a, b) => a.stem.localeCompare(b.stem));
+  for (const { stem, hasParameters } of entries) {
+    // The parameters interface of the constructor (#96)
+    const parameters = hasParameters ? `, type ${parametersInterfaceName(`${stem}Request`)}` : "";
+    code += `export { ${stem}Request${parameters}, ${stem}Response } from './${stem}Message.js';\n`;
   }
 
   // Enum values for parameters, as in the functions package; bodies send member names (#232)

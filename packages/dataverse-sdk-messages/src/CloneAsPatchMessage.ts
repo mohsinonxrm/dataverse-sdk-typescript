@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CloneAsPatchResponse as CloneAsPatchResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CloneAsPatch message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CloneAsPatchRequestParameters {
+  ParentSolutionUniqueName: string;
+  DisplayName: string;
+  VersionNumber: string;
+}
 
 /**
  * CloneAsPatch request message
@@ -12,22 +23,20 @@ export class CloneAsPatchRequest
   extends OrganizationRequest
   implements Executable<CloneAsPatchResponse>
 {
-  constructor(
-    public parentSolutionUniqueName: string,
-    public displayName: string,
-    public versionNumber: string
-  ) {
-    super("CloneAsPatch");
+  declare readonly Parameters: Readonly<CloneAsPatchRequestParameters>;
+
+  constructor(parameters: CloneAsPatchRequestParameters) {
+    super("CloneAsPatch", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CloneAsPatch`;
 
-    const body: Record<string, unknown> = {
-      ParentSolutionUniqueName: this.parentSolutionUniqueName,
-      DisplayName: this.displayName,
-      VersionNumber: this.versionNumber,
-    };
+    const body = requestBody({
+      ParentSolutionUniqueName: this.Parameters.ParentSolutionUniqueName,
+      DisplayName: this.Parameters.DisplayName,
+      VersionNumber: this.Parameters.VersionNumber,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class CloneAsPatchRequest
   }
 
   async parseResponse(response: Response): Promise<CloneAsPatchResponse> {
-    const data = await response.json();
-    return CloneAsPatchResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CloneAsPatchResponse.fromResponse({});
+    return CloneAsPatchResponse.fromResponse(await response.json());
   }
 }
 

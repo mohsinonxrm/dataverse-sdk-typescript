@@ -12,5 +12,5 @@ Complex types have their navigation properties (#231).
   - a table is `EntityReference | EntityPayload<table>`;
   - `Collection(crmbaseentity)` is `Record<string, unknown>[]`;
   - `principal` is `EntityReference`.
-- A member is required when the CSDL says `Nullable="false"`, so `PrincipalAccess` now requires `Principal`. Checked live: `new GrantAccessAction(target, { Principal: createEntityReference("team", id), AccessMask })` grants access, and `RevokeAccessAction` removes it.
+- A member is required when the CSDL says `Nullable="false"`, so `PrincipalAccess` now requires `Principal`. Checked live: `new GrantAccessAction({ Target: target, PrincipalAccess: { Principal: createEntityReference("team", id), AccessMask } })` grants access, and `RevokeAccessAction` removes it.
 - functions: `AnyEntityPayload` and `EntityPayload` are exported, because complex types use them.

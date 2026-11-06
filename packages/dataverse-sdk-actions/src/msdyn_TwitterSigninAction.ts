@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_TwitterSignin action
@@ -9,23 +10,29 @@ export interface msdyn_TwitterSigninResponse {
 }
 
 /**
+ * Parameters of the msdyn_TwitterSignin action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TwitterSigninActionParameters {
+  OrgUrl: string;
+  ApplicationId: string;
+}
+
+/**
  * msdyn_TwitterSignin action
  *
  * Unbound action
  */
 export class msdyn_TwitterSigninAction implements Executable<msdyn_TwitterSigninResponse> {
-  constructor(
-    public readonly orgUrl: string,
-    public readonly applicationId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_TwitterSigninActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TwitterSignin`;
 
-    const body: Record<string, unknown> = {
-      OrgUrl: this.orgUrl,
-      ApplicationId: this.applicationId,
-    };
+    const body = requestBody({
+      OrgUrl: this.parameters.OrgUrl,
+      ApplicationId: this.parameters.ApplicationId,
+    });
 
     return {
       method: "POST",
@@ -38,7 +45,8 @@ export class msdyn_TwitterSigninAction implements Executable<msdyn_TwitterSignin
   }
 
   async parseResponse(response: Response): Promise<msdyn_TwitterSigninResponse> {
-    const data = await response.json();
-    return data as msdyn_TwitterSigninResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_TwitterSigninResponse;
+    return (await response.json()) as msdyn_TwitterSigninResponse;
   }
 }

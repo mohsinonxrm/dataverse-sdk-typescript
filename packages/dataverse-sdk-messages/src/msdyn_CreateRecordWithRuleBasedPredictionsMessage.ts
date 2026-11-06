@@ -2,7 +2,18 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_CreateRecordWithRuleBasedPredictions message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateRecordWithRuleBasedPredictionsRequestParameters {
+  msdyn_Context?: EntityReference | AnyEntityPayload;
+  msdyn_ContextGenerationParameters?: string;
+  msdyn_Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_CreateRecordWithRuleBasedPredictions request message
@@ -13,22 +24,20 @@ export class msdyn_CreateRecordWithRuleBasedPredictionsRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateRecordWithRuleBasedPredictionsResponse>
 {
-  constructor(
-    public msdyn_Context: EntityReference | AnyEntityPayload | undefined,
-    public msdyn_ContextGenerationParameters: string | undefined,
-    public msdyn_Target: EntityReference | AnyEntityPayload
-  ) {
-    super("msdyn_CreateRecordWithRuleBasedPredictions");
+  declare readonly Parameters: Readonly<msdyn_CreateRecordWithRuleBasedPredictionsRequestParameters>;
+
+  constructor(parameters: msdyn_CreateRecordWithRuleBasedPredictionsRequestParameters) {
+    super("msdyn_CreateRecordWithRuleBasedPredictions", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateRecordWithRuleBasedPredictions`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Context: this.msdyn_Context,
-      msdyn_ContextGenerationParameters: this.msdyn_ContextGenerationParameters,
-      msdyn_Target: this.msdyn_Target,
-    };
+    const body = requestBody({
+      msdyn_Context: this.Parameters.msdyn_Context,
+      msdyn_ContextGenerationParameters: this.Parameters.msdyn_ContextGenerationParameters,
+      msdyn_Target: this.Parameters.msdyn_Target,
+    });
 
     return {
       method: "POST",
@@ -43,8 +52,10 @@ export class msdyn_CreateRecordWithRuleBasedPredictionsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CreateRecordWithRuleBasedPredictionsResponse> {
-    const data = await response.json();
-    return msdyn_CreateRecordWithRuleBasedPredictionsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CreateRecordWithRuleBasedPredictionsResponse.fromResponse({});
+    return msdyn_CreateRecordWithRuleBasedPredictionsResponse.fromResponse(await response.json());
   }
 }
 

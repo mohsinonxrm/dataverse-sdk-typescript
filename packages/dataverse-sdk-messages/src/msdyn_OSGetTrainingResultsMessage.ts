@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_OSGetTrainingResultsResponse as msdyn_OSGetTrainingResultsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_OSGetTrainingResults message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_OSGetTrainingResultsRequestParameters {
+  PredictionName?: string;
+}
 
 /**
  * msdyn_OSGetTrainingResults request message
@@ -12,16 +21,18 @@ export class msdyn_OSGetTrainingResultsRequest
   extends OrganizationRequest
   implements Executable<msdyn_OSGetTrainingResultsResponse>
 {
-  constructor(public predictionName?: string) {
-    super("msdyn_OSGetTrainingResults");
+  declare readonly Parameters: Readonly<msdyn_OSGetTrainingResultsRequestParameters>;
+
+  constructor(parameters: msdyn_OSGetTrainingResultsRequestParameters = {}) {
+    super("msdyn_OSGetTrainingResults", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OSGetTrainingResults`;
 
-    const body: Record<string, unknown> = {
-      PredictionName: this.predictionName,
-    };
+    const body = requestBody({
+      PredictionName: this.Parameters.PredictionName,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_OSGetTrainingResultsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_OSGetTrainingResultsResponse> {
-    const data = await response.json();
-    return msdyn_OSGetTrainingResultsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_OSGetTrainingResultsResponse.fromResponse({});
+    return msdyn_OSGetTrainingResultsResponse.fromResponse(await response.json());
   }
 }
 

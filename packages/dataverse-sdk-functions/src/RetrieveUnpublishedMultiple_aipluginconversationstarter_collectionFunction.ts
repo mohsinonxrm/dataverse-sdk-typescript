@@ -31,7 +31,9 @@ export class RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionF
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResponse;
+    return (await response.json()) as RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResponse;
   }
 }

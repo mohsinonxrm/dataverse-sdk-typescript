@@ -31,8 +31,12 @@ export class msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse> {
-    const data = await response.json();
-    return msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse.fromResponse({});
+    return msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

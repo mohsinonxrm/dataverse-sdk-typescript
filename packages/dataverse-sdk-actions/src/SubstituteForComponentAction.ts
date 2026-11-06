@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { SubstitutionResult } from "./types/index.js";
 
@@ -11,23 +12,29 @@ export interface SubstituteForComponentResponse {
 }
 
 /**
+ * Parameters of the SubstituteForComponent action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SubstituteForComponentActionParameters {
+  Entity: EntityReference | AnyEntityPayload;
+  SubStore: string;
+}
+
+/**
  * SubstituteForComponent action
  *
  * Unbound action
  */
 export class SubstituteForComponentAction implements Executable<SubstituteForComponentResponse> {
-  constructor(
-    public readonly entity: EntityReference | AnyEntityPayload,
-    public readonly subStore: string
-  ) {}
+  constructor(public readonly parameters: SubstituteForComponentActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SubstituteForComponent`;
 
-    const body: Record<string, unknown> = {
-      Entity: this.entity,
-      SubStore: this.subStore,
-    };
+    const body = requestBody({
+      Entity: this.parameters.Entity,
+      SubStore: this.parameters.SubStore,
+    });
 
     return {
       method: "POST",
@@ -40,7 +47,8 @@ export class SubstituteForComponentAction implements Executable<SubstituteForCom
   }
 
   async parseResponse(response: Response): Promise<SubstituteForComponentResponse> {
-    const data = await response.json();
-    return data as SubstituteForComponentResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SubstituteForComponentResponse;
+    return (await response.json()) as SubstituteForComponentResponse;
   }
 }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdynmkt_GetCjoEventsMetadataItemsByNames action
@@ -9,26 +10,33 @@ export interface msdynmkt_GetCjoEventsMetadataItemsByNamesResponse {
 }
 
 /**
+ * Parameters of the msdynmkt_GetCjoEventsMetadataItemsByNames action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_GetCjoEventsMetadataItemsByNamesActionParameters {
+  msdynmkt_GetCjoEventsMetadataItemsByNames_request_LanguageCode?: number;
+  msdynmkt_GetCjoEventsMetadataItemsByNames_request_EventNames: string[];
+}
+
+/**
  * msdynmkt_GetCjoEventsMetadataItemsByNames action
  *
  * Unbound action
  */
 export class msdynmkt_GetCjoEventsMetadataItemsByNamesAction implements Executable<msdynmkt_GetCjoEventsMetadataItemsByNamesResponse> {
   constructor(
-    public readonly msdynmkt_GetCjoEventsMetadataItemsByNames_request_LanguageCode:
-      number | undefined,
-    public readonly msdynmkt_GetCjoEventsMetadataItemsByNames_request_EventNames: string[]
+    public readonly parameters: msdynmkt_GetCjoEventsMetadataItemsByNamesActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_GetCjoEventsMetadataItemsByNames`;
 
-    const body: Record<string, unknown> = {
+    const body = requestBody({
       msdynmkt_GetCjoEventsMetadataItemsByNames_request_LanguageCode:
-        this.msdynmkt_GetCjoEventsMetadataItemsByNames_request_LanguageCode,
+        this.parameters.msdynmkt_GetCjoEventsMetadataItemsByNames_request_LanguageCode,
       msdynmkt_GetCjoEventsMetadataItemsByNames_request_EventNames:
-        this.msdynmkt_GetCjoEventsMetadataItemsByNames_request_EventNames,
-    };
+        this.parameters.msdynmkt_GetCjoEventsMetadataItemsByNames_request_EventNames,
+    });
 
     return {
       method: "POST",
@@ -43,7 +51,8 @@ export class msdynmkt_GetCjoEventsMetadataItemsByNamesAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_GetCjoEventsMetadataItemsByNamesResponse> {
-    const data = await response.json();
-    return data as msdynmkt_GetCjoEventsMetadataItemsByNamesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_GetCjoEventsMetadataItemsByNamesResponse;
+    return (await response.json()) as msdynmkt_GetCjoEventsMetadataItemsByNamesResponse;
   }
 }

@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_RouteToOperation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RouteToOperationRequestParameters {
+  LiveWorkItemId: string;
+}
 
 /**
  * msdyn_RouteToOperation request message
@@ -10,16 +19,18 @@ export class msdyn_RouteToOperationRequest
   extends OrganizationRequest
   implements Executable<msdyn_RouteToOperationResponse>
 {
-  constructor(public liveWorkItemId: string) {
-    super("msdyn_RouteToOperation");
+  declare readonly Parameters: Readonly<msdyn_RouteToOperationRequestParameters>;
+
+  constructor(parameters: msdyn_RouteToOperationRequestParameters) {
+    super("msdyn_RouteToOperation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RouteToOperation`;
 
-    const body: Record<string, unknown> = {
-      LiveWorkItemId: this.liveWorkItemId,
-    };
+    const body = requestBody({
+      LiveWorkItemId: this.Parameters.LiveWorkItemId,
+    });
 
     return {
       method: "POST",

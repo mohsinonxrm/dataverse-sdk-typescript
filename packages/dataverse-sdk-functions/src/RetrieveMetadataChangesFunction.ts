@@ -17,19 +17,24 @@ export interface RetrieveMetadataChangesResponse {
 }
 
 /**
+ * Parameters of the RetrieveMetadataChanges function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveMetadataChangesFunctionParameters {
+  Query?: EntityQueryExpression;
+  DeletedMetadataFilters?: DeletedMetadataFilters | keyof typeof DeletedMetadataFilters;
+  ClientVersionStamp?: string;
+  AppModuleId?: string;
+  RetrieveAllSettings?: boolean;
+}
+
+/**
  * RetrieveMetadataChanges function
  *
  * Unbound function
  */
 export class RetrieveMetadataChangesFunction implements Executable<RetrieveMetadataChangesResponse> {
-  constructor(
-    public readonly query?: EntityQueryExpression,
-    public readonly deletedMetadataFilters?:
-      DeletedMetadataFilters | keyof typeof DeletedMetadataFilters,
-    public readonly clientVersionStamp?: string,
-    public readonly appModuleId?: string,
-    public readonly retrieveAllSettings?: boolean
-  ) {}
+  constructor(public readonly parameters: RetrieveMetadataChangesFunctionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveMetadataChanges`;
@@ -37,32 +42,35 @@ export class RetrieveMetadataChangesFunction implements Executable<RetrieveMetad
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.query !== undefined) {
+    if (this.parameters.Query !== undefined) {
       aliases.push(`Query=@p1`);
-      params.append("@p1", JSON.stringify(this.query));
+      params.append("@p1", JSON.stringify(this.parameters.Query));
     }
-    if (this.deletedMetadataFilters !== undefined) {
+    if (this.parameters.DeletedMetadataFilters !== undefined) {
       aliases.push(`DeletedMetadataFilters=@p2`);
       params.append(
         "@p2",
         formatParameterAlias(
-          this.deletedMetadataFilters,
+          this.parameters.DeletedMetadataFilters,
           "mscrm.DeletedMetadataFilters",
           "EnumerationType"
         )
       );
     }
-    if (this.clientVersionStamp !== undefined) {
+    if (this.parameters.ClientVersionStamp !== undefined) {
       aliases.push(`ClientVersionStamp=@p3`);
-      params.append("@p3", formatParameterAlias(this.clientVersionStamp, "Edm.String"));
+      params.append("@p3", formatParameterAlias(this.parameters.ClientVersionStamp, "Edm.String"));
     }
-    if (this.appModuleId !== undefined) {
+    if (this.parameters.AppModuleId !== undefined) {
       aliases.push(`AppModuleId=@p4`);
-      params.append("@p4", formatParameterAlias(this.appModuleId, "Edm.Guid"));
+      params.append("@p4", formatParameterAlias(this.parameters.AppModuleId, "Edm.Guid"));
     }
-    if (this.retrieveAllSettings !== undefined) {
+    if (this.parameters.RetrieveAllSettings !== undefined) {
       aliases.push(`RetrieveAllSettings=@p5`);
-      params.append("@p5", formatParameterAlias(this.retrieveAllSettings, "Edm.Boolean"));
+      params.append(
+        "@p5",
+        formatParameterAlias(this.parameters.RetrieveAllSettings, "Edm.Boolean")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -78,7 +86,8 @@ export class RetrieveMetadataChangesFunction implements Executable<RetrieveMetad
   }
 
   async parseResponse(response: Response): Promise<RetrieveMetadataChangesResponse> {
-    const data = await response.json();
-    return data as RetrieveMetadataChangesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveMetadataChangesResponse;
+    return (await response.json()) as RetrieveMetadataChangesResponse;
   }
 }

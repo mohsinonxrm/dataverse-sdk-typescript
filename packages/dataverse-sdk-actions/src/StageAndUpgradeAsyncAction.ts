@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
 
@@ -11,43 +12,49 @@ export interface StageAndUpgradeAsyncResponse {
 }
 
 /**
+ * Parameters of the StageAndUpgradeAsync action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface StageAndUpgradeAsyncActionParameters {
+  OverwriteUnmanagedCustomizations: boolean;
+  PublishWorkflows: boolean;
+  CustomizationFile?: string;
+  ImportJobId?: string;
+  ConvertToManaged?: boolean;
+  SkipProductUpdateDependencies?: boolean;
+  SkipQueueRibbonJob?: boolean;
+  AsyncRibbonProcessing?: boolean;
+  ComponentParameters?: Record<string, unknown>[];
+  SolutionParameters?: SolutionParameters;
+  LayerDesiredOrder?: LayerDesiredOrder;
+  SchemaUpdatesOnly?: boolean;
+}
+
+/**
  * StageAndUpgradeAsync action
  *
  * Unbound action
  */
 export class StageAndUpgradeAsyncAction implements Executable<StageAndUpgradeAsyncResponse> {
-  constructor(
-    public readonly overwriteUnmanagedCustomizations: boolean,
-    public readonly publishWorkflows: boolean,
-    public readonly customizationFile?: string,
-    public readonly importJobId?: string,
-    public readonly convertToManaged?: boolean,
-    public readonly skipProductUpdateDependencies?: boolean,
-    public readonly skipQueueRibbonJob?: boolean,
-    public readonly asyncRibbonProcessing?: boolean,
-    public readonly componentParameters?: Record<string, unknown>[],
-    public readonly solutionParameters?: SolutionParameters,
-    public readonly layerDesiredOrder?: LayerDesiredOrder,
-    public readonly schemaUpdatesOnly?: boolean
-  ) {}
+  constructor(public readonly parameters: StageAndUpgradeAsyncActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/StageAndUpgradeAsync`;
 
-    const body: Record<string, unknown> = {
-      OverwriteUnmanagedCustomizations: this.overwriteUnmanagedCustomizations,
-      PublishWorkflows: this.publishWorkflows,
-      CustomizationFile: this.customizationFile,
-      ImportJobId: this.importJobId,
-      ConvertToManaged: this.convertToManaged,
-      SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
-      SkipQueueRibbonJob: this.skipQueueRibbonJob,
-      AsyncRibbonProcessing: this.asyncRibbonProcessing,
-      ComponentParameters: this.componentParameters,
-      SolutionParameters: enumBody(this.solutionParameters, "SolutionParameters"),
-      LayerDesiredOrder: enumBody(this.layerDesiredOrder, "LayerDesiredOrder"),
-      SchemaUpdatesOnly: this.schemaUpdatesOnly,
-    };
+    const body = requestBody({
+      OverwriteUnmanagedCustomizations: this.parameters.OverwriteUnmanagedCustomizations,
+      PublishWorkflows: this.parameters.PublishWorkflows,
+      CustomizationFile: this.parameters.CustomizationFile,
+      ImportJobId: this.parameters.ImportJobId,
+      ConvertToManaged: this.parameters.ConvertToManaged,
+      SkipProductUpdateDependencies: this.parameters.SkipProductUpdateDependencies,
+      SkipQueueRibbonJob: this.parameters.SkipQueueRibbonJob,
+      AsyncRibbonProcessing: this.parameters.AsyncRibbonProcessing,
+      ComponentParameters: this.parameters.ComponentParameters,
+      SolutionParameters: enumBody(this.parameters.SolutionParameters, "SolutionParameters"),
+      LayerDesiredOrder: enumBody(this.parameters.LayerDesiredOrder, "LayerDesiredOrder"),
+      SchemaUpdatesOnly: this.parameters.SchemaUpdatesOnly,
+    });
 
     return {
       method: "POST",
@@ -60,7 +67,8 @@ export class StageAndUpgradeAsyncAction implements Executable<StageAndUpgradeAsy
   }
 
   async parseResponse(response: Response): Promise<StageAndUpgradeAsyncResponse> {
-    const data = await response.json();
-    return data as StageAndUpgradeAsyncResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as StageAndUpgradeAsyncResponse;
+    return (await response.json()) as StageAndUpgradeAsyncResponse;
   }
 }

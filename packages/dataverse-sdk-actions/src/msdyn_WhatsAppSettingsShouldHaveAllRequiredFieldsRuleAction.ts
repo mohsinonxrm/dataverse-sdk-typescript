@@ -30,7 +30,9 @@ export class msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleAction impleme
   async parseResponse(
     response: Response
   ): Promise<msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    return (await response.json()) as msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse;
   }
 }

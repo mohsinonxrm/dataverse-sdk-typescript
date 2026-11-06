@@ -1,7 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { GenerateInstantPluginResponse as GenerateInstantPluginResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the GenerateInstantPlugin message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GenerateInstantPluginRequestParameters {
+  SolutionUniqueName?: string;
+  Expression: string;
+  Context?: string;
+  Description: string;
+  EntityLogicalName?: string;
+  Parameters?: string;
+  Name: string;
+}
 
 /**
  * GenerateInstantPlugin request message
@@ -12,30 +27,24 @@ export class GenerateInstantPluginRequest
   extends OrganizationRequest
   implements Executable<GenerateInstantPluginResponse>
 {
-  constructor(
-    public solutionUniqueName: string | undefined,
-    public expression: string,
-    public context: string | undefined,
-    public description: string,
-    public entityLogicalName: string | undefined,
-    public parameters: string | undefined,
-    public name: string
-  ) {
-    super("GenerateInstantPlugin");
+  declare readonly Parameters: Readonly<GenerateInstantPluginRequestParameters>;
+
+  constructor(parameters: GenerateInstantPluginRequestParameters) {
+    super("GenerateInstantPlugin", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GenerateInstantPlugin`;
 
-    const body: Record<string, unknown> = {
-      SolutionUniqueName: this.solutionUniqueName,
-      Expression: this.expression,
-      Context: this.context,
-      Description: this.description,
-      EntityLogicalName: this.entityLogicalName,
-      Parameters: this.parameters,
-      Name: this.name,
-    };
+    const body = requestBody({
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      Expression: this.Parameters.Expression,
+      Context: this.Parameters.Context,
+      Description: this.Parameters.Description,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Parameters: this.Parameters.Parameters,
+      Name: this.Parameters.Name,
+    });
 
     return {
       method: "POST",
@@ -48,8 +57,9 @@ export class GenerateInstantPluginRequest
   }
 
   async parseResponse(response: Response): Promise<GenerateInstantPluginResponse> {
-    const data = await response.json();
-    return GenerateInstantPluginResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return GenerateInstantPluginResponse.fromResponse({});
+    return GenerateInstantPluginResponse.fromResponse(await response.json());
   }
 }
 

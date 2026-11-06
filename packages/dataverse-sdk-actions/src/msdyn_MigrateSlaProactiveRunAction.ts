@@ -27,7 +27,8 @@ export class msdyn_MigrateSlaProactiveRunAction implements Executable<msdyn_Migr
   }
 
   async parseResponse(response: Response): Promise<msdyn_MigrateSlaProactiveRunResponse> {
-    const data = await response.json();
-    return data as msdyn_MigrateSlaProactiveRunResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_MigrateSlaProactiveRunResponse;
+    return (await response.json()) as msdyn_MigrateSlaProactiveRunResponse;
   }
 }

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SIGetFCBStatusResponse as msdyn_SIGetFCBStatusResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SIGetFCBStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SIGetFCBStatusRequestParameters {
+  FCBName: string;
+}
 
 /**
  * msdyn_SIGetFCBStatus request message
@@ -12,16 +21,18 @@ export class msdyn_SIGetFCBStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_SIGetFCBStatusResponse>
 {
-  constructor(public fCBName: string) {
-    super("msdyn_SIGetFCBStatus");
+  declare readonly Parameters: Readonly<msdyn_SIGetFCBStatusRequestParameters>;
+
+  constructor(parameters: msdyn_SIGetFCBStatusRequestParameters) {
+    super("msdyn_SIGetFCBStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SIGetFCBStatus`;
 
-    const body: Record<string, unknown> = {
-      FCBName: this.fCBName,
-    };
+    const body = requestBody({
+      FCBName: this.Parameters.FCBName,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_SIGetFCBStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SIGetFCBStatusResponse> {
-    const data = await response.json();
-    return msdyn_SIGetFCBStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SIGetFCBStatusResponse.fromResponse({});
+    return msdyn_SIGetFCBStatusResponse.fromResponse(await response.json());
   }
 }
 

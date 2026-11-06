@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ApplyPrediction action
@@ -8,19 +9,27 @@ export interface msdyn_ApplyPredictionResponse {
 }
 
 /**
+ * Parameters of the msdyn_ApplyPrediction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ApplyPredictionActionParameters {
+  AutoScheduleTrainingConfig?: string;
+}
+
+/**
  * msdyn_ApplyPrediction action
  *
  * Unbound action
  */
 export class msdyn_ApplyPredictionAction implements Executable<msdyn_ApplyPredictionResponse> {
-  constructor(public readonly autoScheduleTrainingConfig?: string) {}
+  constructor(public readonly parameters: msdyn_ApplyPredictionActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ApplyPrediction`;
 
-    const body: Record<string, unknown> = {
-      AutoScheduleTrainingConfig: this.autoScheduleTrainingConfig,
-    };
+    const body = requestBody({
+      AutoScheduleTrainingConfig: this.parameters.AutoScheduleTrainingConfig,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_ApplyPredictionAction implements Executable<msdyn_ApplyPredic
   }
 
   async parseResponse(response: Response): Promise<msdyn_ApplyPredictionResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ApplyPredictionResponse;
+    return (await response.json()) as msdyn_ApplyPredictionResponse;
   }
 }

@@ -29,8 +29,9 @@ export class msdyn_GetUserConsentStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetUserConsentStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetUserConsentStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetUserConsentStatusResponse.fromResponse({});
+    return msdyn_GetUserConsentStatusResponse.fromResponse(await response.json());
   }
 }
 

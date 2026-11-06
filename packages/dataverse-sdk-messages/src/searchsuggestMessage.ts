@@ -1,7 +1,23 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { searchsuggestResponse as searchsuggestResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the searchsuggest message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface searchsuggestRequestParameters {
+  entities?: string;
+  top?: number;
+  search: string;
+  filter?: string;
+  options?: string;
+  orderby?: string;
+  fuzzy?: boolean;
+  propertybag?: string;
+}
 
 /**
  * searchsuggest request message
@@ -12,32 +28,25 @@ export class searchsuggestRequest
   extends OrganizationRequest
   implements Executable<searchsuggestResponse>
 {
-  constructor(
-    public entities: string | undefined,
-    public top: number | undefined,
-    public search: string,
-    public filter?: string,
-    public options?: string,
-    public orderby?: string,
-    public fuzzy?: boolean,
-    public propertybag?: string
-  ) {
-    super("searchsuggest");
+  declare readonly Parameters: Readonly<searchsuggestRequestParameters>;
+
+  constructor(parameters: searchsuggestRequestParameters) {
+    super("searchsuggest", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/searchsuggest`;
 
-    const body: Record<string, unknown> = {
-      entities: this.entities,
-      top: this.top,
-      search: this.search,
-      filter: this.filter,
-      options: this.options,
-      orderby: this.orderby,
-      fuzzy: this.fuzzy,
-      propertybag: this.propertybag,
-    };
+    const body = requestBody({
+      entities: this.Parameters.entities,
+      top: this.Parameters.top,
+      search: this.Parameters.search,
+      filter: this.Parameters.filter,
+      options: this.Parameters.options,
+      orderby: this.Parameters.orderby,
+      fuzzy: this.Parameters.fuzzy,
+      propertybag: this.Parameters.propertybag,
+    });
 
     return {
       method: "POST",
@@ -50,8 +59,9 @@ export class searchsuggestRequest
   }
 
   async parseResponse(response: Response): Promise<searchsuggestResponse> {
-    const data = await response.json();
-    return searchsuggestResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return searchsuggestResponse.fromResponse({});
+    return searchsuggestResponse.fromResponse(await response.json());
   }
 }
 

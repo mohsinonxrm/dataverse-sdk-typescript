@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_upsertSalesRoutingDiagnostic message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_upsertSalesRoutingDiagnosticRequestParameters {
+  TargetObject: EntityReference | AnyEntityPayload;
+  Payload: string;
+  EventType: number;
+}
 
 /**
  * msdyn_upsertSalesRoutingDiagnostic request message
@@ -12,22 +23,20 @@ export class msdyn_upsertSalesRoutingDiagnosticRequest
   extends OrganizationRequest
   implements Executable<msdyn_upsertSalesRoutingDiagnosticResponse>
 {
-  constructor(
-    public targetObject: EntityReference | AnyEntityPayload,
-    public payload: string,
-    public eventType: number
-  ) {
-    super("msdyn_upsertSalesRoutingDiagnostic");
+  declare readonly Parameters: Readonly<msdyn_upsertSalesRoutingDiagnosticRequestParameters>;
+
+  constructor(parameters: msdyn_upsertSalesRoutingDiagnosticRequestParameters) {
+    super("msdyn_upsertSalesRoutingDiagnostic", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_upsertSalesRoutingDiagnostic`;
 
-    const body: Record<string, unknown> = {
-      TargetObject: this.targetObject,
-      Payload: this.payload,
-      EventType: this.eventType,
-    };
+    const body = requestBody({
+      TargetObject: this.Parameters.TargetObject,
+      Payload: this.Parameters.Payload,
+      EventType: this.Parameters.EventType,
+    });
 
     return {
       method: "POST",

@@ -12,6 +12,8 @@ export interface RestartHostedMachineResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.flowmachine)
+ *
+ * The first argument is the id of the flowmachine record to call it on.
  */
 export class RestartHostedMachineAction implements Executable<RestartHostedMachineResponse> {
   constructor(public readonly flowmachineId: string) {}
@@ -30,7 +32,8 @@ export class RestartHostedMachineAction implements Executable<RestartHostedMachi
   }
 
   async parseResponse(response: Response): Promise<RestartHostedMachineResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RestartHostedMachineResponse;
+    return (await response.json()) as RestartHostedMachineResponse;
   }
 }

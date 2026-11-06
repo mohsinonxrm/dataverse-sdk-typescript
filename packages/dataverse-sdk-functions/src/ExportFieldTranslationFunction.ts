@@ -26,7 +26,8 @@ export class ExportFieldTranslationFunction implements Executable<ExportFieldTra
   }
 
   async parseResponse(response: Response): Promise<ExportFieldTranslationResponse> {
-    const data = await response.json();
-    return data as ExportFieldTranslationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ExportFieldTranslationResponse;
+    return (await response.json()) as ExportFieldTranslationResponse;
   }
 }

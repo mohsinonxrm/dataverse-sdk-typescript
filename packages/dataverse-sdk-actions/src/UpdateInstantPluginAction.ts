@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from UpdateInstantPlugin action
@@ -8,35 +9,41 @@ export interface UpdateInstantPluginResponse {
 }
 
 /**
+ * Parameters of the UpdateInstantPlugin action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateInstantPluginActionParameters {
+  Description?: string;
+  FxExpressionUniqueName: string;
+  Parameters?: string;
+  Context?: string;
+  EntityLogicalName?: string;
+  SolutionUniqueName?: string;
+  Expression?: string;
+  Name?: string;
+}
+
+/**
  * UpdateInstantPlugin action
  *
  * Unbound action
  */
 export class UpdateInstantPluginAction implements Executable<UpdateInstantPluginResponse> {
-  constructor(
-    public readonly description: string | undefined,
-    public readonly fxExpressionUniqueName: string,
-    public readonly parameters?: string,
-    public readonly context?: string,
-    public readonly entityLogicalName?: string,
-    public readonly solutionUniqueName?: string,
-    public readonly expression?: string,
-    public readonly name?: string
-  ) {}
+  constructor(public readonly parameters: UpdateInstantPluginActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateInstantPlugin`;
 
-    const body: Record<string, unknown> = {
-      Description: this.description,
-      FxExpressionUniqueName: this.fxExpressionUniqueName,
-      Parameters: this.parameters,
-      Context: this.context,
-      EntityLogicalName: this.entityLogicalName,
-      SolutionUniqueName: this.solutionUniqueName,
-      Expression: this.expression,
-      Name: this.name,
-    };
+    const body = requestBody({
+      Description: this.parameters.Description,
+      FxExpressionUniqueName: this.parameters.FxExpressionUniqueName,
+      Parameters: this.parameters.Parameters,
+      Context: this.parameters.Context,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+      Expression: this.parameters.Expression,
+      Name: this.parameters.Name,
+    });
 
     return {
       method: "POST",
@@ -49,7 +56,8 @@ export class UpdateInstantPluginAction implements Executable<UpdateInstantPlugin
   }
 
   async parseResponse(response: Response): Promise<UpdateInstantPluginResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UpdateInstantPluginResponse;
+    return (await response.json()) as UpdateInstantPluginResponse;
   }
 }

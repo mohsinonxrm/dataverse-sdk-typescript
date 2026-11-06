@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { ExportSolutionFromGitResponse as ExportSolutionFromGitResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the ExportSolutionFromGit message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ExportSolutionFromGitRequestParameters {
+  SolutionName: string;
+  Managed: boolean;
+  ReleaseBranch: string;
+  IsLiteExport?: boolean;
+}
 
 /**
  * ExportSolutionFromGit request message
@@ -12,24 +24,21 @@ export class ExportSolutionFromGitRequest
   extends OrganizationRequest
   implements Executable<ExportSolutionFromGitResponse>
 {
-  constructor(
-    public solutionName: string,
-    public managed: boolean,
-    public releaseBranch: string,
-    public isLiteExport?: boolean
-  ) {
-    super("ExportSolutionFromGit");
+  declare readonly Parameters: Readonly<ExportSolutionFromGitRequestParameters>;
+
+  constructor(parameters: ExportSolutionFromGitRequestParameters) {
+    super("ExportSolutionFromGit", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ExportSolutionFromGit`;
 
-    const body: Record<string, unknown> = {
-      SolutionName: this.solutionName,
-      Managed: this.managed,
-      ReleaseBranch: this.releaseBranch,
-      IsLiteExport: this.isLiteExport,
-    };
+    const body = requestBody({
+      SolutionName: this.Parameters.SolutionName,
+      Managed: this.Parameters.Managed,
+      ReleaseBranch: this.Parameters.ReleaseBranch,
+      IsLiteExport: this.Parameters.IsLiteExport,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class ExportSolutionFromGitRequest
   }
 
   async parseResponse(response: Response): Promise<ExportSolutionFromGitResponse> {
-    const data = await response.json();
-    return ExportSolutionFromGitResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return ExportSolutionFromGitResponse.fromResponse({});
+    return ExportSolutionFromGitResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from UpdateMultiple action
  */
 export interface UpdateMultipleResponse {
   // No content returned
+}
+
+/**
+ * Parameters of the UpdateMultiple action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateMultipleActionParameters {
+  Targets: Record<string, unknown>[];
 }
 
 /**
@@ -18,16 +27,16 @@ export interface UpdateMultipleResponse {
 export class UpdateMultipleAction implements Executable<UpdateMultipleResponse> {
   constructor(
     public readonly entitySetName: string,
-    public readonly targets: Record<string, unknown>[]
+    public readonly parameters: UpdateMultipleActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action (entity collection)
     const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.UpdateMultiple`;
 
-    const body: Record<string, unknown> = {
-      Targets: this.targets,
-    };
+    const body = requestBody({
+      Targets: this.parameters.Targets,
+    });
 
     return {
       method: "POST",
@@ -40,7 +49,8 @@ export class UpdateMultipleAction implements Executable<UpdateMultipleResponse> 
   }
 
   async parseResponse(response: Response): Promise<UpdateMultipleResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UpdateMultipleResponse;
+    return (await response.json()) as UpdateMultipleResponse;
   }
 }

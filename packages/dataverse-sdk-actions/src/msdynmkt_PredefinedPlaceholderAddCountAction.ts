@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdynmkt_PredefinedPlaceholderAddCount action
@@ -8,19 +9,29 @@ export interface msdynmkt_PredefinedPlaceholderAddCountResponse {
 }
 
 /**
+ * Parameters of the msdynmkt_PredefinedPlaceholderAddCount action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_PredefinedPlaceholderAddCountActionParameters {
+  PredefinedPlaceholderAddCountRequest?: string;
+}
+
+/**
  * msdynmkt_PredefinedPlaceholderAddCount action
  *
  * Unbound action
  */
 export class msdynmkt_PredefinedPlaceholderAddCountAction implements Executable<msdynmkt_PredefinedPlaceholderAddCountResponse> {
-  constructor(public readonly predefinedPlaceholderAddCountRequest?: string) {}
+  constructor(
+    public readonly parameters: msdynmkt_PredefinedPlaceholderAddCountActionParameters = {}
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_PredefinedPlaceholderAddCount`;
 
-    const body: Record<string, unknown> = {
-      PredefinedPlaceholderAddCountRequest: this.predefinedPlaceholderAddCountRequest,
-    };
+    const body = requestBody({
+      PredefinedPlaceholderAddCountRequest: this.parameters.PredefinedPlaceholderAddCountRequest,
+    });
 
     return {
       method: "POST",
@@ -33,7 +44,8 @@ export class msdynmkt_PredefinedPlaceholderAddCountAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_PredefinedPlaceholderAddCountResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_PredefinedPlaceholderAddCountResponse;
+    return (await response.json()) as msdynmkt_PredefinedPlaceholderAddCountResponse;
   }
 }

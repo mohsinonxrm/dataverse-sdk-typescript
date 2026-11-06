@@ -18,7 +18,9 @@ describe("#72: action entity references", () => {
     const { client, fake } = createTestClient();
     fake.on("POST", "/GrantAccess", () => noContent());
 
-    await client.execute(new GrantAccessAction(createEntityReference("account", "a1"), {}));
+    await client.execute(
+      new GrantAccessAction({ Target: createEntityReference("account", "a1"), PrincipalAccess: {} })
+    );
 
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({
       Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a1" },
@@ -38,7 +40,12 @@ describe("#72: action entity references", () => {
     const target = createEntityReference("account", "a1");
 
     await client.execute(
-      new MergeAction(target, createEntityReference("account", "a2"), target, false)
+      new MergeAction({
+        Target: target,
+        Subordinate: createEntityReference("account", "a2"),
+        UpdateContent: target,
+        PerformParentingChecks: false,
+      })
     );
 
     const body = JSON.parse(fake.last().bodyText ?? "") as Record<string, unknown>;

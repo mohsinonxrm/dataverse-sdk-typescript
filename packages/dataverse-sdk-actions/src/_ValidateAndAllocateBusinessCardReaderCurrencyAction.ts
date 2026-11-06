@@ -28,7 +28,9 @@ export class _ValidateAndAllocateBusinessCardReaderCurrencyAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<_ValidateAndAllocateBusinessCardReaderCurrencyResponse> {
-    const data = await response.json();
-    return data as _ValidateAndAllocateBusinessCardReaderCurrencyResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as _ValidateAndAllocateBusinessCardReaderCurrencyResponse;
+    return (await response.json()) as _ValidateAndAllocateBusinessCardReaderCurrencyResponse;
   }
 }

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CascadeCrewMembershipsResponse as msdyn_CascadeCrewMembershipsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CascadeCrewMemberships message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CascadeCrewMembershipsRequestParameters {
+  Payload: string;
+}
 
 /**
  * msdyn_CascadeCrewMemberships request message
@@ -12,16 +21,18 @@ export class msdyn_CascadeCrewMembershipsRequest
   extends OrganizationRequest
   implements Executable<msdyn_CascadeCrewMembershipsResponse>
 {
-  constructor(public payload: string) {
-    super("msdyn_CascadeCrewMemberships");
+  declare readonly Parameters: Readonly<msdyn_CascadeCrewMembershipsRequestParameters>;
+
+  constructor(parameters: msdyn_CascadeCrewMembershipsRequestParameters) {
+    super("msdyn_CascadeCrewMemberships", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CascadeCrewMemberships`;
 
-    const body: Record<string, unknown> = {
-      Payload: this.payload,
-    };
+    const body = requestBody({
+      Payload: this.Parameters.Payload,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_CascadeCrewMembershipsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CascadeCrewMembershipsResponse> {
-    const data = await response.json();
-    return msdyn_CascadeCrewMembershipsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CascadeCrewMembershipsResponse.fromResponse({});
+    return msdyn_CascadeCrewMembershipsResponse.fromResponse(await response.json());
   }
 }
 

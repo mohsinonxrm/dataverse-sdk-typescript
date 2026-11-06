@@ -12,6 +12,8 @@ export interface ClearWorkQueueResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.workqueue)
+ *
+ * The first argument is the id of the workqueue record to call it on.
  */
 export class ClearWorkQueueAction implements Executable<ClearWorkQueueResponse> {
   constructor(public readonly workqueueId: string) {}
@@ -30,7 +32,8 @@ export class ClearWorkQueueAction implements Executable<ClearWorkQueueResponse> 
   }
 
   async parseResponse(response: Response): Promise<ClearWorkQueueResponse> {
-    const data = await response.json();
-    return data as ClearWorkQueueResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ClearWorkQueueResponse;
+    return (await response.json()) as ClearWorkQueueResponse;
   }
 }

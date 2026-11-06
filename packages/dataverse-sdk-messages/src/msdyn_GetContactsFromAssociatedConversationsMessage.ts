@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetContactsFromAssociatedConversationsResponse as msdyn_GetContactsFromAssociatedConversationsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetContactsFromAssociatedConversations message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetContactsFromAssociatedConversationsRequestParameters {
+  EntityLogicalName: string;
+  RecordId: string;
+  CustomActionInputs?: string;
+}
 
 /**
  * msdyn_GetContactsFromAssociatedConversations request message
@@ -12,22 +23,20 @@ export class msdyn_GetContactsFromAssociatedConversationsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetContactsFromAssociatedConversationsResponse>
 {
-  constructor(
-    public entityLogicalName: string,
-    public recordId: string,
-    public customActionInputs?: string
-  ) {
-    super("msdyn_GetContactsFromAssociatedConversations");
+  declare readonly Parameters: Readonly<msdyn_GetContactsFromAssociatedConversationsRequestParameters>;
+
+  constructor(parameters: msdyn_GetContactsFromAssociatedConversationsRequestParameters) {
+    super("msdyn_GetContactsFromAssociatedConversations", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetContactsFromAssociatedConversations`;
 
-    const body: Record<string, unknown> = {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      CustomActionInputs: this.customActionInputs,
-    };
+    const body = requestBody({
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      RecordId: this.Parameters.RecordId,
+      CustomActionInputs: this.Parameters.CustomActionInputs,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,10 @@ export class msdyn_GetContactsFromAssociatedConversationsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetContactsFromAssociatedConversationsResponse> {
-    const data = await response.json();
-    return msdyn_GetContactsFromAssociatedConversationsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_GetContactsFromAssociatedConversationsResponse.fromResponse({});
+    return msdyn_GetContactsFromAssociatedConversationsResponse.fromResponse(await response.json());
   }
 }
 

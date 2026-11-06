@@ -10,16 +10,26 @@ export interface RetrieveUsersPrivilegesThroughTeamsResponse {
 }
 
 /**
+ * Parameters of the RetrieveUsersPrivilegesThroughTeams function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveUsersPrivilegesThroughTeamsFunctionParameters {
+  ExcludeOrgDisabledPrivileges: boolean;
+  IncludeSetupUserFiltering: boolean;
+}
+
+/**
  * RetrieveUsersPrivilegesThroughTeams function
  *
  * Bound function
  * Binding parameter: entity (mscrm.systemuser)
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class RetrieveUsersPrivilegesThroughTeamsFunction implements Executable<RetrieveUsersPrivilegesThroughTeamsResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly excludeOrgDisabledPrivileges: boolean,
-    public readonly includeSetupUserFiltering: boolean
+    public readonly parameters: RetrieveUsersPrivilegesThroughTeamsFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -29,13 +39,19 @@ export class RetrieveUsersPrivilegesThroughTeamsFunction implements Executable<R
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.excludeOrgDisabledPrivileges !== undefined) {
+    if (this.parameters.ExcludeOrgDisabledPrivileges !== undefined) {
       aliases.push(`ExcludeOrgDisabledPrivileges=@p1`);
-      params.append("@p1", formatParameterAlias(this.excludeOrgDisabledPrivileges, "Edm.Boolean"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.ExcludeOrgDisabledPrivileges, "Edm.Boolean")
+      );
     }
-    if (this.includeSetupUserFiltering !== undefined) {
+    if (this.parameters.IncludeSetupUserFiltering !== undefined) {
       aliases.push(`IncludeSetupUserFiltering=@p2`);
-      params.append("@p2", formatParameterAlias(this.includeSetupUserFiltering, "Edm.Boolean"));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.IncludeSetupUserFiltering, "Edm.Boolean")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -51,7 +67,8 @@ export class RetrieveUsersPrivilegesThroughTeamsFunction implements Executable<R
   }
 
   async parseResponse(response: Response): Promise<RetrieveUsersPrivilegesThroughTeamsResponse> {
-    const data = await response.json();
-    return data as RetrieveUsersPrivilegesThroughTeamsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUsersPrivilegesThroughTeamsResponse;
+    return (await response.json()) as RetrieveUsersPrivilegesThroughTeamsResponse;
   }
 }

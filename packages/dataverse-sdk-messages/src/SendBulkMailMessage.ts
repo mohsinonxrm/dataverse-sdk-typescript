@@ -1,9 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { TypedQueryBase } from "./types/index.js";
+
+/**
+ * Parameters of the SendBulkMail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendBulkMailRequestParameters {
+  Sender: EntityReference | AnyEntityPayload;
+  TemplateId: string;
+  RegardingType: string;
+  RegardingId: string;
+  Query?: TypedQueryBase;
+}
 
 /**
  * SendBulkMail request message
@@ -14,26 +27,22 @@ export class SendBulkMailRequest
   extends OrganizationRequest
   implements Executable<SendBulkMailResponse>
 {
-  constructor(
-    public sender: EntityReference | AnyEntityPayload,
-    public templateId: string,
-    public regardingType: string,
-    public regardingId: string,
-    public query?: TypedQueryBase
-  ) {
-    super("SendBulkMail");
+  declare readonly Parameters: Readonly<SendBulkMailRequestParameters>;
+
+  constructor(parameters: SendBulkMailRequestParameters) {
+    super("SendBulkMail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SendBulkMail`;
 
-    const body: Record<string, unknown> = {
-      Sender: this.sender,
-      TemplateId: this.templateId,
-      RegardingType: this.regardingType,
-      RegardingId: this.regardingId,
-      Query: enumBody(this.query, "QueryBase"),
-    };
+    const body = requestBody({
+      Sender: this.Parameters.Sender,
+      TemplateId: this.Parameters.TemplateId,
+      RegardingType: this.Parameters.RegardingType,
+      RegardingId: this.Parameters.RegardingId,
+      Query: enumBody(this.Parameters.Query, "QueryBase"),
+    });
 
     return {
       method: "POST",

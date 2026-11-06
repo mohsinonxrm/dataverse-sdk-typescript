@@ -1,11 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type {
   BackgroundSendEmailResponse as BackgroundSendEmailResponseData,
   TypedQueryBase,
 } from "./types/index.js";
+
+/**
+ * Parameters of the BackgroundSendEmail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface BackgroundSendEmailRequestParameters {
+  Query?: TypedQueryBase;
+}
 
 /**
  * BackgroundSendEmail request message
@@ -16,16 +25,18 @@ export class BackgroundSendEmailRequest
   extends OrganizationRequest
   implements Executable<BackgroundSendEmailResponse>
 {
-  constructor(public query?: TypedQueryBase) {
-    super("BackgroundSendEmail");
+  declare readonly Parameters: Readonly<BackgroundSendEmailRequestParameters>;
+
+  constructor(parameters: BackgroundSendEmailRequestParameters = {}) {
+    super("BackgroundSendEmail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BackgroundSendEmail`;
 
-    const body: Record<string, unknown> = {
-      Query: enumBody(this.query, "QueryBase"),
-    };
+    const body = requestBody({
+      Query: enumBody(this.Parameters.Query, "QueryBase"),
+    });
 
     return {
       method: "POST",
@@ -38,8 +49,9 @@ export class BackgroundSendEmailRequest
   }
 
   async parseResponse(response: Response): Promise<BackgroundSendEmailResponse> {
-    const data = await response.json();
-    return BackgroundSendEmailResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return BackgroundSendEmailResponse.fromResponse({});
+    return BackgroundSendEmailResponse.fromResponse(await response.json());
   }
 }
 

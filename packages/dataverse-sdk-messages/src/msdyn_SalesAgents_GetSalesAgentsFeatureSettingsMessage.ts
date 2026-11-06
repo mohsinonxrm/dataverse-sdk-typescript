@@ -31,8 +31,12 @@ export class msdyn_SalesAgents_GetSalesAgentsFeatureSettingsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse.fromResponse({});
+    return msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

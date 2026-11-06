@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_ModifyAgentPresence message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_ModifyAgentPresenceRequestParameters {
+  PresenceId: string;
+  AgentId: string;
+  ApiVersion: string;
+}
 
 /**
  * CCaaS_ModifyAgentPresence request message
@@ -10,22 +21,20 @@ export class CCaaS_ModifyAgentPresenceRequest
   extends OrganizationRequest
   implements Executable<CCaaS_ModifyAgentPresenceResponse>
 {
-  constructor(
-    public presenceId: string,
-    public agentId: string,
-    public apiVersion: string
-  ) {
-    super("CCaaS_ModifyAgentPresence");
+  declare readonly Parameters: Readonly<CCaaS_ModifyAgentPresenceRequestParameters>;
+
+  constructor(parameters: CCaaS_ModifyAgentPresenceRequestParameters) {
+    super("CCaaS_ModifyAgentPresence", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_ModifyAgentPresence`;
 
-    const body: Record<string, unknown> = {
-      PresenceId: this.presenceId,
-      AgentId: this.agentId,
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      PresenceId: this.Parameters.PresenceId,
+      AgentId: this.Parameters.AgentId,
+      ApiVersion: this.Parameters.ApiVersion,
+    });
 
     return {
       method: "POST",

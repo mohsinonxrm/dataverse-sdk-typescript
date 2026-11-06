@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_applyworktemplateforresources message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_applyworktemplateforresourcesRequestParameters {
+  calendarIds: string;
+  templateCalendarId?: string;
+}
 
 /**
  * msdyn_applyworktemplateforresources request message
@@ -10,20 +20,19 @@ export class msdyn_applyworktemplateforresourcesRequest
   extends OrganizationRequest
   implements Executable<msdyn_applyworktemplateforresourcesResponse>
 {
-  constructor(
-    public calendarIds: string,
-    public templateCalendarId?: string
-  ) {
-    super("msdyn_applyworktemplateforresources");
+  declare readonly Parameters: Readonly<msdyn_applyworktemplateforresourcesRequestParameters>;
+
+  constructor(parameters: msdyn_applyworktemplateforresourcesRequestParameters) {
+    super("msdyn_applyworktemplateforresources", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_applyworktemplateforresources`;
 
-    const body: Record<string, unknown> = {
-      calendarIds: this.calendarIds,
-      templateCalendarId: this.templateCalendarId,
-    };
+    const body = requestBody({
+      calendarIds: this.Parameters.calendarIds,
+      templateCalendarId: this.Parameters.templateCalendarId,
+    });
 
     return {
       method: "POST",

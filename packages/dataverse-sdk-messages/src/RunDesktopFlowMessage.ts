@@ -1,43 +1,56 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { RunDesktopFlowResponse as RunDesktopFlowResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the RunDesktopFlow message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RunDesktopFlowRequestParameters {
+  inputs?: string;
+  runMode: string;
+  connectionName: string;
+  runPriority?: string;
+  timeout?: number;
+  connectionType?: number;
+  callbackUrl?: string;
+}
 
 /**
  * RunDesktopFlow request message
  *
  * Web API Action: RunDesktopFlow
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class RunDesktopFlowRequest
   extends OrganizationRequest
   implements Executable<RunDesktopFlowResponse>
 {
+  declare readonly Parameters: Readonly<RunDesktopFlowRequestParameters>;
+
   constructor(
     public workflowId: string,
-    public inputs: string | undefined,
-    public runMode: string,
-    public connectionName: string,
-    public runPriority?: string,
-    public timeout?: number,
-    public connectionType?: number,
-    public callbackUrl?: string
+    parameters: RunDesktopFlowRequestParameters
   ) {
-    super("RunDesktopFlow");
+    super("RunDesktopFlow", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/workflows(${this.workflowId})/Microsoft.Dynamics.CRM.RunDesktopFlow`;
 
-    const body: Record<string, unknown> = {
-      inputs: this.inputs,
-      runMode: this.runMode,
-      connectionName: this.connectionName,
-      runPriority: this.runPriority,
-      timeout: this.timeout,
-      connectionType: this.connectionType,
-      callbackUrl: this.callbackUrl,
-    };
+    const body = requestBody({
+      inputs: this.Parameters.inputs,
+      runMode: this.Parameters.runMode,
+      connectionName: this.Parameters.connectionName,
+      runPriority: this.Parameters.runPriority,
+      timeout: this.Parameters.timeout,
+      connectionType: this.Parameters.connectionType,
+      callbackUrl: this.Parameters.callbackUrl,
+    });
 
     return {
       method: "POST",
@@ -50,8 +63,9 @@ export class RunDesktopFlowRequest
   }
 
   async parseResponse(response: Response): Promise<RunDesktopFlowResponse> {
-    const data = await response.json();
-    return RunDesktopFlowResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return RunDesktopFlowResponse.fromResponse({});
+    return RunDesktopFlowResponse.fromResponse(await response.json());
   }
 }
 

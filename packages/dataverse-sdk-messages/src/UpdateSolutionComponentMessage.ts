@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UpdateSolutionComponent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateSolutionComponentRequestParameters {
+  ComponentId: string;
+  ComponentType: number;
+  SolutionUniqueName: string;
+  IncludedComponentSettingsValues?: string[];
+}
 
 /**
  * UpdateSolutionComponent request message
@@ -10,24 +22,21 @@ export class UpdateSolutionComponentRequest
   extends OrganizationRequest
   implements Executable<UpdateSolutionComponentResponse>
 {
-  constructor(
-    public componentId: string,
-    public componentType: number,
-    public solutionUniqueName: string,
-    public includedComponentSettingsValues?: string[]
-  ) {
-    super("UpdateSolutionComponent");
+  declare readonly Parameters: Readonly<UpdateSolutionComponentRequestParameters>;
+
+  constructor(parameters: UpdateSolutionComponentRequestParameters) {
+    super("UpdateSolutionComponent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateSolutionComponent`;
 
-    const body: Record<string, unknown> = {
-      ComponentId: this.componentId,
-      ComponentType: this.componentType,
-      SolutionUniqueName: this.solutionUniqueName,
-      IncludedComponentSettingsValues: this.includedComponentSettingsValues,
-    };
+    const body = requestBody({
+      ComponentId: this.Parameters.ComponentId,
+      ComponentType: this.Parameters.ComponentType,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      IncludedComponentSettingsValues: this.Parameters.IncludedComponentSettingsValues,
+    });
 
     return {
       method: "POST",

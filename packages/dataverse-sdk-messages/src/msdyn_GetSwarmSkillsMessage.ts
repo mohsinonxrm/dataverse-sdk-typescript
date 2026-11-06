@@ -2,7 +2,16 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_GetSwarmSkills message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSwarmSkillsRequestParameters {
+  SwarmObject: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_GetSwarmSkills request message
@@ -13,16 +22,18 @@ export class msdyn_GetSwarmSkillsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSwarmSkillsResponse>
 {
-  constructor(public swarmObject: EntityReference | AnyEntityPayload) {
-    super("msdyn_GetSwarmSkills");
+  declare readonly Parameters: Readonly<msdyn_GetSwarmSkillsRequestParameters>;
+
+  constructor(parameters: msdyn_GetSwarmSkillsRequestParameters) {
+    super("msdyn_GetSwarmSkills", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSwarmSkills`;
 
-    const body: Record<string, unknown> = {
-      SwarmObject: this.swarmObject,
-    };
+    const body = requestBody({
+      SwarmObject: this.Parameters.SwarmObject,
+    });
 
     return {
       method: "POST",
@@ -35,8 +46,9 @@ export class msdyn_GetSwarmSkillsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSwarmSkillsResponse> {
-    const data = await response.json();
-    return msdyn_GetSwarmSkillsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetSwarmSkillsResponse.fromResponse({});
+    return msdyn_GetSwarmSkillsResponse.fromResponse(await response.json());
   }
 }
 

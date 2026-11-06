@@ -2,7 +2,47 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_SimulateBookingResource message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SimulateBookingResourceRequestParameters {
+  SubcontractLineId?: string;
+  SubcontractId?: string;
+  DistributeEvenlyBehavior?: number;
+  NewStartDateTime?: string;
+  NewResourceId?: string;
+  NewTravelTime?: number;
+  NewDistance?: number;
+  ResourceId: string;
+  RequirementId?: string;
+  Work?: EntityReference | AnyEntityPayload;
+  BookingStatusId: string;
+  BookingMethod: number;
+  BookingType: number;
+  Schedules: string;
+  Timeframe: number;
+  Hours?: number;
+  Percentage?: number;
+  DistributeMethod?: number;
+  BookingIds?: string;
+  DefaultBookingHeader?: EntityReference | AnyEntityPayload;
+  DefaultBookingDetail?: EntityReference | AnyEntityPayload;
+  ReloadStartDate?: string;
+  ReloadEndDate?: string;
+  ReloadDetailBookings?: boolean;
+  TimeZoneCode?: number;
+  SchedulerSettings?: string;
+  PreventPartialFulfillment?: boolean;
+  AllowDoubleBooking?: boolean;
+  CancelExistingBooking?: boolean;
+  URSInternalFlags?: string;
+  ConsiderAppointments?: boolean;
+  IgnoreTimeZone?: boolean;
+}
 
 /**
  * msdyn_SimulateBookingResource request message
@@ -13,80 +53,49 @@ export class msdyn_SimulateBookingResourceRequest
   extends OrganizationRequest
   implements Executable<msdyn_SimulateBookingResourceResponse>
 {
-  constructor(
-    public subcontractLineId: string | undefined,
-    public subcontractId: string | undefined,
-    public distributeEvenlyBehavior: number | undefined,
-    public newStartDateTime: string | undefined,
-    public newResourceId: string | undefined,
-    public newTravelTime: number | undefined,
-    public newDistance: number | undefined,
-    public resourceId: string,
-    public requirementId: string | undefined,
-    public work: EntityReference | AnyEntityPayload | undefined,
-    public bookingStatusId: string,
-    public bookingMethod: number,
-    public bookingType: number,
-    public schedules: string,
-    public timeframe: number,
-    public hours?: number,
-    public percentage?: number,
-    public distributeMethod?: number,
-    public bookingIds?: string,
-    public defaultBookingHeader?: EntityReference | AnyEntityPayload,
-    public defaultBookingDetail?: EntityReference | AnyEntityPayload,
-    public reloadStartDate?: string,
-    public reloadEndDate?: string,
-    public reloadDetailBookings?: boolean,
-    public timeZoneCode?: number,
-    public schedulerSettings?: string,
-    public preventPartialFulfillment?: boolean,
-    public allowDoubleBooking?: boolean,
-    public cancelExistingBooking?: boolean,
-    public uRSInternalFlags?: string,
-    public considerAppointments?: boolean,
-    public ignoreTimeZone?: boolean
-  ) {
-    super("msdyn_SimulateBookingResource");
+  declare readonly Parameters: Readonly<msdyn_SimulateBookingResourceRequestParameters>;
+
+  constructor(parameters: msdyn_SimulateBookingResourceRequestParameters) {
+    super("msdyn_SimulateBookingResource", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SimulateBookingResource`;
 
-    const body: Record<string, unknown> = {
-      SubcontractLineId: this.subcontractLineId,
-      SubcontractId: this.subcontractId,
-      DistributeEvenlyBehavior: this.distributeEvenlyBehavior,
-      NewStartDateTime: this.newStartDateTime,
-      NewResourceId: this.newResourceId,
-      NewTravelTime: this.newTravelTime,
-      NewDistance: this.newDistance,
-      ResourceId: this.resourceId,
-      RequirementId: this.requirementId,
-      Work: this.work,
-      BookingStatusId: this.bookingStatusId,
-      BookingMethod: this.bookingMethod,
-      BookingType: this.bookingType,
-      Schedules: this.schedules,
-      Timeframe: this.timeframe,
-      Hours: this.hours,
-      Percentage: this.percentage,
-      DistributeMethod: this.distributeMethod,
-      BookingIds: this.bookingIds,
-      DefaultBookingHeader: this.defaultBookingHeader,
-      DefaultBookingDetail: this.defaultBookingDetail,
-      ReloadStartDate: this.reloadStartDate,
-      ReloadEndDate: this.reloadEndDate,
-      ReloadDetailBookings: this.reloadDetailBookings,
-      TimeZoneCode: this.timeZoneCode,
-      SchedulerSettings: this.schedulerSettings,
-      PreventPartialFulfillment: this.preventPartialFulfillment,
-      AllowDoubleBooking: this.allowDoubleBooking,
-      CancelExistingBooking: this.cancelExistingBooking,
-      URSInternalFlags: this.uRSInternalFlags,
-      ConsiderAppointments: this.considerAppointments,
-      IgnoreTimeZone: this.ignoreTimeZone,
-    };
+    const body = requestBody({
+      SubcontractLineId: this.Parameters.SubcontractLineId,
+      SubcontractId: this.Parameters.SubcontractId,
+      DistributeEvenlyBehavior: this.Parameters.DistributeEvenlyBehavior,
+      NewStartDateTime: this.Parameters.NewStartDateTime,
+      NewResourceId: this.Parameters.NewResourceId,
+      NewTravelTime: this.Parameters.NewTravelTime,
+      NewDistance: this.Parameters.NewDistance,
+      ResourceId: this.Parameters.ResourceId,
+      RequirementId: this.Parameters.RequirementId,
+      Work: this.Parameters.Work,
+      BookingStatusId: this.Parameters.BookingStatusId,
+      BookingMethod: this.Parameters.BookingMethod,
+      BookingType: this.Parameters.BookingType,
+      Schedules: this.Parameters.Schedules,
+      Timeframe: this.Parameters.Timeframe,
+      Hours: this.Parameters.Hours,
+      Percentage: this.Parameters.Percentage,
+      DistributeMethod: this.Parameters.DistributeMethod,
+      BookingIds: this.Parameters.BookingIds,
+      DefaultBookingHeader: this.Parameters.DefaultBookingHeader,
+      DefaultBookingDetail: this.Parameters.DefaultBookingDetail,
+      ReloadStartDate: this.Parameters.ReloadStartDate,
+      ReloadEndDate: this.Parameters.ReloadEndDate,
+      ReloadDetailBookings: this.Parameters.ReloadDetailBookings,
+      TimeZoneCode: this.Parameters.TimeZoneCode,
+      SchedulerSettings: this.Parameters.SchedulerSettings,
+      PreventPartialFulfillment: this.Parameters.PreventPartialFulfillment,
+      AllowDoubleBooking: this.Parameters.AllowDoubleBooking,
+      CancelExistingBooking: this.Parameters.CancelExistingBooking,
+      URSInternalFlags: this.Parameters.URSInternalFlags,
+      ConsiderAppointments: this.Parameters.ConsiderAppointments,
+      IgnoreTimeZone: this.Parameters.IgnoreTimeZone,
+    });
 
     return {
       method: "POST",
@@ -99,8 +108,9 @@ export class msdyn_SimulateBookingResourceRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SimulateBookingResourceResponse> {
-    const data = await response.json();
-    return msdyn_SimulateBookingResourceResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SimulateBookingResourceResponse.fromResponse({});
+    return msdyn_SimulateBookingResourceResponse.fromResponse(await response.json());
   }
 }
 

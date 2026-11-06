@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { GetAutoNumberSeedResponse as GetAutoNumberSeedResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the GetAutoNumberSeed message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetAutoNumberSeedRequestParameters {
+  EntityName: string;
+  AttributeName: string;
+}
 
 /**
  * GetAutoNumberSeed request message
@@ -12,20 +22,19 @@ export class GetAutoNumberSeedRequest
   extends OrganizationRequest
   implements Executable<GetAutoNumberSeedResponse>
 {
-  constructor(
-    public entityName: string,
-    public attributeName: string
-  ) {
-    super("GetAutoNumberSeed");
+  declare readonly Parameters: Readonly<GetAutoNumberSeedRequestParameters>;
+
+  constructor(parameters: GetAutoNumberSeedRequestParameters) {
+    super("GetAutoNumberSeed", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetAutoNumberSeed`;
 
-    const body: Record<string, unknown> = {
-      EntityName: this.entityName,
-      AttributeName: this.attributeName,
-    };
+    const body = requestBody({
+      EntityName: this.Parameters.EntityName,
+      AttributeName: this.Parameters.AttributeName,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class GetAutoNumberSeedRequest
   }
 
   async parseResponse(response: Response): Promise<GetAutoNumberSeedResponse> {
-    const data = await response.json();
-    return GetAutoNumberSeedResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return GetAutoNumberSeedResponse.fromResponse({});
+    return GetAutoNumberSeedResponse.fromResponse(await response.json());
   }
 }
 

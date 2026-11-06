@@ -26,7 +26,8 @@ export class msdyn_GetOrCreateExtUserSettingAction implements Executable<msdyn_G
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOrCreateExtUserSettingResponse> {
-    const data = await response.json();
-    return data as msdyn_GetOrCreateExtUserSettingResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetOrCreateExtUserSettingResponse;
+    return (await response.json()) as msdyn_GetOrCreateExtUserSettingResponse;
   }
 }

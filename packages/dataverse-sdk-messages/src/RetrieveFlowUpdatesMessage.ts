@@ -1,6 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the RetrieveFlowUpdates message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveFlowUpdatesRequestParameters {
+  ObjectId: string;
+}
 
 /**
  * RetrieveFlowUpdates request message
@@ -11,16 +20,18 @@ export class RetrieveFlowUpdatesRequest
   extends OrganizationRequest
   implements Executable<RetrieveFlowUpdatesResponse>
 {
-  constructor(public objectId: string) {
-    super("RetrieveFlowUpdates");
+  declare readonly Parameters: Readonly<RetrieveFlowUpdatesRequestParameters>;
+
+  constructor(parameters: RetrieveFlowUpdatesRequestParameters) {
+    super("RetrieveFlowUpdates", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RetrieveFlowUpdates`;
 
-    const body: Record<string, unknown> = {
-      ObjectId: this.objectId,
-    };
+    const body = requestBody({
+      ObjectId: this.Parameters.ObjectId,
+    });
 
     return {
       method: "POST",
@@ -33,8 +44,9 @@ export class RetrieveFlowUpdatesRequest
   }
 
   async parseResponse(response: Response): Promise<RetrieveFlowUpdatesResponse> {
-    const data = await response.json();
-    return RetrieveFlowUpdatesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return RetrieveFlowUpdatesResponse.fromResponse({});
+    return RetrieveFlowUpdatesResponse.fromResponse(await response.json());
   }
 }
 

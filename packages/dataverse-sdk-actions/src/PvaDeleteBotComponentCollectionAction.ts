@@ -12,6 +12,8 @@ export interface PvaDeleteBotComponentCollectionResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.botcomponentcollection)
+ *
+ * The first argument is the id of the botcomponentcollection record to call it on.
  */
 export class PvaDeleteBotComponentCollectionAction implements Executable<PvaDeleteBotComponentCollectionResponse> {
   constructor(public readonly botcomponentcollectionId: string) {}
@@ -30,7 +32,8 @@ export class PvaDeleteBotComponentCollectionAction implements Executable<PvaDele
   }
 
   async parseResponse(response: Response): Promise<PvaDeleteBotComponentCollectionResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PvaDeleteBotComponentCollectionResponse;
+    return (await response.json()) as PvaDeleteBotComponentCollectionResponse;
   }
 }

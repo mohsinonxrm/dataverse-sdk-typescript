@@ -29,8 +29,9 @@ export class msdyn_GetAllLeadPredictionModelsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAllLeadPredictionModelsResponse> {
-    const data = await response.json();
-    return msdyn_GetAllLeadPredictionModelsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetAllLeadPredictionModelsResponse.fromResponse({});
+    return msdyn_GetAllLeadPredictionModelsResponse.fromResponse(await response.json());
   }
 }
 

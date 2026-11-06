@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SalesLeadCatchup action
@@ -11,33 +12,39 @@ export interface msdyn_SalesLeadCatchupResponse {
 }
 
 /**
+ * Parameters of the msdyn_SalesLeadCatchup action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesLeadCatchupActionParameters {
+  msdyn_since?: string;
+  msdyn_sessionId?: string;
+  msdyn_responseFormat?: string;
+  msdyn_additionalParams?: string;
+  msdyn_activityId?: string;
+  msdyn_skipHeader?: string;
+  msdyn_id: string;
+}
+
+/**
  * msdyn_SalesLeadCatchup action
  *
  * Unbound action
  */
 export class msdyn_SalesLeadCatchupAction implements Executable<msdyn_SalesLeadCatchupResponse> {
-  constructor(
-    public readonly msdyn_since: string | undefined,
-    public readonly msdyn_sessionId: string | undefined,
-    public readonly msdyn_responseFormat: string | undefined,
-    public readonly msdyn_additionalParams: string | undefined,
-    public readonly msdyn_activityId: string | undefined,
-    public readonly msdyn_skipHeader: string | undefined,
-    public readonly msdyn_id: string
-  ) {}
+  constructor(public readonly parameters: msdyn_SalesLeadCatchupActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesLeadCatchup`;
 
-    const body: Record<string, unknown> = {
-      msdyn_since: this.msdyn_since,
-      msdyn_sessionId: this.msdyn_sessionId,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-      msdyn_additionalParams: this.msdyn_additionalParams,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_skipHeader: this.msdyn_skipHeader,
-      msdyn_id: this.msdyn_id,
-    };
+    const body = requestBody({
+      msdyn_since: this.parameters.msdyn_since,
+      msdyn_sessionId: this.parameters.msdyn_sessionId,
+      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
+      msdyn_additionalParams: this.parameters.msdyn_additionalParams,
+      msdyn_activityId: this.parameters.msdyn_activityId,
+      msdyn_skipHeader: this.parameters.msdyn_skipHeader,
+      msdyn_id: this.parameters.msdyn_id,
+    });
 
     return {
       method: "POST",
@@ -50,7 +57,8 @@ export class msdyn_SalesLeadCatchupAction implements Executable<msdyn_SalesLeadC
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesLeadCatchupResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesLeadCatchupResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SalesLeadCatchupResponse;
+    return (await response.json()) as msdyn_SalesLeadCatchupResponse;
   }
 }

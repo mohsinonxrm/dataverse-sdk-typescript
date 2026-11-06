@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ForecastInstanceActionsResponse as msdyn_ForecastInstanceActionsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ForecastInstanceActions message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ForecastInstanceActionsRequestParameters {
+  ServiceName: string;
+  WebApiName?: string;
+  RequestJson: string;
+}
 
 /**
  * msdyn_ForecastInstanceActions request message
@@ -12,22 +23,20 @@ export class msdyn_ForecastInstanceActionsRequest
   extends OrganizationRequest
   implements Executable<msdyn_ForecastInstanceActionsResponse>
 {
-  constructor(
-    public serviceName: string,
-    public webApiName: string | undefined,
-    public requestJson: string
-  ) {
-    super("msdyn_ForecastInstanceActions");
+  declare readonly Parameters: Readonly<msdyn_ForecastInstanceActionsRequestParameters>;
+
+  constructor(parameters: msdyn_ForecastInstanceActionsRequestParameters) {
+    super("msdyn_ForecastInstanceActions", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ForecastInstanceActions`;
 
-    const body: Record<string, unknown> = {
-      ServiceName: this.serviceName,
-      WebApiName: this.webApiName,
-      RequestJson: this.requestJson,
-    };
+    const body = requestBody({
+      ServiceName: this.Parameters.ServiceName,
+      WebApiName: this.Parameters.WebApiName,
+      RequestJson: this.Parameters.RequestJson,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_ForecastInstanceActionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ForecastInstanceActionsResponse> {
-    const data = await response.json();
-    return msdyn_ForecastInstanceActionsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ForecastInstanceActionsResponse.fromResponse({});
+    return msdyn_ForecastInstanceActionsResponse.fromResponse(await response.json());
   }
 }
 

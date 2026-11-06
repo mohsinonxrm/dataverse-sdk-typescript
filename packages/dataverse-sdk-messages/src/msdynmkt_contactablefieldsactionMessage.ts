@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_contactablefieldsactionResponse as msdynmkt_contactablefieldsactionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_contactablefieldsaction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_contactablefieldsactionRequestParameters {
+  msdynmkt_contactpointtypes: string;
+  msdynmkt_entitytypes: string;
+}
 
 /**
  * msdynmkt_contactablefieldsaction request message
@@ -12,20 +22,19 @@ export class msdynmkt_contactablefieldsactionRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_contactablefieldsactionResponse>
 {
-  constructor(
-    public msdynmkt_contactpointtypes: string,
-    public msdynmkt_entitytypes: string
-  ) {
-    super("msdynmkt_contactablefieldsaction");
+  declare readonly Parameters: Readonly<msdynmkt_contactablefieldsactionRequestParameters>;
+
+  constructor(parameters: msdynmkt_contactablefieldsactionRequestParameters) {
+    super("msdynmkt_contactablefieldsaction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_contactablefieldsaction`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_contactpointtypes: this.msdynmkt_contactpointtypes,
-      msdynmkt_entitytypes: this.msdynmkt_entitytypes,
-    };
+    const body = requestBody({
+      msdynmkt_contactpointtypes: this.Parameters.msdynmkt_contactpointtypes,
+      msdynmkt_entitytypes: this.Parameters.msdynmkt_entitytypes,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdynmkt_contactablefieldsactionRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_contactablefieldsactionResponse> {
-    const data = await response.json();
-    return msdynmkt_contactablefieldsactionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdynmkt_contactablefieldsactionResponse.fromResponse({});
+    return msdynmkt_contactablefieldsactionResponse.fromResponse(await response.json());
   }
 }
 

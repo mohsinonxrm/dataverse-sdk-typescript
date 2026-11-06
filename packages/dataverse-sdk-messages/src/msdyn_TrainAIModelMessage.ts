@@ -7,6 +7,8 @@ import type { msdyn_TrainAIModelResponse as msdyn_TrainAIModelResponseData } fro
  * msdyn_TrainAIModel request message
  *
  * Web API Action: msdyn_TrainAIModel
+ *
+ * The first argument is the id of the msdyn_ocskillidentmlmodel record to call it on.
  */
 export class msdyn_TrainAIModelRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class msdyn_TrainAIModelRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TrainAIModelResponse> {
-    const data = await response.json();
-    return msdyn_TrainAIModelResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_TrainAIModelResponse.fromResponse({});
+    return msdyn_TrainAIModelResponse.fromResponse(await response.json());
   }
 }
 

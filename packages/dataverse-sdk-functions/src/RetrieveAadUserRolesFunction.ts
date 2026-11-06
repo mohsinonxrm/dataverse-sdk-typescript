@@ -10,12 +10,20 @@ export interface RetrieveAadUserRolesResponse {
 }
 
 /**
+ * Parameters of the RetrieveAadUserRoles function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAadUserRolesFunctionParameters {
+  DirectoryObjectId: string;
+}
+
+/**
  * RetrieveAadUserRoles function
  *
  * Unbound function
  */
 export class RetrieveAadUserRolesFunction implements Executable<RetrieveAadUserRolesResponse> {
-  constructor(public readonly directoryObjectId: string) {}
+  constructor(public readonly parameters: RetrieveAadUserRolesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveAadUserRoles`;
@@ -23,9 +31,9 @@ export class RetrieveAadUserRolesFunction implements Executable<RetrieveAadUserR
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.directoryObjectId !== undefined) {
+    if (this.parameters.DirectoryObjectId !== undefined) {
       aliases.push(`DirectoryObjectId=@p1`);
-      params.append("@p1", formatParameterAlias(this.directoryObjectId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.DirectoryObjectId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class RetrieveAadUserRolesFunction implements Executable<RetrieveAadUserR
   }
 
   async parseResponse(response: Response): Promise<RetrieveAadUserRolesResponse> {
-    const data = await response.json();
-    return data as RetrieveAadUserRolesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveAadUserRolesResponse;
+    return (await response.json()) as RetrieveAadUserRolesResponse;
   }
 }

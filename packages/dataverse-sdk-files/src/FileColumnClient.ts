@@ -201,11 +201,11 @@ export class FileColumnClient {
     const blockIds: string[] = [];
 
     // Step 1: Initialize upload session
-    const initAction = new InitializeFileBlocksUploadAction(
-      await fileTarget(this.adapter, this.baseUrl, entitySetName, normalizeGuid(recordId)),
-      fileName,
-      columnName
-    );
+    const initAction = new InitializeFileBlocksUploadAction({
+      Target: await fileTarget(this.adapter, this.baseUrl, entitySetName, normalizeGuid(recordId)),
+      FileName: fileName,
+      FileAttributeName: columnName,
+    });
     const initRequest = initAction.toRequestInformation(this.baseUrl);
     const initResponse = await sendChecked(this.adapter, initRequest, signal);
     const { FileContinuationToken } = await initAction.parseResponse(initResponse);
@@ -218,11 +218,11 @@ export class FileColumnClient {
       const blockId = this.generateBlockId(index);
       blockIds.push(blockId);
 
-      const uploadAction = new UploadBlockAction(
-        blockId,
-        bytesToBase64(bytes),
-        FileContinuationToken
-      );
+      const uploadAction = new UploadBlockAction({
+        BlockId: blockId,
+        BlockData: bytesToBase64(bytes),
+        FileContinuationToken,
+      });
       const uploadRequest = {
         ...uploadAction.toRequestInformation(this.baseUrl),
         middlewareOptions: blockRetryOptions(),
@@ -237,12 +237,12 @@ export class FileColumnClient {
     // Step 3: Commit upload
     const mimeType =
       options?.mimeType ?? ((isBlob(file) && file.type) || "application/octet-stream");
-    const commitAction = new CommitFileBlocksUploadAction(
-      fileName,
-      mimeType,
-      blockIds,
-      FileContinuationToken
-    );
+    const commitAction = new CommitFileBlocksUploadAction({
+      FileName: fileName,
+      MimeType: mimeType,
+      BlockList: blockIds,
+      FileContinuationToken,
+    });
     const commitRequest = commitAction.toRequestInformation(this.baseUrl);
     await sendChecked(this.adapter, commitRequest, signal);
   }
@@ -506,11 +506,16 @@ export class FileColumnClient {
           'is not available with method "actions"'
         );
       }
-      const init = new InitializeFileBlocksDownloadAction(
-        await fileTarget(this.adapter, this.baseUrl, entitySetName, normalizeGuid(recordId)),
-        columnName,
-        ""
-      );
+      const init = new InitializeFileBlocksDownloadAction({
+        Target: await fileTarget(
+          this.adapter,
+          this.baseUrl,
+          entitySetName,
+          normalizeGuid(recordId)
+        ),
+        FileAttributeName: columnName,
+        DataSource: "",
+      });
       const initBody = await init.parseResponse(
         await sendChecked(
           this.adapter,
@@ -526,7 +531,11 @@ export class FileColumnClient {
     for (;;) {
       if (total !== undefined && offset >= total) return;
       if (method === "actions") {
-        const action = new DownloadBlockAction(offset, chunkSize, token);
+        const action = new DownloadBlockAction({
+          Offset: offset,
+          BlockLength: chunkSize,
+          FileContinuationToken: token,
+        });
         const res = await sendChecked(
           this.adapter,
           { ...action.toRequestInformation(this.baseUrl), middlewareOptions: blockRetryOptions() },

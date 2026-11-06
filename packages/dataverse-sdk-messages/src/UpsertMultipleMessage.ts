@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { UpsertMultipleResponse as UpsertMultipleResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the UpsertMultiple message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpsertMultipleRequestParameters {
+  Targets: Record<string, unknown>[];
+}
 
 /**
  * UpsertMultiple request message
@@ -14,20 +23,22 @@ export class UpsertMultipleRequest
   extends OrganizationRequest
   implements Executable<UpsertMultipleResponse>
 {
+  declare readonly Parameters: Readonly<UpsertMultipleRequestParameters>;
+
   constructor(
     public entitySetName: string,
-    public targets: Record<string, unknown>[]
+    parameters: UpsertMultipleRequestParameters
   ) {
-    super("UpsertMultiple");
+    super("UpsertMultiple", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action (entity collection)
     const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.UpsertMultiple`;
 
-    const body: Record<string, unknown> = {
-      Targets: this.targets,
-    };
+    const body = requestBody({
+      Targets: this.Parameters.Targets,
+    });
 
     return {
       method: "POST",
@@ -40,8 +51,9 @@ export class UpsertMultipleRequest
   }
 
   async parseResponse(response: Response): Promise<UpsertMultipleResponse> {
-    const data = await response.json();
-    return UpsertMultipleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return UpsertMultipleResponse.fromResponse({});
+    return UpsertMultipleResponse.fromResponse(await response.json());
   }
 }
 

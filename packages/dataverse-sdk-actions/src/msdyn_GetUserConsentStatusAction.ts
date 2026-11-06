@@ -26,7 +26,8 @@ export class msdyn_GetUserConsentStatusAction implements Executable<msdyn_GetUse
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetUserConsentStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetUserConsentStatusResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetUserConsentStatusResponse;
+    return (await response.json()) as msdyn_GetUserConsentStatusResponse;
   }
 }

@@ -29,8 +29,9 @@ export class msdyn_GetLegalAcceptanceStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetLegalAcceptanceStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetLegalAcceptanceStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetLegalAcceptanceStatusResponse.fromResponse({});
+    return msdyn_GetLegalAcceptanceStatusResponse.fromResponse(await response.json());
   }
 }
 

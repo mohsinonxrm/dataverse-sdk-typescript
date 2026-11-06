@@ -2,12 +2,22 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type {
   AccessRights,
   GenerateSharedLinkResponse as GenerateSharedLinkResponseData,
 } from "./types/index.js";
+
+/**
+ * Parameters of the GenerateSharedLink message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GenerateSharedLinkRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+  SharedRights: AccessRights;
+}
 
 /**
  * GenerateSharedLink request message
@@ -18,20 +28,19 @@ export class GenerateSharedLinkRequest
   extends OrganizationRequest
   implements Executable<GenerateSharedLinkResponse>
 {
-  constructor(
-    public target: EntityReference | AnyEntityPayload,
-    public sharedRights: AccessRights
-  ) {
-    super("GenerateSharedLink");
+  declare readonly Parameters: Readonly<GenerateSharedLinkRequestParameters>;
+
+  constructor(parameters: GenerateSharedLinkRequestParameters) {
+    super("GenerateSharedLink", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GenerateSharedLink`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      SharedRights: enumBody(this.sharedRights, "AccessRights"),
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      SharedRights: enumBody(this.Parameters.SharedRights, "AccessRights"),
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class GenerateSharedLinkRequest
   }
 
   async parseResponse(response: Response): Promise<GenerateSharedLinkResponse> {
-    const data = await response.json();
-    return GenerateSharedLinkResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return GenerateSharedLinkResponse.fromResponse({});
+    return GenerateSharedLinkResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -11,39 +12,45 @@ export interface CreateHostedFlowMachineGroupResponse {
 }
 
 /**
+ * Parameters of the CreateHostedFlowMachineGroup action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateHostedFlowMachineGroupActionParameters {
+  groupImage?: string;
+  groupCapacityCount?: number;
+  groupDomainSetting?: string;
+  groupDescription?: string;
+  groupMachineNetworkId?: EntityReference | AnyEntityPayload;
+  groupMaximumMachineCount?: number;
+  groupName?: string;
+  groupCredentials: string;
+  groupUsageType?: string;
+  groupManagedVersion?: string;
+}
+
+/**
  * CreateHostedFlowMachineGroup action
  *
  * Unbound action
  */
 export class CreateHostedFlowMachineGroupAction implements Executable<CreateHostedFlowMachineGroupResponse> {
-  constructor(
-    public readonly groupImage: string | undefined,
-    public readonly groupCapacityCount: number | undefined,
-    public readonly groupDomainSetting: string | undefined,
-    public readonly groupDescription: string | undefined,
-    public readonly groupMachineNetworkId: EntityReference | AnyEntityPayload | undefined,
-    public readonly groupMaximumMachineCount: number | undefined,
-    public readonly groupName: string | undefined,
-    public readonly groupCredentials: string,
-    public readonly groupUsageType?: string,
-    public readonly groupManagedVersion?: string
-  ) {}
+  constructor(public readonly parameters: CreateHostedFlowMachineGroupActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateHostedFlowMachineGroup`;
 
-    const body: Record<string, unknown> = {
-      groupImage: this.groupImage,
-      groupCapacityCount: this.groupCapacityCount,
-      groupDomainSetting: this.groupDomainSetting,
-      groupDescription: this.groupDescription,
-      groupMachineNetworkId: this.groupMachineNetworkId,
-      groupMaximumMachineCount: this.groupMaximumMachineCount,
-      groupName: this.groupName,
-      groupCredentials: this.groupCredentials,
-      groupUsageType: this.groupUsageType,
-      groupManagedVersion: this.groupManagedVersion,
-    };
+    const body = requestBody({
+      groupImage: this.parameters.groupImage,
+      groupCapacityCount: this.parameters.groupCapacityCount,
+      groupDomainSetting: this.parameters.groupDomainSetting,
+      groupDescription: this.parameters.groupDescription,
+      groupMachineNetworkId: this.parameters.groupMachineNetworkId,
+      groupMaximumMachineCount: this.parameters.groupMaximumMachineCount,
+      groupName: this.parameters.groupName,
+      groupCredentials: this.parameters.groupCredentials,
+      groupUsageType: this.parameters.groupUsageType,
+      groupManagedVersion: this.parameters.groupManagedVersion,
+    });
 
     return {
       method: "POST",
@@ -56,7 +63,8 @@ export class CreateHostedFlowMachineGroupAction implements Executable<CreateHost
   }
 
   async parseResponse(response: Response): Promise<CreateHostedFlowMachineGroupResponse> {
-    const data = await response.json();
-    return data as CreateHostedFlowMachineGroupResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateHostedFlowMachineGroupResponse;
+    return (await response.json()) as CreateHostedFlowMachineGroupResponse;
   }
 }

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CheckForCustomizedSitemap action
@@ -13,25 +14,31 @@ export interface msdyn_CheckForCustomizedSitemapResponse {
 }
 
 /**
+ * Parameters of the msdyn_CheckForCustomizedSitemap action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForCustomizedSitemapActionParameters {
+  EntityIds?: string;
+  SolutionId?: string;
+  ExcludeSolutionIds?: string;
+}
+
+/**
  * msdyn_CheckForCustomizedSitemap action
  *
  * Unbound action
  */
 export class msdyn_CheckForCustomizedSitemapAction implements Executable<msdyn_CheckForCustomizedSitemapResponse> {
-  constructor(
-    public readonly entityIds?: string,
-    public readonly solutionId?: string,
-    public readonly excludeSolutionIds?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_CheckForCustomizedSitemapActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForCustomizedSitemap`;
 
-    const body: Record<string, unknown> = {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-      ExcludeSolutionIds: this.excludeSolutionIds,
-    };
+    const body = requestBody({
+      EntityIds: this.parameters.EntityIds,
+      SolutionId: this.parameters.SolutionId,
+      ExcludeSolutionIds: this.parameters.ExcludeSolutionIds,
+    });
 
     return {
       method: "POST",
@@ -44,7 +51,8 @@ export class msdyn_CheckForCustomizedSitemapAction implements Executable<msdyn_C
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForCustomizedSitemapResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForCustomizedSitemapResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckForCustomizedSitemapResponse;
+    return (await response.json()) as msdyn_CheckForCustomizedSitemapResponse;
   }
 }

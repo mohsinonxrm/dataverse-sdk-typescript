@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ExecuteRecurringSalesOperation action
@@ -8,27 +9,33 @@ export interface msdyn_ExecuteRecurringSalesOperationResponse {
 }
 
 /**
+ * Parameters of the msdyn_ExecuteRecurringSalesOperation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecuteRecurringSalesOperationActionParameters {
+  InputData?: string;
+  IsRSAV2Entity?: boolean;
+  CustomActionName: string;
+  TriggerName: string;
+}
+
+/**
  * msdyn_ExecuteRecurringSalesOperation action
  *
  * Unbound action
  */
 export class msdyn_ExecuteRecurringSalesOperationAction implements Executable<msdyn_ExecuteRecurringSalesOperationResponse> {
-  constructor(
-    public readonly inputData: string | undefined,
-    public readonly isRSAV2Entity: boolean | undefined,
-    public readonly customActionName: string,
-    public readonly triggerName: string
-  ) {}
+  constructor(public readonly parameters: msdyn_ExecuteRecurringSalesOperationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecuteRecurringSalesOperation`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-      IsRSAV2Entity: this.isRSAV2Entity,
-      CustomActionName: this.customActionName,
-      TriggerName: this.triggerName,
-    };
+    const body = requestBody({
+      InputData: this.parameters.InputData,
+      IsRSAV2Entity: this.parameters.IsRSAV2Entity,
+      CustomActionName: this.parameters.CustomActionName,
+      TriggerName: this.parameters.TriggerName,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_ExecuteRecurringSalesOperationAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteRecurringSalesOperationResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ExecuteRecurringSalesOperationResponse;
+    return (await response.json()) as msdyn_ExecuteRecurringSalesOperationResponse;
   }
 }

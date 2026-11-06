@@ -15,18 +15,24 @@ export interface InitializeFromResponse {
 }
 
 /**
+ * Parameters of the InitializeFrom function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InitializeFromFunctionParameters {
+  EntityMoniker: EntityReference;
+  SkipParentalRelationshipMapping?: boolean;
+  TargetEntityName: string;
+  TargetFieldType: TargetFieldType | keyof typeof TargetFieldType;
+  RetrieveConsumableRecord?: boolean;
+}
+
+/**
  * InitializeFrom function
  *
  * Unbound function
  */
 export class InitializeFromFunction implements Executable<InitializeFromResponse> {
-  constructor(
-    public readonly entityMoniker: EntityReference,
-    public readonly skipParentalRelationshipMapping: boolean | undefined,
-    public readonly targetEntityName: string,
-    public readonly targetFieldType: TargetFieldType | keyof typeof TargetFieldType,
-    public readonly retrieveConsumableRecord?: boolean
-  ) {}
+  constructor(public readonly parameters: InitializeFromFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/InitializeFrom`;
@@ -34,34 +40,41 @@ export class InitializeFromFunction implements Executable<InitializeFromResponse
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityMoniker !== undefined) {
+    if (this.parameters.EntityMoniker !== undefined) {
       aliases.push(`EntityMoniker=@p1`);
       params.append(
         "@p1",
-        formatParameterAlias(this.entityMoniker, "mscrm.crmbaseentity", "EntityType")
+        formatParameterAlias(this.parameters.EntityMoniker, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.skipParentalRelationshipMapping !== undefined) {
+    if (this.parameters.SkipParentalRelationshipMapping !== undefined) {
       aliases.push(`SkipParentalRelationshipMapping=@p2`);
       params.append(
         "@p2",
-        formatParameterAlias(this.skipParentalRelationshipMapping, "Edm.Boolean")
+        formatParameterAlias(this.parameters.SkipParentalRelationshipMapping, "Edm.Boolean")
       );
     }
-    if (this.targetEntityName !== undefined) {
+    if (this.parameters.TargetEntityName !== undefined) {
       aliases.push(`TargetEntityName=@p3`);
-      params.append("@p3", formatParameterAlias(this.targetEntityName, "Edm.String"));
+      params.append("@p3", formatParameterAlias(this.parameters.TargetEntityName, "Edm.String"));
     }
-    if (this.targetFieldType !== undefined) {
+    if (this.parameters.TargetFieldType !== undefined) {
       aliases.push(`TargetFieldType=@p4`);
       params.append(
         "@p4",
-        formatParameterAlias(this.targetFieldType, "mscrm.TargetFieldType", "EnumerationType")
+        formatParameterAlias(
+          this.parameters.TargetFieldType,
+          "mscrm.TargetFieldType",
+          "EnumerationType"
+        )
       );
     }
-    if (this.retrieveConsumableRecord !== undefined) {
+    if (this.parameters.RetrieveConsumableRecord !== undefined) {
       aliases.push(`RetrieveConsumableRecord=@p5`);
-      params.append("@p5", formatParameterAlias(this.retrieveConsumableRecord, "Edm.Boolean"));
+      params.append(
+        "@p5",
+        formatParameterAlias(this.parameters.RetrieveConsumableRecord, "Edm.Boolean")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -77,7 +90,8 @@ export class InitializeFromFunction implements Executable<InitializeFromResponse
   }
 
   async parseResponse(response: Response): Promise<InitializeFromResponse> {
-    const data = await response.json();
-    return data as InitializeFromResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InitializeFromResponse;
+    return (await response.json()) as InitializeFromResponse;
   }
 }

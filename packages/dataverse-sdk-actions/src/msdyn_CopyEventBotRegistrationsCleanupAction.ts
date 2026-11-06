@@ -26,7 +26,8 @@ export class msdyn_CopyEventBotRegistrationsCleanupAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_CopyEventBotRegistrationsCleanupResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CopyEventBotRegistrationsCleanupResponse;
+    return (await response.json()) as msdyn_CopyEventBotRegistrationsCleanupResponse;
   }
 }

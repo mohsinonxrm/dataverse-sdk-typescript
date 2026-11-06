@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetActionTypes action
@@ -9,23 +10,29 @@ export interface msdyn_GetActionTypesResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetActionTypes action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetActionTypesActionParameters {
+  workflowId: string;
+  correlationId: string;
+}
+
+/**
  * msdyn_GetActionTypes action
  *
  * Unbound action
  */
 export class msdyn_GetActionTypesAction implements Executable<msdyn_GetActionTypesResponse> {
-  constructor(
-    public readonly workflowId: string,
-    public readonly correlationId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetActionTypesActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetActionTypes`;
 
-    const body: Record<string, unknown> = {
-      workflowId: this.workflowId,
-      correlationId: this.correlationId,
-    };
+    const body = requestBody({
+      workflowId: this.parameters.workflowId,
+      correlationId: this.parameters.correlationId,
+    });
 
     return {
       method: "POST",
@@ -38,7 +45,8 @@ export class msdyn_GetActionTypesAction implements Executable<msdyn_GetActionTyp
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetActionTypesResponse> {
-    const data = await response.json();
-    return data as msdyn_GetActionTypesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetActionTypesResponse;
+    return (await response.json()) as msdyn_GetActionTypesResponse;
   }
 }

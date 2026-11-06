@@ -31,8 +31,12 @@ export class msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse> {
-    const data = await response.json();
-    return msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse.fromResponse({});
+    return msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

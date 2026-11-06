@@ -30,7 +30,8 @@ export class msdyn_CheckIoTSettingsAndAlertParentingConfigAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIoTSettingsAndAlertParentingConfigResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIoTSettingsAndAlertParentingConfigResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckIoTSettingsAndAlertParentingConfigResponse;
+    return (await response.json()) as msdyn_CheckIoTSettingsAndAlertParentingConfigResponse;
   }
 }

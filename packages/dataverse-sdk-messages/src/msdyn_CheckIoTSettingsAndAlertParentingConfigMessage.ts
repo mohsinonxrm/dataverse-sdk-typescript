@@ -31,8 +31,12 @@ export class msdyn_CheckIoTSettingsAndAlertParentingConfigRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIoTSettingsAndAlertParentingConfigResponse> {
-    const data = await response.json();
-    return msdyn_CheckIoTSettingsAndAlertParentingConfigResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckIoTSettingsAndAlertParentingConfigResponse.fromResponse({});
+    return msdyn_CheckIoTSettingsAndAlertParentingConfigResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

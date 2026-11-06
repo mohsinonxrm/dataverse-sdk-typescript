@@ -28,7 +28,9 @@ export class msdyn_UpdateIsCustomFieldForOrganizationEntityAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<msdyn_UpdateIsCustomFieldForOrganizationEntityResponse> {
-    const data = await response.json();
-    return data as msdyn_UpdateIsCustomFieldForOrganizationEntityResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_UpdateIsCustomFieldForOrganizationEntityResponse;
+    return (await response.json()) as msdyn_UpdateIsCustomFieldForOrganizationEntityResponse;
   }
 }

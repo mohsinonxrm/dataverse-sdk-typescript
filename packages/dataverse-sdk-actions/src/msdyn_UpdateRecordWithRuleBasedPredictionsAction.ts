@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,25 +11,33 @@ export interface msdyn_UpdateRecordWithRuleBasedPredictionsResponse {
 }
 
 /**
+ * Parameters of the msdyn_UpdateRecordWithRuleBasedPredictions action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateRecordWithRuleBasedPredictionsActionParameters {
+  msdyn_Target: EntityReference | AnyEntityPayload;
+  msdyn_Context?: EntityReference | AnyEntityPayload;
+  msdyn_ContextGenerationParameters?: string;
+}
+
+/**
  * msdyn_UpdateRecordWithRuleBasedPredictions action
  *
  * Unbound action
  */
 export class msdyn_UpdateRecordWithRuleBasedPredictionsAction implements Executable<msdyn_UpdateRecordWithRuleBasedPredictionsResponse> {
   constructor(
-    public readonly msdyn_Target: EntityReference | AnyEntityPayload,
-    public readonly msdyn_Context?: EntityReference | AnyEntityPayload,
-    public readonly msdyn_ContextGenerationParameters?: string
+    public readonly parameters: msdyn_UpdateRecordWithRuleBasedPredictionsActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateRecordWithRuleBasedPredictions`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Target: this.msdyn_Target,
-      msdyn_Context: this.msdyn_Context,
-      msdyn_ContextGenerationParameters: this.msdyn_ContextGenerationParameters,
-    };
+    const body = requestBody({
+      msdyn_Target: this.parameters.msdyn_Target,
+      msdyn_Context: this.parameters.msdyn_Context,
+      msdyn_ContextGenerationParameters: this.parameters.msdyn_ContextGenerationParameters,
+    });
 
     return {
       method: "POST",
@@ -43,7 +52,8 @@ export class msdyn_UpdateRecordWithRuleBasedPredictionsAction implements Executa
   async parseResponse(
     response: Response
   ): Promise<msdyn_UpdateRecordWithRuleBasedPredictionsResponse> {
-    const data = await response.json();
-    return data as msdyn_UpdateRecordWithRuleBasedPredictionsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_UpdateRecordWithRuleBasedPredictionsResponse;
+    return (await response.json()) as msdyn_UpdateRecordWithRuleBasedPredictionsResponse;
   }
 }

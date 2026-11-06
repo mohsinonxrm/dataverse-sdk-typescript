@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SalesAdaptiveCardResponse action
@@ -11,25 +12,31 @@ export interface msdyn_SalesAdaptiveCardResponseResponse {
 }
 
 /**
+ * Parameters of the msdyn_SalesAdaptiveCardResponse action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAdaptiveCardResponseActionParameters {
+  msdyn_query?: string;
+  msdyn_id?: string;
+  msdyn_scenario: number;
+}
+
+/**
  * msdyn_SalesAdaptiveCardResponse action
  *
  * Unbound action
  */
 export class msdyn_SalesAdaptiveCardResponseAction implements Executable<msdyn_SalesAdaptiveCardResponseResponse> {
-  constructor(
-    public readonly msdyn_query: string | undefined,
-    public readonly msdyn_id: string | undefined,
-    public readonly msdyn_scenario: number
-  ) {}
+  constructor(public readonly parameters: msdyn_SalesAdaptiveCardResponseActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAdaptiveCardResponse`;
 
-    const body: Record<string, unknown> = {
-      msdyn_query: this.msdyn_query,
-      msdyn_id: this.msdyn_id,
-      msdyn_scenario: this.msdyn_scenario,
-    };
+    const body = requestBody({
+      msdyn_query: this.parameters.msdyn_query,
+      msdyn_id: this.parameters.msdyn_id,
+      msdyn_scenario: this.parameters.msdyn_scenario,
+    });
 
     return {
       method: "POST",
@@ -42,7 +49,8 @@ export class msdyn_SalesAdaptiveCardResponseAction implements Executable<msdyn_S
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAdaptiveCardResponseResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAdaptiveCardResponseResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SalesAdaptiveCardResponseResponse;
+    return (await response.json()) as msdyn_SalesAdaptiveCardResponseResponse;
   }
 }

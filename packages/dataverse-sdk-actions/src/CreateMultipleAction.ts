@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CreateMultiple action
  */
 export interface CreateMultipleResponse {
   Ids: string[];
+}
+
+/**
+ * Parameters of the CreateMultiple action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateMultipleActionParameters {
+  Targets: Record<string, unknown>[];
 }
 
 /**
@@ -18,16 +27,16 @@ export interface CreateMultipleResponse {
 export class CreateMultipleAction implements Executable<CreateMultipleResponse> {
   constructor(
     public readonly entitySetName: string,
-    public readonly targets: Record<string, unknown>[]
+    public readonly parameters: CreateMultipleActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action (entity collection)
     const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`;
 
-    const body: Record<string, unknown> = {
-      Targets: this.targets,
-    };
+    const body = requestBody({
+      Targets: this.parameters.Targets,
+    });
 
     return {
       method: "POST",
@@ -40,7 +49,8 @@ export class CreateMultipleAction implements Executable<CreateMultipleResponse> 
   }
 
   async parseResponse(response: Response): Promise<CreateMultipleResponse> {
-    const data = await response.json();
-    return data as CreateMultipleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateMultipleResponse;
+    return (await response.json()) as CreateMultipleResponse;
   }
 }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,19 +11,27 @@ export interface RestoreResponse {
 }
 
 /**
+ * Parameters of the Restore action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RestoreActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
+
+/**
  * Restore action
  *
  * Unbound action
  */
 export class RestoreAction implements Executable<RestoreResponse> {
-  constructor(public readonly target: EntityReference | AnyEntityPayload) {}
+  constructor(public readonly parameters: RestoreActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/Restore`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -35,7 +44,8 @@ export class RestoreAction implements Executable<RestoreResponse> {
   }
 
   async parseResponse(response: Response): Promise<RestoreResponse> {
-    const data = await response.json();
-    return data as RestoreResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RestoreResponse;
+    return (await response.json()) as RestoreResponse;
   }
 }

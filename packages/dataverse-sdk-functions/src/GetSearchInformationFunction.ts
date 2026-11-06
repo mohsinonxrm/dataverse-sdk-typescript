@@ -10,12 +10,20 @@ export interface GetSearchInformationResponse {
 }
 
 /**
+ * Parameters of the GetSearchInformation function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetSearchInformationFunctionParameters {
+  Fetchxml: string;
+}
+
+/**
  * GetSearchInformation function
  *
  * Unbound function
  */
 export class GetSearchInformationFunction implements Executable<GetSearchInformationResponse> {
-  constructor(public readonly fetchxml: string) {}
+  constructor(public readonly parameters: GetSearchInformationFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/GetSearchInformation`;
@@ -23,9 +31,9 @@ export class GetSearchInformationFunction implements Executable<GetSearchInforma
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.fetchxml !== undefined) {
+    if (this.parameters.Fetchxml !== undefined) {
       aliases.push(`Fetchxml=@p1`);
-      params.append("@p1", formatParameterAlias(this.fetchxml, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.Fetchxml, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class GetSearchInformationFunction implements Executable<GetSearchInforma
   }
 
   async parseResponse(response: Response): Promise<GetSearchInformationResponse> {
-    const data = await response.json();
-    return data as GetSearchInformationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetSearchInformationResponse;
+    return (await response.json()) as GetSearchInformationResponse;
   }
 }

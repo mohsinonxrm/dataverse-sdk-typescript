@@ -13,9 +13,11 @@ describe.skipIf(!live)("live: @odata.type for base-typed parameters (#73)", () =
     const { client } = liveClient();
     const result = await client.execute(
       new QueryExpressionToFetchXmlAction({
-        "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
-        EntityName: "account",
-        ColumnSet: { Columns: ["name"] },
+        Query: {
+          "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+          EntityName: "account",
+          ColumnSet: { Columns: ["name"] },
+        },
       })
     );
     expect(result.FetchXml).toContain('<entity name="account">');
@@ -26,9 +28,11 @@ describe.skipIf(!live)("live: @odata.type for base-typed parameters (#73)", () =
     const { client } = liveClient();
     const result = await client.execute(
       new QueryExpressionToFetchXmlAction({
-        "@odata.type": "Microsoft.Dynamics.CRM.FetchExpression",
-        Query:
-          "<fetch top='1'><entity name='contact'><attribute name='fullname'/></entity></fetch>",
+        Query: {
+          "@odata.type": "Microsoft.Dynamics.CRM.FetchExpression",
+          Query:
+            "<fetch top='1'><entity name='contact'><attribute name='fullname'/></entity></fetch>",
+        },
       })
     );
     expect(result.FetchXml).toContain('<entity name="contact">');

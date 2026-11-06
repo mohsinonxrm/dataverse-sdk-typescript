@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the AddPrincipalToQueue message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddPrincipalToQueueRequestParameters {
+  Principal: EntityReference | AnyEntityPayload;
+}
 
 /**
  * AddPrincipalToQueue request message
  *
  * Web API Action: AddPrincipalToQueue
+ *
+ * The first argument is the id of the queue record to call it on.
  */
 export class AddPrincipalToQueueRequest
   extends OrganizationRequest
   implements Executable<AddPrincipalToQueueResponse>
 {
+  declare readonly Parameters: Readonly<AddPrincipalToQueueRequestParameters>;
+
   constructor(
     public queueId: string,
-    public principal: EntityReference | AnyEntityPayload
+    parameters: AddPrincipalToQueueRequestParameters
   ) {
-    super("AddPrincipalToQueue");
+    super("AddPrincipalToQueue", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/queues(${this.queueId})/Microsoft.Dynamics.CRM.AddPrincipalToQueue`;
 
-    const body: Record<string, unknown> = {
-      Principal: this.principal,
-    };
+    const body = requestBody({
+      Principal: this.Parameters.Principal,
+    });
 
     return {
       method: "POST",

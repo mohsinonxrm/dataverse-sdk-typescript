@@ -30,7 +30,9 @@ export class msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleAction implements 
   async parseResponse(
     response: Response
   ): Promise<msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    return (await response.json()) as msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse;
   }
 }

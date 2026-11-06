@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { delegatedauthorization } from "./types/index.js";
 
@@ -11,25 +12,31 @@ export interface GrantDelegatedAccessResponse {
 }
 
 /**
+ * Parameters of the GrantDelegatedAccess action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GrantDelegatedAccessActionParameters {
+  target: EntityReference | AnyEntityPayload;
+  delegatedauthorization: EntityReference | EntityPayload<delegatedauthorization>;
+  owneraccess: boolean;
+}
+
+/**
  * GrantDelegatedAccess action
  *
  * Unbound action
  */
 export class GrantDelegatedAccessAction implements Executable<GrantDelegatedAccessResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly delegatedauthorization: EntityReference | EntityPayload<delegatedauthorization>,
-    public readonly owneraccess: boolean
-  ) {}
+  constructor(public readonly parameters: GrantDelegatedAccessActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GrantDelegatedAccess`;
 
-    const body: Record<string, unknown> = {
-      target: this.target,
-      delegatedauthorization: this.delegatedauthorization,
-      owneraccess: this.owneraccess,
-    };
+    const body = requestBody({
+      target: this.parameters.target,
+      delegatedauthorization: this.parameters.delegatedauthorization,
+      owneraccess: this.parameters.owneraccess,
+    });
 
     return {
       method: "POST",
@@ -42,7 +49,8 @@ export class GrantDelegatedAccessAction implements Executable<GrantDelegatedAcce
   }
 
   async parseResponse(response: Response): Promise<GrantDelegatedAccessResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GrantDelegatedAccessResponse;
+    return (await response.json()) as GrantDelegatedAccessResponse;
   }
 }

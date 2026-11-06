@@ -9,15 +9,21 @@ export interface LocalTimeFromUtcTimeResponse {
 }
 
 /**
+ * Parameters of the LocalTimeFromUtcTime function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface LocalTimeFromUtcTimeFunctionParameters {
+  TimeZoneCode: number;
+  UtcTime: string | Date;
+}
+
+/**
  * LocalTimeFromUtcTime function
  *
  * Unbound function
  */
 export class LocalTimeFromUtcTimeFunction implements Executable<LocalTimeFromUtcTimeResponse> {
-  constructor(
-    public readonly timeZoneCode: number,
-    public readonly utcTime: string | Date
-  ) {}
+  constructor(public readonly parameters: LocalTimeFromUtcTimeFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/LocalTimeFromUtcTime`;
@@ -25,13 +31,13 @@ export class LocalTimeFromUtcTimeFunction implements Executable<LocalTimeFromUtc
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.timeZoneCode !== undefined) {
+    if (this.parameters.TimeZoneCode !== undefined) {
       aliases.push(`TimeZoneCode=@p1`);
-      params.append("@p1", formatParameterAlias(this.timeZoneCode, "Edm.Int32"));
+      params.append("@p1", formatParameterAlias(this.parameters.TimeZoneCode, "Edm.Int32"));
     }
-    if (this.utcTime !== undefined) {
+    if (this.parameters.UtcTime !== undefined) {
       aliases.push(`UtcTime=@p2`);
-      params.append("@p2", formatParameterAlias(this.utcTime, "Edm.DateTimeOffset"));
+      params.append("@p2", formatParameterAlias(this.parameters.UtcTime, "Edm.DateTimeOffset"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +53,8 @@ export class LocalTimeFromUtcTimeFunction implements Executable<LocalTimeFromUtc
   }
 
   async parseResponse(response: Response): Promise<LocalTimeFromUtcTimeResponse> {
-    const data = await response.json();
-    return data as LocalTimeFromUtcTimeResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as LocalTimeFromUtcTimeResponse;
+    return (await response.json()) as LocalTimeFromUtcTimeResponse;
   }
 }

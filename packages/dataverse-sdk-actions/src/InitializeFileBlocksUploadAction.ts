@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,25 +11,31 @@ export interface InitializeFileBlocksUploadResponse {
 }
 
 /**
+ * Parameters of the InitializeFileBlocksUpload action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InitializeFileBlocksUploadActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  FileName: string;
+  FileAttributeName: string;
+}
+
+/**
  * InitializeFileBlocksUpload action
  *
  * Unbound action
  */
 export class InitializeFileBlocksUploadAction implements Executable<InitializeFileBlocksUploadResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly fileName: string,
-    public readonly fileAttributeName: string
-  ) {}
+  constructor(public readonly parameters: InitializeFileBlocksUploadActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/InitializeFileBlocksUpload`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      FileName: this.fileName,
-      FileAttributeName: this.fileAttributeName,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      FileName: this.parameters.FileName,
+      FileAttributeName: this.parameters.FileAttributeName,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class InitializeFileBlocksUploadAction implements Executable<InitializeFi
   }
 
   async parseResponse(response: Response): Promise<InitializeFileBlocksUploadResponse> {
-    const data = await response.json();
-    return data as InitializeFileBlocksUploadResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InitializeFileBlocksUploadResponse;
+    return (await response.json()) as InitializeFileBlocksUploadResponse;
   }
 }

@@ -12,6 +12,8 @@ export interface GetHeaderColumnsImportFileResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.importfile)
+ *
+ * The first argument is the id of the importfile record to call it on.
  */
 export class GetHeaderColumnsImportFileFunction implements Executable<GetHeaderColumnsImportFileResponse> {
   constructor(public readonly importfileId: string) {}
@@ -30,7 +32,8 @@ export class GetHeaderColumnsImportFileFunction implements Executable<GetHeaderC
   }
 
   async parseResponse(response: Response): Promise<GetHeaderColumnsImportFileResponse> {
-    const data = await response.json();
-    return data as GetHeaderColumnsImportFileResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetHeaderColumnsImportFileResponse;
+    return (await response.json()) as GetHeaderColumnsImportFileResponse;
   }
 }

@@ -30,7 +30,8 @@ export class msdyn_CheckIfCSFormsFromUnmanagedLayerAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfCSFormsFromUnmanagedLayerResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfCSFormsFromUnmanagedLayerResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckIfCSFormsFromUnmanagedLayerResponse;
+    return (await response.json()) as msdyn_CheckIfCSFormsFromUnmanagedLayerResponse;
   }
 }

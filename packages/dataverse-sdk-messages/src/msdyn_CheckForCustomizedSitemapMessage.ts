@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckForCustomizedSitemapResponse as msdyn_CheckForCustomizedSitemapResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckForCustomizedSitemap message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForCustomizedSitemapRequestParameters {
+  EntityIds?: string;
+  SolutionId?: string;
+  ExcludeSolutionIds?: string;
+}
 
 /**
  * msdyn_CheckForCustomizedSitemap request message
@@ -12,22 +23,20 @@ export class msdyn_CheckForCustomizedSitemapRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckForCustomizedSitemapResponse>
 {
-  constructor(
-    public entityIds?: string,
-    public solutionId?: string,
-    public excludeSolutionIds?: string
-  ) {
-    super("msdyn_CheckForCustomizedSitemap");
+  declare readonly Parameters: Readonly<msdyn_CheckForCustomizedSitemapRequestParameters>;
+
+  constructor(parameters: msdyn_CheckForCustomizedSitemapRequestParameters = {}) {
+    super("msdyn_CheckForCustomizedSitemap", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForCustomizedSitemap`;
 
-    const body: Record<string, unknown> = {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-      ExcludeSolutionIds: this.excludeSolutionIds,
-    };
+    const body = requestBody({
+      EntityIds: this.Parameters.EntityIds,
+      SolutionId: this.Parameters.SolutionId,
+      ExcludeSolutionIds: this.Parameters.ExcludeSolutionIds,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_CheckForCustomizedSitemapRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForCustomizedSitemapResponse> {
-    const data = await response.json();
-    return msdyn_CheckForCustomizedSitemapResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckForCustomizedSitemapResponse.fromResponse({});
+    return msdyn_CheckForCustomizedSitemapResponse.fromResponse(await response.json());
   }
 }
 

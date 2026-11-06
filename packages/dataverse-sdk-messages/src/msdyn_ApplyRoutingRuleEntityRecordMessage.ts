@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_ApplyRoutingRuleEntityRecord message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ApplyRoutingRuleEntityRecordRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_ApplyRoutingRuleEntityRecord request message
@@ -12,16 +21,18 @@ export class msdyn_ApplyRoutingRuleEntityRecordRequest
   extends OrganizationRequest
   implements Executable<msdyn_ApplyRoutingRuleEntityRecordResponse>
 {
-  constructor(public target: EntityReference | AnyEntityPayload) {
-    super("msdyn_ApplyRoutingRuleEntityRecord");
+  declare readonly Parameters: Readonly<msdyn_ApplyRoutingRuleEntityRecordRequestParameters>;
+
+  constructor(parameters: msdyn_ApplyRoutingRuleEntityRecordRequestParameters) {
+    super("msdyn_ApplyRoutingRuleEntityRecord", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ApplyRoutingRuleEntityRecord`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",

@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetAppInsightsTelemetryResponse as msdyn_GetAppInsightsTelemetryResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetAppInsightsTelemetry message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAppInsightsTelemetryRequestParameters {
+  msdyn_Query: string;
+  msdyn_Timespan?: string;
+  msdyn_LiveWorkItemIds?: string;
+}
 
 /**
  * msdyn_GetAppInsightsTelemetry request message
@@ -12,22 +23,20 @@ export class msdyn_GetAppInsightsTelemetryRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetAppInsightsTelemetryResponse>
 {
-  constructor(
-    public msdyn_Query: string,
-    public msdyn_Timespan?: string,
-    public msdyn_LiveWorkItemIds?: string
-  ) {
-    super("msdyn_GetAppInsightsTelemetry");
+  declare readonly Parameters: Readonly<msdyn_GetAppInsightsTelemetryRequestParameters>;
+
+  constructor(parameters: msdyn_GetAppInsightsTelemetryRequestParameters) {
+    super("msdyn_GetAppInsightsTelemetry", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAppInsightsTelemetry`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Query: this.msdyn_Query,
-      msdyn_Timespan: this.msdyn_Timespan,
-      msdyn_LiveWorkItemIds: this.msdyn_LiveWorkItemIds,
-    };
+    const body = requestBody({
+      msdyn_Query: this.Parameters.msdyn_Query,
+      msdyn_Timespan: this.Parameters.msdyn_Timespan,
+      msdyn_LiveWorkItemIds: this.Parameters.msdyn_LiveWorkItemIds,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_GetAppInsightsTelemetryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAppInsightsTelemetryResponse> {
-    const data = await response.json();
-    return msdyn_GetAppInsightsTelemetryResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetAppInsightsTelemetryResponse.fromResponse({});
+    return msdyn_GetAppInsightsTelemetryResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_IoTSetConfiguration message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IoTSetConfigurationRequestParameters {
+  Key: string;
+  Value: string;
+}
 
 /**
  * msdyn_IoTSetConfiguration request message
@@ -10,20 +20,19 @@ export class msdyn_IoTSetConfigurationRequest
   extends OrganizationRequest
   implements Executable<msdyn_IoTSetConfigurationResponse>
 {
-  constructor(
-    public key: string,
-    public value: string
-  ) {
-    super("msdyn_IoTSetConfiguration");
+  declare readonly Parameters: Readonly<msdyn_IoTSetConfigurationRequestParameters>;
+
+  constructor(parameters: msdyn_IoTSetConfigurationRequestParameters) {
+    super("msdyn_IoTSetConfiguration", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTSetConfiguration`;
 
-    const body: Record<string, unknown> = {
-      Key: this.key,
-      Value: this.value,
-    };
+    const body = requestBody({
+      Key: this.Parameters.Key,
+      Value: this.Parameters.Value,
+    });
 
     return {
       method: "POST",

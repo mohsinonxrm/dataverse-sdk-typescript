@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_AddSuggestedCards action
@@ -8,27 +9,33 @@ export interface msdyn_AddSuggestedCardsResponse {
 }
 
 /**
+ * Parameters of the msdyn_AddSuggestedCards action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AddSuggestedCardsActionParameters {
+  scope: string;
+  BusinessProcessFlowId?: string;
+  BusinessProcessFlowInstanceId?: string;
+  ActionStepId?: string;
+}
+
+/**
  * msdyn_AddSuggestedCards action
  *
  * Unbound action
  */
 export class msdyn_AddSuggestedCardsAction implements Executable<msdyn_AddSuggestedCardsResponse> {
-  constructor(
-    public readonly scope: string,
-    public readonly businessProcessFlowId?: string,
-    public readonly businessProcessFlowInstanceId?: string,
-    public readonly actionStepId?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_AddSuggestedCardsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AddSuggestedCards`;
 
-    const body: Record<string, unknown> = {
-      scope: this.scope,
-      BusinessProcessFlowId: this.businessProcessFlowId,
-      BusinessProcessFlowInstanceId: this.businessProcessFlowInstanceId,
-      ActionStepId: this.actionStepId,
-    };
+    const body = requestBody({
+      scope: this.parameters.scope,
+      BusinessProcessFlowId: this.parameters.BusinessProcessFlowId,
+      BusinessProcessFlowInstanceId: this.parameters.BusinessProcessFlowInstanceId,
+      ActionStepId: this.parameters.ActionStepId,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_AddSuggestedCardsAction implements Executable<msdyn_AddSugges
   }
 
   async parseResponse(response: Response): Promise<msdyn_AddSuggestedCardsResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_AddSuggestedCardsResponse;
+    return (await response.json()) as msdyn_AddSuggestedCardsResponse;
   }
 }

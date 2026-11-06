@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CategorizeTextResponse as CategorizeTextResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CategorizeText message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CategorizeTextRequestParameters {
+  text: string;
+  modelId?: string;
+  language?: string;
+}
 
 /**
  * CategorizeText request message
@@ -12,22 +23,20 @@ export class CategorizeTextRequest
   extends OrganizationRequest
   implements Executable<CategorizeTextResponse>
 {
-  constructor(
-    public text: string,
-    public modelId?: string,
-    public language?: string
-  ) {
-    super("CategorizeText");
+  declare readonly Parameters: Readonly<CategorizeTextRequestParameters>;
+
+  constructor(parameters: CategorizeTextRequestParameters) {
+    super("CategorizeText", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CategorizeText`;
 
-    const body: Record<string, unknown> = {
-      text: this.text,
-      modelId: this.modelId,
-      language: this.language,
-    };
+    const body = requestBody({
+      text: this.Parameters.text,
+      modelId: this.Parameters.modelId,
+      language: this.Parameters.language,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class CategorizeTextRequest
   }
 
   async parseResponse(response: Response): Promise<CategorizeTextResponse> {
-    const data = await response.json();
-    return CategorizeTextResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CategorizeTextResponse.fromResponse({});
+    return CategorizeTextResponse.fromResponse(await response.json());
   }
 }
 

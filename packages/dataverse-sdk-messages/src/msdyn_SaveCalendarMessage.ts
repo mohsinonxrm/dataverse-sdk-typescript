@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SaveCalendarResponse as msdyn_SaveCalendarResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SaveCalendar message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SaveCalendarRequestParameters {
+  CalendarEventInfo: string;
+}
 
 /**
  * msdyn_SaveCalendar request message
@@ -12,16 +21,18 @@ export class msdyn_SaveCalendarRequest
   extends OrganizationRequest
   implements Executable<msdyn_SaveCalendarResponse>
 {
-  constructor(public calendarEventInfo: string) {
-    super("msdyn_SaveCalendar");
+  declare readonly Parameters: Readonly<msdyn_SaveCalendarRequestParameters>;
+
+  constructor(parameters: msdyn_SaveCalendarRequestParameters) {
+    super("msdyn_SaveCalendar", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SaveCalendar`;
 
-    const body: Record<string, unknown> = {
-      CalendarEventInfo: this.calendarEventInfo,
-    };
+    const body = requestBody({
+      CalendarEventInfo: this.Parameters.CalendarEventInfo,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_SaveCalendarRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SaveCalendarResponse> {
-    const data = await response.json();
-    return msdyn_SaveCalendarResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SaveCalendarResponse.fromResponse({});
+    return msdyn_SaveCalendarResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetSequenceAnalyticsKPIsResponse as msdyn_GetSequenceAnalyticsKPIsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetSequenceAnalyticsKPIs message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSequenceAnalyticsKPIsRequestParameters {
+  SequenceId: string;
+  SequenceStepId?: string;
+  StartDate: string;
+  EndDate: string;
+  Configuration: number;
+}
 
 /**
  * msdyn_GetSequenceAnalyticsKPIs request message
@@ -12,26 +25,22 @@ export class msdyn_GetSequenceAnalyticsKPIsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSequenceAnalyticsKPIsResponse>
 {
-  constructor(
-    public sequenceId: string,
-    public sequenceStepId: string | undefined,
-    public startDate: string,
-    public endDate: string,
-    public configuration: number
-  ) {
-    super("msdyn_GetSequenceAnalyticsKPIs");
+  declare readonly Parameters: Readonly<msdyn_GetSequenceAnalyticsKPIsRequestParameters>;
+
+  constructor(parameters: msdyn_GetSequenceAnalyticsKPIsRequestParameters) {
+    super("msdyn_GetSequenceAnalyticsKPIs", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSequenceAnalyticsKPIs`;
 
-    const body: Record<string, unknown> = {
-      SequenceId: this.sequenceId,
-      SequenceStepId: this.sequenceStepId,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      Configuration: this.configuration,
-    };
+    const body = requestBody({
+      SequenceId: this.Parameters.SequenceId,
+      SequenceStepId: this.Parameters.SequenceStepId,
+      StartDate: this.Parameters.StartDate,
+      EndDate: this.Parameters.EndDate,
+      Configuration: this.Parameters.Configuration,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class msdyn_GetSequenceAnalyticsKPIsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSequenceAnalyticsKPIsResponse> {
-    const data = await response.json();
-    return msdyn_GetSequenceAnalyticsKPIsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetSequenceAnalyticsKPIsResponse.fromResponse({});
+    return msdyn_GetSequenceAnalyticsKPIsResponse.fromResponse(await response.json());
   }
 }
 

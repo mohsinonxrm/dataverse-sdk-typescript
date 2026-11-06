@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_SendHeartbeatResponse as CCaaS_SendHeartbeatResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_SendHeartbeat message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_SendHeartbeatRequestParameters {
+  ApiVersion: string;
+  ClientSessionId: string;
+}
 
 /**
  * CCaaS_SendHeartbeat request message
@@ -12,20 +22,19 @@ export class CCaaS_SendHeartbeatRequest
   extends OrganizationRequest
   implements Executable<CCaaS_SendHeartbeatResponse>
 {
-  constructor(
-    public apiVersion: string,
-    public clientSessionId: string
-  ) {
-    super("CCaaS_SendHeartbeat");
+  declare readonly Parameters: Readonly<CCaaS_SendHeartbeatRequestParameters>;
+
+  constructor(parameters: CCaaS_SendHeartbeatRequestParameters) {
+    super("CCaaS_SendHeartbeat", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_SendHeartbeat`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      ClientSessionId: this.clientSessionId,
-    };
+    const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
+      ClientSessionId: this.Parameters.ClientSessionId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class CCaaS_SendHeartbeatRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_SendHeartbeatResponse> {
-    const data = await response.json();
-    return CCaaS_SendHeartbeatResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CCaaS_SendHeartbeatResponse.fromResponse({});
+    return CCaaS_SendHeartbeatResponse.fromResponse(await response.json());
   }
 }
 

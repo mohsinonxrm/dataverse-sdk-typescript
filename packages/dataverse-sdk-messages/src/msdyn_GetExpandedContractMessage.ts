@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetExpandedContractResponse as msdyn_GetExpandedContractResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetExpandedContract message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetExpandedContractRequestParameters {
+  msdyn_RuleSet: string;
+  msdyn_OrganizationInfo: string;
+}
 
 /**
  * msdyn_GetExpandedContract request message
@@ -12,20 +22,19 @@ export class msdyn_GetExpandedContractRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetExpandedContractResponse>
 {
-  constructor(
-    public msdyn_RuleSet: string,
-    public msdyn_OrganizationInfo: string
-  ) {
-    super("msdyn_GetExpandedContract");
+  declare readonly Parameters: Readonly<msdyn_GetExpandedContractRequestParameters>;
+
+  constructor(parameters: msdyn_GetExpandedContractRequestParameters) {
+    super("msdyn_GetExpandedContract", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetExpandedContract`;
 
-    const body: Record<string, unknown> = {
-      msdyn_RuleSet: this.msdyn_RuleSet,
-      msdyn_OrganizationInfo: this.msdyn_OrganizationInfo,
-    };
+    const body = requestBody({
+      msdyn_RuleSet: this.Parameters.msdyn_RuleSet,
+      msdyn_OrganizationInfo: this.Parameters.msdyn_OrganizationInfo,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_GetExpandedContractRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetExpandedContractResponse> {
-    const data = await response.json();
-    return msdyn_GetExpandedContractResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetExpandedContractResponse.fromResponse({});
+    return msdyn_GetExpandedContractResponse.fromResponse(await response.json());
   }
 }
 

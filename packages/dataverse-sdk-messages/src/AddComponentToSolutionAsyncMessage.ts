@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AddComponentToSolutionAsyncResponse as AddComponentToSolutionAsyncResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the AddComponentToSolutionAsync message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddComponentToSolutionAsyncRequestParameters {
+  LogicalName: string;
+  Id: string;
+  SolutionUniqueName: string;
+  AddRequiredComponents: boolean;
+  IncludeChildComponents?: boolean;
+  IncludeEntityMetadata?: boolean;
+}
 
 /**
  * AddComponentToSolutionAsync request message
@@ -12,28 +26,23 @@ export class AddComponentToSolutionAsyncRequest
   extends OrganizationRequest
   implements Executable<AddComponentToSolutionAsyncResponse>
 {
-  constructor(
-    public logicalName: string,
-    public id: string,
-    public solutionUniqueName: string,
-    public addRequiredComponents: boolean,
-    public includeChildComponents?: boolean,
-    public includeEntityMetadata?: boolean
-  ) {
-    super("AddComponentToSolutionAsync");
+  declare readonly Parameters: Readonly<AddComponentToSolutionAsyncRequestParameters>;
+
+  constructor(parameters: AddComponentToSolutionAsyncRequestParameters) {
+    super("AddComponentToSolutionAsync", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AddComponentToSolutionAsync`;
 
-    const body: Record<string, unknown> = {
-      LogicalName: this.logicalName,
-      Id: this.id,
-      SolutionUniqueName: this.solutionUniqueName,
-      AddRequiredComponents: this.addRequiredComponents,
-      IncludeChildComponents: this.includeChildComponents,
-      IncludeEntityMetadata: this.includeEntityMetadata,
-    };
+    const body = requestBody({
+      LogicalName: this.Parameters.LogicalName,
+      Id: this.Parameters.Id,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      AddRequiredComponents: this.Parameters.AddRequiredComponents,
+      IncludeChildComponents: this.Parameters.IncludeChildComponents,
+      IncludeEntityMetadata: this.Parameters.IncludeEntityMetadata,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class AddComponentToSolutionAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<AddComponentToSolutionAsyncResponse> {
-    const data = await response.json();
-    return AddComponentToSolutionAsyncResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return AddComponentToSolutionAsyncResponse.fromResponse({});
+    return AddComponentToSolutionAsyncResponse.fromResponse(await response.json());
   }
 }
 

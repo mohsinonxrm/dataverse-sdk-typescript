@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_UpdateSequenceDailyUsageMetric message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateSequenceDailyUsageMetricRequestParameters {
+  PreviousDaysCount?: number;
+}
 
 /**
  * msdyn_UpdateSequenceDailyUsageMetric request message
@@ -10,16 +19,18 @@ export class msdyn_UpdateSequenceDailyUsageMetricRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdateSequenceDailyUsageMetricResponse>
 {
-  constructor(public previousDaysCount?: number) {
-    super("msdyn_UpdateSequenceDailyUsageMetric");
+  declare readonly Parameters: Readonly<msdyn_UpdateSequenceDailyUsageMetricRequestParameters>;
+
+  constructor(parameters: msdyn_UpdateSequenceDailyUsageMetricRequestParameters = {}) {
+    super("msdyn_UpdateSequenceDailyUsageMetric", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateSequenceDailyUsageMetric`;
 
-    const body: Record<string, unknown> = {
-      PreviousDaysCount: this.previousDaysCount,
-    };
+    const body = requestBody({
+      PreviousDaysCount: this.Parameters.PreviousDaysCount,
+    });
 
     return {
       method: "POST",

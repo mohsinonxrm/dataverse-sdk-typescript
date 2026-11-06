@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from Ingest action
@@ -8,24 +9,34 @@ export interface IngestResponse {
 }
 
 /**
+ * Parameters of the Ingest action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface IngestActionParameters {
+  version: string;
+}
+
+/**
  * Ingest action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_pmrecording)
+ *
+ * The first argument is the id of the msdyn_pmrecording record to call it on.
  */
 export class IngestAction implements Executable<IngestResponse> {
   constructor(
     public readonly msdyn_pmrecordingId: string,
-    public readonly version: string
+    public readonly parameters: IngestActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_pmrecordings(${this.msdyn_pmrecordingId})/Microsoft.Dynamics.CRM.Ingest`;
 
-    const body: Record<string, unknown> = {
-      version: this.version,
-    };
+    const body = requestBody({
+      version: this.parameters.version,
+    });
 
     return {
       method: "POST",
@@ -38,7 +49,8 @@ export class IngestAction implements Executable<IngestResponse> {
   }
 
   async parseResponse(response: Response): Promise<IngestResponse> {
-    const data = await response.json();
-    return data as IngestResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as IngestResponse;
+    return (await response.json()) as IngestResponse;
   }
 }

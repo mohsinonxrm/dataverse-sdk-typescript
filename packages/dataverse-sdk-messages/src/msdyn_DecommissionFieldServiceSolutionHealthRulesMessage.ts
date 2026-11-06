@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_DecommissionFieldServiceSolutionHealthRulesResponse as msdyn_DecommissionFieldServiceSolutionHealthRulesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_DecommissionFieldServiceSolutionHealthRules message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DecommissionFieldServiceSolutionHealthRulesRequestParameters {
+  SolutionNames: string;
+}
 
 /**
  * msdyn_DecommissionFieldServiceSolutionHealthRules request message
@@ -12,16 +21,18 @@ export class msdyn_DecommissionFieldServiceSolutionHealthRulesRequest
   extends OrganizationRequest
   implements Executable<msdyn_DecommissionFieldServiceSolutionHealthRulesResponse>
 {
-  constructor(public solutionNames: string) {
-    super("msdyn_DecommissionFieldServiceSolutionHealthRules");
+  declare readonly Parameters: Readonly<msdyn_DecommissionFieldServiceSolutionHealthRulesRequestParameters>;
+
+  constructor(parameters: msdyn_DecommissionFieldServiceSolutionHealthRulesRequestParameters) {
+    super("msdyn_DecommissionFieldServiceSolutionHealthRules", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DecommissionFieldServiceSolutionHealthRules`;
 
-    const body: Record<string, unknown> = {
-      SolutionNames: this.solutionNames,
-    };
+    const body = requestBody({
+      SolutionNames: this.Parameters.SolutionNames,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,12 @@ export class msdyn_DecommissionFieldServiceSolutionHealthRulesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_DecommissionFieldServiceSolutionHealthRulesResponse> {
-    const data = await response.json();
-    return msdyn_DecommissionFieldServiceSolutionHealthRulesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_DecommissionFieldServiceSolutionHealthRulesResponse.fromResponse({});
+    return msdyn_DecommissionFieldServiceSolutionHealthRulesResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from PublishAIConfiguration action
@@ -8,26 +9,36 @@ export interface PublishAIConfigurationResponse {
 }
 
 /**
+ * Parameters of the PublishAIConfiguration action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PublishAIConfigurationActionParameters {
+  version: string;
+  source?: string;
+}
+
+/**
  * PublishAIConfiguration action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_aiconfiguration)
+ *
+ * The first argument is the id of the msdyn_aiconfiguration record to call it on.
  */
 export class PublishAIConfigurationAction implements Executable<PublishAIConfigurationResponse> {
   constructor(
     public readonly msdyn_aiconfigurationId: string,
-    public readonly version: string,
-    public readonly source?: string
+    public readonly parameters: PublishAIConfigurationActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_aiconfigurations(${this.msdyn_aiconfigurationId})/Microsoft.Dynamics.CRM.PublishAIConfiguration`;
 
-    const body: Record<string, unknown> = {
-      version: this.version,
-      source: this.source,
-    };
+    const body = requestBody({
+      version: this.parameters.version,
+      source: this.parameters.source,
+    });
 
     return {
       method: "POST",
@@ -40,7 +51,8 @@ export class PublishAIConfigurationAction implements Executable<PublishAIConfigu
   }
 
   async parseResponse(response: Response): Promise<PublishAIConfigurationResponse> {
-    const data = await response.json();
-    return data as PublishAIConfigurationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PublishAIConfigurationResponse;
+    return (await response.json()) as PublishAIConfigurationResponse;
   }
 }

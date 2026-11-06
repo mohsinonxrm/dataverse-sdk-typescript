@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_GetAvailabilityForSimulatedConversation action
@@ -15,27 +16,35 @@ export interface CCaaS_GetAvailabilityForSimulatedConversationResponse {
 }
 
 /**
+ * Parameters of the CCaaS_GetAvailabilityForSimulatedConversation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_GetAvailabilityForSimulatedConversationActionParameters {
+  LiveWorkStreamId?: string;
+  CustomContextItems?: string;
+  ApiVersion: string;
+  ChannelEngagementContext?: string;
+}
+
+/**
  * CCaaS_GetAvailabilityForSimulatedConversation action
  *
  * Unbound action
  */
 export class CCaaS_GetAvailabilityForSimulatedConversationAction implements Executable<CCaaS_GetAvailabilityForSimulatedConversationResponse> {
   constructor(
-    public readonly liveWorkStreamId: string | undefined,
-    public readonly customContextItems: string | undefined,
-    public readonly apiVersion: string,
-    public readonly channelEngagementContext?: string
+    public readonly parameters: CCaaS_GetAvailabilityForSimulatedConversationActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_GetAvailabilityForSimulatedConversation`;
 
-    const body: Record<string, unknown> = {
-      LiveWorkStreamId: this.liveWorkStreamId,
-      CustomContextItems: this.customContextItems,
-      ApiVersion: this.apiVersion,
-      ChannelEngagementContext: this.channelEngagementContext,
-    };
+    const body = requestBody({
+      LiveWorkStreamId: this.parameters.LiveWorkStreamId,
+      CustomContextItems: this.parameters.CustomContextItems,
+      ApiVersion: this.parameters.ApiVersion,
+      ChannelEngagementContext: this.parameters.ChannelEngagementContext,
+    });
 
     return {
       method: "POST",
@@ -50,7 +59,8 @@ export class CCaaS_GetAvailabilityForSimulatedConversationAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<CCaaS_GetAvailabilityForSimulatedConversationResponse> {
-    const data = await response.json();
-    return data as CCaaS_GetAvailabilityForSimulatedConversationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_GetAvailabilityForSimulatedConversationResponse;
+    return (await response.json()) as CCaaS_GetAvailabilityForSimulatedConversationResponse;
   }
 }

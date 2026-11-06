@@ -16,6 +16,8 @@ export interface RetrieveUnpublished_aipluginoperationresponsetemplateResponse e
  *
  * Bound function
  * Binding parameter: entity (mscrm.aipluginoperationresponsetemplate)
+ *
+ * The first argument is the id of the aipluginoperationresponsetemplate record to call it on.
  */
 export class RetrieveUnpublished_aipluginoperationresponsetemplateFunction implements Executable<RetrieveUnpublished_aipluginoperationresponsetemplateResponse> {
   constructor(public readonly aipluginoperationresponsetemplateId: string) {}
@@ -36,7 +38,9 @@ export class RetrieveUnpublished_aipluginoperationresponsetemplateFunction imple
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublished_aipluginoperationresponsetemplateResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublished_aipluginoperationresponsetemplateResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublished_aipluginoperationresponsetemplateResponse;
+    return (await response.json()) as RetrieveUnpublished_aipluginoperationresponsetemplateResponse;
   }
 }

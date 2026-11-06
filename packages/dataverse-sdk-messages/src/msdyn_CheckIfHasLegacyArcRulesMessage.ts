@@ -29,8 +29,9 @@ export class msdyn_CheckIfHasLegacyArcRulesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfHasLegacyArcRulesResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfHasLegacyArcRulesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckIfHasLegacyArcRulesResponse.fromResponse({});
+    return msdyn_CheckIfHasLegacyArcRulesResponse.fromResponse(await response.json());
   }
 }
 

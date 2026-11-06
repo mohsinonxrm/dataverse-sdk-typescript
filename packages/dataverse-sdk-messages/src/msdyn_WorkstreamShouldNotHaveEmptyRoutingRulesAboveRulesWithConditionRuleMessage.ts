@@ -32,9 +32,13 @@ export class msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditi
   async parseResponse(
     response: Response
   ): Promise<msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleResponse> {
-    const data = await response.json();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleResponse.fromResponse(
+        {}
+      );
     return msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleResponse.fromResponse(
-      data
+      await response.json()
     );
   }
 }

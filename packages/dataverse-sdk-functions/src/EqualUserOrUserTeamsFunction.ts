@@ -9,12 +9,20 @@ export interface EqualUserOrUserTeamsResponse {
 }
 
 /**
+ * Parameters of the EqualUserOrUserTeams function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface EqualUserOrUserTeamsFunctionParameters {
+  PropertyName: string;
+}
+
+/**
  * EqualUserOrUserTeams function
  *
  * Unbound function
  */
 export class EqualUserOrUserTeamsFunction implements Executable<EqualUserOrUserTeamsResponse> {
-  constructor(public readonly propertyName: string) {}
+  constructor(public readonly parameters: EqualUserOrUserTeamsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/EqualUserOrUserTeams`;
@@ -22,9 +30,9 @@ export class EqualUserOrUserTeamsFunction implements Executable<EqualUserOrUserT
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class EqualUserOrUserTeamsFunction implements Executable<EqualUserOrUserT
   }
 
   async parseResponse(response: Response): Promise<EqualUserOrUserTeamsResponse> {
-    const data = await response.json();
-    return data as EqualUserOrUserTeamsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as EqualUserOrUserTeamsResponse;
+    return (await response.json()) as EqualUserOrUserTeamsResponse;
   }
 }

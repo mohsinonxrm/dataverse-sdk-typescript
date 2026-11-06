@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAgents_TriggerOutreachAgentResponse as msdyn_SalesAgents_TriggerOutreachAgentResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_TriggerOutreachAgent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_TriggerOutreachAgentRequestParameters {
+  msdyn_TrackingId: string;
+  msdyn_SalesAgentRun: string;
+  msdyn_OutreachConfig?: string;
+}
 
 /**
  * msdyn_SalesAgents_TriggerOutreachAgent request message
@@ -12,22 +23,20 @@ export class msdyn_SalesAgents_TriggerOutreachAgentRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_TriggerOutreachAgentResponse>
 {
-  constructor(
-    public msdyn_TrackingId: string,
-    public msdyn_SalesAgentRun: string,
-    public msdyn_OutreachConfig?: string
-  ) {
-    super("msdyn_SalesAgents_TriggerOutreachAgent");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_TriggerOutreachAgentRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_TriggerOutreachAgentRequestParameters) {
+    super("msdyn_SalesAgents_TriggerOutreachAgent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_TriggerOutreachAgent`;
 
-    const body: Record<string, unknown> = {
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_OutreachConfig: this.msdyn_OutreachConfig,
-    };
+    const body = requestBody({
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_OutreachConfig: this.Parameters.msdyn_OutreachConfig,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,10 @@ export class msdyn_SalesAgents_TriggerOutreachAgentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_TriggerOutreachAgentResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_TriggerOutreachAgentResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_SalesAgents_TriggerOutreachAgentResponse.fromResponse({});
+    return msdyn_SalesAgents_TriggerOutreachAgentResponse.fromResponse(await response.json());
   }
 }
 

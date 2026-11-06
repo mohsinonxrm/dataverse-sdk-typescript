@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,29 +11,35 @@ export interface msdyn_SendRecordEventUpdateResponse {
 }
 
 /**
+ * Parameters of the msdyn_SendRecordEventUpdate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SendRecordEventUpdateActionParameters {
+  msdyn_EventType: string;
+  msdyn_RegardingRecord: EntityReference | AnyEntityPayload;
+  msdyn_AttributeDisplayValues?: string[];
+  msdyn_AttributeNames?: string[];
+  msdyn_RegardingActivity?: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_SendRecordEventUpdate action
  *
  * Unbound action
  */
 export class msdyn_SendRecordEventUpdateAction implements Executable<msdyn_SendRecordEventUpdateResponse> {
-  constructor(
-    public readonly msdyn_EventType: string,
-    public readonly msdyn_RegardingRecord: EntityReference | AnyEntityPayload,
-    public readonly msdyn_AttributeDisplayValues?: string[],
-    public readonly msdyn_AttributeNames?: string[],
-    public readonly msdyn_RegardingActivity?: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: msdyn_SendRecordEventUpdateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SendRecordEventUpdate`;
 
-    const body: Record<string, unknown> = {
-      msdyn_EventType: this.msdyn_EventType,
-      msdyn_RegardingRecord: this.msdyn_RegardingRecord,
-      msdyn_AttributeDisplayValues: this.msdyn_AttributeDisplayValues,
-      msdyn_AttributeNames: this.msdyn_AttributeNames,
-      msdyn_RegardingActivity: this.msdyn_RegardingActivity,
-    };
+    const body = requestBody({
+      msdyn_EventType: this.parameters.msdyn_EventType,
+      msdyn_RegardingRecord: this.parameters.msdyn_RegardingRecord,
+      msdyn_AttributeDisplayValues: this.parameters.msdyn_AttributeDisplayValues,
+      msdyn_AttributeNames: this.parameters.msdyn_AttributeNames,
+      msdyn_RegardingActivity: this.parameters.msdyn_RegardingActivity,
+    });
 
     return {
       method: "POST",
@@ -45,7 +52,8 @@ export class msdyn_SendRecordEventUpdateAction implements Executable<msdyn_SendR
   }
 
   async parseResponse(response: Response): Promise<msdyn_SendRecordEventUpdateResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SendRecordEventUpdateResponse;
+    return (await response.json()) as msdyn_SendRecordEventUpdateResponse;
   }
 }

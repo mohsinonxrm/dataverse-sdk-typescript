@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_OSGetPredictionModelStatusResponse as msdyn_OSGetPredictionModelStatusResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_OSGetPredictionModelStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_OSGetPredictionModelStatusRequestParameters {
+  PredictionName?: string;
+}
 
 /**
  * msdyn_OSGetPredictionModelStatus request message
@@ -12,16 +21,18 @@ export class msdyn_OSGetPredictionModelStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_OSGetPredictionModelStatusResponse>
 {
-  constructor(public predictionName?: string) {
-    super("msdyn_OSGetPredictionModelStatus");
+  declare readonly Parameters: Readonly<msdyn_OSGetPredictionModelStatusRequestParameters>;
+
+  constructor(parameters: msdyn_OSGetPredictionModelStatusRequestParameters = {}) {
+    super("msdyn_OSGetPredictionModelStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OSGetPredictionModelStatus`;
 
-    const body: Record<string, unknown> = {
-      PredictionName: this.predictionName,
-    };
+    const body = requestBody({
+      PredictionName: this.Parameters.PredictionName,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_OSGetPredictionModelStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_OSGetPredictionModelStatusResponse> {
-    const data = await response.json();
-    return msdyn_OSGetPredictionModelStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_OSGetPredictionModelStatusResponse.fromResponse({});
+    return msdyn_OSGetPredictionModelStatusResponse.fromResponse(await response.json());
   }
 }
 

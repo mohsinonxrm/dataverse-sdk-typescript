@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet } from "./types/index.js";
@@ -16,25 +17,31 @@ export interface GenerateQuoteFromOpportunityResponse {
 }
 
 /**
+ * Parameters of the GenerateQuoteFromOpportunity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GenerateQuoteFromOpportunityActionParameters {
+  OpportunityId: string;
+  ColumnSet?: ColumnSet;
+  ProcessInstanceId?: EntityReference | AnyEntityPayload;
+}
+
+/**
  * GenerateQuoteFromOpportunity action
  *
  * Unbound action
  */
 export class GenerateQuoteFromOpportunityAction implements Executable<GenerateQuoteFromOpportunityResponse> {
-  constructor(
-    public readonly opportunityId: string,
-    public readonly columnSet?: ColumnSet,
-    public readonly processInstanceId?: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: GenerateQuoteFromOpportunityActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GenerateQuoteFromOpportunity`;
 
-    const body: Record<string, unknown> = {
-      OpportunityId: this.opportunityId,
-      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
-      ProcessInstanceId: this.processInstanceId,
-    };
+    const body = requestBody({
+      OpportunityId: this.parameters.OpportunityId,
+      ColumnSet: enumBody(this.parameters.ColumnSet, "ColumnSet"),
+      ProcessInstanceId: this.parameters.ProcessInstanceId,
+    });
 
     return {
       method: "POST",
@@ -47,7 +54,8 @@ export class GenerateQuoteFromOpportunityAction implements Executable<GenerateQu
   }
 
   async parseResponse(response: Response): Promise<GenerateQuoteFromOpportunityResponse> {
-    const data = await response.json();
-    return data as GenerateQuoteFromOpportunityResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GenerateQuoteFromOpportunityResponse;
+    return (await response.json()) as GenerateQuoteFromOpportunityResponse;
   }
 }

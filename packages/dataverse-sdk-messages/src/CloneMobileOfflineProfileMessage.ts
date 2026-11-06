@@ -7,6 +7,8 @@ import type { mobileofflineprofile } from "./types/index.js";
  * CloneMobileOfflineProfile request message
  *
  * Web API Action: CloneMobileOfflineProfile
+ *
+ * The first argument is the id of the mobileofflineprofile record to call it on.
  */
 export class CloneMobileOfflineProfileRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class CloneMobileOfflineProfileRequest
   }
 
   async parseResponse(response: Response): Promise<CloneMobileOfflineProfileResponse> {
-    const data = await response.json();
-    return CloneMobileOfflineProfileResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CloneMobileOfflineProfileResponse.fromResponse({});
+    return CloneMobileOfflineProfileResponse.fromResponse(await response.json());
   }
 }
 

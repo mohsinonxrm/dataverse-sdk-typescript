@@ -26,7 +26,8 @@ export class msdyn_TriggerIntegratedSearchAnalyticsAction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_TriggerIntegratedSearchAnalyticsResponse> {
-    const data = await response.json();
-    return data as msdyn_TriggerIntegratedSearchAnalyticsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_TriggerIntegratedSearchAnalyticsResponse;
+    return (await response.json()) as msdyn_TriggerIntegratedSearchAnalyticsResponse;
   }
 }

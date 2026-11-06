@@ -13,6 +13,8 @@ export interface RetrieveUserPrivilegesResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.systemuser)
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class RetrieveUserPrivilegesFunction implements Executable<RetrieveUserPrivilegesResponse> {
   constructor(public readonly systemuserId: string) {}
@@ -31,7 +33,8 @@ export class RetrieveUserPrivilegesFunction implements Executable<RetrieveUserPr
   }
 
   async parseResponse(response: Response): Promise<RetrieveUserPrivilegesResponse> {
-    const data = await response.json();
-    return data as RetrieveUserPrivilegesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUserPrivilegesResponse;
+    return (await response.json()) as RetrieveUserPrivilegesResponse;
   }
 }

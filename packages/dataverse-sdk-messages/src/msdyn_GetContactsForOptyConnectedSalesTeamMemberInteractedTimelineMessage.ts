@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse as msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineRequestParameters {
+  EntityLogicalName: string;
+  RecordId: string;
+  CustomActionInputs?: string;
+}
 
 /**
  * msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline request message
@@ -12,22 +23,22 @@ export class msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineR
   extends OrganizationRequest
   implements Executable<msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineRequestParameters>;
+
   constructor(
-    public entityLogicalName: string,
-    public recordId: string,
-    public customActionInputs?: string
+    parameters: msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineRequestParameters
   ) {
-    super("msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline");
+    super("msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimeline`;
 
-    const body: Record<string, unknown> = {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      CustomActionInputs: this.customActionInputs,
-    };
+    const body = requestBody({
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      RecordId: this.Parameters.RecordId,
+      CustomActionInputs: this.Parameters.CustomActionInputs,
+    });
 
     return {
       method: "POST",
@@ -42,9 +53,13 @@ export class msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineR
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse> {
-    const data = await response.json();
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse.fromResponse(
+        {}
+      );
     return msdyn_GetContactsForOptyConnectedSalesTeamMemberInteractedTimelineResponse.fromResponse(
-      data
+      await response.json()
     );
   }
 }

@@ -29,8 +29,9 @@ export class msdyn_AnalyzeServiceHealthRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AnalyzeServiceHealthResponse> {
-    const data = await response.json();
-    return msdyn_AnalyzeServiceHealthResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_AnalyzeServiceHealthResponse.fromResponse({});
+    return msdyn_AnalyzeServiceHealthResponse.fromResponse(await response.json());
   }
 }
 

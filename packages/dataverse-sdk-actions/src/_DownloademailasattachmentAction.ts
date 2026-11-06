@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from _Downloademailasattachment action
@@ -8,23 +9,29 @@ export interface _DownloademailasattachmentResponse {
 }
 
 /**
+ * Parameters of the _Downloademailasattachment action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _DownloademailasattachmentActionParameters {
+  emailIdToBeDownloaded: string;
+  additionalParameter?: string;
+}
+
+/**
  * _Downloademailasattachment action
  *
  * Unbound action
  */
 export class _DownloademailasattachmentAction implements Executable<_DownloademailasattachmentResponse> {
-  constructor(
-    public readonly emailIdToBeDownloaded: string,
-    public readonly additionalParameter?: string
-  ) {}
+  constructor(public readonly parameters: _DownloademailasattachmentActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_Downloademailasattachment`;
 
-    const body: Record<string, unknown> = {
-      emailIdToBeDownloaded: this.emailIdToBeDownloaded,
-      additionalParameter: this.additionalParameter,
-    };
+    const body = requestBody({
+      emailIdToBeDownloaded: this.parameters.emailIdToBeDownloaded,
+      additionalParameter: this.parameters.additionalParameter,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class _DownloademailasattachmentAction implements Executable<_Downloadema
   }
 
   async parseResponse(response: Response): Promise<_DownloademailasattachmentResponse> {
-    const data = await response.json();
-    return data as _DownloademailasattachmentResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as _DownloademailasattachmentResponse;
+    return (await response.json()) as _DownloademailasattachmentResponse;
   }
 }

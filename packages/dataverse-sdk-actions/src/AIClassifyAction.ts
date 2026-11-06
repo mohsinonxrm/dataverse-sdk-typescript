@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from AIClassify action
@@ -8,23 +9,29 @@ export interface AIClassifyResponse {
 }
 
 /**
+ * Parameters of the AIClassify action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AIClassifyActionParameters {
+  Categories: string[];
+  Text: string;
+}
+
+/**
  * AIClassify action
  *
  * Unbound action
  */
 export class AIClassifyAction implements Executable<AIClassifyResponse> {
-  constructor(
-    public readonly categories: string[],
-    public readonly text: string
-  ) {}
+  constructor(public readonly parameters: AIClassifyActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AIClassify`;
 
-    const body: Record<string, unknown> = {
-      Categories: this.categories,
-      Text: this.text,
-    };
+    const body = requestBody({
+      Categories: this.parameters.Categories,
+      Text: this.parameters.Text,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class AIClassifyAction implements Executable<AIClassifyResponse> {
   }
 
   async parseResponse(response: Response): Promise<AIClassifyResponse> {
-    const data = await response.json();
-    return data as AIClassifyResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AIClassifyResponse;
+    return (await response.json()) as AIClassifyResponse;
   }
 }

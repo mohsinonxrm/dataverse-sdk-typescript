@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { DownloadSolutionExportDataResponse as DownloadSolutionExportDataResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the DownloadSolutionExportData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DownloadSolutionExportDataRequestParameters {
+  ExportJobId: string;
+}
 
 /**
  * DownloadSolutionExportData request message
@@ -12,16 +21,18 @@ export class DownloadSolutionExportDataRequest
   extends OrganizationRequest
   implements Executable<DownloadSolutionExportDataResponse>
 {
-  constructor(public exportJobId: string) {
-    super("DownloadSolutionExportData");
+  declare readonly Parameters: Readonly<DownloadSolutionExportDataRequestParameters>;
+
+  constructor(parameters: DownloadSolutionExportDataRequestParameters) {
+    super("DownloadSolutionExportData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DownloadSolutionExportData`;
 
-    const body: Record<string, unknown> = {
-      ExportJobId: this.exportJobId,
-    };
+    const body = requestBody({
+      ExportJobId: this.Parameters.ExportJobId,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class DownloadSolutionExportDataRequest
   }
 
   async parseResponse(response: Response): Promise<DownloadSolutionExportDataResponse> {
-    const data = await response.json();
-    return DownloadSolutionExportDataResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return DownloadSolutionExportDataResponse.fromResponse({});
+    return DownloadSolutionExportDataResponse.fromResponse(await response.json());
   }
 }
 

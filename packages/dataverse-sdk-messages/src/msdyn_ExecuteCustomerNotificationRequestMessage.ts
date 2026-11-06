@@ -31,8 +31,10 @@ export class msdyn_ExecuteCustomerNotificationRequestRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ExecuteCustomerNotificationRequestResponse> {
-    const data = await response.json();
-    return msdyn_ExecuteCustomerNotificationRequestResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_ExecuteCustomerNotificationRequestResponse.fromResponse({});
+    return msdyn_ExecuteCustomerNotificationRequestResponse.fromResponse(await response.json());
   }
 }
 

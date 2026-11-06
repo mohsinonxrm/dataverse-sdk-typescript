@@ -29,7 +29,8 @@ export class RetrievePrivilegeSetFunction implements Executable<RetrievePrivileg
   }
 
   async parseResponse(response: Response): Promise<RetrievePrivilegeSetResponse> {
-    const data = await response.json();
-    return data as RetrievePrivilegeSetResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrievePrivilegeSetResponse;
+    return (await response.json()) as RetrievePrivilegeSetResponse;
   }
 }

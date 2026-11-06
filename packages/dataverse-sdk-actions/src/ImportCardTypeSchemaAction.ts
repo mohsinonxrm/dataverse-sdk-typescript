@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from ImportCardTypeSchema action
@@ -8,19 +9,27 @@ export interface ImportCardTypeSchemaResponse {
 }
 
 /**
+ * Parameters of the ImportCardTypeSchema action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportCardTypeSchemaActionParameters {
+  ImportCardTypeSchema: string;
+}
+
+/**
  * ImportCardTypeSchema action
  *
  * Unbound action
  */
 export class ImportCardTypeSchemaAction implements Executable<ImportCardTypeSchemaResponse> {
-  constructor(public readonly importCardTypeSchema: string) {}
+  constructor(public readonly parameters: ImportCardTypeSchemaActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportCardTypeSchema`;
 
-    const body: Record<string, unknown> = {
-      ImportCardTypeSchema: this.importCardTypeSchema,
-    };
+    const body = requestBody({
+      ImportCardTypeSchema: this.parameters.ImportCardTypeSchema,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class ImportCardTypeSchemaAction implements Executable<ImportCardTypeSche
   }
 
   async parseResponse(response: Response): Promise<ImportCardTypeSchemaResponse> {
-    const data = await response.json();
-    return data as ImportCardTypeSchemaResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ImportCardTypeSchemaResponse;
+    return (await response.json()) as ImportCardTypeSchemaResponse;
   }
 }

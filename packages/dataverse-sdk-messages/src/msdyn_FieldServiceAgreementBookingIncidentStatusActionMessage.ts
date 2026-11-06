@@ -1,33 +1,46 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse as msdyn_FieldServiceAgreementBookingIncidentStatusActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_FieldServiceAgreementBookingIncidentStatusAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FieldServiceAgreementBookingIncidentStatusActionRequestParameters {
+  Type: number;
+  InputParameter: string;
+}
 
 /**
  * msdyn_FieldServiceAgreementBookingIncidentStatusAction request message
  *
  * Web API Action: msdyn_FieldServiceAgreementBookingIncidentStatusAction
+ *
+ * The first argument is the id of the msdyn_agreementbookingincident record to call it on.
  */
 export class msdyn_FieldServiceAgreementBookingIncidentStatusActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_FieldServiceAgreementBookingIncidentStatusActionRequestParameters>;
+
   constructor(
     public msdyn_agreementbookingincidentId: string,
-    public type: number,
-    public inputParameter: string
+    parameters: msdyn_FieldServiceAgreementBookingIncidentStatusActionRequestParameters
   ) {
-    super("msdyn_FieldServiceAgreementBookingIncidentStatusAction");
+    super("msdyn_FieldServiceAgreementBookingIncidentStatusAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_agreementbookingincidents(${this.msdyn_agreementbookingincidentId})/Microsoft.Dynamics.CRM.msdyn_FieldServiceAgreementBookingIncidentStatusAction`;
 
-    const body: Record<string, unknown> = {
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
+    const body = requestBody({
+      Type: this.Parameters.Type,
+      InputParameter: this.Parameters.InputParameter,
+    });
 
     return {
       method: "POST",
@@ -42,8 +55,12 @@ export class msdyn_FieldServiceAgreementBookingIncidentStatusActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse> {
-    const data = await response.json();
-    return msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse.fromResponse({});
+    return msdyn_FieldServiceAgreementBookingIncidentStatusActionResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

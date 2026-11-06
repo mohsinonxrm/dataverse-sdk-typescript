@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SalesAgents_HandoverInitiate action
@@ -8,31 +9,37 @@ export interface msdyn_SalesAgents_HandoverInitiateResponse {
 }
 
 /**
+ * Parameters of the msdyn_SalesAgents_HandoverInitiate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_HandoverInitiateActionParameters {
+  msdyn_AssignTo?: number;
+  msdyn_HandoverIntent?: number;
+  msdyn_GetHandoverDetailsInfo?: string;
+  msdyn_SalesAgentRun: string;
+  msdyn_HandoverTarget?: number;
+  msdyn_TrackingId?: string;
+}
+
+/**
  * msdyn_SalesAgents_HandoverInitiate action
  *
  * Unbound action
  */
 export class msdyn_SalesAgents_HandoverInitiateAction implements Executable<msdyn_SalesAgents_HandoverInitiateResponse> {
-  constructor(
-    public readonly msdyn_AssignTo: number | undefined,
-    public readonly msdyn_HandoverIntent: number | undefined,
-    public readonly msdyn_GetHandoverDetailsInfo: string | undefined,
-    public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_HandoverTarget?: number,
-    public readonly msdyn_TrackingId?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_SalesAgents_HandoverInitiateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_HandoverInitiate`;
 
-    const body: Record<string, unknown> = {
-      msdyn_AssignTo: this.msdyn_AssignTo,
-      msdyn_HandoverIntent: this.msdyn_HandoverIntent,
-      msdyn_GetHandoverDetailsInfo: this.msdyn_GetHandoverDetailsInfo,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_HandoverTarget: this.msdyn_HandoverTarget,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_AssignTo: this.parameters.msdyn_AssignTo,
+      msdyn_HandoverIntent: this.parameters.msdyn_HandoverIntent,
+      msdyn_GetHandoverDetailsInfo: this.parameters.msdyn_GetHandoverDetailsInfo,
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+      msdyn_HandoverTarget: this.parameters.msdyn_HandoverTarget,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
@@ -45,7 +52,8 @@ export class msdyn_SalesAgents_HandoverInitiateAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_HandoverInitiateResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_HandoverInitiateResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SalesAgents_HandoverInitiateResponse;
+    return (await response.json()) as msdyn_SalesAgents_HandoverInitiateResponse;
   }
 }

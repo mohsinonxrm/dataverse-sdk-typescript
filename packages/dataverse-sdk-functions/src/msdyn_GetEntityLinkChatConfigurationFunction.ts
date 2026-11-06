@@ -13,12 +13,20 @@ export interface msdyn_GetEntityLinkChatConfigurationResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetEntityLinkChatConfiguration function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetEntityLinkChatConfigurationFunctionParameters {
+  msdyn_RegardingEntityName: string;
+}
+
+/**
  * msdyn_GetEntityLinkChatConfiguration function
  *
  * Unbound function
  */
 export class msdyn_GetEntityLinkChatConfigurationFunction implements Executable<msdyn_GetEntityLinkChatConfigurationResponse> {
-  constructor(public readonly msdyn_RegardingEntityName: string) {}
+  constructor(public readonly parameters: msdyn_GetEntityLinkChatConfigurationFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/msdyn_GetEntityLinkChatConfiguration`;
@@ -26,9 +34,12 @@ export class msdyn_GetEntityLinkChatConfigurationFunction implements Executable<
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.msdyn_RegardingEntityName !== undefined) {
+    if (this.parameters.msdyn_RegardingEntityName !== undefined) {
       aliases.push(`msdyn_RegardingEntityName=@p1`);
-      params.append("@p1", formatParameterAlias(this.msdyn_RegardingEntityName, "Edm.String"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.msdyn_RegardingEntityName, "Edm.String")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -44,7 +55,8 @@ export class msdyn_GetEntityLinkChatConfigurationFunction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetEntityLinkChatConfigurationResponse> {
-    const data = await response.json();
-    return data as msdyn_GetEntityLinkChatConfigurationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetEntityLinkChatConfigurationResponse;
+    return (await response.json()) as msdyn_GetEntityLinkChatConfigurationResponse;
   }
 }

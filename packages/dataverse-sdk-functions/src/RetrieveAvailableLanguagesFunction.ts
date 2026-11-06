@@ -26,7 +26,8 @@ export class RetrieveAvailableLanguagesFunction implements Executable<RetrieveAv
   }
 
   async parseResponse(response: Response): Promise<RetrieveAvailableLanguagesResponse> {
-    const data = await response.json();
-    return data as RetrieveAvailableLanguagesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveAvailableLanguagesResponse;
+    return (await response.json()) as RetrieveAvailableLanguagesResponse;
   }
 }

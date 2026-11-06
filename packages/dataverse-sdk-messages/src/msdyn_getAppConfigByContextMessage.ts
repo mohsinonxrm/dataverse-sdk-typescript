@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_getAppConfigByContextResponse as msdyn_getAppConfigByContextResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_getAppConfigByContext message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_getAppConfigByContextRequestParameters {
+  AppUniqueName: string;
+  UserId?: string;
+  Roles?: string;
+  FormFactor?: number;
+}
 
 /**
  * msdyn_getAppConfigByContext request message
@@ -12,24 +24,21 @@ export class msdyn_getAppConfigByContextRequest
   extends OrganizationRequest
   implements Executable<msdyn_getAppConfigByContextResponse>
 {
-  constructor(
-    public appUniqueName: string,
-    public userId?: string,
-    public roles?: string,
-    public formFactor?: number
-  ) {
-    super("msdyn_getAppConfigByContext");
+  declare readonly Parameters: Readonly<msdyn_getAppConfigByContextRequestParameters>;
+
+  constructor(parameters: msdyn_getAppConfigByContextRequestParameters) {
+    super("msdyn_getAppConfigByContext", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_getAppConfigByContext`;
 
-    const body: Record<string, unknown> = {
-      AppUniqueName: this.appUniqueName,
-      UserId: this.userId,
-      Roles: this.roles,
-      FormFactor: this.formFactor,
-    };
+    const body = requestBody({
+      AppUniqueName: this.Parameters.AppUniqueName,
+      UserId: this.Parameters.UserId,
+      Roles: this.Parameters.Roles,
+      FormFactor: this.Parameters.FormFactor,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_getAppConfigByContextRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_getAppConfigByContextResponse> {
-    const data = await response.json();
-    return msdyn_getAppConfigByContextResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_getAppConfigByContextResponse.fromResponse({});
+    return msdyn_getAppConfigByContextResponse.fromResponse(await response.json());
   }
 }
 

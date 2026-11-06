@@ -10,15 +10,21 @@ export interface RetrieveCompositeDataSourceResponse {
 }
 
 /**
+ * Parameters of the RetrieveCompositeDataSource function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveCompositeDataSourceFunctionParameters {
+  ParentSchemaName: string;
+  ChildSchemaName: string;
+}
+
+/**
  * RetrieveCompositeDataSource function
  *
  * Unbound function
  */
 export class RetrieveCompositeDataSourceFunction implements Executable<RetrieveCompositeDataSourceResponse> {
-  constructor(
-    public readonly parentSchemaName: string,
-    public readonly childSchemaName: string
-  ) {}
+  constructor(public readonly parameters: RetrieveCompositeDataSourceFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveCompositeDataSource`;
@@ -26,13 +32,13 @@ export class RetrieveCompositeDataSourceFunction implements Executable<RetrieveC
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.parentSchemaName !== undefined) {
+    if (this.parameters.ParentSchemaName !== undefined) {
       aliases.push(`ParentSchemaName=@p1`);
-      params.append("@p1", formatParameterAlias(this.parentSchemaName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.ParentSchemaName, "Edm.String"));
     }
-    if (this.childSchemaName !== undefined) {
+    if (this.parameters.ChildSchemaName !== undefined) {
       aliases.push(`ChildSchemaName=@p2`);
-      params.append("@p2", formatParameterAlias(this.childSchemaName, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.ChildSchemaName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -48,7 +54,8 @@ export class RetrieveCompositeDataSourceFunction implements Executable<RetrieveC
   }
 
   async parseResponse(response: Response): Promise<RetrieveCompositeDataSourceResponse> {
-    const data = await response.json();
-    return data as RetrieveCompositeDataSourceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveCompositeDataSourceResponse;
+    return (await response.json()) as RetrieveCompositeDataSourceResponse;
   }
 }

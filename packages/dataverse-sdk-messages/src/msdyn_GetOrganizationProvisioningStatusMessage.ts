@@ -31,8 +31,10 @@ export class msdyn_GetOrganizationProvisioningStatusRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetOrganizationProvisioningStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetOrganizationProvisioningStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_GetOrganizationProvisioningStatusResponse.fromResponse({});
+    return msdyn_GetOrganizationProvisioningStatusResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CardGetFullJson action
@@ -8,19 +9,27 @@ export interface CardGetFullJsonResponse {
 }
 
 /**
+ * Parameters of the CardGetFullJson action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CardGetFullJsonActionParameters {
+  CardId: string;
+}
+
+/**
  * CardGetFullJson action
  *
  * Unbound action
  */
 export class CardGetFullJsonAction implements Executable<CardGetFullJsonResponse> {
-  constructor(public readonly cardId: string) {}
+  constructor(public readonly parameters: CardGetFullJsonActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CardGetFullJson`;
 
-    const body: Record<string, unknown> = {
-      CardId: this.cardId,
-    };
+    const body = requestBody({
+      CardId: this.parameters.CardId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class CardGetFullJsonAction implements Executable<CardGetFullJsonResponse
   }
 
   async parseResponse(response: Response): Promise<CardGetFullJsonResponse> {
-    const data = await response.json();
-    return data as CardGetFullJsonResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CardGetFullJsonResponse;
+    return (await response.json()) as CardGetFullJsonResponse;
   }
 }

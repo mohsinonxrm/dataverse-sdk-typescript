@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_JoinConversation action
@@ -8,30 +9,40 @@ export interface CCaaS_JoinConversationResponse {
 }
 
 /**
+ * Parameters of the CCaaS_JoinConversation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_JoinConversationActionParameters {
+  ClientId?: string;
+  ConversationAccess?: number;
+  SessionId: string;
+  ApiVersion: string;
+}
+
+/**
  * CCaaS_JoinConversation action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_ocliveworkitem)
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_JoinConversationAction implements Executable<CCaaS_JoinConversationResponse> {
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
-    public readonly clientId: string | undefined,
-    public readonly conversationAccess: number | undefined,
-    public readonly sessionId: string,
-    public readonly apiVersion: string
+    public readonly parameters: CCaaS_JoinConversationActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_JoinConversation`;
 
-    const body: Record<string, unknown> = {
-      ClientId: this.clientId,
-      ConversationAccess: this.conversationAccess,
-      SessionId: this.sessionId,
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      ClientId: this.parameters.ClientId,
+      ConversationAccess: this.parameters.ConversationAccess,
+      SessionId: this.parameters.SessionId,
+      ApiVersion: this.parameters.ApiVersion,
+    });
 
     return {
       method: "POST",
@@ -44,7 +55,8 @@ export class CCaaS_JoinConversationAction implements Executable<CCaaS_JoinConver
   }
 
   async parseResponse(response: Response): Promise<CCaaS_JoinConversationResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_JoinConversationResponse;
+    return (await response.json()) as CCaaS_JoinConversationResponse;
   }
 }

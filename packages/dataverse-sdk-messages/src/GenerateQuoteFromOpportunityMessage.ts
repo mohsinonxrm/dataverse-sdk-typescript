@@ -2,9 +2,20 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet } from "./types/index.js";
+
+/**
+ * Parameters of the GenerateQuoteFromOpportunity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GenerateQuoteFromOpportunityRequestParameters {
+  OpportunityId: string;
+  ColumnSet?: ColumnSet;
+  ProcessInstanceId?: EntityReference | AnyEntityPayload;
+}
 
 /**
  * GenerateQuoteFromOpportunity request message
@@ -15,22 +26,20 @@ export class GenerateQuoteFromOpportunityRequest
   extends OrganizationRequest
   implements Executable<GenerateQuoteFromOpportunityResponse>
 {
-  constructor(
-    public opportunityId: string,
-    public columnSet?: ColumnSet,
-    public processInstanceId?: EntityReference | AnyEntityPayload
-  ) {
-    super("GenerateQuoteFromOpportunity");
+  declare readonly Parameters: Readonly<GenerateQuoteFromOpportunityRequestParameters>;
+
+  constructor(parameters: GenerateQuoteFromOpportunityRequestParameters) {
+    super("GenerateQuoteFromOpportunity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GenerateQuoteFromOpportunity`;
 
-    const body: Record<string, unknown> = {
-      OpportunityId: this.opportunityId,
-      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
-      ProcessInstanceId: this.processInstanceId,
-    };
+    const body = requestBody({
+      OpportunityId: this.Parameters.OpportunityId,
+      ColumnSet: enumBody(this.Parameters.ColumnSet, "ColumnSet"),
+      ProcessInstanceId: this.Parameters.ProcessInstanceId,
+    });
 
     return {
       method: "POST",
@@ -43,8 +52,9 @@ export class GenerateQuoteFromOpportunityRequest
   }
 
   async parseResponse(response: Response): Promise<GenerateQuoteFromOpportunityResponse> {
-    const data = await response.json();
-    return GenerateQuoteFromOpportunityResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return GenerateQuoteFromOpportunityResponse.fromResponse({});
+    return GenerateQuoteFromOpportunityResponse.fromResponse(await response.json());
   }
 }
 

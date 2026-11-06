@@ -1,29 +1,42 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_CloseConsult message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_CloseConsultRequestParameters {
+  ApiVersion: string;
+}
 
 /**
  * CCaaS_CloseConsult request message
  *
  * Web API Action: CCaaS_CloseConsult
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_CloseConsultRequest
   extends OrganizationRequest
   implements Executable<CCaaS_CloseConsultResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_CloseConsultRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public apiVersion: string
+    parameters: CCaaS_CloseConsultRequestParameters
   ) {
-    super("CCaaS_CloseConsult");
+    super("CCaaS_CloseConsult", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_CloseConsult`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
+    });
 
     return {
       method: "POST",

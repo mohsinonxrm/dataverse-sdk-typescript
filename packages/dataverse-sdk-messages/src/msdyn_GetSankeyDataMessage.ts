@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetSankeyDataResponse as msdyn_GetSankeyDataResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetSankeyData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSankeyDataRequestParameters {
+  msdyn_sequenceid: string;
+  msdyn_dateto: string;
+  msdyn_datefrom: string;
+}
 
 /**
  * msdyn_GetSankeyData request message
@@ -12,22 +23,20 @@ export class msdyn_GetSankeyDataRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSankeyDataResponse>
 {
-  constructor(
-    public msdyn_sequenceid: string,
-    public msdyn_dateto: string,
-    public msdyn_datefrom: string
-  ) {
-    super("msdyn_GetSankeyData");
+  declare readonly Parameters: Readonly<msdyn_GetSankeyDataRequestParameters>;
+
+  constructor(parameters: msdyn_GetSankeyDataRequestParameters) {
+    super("msdyn_GetSankeyData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSankeyData`;
 
-    const body: Record<string, unknown> = {
-      msdyn_sequenceid: this.msdyn_sequenceid,
-      msdyn_dateto: this.msdyn_dateto,
-      msdyn_datefrom: this.msdyn_datefrom,
-    };
+    const body = requestBody({
+      msdyn_sequenceid: this.Parameters.msdyn_sequenceid,
+      msdyn_dateto: this.Parameters.msdyn_dateto,
+      msdyn_datefrom: this.Parameters.msdyn_datefrom,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_GetSankeyDataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSankeyDataResponse> {
-    const data = await response.json();
-    return msdyn_GetSankeyDataResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetSankeyDataResponse.fromResponse({});
+    return msdyn_GetSankeyDataResponse.fromResponse(await response.json());
   }
 }
 

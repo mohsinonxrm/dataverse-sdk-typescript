@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,23 +11,29 @@ export interface RevokeAccessResponse {
 }
 
 /**
+ * Parameters of the RevokeAccess action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RevokeAccessActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  Revokee: EntityReference | AnyEntityPayload;
+}
+
+/**
  * RevokeAccess action
  *
  * Unbound action
  */
 export class RevokeAccessAction implements Executable<RevokeAccessResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly revokee: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: RevokeAccessActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RevokeAccess`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      Revokee: this.revokee,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      Revokee: this.parameters.Revokee,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class RevokeAccessAction implements Executable<RevokeAccessResponse> {
   }
 
   async parseResponse(response: Response): Promise<RevokeAccessResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RevokeAccessResponse;
+    return (await response.json()) as RevokeAccessResponse;
   }
 }

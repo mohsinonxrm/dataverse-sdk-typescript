@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { GetTrackingTokenEmailResponse as GetTrackingTokenEmailResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the GetTrackingTokenEmail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetTrackingTokenEmailRequestParameters {
+  Subject?: string;
+}
 
 /**
  * GetTrackingTokenEmail request message
@@ -12,16 +21,18 @@ export class GetTrackingTokenEmailRequest
   extends OrganizationRequest
   implements Executable<GetTrackingTokenEmailResponse>
 {
-  constructor(public subject?: string) {
-    super("GetTrackingTokenEmail");
+  declare readonly Parameters: Readonly<GetTrackingTokenEmailRequestParameters>;
+
+  constructor(parameters: GetTrackingTokenEmailRequestParameters = {}) {
+    super("GetTrackingTokenEmail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetTrackingTokenEmail`;
 
-    const body: Record<string, unknown> = {
-      Subject: this.subject,
-    };
+    const body = requestBody({
+      Subject: this.Parameters.Subject,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class GetTrackingTokenEmailRequest
   }
 
   async parseResponse(response: Response): Promise<GetTrackingTokenEmailResponse> {
-    const data = await response.json();
-    return GetTrackingTokenEmailResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return GetTrackingTokenEmailResponse.fromResponse({});
+    return GetTrackingTokenEmailResponse.fromResponse(await response.json());
   }
 }
 

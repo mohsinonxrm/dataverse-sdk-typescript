@@ -26,7 +26,8 @@ export class msdyn_GetPremiumOrgStatusAction implements Executable<msdyn_GetPrem
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPremiumOrgStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetPremiumOrgStatusResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetPremiumOrgStatusResponse;
+    return (await response.json()) as msdyn_GetPremiumOrgStatusResponse;
   }
 }

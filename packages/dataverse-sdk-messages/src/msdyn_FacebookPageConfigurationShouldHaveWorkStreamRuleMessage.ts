@@ -31,8 +31,12 @@ export class msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse> {
-    const data = await response.json();
-    return msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    return msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

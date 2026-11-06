@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_knowledgeHarvestCreateArticle action
@@ -8,27 +9,33 @@ export interface msdyn_knowledgeHarvestCreateArticleResponse {
 }
 
 /**
+ * Parameters of the msdyn_knowledgeHarvestCreateArticle action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_knowledgeHarvestCreateArticleActionParameters {
+  msdyn_knowledgeHarvestJobId: string;
+  msdyn_entityName: string;
+  msdyn_entityId: string;
+  msdyn_payload: string;
+}
+
+/**
  * msdyn_knowledgeHarvestCreateArticle action
  *
  * Unbound action
  */
 export class msdyn_knowledgeHarvestCreateArticleAction implements Executable<msdyn_knowledgeHarvestCreateArticleResponse> {
-  constructor(
-    public readonly msdyn_knowledgeHarvestJobId: string,
-    public readonly msdyn_entityName: string,
-    public readonly msdyn_entityId: string,
-    public readonly msdyn_payload: string
-  ) {}
+  constructor(public readonly parameters: msdyn_knowledgeHarvestCreateArticleActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_knowledgeHarvestCreateArticle`;
 
-    const body: Record<string, unknown> = {
-      msdyn_knowledgeHarvestJobId: this.msdyn_knowledgeHarvestJobId,
-      msdyn_entityName: this.msdyn_entityName,
-      msdyn_entityId: this.msdyn_entityId,
-      msdyn_payload: this.msdyn_payload,
-    };
+    const body = requestBody({
+      msdyn_knowledgeHarvestJobId: this.parameters.msdyn_knowledgeHarvestJobId,
+      msdyn_entityName: this.parameters.msdyn_entityName,
+      msdyn_entityId: this.parameters.msdyn_entityId,
+      msdyn_payload: this.parameters.msdyn_payload,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_knowledgeHarvestCreateArticleAction implements Executable<msd
   }
 
   async parseResponse(response: Response): Promise<msdyn_knowledgeHarvestCreateArticleResponse> {
-    const data = await response.json();
-    return data as msdyn_knowledgeHarvestCreateArticleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_knowledgeHarvestCreateArticleResponse;
+    return (await response.json()) as msdyn_knowledgeHarvestCreateArticleResponse;
   }
 }

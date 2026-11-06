@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * msdyn_StartCaseFollowupMonitoring request message
  *
  * Web API Action: msdyn_StartCaseFollowupMonitoring
+ *
+ * The first argument is the id of the incident record to call it on.
  */
 export class msdyn_StartCaseFollowupMonitoringRequest
   extends OrganizationRequest

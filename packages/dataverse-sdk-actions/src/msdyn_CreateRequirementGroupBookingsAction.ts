@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,29 +11,35 @@ export interface msdyn_CreateRequirementGroupBookingsResponse {
 }
 
 /**
+ * Parameters of the msdyn_CreateRequirementGroupBookings action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateRequirementGroupBookingsActionParameters {
+  Version?: string;
+  Start: string;
+  Duration: number;
+  ResourceAssignments: Record<string, unknown>[];
+  RequirementGroup: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_CreateRequirementGroupBookings action
  *
  * Unbound action
  */
 export class msdyn_CreateRequirementGroupBookingsAction implements Executable<msdyn_CreateRequirementGroupBookingsResponse> {
-  constructor(
-    public readonly version: string | undefined,
-    public readonly start: string,
-    public readonly duration: number,
-    public readonly resourceAssignments: Record<string, unknown>[],
-    public readonly requirementGroup: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: msdyn_CreateRequirementGroupBookingsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateRequirementGroupBookings`;
 
-    const body: Record<string, unknown> = {
-      Version: this.version,
-      Start: this.start,
-      Duration: this.duration,
-      ResourceAssignments: this.resourceAssignments,
-      RequirementGroup: this.requirementGroup,
-    };
+    const body = requestBody({
+      Version: this.parameters.Version,
+      Start: this.parameters.Start,
+      Duration: this.parameters.Duration,
+      ResourceAssignments: this.parameters.ResourceAssignments,
+      RequirementGroup: this.parameters.RequirementGroup,
+    });
 
     return {
       method: "POST",
@@ -45,7 +52,8 @@ export class msdyn_CreateRequirementGroupBookingsAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateRequirementGroupBookingsResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateRequirementGroupBookingsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CreateRequirementGroupBookingsResponse;
+    return (await response.json()) as msdyn_CreateRequirementGroupBookingsResponse;
   }
 }

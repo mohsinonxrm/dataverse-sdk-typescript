@@ -31,8 +31,12 @@ export class msdyn_WorkstreamShouldHaveSessionTemplatesRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse> {
-    const data = await response.json();
-    return msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse.fromResponse({});
+    return msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

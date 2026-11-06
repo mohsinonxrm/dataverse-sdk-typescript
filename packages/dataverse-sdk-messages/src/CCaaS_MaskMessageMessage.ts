@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_MaskMessageResponse as CCaaS_MaskMessageResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_MaskMessage message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_MaskMessageRequestParameters {
+  WidgetId: string;
+  MessageId: string;
+  ApiVersion: string;
+  ConversationId: string;
+}
 
 /**
  * CCaaS_MaskMessage request message
@@ -12,24 +24,21 @@ export class CCaaS_MaskMessageRequest
   extends OrganizationRequest
   implements Executable<CCaaS_MaskMessageResponse>
 {
-  constructor(
-    public widgetId: string,
-    public messageId: string,
-    public apiVersion: string,
-    public conversationId: string
-  ) {
-    super("CCaaS_MaskMessage");
+  declare readonly Parameters: Readonly<CCaaS_MaskMessageRequestParameters>;
+
+  constructor(parameters: CCaaS_MaskMessageRequestParameters) {
+    super("CCaaS_MaskMessage", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_MaskMessage`;
 
-    const body: Record<string, unknown> = {
-      WidgetId: this.widgetId,
-      MessageId: this.messageId,
-      ApiVersion: this.apiVersion,
-      ConversationId: this.conversationId,
-    };
+    const body = requestBody({
+      WidgetId: this.Parameters.WidgetId,
+      MessageId: this.Parameters.MessageId,
+      ApiVersion: this.Parameters.ApiVersion,
+      ConversationId: this.Parameters.ConversationId,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class CCaaS_MaskMessageRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_MaskMessageResponse> {
-    const data = await response.json();
-    return CCaaS_MaskMessageResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CCaaS_MaskMessageResponse.fromResponse({});
+    return CCaaS_MaskMessageResponse.fromResponse(await response.json());
   }
 }
 

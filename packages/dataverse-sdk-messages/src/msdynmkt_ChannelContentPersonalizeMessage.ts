@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_ChannelContentPersonalizeResponse as msdynmkt_ChannelContentPersonalizeResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_ChannelContentPersonalize message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_ChannelContentPersonalizeRequestParameters {
+  msdynmkt_PersonalizeContentRequest: string;
+}
 
 /**
  * msdynmkt_ChannelContentPersonalize request message
@@ -12,16 +21,18 @@ export class msdynmkt_ChannelContentPersonalizeRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_ChannelContentPersonalizeResponse>
 {
-  constructor(public msdynmkt_PersonalizeContentRequest: string) {
-    super("msdynmkt_ChannelContentPersonalize");
+  declare readonly Parameters: Readonly<msdynmkt_ChannelContentPersonalizeRequestParameters>;
+
+  constructor(parameters: msdynmkt_ChannelContentPersonalizeRequestParameters) {
+    super("msdynmkt_ChannelContentPersonalize", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_ChannelContentPersonalize`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_PersonalizeContentRequest: this.msdynmkt_PersonalizeContentRequest,
-    };
+    const body = requestBody({
+      msdynmkt_PersonalizeContentRequest: this.Parameters.msdynmkt_PersonalizeContentRequest,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdynmkt_ChannelContentPersonalizeRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_ChannelContentPersonalizeResponse> {
-    const data = await response.json();
-    return msdynmkt_ChannelContentPersonalizeResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdynmkt_ChannelContentPersonalizeResponse.fromResponse({});
+    return msdynmkt_ChannelContentPersonalizeResponse.fromResponse(await response.json());
   }
 }
 

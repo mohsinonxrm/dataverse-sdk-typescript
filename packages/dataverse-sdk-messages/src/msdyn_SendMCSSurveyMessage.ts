@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_SendMCSSurvey message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SendMCSSurveyRequestParameters {
+  From: EntityReference | AnyEntityPayload;
+  To: Record<string, unknown>[];
+  Cc?: Record<string, unknown>[];
+  Bcc?: Record<string, unknown>[];
+  Regarding: EntityReference | AnyEntityPayload;
+  Template?: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_SendMCSSurvey request message
@@ -12,28 +26,23 @@ export class msdyn_SendMCSSurveyRequest
   extends OrganizationRequest
   implements Executable<msdyn_SendMCSSurveyResponse>
 {
-  constructor(
-    public from: EntityReference | AnyEntityPayload,
-    public to: Record<string, unknown>[],
-    public cc: Record<string, unknown>[] | undefined,
-    public bcc: Record<string, unknown>[] | undefined,
-    public regarding: EntityReference | AnyEntityPayload,
-    public template?: EntityReference | AnyEntityPayload
-  ) {
-    super("msdyn_SendMCSSurvey");
+  declare readonly Parameters: Readonly<msdyn_SendMCSSurveyRequestParameters>;
+
+  constructor(parameters: msdyn_SendMCSSurveyRequestParameters) {
+    super("msdyn_SendMCSSurvey", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SendMCSSurvey`;
 
-    const body: Record<string, unknown> = {
-      From: this.from,
-      To: this.to,
-      Cc: this.cc,
-      Bcc: this.bcc,
-      Regarding: this.regarding,
-      Template: this.template,
-    };
+    const body = requestBody({
+      From: this.Parameters.From,
+      To: this.Parameters.To,
+      Cc: this.Parameters.Cc,
+      Bcc: this.Parameters.Bcc,
+      Regarding: this.Parameters.Regarding,
+      Template: this.Parameters.Template,
+    });
 
     return {
       method: "POST",

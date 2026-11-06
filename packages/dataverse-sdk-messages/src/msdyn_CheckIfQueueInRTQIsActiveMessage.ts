@@ -29,8 +29,9 @@ export class msdyn_CheckIfQueueInRTQIsActiveRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfQueueInRTQIsActiveResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfQueueInRTQIsActiveResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckIfQueueInRTQIsActiveResponse.fromResponse({});
+    return msdyn_CheckIfQueueInRTQIsActiveResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetDocumentContentResponse as msdyn_GetDocumentContentResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetDocumentContent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetDocumentContentRequestParameters {
+  msdyn_documents: string;
+  msdyn_activityId?: string;
+  msdyn_type: string;
+  msdyn_userQuery?: string;
+  msdyn_shouldUpload?: boolean;
+  msdyn_keywords?: string;
+}
 
 /**
  * msdyn_GetDocumentContent request message
@@ -12,28 +26,23 @@ export class msdyn_GetDocumentContentRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetDocumentContentResponse>
 {
-  constructor(
-    public msdyn_documents: string,
-    public msdyn_activityId: string | undefined,
-    public msdyn_type: string,
-    public msdyn_userQuery?: string,
-    public msdyn_shouldUpload?: boolean,
-    public msdyn_keywords?: string
-  ) {
-    super("msdyn_GetDocumentContent");
+  declare readonly Parameters: Readonly<msdyn_GetDocumentContentRequestParameters>;
+
+  constructor(parameters: msdyn_GetDocumentContentRequestParameters) {
+    super("msdyn_GetDocumentContent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetDocumentContent`;
 
-    const body: Record<string, unknown> = {
-      msdyn_documents: this.msdyn_documents,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_type: this.msdyn_type,
-      msdyn_userQuery: this.msdyn_userQuery,
-      msdyn_shouldUpload: this.msdyn_shouldUpload,
-      msdyn_keywords: this.msdyn_keywords,
-    };
+    const body = requestBody({
+      msdyn_documents: this.Parameters.msdyn_documents,
+      msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_type: this.Parameters.msdyn_type,
+      msdyn_userQuery: this.Parameters.msdyn_userQuery,
+      msdyn_shouldUpload: this.Parameters.msdyn_shouldUpload,
+      msdyn_keywords: this.Parameters.msdyn_keywords,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class msdyn_GetDocumentContentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetDocumentContentResponse> {
-    const data = await response.json();
-    return msdyn_GetDocumentContentResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetDocumentContentResponse.fromResponse({});
+    return msdyn_GetDocumentContentResponse.fromResponse(await response.json());
   }
 }
 

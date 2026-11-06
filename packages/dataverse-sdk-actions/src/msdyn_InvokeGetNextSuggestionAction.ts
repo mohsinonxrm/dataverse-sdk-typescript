@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,25 +11,31 @@ export interface msdyn_InvokeGetNextSuggestionResponse {
 }
 
 /**
+ * Parameters of the msdyn_InvokeGetNextSuggestion action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_InvokeGetNextSuggestionActionParameters {
+  Entity?: EntityReference | AnyEntityPayload;
+  CustomAgentResponse?: string;
+  SourceContextEntity?: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_InvokeGetNextSuggestion action
  *
  * Unbound action
  */
 export class msdyn_InvokeGetNextSuggestionAction implements Executable<msdyn_InvokeGetNextSuggestionResponse> {
-  constructor(
-    public readonly entity?: EntityReference | AnyEntityPayload,
-    public readonly customAgentResponse?: string,
-    public readonly sourceContextEntity?: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: msdyn_InvokeGetNextSuggestionActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_InvokeGetNextSuggestion`;
 
-    const body: Record<string, unknown> = {
-      Entity: this.entity,
-      CustomAgentResponse: this.customAgentResponse,
-      SourceContextEntity: this.sourceContextEntity,
-    };
+    const body = requestBody({
+      Entity: this.parameters.Entity,
+      CustomAgentResponse: this.parameters.CustomAgentResponse,
+      SourceContextEntity: this.parameters.SourceContextEntity,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_InvokeGetNextSuggestionAction implements Executable<msdyn_Inv
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeGetNextSuggestionResponse> {
-    const data = await response.json();
-    return data as msdyn_InvokeGetNextSuggestionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_InvokeGetNextSuggestionResponse;
+    return (await response.json()) as msdyn_InvokeGetNextSuggestionResponse;
   }
 }

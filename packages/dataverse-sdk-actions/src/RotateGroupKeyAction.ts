@@ -12,6 +12,8 @@ export interface RotateGroupKeyResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.flowmachinegroup)
+ *
+ * The first argument is the id of the flowmachinegroup record to call it on.
  */
 export class RotateGroupKeyAction implements Executable<RotateGroupKeyResponse> {
   constructor(public readonly flowmachinegroupId: string) {}
@@ -30,7 +32,8 @@ export class RotateGroupKeyAction implements Executable<RotateGroupKeyResponse> 
   }
 
   async parseResponse(response: Response): Promise<RotateGroupKeyResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RotateGroupKeyResponse;
+    return (await response.json()) as RotateGroupKeyResponse;
   }
 }

@@ -2,8 +2,18 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_ExecuteARCResponse as msdyn_ExecuteARCResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ExecuteARC message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecuteARCRequestParameters {
+  CreatedEntityReference: EntityReference | AnyEntityPayload;
+  RuleId?: string;
+}
 
 /**
  * msdyn_ExecuteARC request message
@@ -14,20 +24,19 @@ export class msdyn_ExecuteARCRequest
   extends OrganizationRequest
   implements Executable<msdyn_ExecuteARCResponse>
 {
-  constructor(
-    public createdEntityReference: EntityReference | AnyEntityPayload,
-    public ruleId?: string
-  ) {
-    super("msdyn_ExecuteARC");
+  declare readonly Parameters: Readonly<msdyn_ExecuteARCRequestParameters>;
+
+  constructor(parameters: msdyn_ExecuteARCRequestParameters) {
+    super("msdyn_ExecuteARC", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecuteARC`;
 
-    const body: Record<string, unknown> = {
-      CreatedEntityReference: this.createdEntityReference,
-      RuleId: this.ruleId,
-    };
+    const body = requestBody({
+      CreatedEntityReference: this.Parameters.CreatedEntityReference,
+      RuleId: this.Parameters.RuleId,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_ExecuteARCRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteARCResponse> {
-    const data = await response.json();
-    return msdyn_ExecuteARCResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ExecuteARCResponse.fromResponse({});
+    return msdyn_ExecuteARCResponse.fromResponse(await response.json());
   }
 }
 

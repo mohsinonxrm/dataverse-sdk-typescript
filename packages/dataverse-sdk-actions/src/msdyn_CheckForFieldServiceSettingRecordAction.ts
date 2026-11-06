@@ -33,7 +33,8 @@ export class msdyn_CheckForFieldServiceSettingRecordAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckForFieldServiceSettingRecordResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForFieldServiceSettingRecordResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckForFieldServiceSettingRecordResponse;
+    return (await response.json()) as msdyn_CheckForFieldServiceSettingRecordResponse;
   }
 }

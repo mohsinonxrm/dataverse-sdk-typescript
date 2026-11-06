@@ -2,8 +2,19 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { email } from "./types/index.js";
+
+/**
+ * Parameters of the SendEmailFromTemplate message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendEmailFromTemplateRequestParameters {
+  TemplateId: string;
+  Regarding: EntityReference | AnyEntityPayload;
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * SendEmailFromTemplate request message
@@ -14,22 +25,20 @@ export class SendEmailFromTemplateRequest
   extends OrganizationRequest
   implements Executable<SendEmailFromTemplateResponse>
 {
-  constructor(
-    public templateId: string,
-    public regarding: EntityReference | AnyEntityPayload,
-    public target: EntityReference | AnyEntityPayload
-  ) {
-    super("SendEmailFromTemplate");
+  declare readonly Parameters: Readonly<SendEmailFromTemplateRequestParameters>;
+
+  constructor(parameters: SendEmailFromTemplateRequestParameters) {
+    super("SendEmailFromTemplate", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SendEmailFromTemplate`;
 
-    const body: Record<string, unknown> = {
-      TemplateId: this.templateId,
-      Regarding: this.regarding,
-      Target: this.target,
-    };
+    const body = requestBody({
+      TemplateId: this.Parameters.TemplateId,
+      Regarding: this.Parameters.Regarding,
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class SendEmailFromTemplateRequest
   }
 
   async parseResponse(response: Response): Promise<SendEmailFromTemplateResponse> {
-    const data = await response.json();
-    return SendEmailFromTemplateResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return SendEmailFromTemplateResponse.fromResponse({});
+    return SendEmailFromTemplateResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_createevaluationplanbatch action
@@ -8,19 +9,27 @@ export interface msdyn_createevaluationplanbatchResponse {
 }
 
 /**
+ * Parameters of the msdyn_createevaluationplanbatch action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_createevaluationplanbatchActionParameters {
+  EvaluationPlanRunId: string;
+}
+
+/**
  * msdyn_createevaluationplanbatch action
  *
  * Unbound action
  */
 export class msdyn_createevaluationplanbatchAction implements Executable<msdyn_createevaluationplanbatchResponse> {
-  constructor(public readonly evaluationPlanRunId: string) {}
+  constructor(public readonly parameters: msdyn_createevaluationplanbatchActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_createevaluationplanbatch`;
 
-    const body: Record<string, unknown> = {
-      EvaluationPlanRunId: this.evaluationPlanRunId,
-    };
+    const body = requestBody({
+      EvaluationPlanRunId: this.parameters.EvaluationPlanRunId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_createevaluationplanbatchAction implements Executable<msdyn_c
   }
 
   async parseResponse(response: Response): Promise<msdyn_createevaluationplanbatchResponse> {
-    const data = await response.json();
-    return data as msdyn_createevaluationplanbatchResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_createevaluationplanbatchResponse;
+    return (await response.json()) as msdyn_createevaluationplanbatchResponse;
   }
 }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetPostOperations action
@@ -9,23 +10,29 @@ export interface msdyn_GetPostOperationsResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetPostOperations action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetPostOperationsActionParameters {
+  workflowId: string;
+  correlationId: string;
+}
+
+/**
  * msdyn_GetPostOperations action
  *
  * Unbound action
  */
 export class msdyn_GetPostOperationsAction implements Executable<msdyn_GetPostOperationsResponse> {
-  constructor(
-    public readonly workflowId: string,
-    public readonly correlationId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetPostOperationsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetPostOperations`;
 
-    const body: Record<string, unknown> = {
-      workflowId: this.workflowId,
-      correlationId: this.correlationId,
-    };
+    const body = requestBody({
+      workflowId: this.parameters.workflowId,
+      correlationId: this.parameters.correlationId,
+    });
 
     return {
       method: "POST",
@@ -38,7 +45,8 @@ export class msdyn_GetPostOperationsAction implements Executable<msdyn_GetPostOp
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPostOperationsResponse> {
-    const data = await response.json();
-    return data as msdyn_GetPostOperationsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetPostOperationsResponse;
+    return (await response.json()) as msdyn_GetPostOperationsResponse;
   }
 }

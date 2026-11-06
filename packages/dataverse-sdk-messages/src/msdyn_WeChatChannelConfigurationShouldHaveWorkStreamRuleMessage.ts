@@ -31,8 +31,12 @@ export class msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse> {
-    const data = await response.json();
-    return msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    return msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

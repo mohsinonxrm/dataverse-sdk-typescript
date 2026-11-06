@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetSalesCopilotEmailInsightsResponse as msdyn_GetSalesCopilotEmailInsightsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetSalesCopilotEmailInsights message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSalesCopilotEmailInsightsRequestParameters {
+  msdyn_activityid?: string;
+  msdyn_regardinglogicalname: string;
+  msdyn_internetmessageid: string;
+  msdyn_regardingid: string;
+  msdyn_messageid: string;
+}
 
 /**
  * msdyn_GetSalesCopilotEmailInsights request message
@@ -12,26 +25,22 @@ export class msdyn_GetSalesCopilotEmailInsightsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSalesCopilotEmailInsightsResponse>
 {
-  constructor(
-    public msdyn_activityid: string | undefined,
-    public msdyn_regardinglogicalname: string,
-    public msdyn_internetmessageid: string,
-    public msdyn_regardingid: string,
-    public msdyn_messageid: string
-  ) {
-    super("msdyn_GetSalesCopilotEmailInsights");
+  declare readonly Parameters: Readonly<msdyn_GetSalesCopilotEmailInsightsRequestParameters>;
+
+  constructor(parameters: msdyn_GetSalesCopilotEmailInsightsRequestParameters) {
+    super("msdyn_GetSalesCopilotEmailInsights", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSalesCopilotEmailInsights`;
 
-    const body: Record<string, unknown> = {
-      msdyn_activityid: this.msdyn_activityid,
-      msdyn_regardinglogicalname: this.msdyn_regardinglogicalname,
-      msdyn_internetmessageid: this.msdyn_internetmessageid,
-      msdyn_regardingid: this.msdyn_regardingid,
-      msdyn_messageid: this.msdyn_messageid,
-    };
+    const body = requestBody({
+      msdyn_activityid: this.Parameters.msdyn_activityid,
+      msdyn_regardinglogicalname: this.Parameters.msdyn_regardinglogicalname,
+      msdyn_internetmessageid: this.Parameters.msdyn_internetmessageid,
+      msdyn_regardingid: this.Parameters.msdyn_regardingid,
+      msdyn_messageid: this.Parameters.msdyn_messageid,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class msdyn_GetSalesCopilotEmailInsightsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSalesCopilotEmailInsightsResponse> {
-    const data = await response.json();
-    return msdyn_GetSalesCopilotEmailInsightsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetSalesCopilotEmailInsightsResponse.fromResponse({});
+    return msdyn_GetSalesCopilotEmailInsightsResponse.fromResponse(await response.json());
   }
 }
 

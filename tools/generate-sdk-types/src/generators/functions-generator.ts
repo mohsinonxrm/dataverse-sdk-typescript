@@ -8,7 +8,6 @@ import {
   csdlTypeToTs,
   csdlTypeToTsWithExpansion,
   toPascalCase as _toPascalCase,
-  toCamelCase,
   getEntitySetName,
   isCollectionType,
   extractEntityTypeName,
@@ -25,6 +24,13 @@ import { ENTITY_PAYLOAD_MODULE, ENTITY_PAYLOAD_SOURCE } from "../utils/entity-pa
 import { operationNames } from "../utils/overloads.js";
 import { exportedEnumNames } from "./complex-types-generator.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
+import {
+  bindingDoc,
+  parametersArgument,
+  parametersInterface,
+  parametersInterfaceName,
+  parseResponseBody,
+} from "../utils/operation-parameters.js";
 
 /**
  * Map Complex* types to their non-Complex EntityType equivalents.
@@ -346,29 +352,14 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
   code += generateResponseInterface(csdl, func, responseInterfaceName);
   code += `\n`;
 
-  // Generate function class
-  code += `/**\n`;
-  code += ` * ${func.name} function\n`;
-  code += ` *\n`;
-  code += ` * ${func.isBound ? "Bound" : "Unbound"} function\n`;
-  if (func.bindingParameter) {
-    code += ` * Binding parameter: ${func.bindingParameter.name || "unnamed"} (${func.bindingParameter.type})\n`;
-  }
   // Collection-bound: called on an entity set (#69)
   const collection =
     func.isBound && func.bindingParameter && isCollectionType(func.bindingParameter.type)
       ? collectionBinding(csdl, func.bindingParameter.type)
       : undefined;
-  if (collection?.needsEntitySetName) {
-    code += ` *\n`;
-    code += ` * The first argument is the entity set to call it on, for example "accounts".\n`;
-  }
-  code += ` */\n`;
-  code += `export class ${className} implements Executable<${responseInterfaceName}> {\n`;
 
-  // Generate constructor parameters
-  // For bound functions, the binding parameter becomes entityId: string (just the GUID)
-  // All other parameters stay as-is
+  // Constructor arguments: the record or entity set a bound function runs on (in the URL), then
+  // one object with the CSDL parameters (#96)
   const constructorParams: Array<{
     name: string;
     type: string;
@@ -414,7 +405,7 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
     }
 
     constructorParams.push({
-      name: toCamelCase(param.name),
+      name: param.name,
       type: functionParameterTsType(csdl, param.type),
       tsName: param.name,
       isBinding: false,
@@ -423,20 +414,37 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
     });
   }
 
-  if (constructorParams.length > 0) {
+  const bindingParams = constructorParams.filter((p) => p.isBinding);
+  const aliasParams = constructorParams
+    .filter((p) => !p.isBinding)
+    .map((p) => ({ name: p.tsName, type: p.type, optional: p.optional === true }));
+  const parametersName = parametersInterfaceName(className);
+  if (aliasParams.length > 0) {
+    code += parametersInterface(parametersName, `${func.name} function`, aliasParams);
+    code += `\n`;
+  }
+
+  // Generate function class
+  code += `/**\n`;
+  code += ` * ${func.name} function\n`;
+  code += ` *\n`;
+  code += ` * ${func.isBound ? "Bound" : "Unbound"} function\n`;
+  if (func.bindingParameter) {
+    code += ` * Binding parameter: ${func.bindingParameter.name || "unnamed"} (${func.bindingParameter.type})\n`;
+  }
+  code += bindingDoc(bindingParams[0]?.name, func.bindingParameter?.type);
+  code += ` */\n`;
+  code += `export class ${className} implements Executable<${responseInterfaceName}> {\n`;
+
+  const ctorArgs = [
+    ...bindingParams.map((p) => `public readonly ${p.name}: ${p.type}`),
+    ...(aliasParams.length > 0
+      ? [parametersArgument("public readonly", parametersName, aliasParams)]
+      : []),
+  ];
+  if (ctorArgs.length > 0) {
     code += `  constructor(\n`;
-    constructorParams.forEach((param, i) => {
-      // Optional arguments must come last: an optional parameter followed by a required one
-      // stays positional but accepts undefined. Either way undefined leaves the alias out.
-      const trailing = constructorParams.slice(i).every((p) => p.optional === true);
-      if (param.optional && trailing) {
-        code += `    public readonly ${param.name}?: ${param.type},\n`;
-      } else if (param.optional) {
-        code += `    public readonly ${param.name}: ${param.type} | undefined,\n`;
-      } else {
-        code += `    public readonly ${param.name}: ${param.type},\n`;
-      }
-    });
+    for (const arg of ctorArgs) code += `    ${arg},\n`;
     code += `  ) {}\n\n`;
   }
 
@@ -482,21 +490,21 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
         // Determine parameter type category
         const kind = aliasKind(csdl, paramType);
 
-        code += `    if (this.${param.name} !== undefined) {\n`;
+        code += `    if (this.parameters.${param.tsName} !== undefined) {\n`;
         if (kind === "entityReference") {
           // A record reference: {"@odata.id": "<entity set>(<id>)"}; throws without an entity set (#72)
           usesAliasLiteral = true;
           code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', formatParameterAlias(this.${param.name}, '${paramType}', 'EntityType'));\n`;
+          code += `      params.append('${alias}', formatParameterAlias(this.parameters.${param.tsName}, '${paramType}', 'EntityType'));\n`;
         } else if (kind === "complex") {
           // Complex types need JSON serialization
           code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', JSON.stringify(this.${param.name}));\n`;
+          code += `      params.append('${alias}', JSON.stringify(this.parameters.${param.tsName}));\n`;
         } else {
           // Primitives and enums: an OData literal for the parameter's type (#22, #67, #68)
           usesAliasLiteral = true;
           code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', ${scalarAliasCall(csdl, param.name, paramType)});\n`;
+          code += `      params.append('${alias}', ${scalarAliasCall(csdl, `parameters.${param.tsName}`, paramType)});\n`;
         }
         code += `    }\n`;
       }
@@ -516,13 +524,13 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
     }
 
     // Add query parameters using parameter aliases (the entity set isn't one)
-    const aliasParams = constructorParams.filter((p) => !p.isBinding);
-    if (aliasParams.length > 0) {
+    const queryParams = constructorParams.filter((p) => !p.isBinding);
+    if (queryParams.length > 0) {
       code += `    // Build query parameters using parameter aliases\n`;
       code += `    const params = new URLSearchParams();\n`;
       code += `    const aliases: string[] = [];\n`;
       let aliasIndex = 1;
-      for (const param of aliasParams) {
+      for (const param of queryParams) {
         const alias = `@p${String(aliasIndex++)}`;
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const paramDef = func.parameters?.find((p) => p.name === param.tsName);
@@ -532,21 +540,21 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
         // Determine parameter type category
         const kind = aliasKind(csdl, paramType);
 
-        code += `    if (this.${param.name} !== undefined) {\n`;
+        code += `    if (this.parameters.${param.tsName} !== undefined) {\n`;
         if (kind === "entityReference") {
           // A record reference: {"@odata.id": "<entity set>(<id>)"}; throws without an entity set (#72)
           usesAliasLiteral = true;
           code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', formatParameterAlias(this.${param.name}, '${paramType}', 'EntityType'));\n`;
+          code += `      params.append('${alias}', formatParameterAlias(this.parameters.${param.tsName}, '${paramType}', 'EntityType'));\n`;
         } else if (kind === "complex") {
           // Complex types need JSON serialization
           code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', JSON.stringify(this.${param.name}));\n`;
+          code += `      params.append('${alias}', JSON.stringify(this.parameters.${param.tsName}));\n`;
         } else {
           // Primitives and enums: an OData literal for the parameter's type (#22, #67, #68)
           usesAliasLiteral = true;
           code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', ${scalarAliasCall(csdl, param.name, paramType)});\n`;
+          code += `      params.append('${alias}', ${scalarAliasCall(csdl, `parameters.${param.tsName}`, paramType)});\n`;
         }
         code += `    }\n`;
       }
@@ -567,8 +575,7 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
 
   // Generate parseResponse method
   code += `  async parseResponse(response: Response): Promise<${responseInterfaceName}> {\n`;
-  code += `    const data = await response.json();\n`;
-  code += `    return data as ${responseInterfaceName};\n`;
+  code += parseResponseBody(responseInterfaceName);
   code += `  }\n`;
 
   code += `}\n`;
@@ -652,10 +659,15 @@ function generateFunctionsIndex(
   // One export per class: overloads have their own (#75), and a name with no unbound overload
   // has no plain-name export (#286)
   const entries = operations
-    .map((op) => stems.get(op) ?? op.name)
-    .sort((a, b) => a.localeCompare(b));
-  for (const stem of entries) {
-    code += `export { ${stem}Function, type ${stem}Response } from './${stem}Function.js';\n`;
+    .map((op) => ({
+      stem: stems.get(op) ?? op.name,
+      hasParameters: op.parameters.some((p) => p.name),
+    }))
+    .sort((a, b) => a.stem.localeCompare(b.stem));
+  for (const { stem, hasParameters } of entries) {
+    // The parameters interface of the constructor (#96)
+    const parameters = hasParameters ? `, type ${parametersInterfaceName(`${stem}Function`)}` : "";
+    code += `export { ${stem}Function${parameters}, type ${stem}Response } from './${stem}Function.js';\n`;
   }
 
   // Export EntityReference type

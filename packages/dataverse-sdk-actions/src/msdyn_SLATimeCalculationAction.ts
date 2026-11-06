@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SLATimeCalculation action
@@ -9,31 +10,37 @@ export interface msdyn_SLATimeCalculationResponse {
 }
 
 /**
+ * Parameters of the msdyn_SLATimeCalculation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SLATimeCalculationActionParameters {
+  calendarId: string;
+  startTime: string;
+  requestType: string;
+  minutes?: number;
+  logsLevel?: number;
+  endTime?: string;
+}
+
+/**
  * msdyn_SLATimeCalculation action
  *
  * Unbound action
  */
 export class msdyn_SLATimeCalculationAction implements Executable<msdyn_SLATimeCalculationResponse> {
-  constructor(
-    public readonly calendarId: string,
-    public readonly startTime: string,
-    public readonly requestType: string,
-    public readonly minutes?: number,
-    public readonly logsLevel?: number,
-    public readonly endTime?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_SLATimeCalculationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SLATimeCalculation`;
 
-    const body: Record<string, unknown> = {
-      calendarId: this.calendarId,
-      startTime: this.startTime,
-      requestType: this.requestType,
-      minutes: this.minutes,
-      logsLevel: this.logsLevel,
-      endTime: this.endTime,
-    };
+    const body = requestBody({
+      calendarId: this.parameters.calendarId,
+      startTime: this.parameters.startTime,
+      requestType: this.parameters.requestType,
+      minutes: this.parameters.minutes,
+      logsLevel: this.parameters.logsLevel,
+      endTime: this.parameters.endTime,
+    });
 
     return {
       method: "POST",
@@ -46,7 +53,8 @@ export class msdyn_SLATimeCalculationAction implements Executable<msdyn_SLATimeC
   }
 
   async parseResponse(response: Response): Promise<msdyn_SLATimeCalculationResponse> {
-    const data = await response.json();
-    return data as msdyn_SLATimeCalculationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SLATimeCalculationResponse;
+    return (await response.json()) as msdyn_SLATimeCalculationResponse;
   }
 }

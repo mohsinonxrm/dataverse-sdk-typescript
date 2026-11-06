@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetWidgetsDataResponse as msdyn_GetWidgetsDataResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetWidgetsData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetWidgetsDataRequestParameters {
+  msdyn_request: string;
+  msdyn_entityname?: string;
+  msdyn_widgettype: string;
+  msdyn_widgetid: string;
+  msdyn_recordid?: string;
+}
 
 /**
  * msdyn_GetWidgetsData request message
@@ -12,26 +25,22 @@ export class msdyn_GetWidgetsDataRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetWidgetsDataResponse>
 {
-  constructor(
-    public msdyn_request: string,
-    public msdyn_entityname: string | undefined,
-    public msdyn_widgettype: string,
-    public msdyn_widgetid: string,
-    public msdyn_recordid?: string
-  ) {
-    super("msdyn_GetWidgetsData");
+  declare readonly Parameters: Readonly<msdyn_GetWidgetsDataRequestParameters>;
+
+  constructor(parameters: msdyn_GetWidgetsDataRequestParameters) {
+    super("msdyn_GetWidgetsData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetWidgetsData`;
 
-    const body: Record<string, unknown> = {
-      msdyn_request: this.msdyn_request,
-      msdyn_entityname: this.msdyn_entityname,
-      msdyn_widgettype: this.msdyn_widgettype,
-      msdyn_widgetid: this.msdyn_widgetid,
-      msdyn_recordid: this.msdyn_recordid,
-    };
+    const body = requestBody({
+      msdyn_request: this.Parameters.msdyn_request,
+      msdyn_entityname: this.Parameters.msdyn_entityname,
+      msdyn_widgettype: this.Parameters.msdyn_widgettype,
+      msdyn_widgetid: this.Parameters.msdyn_widgetid,
+      msdyn_recordid: this.Parameters.msdyn_recordid,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class msdyn_GetWidgetsDataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetWidgetsDataResponse> {
-    const data = await response.json();
-    return msdyn_GetWidgetsDataResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetWidgetsDataResponse.fromResponse({});
+    return msdyn_GetWidgetsDataResponse.fromResponse(await response.json());
   }
 }
 

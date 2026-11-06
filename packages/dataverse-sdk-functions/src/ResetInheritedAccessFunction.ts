@@ -9,12 +9,20 @@ export interface ResetInheritedAccessResponse {
 }
 
 /**
+ * Parameters of the ResetInheritedAccess function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ResetInheritedAccessFunctionParameters {
+  FetchXml: string;
+}
+
+/**
  * ResetInheritedAccess function
  *
  * Unbound function
  */
 export class ResetInheritedAccessFunction implements Executable<ResetInheritedAccessResponse> {
-  constructor(public readonly fetchXml: string) {}
+  constructor(public readonly parameters: ResetInheritedAccessFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/ResetInheritedAccess`;
@@ -22,9 +30,9 @@ export class ResetInheritedAccessFunction implements Executable<ResetInheritedAc
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.fetchXml !== undefined) {
+    if (this.parameters.FetchXml !== undefined) {
       aliases.push(`FetchXml=@p1`);
-      params.append("@p1", formatParameterAlias(this.fetchXml, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.FetchXml, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class ResetInheritedAccessFunction implements Executable<ResetInheritedAc
   }
 
   async parseResponse(response: Response): Promise<ResetInheritedAccessResponse> {
-    const data = await response.json();
-    return data as ResetInheritedAccessResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ResetInheritedAccessResponse;
+    return (await response.json()) as ResetInheritedAccessResponse;
   }
 }

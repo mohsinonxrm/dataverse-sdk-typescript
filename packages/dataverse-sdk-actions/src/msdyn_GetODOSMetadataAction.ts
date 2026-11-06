@@ -26,7 +26,8 @@ export class msdyn_GetODOSMetadataAction implements Executable<msdyn_GetODOSMeta
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetODOSMetadataResponse> {
-    const data = await response.json();
-    return data as msdyn_GetODOSMetadataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetODOSMetadataResponse;
+    return (await response.json()) as msdyn_GetODOSMetadataResponse;
   }
 }

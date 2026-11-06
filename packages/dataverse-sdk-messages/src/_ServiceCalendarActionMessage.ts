@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { _ServiceCalendarActionResponse as _ServiceCalendarActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the _ServiceCalendarAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _ServiceCalendarActionRequestParameters {
+  Type: number;
+  InputParameter?: string;
+}
 
 /**
  * _ServiceCalendarAction request message
@@ -12,20 +22,19 @@ export class _ServiceCalendarActionRequest
   extends OrganizationRequest
   implements Executable<_ServiceCalendarActionResponse>
 {
-  constructor(
-    public type: number,
-    public inputParameter?: string
-  ) {
-    super("_ServiceCalendarAction");
+  declare readonly Parameters: Readonly<_ServiceCalendarActionRequestParameters>;
+
+  constructor(parameters: _ServiceCalendarActionRequestParameters) {
+    super("_ServiceCalendarAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_ServiceCalendarAction`;
 
-    const body: Record<string, unknown> = {
-      Type: this.type,
-      InputParameter: this.inputParameter,
-    };
+    const body = requestBody({
+      Type: this.Parameters.Type,
+      InputParameter: this.Parameters.InputParameter,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class _ServiceCalendarActionRequest
   }
 
   async parseResponse(response: Response): Promise<_ServiceCalendarActionResponse> {
-    const data = await response.json();
-    return _ServiceCalendarActionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return _ServiceCalendarActionResponse.fromResponse({});
+    return _ServiceCalendarActionResponse.fromResponse(await response.json());
   }
 }
 

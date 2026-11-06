@@ -31,7 +31,9 @@ export class RetrieveUnpublishedMultiple_savedquery_collectionFunction implement
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_savedquery_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_savedquery_collectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublishedMultiple_savedquery_collectionResponse;
+    return (await response.json()) as RetrieveUnpublishedMultiple_savedquery_collectionResponse;
   }
 }

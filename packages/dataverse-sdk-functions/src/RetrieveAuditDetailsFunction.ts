@@ -13,6 +13,8 @@ export interface RetrieveAuditDetailsResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.audit)
+ *
+ * The first argument is the id of the audit record to call it on.
  */
 export class RetrieveAuditDetailsFunction implements Executable<RetrieveAuditDetailsResponse> {
   constructor(public readonly auditId: string) {}
@@ -31,7 +33,8 @@ export class RetrieveAuditDetailsFunction implements Executable<RetrieveAuditDet
   }
 
   async parseResponse(response: Response): Promise<RetrieveAuditDetailsResponse> {
-    const data = await response.json();
-    return data as RetrieveAuditDetailsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveAuditDetailsResponse;
+    return (await response.json()) as RetrieveAuditDetailsResponse;
   }
 }

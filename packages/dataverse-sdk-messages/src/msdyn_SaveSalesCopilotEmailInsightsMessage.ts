@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SaveSalesCopilotEmailInsights message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SaveSalesCopilotEmailInsightsRequestParameters {
+  msdyn_extractedquestions?: Record<string, unknown>[];
+  msdyn_activityid?: string;
+  msdyn_salescopilotemailinsights: Record<string, unknown>[];
+}
 
 /**
  * msdyn_SaveSalesCopilotEmailInsights request message
@@ -10,22 +21,20 @@ export class msdyn_SaveSalesCopilotEmailInsightsRequest
   extends OrganizationRequest
   implements Executable<msdyn_SaveSalesCopilotEmailInsightsResponse>
 {
-  constructor(
-    public msdyn_extractedquestions: Record<string, unknown>[] | undefined,
-    public msdyn_activityid: string | undefined,
-    public msdyn_salescopilotemailinsights: Record<string, unknown>[]
-  ) {
-    super("msdyn_SaveSalesCopilotEmailInsights");
+  declare readonly Parameters: Readonly<msdyn_SaveSalesCopilotEmailInsightsRequestParameters>;
+
+  constructor(parameters: msdyn_SaveSalesCopilotEmailInsightsRequestParameters) {
+    super("msdyn_SaveSalesCopilotEmailInsights", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SaveSalesCopilotEmailInsights`;
 
-    const body: Record<string, unknown> = {
-      msdyn_extractedquestions: this.msdyn_extractedquestions,
-      msdyn_activityid: this.msdyn_activityid,
-      msdyn_salescopilotemailinsights: this.msdyn_salescopilotemailinsights,
-    };
+    const body = requestBody({
+      msdyn_extractedquestions: this.Parameters.msdyn_extractedquestions,
+      msdyn_activityid: this.Parameters.msdyn_activityid,
+      msdyn_salescopilotemailinsights: this.Parameters.msdyn_salescopilotemailinsights,
+    });
 
     return {
       method: "POST",

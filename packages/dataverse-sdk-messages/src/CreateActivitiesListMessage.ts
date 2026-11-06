@@ -2,12 +2,30 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type {
   CreateActivitiesListResponse as CreateActivitiesListResponseData,
   PropagationOwnershipOptions,
 } from "./types/index.js";
+
+/**
+ * Parameters of the CreateActivitiesList message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateActivitiesListRequestParameters {
+  ListId: string;
+  FriendlyName: string;
+  Activity: EntityReference | AnyEntityPayload;
+  TemplateId: string;
+  Propagate: boolean;
+  OwnershipOptions: PropagationOwnershipOptions;
+  Owner: EntityReference | AnyEntityPayload;
+  sendEmail: boolean;
+  PostWorkflowEvent: boolean;
+  QueueId?: string;
+}
 
 /**
  * CreateActivitiesList request message
@@ -18,36 +36,27 @@ export class CreateActivitiesListRequest
   extends OrganizationRequest
   implements Executable<CreateActivitiesListResponse>
 {
-  constructor(
-    public listId: string,
-    public friendlyName: string,
-    public activity: EntityReference | AnyEntityPayload,
-    public templateId: string,
-    public propagate: boolean,
-    public ownershipOptions: PropagationOwnershipOptions,
-    public owner: EntityReference | AnyEntityPayload,
-    public sendEmail: boolean,
-    public postWorkflowEvent: boolean,
-    public queueId?: string
-  ) {
-    super("CreateActivitiesList");
+  declare readonly Parameters: Readonly<CreateActivitiesListRequestParameters>;
+
+  constructor(parameters: CreateActivitiesListRequestParameters) {
+    super("CreateActivitiesList", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateActivitiesList`;
 
-    const body: Record<string, unknown> = {
-      ListId: this.listId,
-      FriendlyName: this.friendlyName,
-      Activity: this.activity,
-      TemplateId: this.templateId,
-      Propagate: this.propagate,
-      OwnershipOptions: enumBody(this.ownershipOptions, "PropagationOwnershipOptions"),
-      Owner: this.owner,
-      sendEmail: this.sendEmail,
-      PostWorkflowEvent: this.postWorkflowEvent,
-      QueueId: this.queueId,
-    };
+    const body = requestBody({
+      ListId: this.Parameters.ListId,
+      FriendlyName: this.Parameters.FriendlyName,
+      Activity: this.Parameters.Activity,
+      TemplateId: this.Parameters.TemplateId,
+      Propagate: this.Parameters.Propagate,
+      OwnershipOptions: enumBody(this.Parameters.OwnershipOptions, "PropagationOwnershipOptions"),
+      Owner: this.Parameters.Owner,
+      sendEmail: this.Parameters.sendEmail,
+      PostWorkflowEvent: this.Parameters.PostWorkflowEvent,
+      QueueId: this.Parameters.QueueId,
+    });
 
     return {
       method: "POST",
@@ -60,8 +69,9 @@ export class CreateActivitiesListRequest
   }
 
   async parseResponse(response: Response): Promise<CreateActivitiesListResponse> {
-    const data = await response.json();
-    return CreateActivitiesListResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CreateActivitiesListResponse.fromResponse({});
+    return CreateActivitiesListResponse.fromResponse(await response.json());
   }
 }
 

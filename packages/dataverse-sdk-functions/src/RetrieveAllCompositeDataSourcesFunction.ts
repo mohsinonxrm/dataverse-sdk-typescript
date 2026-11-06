@@ -10,12 +10,20 @@ export interface RetrieveAllCompositeDataSourcesResponse {
 }
 
 /**
+ * Parameters of the RetrieveAllCompositeDataSources function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAllCompositeDataSourcesFunctionParameters {
+  ParentSchemaName: string;
+}
+
+/**
  * RetrieveAllCompositeDataSources function
  *
  * Unbound function
  */
 export class RetrieveAllCompositeDataSourcesFunction implements Executable<RetrieveAllCompositeDataSourcesResponse> {
-  constructor(public readonly parentSchemaName: string) {}
+  constructor(public readonly parameters: RetrieveAllCompositeDataSourcesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveAllCompositeDataSources`;
@@ -23,9 +31,9 @@ export class RetrieveAllCompositeDataSourcesFunction implements Executable<Retri
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.parentSchemaName !== undefined) {
+    if (this.parameters.ParentSchemaName !== undefined) {
       aliases.push(`ParentSchemaName=@p1`);
-      params.append("@p1", formatParameterAlias(this.parentSchemaName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.ParentSchemaName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class RetrieveAllCompositeDataSourcesFunction implements Executable<Retri
   }
 
   async parseResponse(response: Response): Promise<RetrieveAllCompositeDataSourcesResponse> {
-    const data = await response.json();
-    return data as RetrieveAllCompositeDataSourcesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveAllCompositeDataSourcesResponse;
+    return (await response.json()) as RetrieveAllCompositeDataSourcesResponse;
   }
 }

@@ -26,7 +26,8 @@ export class msdyn_GetAuditStateAction implements Executable<msdyn_GetAuditState
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAuditStateResponse> {
-    const data = await response.json();
-    return data as msdyn_GetAuditStateResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetAuditStateResponse;
+    return (await response.json()) as msdyn_GetAuditStateResponse;
   }
 }

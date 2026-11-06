@@ -29,7 +29,8 @@ export class msdyn_CheckIfSLAStaticFlowIsDisabledAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfSLAStaticFlowIsDisabledResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfSLAStaticFlowIsDisabledResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckIfSLAStaticFlowIsDisabledResponse;
+    return (await response.json()) as msdyn_CheckIfSLAStaticFlowIsDisabledResponse;
   }
 }

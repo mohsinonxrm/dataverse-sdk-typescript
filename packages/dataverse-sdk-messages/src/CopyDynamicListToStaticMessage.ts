@@ -7,6 +7,8 @@ import type { list } from "./types/index.js";
  * CopyDynamicListToStatic request message
  *
  * Web API Action: CopyDynamicListToStatic
+ *
+ * The first argument is the id of the list record to call it on.
  */
 export class CopyDynamicListToStaticRequest
   extends OrganizationRequest
@@ -30,8 +32,9 @@ export class CopyDynamicListToStaticRequest
   }
 
   async parseResponse(response: Response): Promise<CopyDynamicListToStaticResponse> {
-    const data = await response.json();
-    return CopyDynamicListToStaticResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CopyDynamicListToStaticResponse.fromResponse({});
+    return CopyDynamicListToStaticResponse.fromResponse(await response.json());
   }
 }
 

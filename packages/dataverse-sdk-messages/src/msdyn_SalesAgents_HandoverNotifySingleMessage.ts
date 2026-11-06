@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAgents_HandoverNotifySingleResponse as msdyn_SalesAgents_HandoverNotifySingleResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_HandoverNotifySingle message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_HandoverNotifySingleRequestParameters {
+  msdyn_SalesAgentRun: string;
+  msdyn_TrackingId?: string;
+  msdyn_HandoverContext?: string;
+}
 
 /**
  * msdyn_SalesAgents_HandoverNotifySingle request message
@@ -12,22 +23,20 @@ export class msdyn_SalesAgents_HandoverNotifySingleRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_HandoverNotifySingleResponse>
 {
-  constructor(
-    public msdyn_SalesAgentRun: string,
-    public msdyn_TrackingId?: string,
-    public msdyn_HandoverContext?: string
-  ) {
-    super("msdyn_SalesAgents_HandoverNotifySingle");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_HandoverNotifySingleRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_HandoverNotifySingleRequestParameters) {
+    super("msdyn_SalesAgents_HandoverNotifySingle", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_HandoverNotifySingle`;
 
-    const body: Record<string, unknown> = {
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_HandoverContext: this.msdyn_HandoverContext,
-    };
+    const body = requestBody({
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_HandoverContext: this.Parameters.msdyn_HandoverContext,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,10 @@ export class msdyn_SalesAgents_HandoverNotifySingleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_HandoverNotifySingleResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_HandoverNotifySingleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_SalesAgents_HandoverNotifySingleResponse.fromResponse({});
+    return msdyn_SalesAgents_HandoverNotifySingleResponse.fromResponse(await response.json());
   }
 }
 

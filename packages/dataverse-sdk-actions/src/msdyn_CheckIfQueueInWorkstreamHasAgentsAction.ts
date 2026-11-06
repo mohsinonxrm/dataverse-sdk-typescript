@@ -30,7 +30,8 @@ export class msdyn_CheckIfQueueInWorkstreamHasAgentsAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfQueueInWorkstreamHasAgentsResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfQueueInWorkstreamHasAgentsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckIfQueueInWorkstreamHasAgentsResponse;
+    return (await response.json()) as msdyn_CheckIfQueueInWorkstreamHasAgentsResponse;
   }
 }

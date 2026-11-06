@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { ColumnSet } from "./types/index.js";
 
@@ -14,23 +15,29 @@ export interface GenerateSalesOrderFromOpportunityResponse {
 }
 
 /**
+ * Parameters of the GenerateSalesOrderFromOpportunity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GenerateSalesOrderFromOpportunityActionParameters {
+  OpportunityId: string;
+  ColumnSet?: ColumnSet;
+}
+
+/**
  * GenerateSalesOrderFromOpportunity action
  *
  * Unbound action
  */
 export class GenerateSalesOrderFromOpportunityAction implements Executable<GenerateSalesOrderFromOpportunityResponse> {
-  constructor(
-    public readonly opportunityId: string,
-    public readonly columnSet?: ColumnSet
-  ) {}
+  constructor(public readonly parameters: GenerateSalesOrderFromOpportunityActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GenerateSalesOrderFromOpportunity`;
 
-    const body: Record<string, unknown> = {
-      OpportunityId: this.opportunityId,
-      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
-    };
+    const body = requestBody({
+      OpportunityId: this.parameters.OpportunityId,
+      ColumnSet: enumBody(this.parameters.ColumnSet, "ColumnSet"),
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class GenerateSalesOrderFromOpportunityAction implements Executable<Gener
   }
 
   async parseResponse(response: Response): Promise<GenerateSalesOrderFromOpportunityResponse> {
-    const data = await response.json();
-    return data as GenerateSalesOrderFromOpportunityResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GenerateSalesOrderFromOpportunityResponse;
+    return (await response.json()) as GenerateSalesOrderFromOpportunityResponse;
   }
 }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { activitymimeattachment, email } from "./types/index.js";
 
@@ -14,46 +15,56 @@ export interface DeliverPromoteEmailResponse extends email {
 }
 
 /**
+ * Parameters of the DeliverPromoteEmail action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeliverPromoteEmailActionParameters {
+  MessageId: string;
+  Subject?: string;
+  From: string;
+  To: string;
+  Cc: string;
+  Bcc: string;
+  ReceivedOn: string;
+  SubmittedBy: string;
+  Importance: string;
+  Body: string;
+  Attachments: (EntityReference | EntityPayload<activitymimeattachment>)[];
+  ExtraProperties?: EntityReference | AnyEntityPayload;
+}
+
+/**
  * DeliverPromoteEmail action
  *
  * Bound action
  * Binding parameter: entity (mscrm.email)
+ *
+ * The first argument is the id of the email record to call it on.
  */
 export class DeliverPromoteEmailAction implements Executable<DeliverPromoteEmailResponse> {
   constructor(
     public readonly emailId: string,
-    public readonly messageId: string,
-    public readonly subject: string | undefined,
-    public readonly from: string,
-    public readonly to: string,
-    public readonly cc: string,
-    public readonly bcc: string,
-    public readonly receivedOn: string,
-    public readonly submittedBy: string,
-    public readonly importance: string,
-    public readonly body: string,
-    public readonly attachments: (EntityReference | EntityPayload<activitymimeattachment>)[],
-    public readonly extraProperties?: EntityReference | AnyEntityPayload
+    public readonly parameters: DeliverPromoteEmailActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/emails(${this.emailId})/Microsoft.Dynamics.CRM.DeliverPromoteEmail`;
 
-    const body: Record<string, unknown> = {
-      MessageId: this.messageId,
-      Subject: this.subject,
-      From: this.from,
-      To: this.to,
-      Cc: this.cc,
-      Bcc: this.bcc,
-      ReceivedOn: this.receivedOn,
-      SubmittedBy: this.submittedBy,
-      Importance: this.importance,
-      Body: this.body,
-      Attachments: this.attachments,
-      ExtraProperties: this.extraProperties,
-    };
+    const body = requestBody({
+      MessageId: this.parameters.MessageId,
+      Subject: this.parameters.Subject,
+      From: this.parameters.From,
+      To: this.parameters.To,
+      Cc: this.parameters.Cc,
+      Bcc: this.parameters.Bcc,
+      ReceivedOn: this.parameters.ReceivedOn,
+      SubmittedBy: this.parameters.SubmittedBy,
+      Importance: this.parameters.Importance,
+      Body: this.parameters.Body,
+      Attachments: this.parameters.Attachments,
+      ExtraProperties: this.parameters.ExtraProperties,
+    });
 
     return {
       method: "POST",
@@ -66,7 +77,8 @@ export class DeliverPromoteEmailAction implements Executable<DeliverPromoteEmail
   }
 
   async parseResponse(response: Response): Promise<DeliverPromoteEmailResponse> {
-    const data = await response.json();
-    return data as DeliverPromoteEmailResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as DeliverPromoteEmailResponse;
+    return (await response.json()) as DeliverPromoteEmailResponse;
   }
 }

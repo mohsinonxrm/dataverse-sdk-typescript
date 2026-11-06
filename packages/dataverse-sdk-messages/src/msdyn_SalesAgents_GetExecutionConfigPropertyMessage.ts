@@ -2,8 +2,18 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_SalesAgents_GetExecutionConfigPropertyResponse as msdyn_SalesAgents_GetExecutionConfigPropertyResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_GetExecutionConfigProperty message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_GetExecutionConfigPropertyRequestParameters {
+  msdyn_salesagentprofileid: EntityReference | AnyEntityPayload;
+  msdyn_config_key: string;
+}
 
 /**
  * msdyn_SalesAgents_GetExecutionConfigProperty request message
@@ -14,20 +24,19 @@ export class msdyn_SalesAgents_GetExecutionConfigPropertyRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_GetExecutionConfigPropertyResponse>
 {
-  constructor(
-    public msdyn_salesagentprofileid: EntityReference | AnyEntityPayload,
-    public msdyn_config_key: string
-  ) {
-    super("msdyn_SalesAgents_GetExecutionConfigProperty");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_GetExecutionConfigPropertyRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_GetExecutionConfigPropertyRequestParameters) {
+    super("msdyn_SalesAgents_GetExecutionConfigProperty", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_GetExecutionConfigProperty`;
 
-    const body: Record<string, unknown> = {
-      msdyn_salesagentprofileid: this.msdyn_salesagentprofileid,
-      msdyn_config_key: this.msdyn_config_key,
-    };
+    const body = requestBody({
+      msdyn_salesagentprofileid: this.Parameters.msdyn_salesagentprofileid,
+      msdyn_config_key: this.Parameters.msdyn_config_key,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,10 @@ export class msdyn_SalesAgents_GetExecutionConfigPropertyRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetExecutionConfigPropertyResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_GetExecutionConfigPropertyResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_SalesAgents_GetExecutionConfigPropertyResponse.fromResponse({});
+    return msdyn_SalesAgents_GetExecutionConfigPropertyResponse.fromResponse(await response.json());
   }
 }
 

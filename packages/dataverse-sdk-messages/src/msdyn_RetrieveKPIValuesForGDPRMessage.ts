@@ -2,8 +2,17 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_RetrieveKPIValuesForGDPRResponse as msdyn_RetrieveKPIValuesForGDPRResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrieveKPIValuesForGDPR message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveKPIValuesForGDPRRequestParameters {
+  CRMRecord: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_RetrieveKPIValuesForGDPR request message
@@ -14,16 +23,18 @@ export class msdyn_RetrieveKPIValuesForGDPRRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveKPIValuesForGDPRResponse>
 {
-  constructor(public cRMRecord: EntityReference | AnyEntityPayload) {
-    super("msdyn_RetrieveKPIValuesForGDPR");
+  declare readonly Parameters: Readonly<msdyn_RetrieveKPIValuesForGDPRRequestParameters>;
+
+  constructor(parameters: msdyn_RetrieveKPIValuesForGDPRRequestParameters) {
+    super("msdyn_RetrieveKPIValuesForGDPR", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveKPIValuesForGDPR`;
 
-    const body: Record<string, unknown> = {
-      CRMRecord: this.cRMRecord,
-    };
+    const body = requestBody({
+      CRMRecord: this.Parameters.CRMRecord,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,9 @@ export class msdyn_RetrieveKPIValuesForGDPRRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveKPIValuesForGDPRResponse> {
-    const data = await response.json();
-    return msdyn_RetrieveKPIValuesForGDPRResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_RetrieveKPIValuesForGDPRResponse.fromResponse({});
+    return msdyn_RetrieveKPIValuesForGDPRResponse.fromResponse(await response.json());
   }
 }
 

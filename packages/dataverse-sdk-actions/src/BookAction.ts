@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { BusinessNotification, ValidationResult } from "./types/index.js";
 
@@ -12,23 +13,29 @@ export interface BookResponse {
 }
 
 /**
+ * Parameters of the Book action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface BookActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  ReturnNotifications?: boolean;
+}
+
+/**
  * Book action
  *
  * Unbound action
  */
 export class BookAction implements Executable<BookResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly returnNotifications?: boolean
-  ) {}
+  constructor(public readonly parameters: BookActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/Book`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      ReturnNotifications: this.returnNotifications,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      ReturnNotifications: this.parameters.ReturnNotifications,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class BookAction implements Executable<BookResponse> {
   }
 
   async parseResponse(response: Response): Promise<BookResponse> {
-    const data = await response.json();
-    return data as BookResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as BookResponse;
+    return (await response.json()) as BookResponse;
   }
 }

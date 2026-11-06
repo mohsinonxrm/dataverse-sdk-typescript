@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetSalesAcceleratedSeller message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSalesAcceleratedSellerRequestParameters {
+  IsTeamsRequest: boolean;
+  ExpandDetails?: boolean;
+}
 
 /**
  * msdyn_GetSalesAcceleratedSeller request message
@@ -11,20 +21,19 @@ export class msdyn_GetSalesAcceleratedSellerRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetSalesAcceleratedSellerResponse>
 {
-  constructor(
-    public isTeamsRequest: boolean,
-    public expandDetails?: boolean
-  ) {
-    super("msdyn_GetSalesAcceleratedSeller");
+  declare readonly Parameters: Readonly<msdyn_GetSalesAcceleratedSellerRequestParameters>;
+
+  constructor(parameters: msdyn_GetSalesAcceleratedSellerRequestParameters) {
+    super("msdyn_GetSalesAcceleratedSeller", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSalesAcceleratedSeller`;
 
-    const body: Record<string, unknown> = {
-      IsTeamsRequest: this.isTeamsRequest,
-      ExpandDetails: this.expandDetails,
-    };
+    const body = requestBody({
+      IsTeamsRequest: this.Parameters.IsTeamsRequest,
+      ExpandDetails: this.Parameters.ExpandDetails,
+    });
 
     return {
       method: "POST",
@@ -37,8 +46,9 @@ export class msdyn_GetSalesAcceleratedSellerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSalesAcceleratedSellerResponse> {
-    const data = await response.json();
-    return msdyn_GetSalesAcceleratedSellerResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetSalesAcceleratedSellerResponse.fromResponse({});
+    return msdyn_GetSalesAcceleratedSellerResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from McpUpdateTable action
@@ -8,27 +9,33 @@ export interface McpUpdateTableResponse {
 }
 
 /**
+ * Parameters of the McpUpdateTable action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface McpUpdateTableActionParameters {
+  newDisplayName?: string;
+  tablename: string;
+  item: string;
+  description?: string;
+}
+
+/**
  * McpUpdateTable action
  *
  * Unbound action
  */
 export class McpUpdateTableAction implements Executable<McpUpdateTableResponse> {
-  constructor(
-    public readonly newDisplayName: string | undefined,
-    public readonly tablename: string,
-    public readonly item: string,
-    public readonly description?: string
-  ) {}
+  constructor(public readonly parameters: McpUpdateTableActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/McpUpdateTable`;
 
-    const body: Record<string, unknown> = {
-      newDisplayName: this.newDisplayName,
-      tablename: this.tablename,
-      item: this.item,
-      description: this.description,
-    };
+    const body = requestBody({
+      newDisplayName: this.parameters.newDisplayName,
+      tablename: this.parameters.tablename,
+      item: this.parameters.item,
+      description: this.parameters.description,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class McpUpdateTableAction implements Executable<McpUpdateTableResponse> 
   }
 
   async parseResponse(response: Response): Promise<McpUpdateTableResponse> {
-    const data = await response.json();
-    return data as McpUpdateTableResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as McpUpdateTableResponse;
+    return (await response.json()) as McpUpdateTableResponse;
   }
 }

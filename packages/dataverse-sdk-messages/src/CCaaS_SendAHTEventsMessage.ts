@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_SendAHTEventsResponse as CCaaS_SendAHTEventsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_SendAHTEvents message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_SendAHTEventsRequestParameters {
+  ApiVersion: string;
+  Payload: string;
+}
 
 /**
  * CCaaS_SendAHTEvents request message
@@ -12,20 +22,19 @@ export class CCaaS_SendAHTEventsRequest
   extends OrganizationRequest
   implements Executable<CCaaS_SendAHTEventsResponse>
 {
-  constructor(
-    public apiVersion: string,
-    public payload: string
-  ) {
-    super("CCaaS_SendAHTEvents");
+  declare readonly Parameters: Readonly<CCaaS_SendAHTEventsRequestParameters>;
+
+  constructor(parameters: CCaaS_SendAHTEventsRequestParameters) {
+    super("CCaaS_SendAHTEvents", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_SendAHTEvents`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      Payload: this.payload,
-    };
+    const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
+      Payload: this.Parameters.Payload,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class CCaaS_SendAHTEventsRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_SendAHTEventsResponse> {
-    const data = await response.json();
-    return CCaaS_SendAHTEventsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CCaaS_SendAHTEventsResponse.fromResponse({});
+    return CCaaS_SendAHTEventsResponse.fromResponse(await response.json());
   }
 }
 

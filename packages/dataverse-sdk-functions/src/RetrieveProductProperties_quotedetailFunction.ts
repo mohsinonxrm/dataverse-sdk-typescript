@@ -13,6 +13,8 @@ export interface RetrieveProductProperties_quotedetailResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.quotedetail)
+ *
+ * The first argument is the id of the quotedetail record to call it on.
  */
 export class RetrieveProductProperties_quotedetailFunction implements Executable<RetrieveProductProperties_quotedetailResponse> {
   constructor(public readonly quotedetailId: string) {}
@@ -31,7 +33,8 @@ export class RetrieveProductProperties_quotedetailFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveProductProperties_quotedetailResponse> {
-    const data = await response.json();
-    return data as RetrieveProductProperties_quotedetailResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveProductProperties_quotedetailResponse;
+    return (await response.json()) as RetrieveProductProperties_quotedetailResponse;
   }
 }

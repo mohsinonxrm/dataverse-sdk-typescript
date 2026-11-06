@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_DateTimeFormatOptionsResponse as msdynmkt_DateTimeFormatOptionsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_DateTimeFormatOptions message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_DateTimeFormatOptionsRequestParameters {
+  msdynmkt_DateTimeRequestDateOnly?: boolean;
+  msdynmkt_DateTimeRequestTimeZoneId?: string;
+  msdynmkt_DateTimeRequestTimezoneIndepentent?: boolean;
+  msdynmkt_DateTimeRequestDateOnlyV2?: boolean;
+  msdynmkt_DateTimeRequestLCID?: number;
+  msdynmkt_DateTimeRequestCultureName?: string;
+}
 
 /**
  * msdynmkt_DateTimeFormatOptions request message
@@ -12,28 +26,24 @@ export class msdynmkt_DateTimeFormatOptionsRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_DateTimeFormatOptionsResponse>
 {
-  constructor(
-    public msdynmkt_DateTimeRequestDateOnly?: boolean,
-    public msdynmkt_DateTimeRequestTimeZoneId?: string,
-    public msdynmkt_DateTimeRequestTimezoneIndepentent?: boolean,
-    public msdynmkt_DateTimeRequestDateOnlyV2?: boolean,
-    public msdynmkt_DateTimeRequestLCID?: number,
-    public msdynmkt_DateTimeRequestCultureName?: string
-  ) {
-    super("msdynmkt_DateTimeFormatOptions");
+  declare readonly Parameters: Readonly<msdynmkt_DateTimeFormatOptionsRequestParameters>;
+
+  constructor(parameters: msdynmkt_DateTimeFormatOptionsRequestParameters = {}) {
+    super("msdynmkt_DateTimeFormatOptions", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_DateTimeFormatOptions`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_DateTimeRequestDateOnly: this.msdynmkt_DateTimeRequestDateOnly,
-      msdynmkt_DateTimeRequestTimeZoneId: this.msdynmkt_DateTimeRequestTimeZoneId,
-      msdynmkt_DateTimeRequestTimezoneIndepentent: this.msdynmkt_DateTimeRequestTimezoneIndepentent,
-      msdynmkt_DateTimeRequestDateOnlyV2: this.msdynmkt_DateTimeRequestDateOnlyV2,
-      msdynmkt_DateTimeRequestLCID: this.msdynmkt_DateTimeRequestLCID,
-      msdynmkt_DateTimeRequestCultureName: this.msdynmkt_DateTimeRequestCultureName,
-    };
+    const body = requestBody({
+      msdynmkt_DateTimeRequestDateOnly: this.Parameters.msdynmkt_DateTimeRequestDateOnly,
+      msdynmkt_DateTimeRequestTimeZoneId: this.Parameters.msdynmkt_DateTimeRequestTimeZoneId,
+      msdynmkt_DateTimeRequestTimezoneIndepentent:
+        this.Parameters.msdynmkt_DateTimeRequestTimezoneIndepentent,
+      msdynmkt_DateTimeRequestDateOnlyV2: this.Parameters.msdynmkt_DateTimeRequestDateOnlyV2,
+      msdynmkt_DateTimeRequestLCID: this.Parameters.msdynmkt_DateTimeRequestLCID,
+      msdynmkt_DateTimeRequestCultureName: this.Parameters.msdynmkt_DateTimeRequestCultureName,
+    });
 
     return {
       method: "POST",
@@ -46,8 +56,9 @@ export class msdynmkt_DateTimeFormatOptionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_DateTimeFormatOptionsResponse> {
-    const data = await response.json();
-    return msdynmkt_DateTimeFormatOptionsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdynmkt_DateTimeFormatOptionsResponse.fromResponse({});
+    return msdynmkt_DateTimeFormatOptionsResponse.fromResponse(await response.json());
   }
 }
 

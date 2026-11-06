@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_RetrieveEvaluationCriteriaResponse as msdyn_RetrieveEvaluationCriteriaResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrieveEvaluationCriteria message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveEvaluationCriteriaRequestParameters {
+  msydn_RetrieveEvaluationCriteriaPayload: string;
+}
 
 /**
  * msdyn_RetrieveEvaluationCriteria request message
@@ -12,16 +21,19 @@ export class msdyn_RetrieveEvaluationCriteriaRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveEvaluationCriteriaResponse>
 {
-  constructor(public msydn_RetrieveEvaluationCriteriaPayload: string) {
-    super("msdyn_RetrieveEvaluationCriteria");
+  declare readonly Parameters: Readonly<msdyn_RetrieveEvaluationCriteriaRequestParameters>;
+
+  constructor(parameters: msdyn_RetrieveEvaluationCriteriaRequestParameters) {
+    super("msdyn_RetrieveEvaluationCriteria", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveEvaluationCriteria`;
 
-    const body: Record<string, unknown> = {
-      msydn_RetrieveEvaluationCriteriaPayload: this.msydn_RetrieveEvaluationCriteriaPayload,
-    };
+    const body = requestBody({
+      msydn_RetrieveEvaluationCriteriaPayload:
+        this.Parameters.msydn_RetrieveEvaluationCriteriaPayload,
+    });
 
     return {
       method: "POST",
@@ -34,8 +46,9 @@ export class msdyn_RetrieveEvaluationCriteriaRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveEvaluationCriteriaResponse> {
-    const data = await response.json();
-    return msdyn_RetrieveEvaluationCriteriaResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_RetrieveEvaluationCriteriaResponse.fromResponse({});
+    return msdyn_RetrieveEvaluationCriteriaResponse.fromResponse(await response.json());
   }
 }
 

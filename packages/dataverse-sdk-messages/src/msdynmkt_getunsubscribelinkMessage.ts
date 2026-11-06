@@ -1,7 +1,26 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_getunsubscribelinkResponse as msdynmkt_getunsubscribelinkResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_getunsubscribelink message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_getunsubscribelinkRequestParameters {
+  msdynmkt_purposeid: string;
+  msdynmkt_sourcemessageentityname?: string;
+  msdynmkt_messagetemplateid: string;
+  msdynmkt_owningbusinessunitid?: string;
+  msdynmkt_entitytype: string;
+  msdynmkt_entityid: string;
+  msdynmkt_contactpoint: string;
+  msdynmkt_oneclickunsubscribelink?: boolean;
+  msdynmkt_compliancesettingsid: string;
+  msdynmkt_topicid?: string;
+  msdynmkt_sourceapplication?: string;
+}
 
 /**
  * msdynmkt_getunsubscribelink request message
@@ -12,38 +31,28 @@ export class msdynmkt_getunsubscribelinkRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_getunsubscribelinkResponse>
 {
-  constructor(
-    public msdynmkt_purposeid: string,
-    public msdynmkt_sourcemessageentityname: string | undefined,
-    public msdynmkt_messagetemplateid: string,
-    public msdynmkt_owningbusinessunitid: string | undefined,
-    public msdynmkt_entitytype: string,
-    public msdynmkt_entityid: string,
-    public msdynmkt_contactpoint: string,
-    public msdynmkt_oneclickunsubscribelink: boolean | undefined,
-    public msdynmkt_compliancesettingsid: string,
-    public msdynmkt_topicid?: string,
-    public msdynmkt_sourceapplication?: string
-  ) {
-    super("msdynmkt_getunsubscribelink");
+  declare readonly Parameters: Readonly<msdynmkt_getunsubscribelinkRequestParameters>;
+
+  constructor(parameters: msdynmkt_getunsubscribelinkRequestParameters) {
+    super("msdynmkt_getunsubscribelink", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_getunsubscribelink`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_purposeid: this.msdynmkt_purposeid,
-      msdynmkt_sourcemessageentityname: this.msdynmkt_sourcemessageentityname,
-      msdynmkt_messagetemplateid: this.msdynmkt_messagetemplateid,
-      msdynmkt_owningbusinessunitid: this.msdynmkt_owningbusinessunitid,
-      msdynmkt_entitytype: this.msdynmkt_entitytype,
-      msdynmkt_entityid: this.msdynmkt_entityid,
-      msdynmkt_contactpoint: this.msdynmkt_contactpoint,
-      msdynmkt_oneclickunsubscribelink: this.msdynmkt_oneclickunsubscribelink,
-      msdynmkt_compliancesettingsid: this.msdynmkt_compliancesettingsid,
-      msdynmkt_topicid: this.msdynmkt_topicid,
-      msdynmkt_sourceapplication: this.msdynmkt_sourceapplication,
-    };
+    const body = requestBody({
+      msdynmkt_purposeid: this.Parameters.msdynmkt_purposeid,
+      msdynmkt_sourcemessageentityname: this.Parameters.msdynmkt_sourcemessageentityname,
+      msdynmkt_messagetemplateid: this.Parameters.msdynmkt_messagetemplateid,
+      msdynmkt_owningbusinessunitid: this.Parameters.msdynmkt_owningbusinessunitid,
+      msdynmkt_entitytype: this.Parameters.msdynmkt_entitytype,
+      msdynmkt_entityid: this.Parameters.msdynmkt_entityid,
+      msdynmkt_contactpoint: this.Parameters.msdynmkt_contactpoint,
+      msdynmkt_oneclickunsubscribelink: this.Parameters.msdynmkt_oneclickunsubscribelink,
+      msdynmkt_compliancesettingsid: this.Parameters.msdynmkt_compliancesettingsid,
+      msdynmkt_topicid: this.Parameters.msdynmkt_topicid,
+      msdynmkt_sourceapplication: this.Parameters.msdynmkt_sourceapplication,
+    });
 
     return {
       method: "POST",
@@ -56,8 +65,9 @@ export class msdynmkt_getunsubscribelinkRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_getunsubscribelinkResponse> {
-    const data = await response.json();
-    return msdynmkt_getunsubscribelinkResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdynmkt_getunsubscribelinkResponse.fromResponse({});
+    return msdynmkt_getunsubscribelinkResponse.fromResponse(await response.json());
   }
 }
 

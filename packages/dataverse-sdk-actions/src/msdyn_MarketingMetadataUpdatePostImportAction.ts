@@ -28,7 +28,8 @@ export class msdyn_MarketingMetadataUpdatePostImportAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_MarketingMetadataUpdatePostImportResponse> {
-    const data = await response.json();
-    return data as msdyn_MarketingMetadataUpdatePostImportResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_MarketingMetadataUpdatePostImportResponse;
+    return (await response.json()) as msdyn_MarketingMetadataUpdatePostImportResponse;
   }
 }

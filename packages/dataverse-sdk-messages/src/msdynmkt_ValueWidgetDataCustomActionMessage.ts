@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_ValueWidgetDataCustomActionResponse as msdynmkt_ValueWidgetDataCustomActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_ValueWidgetDataCustomAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_ValueWidgetDataCustomActionRequestParameters {
+  WidgetRequest?: string;
+}
 
 /**
  * msdynmkt_ValueWidgetDataCustomAction request message
@@ -12,16 +21,18 @@ export class msdynmkt_ValueWidgetDataCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_ValueWidgetDataCustomActionResponse>
 {
-  constructor(public widgetRequest?: string) {
-    super("msdynmkt_ValueWidgetDataCustomAction");
+  declare readonly Parameters: Readonly<msdynmkt_ValueWidgetDataCustomActionRequestParameters>;
+
+  constructor(parameters: msdynmkt_ValueWidgetDataCustomActionRequestParameters = {}) {
+    super("msdynmkt_ValueWidgetDataCustomAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_ValueWidgetDataCustomAction`;
 
-    const body: Record<string, unknown> = {
-      WidgetRequest: this.widgetRequest,
-    };
+    const body = requestBody({
+      WidgetRequest: this.Parameters.WidgetRequest,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,10 @@ export class msdynmkt_ValueWidgetDataCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_ValueWidgetDataCustomActionResponse> {
-    const data = await response.json();
-    return msdynmkt_ValueWidgetDataCustomActionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdynmkt_ValueWidgetDataCustomActionResponse.fromResponse({});
+    return msdynmkt_ValueWidgetDataCustomActionResponse.fromResponse(await response.json());
   }
 }
 

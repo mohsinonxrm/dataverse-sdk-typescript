@@ -31,8 +31,12 @@ export class msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse> {
-    const data = await response.json();
-    return msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse({});
+    return msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

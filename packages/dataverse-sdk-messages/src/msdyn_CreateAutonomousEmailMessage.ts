@@ -2,8 +2,27 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CreateAutonomousEmailResponse as msdyn_CreateAutonomousEmailResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CreateAutonomousEmail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateAutonomousEmailRequestParameters {
+  SourceContextEntity?: EntityReference | AnyEntityPayload;
+  Entity?: EntityReference | AnyEntityPayload;
+  StandardizedIntent?: string;
+  IntentFamilyId?: string;
+  FallbackEmailTemplateId?: string;
+  SuggestionType: string;
+  SenderEntity: EntityReference | AnyEntityPayload;
+  SuggestionSubtype: string;
+  UseCopilotRecommendedTemplate?: boolean;
+  SuggestionResponse?: string;
+  AutomationLevel?: string;
+}
 
 /**
  * msdyn_CreateAutonomousEmail request message
@@ -14,38 +33,28 @@ export class msdyn_CreateAutonomousEmailRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateAutonomousEmailResponse>
 {
-  constructor(
-    public sourceContextEntity: EntityReference | AnyEntityPayload | undefined,
-    public entity: EntityReference | AnyEntityPayload | undefined,
-    public standardizedIntent: string | undefined,
-    public intentFamilyId: string | undefined,
-    public fallbackEmailTemplateId: string | undefined,
-    public suggestionType: string,
-    public senderEntity: EntityReference | AnyEntityPayload,
-    public suggestionSubtype: string,
-    public useCopilotRecommendedTemplate?: boolean,
-    public suggestionResponse?: string,
-    public automationLevel?: string
-  ) {
-    super("msdyn_CreateAutonomousEmail");
+  declare readonly Parameters: Readonly<msdyn_CreateAutonomousEmailRequestParameters>;
+
+  constructor(parameters: msdyn_CreateAutonomousEmailRequestParameters) {
+    super("msdyn_CreateAutonomousEmail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateAutonomousEmail`;
 
-    const body: Record<string, unknown> = {
-      SourceContextEntity: this.sourceContextEntity,
-      Entity: this.entity,
-      StandardizedIntent: this.standardizedIntent,
-      IntentFamilyId: this.intentFamilyId,
-      FallbackEmailTemplateId: this.fallbackEmailTemplateId,
-      SuggestionType: this.suggestionType,
-      SenderEntity: this.senderEntity,
-      SuggestionSubtype: this.suggestionSubtype,
-      UseCopilotRecommendedTemplate: this.useCopilotRecommendedTemplate,
-      SuggestionResponse: this.suggestionResponse,
-      AutomationLevel: this.automationLevel,
-    };
+    const body = requestBody({
+      SourceContextEntity: this.Parameters.SourceContextEntity,
+      Entity: this.Parameters.Entity,
+      StandardizedIntent: this.Parameters.StandardizedIntent,
+      IntentFamilyId: this.Parameters.IntentFamilyId,
+      FallbackEmailTemplateId: this.Parameters.FallbackEmailTemplateId,
+      SuggestionType: this.Parameters.SuggestionType,
+      SenderEntity: this.Parameters.SenderEntity,
+      SuggestionSubtype: this.Parameters.SuggestionSubtype,
+      UseCopilotRecommendedTemplate: this.Parameters.UseCopilotRecommendedTemplate,
+      SuggestionResponse: this.Parameters.SuggestionResponse,
+      AutomationLevel: this.Parameters.AutomationLevel,
+    });
 
     return {
       method: "POST",
@@ -58,8 +67,9 @@ export class msdyn_CreateAutonomousEmailRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateAutonomousEmailResponse> {
-    const data = await response.json();
-    return msdyn_CreateAutonomousEmailResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CreateAutonomousEmailResponse.fromResponse({});
+    return msdyn_CreateAutonomousEmailResponse.fromResponse(await response.json());
   }
 }
 

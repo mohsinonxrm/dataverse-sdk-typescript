@@ -29,8 +29,9 @@ export class PvaGetMaxDatabaseVersionRequest
   }
 
   async parseResponse(response: Response): Promise<PvaGetMaxDatabaseVersionResponse> {
-    const data = await response.json();
-    return PvaGetMaxDatabaseVersionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return PvaGetMaxDatabaseVersionResponse.fromResponse({});
+    return PvaGetMaxDatabaseVersionResponse.fromResponse(await response.json());
   }
 }
 

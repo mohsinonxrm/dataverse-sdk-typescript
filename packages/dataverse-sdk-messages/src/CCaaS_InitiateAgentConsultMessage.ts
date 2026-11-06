@@ -1,37 +1,50 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_InitiateAgentConsult message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_InitiateAgentConsultRequestParameters {
+  ConsultType: string;
+  ConversationAccess: string;
+  QueueId: string;
+  AgentId: string;
+  ApiVersion: string;
+}
 
 /**
  * CCaaS_InitiateAgentConsult request message
  *
  * Web API Action: CCaaS_InitiateAgentConsult
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_InitiateAgentConsultRequest
   extends OrganizationRequest
   implements Executable<CCaaS_InitiateAgentConsultResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_InitiateAgentConsultRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public consultType: string,
-    public conversationAccess: string,
-    public queueId: string,
-    public agentId: string,
-    public apiVersion: string
+    parameters: CCaaS_InitiateAgentConsultRequestParameters
   ) {
-    super("CCaaS_InitiateAgentConsult");
+    super("CCaaS_InitiateAgentConsult", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentConsult`;
 
-    const body: Record<string, unknown> = {
-      ConsultType: this.consultType,
-      ConversationAccess: this.conversationAccess,
-      QueueId: this.queueId,
-      AgentId: this.agentId,
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      ConsultType: this.Parameters.ConsultType,
+      ConversationAccess: this.Parameters.ConversationAccess,
+      QueueId: this.Parameters.QueueId,
+      AgentId: this.Parameters.AgentId,
+      ApiVersion: this.Parameters.ApiVersion,
+    });
 
     return {
       method: "POST",

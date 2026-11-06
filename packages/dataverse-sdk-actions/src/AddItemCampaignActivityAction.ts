@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { campaignactivity } from "./types/index.js";
 
@@ -11,23 +12,29 @@ export interface AddItemCampaignActivityResponse {
 }
 
 /**
+ * Parameters of the AddItemCampaignActivity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddItemCampaignActivityActionParameters {
+  CampaignActivity: EntityReference | EntityPayload<campaignactivity>;
+  Item: EntityReference | AnyEntityPayload;
+}
+
+/**
  * AddItemCampaignActivity action
  *
  * Unbound action
  */
 export class AddItemCampaignActivityAction implements Executable<AddItemCampaignActivityResponse> {
-  constructor(
-    public readonly campaignActivity: EntityReference | EntityPayload<campaignactivity>,
-    public readonly item: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: AddItemCampaignActivityActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AddItemCampaignActivity`;
 
-    const body: Record<string, unknown> = {
-      CampaignActivity: this.campaignActivity,
-      Item: this.item,
-    };
+    const body = requestBody({
+      CampaignActivity: this.parameters.CampaignActivity,
+      Item: this.parameters.Item,
+    });
 
     return {
       method: "POST",
@@ -40,7 +47,8 @@ export class AddItemCampaignActivityAction implements Executable<AddItemCampaign
   }
 
   async parseResponse(response: Response): Promise<AddItemCampaignActivityResponse> {
-    const data = await response.json();
-    return data as AddItemCampaignActivityResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AddItemCampaignActivityResponse;
+    return (await response.json()) as AddItemCampaignActivityResponse;
   }
 }

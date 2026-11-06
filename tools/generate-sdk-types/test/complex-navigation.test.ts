@@ -130,15 +130,15 @@ describe("navigation properties of complex types (#231)", () => {
 import { GrantAccessRequest, createEntityReference as messageReference } from "./messages/index.js";
 import type { PrincipalAccess } from "./functions/types/index.js";
 const target = createEntityReference("account", "a1");
-export const a = new GrantAccessAction(target, { Principal: createEntityReference("team", "t1"), AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess });
+export const a = new GrantAccessAction({ Target: target, PrincipalAccess: { Principal: createEntityReference("team", "t1"), AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess } });
 const team: WebApiEntityReference = { "@odata.type": "Microsoft.Dynamics.CRM.team", teamid: "t1" };
-export const b = new GrantAccessAction(target, { Principal: team, AccessMask: AccessRights.ReadAccess });
-export const c = new GrantAccessRequest(messageReference("account", "a1"), { Principal: messageReference("team", "t1") });
+export const b = new GrantAccessAction({ Target: target, PrincipalAccess: { Principal: team, AccessMask: AccessRights.ReadAccess } });
+export const c = new GrantAccessRequest({ Target: messageReference("account", "a1"), PrincipalAccess: { Principal: messageReference("team", "t1") } });
 export const d: PrincipalAccess = { Principal: { "@odata.type": "Microsoft.Dynamics.CRM.team", teamid: "t1" } };
 // @ts-expect-error Principal is Nullable="false"
-export const e = new GrantAccessAction(target, { AccessMask: AccessRights.ReadAccess });
+export const e = new GrantAccessAction({ Target: target, PrincipalAccess: { AccessMask: AccessRights.ReadAccess } });
 // @ts-expect-error a hand-written { logicalName, id } is not a principal (#251)
-export const f = new GrantAccessAction(target, { Principal: { "@odata.type": "Microsoft.Dynamics.CRM.team", logicalName: "team", id: "t1" } });
+export const f = new GrantAccessAction({ Target: target, PrincipalAccess: { Principal: { "@odata.type": "Microsoft.Dynamics.CRM.team", logicalName: "team", id: "t1" } } });
 `
     );
     expect(errors).toEqual([]);

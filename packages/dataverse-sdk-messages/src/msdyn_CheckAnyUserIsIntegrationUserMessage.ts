@@ -29,8 +29,10 @@ export class msdyn_CheckAnyUserIsIntegrationUserRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckAnyUserIsIntegrationUserResponse> {
-    const data = await response.json();
-    return msdyn_CheckAnyUserIsIntegrationUserResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckAnyUserIsIntegrationUserResponse.fromResponse({});
+    return msdyn_CheckAnyUserIsIntegrationUserResponse.fromResponse(await response.json());
   }
 }
 

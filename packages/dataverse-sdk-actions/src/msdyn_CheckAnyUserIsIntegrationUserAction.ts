@@ -30,7 +30,8 @@ export class msdyn_CheckAnyUserIsIntegrationUserAction implements Executable<msd
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckAnyUserIsIntegrationUserResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckAnyUserIsIntegrationUserResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckAnyUserIsIntegrationUserResponse;
+    return (await response.json()) as msdyn_CheckAnyUserIsIntegrationUserResponse;
   }
 }

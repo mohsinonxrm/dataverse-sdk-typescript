@@ -31,8 +31,10 @@ export class msdyncrm_GetFileAttributesFromConfigurationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyncrm_GetFileAttributesFromConfigurationResponse> {
-    const data = await response.json();
-    return msdyncrm_GetFileAttributesFromConfigurationResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyncrm_GetFileAttributesFromConfigurationResponse.fromResponse({});
+    return msdyncrm_GetFileAttributesFromConfigurationResponse.fromResponse(await response.json());
   }
 }
 

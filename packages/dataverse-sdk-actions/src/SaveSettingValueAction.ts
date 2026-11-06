@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from SaveSettingValue action
@@ -8,27 +9,33 @@ export interface SaveSettingValueResponse {
 }
 
 /**
+ * Parameters of the SaveSettingValue action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SaveSettingValueActionParameters {
+  AppUniqueName?: string;
+  SettingName: string;
+  Value: string;
+  SolutionUniqueName?: string;
+}
+
+/**
  * SaveSettingValue action
  *
  * Unbound action
  */
 export class SaveSettingValueAction implements Executable<SaveSettingValueResponse> {
-  constructor(
-    public readonly appUniqueName: string | undefined,
-    public readonly settingName: string,
-    public readonly value: string,
-    public readonly solutionUniqueName?: string
-  ) {}
+  constructor(public readonly parameters: SaveSettingValueActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SaveSettingValue`;
 
-    const body: Record<string, unknown> = {
-      AppUniqueName: this.appUniqueName,
-      SettingName: this.settingName,
-      Value: this.value,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      AppUniqueName: this.parameters.AppUniqueName,
+      SettingName: this.parameters.SettingName,
+      Value: this.parameters.Value,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class SaveSettingValueAction implements Executable<SaveSettingValueRespon
   }
 
   async parseResponse(response: Response): Promise<SaveSettingValueResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SaveSettingValueResponse;
+    return (await response.json()) as SaveSettingValueResponse;
   }
 }

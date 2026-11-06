@@ -1,37 +1,50 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_AddChannelToConversationResponse as CCaaS_AddChannelToConversationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_AddChannelToConversation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_AddChannelToConversationRequestParameters {
+  AgentId?: string;
+  ChannelType: string;
+  DestinationPhoneNumber?: string;
+  ApiVersion: string;
+}
 
 /**
  * CCaaS_AddChannelToConversation request message
  *
  * Web API Action: CCaaS_AddChannelToConversation
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_AddChannelToConversationRequest
   extends OrganizationRequest
   implements Executable<CCaaS_AddChannelToConversationResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_AddChannelToConversationRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public agentId: string | undefined,
-    public channelType: string,
-    public destinationPhoneNumber: string | undefined,
-    public apiVersion: string
+    parameters: CCaaS_AddChannelToConversationRequestParameters
   ) {
-    super("CCaaS_AddChannelToConversation");
+    super("CCaaS_AddChannelToConversation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_AddChannelToConversation`;
 
-    const body: Record<string, unknown> = {
-      AgentId: this.agentId,
-      ChannelType: this.channelType,
-      DestinationPhoneNumber: this.destinationPhoneNumber,
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      AgentId: this.Parameters.AgentId,
+      ChannelType: this.Parameters.ChannelType,
+      DestinationPhoneNumber: this.Parameters.DestinationPhoneNumber,
+      ApiVersion: this.Parameters.ApiVersion,
+    });
 
     return {
       method: "POST",
@@ -44,8 +57,9 @@ export class CCaaS_AddChannelToConversationRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_AddChannelToConversationResponse> {
-    const data = await response.json();
-    return CCaaS_AddChannelToConversationResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CCaaS_AddChannelToConversationResponse.fromResponse({});
+    return CCaaS_AddChannelToConversationResponse.fromResponse(await response.json());
   }
 }
 

@@ -26,7 +26,8 @@ export class msdyn_ForecastRecalculateAllAction implements Executable<msdyn_Fore
   }
 
   async parseResponse(response: Response): Promise<msdyn_ForecastRecalculateAllResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ForecastRecalculateAllResponse;
+    return (await response.json()) as msdyn_ForecastRecalculateAllResponse;
   }
 }

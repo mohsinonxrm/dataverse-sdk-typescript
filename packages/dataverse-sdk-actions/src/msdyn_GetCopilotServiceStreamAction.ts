@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetCopilotServiceStream action
@@ -8,23 +9,29 @@ export interface msdyn_GetCopilotServiceStreamResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetCopilotServiceStream action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetCopilotServiceStreamActionParameters {
+  RequestPayload?: string;
+  Context: string;
+}
+
+/**
  * msdyn_GetCopilotServiceStream action
  *
  * Unbound action
  */
 export class msdyn_GetCopilotServiceStreamAction implements Executable<msdyn_GetCopilotServiceStreamResponse> {
-  constructor(
-    public readonly requestPayload: string | undefined,
-    public readonly context: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetCopilotServiceStreamActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetCopilotServiceStream`;
 
-    const body: Record<string, unknown> = {
-      RequestPayload: this.requestPayload,
-      Context: this.context,
-    };
+    const body = requestBody({
+      RequestPayload: this.parameters.RequestPayload,
+      Context: this.parameters.Context,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_GetCopilotServiceStreamAction implements Executable<msdyn_Get
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCopilotServiceStreamResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetCopilotServiceStreamResponse;
+    return (await response.json()) as msdyn_GetCopilotServiceStreamResponse;
   }
 }

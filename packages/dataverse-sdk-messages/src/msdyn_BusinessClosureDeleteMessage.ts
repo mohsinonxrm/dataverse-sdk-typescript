@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_BusinessClosureDeleteResponse as msdyn_BusinessClosureDeleteResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_BusinessClosureDelete message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_BusinessClosureDeleteRequestParameters {
+  Ids: string;
+}
 
 /**
  * msdyn_BusinessClosureDelete request message
@@ -12,16 +21,18 @@ export class msdyn_BusinessClosureDeleteRequest
   extends OrganizationRequest
   implements Executable<msdyn_BusinessClosureDeleteResponse>
 {
-  constructor(public ids: string) {
-    super("msdyn_BusinessClosureDelete");
+  declare readonly Parameters: Readonly<msdyn_BusinessClosureDeleteRequestParameters>;
+
+  constructor(parameters: msdyn_BusinessClosureDeleteRequestParameters) {
+    super("msdyn_BusinessClosureDelete", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_BusinessClosureDelete`;
 
-    const body: Record<string, unknown> = {
-      Ids: this.ids,
-    };
+    const body = requestBody({
+      Ids: this.Parameters.Ids,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_BusinessClosureDeleteRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_BusinessClosureDeleteResponse> {
-    const data = await response.json();
-    return msdyn_BusinessClosureDeleteResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_BusinessClosureDeleteResponse.fromResponse({});
+    return msdyn_BusinessClosureDeleteResponse.fromResponse(await response.json());
   }
 }
 

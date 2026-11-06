@@ -1,7 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_EvaluateConversationResponse as msdyn_EvaluateConversationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_EvaluateConversation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_EvaluateConversationRequestParameters {
+  CriteriaId: string;
+  ExtendedContext?: string;
+  ConversationPayload?: string;
+  LangLocale?: string;
+  EvaluationId: string;
+  AllowCrossGeo?: boolean;
+  RecordId?: string;
+}
 
 /**
  * msdyn_EvaluateConversation request message
@@ -12,30 +27,24 @@ export class msdyn_EvaluateConversationRequest
   extends OrganizationRequest
   implements Executable<msdyn_EvaluateConversationResponse>
 {
-  constructor(
-    public criteriaId: string,
-    public extendedContext: string | undefined,
-    public conversationPayload: string | undefined,
-    public langLocale: string | undefined,
-    public evaluationId: string,
-    public allowCrossGeo?: boolean,
-    public recordId?: string
-  ) {
-    super("msdyn_EvaluateConversation");
+  declare readonly Parameters: Readonly<msdyn_EvaluateConversationRequestParameters>;
+
+  constructor(parameters: msdyn_EvaluateConversationRequestParameters) {
+    super("msdyn_EvaluateConversation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_EvaluateConversation`;
 
-    const body: Record<string, unknown> = {
-      CriteriaId: this.criteriaId,
-      ExtendedContext: this.extendedContext,
-      ConversationPayload: this.conversationPayload,
-      LangLocale: this.langLocale,
-      EvaluationId: this.evaluationId,
-      AllowCrossGeo: this.allowCrossGeo,
-      RecordId: this.recordId,
-    };
+    const body = requestBody({
+      CriteriaId: this.Parameters.CriteriaId,
+      ExtendedContext: this.Parameters.ExtendedContext,
+      ConversationPayload: this.Parameters.ConversationPayload,
+      LangLocale: this.Parameters.LangLocale,
+      EvaluationId: this.Parameters.EvaluationId,
+      AllowCrossGeo: this.Parameters.AllowCrossGeo,
+      RecordId: this.Parameters.RecordId,
+    });
 
     return {
       method: "POST",
@@ -48,8 +57,9 @@ export class msdyn_EvaluateConversationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_EvaluateConversationResponse> {
-    const data = await response.json();
-    return msdyn_EvaluateConversationResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_EvaluateConversationResponse.fromResponse({});
+    return msdyn_EvaluateConversationResponse.fromResponse(await response.json());
   }
 }
 

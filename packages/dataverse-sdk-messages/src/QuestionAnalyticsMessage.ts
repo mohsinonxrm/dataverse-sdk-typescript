@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { QuestionAnalyticsResponse as QuestionAnalyticsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the QuestionAnalytics message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface QuestionAnalyticsRequestParameters {
+  botId: string;
+  page?: number;
+  endDateTime: string;
+  startDateTime: string;
+  state: string;
+  count?: number;
+}
 
 /**
  * QuestionAnalytics request message
@@ -12,28 +26,23 @@ export class QuestionAnalyticsRequest
   extends OrganizationRequest
   implements Executable<QuestionAnalyticsResponse>
 {
-  constructor(
-    public botId: string,
-    public page: number | undefined,
-    public endDateTime: string,
-    public startDateTime: string,
-    public state: string,
-    public count?: number
-  ) {
-    super("QuestionAnalytics");
+  declare readonly Parameters: Readonly<QuestionAnalyticsRequestParameters>;
+
+  constructor(parameters: QuestionAnalyticsRequestParameters) {
+    super("QuestionAnalytics", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/QuestionAnalytics`;
 
-    const body: Record<string, unknown> = {
-      botId: this.botId,
-      page: this.page,
-      endDateTime: this.endDateTime,
-      startDateTime: this.startDateTime,
-      state: this.state,
-      count: this.count,
-    };
+    const body = requestBody({
+      botId: this.Parameters.botId,
+      page: this.Parameters.page,
+      endDateTime: this.Parameters.endDateTime,
+      startDateTime: this.Parameters.startDateTime,
+      state: this.Parameters.state,
+      count: this.Parameters.count,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class QuestionAnalyticsRequest
   }
 
   async parseResponse(response: Response): Promise<QuestionAnalyticsResponse> {
-    const data = await response.json();
-    return QuestionAnalyticsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return QuestionAnalyticsResponse.fromResponse({});
+    return QuestionAnalyticsResponse.fromResponse(await response.json());
   }
 }
 

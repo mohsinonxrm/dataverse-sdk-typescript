@@ -26,7 +26,8 @@ export class msdyn_RetrievePlatformCopilotSettingsAction implements Executable<m
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrievePlatformCopilotSettingsResponse> {
-    const data = await response.json();
-    return data as msdyn_RetrievePlatformCopilotSettingsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_RetrievePlatformCopilotSettingsResponse;
+    return (await response.json()) as msdyn_RetrievePlatformCopilotSettingsResponse;
   }
 }

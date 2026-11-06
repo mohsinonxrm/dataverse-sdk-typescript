@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CardCreateCloneResponse as CardCreateCloneResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CardCreateClone message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CardCreateCloneRequestParameters {
+  CardId: string;
+  CardName: string;
+}
 
 /**
  * CardCreateClone request message
@@ -12,20 +22,19 @@ export class CardCreateCloneRequest
   extends OrganizationRequest
   implements Executable<CardCreateCloneResponse>
 {
-  constructor(
-    public cardId: string,
-    public cardName: string
-  ) {
-    super("CardCreateClone");
+  declare readonly Parameters: Readonly<CardCreateCloneRequestParameters>;
+
+  constructor(parameters: CardCreateCloneRequestParameters) {
+    super("CardCreateClone", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CardCreateClone`;
 
-    const body: Record<string, unknown> = {
-      CardId: this.cardId,
-      CardName: this.cardName,
-    };
+    const body = requestBody({
+      CardId: this.Parameters.CardId,
+      CardName: this.Parameters.CardName,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class CardCreateCloneRequest
   }
 
   async parseResponse(response: Response): Promise<CardCreateCloneResponse> {
-    const data = await response.json();
-    return CardCreateCloneResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CardCreateCloneResponse.fromResponse({});
+    return CardCreateCloneResponse.fromResponse(await response.json());
   }
 }
 

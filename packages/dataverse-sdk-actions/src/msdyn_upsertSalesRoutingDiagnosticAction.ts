@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,25 +11,31 @@ export interface msdyn_upsertSalesRoutingDiagnosticResponse {
 }
 
 /**
+ * Parameters of the msdyn_upsertSalesRoutingDiagnostic action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_upsertSalesRoutingDiagnosticActionParameters {
+  TargetObject: EntityReference | AnyEntityPayload;
+  Payload: string;
+  EventType: number;
+}
+
+/**
  * msdyn_upsertSalesRoutingDiagnostic action
  *
  * Unbound action
  */
 export class msdyn_upsertSalesRoutingDiagnosticAction implements Executable<msdyn_upsertSalesRoutingDiagnosticResponse> {
-  constructor(
-    public readonly targetObject: EntityReference | AnyEntityPayload,
-    public readonly payload: string,
-    public readonly eventType: number
-  ) {}
+  constructor(public readonly parameters: msdyn_upsertSalesRoutingDiagnosticActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_upsertSalesRoutingDiagnostic`;
 
-    const body: Record<string, unknown> = {
-      TargetObject: this.targetObject,
-      Payload: this.payload,
-      EventType: this.eventType,
-    };
+    const body = requestBody({
+      TargetObject: this.parameters.TargetObject,
+      Payload: this.parameters.Payload,
+      EventType: this.parameters.EventType,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class msdyn_upsertSalesRoutingDiagnosticAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_upsertSalesRoutingDiagnosticResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_upsertSalesRoutingDiagnosticResponse;
+    return (await response.json()) as msdyn_upsertSalesRoutingDiagnosticResponse;
   }
 }

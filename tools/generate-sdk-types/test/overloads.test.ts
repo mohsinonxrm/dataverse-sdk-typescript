@@ -166,7 +166,7 @@ describe("operation overloads (#75)", () => {
     const functionsIndex = await read("functions/index.ts");
     for (const stem of ["RetrievePrincipalAccess_systemuser", "RetrievePrincipalAccess_team"]) {
       expect(functionsIndex).toContain(
-        `export { ${stem}Function, type ${stem}Response } from './${stem}Function.js';`
+        `export { ${stem}Function, type ${stem}FunctionParameters, type ${stem}Response } from './${stem}Function.js';`
       );
     }
     expect(await read("actions/index.ts")).toContain(
@@ -218,13 +218,13 @@ describe("operation overloads (#75)", () => {
 import * as a from "./actions/index.js";
 import * as m from "./messages/index.js";
 const target = f.createEntityReference("account", "a1", { entitySetName: "accounts" });
-export const byUser = new f.RetrievePrincipalAccess_systemuserFunction("u1", target);
-export const byTeam = new f.RetrievePrincipalAccess_teamFunction("t1", target);
+export const byUser = new f.RetrievePrincipalAccess_systemuserFunction("u1", { Target: target });
+export const byTeam = new f.RetrievePrincipalAccess_teamFunction("t1", { Target: target });
 export const addUser = new a.AddToTeam_systemuserAction("u1");
 export const addView = new m.AddToTeam_savedqueryRequest("v1");
 export const views = new f.RetrieveUnpublishedMultiple_savedquery_collectionFunction();
-export const share = new a.ShareRecordAction(a.createEntityReference("account", "a1"));
-export const shareTeam = new m.ShareRecord_teamRequest("t1", m.createEntityReference("account", "a1"));
+export const share = new a.ShareRecordAction({ Target: a.createEntityReference("account", "a1") });
+export const shareTeam = new m.ShareRecord_teamRequest("t1", { Target: m.createEntityReference("account", "a1") });
 `
     );
     expect(errors).toEqual([]);
@@ -249,8 +249,8 @@ describe("supplemental ExportToExcel (#75)", () => {
   it("generates ExportToExcelAction and ExportToExcelRequest with the five required parameters", async () => {
     const action = await read("actions/ExportToExcelAction.ts");
     expect(action).toContain("export class ExportToExcelAction");
-    expect(action).toContain("public readonly view: EntityReference | AnyEntityPayload,");
-    expect(action).toContain("public readonly queryParameters: InputArgumentCollection");
+    expect(action).toContain("  View: EntityReference | AnyEntityPayload;");
+    expect(action).toContain("  QueryParameters: InputArgumentCollection;");
     expect(action).toContain("ExcelFile: string;");
     expect(await read("messages/ExportToExcelMessage.ts")).toContain(
       "export class ExportToExcelRequest"
@@ -259,9 +259,15 @@ describe("supplemental ExportToExcel (#75)", () => {
       dir,
       "use-export.ts",
       `import { ExportToExcelAction, createEntityReference } from "./actions/index.js";
-export const x = new ExportToExcelAction(
-  createEntityReference("savedquery", "v1"), "<fetch/>", "<grid/>", "", {}
-);
+export const x = new ExportToExcelAction({
+  View: createEntityReference("savedquery", "v1"),
+  FetchXml: "<fetch/>",
+  LayoutXml: "<grid/>",
+  QueryApi: "",
+  QueryParameters: {},
+});
+// @ts-expect-error all five parameters are required
+export const y = new ExportToExcelAction({ FetchXml: "<fetch/>", LayoutXml: "<grid/>", QueryApi: "" });
 `
     );
     expect(errors).toEqual([]);

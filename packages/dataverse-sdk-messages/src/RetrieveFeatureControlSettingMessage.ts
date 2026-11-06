@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { RetrieveFeatureControlSettingResponse as RetrieveFeatureControlSettingResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the RetrieveFeatureControlSetting message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveFeatureControlSettingRequestParameters {
+  NamespaceValue: string;
+  FeatureControlName: string;
+}
 
 /**
  * RetrieveFeatureControlSetting request message
@@ -12,20 +22,19 @@ export class RetrieveFeatureControlSettingRequest
   extends OrganizationRequest
   implements Executable<RetrieveFeatureControlSettingResponse>
 {
-  constructor(
-    public namespaceValue: string,
-    public featureControlName: string
-  ) {
-    super("RetrieveFeatureControlSetting");
+  declare readonly Parameters: Readonly<RetrieveFeatureControlSettingRequestParameters>;
+
+  constructor(parameters: RetrieveFeatureControlSettingRequestParameters) {
+    super("RetrieveFeatureControlSetting", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RetrieveFeatureControlSetting`;
 
-    const body: Record<string, unknown> = {
-      NamespaceValue: this.namespaceValue,
-      FeatureControlName: this.featureControlName,
-    };
+    const body = requestBody({
+      NamespaceValue: this.Parameters.NamespaceValue,
+      FeatureControlName: this.Parameters.FeatureControlName,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class RetrieveFeatureControlSettingRequest
   }
 
   async parseResponse(response: Response): Promise<RetrieveFeatureControlSettingResponse> {
-    const data = await response.json();
-    return RetrieveFeatureControlSettingResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return RetrieveFeatureControlSettingResponse.fromResponse({});
+    return RetrieveFeatureControlSettingResponse.fromResponse(await response.json());
   }
 }
 

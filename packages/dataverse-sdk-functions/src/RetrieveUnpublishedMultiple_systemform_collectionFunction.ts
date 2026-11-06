@@ -31,7 +31,9 @@ export class RetrieveUnpublishedMultiple_systemform_collectionFunction implement
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_systemform_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_systemform_collectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublishedMultiple_systemform_collectionResponse;
+    return (await response.json()) as RetrieveUnpublishedMultiple_systemform_collectionResponse;
   }
 }

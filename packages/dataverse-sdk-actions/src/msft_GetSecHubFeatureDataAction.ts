@@ -27,7 +27,8 @@ export class msft_GetSecHubFeatureDataAction implements Executable<msft_GetSecHu
   }
 
   async parseResponse(response: Response): Promise<msft_GetSecHubFeatureDataResponse> {
-    const data = await response.json();
-    return data as msft_GetSecHubFeatureDataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msft_GetSecHubFeatureDataResponse;
+    return (await response.json()) as msft_GetSecHubFeatureDataResponse;
   }
 }

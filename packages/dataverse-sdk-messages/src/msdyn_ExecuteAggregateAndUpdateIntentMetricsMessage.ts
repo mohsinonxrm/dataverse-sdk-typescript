@@ -1,7 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse as msdyn_ExecuteAggregateAndUpdateIntentMetricsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ExecuteAggregateAndUpdateIntentMetrics message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecuteAggregateAndUpdateIntentMetricsRequestParameters {
+  msdyn_trackingdate: string;
+  msdyn_shouldupdateintents?: boolean;
+  msdyn_pagenumber: number;
+  msdyn_batchsize?: number;
+  msdyn_parallelexecutions?: number;
+  msdyn_pagingcookie?: string;
+  msdyn_trackingid: string;
+}
 
 /**
  * msdyn_ExecuteAggregateAndUpdateIntentMetrics request message
@@ -12,30 +27,24 @@ export class msdyn_ExecuteAggregateAndUpdateIntentMetricsRequest
   extends OrganizationRequest
   implements Executable<msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse>
 {
-  constructor(
-    public msdyn_trackingdate: string,
-    public msdyn_shouldupdateintents: boolean | undefined,
-    public msdyn_pagenumber: number,
-    public msdyn_batchsize: number | undefined,
-    public msdyn_parallelexecutions: number | undefined,
-    public msdyn_pagingcookie: string | undefined,
-    public msdyn_trackingid: string
-  ) {
-    super("msdyn_ExecuteAggregateAndUpdateIntentMetrics");
+  declare readonly Parameters: Readonly<msdyn_ExecuteAggregateAndUpdateIntentMetricsRequestParameters>;
+
+  constructor(parameters: msdyn_ExecuteAggregateAndUpdateIntentMetricsRequestParameters) {
+    super("msdyn_ExecuteAggregateAndUpdateIntentMetrics", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecuteAggregateAndUpdateIntentMetrics`;
 
-    const body: Record<string, unknown> = {
-      msdyn_trackingdate: this.msdyn_trackingdate,
-      msdyn_shouldupdateintents: this.msdyn_shouldupdateintents,
-      msdyn_pagenumber: this.msdyn_pagenumber,
-      msdyn_batchsize: this.msdyn_batchsize,
-      msdyn_parallelexecutions: this.msdyn_parallelexecutions,
-      msdyn_pagingcookie: this.msdyn_pagingcookie,
-      msdyn_trackingid: this.msdyn_trackingid,
-    };
+    const body = requestBody({
+      msdyn_trackingdate: this.Parameters.msdyn_trackingdate,
+      msdyn_shouldupdateintents: this.Parameters.msdyn_shouldupdateintents,
+      msdyn_pagenumber: this.Parameters.msdyn_pagenumber,
+      msdyn_batchsize: this.Parameters.msdyn_batchsize,
+      msdyn_parallelexecutions: this.Parameters.msdyn_parallelexecutions,
+      msdyn_pagingcookie: this.Parameters.msdyn_pagingcookie,
+      msdyn_trackingid: this.Parameters.msdyn_trackingid,
+    });
 
     return {
       method: "POST",
@@ -50,8 +59,10 @@ export class msdyn_ExecuteAggregateAndUpdateIntentMetricsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse> {
-    const data = await response.json();
-    return msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse.fromResponse({});
+    return msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse.fromResponse(await response.json());
   }
 }
 

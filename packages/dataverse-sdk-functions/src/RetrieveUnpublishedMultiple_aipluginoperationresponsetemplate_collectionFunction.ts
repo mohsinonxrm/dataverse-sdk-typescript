@@ -31,7 +31,9 @@ export class RetrieveUnpublishedMultiple_aipluginoperationresponsetemplate_colle
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_aipluginoperationresponsetemplate_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_aipluginoperationresponsetemplate_collectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublishedMultiple_aipluginoperationresponsetemplate_collectionResponse;
+    return (await response.json()) as RetrieveUnpublishedMultiple_aipluginoperationresponsetemplate_collectionResponse;
   }
 }

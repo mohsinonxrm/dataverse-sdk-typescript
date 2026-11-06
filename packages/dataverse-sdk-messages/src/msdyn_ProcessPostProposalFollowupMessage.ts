@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ProcessPostProposalFollowupResponse as msdyn_ProcessPostProposalFollowupResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ProcessPostProposalFollowup message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ProcessPostProposalFollowupRequestParameters {
+  msdyn_Thread: string;
+  msdyn_SalesAgentRun: string;
+  msdyn_TrackingId: string;
+}
 
 /**
  * msdyn_ProcessPostProposalFollowup request message
@@ -12,22 +23,20 @@ export class msdyn_ProcessPostProposalFollowupRequest
   extends OrganizationRequest
   implements Executable<msdyn_ProcessPostProposalFollowupResponse>
 {
-  constructor(
-    public msdyn_Thread: string,
-    public msdyn_SalesAgentRun: string,
-    public msdyn_TrackingId: string
-  ) {
-    super("msdyn_ProcessPostProposalFollowup");
+  declare readonly Parameters: Readonly<msdyn_ProcessPostProposalFollowupRequestParameters>;
+
+  constructor(parameters: msdyn_ProcessPostProposalFollowupRequestParameters) {
+    super("msdyn_ProcessPostProposalFollowup", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ProcessPostProposalFollowup`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Thread: this.msdyn_Thread,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_Thread: this.Parameters.msdyn_Thread,
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_ProcessPostProposalFollowupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ProcessPostProposalFollowupResponse> {
-    const data = await response.json();
-    return msdyn_ProcessPostProposalFollowupResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ProcessPostProposalFollowupResponse.fromResponse({});
+    return msdyn_ProcessPostProposalFollowupResponse.fromResponse(await response.json());
   }
 }
 

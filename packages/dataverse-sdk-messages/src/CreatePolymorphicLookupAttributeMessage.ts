@@ -1,12 +1,23 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type {
   ComplexLookupAttributeMetadata,
   ComplexOneToManyRelationshipMetadata,
   CreatePolymorphicLookupAttributeResponse as CreatePolymorphicLookupAttributeResponseData,
 } from "./types/index.js";
+
+/**
+ * Parameters of the CreatePolymorphicLookupAttribute message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreatePolymorphicLookupAttributeRequestParameters {
+  Lookup?: ComplexLookupAttributeMetadata;
+  OneToManyRelationships?: ComplexOneToManyRelationshipMetadata[];
+  SolutionUniqueName?: string;
+}
 
 /**
  * CreatePolymorphicLookupAttribute request message
@@ -17,25 +28,23 @@ export class CreatePolymorphicLookupAttributeRequest
   extends OrganizationRequest
   implements Executable<CreatePolymorphicLookupAttributeResponse>
 {
-  constructor(
-    public lookup?: ComplexLookupAttributeMetadata,
-    public oneToManyRelationships?: ComplexOneToManyRelationshipMetadata[],
-    public solutionUniqueName?: string
-  ) {
-    super("CreatePolymorphicLookupAttribute");
+  declare readonly Parameters: Readonly<CreatePolymorphicLookupAttributeRequestParameters>;
+
+  constructor(parameters: CreatePolymorphicLookupAttributeRequestParameters = {}) {
+    super("CreatePolymorphicLookupAttribute", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreatePolymorphicLookupAttribute`;
 
-    const body: Record<string, unknown> = {
-      Lookup: enumBody(this.lookup, "ComplexLookupAttributeMetadata"),
+    const body = requestBody({
+      Lookup: enumBody(this.Parameters.Lookup, "ComplexLookupAttributeMetadata"),
       OneToManyRelationships: enumBody(
-        this.oneToManyRelationships,
+        this.Parameters.OneToManyRelationships,
         "ComplexOneToManyRelationshipMetadata"
       ),
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -48,8 +57,9 @@ export class CreatePolymorphicLookupAttributeRequest
   }
 
   async parseResponse(response: Response): Promise<CreatePolymorphicLookupAttributeResponse> {
-    const data = await response.json();
-    return CreatePolymorphicLookupAttributeResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CreatePolymorphicLookupAttributeResponse.fromResponse({});
+    return CreatePolymorphicLookupAttributeResponse.fromResponse(await response.json());
   }
 }
 

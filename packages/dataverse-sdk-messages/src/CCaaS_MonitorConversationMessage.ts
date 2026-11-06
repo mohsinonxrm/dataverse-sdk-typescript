@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_MonitorConversation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_MonitorConversationRequestParameters {
+  ApiVersion: string;
+  ClientId?: string;
+}
 
 /**
  * CCaaS_MonitorConversation request message
  *
  * Web API Action: CCaaS_MonitorConversation
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_MonitorConversationRequest
   extends OrganizationRequest
   implements Executable<CCaaS_MonitorConversationResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_MonitorConversationRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public apiVersion: string,
-    public clientId?: string
+    parameters: CCaaS_MonitorConversationRequestParameters
   ) {
-    super("CCaaS_MonitorConversation");
+    super("CCaaS_MonitorConversation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_MonitorConversation`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      ClientId: this.clientId,
-    };
+    const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
+      ClientId: this.Parameters.ClientId,
+    });
 
     return {
       method: "POST",

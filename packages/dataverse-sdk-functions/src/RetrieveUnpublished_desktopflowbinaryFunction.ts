@@ -16,6 +16,8 @@ export interface RetrieveUnpublished_desktopflowbinaryResponse extends desktopfl
  *
  * Bound function
  * Binding parameter: entity (mscrm.desktopflowbinary)
+ *
+ * The first argument is the id of the desktopflowbinary record to call it on.
  */
 export class RetrieveUnpublished_desktopflowbinaryFunction implements Executable<RetrieveUnpublished_desktopflowbinaryResponse> {
   constructor(public readonly desktopflowbinaryId: string) {}
@@ -34,7 +36,8 @@ export class RetrieveUnpublished_desktopflowbinaryFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_desktopflowbinaryResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublished_desktopflowbinaryResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUnpublished_desktopflowbinaryResponse;
+    return (await response.json()) as RetrieveUnpublished_desktopflowbinaryResponse;
   }
 }

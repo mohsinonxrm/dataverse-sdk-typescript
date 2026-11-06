@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_NotifyAgentResponse as CCaaS_NotifyAgentResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_NotifyAgent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_NotifyAgentRequestParameters {
+  ApiVersion: string;
+  Title: string;
+  Message: string;
+  AgentIds: string[];
+}
 
 /**
  * CCaaS_NotifyAgent request message
@@ -12,24 +24,21 @@ export class CCaaS_NotifyAgentRequest
   extends OrganizationRequest
   implements Executable<CCaaS_NotifyAgentResponse>
 {
-  constructor(
-    public apiVersion: string,
-    public title: string,
-    public message: string,
-    public agentIds: string[]
-  ) {
-    super("CCaaS_NotifyAgent");
+  declare readonly Parameters: Readonly<CCaaS_NotifyAgentRequestParameters>;
+
+  constructor(parameters: CCaaS_NotifyAgentRequestParameters) {
+    super("CCaaS_NotifyAgent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_NotifyAgent`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      Title: this.title,
-      Message: this.message,
-      AgentIds: this.agentIds,
-    };
+    const body = requestBody({
+      ApiVersion: this.Parameters.ApiVersion,
+      Title: this.Parameters.Title,
+      Message: this.Parameters.Message,
+      AgentIds: this.Parameters.AgentIds,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class CCaaS_NotifyAgentRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_NotifyAgentResponse> {
-    const data = await response.json();
-    return CCaaS_NotifyAgentResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CCaaS_NotifyAgentResponse.fromResponse({});
+    return CCaaS_NotifyAgentResponse.fromResponse(await response.json());
   }
 }
 

@@ -31,8 +31,12 @@ export class msdyn_CheckForFailingDeleteUniqueNumberWorkflowRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckForFailingDeleteUniqueNumberWorkflowResponse> {
-    const data = await response.json();
-    return msdyn_CheckForFailingDeleteUniqueNumberWorkflowResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckForFailingDeleteUniqueNumberWorkflowResponse.fromResponse({});
+    return msdyn_CheckForFailingDeleteUniqueNumberWorkflowResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

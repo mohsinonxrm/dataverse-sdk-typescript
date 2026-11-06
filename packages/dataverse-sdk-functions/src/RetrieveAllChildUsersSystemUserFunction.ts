@@ -13,6 +13,8 @@ export interface RetrieveAllChildUsersSystemUserResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.systemuser)
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class RetrieveAllChildUsersSystemUserFunction implements Executable<RetrieveAllChildUsersSystemUserResponse> {
   constructor(public readonly systemuserId: string) {}
@@ -31,7 +33,8 @@ export class RetrieveAllChildUsersSystemUserFunction implements Executable<Retri
   }
 
   async parseResponse(response: Response): Promise<RetrieveAllChildUsersSystemUserResponse> {
-    const data = await response.json();
-    return data as RetrieveAllChildUsersSystemUserResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveAllChildUsersSystemUserResponse;
+    return (await response.json()) as RetrieveAllChildUsersSystemUserResponse;
   }
 }

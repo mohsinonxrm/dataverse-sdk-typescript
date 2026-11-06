@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetAutonomousAgentEmailAssist action
@@ -9,25 +10,31 @@ export interface msdyn_GetAutonomousAgentEmailAssistResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetAutonomousAgentEmailAssist action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAutonomousAgentEmailAssistActionParameters {
+  emailAssistAdditionalInformation: string;
+  emailAssistRequestPayload: string;
+  emailAssistRequestHeader: string;
+}
+
+/**
  * msdyn_GetAutonomousAgentEmailAssist action
  *
  * Unbound action
  */
 export class msdyn_GetAutonomousAgentEmailAssistAction implements Executable<msdyn_GetAutonomousAgentEmailAssistResponse> {
-  constructor(
-    public readonly emailAssistAdditionalInformation: string,
-    public readonly emailAssistRequestPayload: string,
-    public readonly emailAssistRequestHeader: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetAutonomousAgentEmailAssistActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAutonomousAgentEmailAssist`;
 
-    const body: Record<string, unknown> = {
-      emailAssistAdditionalInformation: this.emailAssistAdditionalInformation,
-      emailAssistRequestPayload: this.emailAssistRequestPayload,
-      emailAssistRequestHeader: this.emailAssistRequestHeader,
-    };
+    const body = requestBody({
+      emailAssistAdditionalInformation: this.parameters.emailAssistAdditionalInformation,
+      emailAssistRequestPayload: this.parameters.emailAssistRequestPayload,
+      emailAssistRequestHeader: this.parameters.emailAssistRequestHeader,
+    });
 
     return {
       method: "POST",
@@ -40,7 +47,8 @@ export class msdyn_GetAutonomousAgentEmailAssistAction implements Executable<msd
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAutonomousAgentEmailAssistResponse> {
-    const data = await response.json();
-    return data as msdyn_GetAutonomousAgentEmailAssistResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetAutonomousAgentEmailAssistResponse;
+    return (await response.json()) as msdyn_GetAutonomousAgentEmailAssistResponse;
   }
 }

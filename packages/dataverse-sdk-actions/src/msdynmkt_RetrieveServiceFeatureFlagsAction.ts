@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdynmkt_RetrieveServiceFeatureFlags action
@@ -9,19 +10,29 @@ export interface msdynmkt_RetrieveServiceFeatureFlagsResponse {
 }
 
 /**
+ * Parameters of the msdynmkt_RetrieveServiceFeatureFlags action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_RetrieveServiceFeatureFlagsActionParameters {
+  ServiceName?: string;
+}
+
+/**
  * msdynmkt_RetrieveServiceFeatureFlags action
  *
  * Unbound action
  */
 export class msdynmkt_RetrieveServiceFeatureFlagsAction implements Executable<msdynmkt_RetrieveServiceFeatureFlagsResponse> {
-  constructor(public readonly serviceName?: string) {}
+  constructor(
+    public readonly parameters: msdynmkt_RetrieveServiceFeatureFlagsActionParameters = {}
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_RetrieveServiceFeatureFlags`;
 
-    const body: Record<string, unknown> = {
-      ServiceName: this.serviceName,
-    };
+    const body = requestBody({
+      ServiceName: this.parameters.ServiceName,
+    });
 
     return {
       method: "POST",
@@ -34,7 +45,8 @@ export class msdynmkt_RetrieveServiceFeatureFlagsAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_RetrieveServiceFeatureFlagsResponse> {
-    const data = await response.json();
-    return data as msdynmkt_RetrieveServiceFeatureFlagsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_RetrieveServiceFeatureFlagsResponse;
+    return (await response.json()) as msdynmkt_RetrieveServiceFeatureFlagsResponse;
   }
 }

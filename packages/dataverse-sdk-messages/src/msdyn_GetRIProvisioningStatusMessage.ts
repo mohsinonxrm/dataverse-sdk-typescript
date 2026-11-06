@@ -29,8 +29,9 @@ export class msdyn_GetRIProvisioningStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRIProvisioningStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetRIProvisioningStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetRIProvisioningStatusResponse.fromResponse({});
+    return msdyn_GetRIProvisioningStatusResponse.fromResponse(await response.json());
   }
 }
 

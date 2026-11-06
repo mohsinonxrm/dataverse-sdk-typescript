@@ -31,7 +31,8 @@ export class msdyn_CheckIfRequiredLevelOfFieldIsChangedAction implements Executa
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse;
+    return (await response.json()) as msdyn_CheckIfRequiredLevelOfFieldIsChangedResponse;
   }
 }

@@ -31,8 +31,12 @@ export class _ValidateAndAllocateBusinessCardReaderCurrencyRequest
   async parseResponse(
     response: Response
   ): Promise<_ValidateAndAllocateBusinessCardReaderCurrencyResponse> {
-    const data = await response.json();
-    return _ValidateAndAllocateBusinessCardReaderCurrencyResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return _ValidateAndAllocateBusinessCardReaderCurrencyResponse.fromResponse({});
+    return _ValidateAndAllocateBusinessCardReaderCurrencyResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

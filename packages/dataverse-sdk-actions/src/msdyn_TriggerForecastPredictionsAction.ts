@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_TriggerForecastPredictions action
@@ -8,19 +9,27 @@ export interface msdyn_TriggerForecastPredictionsResponse {
 }
 
 /**
+ * Parameters of the msdyn_TriggerForecastPredictions action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TriggerForecastPredictionsActionParameters {
+  InputData: string;
+}
+
+/**
  * msdyn_TriggerForecastPredictions action
  *
  * Unbound action
  */
 export class msdyn_TriggerForecastPredictionsAction implements Executable<msdyn_TriggerForecastPredictionsResponse> {
-  constructor(public readonly inputData: string) {}
+  constructor(public readonly parameters: msdyn_TriggerForecastPredictionsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TriggerForecastPredictions`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.parameters.InputData,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_TriggerForecastPredictionsAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_TriggerForecastPredictionsResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_TriggerForecastPredictionsResponse;
+    return (await response.json()) as msdyn_TriggerForecastPredictionsResponse;
   }
 }

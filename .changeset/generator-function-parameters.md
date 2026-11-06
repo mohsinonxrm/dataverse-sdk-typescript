@@ -12,7 +12,7 @@ Generated functions send valid parameters, and bound actions and functions call 
   - collections and complex values become JSON, and entity references `{"@odata.id":"<set>(<id>)"}`.
 
   The aliases are numbered (`@p1`) and URL-encoded into the URL. Functions without parameters are called with `()`.
-- Bound operations were called as unbound (`/<Name>`). They now use `/<set>(<id>)/Microsoft.Dynamics.CRM.<Name>` for one record and `/<set>/Microsoft.Dynamics.CRM.<Name>` for a collection. The constructor takes `targetId` first, or a `target: EntityReference` (or `entitySetName`) when the bound type has no entity set.
+- Bound operations were called as unbound (`/<Name>`). They now use `/<set>(<id>)/Microsoft.Dynamics.CRM.<Name>` for one record and `/<set>/Microsoft.Dynamics.CRM.<Name>` for a collection. The constructor takes the record id first (`<table>Id`), or a `target: EntityReference` (or `entitySetName`) when the bound type has no entity set.
 - An operation bound to several tables gets one class per binding (`RetrieveUnpublished_savedqueryFunction`) instead of each overload overwriting the same file. `ActionMetadata` and `FunctionMetadata` are keyed the same way.
 - Trailing nullable parameters are optional, and `undefined` ones are left out of the call.
 - A function's entity-typed parameter accepts an `EntityReference`. `getStructuralType()` recognises entity types that aren't generated (`crmbaseentity`).

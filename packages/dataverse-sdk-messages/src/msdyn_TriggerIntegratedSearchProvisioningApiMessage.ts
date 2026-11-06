@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_TriggerIntegratedSearchProvisioningApiResponse as msdyn_TriggerIntegratedSearchProvisioningApiResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_TriggerIntegratedSearchProvisioningApi message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TriggerIntegratedSearchProvisioningApiRequestParameters {
+  msdyn_DegreeOfParallelism: string;
+}
 
 /**
  * msdyn_TriggerIntegratedSearchProvisioningApi request message
@@ -12,16 +21,18 @@ export class msdyn_TriggerIntegratedSearchProvisioningApiRequest
   extends OrganizationRequest
   implements Executable<msdyn_TriggerIntegratedSearchProvisioningApiResponse>
 {
-  constructor(public msdyn_DegreeOfParallelism: string) {
-    super("msdyn_TriggerIntegratedSearchProvisioningApi");
+  declare readonly Parameters: Readonly<msdyn_TriggerIntegratedSearchProvisioningApiRequestParameters>;
+
+  constructor(parameters: msdyn_TriggerIntegratedSearchProvisioningApiRequestParameters) {
+    super("msdyn_TriggerIntegratedSearchProvisioningApi", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TriggerIntegratedSearchProvisioningApi`;
 
-    const body: Record<string, unknown> = {
-      msdyn_DegreeOfParallelism: this.msdyn_DegreeOfParallelism,
-    };
+    const body = requestBody({
+      msdyn_DegreeOfParallelism: this.Parameters.msdyn_DegreeOfParallelism,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,10 @@ export class msdyn_TriggerIntegratedSearchProvisioningApiRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TriggerIntegratedSearchProvisioningApiResponse> {
-    const data = await response.json();
-    return msdyn_TriggerIntegratedSearchProvisioningApiResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_TriggerIntegratedSearchProvisioningApiResponse.fromResponse({});
+    return msdyn_TriggerIntegratedSearchProvisioningApiResponse.fromResponse(await response.json());
   }
 }
 

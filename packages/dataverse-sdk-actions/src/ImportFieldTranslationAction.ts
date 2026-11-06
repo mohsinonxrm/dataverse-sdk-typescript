@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { importjob } from "./types/index.js";
 
 /**
@@ -12,19 +13,27 @@ export interface ImportFieldTranslationResponse extends importjob {
 }
 
 /**
+ * Parameters of the ImportFieldTranslation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportFieldTranslationActionParameters {
+  TranslationFile: string;
+}
+
+/**
  * ImportFieldTranslation action
  *
  * Unbound action
  */
 export class ImportFieldTranslationAction implements Executable<ImportFieldTranslationResponse> {
-  constructor(public readonly translationFile: string) {}
+  constructor(public readonly parameters: ImportFieldTranslationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportFieldTranslation`;
 
-    const body: Record<string, unknown> = {
-      TranslationFile: this.translationFile,
-    };
+    const body = requestBody({
+      TranslationFile: this.parameters.TranslationFile,
+    });
 
     return {
       method: "POST",
@@ -37,7 +46,8 @@ export class ImportFieldTranslationAction implements Executable<ImportFieldTrans
   }
 
   async parseResponse(response: Response): Promise<ImportFieldTranslationResponse> {
-    const data = await response.json();
-    return data as ImportFieldTranslationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ImportFieldTranslationResponse;
+    return (await response.json()) as ImportFieldTranslationResponse;
   }
 }

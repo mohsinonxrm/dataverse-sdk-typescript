@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetCaseSuggestionsResponse as msdyn_GetCaseSuggestionsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetCaseSuggestions message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetCaseSuggestionsRequestParameters {
+  Count?: number;
+}
 
 /**
  * msdyn_GetCaseSuggestions request message
  *
  * Web API Action: msdyn_GetCaseSuggestions
+ *
+ * The first argument is the id of the incident record to call it on.
  */
 export class msdyn_GetCaseSuggestionsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetCaseSuggestionsResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_GetCaseSuggestionsRequestParameters>;
+
   constructor(
     public incidentId: string,
-    public count?: number
+    parameters: msdyn_GetCaseSuggestionsRequestParameters = {}
   ) {
-    super("msdyn_GetCaseSuggestions");
+    super("msdyn_GetCaseSuggestions", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/incidents(${this.incidentId})/Microsoft.Dynamics.CRM.msdyn_GetCaseSuggestions`;
 
-    const body: Record<string, unknown> = {
-      Count: this.count,
-    };
+    const body = requestBody({
+      Count: this.Parameters.Count,
+    });
 
     return {
       method: "POST",
@@ -38,8 +51,9 @@ export class msdyn_GetCaseSuggestionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCaseSuggestionsResponse> {
-    const data = await response.json();
-    return msdyn_GetCaseSuggestionsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetCaseSuggestionsResponse.fromResponse({});
+    return msdyn_GetCaseSuggestionsResponse.fromResponse(await response.json());
   }
 }
 

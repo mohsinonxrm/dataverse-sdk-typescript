@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetSankeyViewKPIs action
@@ -8,25 +9,31 @@ export interface msdyn_GetSankeyViewKPIsResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetSankeyViewKPIs action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSankeyViewKPIsActionParameters {
+  ActionIds: string;
+  SequenceId: string;
+  RegardingEntityName: string;
+}
+
+/**
  * msdyn_GetSankeyViewKPIs action
  *
  * Unbound action
  */
 export class msdyn_GetSankeyViewKPIsAction implements Executable<msdyn_GetSankeyViewKPIsResponse> {
-  constructor(
-    public readonly actionIds: string,
-    public readonly sequenceId: string,
-    public readonly regardingEntityName: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetSankeyViewKPIsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSankeyViewKPIs`;
 
-    const body: Record<string, unknown> = {
-      ActionIds: this.actionIds,
-      SequenceId: this.sequenceId,
-      RegardingEntityName: this.regardingEntityName,
-    };
+    const body = requestBody({
+      ActionIds: this.parameters.ActionIds,
+      SequenceId: this.parameters.SequenceId,
+      RegardingEntityName: this.parameters.RegardingEntityName,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_GetSankeyViewKPIsAction implements Executable<msdyn_GetSankey
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSankeyViewKPIsResponse> {
-    const data = await response.json();
-    return data as msdyn_GetSankeyViewKPIsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetSankeyViewKPIsResponse;
+    return (await response.json()) as msdyn_GetSankeyViewKPIsResponse;
   }
 }

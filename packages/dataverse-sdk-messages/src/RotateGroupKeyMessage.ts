@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * RotateGroupKey request message
  *
  * Web API Action: RotateGroupKey
+ *
+ * The first argument is the id of the flowmachinegroup record to call it on.
  */
 export class RotateGroupKeyRequest
   extends OrganizationRequest

@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { PurgeRetainedContentResponse as PurgeRetainedContentResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the PurgeRetainedContent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PurgeRetainedContentRequestParameters {
+  EntityName?: string;
+  PageSize?: number;
+  OperationId?: string;
+  MaxVersionToPurge: number;
+}
 
 /**
  * PurgeRetainedContent request message
@@ -12,24 +24,21 @@ export class PurgeRetainedContentRequest
   extends OrganizationRequest
   implements Executable<PurgeRetainedContentResponse>
 {
-  constructor(
-    public entityName: string | undefined,
-    public pageSize: number | undefined,
-    public operationId: string | undefined,
-    public maxVersionToPurge: number
-  ) {
-    super("PurgeRetainedContent");
+  declare readonly Parameters: Readonly<PurgeRetainedContentRequestParameters>;
+
+  constructor(parameters: PurgeRetainedContentRequestParameters) {
+    super("PurgeRetainedContent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/PurgeRetainedContent`;
 
-    const body: Record<string, unknown> = {
-      EntityName: this.entityName,
-      PageSize: this.pageSize,
-      OperationId: this.operationId,
-      MaxVersionToPurge: this.maxVersionToPurge,
-    };
+    const body = requestBody({
+      EntityName: this.Parameters.EntityName,
+      PageSize: this.Parameters.PageSize,
+      OperationId: this.Parameters.OperationId,
+      MaxVersionToPurge: this.Parameters.MaxVersionToPurge,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class PurgeRetainedContentRequest
   }
 
   async parseResponse(response: Response): Promise<PurgeRetainedContentResponse> {
-    const data = await response.json();
-    return PurgeRetainedContentResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return PurgeRetainedContentResponse.fromResponse({});
+    return PurgeRetainedContentResponse.fromResponse(await response.json());
   }
 }
 

@@ -26,7 +26,8 @@ export class msdyn_PostOperationRevokeUsrConsentAction implements Executable<msd
   }
 
   async parseResponse(response: Response): Promise<msdyn_PostOperationRevokeUsrConsentResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_PostOperationRevokeUsrConsentResponse;
+    return (await response.json()) as msdyn_PostOperationRevokeUsrConsentResponse;
   }
 }

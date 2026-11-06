@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_PostOrganizationProvisioningStatus action
@@ -8,25 +9,33 @@ export interface msdyn_PostOrganizationProvisioningStatusResponse {
 }
 
 /**
+ * Parameters of the msdyn_PostOrganizationProvisioningStatus action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_PostOrganizationProvisioningStatusActionParameters {
+  autoCaptureSettings: string;
+  autoCaptureRules: string;
+  orgProvisioningDetails: string;
+}
+
+/**
  * msdyn_PostOrganizationProvisioningStatus action
  *
  * Unbound action
  */
 export class msdyn_PostOrganizationProvisioningStatusAction implements Executable<msdyn_PostOrganizationProvisioningStatusResponse> {
   constructor(
-    public readonly autoCaptureSettings: string,
-    public readonly autoCaptureRules: string,
-    public readonly orgProvisioningDetails: string
+    public readonly parameters: msdyn_PostOrganizationProvisioningStatusActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PostOrganizationProvisioningStatus`;
 
-    const body: Record<string, unknown> = {
-      autoCaptureSettings: this.autoCaptureSettings,
-      autoCaptureRules: this.autoCaptureRules,
-      orgProvisioningDetails: this.orgProvisioningDetails,
-    };
+    const body = requestBody({
+      autoCaptureSettings: this.parameters.autoCaptureSettings,
+      autoCaptureRules: this.parameters.autoCaptureRules,
+      orgProvisioningDetails: this.parameters.orgProvisioningDetails,
+    });
 
     return {
       method: "POST",
@@ -41,7 +50,8 @@ export class msdyn_PostOrganizationProvisioningStatusAction implements Executabl
   async parseResponse(
     response: Response
   ): Promise<msdyn_PostOrganizationProvisioningStatusResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_PostOrganizationProvisioningStatusResponse;
+    return (await response.json()) as msdyn_PostOrganizationProvisioningStatusResponse;
   }
 }

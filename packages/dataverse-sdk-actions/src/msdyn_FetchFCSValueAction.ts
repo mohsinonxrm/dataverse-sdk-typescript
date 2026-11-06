@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_FetchFCSValue action
@@ -8,23 +9,29 @@ export interface msdyn_FetchFCSValueResponse {
 }
 
 /**
+ * Parameters of the msdyn_FetchFCSValue action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FetchFCSValueActionParameters {
+  Namespace: string;
+  Key: string;
+}
+
+/**
  * msdyn_FetchFCSValue action
  *
  * Unbound action
  */
 export class msdyn_FetchFCSValueAction implements Executable<msdyn_FetchFCSValueResponse> {
-  constructor(
-    public readonly namespace: string,
-    public readonly key: string
-  ) {}
+  constructor(public readonly parameters: msdyn_FetchFCSValueActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FetchFCSValue`;
 
-    const body: Record<string, unknown> = {
-      Namespace: this.namespace,
-      Key: this.key,
-    };
+    const body = requestBody({
+      Namespace: this.parameters.Namespace,
+      Key: this.parameters.Key,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class msdyn_FetchFCSValueAction implements Executable<msdyn_FetchFCSValue
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchFCSValueResponse> {
-    const data = await response.json();
-    return data as msdyn_FetchFCSValueResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_FetchFCSValueResponse;
+    return (await response.json()) as msdyn_FetchFCSValueResponse;
   }
 }

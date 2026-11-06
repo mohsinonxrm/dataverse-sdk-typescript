@@ -30,7 +30,9 @@ export class msdyn_WorkstreamShouldNotHaveDuplicateContextRuleAction implements 
   async parseResponse(
     response: Response
   ): Promise<msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse;
+    return (await response.json()) as msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse;
   }
 }

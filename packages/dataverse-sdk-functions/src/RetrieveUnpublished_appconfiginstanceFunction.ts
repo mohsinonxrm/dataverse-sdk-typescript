@@ -16,6 +16,8 @@ export interface RetrieveUnpublished_appconfiginstanceResponse extends appconfig
  *
  * Bound function
  * Binding parameter: entity (mscrm.appconfiginstance)
+ *
+ * The first argument is the id of the appconfiginstance record to call it on.
  */
 export class RetrieveUnpublished_appconfiginstanceFunction implements Executable<RetrieveUnpublished_appconfiginstanceResponse> {
   constructor(public readonly appconfiginstanceId: string) {}
@@ -34,7 +36,8 @@ export class RetrieveUnpublished_appconfiginstanceFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveUnpublished_appconfiginstanceResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublished_appconfiginstanceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUnpublished_appconfiginstanceResponse;
+    return (await response.json()) as RetrieveUnpublished_appconfiginstanceResponse;
   }
 }

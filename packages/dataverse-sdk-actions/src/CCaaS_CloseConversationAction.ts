@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_CloseConversation action
@@ -8,25 +9,31 @@ export interface CCaaS_CloseConversationResponse {
 }
 
 /**
+ * Parameters of the CCaaS_CloseConversation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_CloseConversationActionParameters {
+  AgentId: string;
+  LiveworkitemId: string;
+  ActivityStatusCode: string;
+}
+
+/**
  * CCaaS_CloseConversation action
  *
  * Unbound action
  */
 export class CCaaS_CloseConversationAction implements Executable<CCaaS_CloseConversationResponse> {
-  constructor(
-    public readonly agentId: string,
-    public readonly liveworkitemId: string,
-    public readonly activityStatusCode: string
-  ) {}
+  constructor(public readonly parameters: CCaaS_CloseConversationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_CloseConversation`;
 
-    const body: Record<string, unknown> = {
-      AgentId: this.agentId,
-      LiveworkitemId: this.liveworkitemId,
-      ActivityStatusCode: this.activityStatusCode,
-    };
+    const body = requestBody({
+      AgentId: this.parameters.AgentId,
+      LiveworkitemId: this.parameters.LiveworkitemId,
+      ActivityStatusCode: this.parameters.ActivityStatusCode,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class CCaaS_CloseConversationAction implements Executable<CCaaS_CloseConv
   }
 
   async parseResponse(response: Response): Promise<CCaaS_CloseConversationResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_CloseConversationResponse;
+    return (await response.json()) as CCaaS_CloseConversationResponse;
   }
 }

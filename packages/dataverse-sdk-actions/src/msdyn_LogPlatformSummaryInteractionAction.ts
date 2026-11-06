@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_LogPlatformSummaryInteraction action
@@ -8,25 +9,33 @@ export interface msdyn_LogPlatformSummaryInteractionResponse {
 }
 
 /**
+ * Parameters of the msdyn_LogPlatformSummaryInteraction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_LogPlatformSummaryInteractionActionParameters {
+  InteractionData?: string;
+  Context?: string;
+  InteractionType?: string;
+}
+
+/**
  * msdyn_LogPlatformSummaryInteraction action
  *
  * Unbound action
  */
 export class msdyn_LogPlatformSummaryInteractionAction implements Executable<msdyn_LogPlatformSummaryInteractionResponse> {
   constructor(
-    public readonly interactionData?: string,
-    public readonly context?: string,
-    public readonly interactionType?: string
+    public readonly parameters: msdyn_LogPlatformSummaryInteractionActionParameters = {}
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_LogPlatformSummaryInteraction`;
 
-    const body: Record<string, unknown> = {
-      InteractionData: this.interactionData,
-      Context: this.context,
-      InteractionType: this.interactionType,
-    };
+    const body = requestBody({
+      InteractionData: this.parameters.InteractionData,
+      Context: this.parameters.Context,
+      InteractionType: this.parameters.InteractionType,
+    });
 
     return {
       method: "POST",
@@ -39,7 +48,8 @@ export class msdyn_LogPlatformSummaryInteractionAction implements Executable<msd
   }
 
   async parseResponse(response: Response): Promise<msdyn_LogPlatformSummaryInteractionResponse> {
-    const data = await response.json();
-    return data as msdyn_LogPlatformSummaryInteractionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_LogPlatformSummaryInteractionResponse;
+    return (await response.json()) as msdyn_LogPlatformSummaryInteractionResponse;
   }
 }

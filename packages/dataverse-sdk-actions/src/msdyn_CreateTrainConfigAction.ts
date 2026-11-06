@@ -16,6 +16,8 @@ export interface msdyn_CreateTrainConfigResponse extends msdyn_ocsimltraining {
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_ocskillidentmlmodel)
+ *
+ * The first argument is the id of the msdyn_ocskillidentmlmodel record to call it on.
  */
 export class msdyn_CreateTrainConfigAction implements Executable<msdyn_CreateTrainConfigResponse> {
   constructor(public readonly msdyn_ocskillidentmlmodelId: string) {}
@@ -34,7 +36,8 @@ export class msdyn_CreateTrainConfigAction implements Executable<msdyn_CreateTra
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateTrainConfigResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateTrainConfigResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CreateTrainConfigResponse;
+    return (await response.json()) as msdyn_CreateTrainConfigResponse;
   }
 }

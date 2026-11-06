@@ -29,8 +29,10 @@ export class msdyn_IsMSTeamsUserSyncFeatureEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsMSTeamsUserSyncFeatureEnabledResponse> {
-    const data = await response.json();
-    return msdyn_IsMSTeamsUserSyncFeatureEnabledResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_IsMSTeamsUserSyncFeatureEnabledResponse.fromResponse({});
+    return msdyn_IsMSTeamsUserSyncFeatureEnabledResponse.fromResponse(await response.json());
   }
 }
 

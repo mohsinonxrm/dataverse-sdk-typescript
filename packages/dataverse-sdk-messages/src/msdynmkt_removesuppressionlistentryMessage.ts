@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_removesuppressionlistentryResponse as msdynmkt_removesuppressionlistentryResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_removesuppressionlistentry message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_removesuppressionlistentryRequestParameters {
+  msdynmkt_emailaddress: string;
+}
 
 /**
  * msdynmkt_removesuppressionlistentry request message
@@ -12,16 +21,18 @@ export class msdynmkt_removesuppressionlistentryRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_removesuppressionlistentryResponse>
 {
-  constructor(public msdynmkt_emailaddress: string) {
-    super("msdynmkt_removesuppressionlistentry");
+  declare readonly Parameters: Readonly<msdynmkt_removesuppressionlistentryRequestParameters>;
+
+  constructor(parameters: msdynmkt_removesuppressionlistentryRequestParameters) {
+    super("msdynmkt_removesuppressionlistentry", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_removesuppressionlistentry`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_emailaddress: this.msdynmkt_emailaddress,
-    };
+    const body = requestBody({
+      msdynmkt_emailaddress: this.Parameters.msdynmkt_emailaddress,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,10 @@ export class msdynmkt_removesuppressionlistentryRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_removesuppressionlistentryResponse> {
-    const data = await response.json();
-    return msdynmkt_removesuppressionlistentryResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdynmkt_removesuppressionlistentryResponse.fromResponse({});
+    return msdynmkt_removesuppressionlistentryResponse.fromResponse(await response.json());
   }
 }
 

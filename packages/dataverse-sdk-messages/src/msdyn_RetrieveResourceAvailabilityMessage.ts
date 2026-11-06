@@ -2,11 +2,42 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type {
   msdyn_RetrieveResourceAvailabilityResponse as msdyn_RetrieveResourceAvailabilityResponseData,
   msdyn_timegroup,
 } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrieveResourceAvailability message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveResourceAvailabilityRequestParameters {
+  WorkOrder?: EntityReference | AnyEntityPayload;
+  RealTimeMode: boolean;
+  Duration: number;
+  ForceDateRange?: boolean;
+  IgnoreDuration: boolean;
+  IgnoreTravelTime: boolean;
+  AllowOverlapping: boolean;
+  Radius: number;
+  StartTime: string;
+  EndTime: string;
+  TimeGroup?: EntityReference | EntityPayload<msdyn_timegroup>;
+  Calendar?: string;
+  Characteristics?: Record<string, unknown>[];
+  Territories?: Record<string, unknown>[];
+  ResourceTypes?: Record<string, unknown>[];
+  Resources?: Record<string, unknown>[];
+  RestrictedResources?: Record<string, unknown>[];
+  Latitude?: number;
+  Longitude?: number;
+  Categories?: Record<string, unknown>[];
+  OrganizationalUnits?: Record<string, unknown>[];
+  Teams?: Record<string, unknown>[];
+  BusinessUnits?: Record<string, unknown>[];
+}
 
 /**
  * msdyn_RetrieveResourceAvailability request message
@@ -17,62 +48,40 @@ export class msdyn_RetrieveResourceAvailabilityRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveResourceAvailabilityResponse>
 {
-  constructor(
-    public workOrder: EntityReference | AnyEntityPayload | undefined,
-    public realTimeMode: boolean,
-    public duration: number,
-    public forceDateRange: boolean | undefined,
-    public ignoreDuration: boolean,
-    public ignoreTravelTime: boolean,
-    public allowOverlapping: boolean,
-    public radius: number,
-    public startTime: string,
-    public endTime: string,
-    public timeGroup?: EntityReference | EntityPayload<msdyn_timegroup>,
-    public calendar?: string,
-    public characteristics?: Record<string, unknown>[],
-    public territories?: Record<string, unknown>[],
-    public resourceTypes?: Record<string, unknown>[],
-    public resources?: Record<string, unknown>[],
-    public restrictedResources?: Record<string, unknown>[],
-    public latitude?: number,
-    public longitude?: number,
-    public categories?: Record<string, unknown>[],
-    public organizationalUnits?: Record<string, unknown>[],
-    public teams?: Record<string, unknown>[],
-    public businessUnits?: Record<string, unknown>[]
-  ) {
-    super("msdyn_RetrieveResourceAvailability");
+  declare readonly Parameters: Readonly<msdyn_RetrieveResourceAvailabilityRequestParameters>;
+
+  constructor(parameters: msdyn_RetrieveResourceAvailabilityRequestParameters) {
+    super("msdyn_RetrieveResourceAvailability", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveResourceAvailability`;
 
-    const body: Record<string, unknown> = {
-      WorkOrder: this.workOrder,
-      RealTimeMode: this.realTimeMode,
-      Duration: this.duration,
-      ForceDateRange: this.forceDateRange,
-      IgnoreDuration: this.ignoreDuration,
-      IgnoreTravelTime: this.ignoreTravelTime,
-      AllowOverlapping: this.allowOverlapping,
-      Radius: this.radius,
-      StartTime: this.startTime,
-      EndTime: this.endTime,
-      TimeGroup: this.timeGroup,
-      Calendar: this.calendar,
-      Characteristics: this.characteristics,
-      Territories: this.territories,
-      ResourceTypes: this.resourceTypes,
-      Resources: this.resources,
-      RestrictedResources: this.restrictedResources,
-      Latitude: this.latitude,
-      Longitude: this.longitude,
-      Categories: this.categories,
-      OrganizationalUnits: this.organizationalUnits,
-      Teams: this.teams,
-      BusinessUnits: this.businessUnits,
-    };
+    const body = requestBody({
+      WorkOrder: this.Parameters.WorkOrder,
+      RealTimeMode: this.Parameters.RealTimeMode,
+      Duration: this.Parameters.Duration,
+      ForceDateRange: this.Parameters.ForceDateRange,
+      IgnoreDuration: this.Parameters.IgnoreDuration,
+      IgnoreTravelTime: this.Parameters.IgnoreTravelTime,
+      AllowOverlapping: this.Parameters.AllowOverlapping,
+      Radius: this.Parameters.Radius,
+      StartTime: this.Parameters.StartTime,
+      EndTime: this.Parameters.EndTime,
+      TimeGroup: this.Parameters.TimeGroup,
+      Calendar: this.Parameters.Calendar,
+      Characteristics: this.Parameters.Characteristics,
+      Territories: this.Parameters.Territories,
+      ResourceTypes: this.Parameters.ResourceTypes,
+      Resources: this.Parameters.Resources,
+      RestrictedResources: this.Parameters.RestrictedResources,
+      Latitude: this.Parameters.Latitude,
+      Longitude: this.Parameters.Longitude,
+      Categories: this.Parameters.Categories,
+      OrganizationalUnits: this.Parameters.OrganizationalUnits,
+      Teams: this.Parameters.Teams,
+      BusinessUnits: this.Parameters.BusinessUnits,
+    });
 
     return {
       method: "POST",
@@ -85,8 +94,9 @@ export class msdyn_RetrieveResourceAvailabilityRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveResourceAvailabilityResponse> {
-    const data = await response.json();
-    return msdyn_RetrieveResourceAvailabilityResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_RetrieveResourceAvailabilityResponse.fromResponse({});
+    return msdyn_RetrieveResourceAvailabilityResponse.fromResponse(await response.json());
   }
 }
 

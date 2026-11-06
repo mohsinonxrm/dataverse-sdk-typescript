@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SendEmailsToOptedInResourcesResponse as msdyn_SendEmailsToOptedInResourcesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SendEmailsToOptedInResources message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SendEmailsToOptedInResourcesRequestParameters {
+  FromUserId: string;
+  ToResourceIds: string;
+}
 
 /**
  * msdyn_SendEmailsToOptedInResources request message
@@ -12,20 +22,19 @@ export class msdyn_SendEmailsToOptedInResourcesRequest
   extends OrganizationRequest
   implements Executable<msdyn_SendEmailsToOptedInResourcesResponse>
 {
-  constructor(
-    public fromUserId: string,
-    public toResourceIds: string
-  ) {
-    super("msdyn_SendEmailsToOptedInResources");
+  declare readonly Parameters: Readonly<msdyn_SendEmailsToOptedInResourcesRequestParameters>;
+
+  constructor(parameters: msdyn_SendEmailsToOptedInResourcesRequestParameters) {
+    super("msdyn_SendEmailsToOptedInResources", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SendEmailsToOptedInResources`;
 
-    const body: Record<string, unknown> = {
-      FromUserId: this.fromUserId,
-      ToResourceIds: this.toResourceIds,
-    };
+    const body = requestBody({
+      FromUserId: this.Parameters.FromUserId,
+      ToResourceIds: this.Parameters.ToResourceIds,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_SendEmailsToOptedInResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SendEmailsToOptedInResourcesResponse> {
-    const data = await response.json();
-    return msdyn_SendEmailsToOptedInResourcesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SendEmailsToOptedInResourcesResponse.fromResponse({});
+    return msdyn_SendEmailsToOptedInResourcesResponse.fromResponse(await response.json());
   }
 }
 

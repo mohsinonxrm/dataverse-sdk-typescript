@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CheckForDeletedProcessResponse as msdyn_CheckForDeletedProcessResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CheckForDeletedProcess message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForDeletedProcessRequestParameters {
+  EntityIds?: string;
+  SolutionId?: string;
+}
 
 /**
  * msdyn_CheckForDeletedProcess request message
@@ -12,20 +22,19 @@ export class msdyn_CheckForDeletedProcessRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckForDeletedProcessResponse>
 {
-  constructor(
-    public entityIds?: string,
-    public solutionId?: string
-  ) {
-    super("msdyn_CheckForDeletedProcess");
+  declare readonly Parameters: Readonly<msdyn_CheckForDeletedProcessRequestParameters>;
+
+  constructor(parameters: msdyn_CheckForDeletedProcessRequestParameters = {}) {
+    super("msdyn_CheckForDeletedProcess", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForDeletedProcess`;
 
-    const body: Record<string, unknown> = {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-    };
+    const body = requestBody({
+      EntityIds: this.Parameters.EntityIds,
+      SolutionId: this.Parameters.SolutionId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_CheckForDeletedProcessRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForDeletedProcessResponse> {
-    const data = await response.json();
-    return msdyn_CheckForDeletedProcessResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckForDeletedProcessResponse.fromResponse({});
+    return msdyn_CheckForDeletedProcessResponse.fromResponse(await response.json());
   }
 }
 

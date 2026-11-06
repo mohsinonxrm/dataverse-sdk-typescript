@@ -28,7 +28,9 @@ export class msdyn_SalesAgents_GetSalesAgentsFeatureSettingsAction implements Ex
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse;
+    return (await response.json()) as msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse;
   }
 }

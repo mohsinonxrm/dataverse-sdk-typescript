@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_getsuppressionlistentriesResponse as msdynmkt_getsuppressionlistentriesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_getsuppressionlistentries message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_getsuppressionlistentriesRequestParameters {
+  msdynmkt_getsuppressionlistentriesemailaddresses: string;
+}
 
 /**
  * msdynmkt_getsuppressionlistentries request message
@@ -12,17 +21,19 @@ export class msdynmkt_getsuppressionlistentriesRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_getsuppressionlistentriesResponse>
 {
-  constructor(public msdynmkt_getsuppressionlistentriesemailaddresses: string) {
-    super("msdynmkt_getsuppressionlistentries");
+  declare readonly Parameters: Readonly<msdynmkt_getsuppressionlistentriesRequestParameters>;
+
+  constructor(parameters: msdynmkt_getsuppressionlistentriesRequestParameters) {
+    super("msdynmkt_getsuppressionlistentries", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_getsuppressionlistentries`;
 
-    const body: Record<string, unknown> = {
+    const body = requestBody({
       msdynmkt_getsuppressionlistentriesemailaddresses:
-        this.msdynmkt_getsuppressionlistentriesemailaddresses,
-    };
+        this.Parameters.msdynmkt_getsuppressionlistentriesemailaddresses,
+    });
 
     return {
       method: "POST",
@@ -35,8 +46,9 @@ export class msdynmkt_getsuppressionlistentriesRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_getsuppressionlistentriesResponse> {
-    const data = await response.json();
-    return msdynmkt_getsuppressionlistentriesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdynmkt_getsuppressionlistentriesResponse.fromResponse({});
+    return msdynmkt_getsuppressionlistentriesResponse.fromResponse(await response.json());
   }
 }
 

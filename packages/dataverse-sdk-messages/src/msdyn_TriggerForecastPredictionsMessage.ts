@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_TriggerForecastPredictions message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TriggerForecastPredictionsRequestParameters {
+  InputData: string;
+}
 
 /**
  * msdyn_TriggerForecastPredictions request message
@@ -10,16 +19,18 @@ export class msdyn_TriggerForecastPredictionsRequest
   extends OrganizationRequest
   implements Executable<msdyn_TriggerForecastPredictionsResponse>
 {
-  constructor(public inputData: string) {
-    super("msdyn_TriggerForecastPredictions");
+  declare readonly Parameters: Readonly<msdyn_TriggerForecastPredictionsRequestParameters>;
+
+  constructor(parameters: msdyn_TriggerForecastPredictionsRequestParameters) {
+    super("msdyn_TriggerForecastPredictions", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TriggerForecastPredictions`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.Parameters.InputData,
+    });
 
     return {
       method: "POST",

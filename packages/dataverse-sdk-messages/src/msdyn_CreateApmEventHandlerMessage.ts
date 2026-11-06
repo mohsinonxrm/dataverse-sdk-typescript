@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CreateApmEventHandlerResponse as msdyn_CreateApmEventHandlerResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CreateApmEventHandler message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateApmEventHandlerRequestParameters {
+  AppModuleId: string;
+}
 
 /**
  * msdyn_CreateApmEventHandler request message
@@ -12,16 +21,18 @@ export class msdyn_CreateApmEventHandlerRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateApmEventHandlerResponse>
 {
-  constructor(public appModuleId: string) {
-    super("msdyn_CreateApmEventHandler");
+  declare readonly Parameters: Readonly<msdyn_CreateApmEventHandlerRequestParameters>;
+
+  constructor(parameters: msdyn_CreateApmEventHandlerRequestParameters) {
+    super("msdyn_CreateApmEventHandler", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateApmEventHandler`;
 
-    const body: Record<string, unknown> = {
-      AppModuleId: this.appModuleId,
-    };
+    const body = requestBody({
+      AppModuleId: this.Parameters.AppModuleId,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_CreateApmEventHandlerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateApmEventHandlerResponse> {
-    const data = await response.json();
-    return msdyn_CreateApmEventHandlerResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CreateApmEventHandlerResponse.fromResponse({});
+    return msdyn_CreateApmEventHandlerResponse.fromResponse(await response.json());
   }
 }
 

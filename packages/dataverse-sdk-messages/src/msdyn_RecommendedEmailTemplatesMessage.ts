@@ -1,7 +1,25 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_RecommendedEmailTemplatesResponse as msdyn_RecommendedEmailTemplatesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RecommendedEmailTemplates message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RecommendedEmailTemplatesRequestParameters {
+  isTemplateResponse?: boolean;
+  emailContextData?: string;
+  emailId: string;
+  templateFiltersInString: string;
+  filters?: string;
+  customerIntent: string;
+  transactionId: string;
+  emailString: string;
+  multiturnPayload?: string;
+  copilotRequestParameters: string;
+}
 
 /**
  * msdyn_RecommendedEmailTemplates request message
@@ -12,36 +30,27 @@ export class msdyn_RecommendedEmailTemplatesRequest
   extends OrganizationRequest
   implements Executable<msdyn_RecommendedEmailTemplatesResponse>
 {
-  constructor(
-    public isTemplateResponse: boolean | undefined,
-    public emailContextData: string | undefined,
-    public emailId: string,
-    public templateFiltersInString: string,
-    public filters: string | undefined,
-    public customerIntent: string,
-    public transactionId: string,
-    public emailString: string,
-    public multiturnPayload: string | undefined,
-    public copilotRequestParameters: string
-  ) {
-    super("msdyn_RecommendedEmailTemplates");
+  declare readonly Parameters: Readonly<msdyn_RecommendedEmailTemplatesRequestParameters>;
+
+  constructor(parameters: msdyn_RecommendedEmailTemplatesRequestParameters) {
+    super("msdyn_RecommendedEmailTemplates", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RecommendedEmailTemplates`;
 
-    const body: Record<string, unknown> = {
-      isTemplateResponse: this.isTemplateResponse,
-      emailContextData: this.emailContextData,
-      emailId: this.emailId,
-      templateFiltersInString: this.templateFiltersInString,
-      filters: this.filters,
-      customerIntent: this.customerIntent,
-      transactionId: this.transactionId,
-      emailString: this.emailString,
-      multiturnPayload: this.multiturnPayload,
-      copilotRequestParameters: this.copilotRequestParameters,
-    };
+    const body = requestBody({
+      isTemplateResponse: this.Parameters.isTemplateResponse,
+      emailContextData: this.Parameters.emailContextData,
+      emailId: this.Parameters.emailId,
+      templateFiltersInString: this.Parameters.templateFiltersInString,
+      filters: this.Parameters.filters,
+      customerIntent: this.Parameters.customerIntent,
+      transactionId: this.Parameters.transactionId,
+      emailString: this.Parameters.emailString,
+      multiturnPayload: this.Parameters.multiturnPayload,
+      copilotRequestParameters: this.Parameters.copilotRequestParameters,
+    });
 
     return {
       method: "POST",
@@ -54,8 +63,9 @@ export class msdyn_RecommendedEmailTemplatesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RecommendedEmailTemplatesResponse> {
-    const data = await response.json();
-    return msdyn_RecommendedEmailTemplatesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_RecommendedEmailTemplatesResponse.fromResponse({});
+    return msdyn_RecommendedEmailTemplatesResponse.fromResponse(await response.json());
   }
 }
 

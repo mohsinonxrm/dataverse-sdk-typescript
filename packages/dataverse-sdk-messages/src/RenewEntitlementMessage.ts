@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { entitlement } from "./types/index.js";
+
+/**
+ * Parameters of the RenewEntitlement message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RenewEntitlementRequestParameters {
+  Status: number;
+}
 
 /**
  * RenewEntitlement request message
  *
  * Web API Action: RenewEntitlement
+ *
+ * The first argument is the id of the entitlement record to call it on.
  */
 export class RenewEntitlementRequest
   extends OrganizationRequest
   implements Executable<RenewEntitlementResponse>
 {
+  declare readonly Parameters: Readonly<RenewEntitlementRequestParameters>;
+
   constructor(
     public entitlementId: string,
-    public status: number
+    parameters: RenewEntitlementRequestParameters
   ) {
-    super("RenewEntitlement");
+    super("RenewEntitlement", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/entitlements(${this.entitlementId})/Microsoft.Dynamics.CRM.RenewEntitlement`;
 
-    const body: Record<string, unknown> = {
-      Status: this.status,
-    };
+    const body = requestBody({
+      Status: this.Parameters.Status,
+    });
 
     return {
       method: "POST",
@@ -38,8 +51,9 @@ export class RenewEntitlementRequest
   }
 
   async parseResponse(response: Response): Promise<RenewEntitlementResponse> {
-    const data = await response.json();
-    return RenewEntitlementResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return RenewEntitlementResponse.fromResponse({});
+    return RenewEntitlementResponse.fromResponse(await response.json());
   }
 }
 

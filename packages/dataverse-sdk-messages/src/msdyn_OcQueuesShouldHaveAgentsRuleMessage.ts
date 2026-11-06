@@ -29,8 +29,9 @@ export class msdyn_OcQueuesShouldHaveAgentsRuleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_OcQueuesShouldHaveAgentsRuleResponse> {
-    const data = await response.json();
-    return msdyn_OcQueuesShouldHaveAgentsRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_OcQueuesShouldHaveAgentsRuleResponse.fromResponse({});
+    return msdyn_OcQueuesShouldHaveAgentsRuleResponse.fromResponse(await response.json());
   }
 }
 

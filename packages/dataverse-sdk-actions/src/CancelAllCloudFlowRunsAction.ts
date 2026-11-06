@@ -12,6 +12,8 @@ export interface CancelAllCloudFlowRunsResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.workflow)
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class CancelAllCloudFlowRunsAction implements Executable<CancelAllCloudFlowRunsResponse> {
   constructor(public readonly workflowId: string) {}
@@ -30,7 +32,8 @@ export class CancelAllCloudFlowRunsAction implements Executable<CancelAllCloudFl
   }
 
   async parseResponse(response: Response): Promise<CancelAllCloudFlowRunsResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CancelAllCloudFlowRunsResponse;
+    return (await response.json()) as CancelAllCloudFlowRunsResponse;
   }
 }

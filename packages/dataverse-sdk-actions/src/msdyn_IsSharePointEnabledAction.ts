@@ -26,7 +26,8 @@ export class msdyn_IsSharePointEnabledAction implements Executable<msdyn_IsShare
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsSharePointEnabledResponse> {
-    const data = await response.json();
-    return data as msdyn_IsSharePointEnabledResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_IsSharePointEnabledResponse;
+    return (await response.json()) as msdyn_IsSharePointEnabledResponse;
   }
 }

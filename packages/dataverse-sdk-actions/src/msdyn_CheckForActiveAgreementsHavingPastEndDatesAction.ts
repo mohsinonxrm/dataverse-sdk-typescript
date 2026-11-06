@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CheckForActiveAgreementsHavingPastEndDates action
@@ -11,19 +12,29 @@ export interface msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse {
 }
 
 /**
+ * Parameters of the msdyn_CheckForActiveAgreementsHavingPastEndDates action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForActiveAgreementsHavingPastEndDatesActionParameters {
+  TimeInterval: string;
+}
+
+/**
  * msdyn_CheckForActiveAgreementsHavingPastEndDates action
  *
  * Unbound action
  */
 export class msdyn_CheckForActiveAgreementsHavingPastEndDatesAction implements Executable<msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse> {
-  constructor(public readonly timeInterval: string) {}
+  constructor(
+    public readonly parameters: msdyn_CheckForActiveAgreementsHavingPastEndDatesActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForActiveAgreementsHavingPastEndDates`;
 
-    const body: Record<string, unknown> = {
-      TimeInterval: this.timeInterval,
-    };
+    const body = requestBody({
+      TimeInterval: this.parameters.TimeInterval,
+    });
 
     return {
       method: "POST",
@@ -38,7 +49,9 @@ export class msdyn_CheckForActiveAgreementsHavingPastEndDatesAction implements E
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse;
+    return (await response.json()) as msdyn_CheckForActiveAgreementsHavingPastEndDatesResponse;
   }
 }

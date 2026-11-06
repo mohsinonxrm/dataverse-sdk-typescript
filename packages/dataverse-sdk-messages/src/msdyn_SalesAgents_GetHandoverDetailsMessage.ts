@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAgents_GetHandoverDetailsResponse as msdyn_SalesAgents_GetHandoverDetailsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_GetHandoverDetails message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_GetHandoverDetailsRequestParameters {
+  msdyn_SalesAgentRun: string;
+  msdyn_TrackingId?: string;
+}
 
 /**
  * msdyn_SalesAgents_GetHandoverDetails request message
@@ -12,20 +22,19 @@ export class msdyn_SalesAgents_GetHandoverDetailsRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_GetHandoverDetailsResponse>
 {
-  constructor(
-    public msdyn_SalesAgentRun: string,
-    public msdyn_TrackingId?: string
-  ) {
-    super("msdyn_SalesAgents_GetHandoverDetails");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_GetHandoverDetailsRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_GetHandoverDetailsRequestParameters) {
+    super("msdyn_SalesAgents_GetHandoverDetails", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_GetHandoverDetails`;
 
-    const body: Record<string, unknown> = {
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_SalesAgentRun: this.Parameters.msdyn_SalesAgentRun,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,10 @@ export class msdyn_SalesAgents_GetHandoverDetailsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_GetHandoverDetailsResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_GetHandoverDetailsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_SalesAgents_GetHandoverDetailsResponse.fromResponse({});
+    return msdyn_SalesAgents_GetHandoverDetailsResponse.fromResponse(await response.json());
   }
 }
 

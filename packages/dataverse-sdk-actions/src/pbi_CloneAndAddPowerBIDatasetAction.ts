@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from pbi_CloneAndAddPowerBIDataset action
@@ -12,27 +13,33 @@ export interface pbi_CloneAndAddPowerBIDatasetResponse {
 }
 
 /**
+ * Parameters of the pbi_CloneAndAddPowerBIDataset action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface pbi_CloneAndAddPowerBIDatasetActionParameters {
+  pbi_DatasetObjectId: string;
+  pbi_UniqueName: string;
+  pbi_WorkspaceObjectId: string;
+  pbi_SolutionUniqueName: string;
+}
+
+/**
  * pbi_CloneAndAddPowerBIDataset action
  *
  * Unbound action
  */
 export class pbi_CloneAndAddPowerBIDatasetAction implements Executable<pbi_CloneAndAddPowerBIDatasetResponse> {
-  constructor(
-    public readonly pbi_DatasetObjectId: string,
-    public readonly pbi_UniqueName: string,
-    public readonly pbi_WorkspaceObjectId: string,
-    public readonly pbi_SolutionUniqueName: string
-  ) {}
+  constructor(public readonly parameters: pbi_CloneAndAddPowerBIDatasetActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/pbi_CloneAndAddPowerBIDataset`;
 
-    const body: Record<string, unknown> = {
-      pbi_DatasetObjectId: this.pbi_DatasetObjectId,
-      pbi_UniqueName: this.pbi_UniqueName,
-      pbi_WorkspaceObjectId: this.pbi_WorkspaceObjectId,
-      pbi_SolutionUniqueName: this.pbi_SolutionUniqueName,
-    };
+    const body = requestBody({
+      pbi_DatasetObjectId: this.parameters.pbi_DatasetObjectId,
+      pbi_UniqueName: this.parameters.pbi_UniqueName,
+      pbi_WorkspaceObjectId: this.parameters.pbi_WorkspaceObjectId,
+      pbi_SolutionUniqueName: this.parameters.pbi_SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -45,7 +52,8 @@ export class pbi_CloneAndAddPowerBIDatasetAction implements Executable<pbi_Clone
   }
 
   async parseResponse(response: Response): Promise<pbi_CloneAndAddPowerBIDatasetResponse> {
-    const data = await response.json();
-    return data as pbi_CloneAndAddPowerBIDatasetResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as pbi_CloneAndAddPowerBIDatasetResponse;
+    return (await response.json()) as pbi_CloneAndAddPowerBIDatasetResponse;
   }
 }

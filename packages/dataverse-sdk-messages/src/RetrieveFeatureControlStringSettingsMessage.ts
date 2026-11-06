@@ -29,8 +29,10 @@ export class RetrieveFeatureControlStringSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<RetrieveFeatureControlStringSettingsResponse> {
-    const data = await response.json();
-    return RetrieveFeatureControlStringSettingsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return RetrieveFeatureControlStringSettingsResponse.fromResponse({});
+    return RetrieveFeatureControlStringSettingsResponse.fromResponse(await response.json());
   }
 }
 

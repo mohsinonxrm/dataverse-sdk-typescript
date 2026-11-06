@@ -30,7 +30,9 @@ export class msdyn_GBMConfigurationShouldHaveWorkStreamRuleAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse;
+    return (await response.json()) as msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse;
   }
 }

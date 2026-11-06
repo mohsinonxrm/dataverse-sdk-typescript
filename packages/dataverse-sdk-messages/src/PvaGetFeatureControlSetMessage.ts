@@ -29,8 +29,9 @@ export class PvaGetFeatureControlSetRequest
   }
 
   async parseResponse(response: Response): Promise<PvaGetFeatureControlSetResponse> {
-    const data = await response.json();
-    return PvaGetFeatureControlSetResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return PvaGetFeatureControlSetResponse.fromResponse({});
+    return PvaGetFeatureControlSetResponse.fromResponse(await response.json());
   }
 }
 

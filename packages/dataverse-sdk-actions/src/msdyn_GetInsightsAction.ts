@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetInsights action
@@ -9,25 +10,31 @@ export interface msdyn_GetInsightsResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetInsights action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetInsightsActionParameters {
+  msdyn_payload: string;
+  msdyn_insighttype: string;
+  msdyn_responseFormat?: string;
+}
+
+/**
  * msdyn_GetInsights action
  *
  * Unbound action
  */
 export class msdyn_GetInsightsAction implements Executable<msdyn_GetInsightsResponse> {
-  constructor(
-    public readonly msdyn_payload: string,
-    public readonly msdyn_insighttype: string,
-    public readonly msdyn_responseFormat?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetInsightsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetInsights`;
 
-    const body: Record<string, unknown> = {
-      msdyn_payload: this.msdyn_payload,
-      msdyn_insighttype: this.msdyn_insighttype,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-    };
+    const body = requestBody({
+      msdyn_payload: this.parameters.msdyn_payload,
+      msdyn_insighttype: this.parameters.msdyn_insighttype,
+      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
+    });
 
     return {
       method: "POST",
@@ -40,7 +47,8 @@ export class msdyn_GetInsightsAction implements Executable<msdyn_GetInsightsResp
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetInsightsResponse> {
-    const data = await response.json();
-    return data as msdyn_GetInsightsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetInsightsResponse;
+    return (await response.json()) as msdyn_GetInsightsResponse;
   }
 }

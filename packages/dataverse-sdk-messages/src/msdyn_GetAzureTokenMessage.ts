@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetAzureTokenResponse as msdyn_GetAzureTokenResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetAzureToken message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAzureTokenRequestParameters {
+  InputParameter: string;
+}
 
 /**
  * msdyn_GetAzureToken request message
@@ -12,16 +21,18 @@ export class msdyn_GetAzureTokenRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetAzureTokenResponse>
 {
-  constructor(public inputParameter: string) {
-    super("msdyn_GetAzureToken");
+  declare readonly Parameters: Readonly<msdyn_GetAzureTokenRequestParameters>;
+
+  constructor(parameters: msdyn_GetAzureTokenRequestParameters) {
+    super("msdyn_GetAzureToken", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAzureToken`;
 
-    const body: Record<string, unknown> = {
-      InputParameter: this.inputParameter,
-    };
+    const body = requestBody({
+      InputParameter: this.Parameters.InputParameter,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetAzureTokenRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAzureTokenResponse> {
-    const data = await response.json();
-    return msdyn_GetAzureTokenResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetAzureTokenResponse.fromResponse({});
+    return msdyn_GetAzureTokenResponse.fromResponse(await response.json());
   }
 }
 

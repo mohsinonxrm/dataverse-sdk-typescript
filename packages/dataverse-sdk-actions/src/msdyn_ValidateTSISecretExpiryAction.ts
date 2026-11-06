@@ -29,7 +29,8 @@ export class msdyn_ValidateTSISecretExpiryAction implements Executable<msdyn_Val
   }
 
   async parseResponse(response: Response): Promise<msdyn_ValidateTSISecretExpiryResponse> {
-    const data = await response.json();
-    return data as msdyn_ValidateTSISecretExpiryResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ValidateTSISecretExpiryResponse;
+    return (await response.json()) as msdyn_ValidateTSISecretExpiryResponse;
   }
 }

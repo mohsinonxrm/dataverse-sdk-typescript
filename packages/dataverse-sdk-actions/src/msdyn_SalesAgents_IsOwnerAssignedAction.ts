@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SalesAgents_IsOwnerAssigned action
@@ -8,25 +9,31 @@ export interface msdyn_SalesAgents_IsOwnerAssignedResponse {
 }
 
 /**
+ * Parameters of the msdyn_SalesAgents_IsOwnerAssigned action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_IsOwnerAssignedActionParameters {
+  msdyn_HandoverContext?: string;
+  msdyn_SalesAgentRun: string;
+  msdyn_TrackingId?: string;
+}
+
+/**
  * msdyn_SalesAgents_IsOwnerAssigned action
  *
  * Unbound action
  */
 export class msdyn_SalesAgents_IsOwnerAssignedAction implements Executable<msdyn_SalesAgents_IsOwnerAssignedResponse> {
-  constructor(
-    public readonly msdyn_HandoverContext: string | undefined,
-    public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_TrackingId?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_SalesAgents_IsOwnerAssignedActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_IsOwnerAssigned`;
 
-    const body: Record<string, unknown> = {
-      msdyn_HandoverContext: this.msdyn_HandoverContext,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_HandoverContext: this.parameters.msdyn_HandoverContext,
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_SalesAgents_IsOwnerAssignedAction implements Executable<msdyn
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_IsOwnerAssignedResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_IsOwnerAssignedResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SalesAgents_IsOwnerAssignedResponse;
+    return (await response.json()) as msdyn_SalesAgents_IsOwnerAssignedResponse;
   }
 }

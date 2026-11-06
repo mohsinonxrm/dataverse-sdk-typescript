@@ -26,7 +26,8 @@ export class PvaGetMaxDatabaseVersionAction implements Executable<PvaGetMaxDatab
   }
 
   async parseResponse(response: Response): Promise<PvaGetMaxDatabaseVersionResponse> {
-    const data = await response.json();
-    return data as PvaGetMaxDatabaseVersionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PvaGetMaxDatabaseVersionResponse;
+    return (await response.json()) as PvaGetMaxDatabaseVersionResponse;
   }
 }

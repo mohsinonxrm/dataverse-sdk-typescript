@@ -31,7 +31,9 @@ export class msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysAction implements 
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse;
+    return (await response.json()) as msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse;
   }
 }

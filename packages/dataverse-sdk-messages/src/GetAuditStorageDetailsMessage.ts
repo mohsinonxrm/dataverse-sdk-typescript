@@ -29,8 +29,9 @@ export class GetAuditStorageDetailsRequest
   }
 
   async parseResponse(response: Response): Promise<GetAuditStorageDetailsResponse> {
-    const data = await response.json();
-    return GetAuditStorageDetailsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return GetAuditStorageDetailsResponse.fromResponse({});
+    return GetAuditStorageDetailsResponse.fromResponse(await response.json());
   }
 }
 

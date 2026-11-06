@@ -28,7 +28,8 @@ export class msdyn_CheckIoTDeviceCategoryOfDeviceAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIoTDeviceCategoryOfDeviceResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIoTDeviceCategoryOfDeviceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckIoTDeviceCategoryOfDeviceResponse;
+    return (await response.json()) as msdyn_CheckIoTDeviceCategoryOfDeviceResponse;
   }
 }

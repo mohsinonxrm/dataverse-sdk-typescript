@@ -31,8 +31,12 @@ export class msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    const data = await response.json();
-    return msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse({});
+    return msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

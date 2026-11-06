@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ConditionXmlConversion action
@@ -9,29 +10,35 @@ export interface msdyn_ConditionXmlConversionResponse {
 }
 
 /**
+ * Parameters of the msdyn_ConditionXmlConversion action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ConditionXmlConversionActionParameters {
+  InputType: string;
+  OutputType: string;
+  InputString: string;
+  EntityName: string;
+  EnableUnderNotUnderSupport?: boolean;
+}
+
+/**
  * msdyn_ConditionXmlConversion action
  *
  * Unbound action
  */
 export class msdyn_ConditionXmlConversionAction implements Executable<msdyn_ConditionXmlConversionResponse> {
-  constructor(
-    public readonly inputType: string,
-    public readonly outputType: string,
-    public readonly inputString: string,
-    public readonly entityName: string,
-    public readonly enableUnderNotUnderSupport?: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_ConditionXmlConversionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ConditionXmlConversion`;
 
-    const body: Record<string, unknown> = {
-      InputType: this.inputType,
-      OutputType: this.outputType,
-      InputString: this.inputString,
-      EntityName: this.entityName,
-      EnableUnderNotUnderSupport: this.enableUnderNotUnderSupport,
-    };
+    const body = requestBody({
+      InputType: this.parameters.InputType,
+      OutputType: this.parameters.OutputType,
+      InputString: this.parameters.InputString,
+      EntityName: this.parameters.EntityName,
+      EnableUnderNotUnderSupport: this.parameters.EnableUnderNotUnderSupport,
+    });
 
     return {
       method: "POST",
@@ -44,7 +51,8 @@ export class msdyn_ConditionXmlConversionAction implements Executable<msdyn_Cond
   }
 
   async parseResponse(response: Response): Promise<msdyn_ConditionXmlConversionResponse> {
-    const data = await response.json();
-    return data as msdyn_ConditionXmlConversionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ConditionXmlConversionResponse;
+    return (await response.json()) as msdyn_ConditionXmlConversionResponse;
   }
 }

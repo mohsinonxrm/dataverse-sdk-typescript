@@ -1,33 +1,46 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_EndSecondaryChannel message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_EndSecondaryChannelRequestParameters {
+  SecondaryChannelSessionId: string;
+  ApiVersion: string;
+  SecondaryChannelType: string;
+}
 
 /**
  * CCaaS_EndSecondaryChannel request message
  *
  * Web API Action: CCaaS_EndSecondaryChannel
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_EndSecondaryChannelRequest
   extends OrganizationRequest
   implements Executable<CCaaS_EndSecondaryChannelResponse>
 {
+  declare readonly Parameters: Readonly<CCaaS_EndSecondaryChannelRequestParameters>;
+
   constructor(
     public msdyn_ocliveworkitemId: string,
-    public secondaryChannelSessionId: string,
-    public apiVersion: string,
-    public secondaryChannelType: string
+    parameters: CCaaS_EndSecondaryChannelRequestParameters
   ) {
-    super("CCaaS_EndSecondaryChannel");
+    super("CCaaS_EndSecondaryChannel", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_EndSecondaryChannel`;
 
-    const body: Record<string, unknown> = {
-      SecondaryChannelSessionId: this.secondaryChannelSessionId,
-      ApiVersion: this.apiVersion,
-      SecondaryChannelType: this.secondaryChannelType,
-    };
+    const body = requestBody({
+      SecondaryChannelSessionId: this.Parameters.SecondaryChannelSessionId,
+      ApiVersion: this.Parameters.ApiVersion,
+      SecondaryChannelType: this.Parameters.SecondaryChannelType,
+    });
 
     return {
       method: "POST",

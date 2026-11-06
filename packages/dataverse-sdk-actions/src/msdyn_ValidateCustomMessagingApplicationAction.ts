@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ValidateCustomMessagingApplication action
@@ -9,25 +10,33 @@ export interface msdyn_ValidateCustomMessagingApplicationResponse {
 }
 
 /**
+ * Parameters of the msdyn_ValidateCustomMessagingApplication action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ValidateCustomMessagingApplicationActionParameters {
+  CustomMessagingBCRMSAppId: string;
+  CustomMessagingBCRRecordId?: string;
+  CustomMessagingBCRMSAppSecret: string;
+}
+
+/**
  * msdyn_ValidateCustomMessagingApplication action
  *
  * Unbound action
  */
 export class msdyn_ValidateCustomMessagingApplicationAction implements Executable<msdyn_ValidateCustomMessagingApplicationResponse> {
   constructor(
-    public readonly customMessagingBCRMSAppId: string,
-    public readonly customMessagingBCRRecordId: string | undefined,
-    public readonly customMessagingBCRMSAppSecret: string
+    public readonly parameters: msdyn_ValidateCustomMessagingApplicationActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ValidateCustomMessagingApplication`;
 
-    const body: Record<string, unknown> = {
-      CustomMessagingBCRMSAppId: this.customMessagingBCRMSAppId,
-      CustomMessagingBCRRecordId: this.customMessagingBCRRecordId,
-      CustomMessagingBCRMSAppSecret: this.customMessagingBCRMSAppSecret,
-    };
+    const body = requestBody({
+      CustomMessagingBCRMSAppId: this.parameters.CustomMessagingBCRMSAppId,
+      CustomMessagingBCRRecordId: this.parameters.CustomMessagingBCRRecordId,
+      CustomMessagingBCRMSAppSecret: this.parameters.CustomMessagingBCRMSAppSecret,
+    });
 
     return {
       method: "POST",
@@ -42,7 +51,8 @@ export class msdyn_ValidateCustomMessagingApplicationAction implements Executabl
   async parseResponse(
     response: Response
   ): Promise<msdyn_ValidateCustomMessagingApplicationResponse> {
-    const data = await response.json();
-    return data as msdyn_ValidateCustomMessagingApplicationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ValidateCustomMessagingApplicationResponse;
+    return (await response.json()) as msdyn_ValidateCustomMessagingApplicationResponse;
   }
 }

@@ -30,7 +30,9 @@ let teamId = "";
 async function teamAccess(): Promise<string> {
   const { client } = liveClient();
   const result = await client.execute(
-    new RetrievePrincipalAccess_teamFunction(teamId, functionReference("account", accountId))
+    new RetrievePrincipalAccess_teamFunction(teamId, {
+      Target: functionReference("account", accountId),
+    })
   );
   return String(result.AccessRights);
 }
@@ -60,14 +62,19 @@ describe.skipIf(!live)("live: navigation properties of complex types (#231)", ()
     const target = createEntityReference("account", accountId);
 
     await client.execute(
-      new GrantAccessAction(target, {
-        Principal: createEntityReference("team", teamId),
-        AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess,
+      new GrantAccessAction({
+        Target: target,
+        PrincipalAccess: {
+          Principal: createEntityReference("team", teamId),
+          AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess,
+        },
       })
     );
     expect(await teamAccess()).toBe("ReadAccess, WriteAccess");
 
-    await client.execute(new RevokeAccessAction(target, createEntityReference("team", teamId)));
+    await client.execute(
+      new RevokeAccessAction({ Target: target, Revokee: createEntityReference("team", teamId) })
+    );
     expect(await teamAccess()).toBe("None");
   });
 
@@ -79,21 +86,27 @@ describe.skipIf(!live)("live: navigation properties of complex types (#231)", ()
     };
 
     await client.execute(
-      new GrantAccessRequest(messageReference("account", accountId), {
-        Principal: team,
-        AccessMask: MessageAccessRights.ReadAccess,
+      new GrantAccessRequest({
+        Target: messageReference("account", accountId),
+        PrincipalAccess: {
+          Principal: team,
+          AccessMask: MessageAccessRights.ReadAccess,
+        },
       })
     );
     expect(await teamAccess()).toBe("ReadAccess");
 
-    await client.execute(new RevokeAccessRequest(messageReference("account", accountId), team));
+    await client.execute(
+      new RevokeAccessRequest({ Target: messageReference("account", accountId), Revokee: team })
+    );
     expect(await teamAccess()).toBe("None");
   });
 
   it("Principal is required: GrantAccess without it doesn't type-check", () => {
-    // @ts-expect-error #231: PrincipalAccess.Principal is Nullable="false"
-    const action = new GrantAccessAction(createEntityReference("account", accountId), {
-      AccessMask: AccessRights.ReadAccess,
+    const action = new GrantAccessAction({
+      Target: createEntityReference("account", accountId),
+      // @ts-expect-error #231: PrincipalAccess.Principal is Nullable="false"
+      PrincipalAccess: { AccessMask: AccessRights.ReadAccess },
     });
     expect(action).toBeInstanceOf(GrantAccessAction);
   });

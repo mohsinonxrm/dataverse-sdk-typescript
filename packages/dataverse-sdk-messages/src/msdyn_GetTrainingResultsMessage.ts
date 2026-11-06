@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetTrainingResultsResponse as msdyn_GetTrainingResultsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetTrainingResults message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetTrainingResultsRequestParameters {
+  PredictionName?: string;
+}
 
 /**
  * msdyn_GetTrainingResults request message
@@ -12,16 +21,18 @@ export class msdyn_GetTrainingResultsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetTrainingResultsResponse>
 {
-  constructor(public predictionName?: string) {
-    super("msdyn_GetTrainingResults");
+  declare readonly Parameters: Readonly<msdyn_GetTrainingResultsRequestParameters>;
+
+  constructor(parameters: msdyn_GetTrainingResultsRequestParameters = {}) {
+    super("msdyn_GetTrainingResults", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetTrainingResults`;
 
-    const body: Record<string, unknown> = {
-      PredictionName: this.predictionName,
-    };
+    const body = requestBody({
+      PredictionName: this.Parameters.PredictionName,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetTrainingResultsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetTrainingResultsResponse> {
-    const data = await response.json();
-    return msdyn_GetTrainingResultsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetTrainingResultsResponse.fromResponse({});
+    return msdyn_GetTrainingResultsResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from pm_CreateProcess action
@@ -8,27 +9,33 @@ export interface pm_CreateProcessResponse {
 }
 
 /**
+ * Parameters of the pm_CreateProcess action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface pm_CreateProcessActionParameters {
+  reportData?: string;
+  inputDataBinding: string;
+  name: string;
+  description?: string;
+}
+
+/**
  * pm_CreateProcess action
  *
  * Unbound action
  */
 export class pm_CreateProcessAction implements Executable<pm_CreateProcessResponse> {
-  constructor(
-    public readonly reportData: string | undefined,
-    public readonly inputDataBinding: string,
-    public readonly name: string,
-    public readonly description?: string
-  ) {}
+  constructor(public readonly parameters: pm_CreateProcessActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/pm_CreateProcess`;
 
-    const body: Record<string, unknown> = {
-      reportData: this.reportData,
-      inputDataBinding: this.inputDataBinding,
-      name: this.name,
-      description: this.description,
-    };
+    const body = requestBody({
+      reportData: this.parameters.reportData,
+      inputDataBinding: this.parameters.inputDataBinding,
+      name: this.parameters.name,
+      description: this.parameters.description,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class pm_CreateProcessAction implements Executable<pm_CreateProcessRespon
   }
 
   async parseResponse(response: Response): Promise<pm_CreateProcessResponse> {
-    const data = await response.json();
-    return data as pm_CreateProcessResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as pm_CreateProcessResponse;
+    return (await response.json()) as pm_CreateProcessResponse;
   }
 }

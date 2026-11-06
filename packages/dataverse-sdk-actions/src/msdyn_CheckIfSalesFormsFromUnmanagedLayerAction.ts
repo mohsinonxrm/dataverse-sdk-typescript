@@ -32,7 +32,8 @@ export class msdyn_CheckIfSalesFormsFromUnmanagedLayerAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse;
+    return (await response.json()) as msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse;
   }
 }

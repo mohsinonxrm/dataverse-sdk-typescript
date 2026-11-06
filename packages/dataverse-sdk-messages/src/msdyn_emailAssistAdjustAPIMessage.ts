@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_emailAssistAdjustAPIResponse as msdyn_emailAssistAdjustAPIResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_emailAssistAdjustAPI message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_emailAssistAdjustAPIRequestParameters {
+  emailInput: string;
+  caller: string;
+  knobsConfigurations: string;
+  requestId: string;
+  copilotOption: string;
+}
 
 /**
  * msdyn_emailAssistAdjustAPI request message
@@ -12,26 +25,22 @@ export class msdyn_emailAssistAdjustAPIRequest
   extends OrganizationRequest
   implements Executable<msdyn_emailAssistAdjustAPIResponse>
 {
-  constructor(
-    public emailInput: string,
-    public caller: string,
-    public knobsConfigurations: string,
-    public requestId: string,
-    public copilotOption: string
-  ) {
-    super("msdyn_emailAssistAdjustAPI");
+  declare readonly Parameters: Readonly<msdyn_emailAssistAdjustAPIRequestParameters>;
+
+  constructor(parameters: msdyn_emailAssistAdjustAPIRequestParameters) {
+    super("msdyn_emailAssistAdjustAPI", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_emailAssistAdjustAPI`;
 
-    const body: Record<string, unknown> = {
-      emailInput: this.emailInput,
-      caller: this.caller,
-      knobsConfigurations: this.knobsConfigurations,
-      requestId: this.requestId,
-      copilotOption: this.copilotOption,
-    };
+    const body = requestBody({
+      emailInput: this.Parameters.emailInput,
+      caller: this.Parameters.caller,
+      knobsConfigurations: this.Parameters.knobsConfigurations,
+      requestId: this.Parameters.requestId,
+      copilotOption: this.Parameters.copilotOption,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class msdyn_emailAssistAdjustAPIRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_emailAssistAdjustAPIResponse> {
-    const data = await response.json();
-    return msdyn_emailAssistAdjustAPIResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_emailAssistAdjustAPIResponse.fromResponse({});
+    return msdyn_emailAssistAdjustAPIResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_businessclosure } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_BusinessClosureRetrieve message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_BusinessClosureRetrieveRequestParameters {
+  Id: string;
+}
 
 /**
  * msdyn_BusinessClosureRetrieve request message
@@ -12,16 +21,18 @@ export class msdyn_BusinessClosureRetrieveRequest
   extends OrganizationRequest
   implements Executable<msdyn_BusinessClosureRetrieveResponse>
 {
-  constructor(public id: string) {
-    super("msdyn_BusinessClosureRetrieve");
+  declare readonly Parameters: Readonly<msdyn_BusinessClosureRetrieveRequestParameters>;
+
+  constructor(parameters: msdyn_BusinessClosureRetrieveRequestParameters) {
+    super("msdyn_BusinessClosureRetrieve", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_BusinessClosureRetrieve`;
 
-    const body: Record<string, unknown> = {
-      Id: this.id,
-    };
+    const body = requestBody({
+      Id: this.Parameters.Id,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_BusinessClosureRetrieveRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_BusinessClosureRetrieveResponse> {
-    const data = await response.json();
-    return msdyn_BusinessClosureRetrieveResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_BusinessClosureRetrieveResponse.fromResponse({});
+    return msdyn_BusinessClosureRetrieveResponse.fromResponse(await response.json());
   }
 }
 

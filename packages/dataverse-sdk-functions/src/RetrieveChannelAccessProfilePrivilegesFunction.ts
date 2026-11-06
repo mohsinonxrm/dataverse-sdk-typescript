@@ -10,12 +10,22 @@ export interface RetrieveChannelAccessProfilePrivilegesResponse {
 }
 
 /**
+ * Parameters of the RetrieveChannelAccessProfilePrivileges function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveChannelAccessProfilePrivilegesFunctionParameters {
+  ChannelAccessProfileId: string;
+}
+
+/**
  * RetrieveChannelAccessProfilePrivileges function
  *
  * Unbound function
  */
 export class RetrieveChannelAccessProfilePrivilegesFunction implements Executable<RetrieveChannelAccessProfilePrivilegesResponse> {
-  constructor(public readonly channelAccessProfileId: string) {}
+  constructor(
+    public readonly parameters: RetrieveChannelAccessProfilePrivilegesFunctionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveChannelAccessProfilePrivileges`;
@@ -23,9 +33,12 @@ export class RetrieveChannelAccessProfilePrivilegesFunction implements Executabl
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.channelAccessProfileId !== undefined) {
+    if (this.parameters.ChannelAccessProfileId !== undefined) {
       aliases.push(`ChannelAccessProfileId=@p1`);
-      params.append("@p1", formatParameterAlias(this.channelAccessProfileId, "Edm.Guid"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.ChannelAccessProfileId, "Edm.Guid")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +54,8 @@ export class RetrieveChannelAccessProfilePrivilegesFunction implements Executabl
   }
 
   async parseResponse(response: Response): Promise<RetrieveChannelAccessProfilePrivilegesResponse> {
-    const data = await response.json();
-    return data as RetrieveChannelAccessProfilePrivilegesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveChannelAccessProfilePrivilegesResponse;
+    return (await response.json()) as RetrieveChannelAccessProfilePrivilegesResponse;
   }
 }

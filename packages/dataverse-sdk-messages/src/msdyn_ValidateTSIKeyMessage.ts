@@ -29,8 +29,9 @@ export class msdyn_ValidateTSIKeyRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ValidateTSIKeyResponse> {
-    const data = await response.json();
-    return msdyn_ValidateTSIKeyResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ValidateTSIKeyResponse.fromResponse({});
+    return msdyn_ValidateTSIKeyResponse.fromResponse(await response.json());
   }
 }
 

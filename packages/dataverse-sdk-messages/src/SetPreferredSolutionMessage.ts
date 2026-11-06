@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the SetPreferredSolution message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetPreferredSolutionRequestParameters {
+  SolutionId: string;
+}
 
 /**
  * SetPreferredSolution request message
@@ -10,16 +19,18 @@ export class SetPreferredSolutionRequest
   extends OrganizationRequest
   implements Executable<SetPreferredSolutionResponse>
 {
-  constructor(public solutionId: string) {
-    super("SetPreferredSolution");
+  declare readonly Parameters: Readonly<SetPreferredSolutionRequestParameters>;
+
+  constructor(parameters: SetPreferredSolutionRequestParameters) {
+    super("SetPreferredSolution", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SetPreferredSolution`;
 
-    const body: Record<string, unknown> = {
-      SolutionId: this.solutionId,
-    };
+    const body = requestBody({
+      SolutionId: this.Parameters.SolutionId,
+    });
 
     return {
       method: "POST",

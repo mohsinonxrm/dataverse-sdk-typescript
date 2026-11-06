@@ -26,7 +26,8 @@ export class msdyn_getAppConfigAction implements Executable<msdyn_getAppConfigRe
   }
 
   async parseResponse(response: Response): Promise<msdyn_getAppConfigResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_getAppConfigResponse;
+    return (await response.json()) as msdyn_getAppConfigResponse;
   }
 }

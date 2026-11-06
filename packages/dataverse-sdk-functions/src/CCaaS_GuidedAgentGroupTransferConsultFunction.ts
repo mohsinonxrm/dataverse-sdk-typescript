@@ -13,17 +13,27 @@ export interface CCaaS_GuidedAgentGroupTransferConsultResponse {
 }
 
 /**
+ * Parameters of the CCaaS_GuidedAgentGroupTransferConsult function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_GuidedAgentGroupTransferConsultFunctionParameters {
+  IntentFamilyId: string;
+  IntentGroupId?: string;
+  IntentId?: string;
+}
+
+/**
  * CCaaS_GuidedAgentGroupTransferConsult function
  *
  * Bound function
  * Binding parameter: entity (mscrm.msdyn_ocliveworkitem)
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_GuidedAgentGroupTransferConsultFunction implements Executable<CCaaS_GuidedAgentGroupTransferConsultResponse> {
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
-    public readonly intentFamilyId: string,
-    public readonly intentGroupId?: string,
-    public readonly intentId?: string
+    public readonly parameters: CCaaS_GuidedAgentGroupTransferConsultFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -33,17 +43,17 @@ export class CCaaS_GuidedAgentGroupTransferConsultFunction implements Executable
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.intentFamilyId !== undefined) {
+    if (this.parameters.IntentFamilyId !== undefined) {
       aliases.push(`IntentFamilyId=@p1`);
-      params.append("@p1", formatParameterAlias(this.intentFamilyId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.IntentFamilyId, "Edm.Guid"));
     }
-    if (this.intentGroupId !== undefined) {
+    if (this.parameters.IntentGroupId !== undefined) {
       aliases.push(`IntentGroupId=@p2`);
-      params.append("@p2", formatParameterAlias(this.intentGroupId, "Edm.Guid"));
+      params.append("@p2", formatParameterAlias(this.parameters.IntentGroupId, "Edm.Guid"));
     }
-    if (this.intentId !== undefined) {
+    if (this.parameters.IntentId !== undefined) {
       aliases.push(`IntentId=@p3`);
-      params.append("@p3", formatParameterAlias(this.intentId, "Edm.Guid"));
+      params.append("@p3", formatParameterAlias(this.parameters.IntentId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -59,7 +69,8 @@ export class CCaaS_GuidedAgentGroupTransferConsultFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<CCaaS_GuidedAgentGroupTransferConsultResponse> {
-    const data = await response.json();
-    return data as CCaaS_GuidedAgentGroupTransferConsultResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_GuidedAgentGroupTransferConsultResponse;
+    return (await response.json()) as CCaaS_GuidedAgentGroupTransferConsultResponse;
   }
 }

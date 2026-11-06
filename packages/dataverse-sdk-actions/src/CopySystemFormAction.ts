@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemform } from "./types/index.js";
 
@@ -14,24 +15,34 @@ export interface CopySystemFormResponse extends systemform {
 }
 
 /**
+ * Parameters of the CopySystemForm action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CopySystemFormActionParameters {
+  Target?: EntityReference | EntityPayload<systemform>;
+}
+
+/**
  * CopySystemForm action
  *
  * Bound action
  * Binding parameter: entity (mscrm.systemform)
+ *
+ * The first argument is the id of the systemform record to call it on.
  */
 export class CopySystemFormAction implements Executable<CopySystemFormResponse> {
   constructor(
     public readonly systemformId: string,
-    public readonly target?: EntityReference | EntityPayload<systemform>
+    public readonly parameters: CopySystemFormActionParameters = {}
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/systemforms(${this.systemformId})/Microsoft.Dynamics.CRM.CopySystemForm`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -44,7 +55,8 @@ export class CopySystemFormAction implements Executable<CopySystemFormResponse> 
   }
 
   async parseResponse(response: Response): Promise<CopySystemFormResponse> {
-    const data = await response.json();
-    return data as CopySystemFormResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CopySystemFormResponse;
+    return (await response.json()) as CopySystemFormResponse;
   }
 }

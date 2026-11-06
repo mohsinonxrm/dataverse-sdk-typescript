@@ -10,12 +10,20 @@ export interface RetrieveMissingDependenciesResponse {
 }
 
 /**
+ * Parameters of the RetrieveMissingDependencies function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveMissingDependenciesFunctionParameters {
+  SolutionUniqueName: string;
+}
+
+/**
  * RetrieveMissingDependencies function
  *
  * Unbound function
  */
 export class RetrieveMissingDependenciesFunction implements Executable<RetrieveMissingDependenciesResponse> {
-  constructor(public readonly solutionUniqueName: string) {}
+  constructor(public readonly parameters: RetrieveMissingDependenciesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveMissingDependencies`;
@@ -23,9 +31,9 @@ export class RetrieveMissingDependenciesFunction implements Executable<RetrieveM
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.solutionUniqueName !== undefined) {
+    if (this.parameters.SolutionUniqueName !== undefined) {
       aliases.push(`SolutionUniqueName=@p1`);
-      params.append("@p1", formatParameterAlias(this.solutionUniqueName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.SolutionUniqueName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class RetrieveMissingDependenciesFunction implements Executable<RetrieveM
   }
 
   async parseResponse(response: Response): Promise<RetrieveMissingDependenciesResponse> {
-    const data = await response.json();
-    return data as RetrieveMissingDependenciesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveMissingDependenciesResponse;
+    return (await response.json()) as RetrieveMissingDependenciesResponse;
   }
 }

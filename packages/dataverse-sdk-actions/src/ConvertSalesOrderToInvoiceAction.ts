@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet, invoice } from "./types/index.js";
@@ -15,25 +16,31 @@ export interface ConvertSalesOrderToInvoiceResponse extends invoice {
 }
 
 /**
+ * Parameters of the ConvertSalesOrderToInvoice action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ConvertSalesOrderToInvoiceActionParameters {
+  SalesOrderId: string;
+  ColumnSet?: ColumnSet;
+  ProcessInstanceId?: EntityReference | AnyEntityPayload;
+}
+
+/**
  * ConvertSalesOrderToInvoice action
  *
  * Unbound action
  */
 export class ConvertSalesOrderToInvoiceAction implements Executable<ConvertSalesOrderToInvoiceResponse> {
-  constructor(
-    public readonly salesOrderId: string,
-    public readonly columnSet?: ColumnSet,
-    public readonly processInstanceId?: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: ConvertSalesOrderToInvoiceActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ConvertSalesOrderToInvoice`;
 
-    const body: Record<string, unknown> = {
-      SalesOrderId: this.salesOrderId,
-      ColumnSet: enumBody(this.columnSet, "ColumnSet"),
-      ProcessInstanceId: this.processInstanceId,
-    };
+    const body = requestBody({
+      SalesOrderId: this.parameters.SalesOrderId,
+      ColumnSet: enumBody(this.parameters.ColumnSet, "ColumnSet"),
+      ProcessInstanceId: this.parameters.ProcessInstanceId,
+    });
 
     return {
       method: "POST",
@@ -46,7 +53,8 @@ export class ConvertSalesOrderToInvoiceAction implements Executable<ConvertSales
   }
 
   async parseResponse(response: Response): Promise<ConvertSalesOrderToInvoiceResponse> {
-    const data = await response.json();
-    return data as ConvertSalesOrderToInvoiceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ConvertSalesOrderToInvoiceResponse;
+    return (await response.json()) as ConvertSalesOrderToInvoiceResponse;
   }
 }

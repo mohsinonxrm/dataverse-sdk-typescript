@@ -11,16 +11,22 @@ export interface RetrieveDuplicatesResponse {
 }
 
 /**
+ * Parameters of the RetrieveDuplicates function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveDuplicatesFunctionParameters {
+  BusinessEntity: EntityReference;
+  MatchingEntityName: string;
+  PagingInfo?: PagingInfo;
+}
+
+/**
  * RetrieveDuplicates function
  *
  * Unbound function
  */
 export class RetrieveDuplicatesFunction implements Executable<RetrieveDuplicatesResponse> {
-  constructor(
-    public readonly businessEntity: EntityReference,
-    public readonly matchingEntityName: string,
-    public readonly pagingInfo?: PagingInfo
-  ) {}
+  constructor(public readonly parameters: RetrieveDuplicatesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveDuplicates`;
@@ -28,20 +34,20 @@ export class RetrieveDuplicatesFunction implements Executable<RetrieveDuplicates
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.businessEntity !== undefined) {
+    if (this.parameters.BusinessEntity !== undefined) {
       aliases.push(`BusinessEntity=@p1`);
       params.append(
         "@p1",
-        formatParameterAlias(this.businessEntity, "mscrm.crmbaseentity", "EntityType")
+        formatParameterAlias(this.parameters.BusinessEntity, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.matchingEntityName !== undefined) {
+    if (this.parameters.MatchingEntityName !== undefined) {
       aliases.push(`MatchingEntityName=@p2`);
-      params.append("@p2", formatParameterAlias(this.matchingEntityName, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.MatchingEntityName, "Edm.String"));
     }
-    if (this.pagingInfo !== undefined) {
+    if (this.parameters.PagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p3`);
-      params.append("@p3", JSON.stringify(this.pagingInfo));
+      params.append("@p3", JSON.stringify(this.parameters.PagingInfo));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -57,7 +63,8 @@ export class RetrieveDuplicatesFunction implements Executable<RetrieveDuplicates
   }
 
   async parseResponse(response: Response): Promise<RetrieveDuplicatesResponse> {
-    const data = await response.json();
-    return data as RetrieveDuplicatesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveDuplicatesResponse;
+    return (await response.json()) as RetrieveDuplicatesResponse;
   }
 }

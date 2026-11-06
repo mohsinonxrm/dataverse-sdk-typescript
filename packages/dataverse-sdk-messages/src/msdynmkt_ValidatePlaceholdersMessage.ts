@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_ValidatePlaceholdersResponse as msdynmkt_ValidatePlaceholdersResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_ValidatePlaceholders message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_ValidatePlaceholdersRequestParameters {
+  ValidatePlaceholdersRequest?: string;
+}
 
 /**
  * msdynmkt_ValidatePlaceholders request message
@@ -12,16 +21,18 @@ export class msdynmkt_ValidatePlaceholdersRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_ValidatePlaceholdersResponse>
 {
-  constructor(public validatePlaceholdersRequest?: string) {
-    super("msdynmkt_ValidatePlaceholders");
+  declare readonly Parameters: Readonly<msdynmkt_ValidatePlaceholdersRequestParameters>;
+
+  constructor(parameters: msdynmkt_ValidatePlaceholdersRequestParameters = {}) {
+    super("msdynmkt_ValidatePlaceholders", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_ValidatePlaceholders`;
 
-    const body: Record<string, unknown> = {
-      ValidatePlaceholdersRequest: this.validatePlaceholdersRequest,
-    };
+    const body = requestBody({
+      ValidatePlaceholdersRequest: this.Parameters.ValidatePlaceholdersRequest,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdynmkt_ValidatePlaceholdersRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_ValidatePlaceholdersResponse> {
-    const data = await response.json();
-    return msdynmkt_ValidatePlaceholdersResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdynmkt_ValidatePlaceholdersResponse.fromResponse({});
+    return msdynmkt_ValidatePlaceholdersResponse.fromResponse(await response.json());
   }
 }
 

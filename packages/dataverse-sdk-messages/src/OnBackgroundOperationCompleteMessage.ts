@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { OnBackgroundOperationCompleteResponse as OnBackgroundOperationCompleteResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the OnBackgroundOperationComplete message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface OnBackgroundOperationCompleteRequestParameters {
+  LocationUrl: string;
+  CallbackUrl?: string;
+  BackgroundOperationId: string;
+  PayloadType: number;
+}
 
 /**
  * OnBackgroundOperationComplete request message
@@ -12,24 +24,21 @@ export class OnBackgroundOperationCompleteRequest
   extends OrganizationRequest
   implements Executable<OnBackgroundOperationCompleteResponse>
 {
-  constructor(
-    public locationUrl: string,
-    public callbackUrl: string | undefined,
-    public backgroundOperationId: string,
-    public payloadType: number
-  ) {
-    super("OnBackgroundOperationComplete");
+  declare readonly Parameters: Readonly<OnBackgroundOperationCompleteRequestParameters>;
+
+  constructor(parameters: OnBackgroundOperationCompleteRequestParameters) {
+    super("OnBackgroundOperationComplete", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/OnBackgroundOperationComplete`;
 
-    const body: Record<string, unknown> = {
-      LocationUrl: this.locationUrl,
-      CallbackUrl: this.callbackUrl,
-      BackgroundOperationId: this.backgroundOperationId,
-      PayloadType: this.payloadType,
-    };
+    const body = requestBody({
+      LocationUrl: this.Parameters.LocationUrl,
+      CallbackUrl: this.Parameters.CallbackUrl,
+      BackgroundOperationId: this.Parameters.BackgroundOperationId,
+      PayloadType: this.Parameters.PayloadType,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class OnBackgroundOperationCompleteRequest
   }
 
   async parseResponse(response: Response): Promise<OnBackgroundOperationCompleteResponse> {
-    const data = await response.json();
-    return OnBackgroundOperationCompleteResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return OnBackgroundOperationCompleteResponse.fromResponse({});
+    return OnBackgroundOperationCompleteResponse.fromResponse(await response.json());
   }
 }
 

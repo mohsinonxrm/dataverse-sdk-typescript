@@ -2,8 +2,26 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { CreateHostedFlowMachineGroupResponse as CreateHostedFlowMachineGroupResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CreateHostedFlowMachineGroup message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateHostedFlowMachineGroupRequestParameters {
+  groupImage?: string;
+  groupCapacityCount?: number;
+  groupDomainSetting?: string;
+  groupDescription?: string;
+  groupMachineNetworkId?: EntityReference | AnyEntityPayload;
+  groupMaximumMachineCount?: number;
+  groupName?: string;
+  groupCredentials: string;
+  groupUsageType?: string;
+  groupManagedVersion?: string;
+}
 
 /**
  * CreateHostedFlowMachineGroup request message
@@ -14,36 +32,27 @@ export class CreateHostedFlowMachineGroupRequest
   extends OrganizationRequest
   implements Executable<CreateHostedFlowMachineGroupResponse>
 {
-  constructor(
-    public groupImage: string | undefined,
-    public groupCapacityCount: number | undefined,
-    public groupDomainSetting: string | undefined,
-    public groupDescription: string | undefined,
-    public groupMachineNetworkId: EntityReference | AnyEntityPayload | undefined,
-    public groupMaximumMachineCount: number | undefined,
-    public groupName: string | undefined,
-    public groupCredentials: string,
-    public groupUsageType?: string,
-    public groupManagedVersion?: string
-  ) {
-    super("CreateHostedFlowMachineGroup");
+  declare readonly Parameters: Readonly<CreateHostedFlowMachineGroupRequestParameters>;
+
+  constructor(parameters: CreateHostedFlowMachineGroupRequestParameters) {
+    super("CreateHostedFlowMachineGroup", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateHostedFlowMachineGroup`;
 
-    const body: Record<string, unknown> = {
-      groupImage: this.groupImage,
-      groupCapacityCount: this.groupCapacityCount,
-      groupDomainSetting: this.groupDomainSetting,
-      groupDescription: this.groupDescription,
-      groupMachineNetworkId: this.groupMachineNetworkId,
-      groupMaximumMachineCount: this.groupMaximumMachineCount,
-      groupName: this.groupName,
-      groupCredentials: this.groupCredentials,
-      groupUsageType: this.groupUsageType,
-      groupManagedVersion: this.groupManagedVersion,
-    };
+    const body = requestBody({
+      groupImage: this.Parameters.groupImage,
+      groupCapacityCount: this.Parameters.groupCapacityCount,
+      groupDomainSetting: this.Parameters.groupDomainSetting,
+      groupDescription: this.Parameters.groupDescription,
+      groupMachineNetworkId: this.Parameters.groupMachineNetworkId,
+      groupMaximumMachineCount: this.Parameters.groupMaximumMachineCount,
+      groupName: this.Parameters.groupName,
+      groupCredentials: this.Parameters.groupCredentials,
+      groupUsageType: this.Parameters.groupUsageType,
+      groupManagedVersion: this.Parameters.groupManagedVersion,
+    });
 
     return {
       method: "POST",
@@ -56,8 +65,9 @@ export class CreateHostedFlowMachineGroupRequest
   }
 
   async parseResponse(response: Response): Promise<CreateHostedFlowMachineGroupResponse> {
-    const data = await response.json();
-    return CreateHostedFlowMachineGroupResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CreateHostedFlowMachineGroupResponse.fromResponse({});
+    return CreateHostedFlowMachineGroupResponse.fromResponse(await response.json());
   }
 }
 

@@ -9,15 +9,21 @@ export interface NotInResponse {
 }
 
 /**
+ * Parameters of the NotIn function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface NotInFunctionParameters {
+  PropertyName: string;
+  PropertyValues: string[];
+}
+
+/**
  * NotIn function
  *
  * Unbound function
  */
 export class NotInFunction implements Executable<NotInResponse> {
-  constructor(
-    public readonly propertyName: string,
-    public readonly propertyValues: string[]
-  ) {}
+  constructor(public readonly parameters: NotInFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/NotIn`;
@@ -25,13 +31,13 @@ export class NotInFunction implements Executable<NotInResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
-    if (this.propertyValues !== undefined) {
+    if (this.parameters.PropertyValues !== undefined) {
       aliases.push(`PropertyValues=@p2`);
-      params.append("@p2", JSON.stringify(this.propertyValues));
+      params.append("@p2", JSON.stringify(this.parameters.PropertyValues));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +53,8 @@ export class NotInFunction implements Executable<NotInResponse> {
   }
 
   async parseResponse(response: Response): Promise<NotInResponse> {
-    const data = await response.json();
-    return data as NotInResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as NotInResponse;
+    return (await response.json()) as NotInResponse;
   }
 }

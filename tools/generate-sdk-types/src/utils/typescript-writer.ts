@@ -234,26 +234,3 @@ export function getEntitySetName(
   // Look up in entity set map (case-insensitive)
   return entitySetMap.get(entityTypeName.toLowerCase());
 }
-
-/**
- * Constructor parameter lines. Optional arguments must come last: an optional parameter followed
- * by a required one stays positional but accepts `undefined`. Either way `undefined` is left out
- * of the JSON body.
- */
-export function constructorParameterList(
-  params: ReadonlyArray<{ name: string; type: string; optional?: boolean }>,
-  modifier: string
-): string {
-  let code = "";
-  params.forEach((param, i) => {
-    const trailing = params.slice(i).every((p) => p.optional === true);
-    if (param.optional && trailing) {
-      code += `    ${modifier} ${param.name}?: ${param.type},\n`;
-    } else if (param.optional) {
-      code += `    ${modifier} ${param.name}: ${param.type} | undefined,\n`;
-    } else {
-      code += `    ${modifier} ${param.name}: ${param.type},\n`;
-    }
-  });
-  return code;
-}

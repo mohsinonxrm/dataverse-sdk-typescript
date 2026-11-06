@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_getCTandEACdisabledEntitiesResponse as msdyn_getCTandEACdisabledEntitiesResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_getCTandEACdisabledEntities message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_getCTandEACdisabledEntitiesRequestParameters {
+  msdyn_entityName: string;
+  msdyn_entityList: string;
+}
 
 /**
  * msdyn_getCTandEACdisabledEntities request message
@@ -12,20 +22,19 @@ export class msdyn_getCTandEACdisabledEntitiesRequest
   extends OrganizationRequest
   implements Executable<msdyn_getCTandEACdisabledEntitiesResponse>
 {
-  constructor(
-    public msdyn_entityName: string,
-    public msdyn_entityList: string
-  ) {
-    super("msdyn_getCTandEACdisabledEntities");
+  declare readonly Parameters: Readonly<msdyn_getCTandEACdisabledEntitiesRequestParameters>;
+
+  constructor(parameters: msdyn_getCTandEACdisabledEntitiesRequestParameters) {
+    super("msdyn_getCTandEACdisabledEntities", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_getCTandEACdisabledEntities`;
 
-    const body: Record<string, unknown> = {
-      msdyn_entityName: this.msdyn_entityName,
-      msdyn_entityList: this.msdyn_entityList,
-    };
+    const body = requestBody({
+      msdyn_entityName: this.Parameters.msdyn_entityName,
+      msdyn_entityList: this.Parameters.msdyn_entityList,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_getCTandEACdisabledEntitiesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_getCTandEACdisabledEntitiesResponse> {
-    const data = await response.json();
-    return msdyn_getCTandEACdisabledEntitiesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_getCTandEACdisabledEntitiesResponse.fromResponse({});
+    return msdyn_getCTandEACdisabledEntitiesResponse.fromResponse(await response.json());
   }
 }
 

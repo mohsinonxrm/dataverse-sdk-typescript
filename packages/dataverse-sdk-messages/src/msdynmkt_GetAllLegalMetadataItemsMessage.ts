@@ -1,6 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseValue } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdynmkt_GetAllLegalMetadataItems message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_GetAllLegalMetadataItemsRequestParameters {
+  msdynmkt_GetAllLegalMetadataItems_request_LanguageCode?: number;
+}
 
 /**
  * msdynmkt_GetAllLegalMetadataItems request message
@@ -11,17 +20,19 @@ export class msdynmkt_GetAllLegalMetadataItemsRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_GetAllLegalMetadataItemsResponse>
 {
-  constructor(public msdynmkt_GetAllLegalMetadataItems_request_LanguageCode?: number) {
-    super("msdynmkt_GetAllLegalMetadataItems");
+  declare readonly Parameters: Readonly<msdynmkt_GetAllLegalMetadataItemsRequestParameters>;
+
+  constructor(parameters: msdynmkt_GetAllLegalMetadataItemsRequestParameters = {}) {
+    super("msdynmkt_GetAllLegalMetadataItems", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_GetAllLegalMetadataItems`;
 
-    const body: Record<string, unknown> = {
+    const body = requestBody({
       msdynmkt_GetAllLegalMetadataItems_request_LanguageCode:
-        this.msdynmkt_GetAllLegalMetadataItems_request_LanguageCode,
-    };
+        this.Parameters.msdynmkt_GetAllLegalMetadataItems_request_LanguageCode,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdynmkt_GetAllLegalMetadataItemsRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_GetAllLegalMetadataItemsResponse> {
-    const data = await response.json();
-    return msdynmkt_GetAllLegalMetadataItemsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdynmkt_GetAllLegalMetadataItemsResponse.fromResponse({});
+    return msdynmkt_GetAllLegalMetadataItemsResponse.fromResponse(await response.json());
   }
 }
 

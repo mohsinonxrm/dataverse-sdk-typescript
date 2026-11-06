@@ -1,27 +1,40 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the Dequeue message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DequeueRequestParameters {
+  request?: string;
+}
 
 /**
  * Dequeue request message
  *
  * Web API Action: Dequeue
+ *
+ * The first argument is the id of the workqueue record to call it on.
  */
 export class DequeueRequest extends OrganizationRequest implements Executable<DequeueResponse> {
+  declare readonly Parameters: Readonly<DequeueRequestParameters>;
+
   constructor(
     public workqueueId: string,
-    public request?: string
+    parameters: DequeueRequestParameters = {}
   ) {
-    super("Dequeue");
+    super("Dequeue", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/workqueues(${this.workqueueId})/Microsoft.Dynamics.CRM.Dequeue`;
 
-    const body: Record<string, unknown> = {
-      request: this.request,
-    };
+    const body = requestBody({
+      request: this.Parameters.request,
+    });
 
     return {
       method: "POST",
@@ -34,8 +47,9 @@ export class DequeueRequest extends OrganizationRequest implements Executable<De
   }
 
   async parseResponse(response: Response): Promise<DequeueResponse> {
-    const data = await response.json();
-    return DequeueResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return DequeueResponse.fromResponse({});
+    return DequeueResponse.fromResponse(await response.json());
   }
 }
 

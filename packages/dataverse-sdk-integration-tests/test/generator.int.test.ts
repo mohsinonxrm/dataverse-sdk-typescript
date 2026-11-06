@@ -81,14 +81,16 @@ describe.skipIf(!live)("live: generator output", () => {
 
     it("enum parameter", async () => {
       // EndpointAccessType.Default = 0
-      const res = await run<{ Detail: unknown }>("RetrieveCurrentOrganizationFunction", 0);
+      const res = await run<{ Detail: unknown }>("RetrieveCurrentOrganizationFunction", {
+        AccessType: 0,
+      });
       expect(res.Detail).toBeDefined();
     });
 
     it("collection parameter", async () => {
       const res = await run<{ EntityRecordCountCollection: unknown }>(
         "RetrieveTotalRecordCountFunction",
-        ["account", "contact"]
+        { EntityNames: ["account", "contact"] }
       );
       expect(res.EntityRecordCountCollection).toBeDefined();
     });
@@ -98,14 +100,13 @@ describe.skipIf(!live)("live: generator output", () => {
       const omitted = await run<{ RolePrivileges: unknown[] }>(
         "RetrieveUserPrivilegeByPrivilegeNameFunction",
         UserId,
-        "prvReadAccount"
+        { PrivilegeName: "prvReadAccount" }
       );
       expect(Array.isArray(omitted.RolePrivileges)).toBe(true);
       const given = await run<{ RolePrivileges: unknown[] }>(
         "RetrieveUserPrivilegeByPrivilegeNameFunction",
         UserId,
-        "prvReadAccount",
-        true
+        { PrivilegeName: "prvReadAccount", ExcludeTeamBasic: true }
       );
       expect(Array.isArray(given.RolePrivileges)).toBe(true);
     });
@@ -113,7 +114,7 @@ describe.skipIf(!live)("live: generator output", () => {
     it("collection-bound function", async () => {
       const res = await run<{ value?: unknown[] } | unknown[]>(
         "GetAllTimeZonesWithDisplayNameFunction",
-        1033
+        { LocaleId: 1033 }
       );
       const list = Array.isArray(res) ? res : res.value;
       expect(list?.length).toBeGreaterThan(0);
@@ -122,8 +123,11 @@ describe.skipIf(!live)("live: generator output", () => {
     it("string parameter containing a single quote", async () => {
       const res = await run<{ Query: { EntityName: string } }>(
         "FetchXmlToQueryExpressionFunction",
-        `<fetch><entity name='account'><attribute name='name'/><filter>` +
-          `<condition attribute='name' operator='eq' value="O'Brien"/></filter></entity></fetch>`
+        {
+          FetchXml:
+            `<fetch><entity name='account'><attribute name='name'/><filter>` +
+            `<condition attribute='name' operator='eq' value="O'Brien"/></filter></entity></fetch>`,
+        }
       );
       expect(res.Query.EntityName).toBe("account");
     });

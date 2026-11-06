@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CommitToGitResponse as CommitToGitResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CommitToGit message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CommitToGitRequestParameters {
+  CommitMessage: string;
+  SolutionUniqueName: string;
+}
 
 /**
  * CommitToGit request message
@@ -12,20 +22,19 @@ export class CommitToGitRequest
   extends OrganizationRequest
   implements Executable<CommitToGitResponse>
 {
-  constructor(
-    public commitMessage: string,
-    public solutionUniqueName: string
-  ) {
-    super("CommitToGit");
+  declare readonly Parameters: Readonly<CommitToGitRequestParameters>;
+
+  constructor(parameters: CommitToGitRequestParameters) {
+    super("CommitToGit", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CommitToGit`;
 
-    const body: Record<string, unknown> = {
-      CommitMessage: this.commitMessage,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      CommitMessage: this.Parameters.CommitMessage,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class CommitToGitRequest
   }
 
   async parseResponse(response: Response): Promise<CommitToGitResponse> {
-    const data = await response.json();
-    return CommitToGitResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CommitToGitResponse.fromResponse({});
+    return CommitToGitResponse.fromResponse(await response.json());
   }
 }
 

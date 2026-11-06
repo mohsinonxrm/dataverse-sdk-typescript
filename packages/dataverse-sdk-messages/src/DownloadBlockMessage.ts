@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { DownloadBlockResponse as DownloadBlockResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the DownloadBlock message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DownloadBlockRequestParameters {
+  Offset: number;
+  BlockLength: number;
+  FileContinuationToken: string;
+}
 
 /**
  * DownloadBlock request message
@@ -12,22 +23,20 @@ export class DownloadBlockRequest
   extends OrganizationRequest
   implements Executable<DownloadBlockResponse>
 {
-  constructor(
-    public offset: number,
-    public blockLength: number,
-    public fileContinuationToken: string
-  ) {
-    super("DownloadBlock");
+  declare readonly Parameters: Readonly<DownloadBlockRequestParameters>;
+
+  constructor(parameters: DownloadBlockRequestParameters) {
+    super("DownloadBlock", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DownloadBlock`;
 
-    const body: Record<string, unknown> = {
-      Offset: this.offset,
-      BlockLength: this.blockLength,
-      FileContinuationToken: this.fileContinuationToken,
-    };
+    const body = requestBody({
+      Offset: this.Parameters.Offset,
+      BlockLength: this.Parameters.BlockLength,
+      FileContinuationToken: this.Parameters.FileContinuationToken,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class DownloadBlockRequest
   }
 
   async parseResponse(response: Response): Promise<DownloadBlockResponse> {
-    const data = await response.json();
-    return DownloadBlockResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return DownloadBlockResponse.fromResponse({});
+    return DownloadBlockResponse.fromResponse(await response.json());
   }
 }
 

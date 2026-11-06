@@ -28,8 +28,9 @@ export class RetrieveConnectorSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<RetrieveConnectorSettingsResponse> {
-    const data = await response.json();
-    return RetrieveConnectorSettingsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return RetrieveConnectorSettingsResponse.fromResponse({});
+    return RetrieveConnectorSettingsResponse.fromResponse(await response.json());
   }
 }
 

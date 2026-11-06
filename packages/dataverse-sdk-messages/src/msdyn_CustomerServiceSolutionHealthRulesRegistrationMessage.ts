@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse as msdyn_CustomerServiceSolutionHealthRulesRegistrationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CustomerServiceSolutionHealthRulesRegistration message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CustomerServiceSolutionHealthRulesRegistrationRequestParameters {
+  SolutionNames?: string;
+}
 
 /**
  * msdyn_CustomerServiceSolutionHealthRulesRegistration request message
@@ -12,16 +21,20 @@ export class msdyn_CustomerServiceSolutionHealthRulesRegistrationRequest
   extends OrganizationRequest
   implements Executable<msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse>
 {
-  constructor(public solutionNames?: string) {
-    super("msdyn_CustomerServiceSolutionHealthRulesRegistration");
+  declare readonly Parameters: Readonly<msdyn_CustomerServiceSolutionHealthRulesRegistrationRequestParameters>;
+
+  constructor(
+    parameters: msdyn_CustomerServiceSolutionHealthRulesRegistrationRequestParameters = {}
+  ) {
+    super("msdyn_CustomerServiceSolutionHealthRulesRegistration", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CustomerServiceSolutionHealthRulesRegistration`;
 
-    const body: Record<string, unknown> = {
-      SolutionNames: this.solutionNames,
-    };
+    const body = requestBody({
+      SolutionNames: this.Parameters.SolutionNames,
+    });
 
     return {
       method: "POST",
@@ -36,8 +49,12 @@ export class msdyn_CustomerServiceSolutionHealthRulesRegistrationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse> {
-    const data = await response.json();
-    return msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse.fromResponse({});
+    return msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

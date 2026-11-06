@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdynmkt_updategdprconfiguration action
@@ -8,24 +9,31 @@ export interface msdynmkt_updategdprconfigurationResponse {
 }
 
 /**
+ * Parameters of the msdynmkt_updategdprconfiguration action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_updategdprconfigurationActionParameters {
+  msdynmkt_updategdprconfigurationisenforced: boolean;
+  msdynmkt_updategdprconfigurationischangeloggingenabled: boolean;
+}
+
+/**
  * msdynmkt_updategdprconfiguration action
  *
  * Unbound action
  */
 export class msdynmkt_updategdprconfigurationAction implements Executable<msdynmkt_updategdprconfigurationResponse> {
-  constructor(
-    public readonly msdynmkt_updategdprconfigurationisenforced: boolean,
-    public readonly msdynmkt_updategdprconfigurationischangeloggingenabled: boolean
-  ) {}
+  constructor(public readonly parameters: msdynmkt_updategdprconfigurationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_updategdprconfiguration`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_updategdprconfigurationisenforced: this.msdynmkt_updategdprconfigurationisenforced,
+    const body = requestBody({
+      msdynmkt_updategdprconfigurationisenforced:
+        this.parameters.msdynmkt_updategdprconfigurationisenforced,
       msdynmkt_updategdprconfigurationischangeloggingenabled:
-        this.msdynmkt_updategdprconfigurationischangeloggingenabled,
-    };
+        this.parameters.msdynmkt_updategdprconfigurationischangeloggingenabled,
+    });
 
     return {
       method: "POST",
@@ -38,7 +46,8 @@ export class msdynmkt_updategdprconfigurationAction implements Executable<msdynm
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_updategdprconfigurationResponse> {
-    const data = await response.json();
-    return data as msdynmkt_updategdprconfigurationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_updategdprconfigurationResponse;
+    return (await response.json()) as msdynmkt_updategdprconfigurationResponse;
   }
 }

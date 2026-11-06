@@ -2,8 +2,21 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_SearchResourceAvailabilityResponse as msdyn_SearchResourceAvailabilityResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SearchResourceAvailability message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SearchResourceAvailabilityRequestParameters {
+  Version?: string;
+  IsWebApi?: boolean;
+  Requirement: EntityReference | AnyEntityPayload;
+  Settings: EntityReference | AnyEntityPayload;
+  ResourceSpecification?: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_SearchResourceAvailability request message
@@ -14,26 +27,22 @@ export class msdyn_SearchResourceAvailabilityRequest
   extends OrganizationRequest
   implements Executable<msdyn_SearchResourceAvailabilityResponse>
 {
-  constructor(
-    public version: string | undefined,
-    public isWebApi: boolean | undefined,
-    public requirement: EntityReference | AnyEntityPayload,
-    public settings: EntityReference | AnyEntityPayload,
-    public resourceSpecification?: EntityReference | AnyEntityPayload
-  ) {
-    super("msdyn_SearchResourceAvailability");
+  declare readonly Parameters: Readonly<msdyn_SearchResourceAvailabilityRequestParameters>;
+
+  constructor(parameters: msdyn_SearchResourceAvailabilityRequestParameters) {
+    super("msdyn_SearchResourceAvailability", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SearchResourceAvailability`;
 
-    const body: Record<string, unknown> = {
-      Version: this.version,
-      IsWebApi: this.isWebApi,
-      Requirement: this.requirement,
-      Settings: this.settings,
-      ResourceSpecification: this.resourceSpecification,
-    };
+    const body = requestBody({
+      Version: this.Parameters.Version,
+      IsWebApi: this.Parameters.IsWebApi,
+      Requirement: this.Parameters.Requirement,
+      Settings: this.Parameters.Settings,
+      ResourceSpecification: this.Parameters.ResourceSpecification,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class msdyn_SearchResourceAvailabilityRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SearchResourceAvailabilityResponse> {
-    const data = await response.json();
-    return msdyn_SearchResourceAvailabilityResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SearchResourceAvailabilityResponse.fromResponse({});
+    return msdyn_SearchResourceAvailabilityResponse.fromResponse(await response.json());
   }
 }
 

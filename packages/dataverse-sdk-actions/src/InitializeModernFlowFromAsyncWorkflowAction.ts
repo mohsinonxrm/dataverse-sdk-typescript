@@ -16,6 +16,8 @@ export interface InitializeModernFlowFromAsyncWorkflowResponse extends workflow 
  *
  * Bound action
  * Binding parameter: entity (mscrm.workflow)
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class InitializeModernFlowFromAsyncWorkflowAction implements Executable<InitializeModernFlowFromAsyncWorkflowResponse> {
   constructor(public readonly workflowId: string) {}
@@ -34,7 +36,8 @@ export class InitializeModernFlowFromAsyncWorkflowAction implements Executable<I
   }
 
   async parseResponse(response: Response): Promise<InitializeModernFlowFromAsyncWorkflowResponse> {
-    const data = await response.json();
-    return data as InitializeModernFlowFromAsyncWorkflowResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InitializeModernFlowFromAsyncWorkflowResponse;
+    return (await response.json()) as InitializeModernFlowFromAsyncWorkflowResponse;
   }
 }

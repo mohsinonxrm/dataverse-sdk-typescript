@@ -30,7 +30,9 @@ export class msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleAction impl
   async parseResponse(
     response: Response
   ): Promise<msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponse;
+    return (await response.json()) as msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponse;
   }
 }

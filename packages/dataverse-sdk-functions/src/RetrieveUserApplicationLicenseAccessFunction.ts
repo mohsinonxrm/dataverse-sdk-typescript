@@ -9,15 +9,25 @@ export interface RetrieveUserApplicationLicenseAccessResponse {
 }
 
 /**
+ * Parameters of the RetrieveUserApplicationLicenseAccess function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveUserApplicationLicenseAccessFunctionParameters {
+  ApplicationId: string;
+}
+
+/**
  * RetrieveUserApplicationLicenseAccess function
  *
  * Bound function
  * Binding parameter: entity (mscrm.systemuser)
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class RetrieveUserApplicationLicenseAccessFunction implements Executable<RetrieveUserApplicationLicenseAccessResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly applicationId: string
+    public readonly parameters: RetrieveUserApplicationLicenseAccessFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -27,9 +37,9 @@ export class RetrieveUserApplicationLicenseAccessFunction implements Executable<
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.applicationId !== undefined) {
+    if (this.parameters.ApplicationId !== undefined) {
       aliases.push(`ApplicationId=@p1`);
-      params.append("@p1", formatParameterAlias(this.applicationId, "Edm.Guid"));
+      params.append("@p1", formatParameterAlias(this.parameters.ApplicationId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -45,7 +55,8 @@ export class RetrieveUserApplicationLicenseAccessFunction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<RetrieveUserApplicationLicenseAccessResponse> {
-    const data = await response.json();
-    return data as RetrieveUserApplicationLicenseAccessResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveUserApplicationLicenseAccessResponse;
+    return (await response.json()) as RetrieveUserApplicationLicenseAccessResponse;
   }
 }

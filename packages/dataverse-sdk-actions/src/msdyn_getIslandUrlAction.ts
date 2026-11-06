@@ -26,7 +26,8 @@ export class msdyn_getIslandUrlAction implements Executable<msdyn_getIslandUrlRe
   }
 
   async parseResponse(response: Response): Promise<msdyn_getIslandUrlResponse> {
-    const data = await response.json();
-    return data as msdyn_getIslandUrlResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_getIslandUrlResponse;
+    return (await response.json()) as msdyn_getIslandUrlResponse;
   }
 }

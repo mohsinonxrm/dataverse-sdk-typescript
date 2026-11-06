@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * AddRequiredDesktopFlowComponentsToSolutions request message
  *
  * Web API Action: AddRequiredDesktopFlowComponentsToSolutions
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class AddRequiredDesktopFlowComponentsToSolutionsRequest
   extends OrganizationRequest

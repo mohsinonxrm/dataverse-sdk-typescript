@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetGPT3Prediction action
@@ -9,23 +10,29 @@ export interface msdyn_GetGPT3PredictionResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetGPT3Prediction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetGPT3PredictionActionParameters {
+  msdyn_input: string;
+  msdyn_predictiontype: number;
+}
+
+/**
  * msdyn_GetGPT3Prediction action
  *
  * Unbound action
  */
 export class msdyn_GetGPT3PredictionAction implements Executable<msdyn_GetGPT3PredictionResponse> {
-  constructor(
-    public readonly msdyn_input: string,
-    public readonly msdyn_predictiontype: number
-  ) {}
+  constructor(public readonly parameters: msdyn_GetGPT3PredictionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetGPT3Prediction`;
 
-    const body: Record<string, unknown> = {
-      msdyn_input: this.msdyn_input,
-      msdyn_predictiontype: this.msdyn_predictiontype,
-    };
+    const body = requestBody({
+      msdyn_input: this.parameters.msdyn_input,
+      msdyn_predictiontype: this.parameters.msdyn_predictiontype,
+    });
 
     return {
       method: "POST",
@@ -38,7 +45,8 @@ export class msdyn_GetGPT3PredictionAction implements Executable<msdyn_GetGPT3Pr
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetGPT3PredictionResponse> {
-    const data = await response.json();
-    return data as msdyn_GetGPT3PredictionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetGPT3PredictionResponse;
+    return (await response.json()) as msdyn_GetGPT3PredictionResponse;
   }
 }

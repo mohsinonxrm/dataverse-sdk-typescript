@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GeolocationLocationTrackingData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GeolocationLocationTrackingDataRequestParameters {
+  Locations: string;
+}
 
 /**
  * msdyn_GeolocationLocationTrackingData request message
@@ -10,16 +19,18 @@ export class msdyn_GeolocationLocationTrackingDataRequest
   extends OrganizationRequest
   implements Executable<msdyn_GeolocationLocationTrackingDataResponse>
 {
-  constructor(public locations: string) {
-    super("msdyn_GeolocationLocationTrackingData");
+  declare readonly Parameters: Readonly<msdyn_GeolocationLocationTrackingDataRequestParameters>;
+
+  constructor(parameters: msdyn_GeolocationLocationTrackingDataRequestParameters) {
+    super("msdyn_GeolocationLocationTrackingData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GeolocationLocationTrackingData`;
 
-    const body: Record<string, unknown> = {
-      Locations: this.locations,
-    };
+    const body = requestBody({
+      Locations: this.Parameters.Locations,
+    });
 
     return {
       method: "POST",

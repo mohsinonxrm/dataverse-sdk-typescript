@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { SummarizeRecordResponse as SummarizeRecordResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the SummarizeRecord message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SummarizeRecordRequestParameters {
+  Id: string;
+  EntityLogicalName: string;
+  RecordContext?: string;
+  IsMergedCatchupAndSummary?: boolean;
+}
 
 /**
  * SummarizeRecord request message
@@ -12,24 +24,21 @@ export class SummarizeRecordRequest
   extends OrganizationRequest
   implements Executable<SummarizeRecordResponse>
 {
-  constructor(
-    public id: string,
-    public entityLogicalName: string,
-    public recordContext?: string,
-    public isMergedCatchupAndSummary?: boolean
-  ) {
-    super("SummarizeRecord");
+  declare readonly Parameters: Readonly<SummarizeRecordRequestParameters>;
+
+  constructor(parameters: SummarizeRecordRequestParameters) {
+    super("SummarizeRecord", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SummarizeRecord`;
 
-    const body: Record<string, unknown> = {
-      Id: this.id,
-      EntityLogicalName: this.entityLogicalName,
-      RecordContext: this.recordContext,
-      IsMergedCatchupAndSummary: this.isMergedCatchupAndSummary,
-    };
+    const body = requestBody({
+      Id: this.Parameters.Id,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      RecordContext: this.Parameters.RecordContext,
+      IsMergedCatchupAndSummary: this.Parameters.IsMergedCatchupAndSummary,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class SummarizeRecordRequest
   }
 
   async parseResponse(response: Response): Promise<SummarizeRecordResponse> {
-    const data = await response.json();
-    return SummarizeRecordResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return SummarizeRecordResponse.fromResponse({});
+    return SummarizeRecordResponse.fromResponse(await response.json());
   }
 }
 

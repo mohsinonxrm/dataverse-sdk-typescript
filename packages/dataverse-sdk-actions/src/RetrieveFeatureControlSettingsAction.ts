@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { FeatureControlSettingData } from "./types/index.js";
 
 /**
@@ -9,23 +10,29 @@ export interface RetrieveFeatureControlSettingsResponse {
 }
 
 /**
+ * Parameters of the RetrieveFeatureControlSettings action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveFeatureControlSettingsActionParameters {
+  NamespaceValue: string;
+  FeatureControlName: string;
+}
+
+/**
  * RetrieveFeatureControlSettings action
  *
  * Unbound action
  */
 export class RetrieveFeatureControlSettingsAction implements Executable<RetrieveFeatureControlSettingsResponse> {
-  constructor(
-    public readonly namespaceValue: string,
-    public readonly featureControlName: string
-  ) {}
+  constructor(public readonly parameters: RetrieveFeatureControlSettingsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RetrieveFeatureControlSettings`;
 
-    const body: Record<string, unknown> = {
-      NamespaceValue: this.namespaceValue,
-      FeatureControlName: this.featureControlName,
-    };
+    const body = requestBody({
+      NamespaceValue: this.parameters.NamespaceValue,
+      FeatureControlName: this.parameters.FeatureControlName,
+    });
 
     return {
       method: "POST",
@@ -38,7 +45,8 @@ export class RetrieveFeatureControlSettingsAction implements Executable<Retrieve
   }
 
   async parseResponse(response: Response): Promise<RetrieveFeatureControlSettingsResponse> {
-    const data = await response.json();
-    return data as RetrieveFeatureControlSettingsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveFeatureControlSettingsResponse;
+    return (await response.json()) as RetrieveFeatureControlSettingsResponse;
   }
 }

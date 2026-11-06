@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_RetrieveKnowledgeManagementSettingsResponse as msdyn_RetrieveKnowledgeManagementSettingsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrieveKnowledgeManagementSettings message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveKnowledgeManagementSettingsRequestParameters {
+  RecordTypes?: string;
+}
 
 /**
  * msdyn_RetrieveKnowledgeManagementSettings request message
@@ -12,16 +21,18 @@ export class msdyn_RetrieveKnowledgeManagementSettingsRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveKnowledgeManagementSettingsResponse>
 {
-  constructor(public recordTypes?: string) {
-    super("msdyn_RetrieveKnowledgeManagementSettings");
+  declare readonly Parameters: Readonly<msdyn_RetrieveKnowledgeManagementSettingsRequestParameters>;
+
+  constructor(parameters: msdyn_RetrieveKnowledgeManagementSettingsRequestParameters = {}) {
+    super("msdyn_RetrieveKnowledgeManagementSettings", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveKnowledgeManagementSettings`;
 
-    const body: Record<string, unknown> = {
-      RecordTypes: this.recordTypes,
-    };
+    const body = requestBody({
+      RecordTypes: this.Parameters.RecordTypes,
+    });
 
     return {
       method: "POST",
@@ -36,8 +47,10 @@ export class msdyn_RetrieveKnowledgeManagementSettingsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveKnowledgeManagementSettingsResponse> {
-    const data = await response.json();
-    return msdyn_RetrieveKnowledgeManagementSettingsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_RetrieveKnowledgeManagementSettingsResponse.fromResponse({});
+    return msdyn_RetrieveKnowledgeManagementSettingsResponse.fromResponse(await response.json());
   }
 }
 

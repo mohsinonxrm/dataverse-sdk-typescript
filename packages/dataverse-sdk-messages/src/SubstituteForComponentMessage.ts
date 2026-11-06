@@ -2,8 +2,18 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { SubstituteForComponentResponse as SubstituteForComponentResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the SubstituteForComponent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SubstituteForComponentRequestParameters {
+  Entity: EntityReference | AnyEntityPayload;
+  SubStore: string;
+}
 
 /**
  * SubstituteForComponent request message
@@ -14,20 +24,19 @@ export class SubstituteForComponentRequest
   extends OrganizationRequest
   implements Executable<SubstituteForComponentResponse>
 {
-  constructor(
-    public entity: EntityReference | AnyEntityPayload,
-    public subStore: string
-  ) {
-    super("SubstituteForComponent");
+  declare readonly Parameters: Readonly<SubstituteForComponentRequestParameters>;
+
+  constructor(parameters: SubstituteForComponentRequestParameters) {
+    super("SubstituteForComponent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SubstituteForComponent`;
 
-    const body: Record<string, unknown> = {
-      Entity: this.entity,
-      SubStore: this.subStore,
-    };
+    const body = requestBody({
+      Entity: this.Parameters.Entity,
+      SubStore: this.Parameters.SubStore,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class SubstituteForComponentRequest
   }
 
   async parseResponse(response: Response): Promise<SubstituteForComponentResponse> {
-    const data = await response.json();
-    return SubstituteForComponentResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return SubstituteForComponentResponse.fromResponse({});
+    return SubstituteForComponentResponse.fromResponse(await response.json());
   }
 }
 

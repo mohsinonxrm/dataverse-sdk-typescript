@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { QueryExpression } from "./types/index.js";
 
@@ -10,23 +11,29 @@ export interface SyncBulkOperationResponse {
 }
 
 /**
+ * Parameters of the SyncBulkOperation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SyncBulkOperationActionParameters {
+  QuerySet?: QueryExpression[];
+  OperationType: number;
+}
+
+/**
  * SyncBulkOperation action
  *
  * Unbound action
  */
 export class SyncBulkOperationAction implements Executable<SyncBulkOperationResponse> {
-  constructor(
-    public readonly querySet: QueryExpression[] | undefined,
-    public readonly operationType: number
-  ) {}
+  constructor(public readonly parameters: SyncBulkOperationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SyncBulkOperation`;
 
-    const body: Record<string, unknown> = {
-      QuerySet: enumBody(this.querySet, "QueryExpression"),
-      OperationType: this.operationType,
-    };
+    const body = requestBody({
+      QuerySet: enumBody(this.parameters.QuerySet, "QueryExpression"),
+      OperationType: this.parameters.OperationType,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class SyncBulkOperationAction implements Executable<SyncBulkOperationResp
   }
 
   async parseResponse(response: Response): Promise<SyncBulkOperationResponse> {
-    const data = await response.json();
-    return data as SyncBulkOperationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as SyncBulkOperationResponse;
+    return (await response.json()) as SyncBulkOperationResponse;
   }
 }

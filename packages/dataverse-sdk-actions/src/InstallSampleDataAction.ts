@@ -26,7 +26,8 @@ export class InstallSampleDataAction implements Executable<InstallSampleDataResp
   }
 
   async parseResponse(response: Response): Promise<InstallSampleDataResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InstallSampleDataResponse;
+    return (await response.json()) as InstallSampleDataResponse;
   }
 }

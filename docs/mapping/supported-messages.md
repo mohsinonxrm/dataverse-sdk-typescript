@@ -9,8 +9,11 @@
 ## Overview
 
 Each Web API **action** has a `<Name>Request` / `<Name>Response` pair, for code written in the
-style of the .NET SDK's `OrganizationRequest` classes. A request takes the same positional
-arguments as the matching class in `@mohsinonxrm/dataverse-sdk-actions` and sends the same `POST`.
+style of the .NET SDK's `OrganizationRequest` classes. A request takes the same arguments as the
+matching class in `@mohsinonxrm/dataverse-sdk-actions` (the record id of a bound action, then one
+object with the parameters by their `$metadata` names, as in .NET's
+`new MergeRequest { Target = …, SubordinateId = … }`), keeps them in `request.Parameters`, and
+sends the same `POST`.
 Run it with `client.execute(request)`, or with `OrganizationService.execute` from
 `@mohsinonxrm/dataverse-sdk-xrm`.
 
@@ -32,16 +35,15 @@ import { WinOpportunityRequest, WinOpportunityResponse } from "@mohsinonxrm/data
 const orgService = new OrganizationService(client);
 
 await orgService.execute<WinOpportunityResponse>(
-  new WinOpportunityRequest(
-    {
+  new WinOpportunityRequest({
+    OpportunityClose: {
       "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
       subject: "Deal closed",
       "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
       actualrevenue: 150000,
     },
-    undefined, // Caller
-    3 // Status: Won
-  )
+    Status: 3,
+  })
 );
 ```
 
@@ -94,13 +96,13 @@ BulkDelete: Start an asynchronous bulk delete job.
 ExportToExcel: Export a view's rows as an .xlsx file (base64).
 -->
 
-- `new CreateMultipleRequest(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`): Create records of one table in one request.
-- `new UpdateMultipleRequest(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpdateMultiple`): Update records of one table in one request.
-- `new UpsertMultipleRequest(entitySetName, targets)` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpsertMultiple`): Create or update records of one table in one request.
-- `new ExecuteWorkflowRequest(workflowId, entityId, inputArguments?)` (`POST /workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`): Run an on-demand workflow on a record; `result` is the `asyncoperation`.
-- `new MergeRequest(target, subordinate, updateContent, performParentingChecks)` (`POST /Merge`): Merge a subordinate record into a target.
-- `new BulkDeleteRequest(querySet, jobName, sendEmailNotification, toRecipients, cCRecipients, recurrencePattern, startDateTime, sourceImportId?, runNow?)` (`POST /BulkDelete`): Start an asynchronous bulk delete job.
-- `new ExportToExcelRequest(view, fetchXml, layoutXml, queryApi, queryParameters)` (`POST /ExportToExcel`): Export a view's rows as an .xlsx file (base64).
+- `new CreateMultipleRequest(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`): Create records of one table in one request.
+- `new UpdateMultipleRequest(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpdateMultiple`): Update records of one table in one request.
+- `new UpsertMultipleRequest(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpsertMultiple`): Create or update records of one table in one request.
+- `new ExecuteWorkflowRequest(workflowId, { EntityId, InputArguments? })` (`POST /workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`): Run an on-demand workflow on a record; `result` is the `asyncoperation`.
+- `new MergeRequest({ Target, Subordinate, UpdateContent?, PerformParentingChecks })` (`POST /Merge`): Merge a subordinate record into a target.
+- `new BulkDeleteRequest({ QuerySet?, JobName, SendEmailNotification, ToRecipients, CCRecipients, RecurrencePattern, StartDateTime, SourceImportId?, RunNow? })` (`POST /BulkDelete`): Start an asynchronous bulk delete job.
+- `new ExportToExcelRequest({ View, FetchXml, LayoutXml, QueryApi, QueryParameters })` (`POST /ExportToExcel`): Export a view's rows as an .xlsx file (base64).
 
 <!-- /operations -->
 
@@ -114,11 +116,11 @@ AddMembersTeam: Add users to a team.
 RemoveMembersTeam: Remove users from a team.
 -->
 
-- `new GrantAccessRequest(target, principalAccess?)` (`POST /GrantAccess`): Share a record with a user or team.
-- `new ModifyAccessRequest(target, principalAccess?)` (`POST /ModifyAccess`): Change shared access.
-- `new RevokeAccessRequest(target, revokee)` (`POST /RevokeAccess`): Stop sharing a record.
-- `new AddMembersTeamRequest(teamId, members)` (`POST /teams({teamId})/Microsoft.Dynamics.CRM.AddMembersTeam`): Add users to a team.
-- `new RemoveMembersTeamRequest(teamId, members)` (`POST /teams({teamId})/Microsoft.Dynamics.CRM.RemoveMembersTeam`): Remove users from a team.
+- `new GrantAccessRequest({ Target, PrincipalAccess? })` (`POST /GrantAccess`): Share a record with a user or team.
+- `new ModifyAccessRequest({ Target, PrincipalAccess? })` (`POST /ModifyAccess`): Change shared access.
+- `new RevokeAccessRequest({ Target, Revokee })` (`POST /RevokeAccess`): Stop sharing a record.
+- `new AddMembersTeamRequest(teamId, { Members })` (`POST /teams({teamId})/Microsoft.Dynamics.CRM.AddMembersTeam`): Add users to a team.
+- `new RemoveMembersTeamRequest(teamId, { Members })` (`POST /teams({teamId})/Microsoft.Dynamics.CRM.RemoveMembersTeam`): Remove users from a team.
 
 <!-- /operations -->
 
@@ -132,11 +134,11 @@ PublishAllXml: Publish all customizations.
 AddSolutionComponent: Add a component to an unmanaged solution.
 -->
 
-- `new ImportSolutionRequest(overwriteUnmanagedCustomizations, publishWorkflows, customizationFile, importJobId, convertToManaged?, skipProductUpdateDependencies?, holdingSolution?, skipQueueRibbonJob?, layerDesiredOrder?, asyncRibbonProcessing?, componentParameters?, isTemplateMode?, templateSuffix?, solutionParameters?, templateDisplayNamePrefix?, stageAndUpgrade?, schemaUpdatesOnly?)` (`POST /ImportSolution`): Import a solution file (base64).
-- `new ExportSolutionRequest(solutionName, managed, targetVersion?, exportAutoNumberingSettings?, exportCalendarSettings?, exportCustomizationSettings?, exportEmailTrackingSettings?, exportGeneralSettings?, exportMarketingSettings?, exportOutlookSynchronizationSettings?, exportRelationshipRoles?, exportIsvConfig?, exportSales?, exportExternalApplications?, exportComponentsParams?)` (`POST /ExportSolution`): Export a solution; `result.ExportSolutionFile` is the file (base64).
-- `new PublishXmlRequest(parameterXml)` (`POST /PublishXml`): Publish the customizations named in `parameterXml`.
+- `new ImportSolutionRequest({ OverwriteUnmanagedCustomizations, PublishWorkflows, CustomizationFile, ImportJobId, ConvertToManaged?, SkipProductUpdateDependencies?, HoldingSolution?, SkipQueueRibbonJob?, LayerDesiredOrder?, AsyncRibbonProcessing?, ComponentParameters?, IsTemplateMode?, TemplateSuffix?, SolutionParameters?, TemplateDisplayNamePrefix?, StageAndUpgrade?, SchemaUpdatesOnly? })` (`POST /ImportSolution`): Import a solution file (base64).
+- `new ExportSolutionRequest({ SolutionName, Managed, TargetVersion?, ExportAutoNumberingSettings?, ExportCalendarSettings?, ExportCustomizationSettings?, ExportEmailTrackingSettings?, ExportGeneralSettings?, ExportMarketingSettings?, ExportOutlookSynchronizationSettings?, ExportRelationshipRoles?, ExportIsvConfig?, ExportSales?, ExportExternalApplications?, ExportComponentsParams? })` (`POST /ExportSolution`): Export a solution; `result.ExportSolutionFile` is the file (base64).
+- `new PublishXmlRequest({ ParameterXml })` (`POST /PublishXml`): Publish the customizations named in `parameterXml`.
 - `new PublishAllXmlRequest()` (`POST /PublishAllXml`): Publish all customizations.
-- `new AddSolutionComponentRequest(componentId, componentType, solutionUniqueName, addRequiredComponents, doNotIncludeSubcomponents?, includedComponentSettingsValues?)` (`POST /AddSolutionComponent`): Add a component to an unmanaged solution.
+- `new AddSolutionComponentRequest({ ComponentId, ComponentType, SolutionUniqueName, AddRequiredComponents, DoNotIncludeSubcomponents?, IncludedComponentSettingsValues? })` (`POST /AddSolutionComponent`): Add a component to an unmanaged solution.
 
 <!-- /operations -->
 
@@ -151,12 +153,12 @@ ConvertQuoteToSalesOrder: Create an order from a quote.
 ConvertSalesOrderToInvoice: Create an invoice from an order.
 -->
 
-- `new WinOpportunityRequest(opportunityClose, caller, status)` (`POST /WinOpportunity`): Close an opportunity as won.
-- `new LoseOpportunityRequest(caller, opportunityClose, status)` (`POST /LoseOpportunity`): Close an opportunity as lost.
-- `new QualifyLeadRequest(leadId, createAccount, createContact, createOpportunity, opportunityCurrencyId, opportunityCustomerId, sourceCampaignId, status, processInstanceId?, leadQualificationV2Param?)` (`POST /leads({leadId})/Microsoft.Dynamics.CRM.QualifyLead`): Qualify a lead.
-- `new WinQuoteRequest(quoteClose, status)` (`POST /WinQuote`): Close a quote as won.
-- `new ConvertQuoteToSalesOrderRequest(quoteId, columnSet?, quoteCloseDate?, quoteCloseStatus?, quoteCloseSubject?, quoteCloseDescription?, processInstanceId?)` (`POST /ConvertQuoteToSalesOrder`): Create an order from a quote.
-- `new ConvertSalesOrderToInvoiceRequest(salesOrderId, columnSet?, processInstanceId?)` (`POST /ConvertSalesOrderToInvoice`): Create an invoice from an order.
+- `new WinOpportunityRequest({ OpportunityClose, Caller?, Status })` (`POST /WinOpportunity`): Close an opportunity as won.
+- `new LoseOpportunityRequest({ Caller?, OpportunityClose, Status })` (`POST /LoseOpportunity`): Close an opportunity as lost.
+- `new QualifyLeadRequest(leadId, { CreateAccount, CreateContact, CreateOpportunity, OpportunityCurrencyId?, OpportunityCustomerId?, SourceCampaignId?, Status, ProcessInstanceId?, LeadQualificationV2Param? })` (`POST /leads({leadId})/Microsoft.Dynamics.CRM.QualifyLead`): Qualify a lead.
+- `new WinQuoteRequest({ QuoteClose, Status })` (`POST /WinQuote`): Close a quote as won.
+- `new ConvertQuoteToSalesOrderRequest({ QuoteId, ColumnSet?, QuoteCloseDate?, QuoteCloseStatus?, QuoteCloseSubject?, QuoteCloseDescription?, ProcessInstanceId? })` (`POST /ConvertQuoteToSalesOrder`): Create an order from a quote.
+- `new ConvertSalesOrderToInvoiceRequest({ SalesOrderId, ColumnSet?, ProcessInstanceId? })` (`POST /ConvertSalesOrderToInvoice`): Create an invoice from an order.
 
 <!-- /operations -->
 
@@ -169,10 +171,10 @@ PickFromQueue: Assign a queue item to a user.
 RouteTo: Route a queue item with routing rules.
 -->
 
-- `new CloseIncidentRequest(incidentResolution, status)` (`POST /CloseIncident`): Resolve a case with an `incidentresolution`.
-- `new AddToQueueRequest(queueId, target, sourceQueue?, queueItemProperties?)` (`POST /queues({queueId})/Microsoft.Dynamics.CRM.AddToQueue`): Move a record into a queue.
-- `new PickFromQueueRequest(queueitemId, systemUser, removeQueueItem)` (`POST /queueitems({queueitemId})/Microsoft.Dynamics.CRM.PickFromQueue`): Assign a queue item to a user.
-- `new RouteToRequest(target, queueItem?)` (`POST /RouteTo`): Route a queue item with routing rules.
+- `new CloseIncidentRequest({ IncidentResolution, Status })` (`POST /CloseIncident`): Resolve a case with an `incidentresolution`.
+- `new AddToQueueRequest(queueId, { Target, SourceQueue?, QueueItemProperties? })` (`POST /queues({queueId})/Microsoft.Dynamics.CRM.AddToQueue`): Move a record into a queue.
+- `new PickFromQueueRequest(queueitemId, { SystemUser, RemoveQueueItem })` (`POST /queueitems({queueitemId})/Microsoft.Dynamics.CRM.PickFromQueue`): Assign a queue item to a user.
+- `new RouteToRequest({ Target, QueueItem? })` (`POST /RouteTo`): Route a queue item with routing rules.
 
 <!-- /operations -->
 
@@ -203,7 +205,7 @@ runs, and 30 (succeeded), 31 (failed) or 32 (canceled) once it ends, so poll unt
 
 ```typescript
 const { result } = await orgService.execute<ExecuteWorkflowResponse>(
-  new ExecuteWorkflowRequest(workflowId, recordId)
+  new ExecuteWorkflowRequest(workflowId, { EntityId: recordId })
 );
 let job: { statuscode: number };
 do {

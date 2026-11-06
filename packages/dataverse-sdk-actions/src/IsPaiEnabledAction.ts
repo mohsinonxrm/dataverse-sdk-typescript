@@ -30,7 +30,8 @@ export class IsPaiEnabledAction implements Executable<IsPaiEnabledResponse> {
   }
 
   async parseResponse(response: Response): Promise<IsPaiEnabledResponse> {
-    const data = await response.json();
-    return data as IsPaiEnabledResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as IsPaiEnabledResponse;
+    return (await response.json()) as IsPaiEnabledResponse;
   }
 }

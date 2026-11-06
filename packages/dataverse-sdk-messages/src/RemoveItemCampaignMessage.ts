@@ -1,32 +1,45 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { campaignitem } from "./types/index.js";
+
+/**
+ * Parameters of the RemoveItemCampaign message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveItemCampaignRequestParameters {
+  CampaignItem: EntityReference | EntityPayload<campaignitem>;
+}
 
 /**
  * RemoveItemCampaign request message
  *
  * Web API Action: RemoveItemCampaign
+ *
+ * The first argument is the id of the campaign record to call it on.
  */
 export class RemoveItemCampaignRequest
   extends OrganizationRequest
   implements Executable<RemoveItemCampaignResponse>
 {
+  declare readonly Parameters: Readonly<RemoveItemCampaignRequestParameters>;
+
   constructor(
     public campaignId: string,
-    public campaignItem: EntityReference | EntityPayload<campaignitem>
+    parameters: RemoveItemCampaignRequestParameters
   ) {
-    super("RemoveItemCampaign");
+    super("RemoveItemCampaign", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/campaigns(${this.campaignId})/Microsoft.Dynamics.CRM.RemoveItemCampaign`;
 
-    const body: Record<string, unknown> = {
-      CampaignItem: this.campaignItem,
-    };
+    const body = requestBody({
+      CampaignItem: this.Parameters.CampaignItem,
+    });
 
     return {
       method: "POST",

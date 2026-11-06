@@ -34,12 +34,11 @@ describe.skipIf(!live)("live: entity references (#72)", () => {
     const { client } = liveClient();
     const id = await createAccount(`${runId} initfrom`);
     const result = (await client.execute(
-      new InitializeFromFunction(
-        functionReference("account", id),
-        undefined,
-        "contact",
-        "ValidForCreate"
-      )
+      new InitializeFromFunction({
+        EntityMoniker: functionReference("account", id),
+        TargetEntityName: "contact",
+        TargetFieldType: "ValidForCreate",
+      })
     )) as unknown as Record<string, unknown>;
     // The new contact is pre-filled from the account: its parent customer is bound to it
     expect(JSON.stringify(result)).toContain(id);
@@ -73,12 +72,12 @@ describe.skipIf(!live)("live: entity references (#72)", () => {
     const subordinate = await createAccount(`${runId} merge subordinate`);
 
     await client.execute(
-      new MergeAction(
-        actionReference("account", target),
-        actionReference("account", subordinate),
-        actionReference("account", target),
-        false
-      )
+      new MergeAction({
+        Target: actionReference("account", target),
+        Subordinate: actionReference("account", subordinate),
+        UpdateContent: actionReference("account", target),
+        PerformParentingChecks: false,
+      })
     );
 
     const merged = await client

@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_GetAvailabilityForConversationResponse as CCaaS_GetAvailabilityForConversationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_GetAvailabilityForConversation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_GetAvailabilityForConversationRequestParameters {
+  CustomContextItems?: string;
+  ApiVersion: string;
+  ConversationId?: string;
+}
 
 /**
  * CCaaS_GetAvailabilityForConversation request message
@@ -12,22 +23,20 @@ export class CCaaS_GetAvailabilityForConversationRequest
   extends OrganizationRequest
   implements Executable<CCaaS_GetAvailabilityForConversationResponse>
 {
-  constructor(
-    public customContextItems: string | undefined,
-    public apiVersion: string,
-    public conversationId?: string
-  ) {
-    super("CCaaS_GetAvailabilityForConversation");
+  declare readonly Parameters: Readonly<CCaaS_GetAvailabilityForConversationRequestParameters>;
+
+  constructor(parameters: CCaaS_GetAvailabilityForConversationRequestParameters) {
+    super("CCaaS_GetAvailabilityForConversation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_GetAvailabilityForConversation`;
 
-    const body: Record<string, unknown> = {
-      CustomContextItems: this.customContextItems,
-      ApiVersion: this.apiVersion,
-      ConversationId: this.conversationId,
-    };
+    const body = requestBody({
+      CustomContextItems: this.Parameters.CustomContextItems,
+      ApiVersion: this.Parameters.ApiVersion,
+      ConversationId: this.Parameters.ConversationId,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,10 @@ export class CCaaS_GetAvailabilityForConversationRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_GetAvailabilityForConversationResponse> {
-    const data = await response.json();
-    return CCaaS_GetAvailabilityForConversationResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return CCaaS_GetAvailabilityForConversationResponse.fromResponse({});
+    return CCaaS_GetAvailabilityForConversationResponse.fromResponse(await response.json());
   }
 }
 

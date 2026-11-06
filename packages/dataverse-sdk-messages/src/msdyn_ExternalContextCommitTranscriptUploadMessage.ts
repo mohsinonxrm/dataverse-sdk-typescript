@@ -1,33 +1,46 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ExternalContextCommitTranscriptUploadResponse as msdyn_ExternalContextCommitTranscriptUploadResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ExternalContextCommitTranscriptUpload message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExternalContextCommitTranscriptUploadRequestParameters {
+  FileContinuationToken: string;
+  BlockList: string[];
+}
 
 /**
  * msdyn_ExternalContextCommitTranscriptUpload request message
  *
  * Web API Action: msdyn_ExternalContextCommitTranscriptUpload
+ *
+ * The first argument is the id of the msdyn_ocexternalcontext record to call it on.
  */
 export class msdyn_ExternalContextCommitTranscriptUploadRequest
   extends OrganizationRequest
   implements Executable<msdyn_ExternalContextCommitTranscriptUploadResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_ExternalContextCommitTranscriptUploadRequestParameters>;
+
   constructor(
     public msdyn_ocexternalcontextId: string,
-    public fileContinuationToken: string,
-    public blockList: string[]
+    parameters: msdyn_ExternalContextCommitTranscriptUploadRequestParameters
   ) {
-    super("msdyn_ExternalContextCommitTranscriptUpload");
+    super("msdyn_ExternalContextCommitTranscriptUpload", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocexternalcontexts(${this.msdyn_ocexternalcontextId})/Microsoft.Dynamics.CRM.msdyn_ExternalContextCommitTranscriptUpload`;
 
-    const body: Record<string, unknown> = {
-      FileContinuationToken: this.fileContinuationToken,
-      BlockList: this.blockList,
-    };
+    const body = requestBody({
+      FileContinuationToken: this.Parameters.FileContinuationToken,
+      BlockList: this.Parameters.BlockList,
+    });
 
     return {
       method: "POST",
@@ -42,8 +55,10 @@ export class msdyn_ExternalContextCommitTranscriptUploadRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ExternalContextCommitTranscriptUploadResponse> {
-    const data = await response.json();
-    return msdyn_ExternalContextCommitTranscriptUploadResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_ExternalContextCommitTranscriptUploadResponse.fromResponse({});
+    return msdyn_ExternalContextCommitTranscriptUploadResponse.fromResponse(await response.json());
   }
 }
 

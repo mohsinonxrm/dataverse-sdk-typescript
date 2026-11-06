@@ -2,8 +2,20 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ValidateRetentionConfigResponse as ValidateRetentionConfigResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the ValidateRetentionConfig message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ValidateRetentionConfigRequestParameters {
+  Target?: EntityReference | AnyEntityPayload;
+  EntityName?: string;
+  FetchXml: string;
+  RetentionConfigId?: string;
+}
 
 /**
  * ValidateRetentionConfig request message
@@ -14,24 +26,21 @@ export class ValidateRetentionConfigRequest
   extends OrganizationRequest
   implements Executable<ValidateRetentionConfigResponse>
 {
-  constructor(
-    public target: EntityReference | AnyEntityPayload | undefined,
-    public entityName: string | undefined,
-    public fetchXml: string,
-    public retentionConfigId?: string
-  ) {
-    super("ValidateRetentionConfig");
+  declare readonly Parameters: Readonly<ValidateRetentionConfigRequestParameters>;
+
+  constructor(parameters: ValidateRetentionConfigRequestParameters) {
+    super("ValidateRetentionConfig", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ValidateRetentionConfig`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      EntityName: this.entityName,
-      FetchXml: this.fetchXml,
-      RetentionConfigId: this.retentionConfigId,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      EntityName: this.Parameters.EntityName,
+      FetchXml: this.Parameters.FetchXml,
+      RetentionConfigId: this.Parameters.RetentionConfigId,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class ValidateRetentionConfigRequest
   }
 
   async parseResponse(response: Response): Promise<ValidateRetentionConfigResponse> {
-    const data = await response.json();
-    return ValidateRetentionConfigResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return ValidateRetentionConfigResponse.fromResponse({});
+    return ValidateRetentionConfigResponse.fromResponse(await response.json());
   }
 }
 

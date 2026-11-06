@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msft_DataEngineIndexMgmt_CreateIndexResponse as msft_DataEngineIndexMgmt_CreateIndexResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msft_DataEngineIndexMgmt_CreateIndex message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msft_DataEngineIndexMgmt_CreateIndexRequestParameters {
+  CreateIndex_QueueAdhocRequest: boolean;
+  CreateIndex_KeyColumnsJson: string;
+  CreateIndex_LogicalTableName: string;
+}
 
 /**
  * msft_DataEngineIndexMgmt_CreateIndex request message
@@ -12,22 +23,20 @@ export class msft_DataEngineIndexMgmt_CreateIndexRequest
   extends OrganizationRequest
   implements Executable<msft_DataEngineIndexMgmt_CreateIndexResponse>
 {
-  constructor(
-    public createIndex_QueueAdhocRequest: boolean,
-    public createIndex_KeyColumnsJson: string,
-    public createIndex_LogicalTableName: string
-  ) {
-    super("msft_DataEngineIndexMgmt_CreateIndex");
+  declare readonly Parameters: Readonly<msft_DataEngineIndexMgmt_CreateIndexRequestParameters>;
+
+  constructor(parameters: msft_DataEngineIndexMgmt_CreateIndexRequestParameters) {
+    super("msft_DataEngineIndexMgmt_CreateIndex", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msft_DataEngineIndexMgmt_CreateIndex`;
 
-    const body: Record<string, unknown> = {
-      CreateIndex_QueueAdhocRequest: this.createIndex_QueueAdhocRequest,
-      CreateIndex_KeyColumnsJson: this.createIndex_KeyColumnsJson,
-      CreateIndex_LogicalTableName: this.createIndex_LogicalTableName,
-    };
+    const body = requestBody({
+      CreateIndex_QueueAdhocRequest: this.Parameters.CreateIndex_QueueAdhocRequest,
+      CreateIndex_KeyColumnsJson: this.Parameters.CreateIndex_KeyColumnsJson,
+      CreateIndex_LogicalTableName: this.Parameters.CreateIndex_LogicalTableName,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,10 @@ export class msft_DataEngineIndexMgmt_CreateIndexRequest
   }
 
   async parseResponse(response: Response): Promise<msft_DataEngineIndexMgmt_CreateIndexResponse> {
-    const data = await response.json();
-    return msft_DataEngineIndexMgmt_CreateIndexResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msft_DataEngineIndexMgmt_CreateIndexResponse.fromResponse({});
+    return msft_DataEngineIndexMgmt_CreateIndexResponse.fromResponse(await response.json());
   }
 }
 

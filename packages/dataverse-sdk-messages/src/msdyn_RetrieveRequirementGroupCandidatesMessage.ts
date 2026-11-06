@@ -2,8 +2,22 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_requirementgroup } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RetrieveRequirementGroupCandidates message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveRequirementGroupCandidatesRequestParameters {
+  RequirementGroup?: EntityReference | EntityPayload<msdyn_requirementgroup>;
+  StartTime: string;
+  EndTime: string;
+  Duration: number;
+  ConstraintBag?: string;
+  Version?: string;
+}
 
 /**
  * msdyn_RetrieveRequirementGroupCandidates request message
@@ -14,28 +28,23 @@ export class msdyn_RetrieveRequirementGroupCandidatesRequest
   extends OrganizationRequest
   implements Executable<msdyn_RetrieveRequirementGroupCandidatesResponse>
 {
-  constructor(
-    public requirementGroup: EntityReference | EntityPayload<msdyn_requirementgroup> | undefined,
-    public startTime: string,
-    public endTime: string,
-    public duration: number,
-    public constraintBag?: string,
-    public version?: string
-  ) {
-    super("msdyn_RetrieveRequirementGroupCandidates");
+  declare readonly Parameters: Readonly<msdyn_RetrieveRequirementGroupCandidatesRequestParameters>;
+
+  constructor(parameters: msdyn_RetrieveRequirementGroupCandidatesRequestParameters) {
+    super("msdyn_RetrieveRequirementGroupCandidates", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveRequirementGroupCandidates`;
 
-    const body: Record<string, unknown> = {
-      RequirementGroup: this.requirementGroup,
-      StartTime: this.startTime,
-      EndTime: this.endTime,
-      Duration: this.duration,
-      ConstraintBag: this.constraintBag,
-      Version: this.version,
-    };
+    const body = requestBody({
+      RequirementGroup: this.Parameters.RequirementGroup,
+      StartTime: this.Parameters.StartTime,
+      EndTime: this.Parameters.EndTime,
+      Duration: this.Parameters.Duration,
+      ConstraintBag: this.Parameters.ConstraintBag,
+      Version: this.Parameters.Version,
+    });
 
     return {
       method: "POST",
@@ -50,8 +59,10 @@ export class msdyn_RetrieveRequirementGroupCandidatesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveRequirementGroupCandidatesResponse> {
-    const data = await response.json();
-    return msdyn_RetrieveRequirementGroupCandidatesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_RetrieveRequirementGroupCandidatesResponse.fromResponse({});
+    return msdyn_RetrieveRequirementGroupCandidatesResponse.fromResponse(await response.json());
   }
 }
 

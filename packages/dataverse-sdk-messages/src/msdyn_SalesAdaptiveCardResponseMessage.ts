@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAdaptiveCardResponseResponse as msdyn_SalesAdaptiveCardResponseResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAdaptiveCardResponse message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAdaptiveCardResponseRequestParameters {
+  msdyn_query?: string;
+  msdyn_id?: string;
+  msdyn_scenario: number;
+}
 
 /**
  * msdyn_SalesAdaptiveCardResponse request message
@@ -12,22 +23,20 @@ export class msdyn_SalesAdaptiveCardResponseRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAdaptiveCardResponseResponse>
 {
-  constructor(
-    public msdyn_query: string | undefined,
-    public msdyn_id: string | undefined,
-    public msdyn_scenario: number
-  ) {
-    super("msdyn_SalesAdaptiveCardResponse");
+  declare readonly Parameters: Readonly<msdyn_SalesAdaptiveCardResponseRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAdaptiveCardResponseRequestParameters) {
+    super("msdyn_SalesAdaptiveCardResponse", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAdaptiveCardResponse`;
 
-    const body: Record<string, unknown> = {
-      msdyn_query: this.msdyn_query,
-      msdyn_id: this.msdyn_id,
-      msdyn_scenario: this.msdyn_scenario,
-    };
+    const body = requestBody({
+      msdyn_query: this.Parameters.msdyn_query,
+      msdyn_id: this.Parameters.msdyn_id,
+      msdyn_scenario: this.Parameters.msdyn_scenario,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_SalesAdaptiveCardResponseRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAdaptiveCardResponseResponse> {
-    const data = await response.json();
-    return msdyn_SalesAdaptiveCardResponseResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SalesAdaptiveCardResponseResponse.fromResponse({});
+    return msdyn_SalesAdaptiveCardResponseResponse.fromResponse(await response.json());
   }
 }
 

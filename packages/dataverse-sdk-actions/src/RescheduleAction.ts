@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { BusinessNotification, ValidationResult } from "./types/index.js";
 
@@ -12,23 +13,29 @@ export interface RescheduleResponse {
 }
 
 /**
+ * Parameters of the Reschedule action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RescheduleActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  ReturnNotifications?: boolean;
+}
+
+/**
  * Reschedule action
  *
  * Unbound action
  */
 export class RescheduleAction implements Executable<RescheduleResponse> {
-  constructor(
-    public readonly target: EntityReference | AnyEntityPayload,
-    public readonly returnNotifications?: boolean
-  ) {}
+  constructor(public readonly parameters: RescheduleActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/Reschedule`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      ReturnNotifications: this.returnNotifications,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      ReturnNotifications: this.parameters.ReturnNotifications,
+    });
 
     return {
       method: "POST",
@@ -41,7 +48,8 @@ export class RescheduleAction implements Executable<RescheduleResponse> {
   }
 
   async parseResponse(response: Response): Promise<RescheduleResponse> {
-    const data = await response.json();
-    return data as RescheduleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RescheduleResponse;
+    return (await response.json()) as RescheduleResponse;
   }
 }

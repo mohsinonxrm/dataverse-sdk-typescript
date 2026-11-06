@@ -29,8 +29,10 @@ export class msdyn_CheckDefaultValueForLineStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckDefaultValueForLineStatusResponse> {
-    const data = await response.json();
-    return msdyn_CheckDefaultValueForLineStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckDefaultValueForLineStatusResponse.fromResponse({});
+    return msdyn_CheckDefaultValueForLineStatusResponse.fromResponse(await response.json());
   }
 }
 

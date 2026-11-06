@@ -2,7 +2,16 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_RestartAgreementRelatedWorkflowResponse as msdyn_RestartAgreementRelatedWorkflowResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RestartAgreementRelatedWorkflow message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RestartAgreementRelatedWorkflowRequestParameters {
+  AnalysisResult: EntityReference;
+}
 
 /**
  * msdyn_RestartAgreementRelatedWorkflow request message
@@ -13,16 +22,18 @@ export class msdyn_RestartAgreementRelatedWorkflowRequest
   extends OrganizationRequest
   implements Executable<msdyn_RestartAgreementRelatedWorkflowResponse>
 {
-  constructor(public analysisResult: EntityReference) {
-    super("msdyn_RestartAgreementRelatedWorkflow");
+  declare readonly Parameters: Readonly<msdyn_RestartAgreementRelatedWorkflowRequestParameters>;
+
+  constructor(parameters: msdyn_RestartAgreementRelatedWorkflowRequestParameters) {
+    super("msdyn_RestartAgreementRelatedWorkflow", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RestartAgreementRelatedWorkflow`;
 
-    const body: Record<string, unknown> = {
-      AnalysisResult: this.analysisResult,
-    };
+    const body = requestBody({
+      AnalysisResult: this.Parameters.AnalysisResult,
+    });
 
     return {
       method: "POST",
@@ -35,8 +46,10 @@ export class msdyn_RestartAgreementRelatedWorkflowRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RestartAgreementRelatedWorkflowResponse> {
-    const data = await response.json();
-    return msdyn_RestartAgreementRelatedWorkflowResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_RestartAgreementRelatedWorkflowResponse.fromResponse({});
+    return msdyn_RestartAgreementRelatedWorkflowResponse.fromResponse(await response.json());
   }
 }
 

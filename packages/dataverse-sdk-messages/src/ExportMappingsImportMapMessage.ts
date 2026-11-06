@@ -1,31 +1,44 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { ExportMappingsImportMapResponse as ExportMappingsImportMapResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the ExportMappingsImportMap message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ExportMappingsImportMapRequestParameters {
+  ExportIds?: boolean;
+}
 
 /**
  * ExportMappingsImportMap request message
  *
  * Web API Action: ExportMappingsImportMap
+ *
+ * The first argument is the id of the importmap record to call it on.
  */
 export class ExportMappingsImportMapRequest
   extends OrganizationRequest
   implements Executable<ExportMappingsImportMapResponse>
 {
+  declare readonly Parameters: Readonly<ExportMappingsImportMapRequestParameters>;
+
   constructor(
     public importmapId: string,
-    public exportIds?: boolean
+    parameters: ExportMappingsImportMapRequestParameters = {}
   ) {
-    super("ExportMappingsImportMap");
+    super("ExportMappingsImportMap", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/importmaps(${this.importmapId})/Microsoft.Dynamics.CRM.ExportMappingsImportMap`;
 
-    const body: Record<string, unknown> = {
-      ExportIds: this.exportIds,
-    };
+    const body = requestBody({
+      ExportIds: this.Parameters.ExportIds,
+    });
 
     return {
       method: "POST",
@@ -38,8 +51,9 @@ export class ExportMappingsImportMapRequest
   }
 
   async parseResponse(response: Response): Promise<ExportMappingsImportMapResponse> {
-    const data = await response.json();
-    return ExportMappingsImportMapResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return ExportMappingsImportMapResponse.fromResponse({});
+    return ExportMappingsImportMapResponse.fromResponse(await response.json());
   }
 }
 

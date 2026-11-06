@@ -1,10 +1,27 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type {
   InsertStatusValueResponse as InsertStatusValueResponseData,
   Label,
 } from "./types/index.js";
+
+/**
+ * Parameters of the InsertStatusValue message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InsertStatusValueRequestParameters {
+  Color?: string;
+  OptionSetName?: string;
+  AttributeLogicalName?: string;
+  EntityLogicalName?: string;
+  Value?: number;
+  Label?: Label;
+  Description?: Label;
+  StateCode: number;
+  SolutionUniqueName?: string;
+}
 
 /**
  * InsertStatusValue request message
@@ -15,34 +32,26 @@ export class InsertStatusValueRequest
   extends OrganizationRequest
   implements Executable<InsertStatusValueResponse>
 {
-  constructor(
-    public color: string | undefined,
-    public optionSetName: string | undefined,
-    public attributeLogicalName: string | undefined,
-    public entityLogicalName: string | undefined,
-    public value: number | undefined,
-    public label: Label | undefined,
-    public description: Label | undefined,
-    public stateCode: number,
-    public solutionUniqueName?: string
-  ) {
-    super("InsertStatusValue");
+  declare readonly Parameters: Readonly<InsertStatusValueRequestParameters>;
+
+  constructor(parameters: InsertStatusValueRequestParameters) {
+    super("InsertStatusValue", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/InsertStatusValue`;
 
-    const body: Record<string, unknown> = {
-      Color: this.color,
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Value: this.value,
-      Label: this.label,
-      Description: this.description,
-      StateCode: this.stateCode,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      Color: this.Parameters.Color,
+      OptionSetName: this.Parameters.OptionSetName,
+      AttributeLogicalName: this.Parameters.AttributeLogicalName,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Value: this.Parameters.Value,
+      Label: this.Parameters.Label,
+      Description: this.Parameters.Description,
+      StateCode: this.Parameters.StateCode,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -55,8 +64,9 @@ export class InsertStatusValueRequest
   }
 
   async parseResponse(response: Response): Promise<InsertStatusValueResponse> {
-    const data = await response.json();
-    return InsertStatusValueResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return InsertStatusValueResponse.fromResponse({});
+    return InsertStatusValueResponse.fromResponse(await response.json());
   }
 }
 

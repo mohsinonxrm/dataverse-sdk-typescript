@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_ShowPrivacyTermsResponse as msdyn_ShowPrivacyTermsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_ShowPrivacyTerms message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ShowPrivacyTermsRequestParameters {
+  StreamSource: number;
+}
 
 /**
  * msdyn_ShowPrivacyTerms request message
@@ -12,16 +21,18 @@ export class msdyn_ShowPrivacyTermsRequest
   extends OrganizationRequest
   implements Executable<msdyn_ShowPrivacyTermsResponse>
 {
-  constructor(public streamSource: number) {
-    super("msdyn_ShowPrivacyTerms");
+  declare readonly Parameters: Readonly<msdyn_ShowPrivacyTermsRequestParameters>;
+
+  constructor(parameters: msdyn_ShowPrivacyTermsRequestParameters) {
+    super("msdyn_ShowPrivacyTerms", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ShowPrivacyTerms`;
 
-    const body: Record<string, unknown> = {
-      StreamSource: this.streamSource,
-    };
+    const body = requestBody({
+      StreamSource: this.Parameters.StreamSource,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_ShowPrivacyTermsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ShowPrivacyTermsResponse> {
-    const data = await response.json();
-    return msdyn_ShowPrivacyTermsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_ShowPrivacyTermsResponse.fromResponse({});
+    return msdyn_ShowPrivacyTermsResponse.fromResponse(await response.json());
   }
 }
 

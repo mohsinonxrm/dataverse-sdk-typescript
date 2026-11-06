@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CreateNPSUserRating action
@@ -8,29 +9,35 @@ export interface CreateNPSUserRatingResponse {
 }
 
 /**
+ * Parameters of the CreateNPSUserRating action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateNPSUserRatingActionParameters {
+  Score: number;
+  Comment?: string;
+  AppModuleId: string;
+  Browser: string;
+  Device: string;
+}
+
+/**
  * CreateNPSUserRating action
  *
  * Unbound action
  */
 export class CreateNPSUserRatingAction implements Executable<CreateNPSUserRatingResponse> {
-  constructor(
-    public readonly score: number,
-    public readonly comment: string | undefined,
-    public readonly appModuleId: string,
-    public readonly browser: string,
-    public readonly device: string
-  ) {}
+  constructor(public readonly parameters: CreateNPSUserRatingActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateNPSUserRating`;
 
-    const body: Record<string, unknown> = {
-      Score: this.score,
-      Comment: this.comment,
-      AppModuleId: this.appModuleId,
-      Browser: this.browser,
-      Device: this.device,
-    };
+    const body = requestBody({
+      Score: this.parameters.Score,
+      Comment: this.parameters.Comment,
+      AppModuleId: this.parameters.AppModuleId,
+      Browser: this.parameters.Browser,
+      Device: this.parameters.Device,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class CreateNPSUserRatingAction implements Executable<CreateNPSUserRating
   }
 
   async parseResponse(response: Response): Promise<CreateNPSUserRatingResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateNPSUserRatingResponse;
+    return (await response.json()) as CreateNPSUserRatingResponse;
   }
 }

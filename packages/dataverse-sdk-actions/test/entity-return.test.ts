@@ -51,7 +51,9 @@ describe("#71: entity-returning actions", () => {
       })
     );
 
-    const res = await client.execute(new ExecuteWorkflowAction(WORKFLOW, "e1", {}));
+    const res = await client.execute(
+      new ExecuteWorkflowAction(WORKFLOW, { EntityId: "e1", InputArguments: {} })
+    );
 
     expect(res.asyncoperationid).toBe("aaa");
     expect(res["@odata.context"]).toBe("$metadata#asyncoperations/$entity");

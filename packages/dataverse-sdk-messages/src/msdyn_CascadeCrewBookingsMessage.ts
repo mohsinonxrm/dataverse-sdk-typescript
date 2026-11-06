@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_CascadeCrewBookings message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CascadeCrewBookingsRequestParameters {
+  BookingsToCreate?: Record<string, unknown>[];
+  BookingsToUpdate?: Record<string, unknown>[];
+  ParentBookingsToUpdate?: Record<string, unknown>[];
+  BatchNumber?: number;
+}
 
 /**
  * msdyn_CascadeCrewBookings request message
@@ -10,24 +22,21 @@ export class msdyn_CascadeCrewBookingsRequest
   extends OrganizationRequest
   implements Executable<msdyn_CascadeCrewBookingsResponse>
 {
-  constructor(
-    public bookingsToCreate?: Record<string, unknown>[],
-    public bookingsToUpdate?: Record<string, unknown>[],
-    public parentBookingsToUpdate?: Record<string, unknown>[],
-    public batchNumber?: number
-  ) {
-    super("msdyn_CascadeCrewBookings");
+  declare readonly Parameters: Readonly<msdyn_CascadeCrewBookingsRequestParameters>;
+
+  constructor(parameters: msdyn_CascadeCrewBookingsRequestParameters = {}) {
+    super("msdyn_CascadeCrewBookings", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CascadeCrewBookings`;
 
-    const body: Record<string, unknown> = {
-      BookingsToCreate: this.bookingsToCreate,
-      BookingsToUpdate: this.bookingsToUpdate,
-      ParentBookingsToUpdate: this.parentBookingsToUpdate,
-      BatchNumber: this.batchNumber,
-    };
+    const body = requestBody({
+      BookingsToCreate: this.Parameters.BookingsToCreate,
+      BookingsToUpdate: this.Parameters.BookingsToUpdate,
+      ParentBookingsToUpdate: this.Parameters.ParentBookingsToUpdate,
+      BatchNumber: this.Parameters.BatchNumber,
+    });
 
     return {
       method: "POST",

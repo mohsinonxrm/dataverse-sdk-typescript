@@ -2,8 +2,20 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_CSCopilotResolveCaseResponse as msdyn_CSCopilotResolveCaseResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CSCopilotResolveCase message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CSCopilotResolveCaseRequestParameters {
+  Incident: EntityReference | AnyEntityPayload;
+  ResolutionReason: number;
+  CallerIdentifier: string;
+  StatusReason: number;
+}
 
 /**
  * msdyn_CSCopilotResolveCase request message
@@ -14,24 +26,21 @@ export class msdyn_CSCopilotResolveCaseRequest
   extends OrganizationRequest
   implements Executable<msdyn_CSCopilotResolveCaseResponse>
 {
-  constructor(
-    public incident: EntityReference | AnyEntityPayload,
-    public resolutionReason: number,
-    public callerIdentifier: string,
-    public statusReason: number
-  ) {
-    super("msdyn_CSCopilotResolveCase");
+  declare readonly Parameters: Readonly<msdyn_CSCopilotResolveCaseRequestParameters>;
+
+  constructor(parameters: msdyn_CSCopilotResolveCaseRequestParameters) {
+    super("msdyn_CSCopilotResolveCase", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CSCopilotResolveCase`;
 
-    const body: Record<string, unknown> = {
-      Incident: this.incident,
-      ResolutionReason: this.resolutionReason,
-      CallerIdentifier: this.callerIdentifier,
-      StatusReason: this.statusReason,
-    };
+    const body = requestBody({
+      Incident: this.Parameters.Incident,
+      ResolutionReason: this.Parameters.ResolutionReason,
+      CallerIdentifier: this.Parameters.CallerIdentifier,
+      StatusReason: this.Parameters.StatusReason,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class msdyn_CSCopilotResolveCaseRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CSCopilotResolveCaseResponse> {
-    const data = await response.json();
-    return msdyn_CSCopilotResolveCaseResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CSCopilotResolveCaseResponse.fromResponse({});
+    return msdyn_CSCopilotResolveCaseResponse.fromResponse(await response.json());
   }
 }
 

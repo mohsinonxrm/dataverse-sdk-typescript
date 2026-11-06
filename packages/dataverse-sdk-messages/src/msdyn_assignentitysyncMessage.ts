@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_assignentitysyncResponse as msdyn_assignentitysyncResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_assignentitysync message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_assignentitysyncRequestParameters {
+  RegardingEntityId: string;
+  RegardingEntityName: string;
+  SegmentId: string;
+}
 
 /**
  * msdyn_assignentitysync request message
@@ -12,22 +23,20 @@ export class msdyn_assignentitysyncRequest
   extends OrganizationRequest
   implements Executable<msdyn_assignentitysyncResponse>
 {
-  constructor(
-    public regardingEntityId: string,
-    public regardingEntityName: string,
-    public segmentId: string
-  ) {
-    super("msdyn_assignentitysync");
+  declare readonly Parameters: Readonly<msdyn_assignentitysyncRequestParameters>;
+
+  constructor(parameters: msdyn_assignentitysyncRequestParameters) {
+    super("msdyn_assignentitysync", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_assignentitysync`;
 
-    const body: Record<string, unknown> = {
-      RegardingEntityId: this.regardingEntityId,
-      RegardingEntityName: this.regardingEntityName,
-      SegmentId: this.segmentId,
-    };
+    const body = requestBody({
+      RegardingEntityId: this.Parameters.RegardingEntityId,
+      RegardingEntityName: this.Parameters.RegardingEntityName,
+      SegmentId: this.Parameters.SegmentId,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_assignentitysyncRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_assignentitysyncResponse> {
-    const data = await response.json();
-    return msdyn_assignentitysyncResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_assignentitysyncResponse.fromResponse({});
+    return msdyn_assignentitysyncResponse.fromResponse(await response.json());
   }
 }
 

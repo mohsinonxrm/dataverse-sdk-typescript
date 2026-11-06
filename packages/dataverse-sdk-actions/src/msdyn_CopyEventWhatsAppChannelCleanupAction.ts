@@ -26,7 +26,8 @@ export class msdyn_CopyEventWhatsAppChannelCleanupAction implements Executable<m
   }
 
   async parseResponse(response: Response): Promise<msdyn_CopyEventWhatsAppChannelCleanupResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CopyEventWhatsAppChannelCleanupResponse;
+    return (await response.json()) as msdyn_CopyEventWhatsAppChannelCleanupResponse;
   }
 }

@@ -26,7 +26,8 @@ export class msdyn_EnableLinkedInDataValidationAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_EnableLinkedInDataValidationResponse> {
-    const data = await response.json();
-    return data as msdyn_EnableLinkedInDataValidationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_EnableLinkedInDataValidationResponse;
+    return (await response.json()) as msdyn_EnableLinkedInDataValidationResponse;
   }
 }

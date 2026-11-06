@@ -9,15 +9,21 @@ export interface InResponse {
 }
 
 /**
+ * Parameters of the In function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InFunctionParameters {
+  PropertyName: string;
+  PropertyValues: string[];
+}
+
+/**
  * In function
  *
  * Unbound function
  */
 export class InFunction implements Executable<InResponse> {
-  constructor(
-    public readonly propertyName: string,
-    public readonly propertyValues: string[]
-  ) {}
+  constructor(public readonly parameters: InFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/In`;
@@ -25,13 +31,13 @@ export class InFunction implements Executable<InResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
-    if (this.propertyValues !== undefined) {
+    if (this.parameters.PropertyValues !== undefined) {
       aliases.push(`PropertyValues=@p2`);
-      params.append("@p2", JSON.stringify(this.propertyValues));
+      params.append("@p2", JSON.stringify(this.parameters.PropertyValues));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +53,8 @@ export class InFunction implements Executable<InResponse> {
   }
 
   async parseResponse(response: Response): Promise<InResponse> {
-    const data = await response.json();
-    return data as InResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as InResponse;
+    return (await response.json()) as InResponse;
   }
 }

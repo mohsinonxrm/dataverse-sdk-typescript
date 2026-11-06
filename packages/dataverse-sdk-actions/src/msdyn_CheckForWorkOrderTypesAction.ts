@@ -29,7 +29,8 @@ export class msdyn_CheckForWorkOrderTypesAction implements Executable<msdyn_Chec
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForWorkOrderTypesResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForWorkOrderTypesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckForWorkOrderTypesResponse;
+    return (await response.json()) as msdyn_CheckForWorkOrderTypesResponse;
   }
 }

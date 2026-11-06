@@ -1,7 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the SendTemplate message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendTemplateRequestParameters {
+  TemplateId: string;
+  Sender: EntityReference | AnyEntityPayload;
+  Recipients: Record<string, unknown>[];
+  Regarding: EntityReference | AnyEntityPayload;
+  DeliveryPriorityCode?: number;
+}
 
 /**
  * SendTemplate request message
@@ -12,26 +25,22 @@ export class SendTemplateRequest
   extends OrganizationRequest
   implements Executable<SendTemplateResponse>
 {
-  constructor(
-    public templateId: string,
-    public sender: EntityReference | AnyEntityPayload,
-    public recipients: Record<string, unknown>[],
-    public regarding: EntityReference | AnyEntityPayload,
-    public deliveryPriorityCode?: number
-  ) {
-    super("SendTemplate");
+  declare readonly Parameters: Readonly<SendTemplateRequestParameters>;
+
+  constructor(parameters: SendTemplateRequestParameters) {
+    super("SendTemplate", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SendTemplate`;
 
-    const body: Record<string, unknown> = {
-      TemplateId: this.templateId,
-      Sender: this.sender,
-      Recipients: this.recipients,
-      Regarding: this.regarding,
-      DeliveryPriorityCode: this.deliveryPriorityCode,
-    };
+    const body = requestBody({
+      TemplateId: this.Parameters.TemplateId,
+      Sender: this.Parameters.Sender,
+      Recipients: this.Parameters.Recipients,
+      Regarding: this.Parameters.Regarding,
+      DeliveryPriorityCode: this.Parameters.DeliveryPriorityCode,
+    });
 
     return {
       method: "POST",

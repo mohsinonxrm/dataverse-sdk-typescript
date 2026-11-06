@@ -1,8 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { knowledgearticle, msdyn_kbattachment } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_UpdateKbAttachmentPrivilege message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateKbAttachmentPrivilegeRequestParameters {
+  KbAttachmentId: EntityReference | EntityPayload<msdyn_kbattachment>;
+  ParentKnowledgeArticleId: EntityReference | EntityPayload<knowledgearticle>;
+  PrincipalId: EntityReference | AnyEntityPayload;
+  AccessMask?: string;
+}
 
 /**
  * msdyn_UpdateKbAttachmentPrivilege request message
@@ -13,24 +25,21 @@ export class msdyn_UpdateKbAttachmentPrivilegeRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpdateKbAttachmentPrivilegeResponse>
 {
-  constructor(
-    public kbAttachmentId: EntityReference | EntityPayload<msdyn_kbattachment>,
-    public parentKnowledgeArticleId: EntityReference | EntityPayload<knowledgearticle>,
-    public principalId: EntityReference | AnyEntityPayload,
-    public accessMask?: string
-  ) {
-    super("msdyn_UpdateKbAttachmentPrivilege");
+  declare readonly Parameters: Readonly<msdyn_UpdateKbAttachmentPrivilegeRequestParameters>;
+
+  constructor(parameters: msdyn_UpdateKbAttachmentPrivilegeRequestParameters) {
+    super("msdyn_UpdateKbAttachmentPrivilege", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateKbAttachmentPrivilege`;
 
-    const body: Record<string, unknown> = {
-      KbAttachmentId: this.kbAttachmentId,
-      ParentKnowledgeArticleId: this.parentKnowledgeArticleId,
-      PrincipalId: this.principalId,
-      AccessMask: this.accessMask,
-    };
+    const body = requestBody({
+      KbAttachmentId: this.Parameters.KbAttachmentId,
+      ParentKnowledgeArticleId: this.Parameters.ParentKnowledgeArticleId,
+      PrincipalId: this.Parameters.PrincipalId,
+      AccessMask: this.Parameters.AccessMask,
+    });
 
     return {
       method: "POST",

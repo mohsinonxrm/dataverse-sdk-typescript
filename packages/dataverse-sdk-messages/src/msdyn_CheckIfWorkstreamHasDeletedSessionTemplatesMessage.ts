@@ -31,8 +31,12 @@ export class msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse.fromResponse({});
+    return msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

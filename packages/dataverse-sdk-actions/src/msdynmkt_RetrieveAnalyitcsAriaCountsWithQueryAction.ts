@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery action
@@ -10,27 +11,35 @@ export interface msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse {
 }
 
 /**
+ * Parameters of the msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryActionParameters {
+  msdynmkt_primaryrecordid: string;
+  msdynmkt_primaryrecordentityname: string;
+  msdynmkt_ariacountsrequest: string;
+  msdynmkt_appname: string;
+}
+
+/**
  * msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery action
  *
  * Unbound action
  */
 export class msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryAction implements Executable<msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse> {
   constructor(
-    public readonly msdynmkt_primaryrecordid: string,
-    public readonly msdynmkt_primaryrecordentityname: string,
-    public readonly msdynmkt_ariacountsrequest: string,
-    public readonly msdynmkt_appname: string
+    public readonly parameters: msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_RetrieveAnalyitcsAriaCountsWithQuery`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_primaryrecordid: this.msdynmkt_primaryrecordid,
-      msdynmkt_primaryrecordentityname: this.msdynmkt_primaryrecordentityname,
-      msdynmkt_ariacountsrequest: this.msdynmkt_ariacountsrequest,
-      msdynmkt_appname: this.msdynmkt_appname,
-    };
+    const body = requestBody({
+      msdynmkt_primaryrecordid: this.parameters.msdynmkt_primaryrecordid,
+      msdynmkt_primaryrecordentityname: this.parameters.msdynmkt_primaryrecordentityname,
+      msdynmkt_ariacountsrequest: this.parameters.msdynmkt_ariacountsrequest,
+      msdynmkt_appname: this.parameters.msdynmkt_appname,
+    });
 
     return {
       method: "POST",
@@ -45,7 +54,8 @@ export class msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse> {
-    const data = await response.json();
-    return data as msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse;
+    return (await response.json()) as msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse;
   }
 }

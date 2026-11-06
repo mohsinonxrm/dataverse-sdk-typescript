@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_InvokeStoredProc action
@@ -8,29 +9,35 @@ export interface msdyn_InvokeStoredProcResponse {
 }
 
 /**
+ * Parameters of the msdyn_InvokeStoredProc action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_InvokeStoredProcActionParameters {
+  ProcId: number;
+  BatchSize: number;
+  BatchStart: number;
+  AdminUserId: string;
+  StringParam: string;
+}
+
+/**
  * msdyn_InvokeStoredProc action
  *
  * Unbound action
  */
 export class msdyn_InvokeStoredProcAction implements Executable<msdyn_InvokeStoredProcResponse> {
-  constructor(
-    public readonly procId: number,
-    public readonly batchSize: number,
-    public readonly batchStart: number,
-    public readonly adminUserId: string,
-    public readonly stringParam: string
-  ) {}
+  constructor(public readonly parameters: msdyn_InvokeStoredProcActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_InvokeStoredProc`;
 
-    const body: Record<string, unknown> = {
-      ProcId: this.procId,
-      BatchSize: this.batchSize,
-      BatchStart: this.batchStart,
-      AdminUserId: this.adminUserId,
-      StringParam: this.stringParam,
-    };
+    const body = requestBody({
+      ProcId: this.parameters.ProcId,
+      BatchSize: this.parameters.BatchSize,
+      BatchStart: this.parameters.BatchStart,
+      AdminUserId: this.parameters.AdminUserId,
+      StringParam: this.parameters.StringParam,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class msdyn_InvokeStoredProcAction implements Executable<msdyn_InvokeStor
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeStoredProcResponse> {
-    const data = await response.json();
-    return data as msdyn_InvokeStoredProcResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_InvokeStoredProcResponse;
+    return (await response.json()) as msdyn_InvokeStoredProcResponse;
   }
 }

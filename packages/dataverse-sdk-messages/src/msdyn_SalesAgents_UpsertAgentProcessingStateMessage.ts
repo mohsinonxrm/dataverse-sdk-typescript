@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_UpsertAgentProcessingState message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_UpsertAgentProcessingStateRequestParameters {
+  msdyn_Records: Record<string, unknown>[];
+  msdyn_SalesAgentType: number;
+  msdyn_TrackingId?: string;
+  msdyn_SkipVersionNumberUpdate?: boolean;
+}
 
 /**
  * msdyn_SalesAgents_UpsertAgentProcessingState request message
@@ -10,24 +22,21 @@ export class msdyn_SalesAgents_UpsertAgentProcessingStateRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_UpsertAgentProcessingStateResponse>
 {
-  constructor(
-    public msdyn_Records: Record<string, unknown>[],
-    public msdyn_SalesAgentType: number,
-    public msdyn_TrackingId?: string,
-    public msdyn_SkipVersionNumberUpdate?: boolean
-  ) {
-    super("msdyn_SalesAgents_UpsertAgentProcessingState");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_UpsertAgentProcessingStateRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_UpsertAgentProcessingStateRequestParameters) {
+    super("msdyn_SalesAgents_UpsertAgentProcessingState", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_UpsertAgentProcessingState`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Records: this.msdyn_Records,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SkipVersionNumberUpdate: this.msdyn_SkipVersionNumberUpdate,
-    };
+    const body = requestBody({
+      msdyn_Records: this.Parameters.msdyn_Records,
+      msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_SkipVersionNumberUpdate: this.Parameters.msdyn_SkipVersionNumberUpdate,
+    });
 
     return {
       method: "POST",

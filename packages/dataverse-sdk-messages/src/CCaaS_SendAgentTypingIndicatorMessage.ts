@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CCaaS_SendAgentTypingIndicatorResponse as CCaaS_SendAgentTypingIndicatorResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CCaaS_SendAgentTypingIndicator message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_SendAgentTypingIndicatorRequestParameters {
+  AgentChatId: string;
+  ApiVersion: string;
+  AgentDisplayName: string;
+}
 
 /**
  * CCaaS_SendAgentTypingIndicator request message
@@ -12,22 +23,20 @@ export class CCaaS_SendAgentTypingIndicatorRequest
   extends OrganizationRequest
   implements Executable<CCaaS_SendAgentTypingIndicatorResponse>
 {
-  constructor(
-    public agentChatId: string,
-    public apiVersion: string,
-    public agentDisplayName: string
-  ) {
-    super("CCaaS_SendAgentTypingIndicator");
+  declare readonly Parameters: Readonly<CCaaS_SendAgentTypingIndicatorRequestParameters>;
+
+  constructor(parameters: CCaaS_SendAgentTypingIndicatorRequestParameters) {
+    super("CCaaS_SendAgentTypingIndicator", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_SendAgentTypingIndicator`;
 
-    const body: Record<string, unknown> = {
-      AgentChatId: this.agentChatId,
-      ApiVersion: this.apiVersion,
-      AgentDisplayName: this.agentDisplayName,
-    };
+    const body = requestBody({
+      AgentChatId: this.Parameters.AgentChatId,
+      ApiVersion: this.Parameters.ApiVersion,
+      AgentDisplayName: this.Parameters.AgentDisplayName,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class CCaaS_SendAgentTypingIndicatorRequest
   }
 
   async parseResponse(response: Response): Promise<CCaaS_SendAgentTypingIndicatorResponse> {
-    const data = await response.json();
-    return CCaaS_SendAgentTypingIndicatorResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CCaaS_SendAgentTypingIndicatorResponse.fromResponse({});
+    return CCaaS_SendAgentTypingIndicatorResponse.fromResponse(await response.json());
   }
 }
 

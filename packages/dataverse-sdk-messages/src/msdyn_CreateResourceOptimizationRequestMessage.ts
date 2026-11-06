@@ -1,5 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_CreateResourceOptimizationRequest message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateResourceOptimizationRequestRequestParameters {
+  ResourceIds: string;
+  StartDate: string;
+  EndDate: string;
+  GoalId?: string;
+  IsSimulation?: boolean;
+  OptimizationRequestId?: string;
+}
 
 /**
  * msdyn_CreateResourceOptimizationRequest request message
@@ -10,28 +24,23 @@ export class msdyn_CreateResourceOptimizationRequestRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateResourceOptimizationRequestResponse>
 {
-  constructor(
-    public resourceIds: string,
-    public startDate: string,
-    public endDate: string,
-    public goalId?: string,
-    public isSimulation?: boolean,
-    public optimizationRequestId?: string
-  ) {
-    super("msdyn_CreateResourceOptimizationRequest");
+  declare readonly Parameters: Readonly<msdyn_CreateResourceOptimizationRequestRequestParameters>;
+
+  constructor(parameters: msdyn_CreateResourceOptimizationRequestRequestParameters) {
+    super("msdyn_CreateResourceOptimizationRequest", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateResourceOptimizationRequest`;
 
-    const body: Record<string, unknown> = {
-      ResourceIds: this.resourceIds,
-      StartDate: this.startDate,
-      EndDate: this.endDate,
-      GoalId: this.goalId,
-      IsSimulation: this.isSimulation,
-      OptimizationRequestId: this.optimizationRequestId,
-    };
+    const body = requestBody({
+      ResourceIds: this.Parameters.ResourceIds,
+      StartDate: this.Parameters.StartDate,
+      EndDate: this.Parameters.EndDate,
+      GoalId: this.Parameters.GoalId,
+      IsSimulation: this.Parameters.IsSimulation,
+      OptimizationRequestId: this.Parameters.OptimizationRequestId,
+    });
 
     return {
       method: "POST",

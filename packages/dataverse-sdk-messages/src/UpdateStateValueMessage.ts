@@ -1,6 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { Label } from "./types/index.js";
+
+/**
+ * Parameters of the UpdateStateValue message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateStateValueRequestParameters {
+  OptionSetName?: string;
+  AttributeLogicalName?: string;
+  EntityLogicalName?: string;
+  Value: number;
+  Label?: Label;
+  Description?: Label;
+  MergeLabels: boolean;
+  DefaultStatusCode?: number;
+}
 
 /**
  * UpdateStateValue request message
@@ -11,32 +27,25 @@ export class UpdateStateValueRequest
   extends OrganizationRequest
   implements Executable<UpdateStateValueResponse>
 {
-  constructor(
-    public optionSetName: string | undefined,
-    public attributeLogicalName: string | undefined,
-    public entityLogicalName: string | undefined,
-    public value: number,
-    public label: Label | undefined,
-    public description: Label | undefined,
-    public mergeLabels: boolean,
-    public defaultStatusCode?: number
-  ) {
-    super("UpdateStateValue");
+  declare readonly Parameters: Readonly<UpdateStateValueRequestParameters>;
+
+  constructor(parameters: UpdateStateValueRequestParameters) {
+    super("UpdateStateValue", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateStateValue`;
 
-    const body: Record<string, unknown> = {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Value: this.value,
-      Label: this.label,
-      Description: this.description,
-      MergeLabels: this.mergeLabels,
-      DefaultStatusCode: this.defaultStatusCode,
-    };
+    const body = requestBody({
+      OptionSetName: this.Parameters.OptionSetName,
+      AttributeLogicalName: this.Parameters.AttributeLogicalName,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Value: this.Parameters.Value,
+      Label: this.Parameters.Label,
+      Description: this.Parameters.Description,
+      MergeLabels: this.Parameters.MergeLabels,
+      DefaultStatusCode: this.Parameters.DefaultStatusCode,
+    });
 
     return {
       method: "POST",

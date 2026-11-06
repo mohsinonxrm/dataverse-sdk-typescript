@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { CreateVirtualConnectorTableMetadata } from "./types/index.js";
 
 /**
@@ -9,21 +10,27 @@ export interface CreateVirtualConnectorTableResponse {
 }
 
 /**
+ * Parameters of the CreateVirtualConnectorTable action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateVirtualConnectorTableActionParameters {
+  CreateVirtualConnectorTableMetadata?: CreateVirtualConnectorTableMetadata;
+}
+
+/**
  * CreateVirtualConnectorTable action
  *
  * Unbound action
  */
 export class CreateVirtualConnectorTableAction implements Executable<CreateVirtualConnectorTableResponse> {
-  constructor(
-    public readonly createVirtualConnectorTableMetadata?: CreateVirtualConnectorTableMetadata
-  ) {}
+  constructor(public readonly parameters: CreateVirtualConnectorTableActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateVirtualConnectorTable`;
 
-    const body: Record<string, unknown> = {
-      CreateVirtualConnectorTableMetadata: this.createVirtualConnectorTableMetadata,
-    };
+    const body = requestBody({
+      CreateVirtualConnectorTableMetadata: this.parameters.CreateVirtualConnectorTableMetadata,
+    });
 
     return {
       method: "POST",
@@ -36,7 +43,8 @@ export class CreateVirtualConnectorTableAction implements Executable<CreateVirtu
   }
 
   async parseResponse(response: Response): Promise<CreateVirtualConnectorTableResponse> {
-    const data = await response.json();
-    return data as CreateVirtualConnectorTableResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CreateVirtualConnectorTableResponse;
+    return (await response.json()) as CreateVirtualConnectorTableResponse;
   }
 }

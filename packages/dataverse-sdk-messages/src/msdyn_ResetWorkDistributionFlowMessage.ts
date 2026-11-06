@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_ResetWorkDistributionFlow message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ResetWorkDistributionFlowRequestParameters {
+  ShouldMaintainCustomizations: boolean;
+}
 
 /**
  * msdyn_ResetWorkDistributionFlow request message
@@ -10,16 +19,18 @@ export class msdyn_ResetWorkDistributionFlowRequest
   extends OrganizationRequest
   implements Executable<msdyn_ResetWorkDistributionFlowResponse>
 {
-  constructor(public shouldMaintainCustomizations: boolean) {
-    super("msdyn_ResetWorkDistributionFlow");
+  declare readonly Parameters: Readonly<msdyn_ResetWorkDistributionFlowRequestParameters>;
+
+  constructor(parameters: msdyn_ResetWorkDistributionFlowRequestParameters) {
+    super("msdyn_ResetWorkDistributionFlow", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ResetWorkDistributionFlow`;
 
-    const body: Record<string, unknown> = {
-      ShouldMaintainCustomizations: this.shouldMaintainCustomizations,
-    };
+    const body = requestBody({
+      ShouldMaintainCustomizations: this.Parameters.ShouldMaintainCustomizations,
+    });
 
     return {
       method: "POST",

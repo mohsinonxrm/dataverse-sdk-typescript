@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_LogPlatformSummaryInteractionResponse as msdyn_LogPlatformSummaryInteractionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_LogPlatformSummaryInteraction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_LogPlatformSummaryInteractionRequestParameters {
+  InteractionData?: string;
+  Context?: string;
+  InteractionType?: string;
+}
 
 /**
  * msdyn_LogPlatformSummaryInteraction request message
@@ -12,22 +23,20 @@ export class msdyn_LogPlatformSummaryInteractionRequest
   extends OrganizationRequest
   implements Executable<msdyn_LogPlatformSummaryInteractionResponse>
 {
-  constructor(
-    public interactionData?: string,
-    public context?: string,
-    public interactionType?: string
-  ) {
-    super("msdyn_LogPlatformSummaryInteraction");
+  declare readonly Parameters: Readonly<msdyn_LogPlatformSummaryInteractionRequestParameters>;
+
+  constructor(parameters: msdyn_LogPlatformSummaryInteractionRequestParameters = {}) {
+    super("msdyn_LogPlatformSummaryInteraction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_LogPlatformSummaryInteraction`;
 
-    const body: Record<string, unknown> = {
-      InteractionData: this.interactionData,
-      Context: this.context,
-      InteractionType: this.interactionType,
-    };
+    const body = requestBody({
+      InteractionData: this.Parameters.InteractionData,
+      Context: this.Parameters.Context,
+      InteractionType: this.Parameters.InteractionType,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,10 @@ export class msdyn_LogPlatformSummaryInteractionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_LogPlatformSummaryInteractionResponse> {
-    const data = await response.json();
-    return msdyn_LogPlatformSummaryInteractionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_LogPlatformSummaryInteractionResponse.fromResponse({});
+    return msdyn_LogPlatformSummaryInteractionResponse.fromResponse(await response.json());
   }
 }
 

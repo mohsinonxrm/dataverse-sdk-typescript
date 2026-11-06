@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_markunmarkfavoritearticleResponse as msdyn_markunmarkfavoritearticleResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_markunmarkfavoritearticle message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_markunmarkfavoritearticleRequestParameters {
+  msdyn_knowledgearticleid: string;
+  msdyn_userid: string;
+  msdyn_actionname: string;
+}
 
 /**
  * msdyn_markunmarkfavoritearticle request message
@@ -12,22 +23,20 @@ export class msdyn_markunmarkfavoritearticleRequest
   extends OrganizationRequest
   implements Executable<msdyn_markunmarkfavoritearticleResponse>
 {
-  constructor(
-    public msdyn_knowledgearticleid: string,
-    public msdyn_userid: string,
-    public msdyn_actionname: string
-  ) {
-    super("msdyn_markunmarkfavoritearticle");
+  declare readonly Parameters: Readonly<msdyn_markunmarkfavoritearticleRequestParameters>;
+
+  constructor(parameters: msdyn_markunmarkfavoritearticleRequestParameters) {
+    super("msdyn_markunmarkfavoritearticle", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_markunmarkfavoritearticle`;
 
-    const body: Record<string, unknown> = {
-      msdyn_knowledgearticleid: this.msdyn_knowledgearticleid,
-      msdyn_userid: this.msdyn_userid,
-      msdyn_actionname: this.msdyn_actionname,
-    };
+    const body = requestBody({
+      msdyn_knowledgearticleid: this.Parameters.msdyn_knowledgearticleid,
+      msdyn_userid: this.Parameters.msdyn_userid,
+      msdyn_actionname: this.Parameters.msdyn_actionname,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_markunmarkfavoritearticleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_markunmarkfavoritearticleResponse> {
-    const data = await response.json();
-    return msdyn_markunmarkfavoritearticleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_markunmarkfavoritearticleResponse.fromResponse({});
+    return msdyn_markunmarkfavoritearticleResponse.fromResponse(await response.json());
   }
 }
 

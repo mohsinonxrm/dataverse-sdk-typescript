@@ -59,8 +59,8 @@ describe("#69: collection-bound functions", () => {
     for (const name of collectionBoundFunctions()) {
       const Fn = (functions as unknown as Record<string, FunctionClass | undefined>)[name];
       if (!Fn) throw new Error(`${name} isn't exported`);
-      // No arguments: every parameter alias is left out, so the URL is the bare path
-      urls[name] = new Fn().toRequestInformation(TEST_API_URL).url.slice(TEST_API_URL.length);
+      // No parameters (#96): every parameter alias is left out, so the URL is the bare path
+      urls[name] = new Fn({}).toRequestInformation(TEST_API_URL).url.slice(TEST_API_URL.length);
     }
     expect(urls).toEqual({
       GetAllTimeZonesWithDisplayNameFunction:

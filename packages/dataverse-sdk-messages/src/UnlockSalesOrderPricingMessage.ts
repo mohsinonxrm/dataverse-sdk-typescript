@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UnlockSalesOrderPricing message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UnlockSalesOrderPricingRequestParameters {
+  SalesOrderId: string;
+}
 
 /**
  * UnlockSalesOrderPricing request message
@@ -10,16 +19,18 @@ export class UnlockSalesOrderPricingRequest
   extends OrganizationRequest
   implements Executable<UnlockSalesOrderPricingResponse>
 {
-  constructor(public salesOrderId: string) {
-    super("UnlockSalesOrderPricing");
+  declare readonly Parameters: Readonly<UnlockSalesOrderPricingRequestParameters>;
+
+  constructor(parameters: UnlockSalesOrderPricingRequestParameters) {
+    super("UnlockSalesOrderPricing", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UnlockSalesOrderPricing`;
 
-    const body: Record<string, unknown> = {
-      SalesOrderId: this.salesOrderId,
-    };
+    const body = requestBody({
+      SalesOrderId: this.Parameters.SalesOrderId,
+    });
 
     return {
       method: "POST",

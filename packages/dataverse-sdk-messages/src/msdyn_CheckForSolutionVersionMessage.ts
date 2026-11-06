@@ -29,8 +29,9 @@ export class msdyn_CheckForSolutionVersionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForSolutionVersionResponse> {
-    const data = await response.json();
-    return msdyn_CheckForSolutionVersionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckForSolutionVersionResponse.fromResponse({});
+    return msdyn_CheckForSolutionVersionResponse.fromResponse(await response.json());
   }
 }
 

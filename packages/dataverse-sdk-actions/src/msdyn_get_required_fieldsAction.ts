@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_get_required_fields action
@@ -15,27 +16,33 @@ export interface msdyn_get_required_fieldsResponse {
 }
 
 /**
+ * Parameters of the msdyn_get_required_fields action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_get_required_fieldsActionParameters {
+  table_id: string;
+  dataset_value: string;
+  connection_id: string;
+  connector_id: string;
+}
+
+/**
  * msdyn_get_required_fields action
  *
  * Unbound action
  */
 export class msdyn_get_required_fieldsAction implements Executable<msdyn_get_required_fieldsResponse> {
-  constructor(
-    public readonly table_id: string,
-    public readonly dataset_value: string,
-    public readonly connection_id: string,
-    public readonly connector_id: string
-  ) {}
+  constructor(public readonly parameters: msdyn_get_required_fieldsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_get_required_fields`;
 
-    const body: Record<string, unknown> = {
-      table_id: this.table_id,
-      dataset_value: this.dataset_value,
-      connection_id: this.connection_id,
-      connector_id: this.connector_id,
-    };
+    const body = requestBody({
+      table_id: this.parameters.table_id,
+      dataset_value: this.parameters.dataset_value,
+      connection_id: this.parameters.connection_id,
+      connector_id: this.parameters.connector_id,
+    });
 
     return {
       method: "POST",
@@ -48,7 +55,8 @@ export class msdyn_get_required_fieldsAction implements Executable<msdyn_get_req
   }
 
   async parseResponse(response: Response): Promise<msdyn_get_required_fieldsResponse> {
-    const data = await response.json();
-    return data as msdyn_get_required_fieldsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_get_required_fieldsResponse;
+    return (await response.json()) as msdyn_get_required_fieldsResponse;
   }
 }

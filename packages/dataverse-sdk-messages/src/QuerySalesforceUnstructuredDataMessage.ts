@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { QuerySalesforceUnstructuredDataResponse as QuerySalesforceUnstructuredDataResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the QuerySalesforceUnstructuredData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface QuerySalesforceUnstructuredDataRequestParameters {
+  filterCriteria: string;
+  connectionId: string;
+  searchResultCount: number;
+  userQueryText: string;
+}
 
 /**
  * QuerySalesforceUnstructuredData request message
@@ -12,24 +24,21 @@ export class QuerySalesforceUnstructuredDataRequest
   extends OrganizationRequest
   implements Executable<QuerySalesforceUnstructuredDataResponse>
 {
-  constructor(
-    public filterCriteria: string,
-    public connectionId: string,
-    public searchResultCount: number,
-    public userQueryText: string
-  ) {
-    super("QuerySalesforceUnstructuredData");
+  declare readonly Parameters: Readonly<QuerySalesforceUnstructuredDataRequestParameters>;
+
+  constructor(parameters: QuerySalesforceUnstructuredDataRequestParameters) {
+    super("QuerySalesforceUnstructuredData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/QuerySalesforceUnstructuredData`;
 
-    const body: Record<string, unknown> = {
-      filterCriteria: this.filterCriteria,
-      connectionId: this.connectionId,
-      searchResultCount: this.searchResultCount,
-      userQueryText: this.userQueryText,
-    };
+    const body = requestBody({
+      filterCriteria: this.Parameters.filterCriteria,
+      connectionId: this.Parameters.connectionId,
+      searchResultCount: this.Parameters.searchResultCount,
+      userQueryText: this.Parameters.userQueryText,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class QuerySalesforceUnstructuredDataRequest
   }
 
   async parseResponse(response: Response): Promise<QuerySalesforceUnstructuredDataResponse> {
-    const data = await response.json();
-    return QuerySalesforceUnstructuredDataResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return QuerySalesforceUnstructuredDataResponse.fromResponse({});
+    return QuerySalesforceUnstructuredDataResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_FetchEvaluatedEntityInputConfigResponse as msdyn_FetchEvaluatedEntityInputConfigResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_FetchEvaluatedEntityInputConfig message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FetchEvaluatedEntityInputConfigRequestParameters {
+  regardingEntityId: string;
+  regardingEntityLogicalName: string;
+}
 
 /**
  * msdyn_FetchEvaluatedEntityInputConfig request message
@@ -12,20 +22,19 @@ export class msdyn_FetchEvaluatedEntityInputConfigRequest
   extends OrganizationRequest
   implements Executable<msdyn_FetchEvaluatedEntityInputConfigResponse>
 {
-  constructor(
-    public regardingEntityId: string,
-    public regardingEntityLogicalName: string
-  ) {
-    super("msdyn_FetchEvaluatedEntityInputConfig");
+  declare readonly Parameters: Readonly<msdyn_FetchEvaluatedEntityInputConfigRequestParameters>;
+
+  constructor(parameters: msdyn_FetchEvaluatedEntityInputConfigRequestParameters) {
+    super("msdyn_FetchEvaluatedEntityInputConfig", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FetchEvaluatedEntityInputConfig`;
 
-    const body: Record<string, unknown> = {
-      regardingEntityId: this.regardingEntityId,
-      regardingEntityLogicalName: this.regardingEntityLogicalName,
-    };
+    const body = requestBody({
+      regardingEntityId: this.Parameters.regardingEntityId,
+      regardingEntityLogicalName: this.Parameters.regardingEntityLogicalName,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,10 @@ export class msdyn_FetchEvaluatedEntityInputConfigRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchEvaluatedEntityInputConfigResponse> {
-    const data = await response.json();
-    return msdyn_FetchEvaluatedEntityInputConfigResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_FetchEvaluatedEntityInputConfigResponse.fromResponse({});
+    return msdyn_FetchEvaluatedEntityInputConfigResponse.fromResponse(await response.json());
   }
 }
 

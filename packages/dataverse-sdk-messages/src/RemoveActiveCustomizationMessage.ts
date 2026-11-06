@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { RemoveActiveCustomizationResponse as RemoveActiveCustomizationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the RemoveActiveCustomization message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveActiveCustomizationRequestParameters {
+  LogicalName: string;
+  Id: string;
+}
 
 /**
  * RemoveActiveCustomization request message
@@ -12,20 +22,19 @@ export class RemoveActiveCustomizationRequest
   extends OrganizationRequest
   implements Executable<RemoveActiveCustomizationResponse>
 {
-  constructor(
-    public logicalName: string,
-    public id: string
-  ) {
-    super("RemoveActiveCustomization");
+  declare readonly Parameters: Readonly<RemoveActiveCustomizationRequestParameters>;
+
+  constructor(parameters: RemoveActiveCustomizationRequestParameters) {
+    super("RemoveActiveCustomization", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RemoveActiveCustomization`;
 
-    const body: Record<string, unknown> = {
-      LogicalName: this.logicalName,
-      Id: this.id,
-    };
+    const body = requestBody({
+      LogicalName: this.Parameters.LogicalName,
+      Id: this.Parameters.Id,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class RemoveActiveCustomizationRequest
   }
 
   async parseResponse(response: Response): Promise<RemoveActiveCustomizationResponse> {
-    const data = await response.json();
-    return RemoveActiveCustomizationResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return RemoveActiveCustomizationResponse.fromResponse({});
+    return RemoveActiveCustomizationResponse.fromResponse(await response.json());
   }
 }
 

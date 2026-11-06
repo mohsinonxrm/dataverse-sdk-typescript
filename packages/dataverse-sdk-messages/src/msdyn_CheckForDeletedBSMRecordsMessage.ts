@@ -29,8 +29,9 @@ export class msdyn_CheckForDeletedBSMRecordsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForDeletedBSMRecordsResponse> {
-    const data = await response.json();
-    return msdyn_CheckForDeletedBSMRecordsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckForDeletedBSMRecordsResponse.fromResponse({});
+    return msdyn_CheckForDeletedBSMRecordsResponse.fromResponse(await response.json());
   }
 }
 

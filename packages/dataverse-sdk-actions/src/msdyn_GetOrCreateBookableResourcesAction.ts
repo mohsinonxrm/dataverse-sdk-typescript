@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetOrCreateBookableResources action
@@ -8,19 +9,27 @@ export interface msdyn_GetOrCreateBookableResourcesResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetOrCreateBookableResources action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetOrCreateBookableResourcesActionParameters {
+  Resources: string;
+}
+
+/**
  * msdyn_GetOrCreateBookableResources action
  *
  * Unbound action
  */
 export class msdyn_GetOrCreateBookableResourcesAction implements Executable<msdyn_GetOrCreateBookableResourcesResponse> {
-  constructor(public readonly resources: string) {}
+  constructor(public readonly parameters: msdyn_GetOrCreateBookableResourcesActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetOrCreateBookableResources`;
 
-    const body: Record<string, unknown> = {
-      Resources: this.resources,
-    };
+    const body = requestBody({
+      Resources: this.parameters.Resources,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_GetOrCreateBookableResourcesAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOrCreateBookableResourcesResponse> {
-    const data = await response.json();
-    return data as msdyn_GetOrCreateBookableResourcesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetOrCreateBookableResourcesResponse;
+    return (await response.json()) as msdyn_GetOrCreateBookableResourcesResponse;
   }
 }

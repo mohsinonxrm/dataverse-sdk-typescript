@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_StartODOSDeprovisioning message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_StartODOSDeprovisioningRequestParameters {
+  FeatureName: string;
+  IsDeprecationDeprovisioning?: boolean;
+}
 
 /**
  * msdyn_StartODOSDeprovisioning request message
@@ -10,20 +20,19 @@ export class msdyn_StartODOSDeprovisioningRequest
   extends OrganizationRequest
   implements Executable<msdyn_StartODOSDeprovisioningResponse>
 {
-  constructor(
-    public featureName: string,
-    public isDeprecationDeprovisioning?: boolean
-  ) {
-    super("msdyn_StartODOSDeprovisioning");
+  declare readonly Parameters: Readonly<msdyn_StartODOSDeprovisioningRequestParameters>;
+
+  constructor(parameters: msdyn_StartODOSDeprovisioningRequestParameters) {
+    super("msdyn_StartODOSDeprovisioning", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_StartODOSDeprovisioning`;
 
-    const body: Record<string, unknown> = {
-      FeatureName: this.featureName,
-      IsDeprecationDeprovisioning: this.isDeprecationDeprovisioning,
-    };
+    const body = requestBody({
+      FeatureName: this.Parameters.FeatureName,
+      IsDeprecationDeprovisioning: this.Parameters.IsDeprecationDeprovisioning,
+    });
 
     return {
       method: "POST",

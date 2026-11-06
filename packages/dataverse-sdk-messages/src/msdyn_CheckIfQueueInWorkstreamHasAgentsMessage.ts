@@ -31,8 +31,10 @@ export class msdyn_CheckIfQueueInWorkstreamHasAgentsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfQueueInWorkstreamHasAgentsResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfQueueInWorkstreamHasAgentsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckIfQueueInWorkstreamHasAgentsResponse.fromResponse({});
+    return msdyn_CheckIfQueueInWorkstreamHasAgentsResponse.fromResponse(await response.json());
   }
 }
 

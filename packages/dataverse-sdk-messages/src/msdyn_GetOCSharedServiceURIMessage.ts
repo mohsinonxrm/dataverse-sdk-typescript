@@ -29,8 +29,9 @@ export class msdyn_GetOCSharedServiceURIRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOCSharedServiceURIResponse> {
-    const data = await response.json();
-    return msdyn_GetOCSharedServiceURIResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetOCSharedServiceURIResponse.fromResponse({});
+    return msdyn_GetOCSharedServiceURIResponse.fromResponse(await response.json());
   }
 }
 

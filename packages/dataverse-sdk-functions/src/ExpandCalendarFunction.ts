@@ -10,16 +10,26 @@ export interface ExpandCalendarResponse {
 }
 
 /**
+ * Parameters of the ExpandCalendar function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ExpandCalendarFunctionParameters {
+  Start: string | Date;
+  End: string | Date;
+}
+
+/**
  * ExpandCalendar function
  *
  * Bound function
  * Binding parameter: entity (mscrm.calendar)
+ *
+ * The first argument is the id of the calendar record to call it on.
  */
 export class ExpandCalendarFunction implements Executable<ExpandCalendarResponse> {
   constructor(
     public readonly calendarId: string,
-    public readonly start: string | Date,
-    public readonly end: string | Date
+    public readonly parameters: ExpandCalendarFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -29,13 +39,13 @@ export class ExpandCalendarFunction implements Executable<ExpandCalendarResponse
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.start !== undefined) {
+    if (this.parameters.Start !== undefined) {
       aliases.push(`Start=@p1`);
-      params.append("@p1", formatParameterAlias(this.start, "Edm.DateTimeOffset"));
+      params.append("@p1", formatParameterAlias(this.parameters.Start, "Edm.DateTimeOffset"));
     }
-    if (this.end !== undefined) {
+    if (this.parameters.End !== undefined) {
       aliases.push(`End=@p2`);
-      params.append("@p2", formatParameterAlias(this.end, "Edm.DateTimeOffset"));
+      params.append("@p2", formatParameterAlias(this.parameters.End, "Edm.DateTimeOffset"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -51,7 +61,8 @@ export class ExpandCalendarFunction implements Executable<ExpandCalendarResponse
   }
 
   async parseResponse(response: Response): Promise<ExpandCalendarResponse> {
-    const data = await response.json();
-    return data as ExpandCalendarResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ExpandCalendarResponse;
+    return (await response.json()) as ExpandCalendarResponse;
   }
 }

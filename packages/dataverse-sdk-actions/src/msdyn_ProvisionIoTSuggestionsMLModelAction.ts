@@ -26,7 +26,8 @@ export class msdyn_ProvisionIoTSuggestionsMLModelAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_ProvisionIoTSuggestionsMLModelResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ProvisionIoTSuggestionsMLModelResponse;
+    return (await response.json()) as msdyn_ProvisionIoTSuggestionsMLModelResponse;
   }
 }

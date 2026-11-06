@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_CreateTrainEffortModelConfigResponse as msdyn_CreateTrainEffortModelConfigResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_CreateTrainEffortModelConfig message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateTrainEffortModelConfigRequestParameters {
+  EntityLogicalName: string;
+  RecordId: string;
+  DataBinding: string;
+  CustomConfig: string;
+}
 
 /**
  * msdyn_CreateTrainEffortModelConfig request message
@@ -12,24 +24,21 @@ export class msdyn_CreateTrainEffortModelConfigRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateTrainEffortModelConfigResponse>
 {
-  constructor(
-    public entityLogicalName: string,
-    public recordId: string,
-    public dataBinding: string,
-    public customConfig: string
-  ) {
-    super("msdyn_CreateTrainEffortModelConfig");
+  declare readonly Parameters: Readonly<msdyn_CreateTrainEffortModelConfigRequestParameters>;
+
+  constructor(parameters: msdyn_CreateTrainEffortModelConfigRequestParameters) {
+    super("msdyn_CreateTrainEffortModelConfig", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateTrainEffortModelConfig`;
 
-    const body: Record<string, unknown> = {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      DataBinding: this.dataBinding,
-      CustomConfig: this.customConfig,
-    };
+    const body = requestBody({
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      RecordId: this.Parameters.RecordId,
+      DataBinding: this.Parameters.DataBinding,
+      CustomConfig: this.Parameters.CustomConfig,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_CreateTrainEffortModelConfigRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateTrainEffortModelConfigResponse> {
-    const data = await response.json();
-    return msdyn_CreateTrainEffortModelConfigResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CreateTrainEffortModelConfigResponse.fromResponse({});
+    return msdyn_CreateTrainEffortModelConfigResponse.fromResponse(await response.json());
   }
 }
 

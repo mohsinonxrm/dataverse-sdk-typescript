@@ -29,8 +29,9 @@ export class msdyn_getIslandUrlRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_getIslandUrlResponse> {
-    const data = await response.json();
-    return msdyn_getIslandUrlResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_getIslandUrlResponse.fromResponse({});
+    return msdyn_getIslandUrlResponse.fromResponse(await response.json());
   }
 }
 

@@ -29,8 +29,9 @@ export class msdyn_SalesAgents_GetM365ConsentRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_GetM365ConsentResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_GetM365ConsentResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_SalesAgents_GetM365ConsentResponse.fromResponse({});
+    return msdyn_SalesAgents_GetM365ConsentResponse.fromResponse(await response.json());
   }
 }
 

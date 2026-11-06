@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from AddCertificateCredential action
@@ -8,25 +9,31 @@ export interface AddCertificateCredentialResponse {
 }
 
 /**
+ * Parameters of the AddCertificateCredential action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddCertificateCredentialActionParameters {
+  entityLogicalName: string;
+  entityId: string;
+  thumbprint: string;
+}
+
+/**
  * AddCertificateCredential action
  *
  * Unbound action
  */
 export class AddCertificateCredentialAction implements Executable<AddCertificateCredentialResponse> {
-  constructor(
-    public readonly entityLogicalName: string,
-    public readonly entityId: string,
-    public readonly thumbprint: string
-  ) {}
+  constructor(public readonly parameters: AddCertificateCredentialActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AddCertificateCredential`;
 
-    const body: Record<string, unknown> = {
-      entityLogicalName: this.entityLogicalName,
-      entityId: this.entityId,
-      thumbprint: this.thumbprint,
-    };
+    const body = requestBody({
+      entityLogicalName: this.parameters.entityLogicalName,
+      entityId: this.parameters.entityId,
+      thumbprint: this.parameters.thumbprint,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class AddCertificateCredentialAction implements Executable<AddCertificate
   }
 
   async parseResponse(response: Response): Promise<AddCertificateCredentialResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as AddCertificateCredentialResponse;
+    return (await response.json()) as AddCertificateCredentialResponse;
   }
 }

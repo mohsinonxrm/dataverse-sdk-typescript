@@ -9,12 +9,20 @@ export interface RetrieveByResourcesServiceResponse {
 }
 
 /**
+ * Parameters of the RetrieveByResourcesService function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveByResourcesServiceFunctionParameters {
+  Resource: resource[];
+}
+
+/**
  * RetrieveByResourcesService function
  *
  * Unbound function
  */
 export class RetrieveByResourcesServiceFunction implements Executable<RetrieveByResourcesServiceResponse> {
-  constructor(public readonly resource: resource[]) {}
+  constructor(public readonly parameters: RetrieveByResourcesServiceFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveByResourcesService`;
@@ -22,9 +30,9 @@ export class RetrieveByResourcesServiceFunction implements Executable<RetrieveBy
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.resource !== undefined) {
+    if (this.parameters.Resource !== undefined) {
       aliases.push(`Resource=@p1`);
-      params.append("@p1", JSON.stringify(this.resource));
+      params.append("@p1", JSON.stringify(this.parameters.Resource));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class RetrieveByResourcesServiceFunction implements Executable<RetrieveBy
   }
 
   async parseResponse(response: Response): Promise<RetrieveByResourcesServiceResponse> {
-    const data = await response.json();
-    return data as RetrieveByResourcesServiceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveByResourcesServiceResponse;
+    return (await response.json()) as RetrieveByResourcesServiceResponse;
   }
 }

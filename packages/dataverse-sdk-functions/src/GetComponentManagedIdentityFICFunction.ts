@@ -9,15 +9,21 @@ export interface GetComponentManagedIdentityFICResponse {
 }
 
 /**
+ * Parameters of the GetComponentManagedIdentityFIC function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetComponentManagedIdentityFICFunctionParameters {
+  ComponentName: string;
+  ComponentId: string;
+}
+
+/**
  * GetComponentManagedIdentityFIC function
  *
  * Unbound function
  */
 export class GetComponentManagedIdentityFICFunction implements Executable<GetComponentManagedIdentityFICResponse> {
-  constructor(
-    public readonly componentName: string,
-    public readonly componentId: string
-  ) {}
+  constructor(public readonly parameters: GetComponentManagedIdentityFICFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/GetComponentManagedIdentityFIC`;
@@ -25,13 +31,13 @@ export class GetComponentManagedIdentityFICFunction implements Executable<GetCom
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.componentName !== undefined) {
+    if (this.parameters.ComponentName !== undefined) {
       aliases.push(`ComponentName=@p1`);
-      params.append("@p1", formatParameterAlias(this.componentName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.ComponentName, "Edm.String"));
     }
-    if (this.componentId !== undefined) {
+    if (this.parameters.ComponentId !== undefined) {
       aliases.push(`ComponentId=@p2`);
-      params.append("@p2", formatParameterAlias(this.componentId, "Edm.Guid"));
+      params.append("@p2", formatParameterAlias(this.parameters.ComponentId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +53,8 @@ export class GetComponentManagedIdentityFICFunction implements Executable<GetCom
   }
 
   async parseResponse(response: Response): Promise<GetComponentManagedIdentityFICResponse> {
-    const data = await response.json();
-    return data as GetComponentManagedIdentityFICResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetComponentManagedIdentityFICResponse;
+    return (await response.json()) as GetComponentManagedIdentityFICResponse;
   }
 }

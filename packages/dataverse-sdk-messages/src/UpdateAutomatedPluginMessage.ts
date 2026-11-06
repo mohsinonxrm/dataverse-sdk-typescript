@@ -1,5 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UpdateAutomatedPlugin message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateAutomatedPluginRequestParameters {
+  Expression?: string;
+  SolutionUniqueName?: string;
+  EntityLogicalName?: string;
+  Context?: string;
+  Name?: string;
+  Stage?: number;
+  FxExpressionUniqueName: string;
+  MessageName?: string;
+}
 
 /**
  * UpdateAutomatedPlugin request message
@@ -10,32 +26,25 @@ export class UpdateAutomatedPluginRequest
   extends OrganizationRequest
   implements Executable<UpdateAutomatedPluginResponse>
 {
-  constructor(
-    public expression: string | undefined,
-    public solutionUniqueName: string | undefined,
-    public entityLogicalName: string | undefined,
-    public context: string | undefined,
-    public name: string | undefined,
-    public stage: number | undefined,
-    public fxExpressionUniqueName: string,
-    public messageName: string
-  ) {
-    super("UpdateAutomatedPlugin");
+  declare readonly Parameters: Readonly<UpdateAutomatedPluginRequestParameters>;
+
+  constructor(parameters: UpdateAutomatedPluginRequestParameters) {
+    super("UpdateAutomatedPlugin", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateAutomatedPlugin`;
 
-    const body: Record<string, unknown> = {
-      Expression: this.expression,
-      SolutionUniqueName: this.solutionUniqueName,
-      EntityLogicalName: this.entityLogicalName,
-      Context: this.context,
-      Name: this.name,
-      Stage: this.stage,
-      FxExpressionUniqueName: this.fxExpressionUniqueName,
-      MessageName: this.messageName,
-    };
+    const body = requestBody({
+      Expression: this.Parameters.Expression,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Context: this.Parameters.Context,
+      Name: this.Parameters.Name,
+      Stage: this.Parameters.Stage,
+      FxExpressionUniqueName: this.Parameters.FxExpressionUniqueName,
+      MessageName: this.Parameters.MessageName,
+    });
 
     return {
       method: "POST",

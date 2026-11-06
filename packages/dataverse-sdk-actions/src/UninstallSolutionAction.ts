@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from UninstallSolution action
@@ -8,19 +9,27 @@ export interface UninstallSolutionResponse {
 }
 
 /**
+ * Parameters of the UninstallSolution action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UninstallSolutionActionParameters {
+  SolutionUniqueName: string;
+}
+
+/**
  * UninstallSolution action
  *
  * Unbound action
  */
 export class UninstallSolutionAction implements Executable<UninstallSolutionResponse> {
-  constructor(public readonly solutionUniqueName: string) {}
+  constructor(public readonly parameters: UninstallSolutionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UninstallSolution`;
 
-    const body: Record<string, unknown> = {
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class UninstallSolutionAction implements Executable<UninstallSolutionResp
   }
 
   async parseResponse(response: Response): Promise<UninstallSolutionResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UninstallSolutionResponse;
+    return (await response.json()) as UninstallSolutionResponse;
   }
 }

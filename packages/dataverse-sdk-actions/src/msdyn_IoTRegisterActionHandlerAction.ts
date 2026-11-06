@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_IoTRegisterActionHandler action
@@ -8,19 +9,27 @@ export interface msdyn_IoTRegisterActionHandlerResponse {
 }
 
 /**
+ * Parameters of the msdyn_IoTRegisterActionHandler action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IoTRegisterActionHandlerActionParameters {
+  EntityCollection?: Record<string, unknown>[];
+}
+
+/**
  * msdyn_IoTRegisterActionHandler action
  *
  * Unbound action
  */
 export class msdyn_IoTRegisterActionHandlerAction implements Executable<msdyn_IoTRegisterActionHandlerResponse> {
-  constructor(public readonly entityCollection?: Record<string, unknown>[]) {}
+  constructor(public readonly parameters: msdyn_IoTRegisterActionHandlerActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTRegisterActionHandler`;
 
-    const body: Record<string, unknown> = {
-      EntityCollection: this.entityCollection,
-    };
+    const body = requestBody({
+      EntityCollection: this.parameters.EntityCollection,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_IoTRegisterActionHandlerAction implements Executable<msdyn_Io
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTRegisterActionHandlerResponse> {
-    const data = await response.json();
-    return data as msdyn_IoTRegisterActionHandlerResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_IoTRegisterActionHandlerResponse;
+    return (await response.json()) as msdyn_IoTRegisterActionHandlerResponse;
   }
 }

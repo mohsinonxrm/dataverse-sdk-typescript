@@ -9,15 +9,21 @@ export interface LastXFiscalYearsResponse {
 }
 
 /**
+ * Parameters of the LastXFiscalYears function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface LastXFiscalYearsFunctionParameters {
+  PropertyName: string;
+  PropertyValue: number;
+}
+
+/**
  * LastXFiscalYears function
  *
  * Unbound function
  */
 export class LastXFiscalYearsFunction implements Executable<LastXFiscalYearsResponse> {
-  constructor(
-    public readonly propertyName: string,
-    public readonly propertyValue: number
-  ) {}
+  constructor(public readonly parameters: LastXFiscalYearsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/LastXFiscalYears`;
@@ -25,13 +31,13 @@ export class LastXFiscalYearsFunction implements Executable<LastXFiscalYearsResp
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
-    if (this.propertyValue !== undefined) {
+    if (this.parameters.PropertyValue !== undefined) {
       aliases.push(`PropertyValue=@p2`);
-      params.append("@p2", formatParameterAlias(this.propertyValue, "Edm.Int64"));
+      params.append("@p2", formatParameterAlias(this.parameters.PropertyValue, "Edm.Int64"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +53,8 @@ export class LastXFiscalYearsFunction implements Executable<LastXFiscalYearsResp
   }
 
   async parseResponse(response: Response): Promise<LastXFiscalYearsResponse> {
-    const data = await response.json();
-    return data as LastXFiscalYearsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as LastXFiscalYearsResponse;
+    return (await response.json()) as LastXFiscalYearsResponse;
   }
 }

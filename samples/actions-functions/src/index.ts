@@ -110,7 +110,7 @@ async function createMultipleDemo(client: DataverseClient): Promise<void> {
   console.log(`Creating ${String(accounts.length)} accounts with CreateMultiple...`);
   const startTime = Date.now();
 
-  const createMultiple = new CreateMultipleAction("accounts", accounts);
+  const createMultiple = new CreateMultipleAction("accounts", { Targets: accounts });
 
   const result = await client.execute(createMultiple);
   const duration = Date.now() - startTime;
@@ -159,7 +159,7 @@ async function updateMultipleDemo(client: DataverseClient): Promise<void> {
   console.log(`Updating ${String(updates.length)} accounts with UpdateMultiple...`);
   const startTime = Date.now();
 
-  const updateMultiple = new UpdateMultipleAction("accounts", updates);
+  const updateMultiple = new UpdateMultipleAction("accounts", { Targets: updates });
 
   await client.execute(updateMultiple);
   const duration = Date.now() - startTime;
@@ -200,7 +200,7 @@ async function upsertMultipleDemo(client: DataverseClient): Promise<void> {
   console.log(`Upserting ${String(accounts.length)} accounts (first run - creates)...`);
   let startTime = Date.now();
 
-  const upsertMultiple1 = new UpsertMultipleAction("accounts", accounts);
+  const upsertMultiple1 = new UpsertMultipleAction("accounts", { Targets: accounts });
 
   await client.execute(upsertMultiple1);
   let duration = Date.now() - startTime;
@@ -216,7 +216,7 @@ async function upsertMultipleDemo(client: DataverseClient): Promise<void> {
 
   startTime = Date.now();
 
-  const upsertMultiple2 = new UpsertMultipleAction("accounts", accounts);
+  const upsertMultiple2 = new UpsertMultipleAction("accounts", { Targets: accounts });
 
   await client.execute(upsertMultiple2);
   duration = Date.now() - startTime;
@@ -273,8 +273,11 @@ async function executeWorkflowDemo(client: DataverseClient): Promise<void> {
     `Executing workflow ${chalk.dim(workflowId.substring(0, 8) + "...")} on account ${chalk.dim(targetAccount.substring(0, 8) + "...")}`
   );
 
-  const executeWorkflow = new ExecuteWorkflowAction(workflowId, targetAccount, {
-    Arguments: { Count: 0, IsReadOnly: false, Keys: [], Values: [] },
+  const executeWorkflow = new ExecuteWorkflowAction(workflowId, {
+    EntityId: targetAccount,
+    InputArguments: {
+      Arguments: { Count: 0, IsReadOnly: false, Keys: [], Values: [] },
+    },
   });
 
   const result = await client.execute(executeWorkflow);
@@ -318,7 +321,10 @@ async function winOpportunityDemo(client: DataverseClient): Promise<void> {
     actualend: new Date().toISOString(),
   };
 
-  const winOpp = new WinOpportunityAction(opportunityClose, "", 3); // 3 = Won status, '' = system caller
+  const winOpp = new WinOpportunityAction({
+    OpportunityClose: opportunityClose,
+    Status: 3,
+  }); // 3 = Won; Caller is left out (the calling user)
 
   await client.execute(winOpp);
 
@@ -385,12 +391,12 @@ async function mergeDemo(client: DataverseClient): Promise<void> {
   // Merge subordinate into target
   console.log("\nMerging accounts...");
 
-  const merge = new MergeAction(
-    createEntityReference("account", targetId),
-    createEntityReference("account", subordinateId),
-    createEntityReference("account", targetId),
-    false
-  );
+  const merge = new MergeAction({
+    Target: createEntityReference("account", targetId),
+    Subordinate: createEntityReference("account", subordinateId),
+    UpdateContent: createEntityReference("account", targetId),
+    PerformParentingChecks: false,
+  });
 
   await client.execute(merge);
 
@@ -458,11 +464,11 @@ async function fileOperationsDemo(client: DataverseClient): Promise<void> {
   // Step 1: Initialize upload
   console.log("\n1. Initializing file upload...");
 
-  const initialize = new InitializeFileBlocksUploadAction(
-    createEntityReference("account", targetAccount),
-    fileName,
-    "entityimage" // Standard image column
-  );
+  const initialize = new InitializeFileBlocksUploadAction({
+    Target: createEntityReference("account", targetAccount),
+    FileName: fileName,
+    FileAttributeName: "entityimage",
+  });
 
   const initResult = await client.execute(initialize);
 
@@ -486,11 +492,11 @@ async function fileOperationsDemo(client: DataverseClient): Promise<void> {
 
     blockIds.push(blockId);
 
-    const uploadBlock = new UploadBlockAction(
-      blockId,
-      blockData.toString("base64"),
-      initResult.FileContinuationToken
-    );
+    const uploadBlock = new UploadBlockAction({
+      BlockId: blockId,
+      BlockData: blockData.toString("base64"),
+      FileContinuationToken: initResult.FileContinuationToken,
+    });
 
     await client.execute(uploadBlock);
 
@@ -503,12 +509,12 @@ async function fileOperationsDemo(client: DataverseClient): Promise<void> {
   // Step 3: Commit upload
   console.log("\n3. Committing file upload...");
 
-  const commit = new CommitFileBlocksUploadAction(
-    fileName,
-    "image/png", // mimeType
-    blockIds,
-    initResult.FileContinuationToken
-  );
+  const commit = new CommitFileBlocksUploadAction({
+    FileName: fileName,
+    MimeType: "image/png",
+    BlockList: blockIds,
+    FileContinuationToken: initResult.FileContinuationToken,
+  });
 
   await client.execute(commit);
 

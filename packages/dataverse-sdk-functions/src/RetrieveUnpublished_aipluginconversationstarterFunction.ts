@@ -16,6 +16,8 @@ export interface RetrieveUnpublished_aipluginconversationstarterResponse extends
  *
  * Bound function
  * Binding parameter: entity (mscrm.aipluginconversationstarter)
+ *
+ * The first argument is the id of the aipluginconversationstarter record to call it on.
  */
 export class RetrieveUnpublished_aipluginconversationstarterFunction implements Executable<RetrieveUnpublished_aipluginconversationstarterResponse> {
   constructor(public readonly aipluginconversationstarterId: string) {}
@@ -36,7 +38,9 @@ export class RetrieveUnpublished_aipluginconversationstarterFunction implements 
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublished_aipluginconversationstarterResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublished_aipluginconversationstarterResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublished_aipluginconversationstarterResponse;
+    return (await response.json()) as RetrieveUnpublished_aipluginconversationstarterResponse;
   }
 }

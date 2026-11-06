@@ -13,6 +13,8 @@ export interface RetrieveByGroupResourceResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.resourcegroup)
+ *
+ * The first argument is the id of the resourcegroup record to call it on.
  */
 export class RetrieveByGroupResourceFunction implements Executable<RetrieveByGroupResourceResponse> {
   constructor(public readonly resourcegroupId: string) {}
@@ -31,7 +33,8 @@ export class RetrieveByGroupResourceFunction implements Executable<RetrieveByGro
   }
 
   async parseResponse(response: Response): Promise<RetrieveByGroupResourceResponse> {
-    const data = await response.json();
-    return data as RetrieveByGroupResourceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveByGroupResourceResponse;
+    return (await response.json()) as RetrieveByGroupResourceResponse;
   }
 }

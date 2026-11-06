@@ -5,6 +5,8 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
  * CancelAllCloudFlowRuns request message
  *
  * Web API Action: CancelAllCloudFlowRuns
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class CancelAllCloudFlowRunsRequest
   extends OrganizationRequest

@@ -1,30 +1,43 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { SendEmailResponse as SendEmailResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the SendEmail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendEmailRequestParameters {
+  IssueSend: boolean;
+  TrackingToken?: string;
+}
 
 /**
  * SendEmail request message
  *
  * Web API Action: SendEmail
+ *
+ * The first argument is the id of the email record to call it on.
  */
 export class SendEmailRequest extends OrganizationRequest implements Executable<SendEmailResponse> {
+  declare readonly Parameters: Readonly<SendEmailRequestParameters>;
+
   constructor(
     public emailId: string,
-    public issueSend: boolean,
-    public trackingToken?: string
+    parameters: SendEmailRequestParameters
   ) {
-    super("SendEmail");
+    super("SendEmail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/emails(${this.emailId})/Microsoft.Dynamics.CRM.SendEmail`;
 
-    const body: Record<string, unknown> = {
-      IssueSend: this.issueSend,
-      TrackingToken: this.trackingToken,
-    };
+    const body = requestBody({
+      IssueSend: this.Parameters.IssueSend,
+      TrackingToken: this.Parameters.TrackingToken,
+    });
 
     return {
       method: "POST",
@@ -37,8 +50,9 @@ export class SendEmailRequest extends OrganizationRequest implements Executable<
   }
 
   async parseResponse(response: Response): Promise<SendEmailResponse> {
-    const data = await response.json();
-    return SendEmailResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return SendEmailResponse.fromResponse({});
+    return SendEmailResponse.fromResponse(await response.json());
   }
 }
 

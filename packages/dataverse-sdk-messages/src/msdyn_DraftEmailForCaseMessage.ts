@@ -1,7 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_DraftEmailForCaseResponse as msdyn_DraftEmailForCaseResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_DraftEmailForCase message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DraftEmailForCaseRequestParameters {
+  additionalInstructions?: string;
+  context_CaseNotes?: string;
+  context_CaseTitle?: string;
+  context_CaseId?: string;
+  recipientName: string;
+  senderName: string;
+}
 
 /**
  * msdyn_DraftEmailForCase request message
@@ -12,28 +26,23 @@ export class msdyn_DraftEmailForCaseRequest
   extends OrganizationRequest
   implements Executable<msdyn_DraftEmailForCaseResponse>
 {
-  constructor(
-    public additionalInstructions: string | undefined,
-    public context_CaseNotes: string | undefined,
-    public context_CaseTitle: string | undefined,
-    public context_CaseId: string | undefined,
-    public recipientName: string,
-    public senderName: string
-  ) {
-    super("msdyn_DraftEmailForCase");
+  declare readonly Parameters: Readonly<msdyn_DraftEmailForCaseRequestParameters>;
+
+  constructor(parameters: msdyn_DraftEmailForCaseRequestParameters) {
+    super("msdyn_DraftEmailForCase", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DraftEmailForCase`;
 
-    const body: Record<string, unknown> = {
-      additionalInstructions: this.additionalInstructions,
-      context_CaseNotes: this.context_CaseNotes,
-      context_CaseTitle: this.context_CaseTitle,
-      context_CaseId: this.context_CaseId,
-      recipientName: this.recipientName,
-      senderName: this.senderName,
-    };
+    const body = requestBody({
+      additionalInstructions: this.Parameters.additionalInstructions,
+      context_CaseNotes: this.Parameters.context_CaseNotes,
+      context_CaseTitle: this.Parameters.context_CaseTitle,
+      context_CaseId: this.Parameters.context_CaseId,
+      recipientName: this.Parameters.recipientName,
+      senderName: this.Parameters.senderName,
+    });
 
     return {
       method: "POST",
@@ -46,8 +55,9 @@ export class msdyn_DraftEmailForCaseRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DraftEmailForCaseResponse> {
-    const data = await response.json();
-    return msdyn_DraftEmailForCaseResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_DraftEmailForCaseResponse.fromResponse({});
+    return msdyn_DraftEmailForCaseResponse.fromResponse(await response.json());
   }
 }
 

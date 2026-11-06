@@ -10,12 +10,20 @@ export interface RetrieveMissingComponentsResponse {
 }
 
 /**
+ * Parameters of the RetrieveMissingComponents function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveMissingComponentsFunctionParameters {
+  CustomizationFile: string;
+}
+
+/**
  * RetrieveMissingComponents function
  *
  * Unbound function
  */
 export class RetrieveMissingComponentsFunction implements Executable<RetrieveMissingComponentsResponse> {
-  constructor(public readonly customizationFile: string) {}
+  constructor(public readonly parameters: RetrieveMissingComponentsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveMissingComponents`;
@@ -23,9 +31,9 @@ export class RetrieveMissingComponentsFunction implements Executable<RetrieveMis
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.customizationFile !== undefined) {
+    if (this.parameters.CustomizationFile !== undefined) {
       aliases.push(`CustomizationFile=@p1`);
-      params.append("@p1", formatParameterAlias(this.customizationFile, "Edm.Binary"));
+      params.append("@p1", formatParameterAlias(this.parameters.CustomizationFile, "Edm.Binary"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -41,7 +49,8 @@ export class RetrieveMissingComponentsFunction implements Executable<RetrieveMis
   }
 
   async parseResponse(response: Response): Promise<RetrieveMissingComponentsResponse> {
-    const data = await response.json();
-    return data as RetrieveMissingComponentsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveMissingComponentsResponse;
+    return (await response.json()) as RetrieveMissingComponentsResponse;
   }
 }

@@ -30,7 +30,9 @@ export class msdyn_WorkstreamShouldHaveSessionTemplatesRuleAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse;
+    return (await response.json()) as msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse;
   }
 }

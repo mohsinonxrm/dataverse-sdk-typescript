@@ -26,7 +26,8 @@ export class msdyn_GetAllLeadPredictionModelsAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAllLeadPredictionModelsResponse> {
-    const data = await response.json();
-    return data as msdyn_GetAllLeadPredictionModelsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetAllLeadPredictionModelsResponse;
+    return (await response.json()) as msdyn_GetAllLeadPredictionModelsResponse;
   }
 }

@@ -26,7 +26,8 @@ export class msdyn_GetLicenseInfoAction implements Executable<msdyn_GetLicenseIn
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetLicenseInfoResponse> {
-    const data = await response.json();
-    return data as msdyn_GetLicenseInfoResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetLicenseInfoResponse;
+    return (await response.json()) as msdyn_GetLicenseInfoResponse;
   }
 }

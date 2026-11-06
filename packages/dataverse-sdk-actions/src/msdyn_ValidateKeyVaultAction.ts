@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_ValidateKeyVault action
@@ -8,29 +9,35 @@ export interface msdyn_ValidateKeyVaultResponse {
 }
 
 /**
+ * Parameters of the msdyn_ValidateKeyVault action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ValidateKeyVaultActionParameters {
+  KeyVaultUri?: string;
+  PlatformType?: string;
+  IsAppSigningEnabled?: boolean;
+  BundleIdentifier?: string;
+  StorageTypeForUpload?: string;
+}
+
+/**
  * msdyn_ValidateKeyVault action
  *
  * Unbound action
  */
 export class msdyn_ValidateKeyVaultAction implements Executable<msdyn_ValidateKeyVaultResponse> {
-  constructor(
-    public readonly keyVaultUri?: string,
-    public readonly platformType?: string,
-    public readonly isAppSigningEnabled?: boolean,
-    public readonly bundleIdentifier?: string,
-    public readonly storageTypeForUpload?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_ValidateKeyVaultActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ValidateKeyVault`;
 
-    const body: Record<string, unknown> = {
-      KeyVaultUri: this.keyVaultUri,
-      PlatformType: this.platformType,
-      IsAppSigningEnabled: this.isAppSigningEnabled,
-      BundleIdentifier: this.bundleIdentifier,
-      StorageTypeForUpload: this.storageTypeForUpload,
-    };
+    const body = requestBody({
+      KeyVaultUri: this.parameters.KeyVaultUri,
+      PlatformType: this.parameters.PlatformType,
+      IsAppSigningEnabled: this.parameters.IsAppSigningEnabled,
+      BundleIdentifier: this.parameters.BundleIdentifier,
+      StorageTypeForUpload: this.parameters.StorageTypeForUpload,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class msdyn_ValidateKeyVaultAction implements Executable<msdyn_ValidateKe
   }
 
   async parseResponse(response: Response): Promise<msdyn_ValidateKeyVaultResponse> {
-    const data = await response.json();
-    return data as msdyn_ValidateKeyVaultResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ValidateKeyVaultResponse;
+    return (await response.json()) as msdyn_ValidateKeyVaultResponse;
   }
 }

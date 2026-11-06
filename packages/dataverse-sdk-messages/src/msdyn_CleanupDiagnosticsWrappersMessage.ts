@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_CleanupDiagnosticsWrappers message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CleanupDiagnosticsWrappersRequestParameters {
+  WorkItemId?: string;
+  TargetId?: string;
+  RunNumber: number;
+}
 
 /**
  * msdyn_CleanupDiagnosticsWrappers request message
@@ -10,22 +21,20 @@ export class msdyn_CleanupDiagnosticsWrappersRequest
   extends OrganizationRequest
   implements Executable<msdyn_CleanupDiagnosticsWrappersResponse>
 {
-  constructor(
-    public workItemId: string | undefined,
-    public targetId: string | undefined,
-    public runNumber: number
-  ) {
-    super("msdyn_CleanupDiagnosticsWrappers");
+  declare readonly Parameters: Readonly<msdyn_CleanupDiagnosticsWrappersRequestParameters>;
+
+  constructor(parameters: msdyn_CleanupDiagnosticsWrappersRequestParameters) {
+    super("msdyn_CleanupDiagnosticsWrappers", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CleanupDiagnosticsWrappers`;
 
-    const body: Record<string, unknown> = {
-      WorkItemId: this.workItemId,
-      TargetId: this.targetId,
-      RunNumber: this.runNumber,
-    };
+    const body = requestBody({
+      WorkItemId: this.Parameters.WorkItemId,
+      TargetId: this.Parameters.TargetId,
+      RunNumber: this.Parameters.RunNumber,
+    });
 
     return {
       method: "POST",

@@ -1,5 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the OrderOption message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface OrderOptionRequestParameters {
+  OptionSetName?: string;
+  AttributeLogicalName?: string;
+  EntityLogicalName?: string;
+  Values: number[];
+  SolutionUniqueName?: string;
+}
 
 /**
  * OrderOption request message
@@ -10,26 +23,22 @@ export class OrderOptionRequest
   extends OrganizationRequest
   implements Executable<OrderOptionResponse>
 {
-  constructor(
-    public optionSetName: string | undefined,
-    public attributeLogicalName: string | undefined,
-    public entityLogicalName: string | undefined,
-    public values: number[],
-    public solutionUniqueName?: string
-  ) {
-    super("OrderOption");
+  declare readonly Parameters: Readonly<OrderOptionRequestParameters>;
+
+  constructor(parameters: OrderOptionRequestParameters) {
+    super("OrderOption", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/OrderOption`;
 
-    const body: Record<string, unknown> = {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Values: this.values,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      OptionSetName: this.Parameters.OptionSetName,
+      AttributeLogicalName: this.Parameters.AttributeLogicalName,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Values: this.Parameters.Values,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",

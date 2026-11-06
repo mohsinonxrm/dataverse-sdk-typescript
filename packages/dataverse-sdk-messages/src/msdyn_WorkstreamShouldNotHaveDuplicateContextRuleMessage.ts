@@ -31,8 +31,12 @@ export class msdyn_WorkstreamShouldNotHaveDuplicateContextRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse> {
-    const data = await response.json();
-    return msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse.fromResponse({});
+    return msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

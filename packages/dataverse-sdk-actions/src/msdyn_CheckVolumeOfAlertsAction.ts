@@ -28,7 +28,8 @@ export class msdyn_CheckVolumeOfAlertsAction implements Executable<msdyn_CheckVo
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckVolumeOfAlertsResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckVolumeOfAlertsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CheckVolumeOfAlertsResponse;
+    return (await response.json()) as msdyn_CheckVolumeOfAlertsResponse;
   }
 }

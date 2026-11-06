@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetWorkListConfiguration action
@@ -10,27 +11,33 @@ export interface msdyn_GetWorkListConfigurationResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetWorkListConfiguration action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetWorkListConfigurationActionParameters {
+  Viewtype?: string;
+  GetData?: boolean;
+  DefaultViewType?: string;
+  QueryParams?: string;
+}
+
+/**
  * msdyn_GetWorkListConfiguration action
  *
  * Unbound action
  */
 export class msdyn_GetWorkListConfigurationAction implements Executable<msdyn_GetWorkListConfigurationResponse> {
-  constructor(
-    public readonly viewtype?: string,
-    public readonly getData?: boolean,
-    public readonly defaultViewType?: string,
-    public readonly queryParams?: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetWorkListConfigurationActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetWorkListConfiguration`;
 
-    const body: Record<string, unknown> = {
-      Viewtype: this.viewtype,
-      GetData: this.getData,
-      DefaultViewType: this.defaultViewType,
-      QueryParams: this.queryParams,
-    };
+    const body = requestBody({
+      Viewtype: this.parameters.Viewtype,
+      GetData: this.parameters.GetData,
+      DefaultViewType: this.parameters.DefaultViewType,
+      QueryParams: this.parameters.QueryParams,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class msdyn_GetWorkListConfigurationAction implements Executable<msdyn_Ge
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetWorkListConfigurationResponse> {
-    const data = await response.json();
-    return data as msdyn_GetWorkListConfigurationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetWorkListConfigurationResponse;
+    return (await response.json()) as msdyn_GetWorkListConfigurationResponse;
   }
 }

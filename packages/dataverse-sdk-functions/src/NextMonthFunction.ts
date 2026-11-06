@@ -9,12 +9,20 @@ export interface NextMonthResponse {
 }
 
 /**
+ * Parameters of the NextMonth function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface NextMonthFunctionParameters {
+  PropertyName: string;
+}
+
+/**
  * NextMonth function
  *
  * Unbound function
  */
 export class NextMonthFunction implements Executable<NextMonthResponse> {
-  constructor(public readonly propertyName: string) {}
+  constructor(public readonly parameters: NextMonthFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/NextMonth`;
@@ -22,9 +30,9 @@ export class NextMonthFunction implements Executable<NextMonthResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +48,8 @@ export class NextMonthFunction implements Executable<NextMonthResponse> {
   }
 
   async parseResponse(response: Response): Promise<NextMonthResponse> {
-    const data = await response.json();
-    return data as NextMonthResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as NextMonthResponse;
+    return (await response.json()) as NextMonthResponse;
   }
 }

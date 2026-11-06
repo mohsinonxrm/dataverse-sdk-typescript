@@ -26,7 +26,8 @@ export class msdyn_CopyEventGoogleChannelsCleanupAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_CopyEventGoogleChannelsCleanupResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CopyEventGoogleChannelsCleanupResponse;
+    return (await response.json()) as msdyn_CopyEventGoogleChannelsCleanupResponse;
   }
 }

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_SalesAgents_IsOrchestrationComplete action
@@ -8,25 +9,33 @@ export interface msdyn_SalesAgents_IsOrchestrationCompleteResponse {
 }
 
 /**
+ * Parameters of the msdyn_SalesAgents_IsOrchestrationComplete action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_IsOrchestrationCompleteActionParameters {
+  msdyn_TrackingId?: string;
+  msdyn_AgentType: number;
+  msdyn_SalesAgentType: number;
+}
+
+/**
  * msdyn_SalesAgents_IsOrchestrationComplete action
  *
  * Unbound action
  */
 export class msdyn_SalesAgents_IsOrchestrationCompleteAction implements Executable<msdyn_SalesAgents_IsOrchestrationCompleteResponse> {
   constructor(
-    public readonly msdyn_TrackingId: string | undefined,
-    public readonly msdyn_AgentType: number,
-    public readonly msdyn_SalesAgentType: number
+    public readonly parameters: msdyn_SalesAgents_IsOrchestrationCompleteActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_IsOrchestrationComplete`;
 
-    const body: Record<string, unknown> = {
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_AgentType: this.msdyn_AgentType,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-    };
+    const body = requestBody({
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_AgentType: this.parameters.msdyn_AgentType,
+      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
+    });
 
     return {
       method: "POST",
@@ -41,7 +50,8 @@ export class msdyn_SalesAgents_IsOrchestrationCompleteAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_IsOrchestrationCompleteResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_IsOrchestrationCompleteResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_SalesAgents_IsOrchestrationCompleteResponse;
+    return (await response.json()) as msdyn_SalesAgents_IsOrchestrationCompleteResponse;
   }
 }

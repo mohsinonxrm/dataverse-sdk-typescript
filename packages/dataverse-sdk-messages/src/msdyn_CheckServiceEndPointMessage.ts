@@ -29,8 +29,9 @@ export class msdyn_CheckServiceEndPointRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckServiceEndPointResponse> {
-    const data = await response.json();
-    return msdyn_CheckServiceEndPointResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_CheckServiceEndPointResponse.fromResponse({});
+    return msdyn_CheckServiceEndPointResponse.fromResponse(await response.json());
   }
 }
 

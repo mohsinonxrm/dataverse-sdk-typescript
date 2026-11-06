@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_AutoLinkingLeadCustomActionResponse as msdyn_AutoLinkingLeadCustomActionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_AutoLinkingLeadCustomAction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutoLinkingLeadCustomActionRequestParameters {
+  AutoLinkRequest?: string;
+}
 
 /**
  * msdyn_AutoLinkingLeadCustomAction request message
@@ -12,16 +21,18 @@ export class msdyn_AutoLinkingLeadCustomActionRequest
   extends OrganizationRequest
   implements Executable<msdyn_AutoLinkingLeadCustomActionResponse>
 {
-  constructor(public autoLinkRequest?: string) {
-    super("msdyn_AutoLinkingLeadCustomAction");
+  declare readonly Parameters: Readonly<msdyn_AutoLinkingLeadCustomActionRequestParameters>;
+
+  constructor(parameters: msdyn_AutoLinkingLeadCustomActionRequestParameters = {}) {
+    super("msdyn_AutoLinkingLeadCustomAction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutoLinkingLeadCustomAction`;
 
-    const body: Record<string, unknown> = {
-      AutoLinkRequest: this.autoLinkRequest,
-    };
+    const body = requestBody({
+      AutoLinkRequest: this.Parameters.AutoLinkRequest,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_AutoLinkingLeadCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AutoLinkingLeadCustomActionResponse> {
-    const data = await response.json();
-    return msdyn_AutoLinkingLeadCustomActionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_AutoLinkingLeadCustomActionResponse.fromResponse({});
+    return msdyn_AutoLinkingLeadCustomActionResponse.fromResponse(await response.json());
   }
 }
 

@@ -12,6 +12,8 @@ export interface ListCredentialDependenciesResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.credential)
+ *
+ * The first argument is the id of the credential record to call it on.
  */
 export class ListCredentialDependenciesFunction implements Executable<ListCredentialDependenciesResponse> {
   constructor(public readonly credentialId: string) {}
@@ -30,7 +32,8 @@ export class ListCredentialDependenciesFunction implements Executable<ListCreden
   }
 
   async parseResponse(response: Response): Promise<ListCredentialDependenciesResponse> {
-    const data = await response.json();
-    return data as ListCredentialDependenciesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ListCredentialDependenciesResponse;
+    return (await response.json()) as ListCredentialDependenciesResponse;
   }
 }

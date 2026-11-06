@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from UnlockSalesOrderPricing action
@@ -8,19 +9,27 @@ export interface UnlockSalesOrderPricingResponse {
 }
 
 /**
+ * Parameters of the UnlockSalesOrderPricing action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UnlockSalesOrderPricingActionParameters {
+  SalesOrderId: string;
+}
+
+/**
  * UnlockSalesOrderPricing action
  *
  * Unbound action
  */
 export class UnlockSalesOrderPricingAction implements Executable<UnlockSalesOrderPricingResponse> {
-  constructor(public readonly salesOrderId: string) {}
+  constructor(public readonly parameters: UnlockSalesOrderPricingActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UnlockSalesOrderPricing`;
 
-    const body: Record<string, unknown> = {
-      SalesOrderId: this.salesOrderId,
-    };
+    const body = requestBody({
+      SalesOrderId: this.parameters.SalesOrderId,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class UnlockSalesOrderPricingAction implements Executable<UnlockSalesOrde
   }
 
   async parseResponse(response: Response): Promise<UnlockSalesOrderPricingResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as UnlockSalesOrderPricingResponse;
+    return (await response.json()) as UnlockSalesOrderPricingResponse;
   }
 }

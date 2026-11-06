@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the _RemoveMarketingListMembersByIds message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _RemoveMarketingListMembersByIdsRequestParameters {
+  ListId?: string;
+  MemberIds?: string;
+}
 
 /**
  * _RemoveMarketingListMembersByIds request message
@@ -10,20 +20,19 @@ export class _RemoveMarketingListMembersByIdsRequest
   extends OrganizationRequest
   implements Executable<_RemoveMarketingListMembersByIdsResponse>
 {
-  constructor(
-    public listId?: string,
-    public memberIds?: string
-  ) {
-    super("_RemoveMarketingListMembersByIds");
+  declare readonly Parameters: Readonly<_RemoveMarketingListMembersByIdsRequestParameters>;
+
+  constructor(parameters: _RemoveMarketingListMembersByIdsRequestParameters = {}) {
+    super("_RemoveMarketingListMembersByIds", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_RemoveMarketingListMembersByIds`;
 
-    const body: Record<string, unknown> = {
-      ListId: this.listId,
-      MemberIds: this.memberIds,
-    };
+    const body = requestBody({
+      ListId: this.Parameters.ListId,
+      MemberIds: this.Parameters.MemberIds,
+    });
 
     return {
       method: "POST",

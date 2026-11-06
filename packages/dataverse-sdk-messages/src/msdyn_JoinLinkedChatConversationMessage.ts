@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_JoinLinkedChatConversation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_JoinLinkedChatConversationRequestParameters {
+  msdyn_UserId?: string;
+  msdyn_RegardingEntityId: string;
+  msdyn_TeamsConversationId: string;
+}
 
 /**
  * msdyn_JoinLinkedChatConversation request message
@@ -10,22 +21,20 @@ export class msdyn_JoinLinkedChatConversationRequest
   extends OrganizationRequest
   implements Executable<msdyn_JoinLinkedChatConversationResponse>
 {
-  constructor(
-    public msdyn_UserId: string | undefined,
-    public msdyn_RegardingEntityId: string,
-    public msdyn_TeamsConversationId: string
-  ) {
-    super("msdyn_JoinLinkedChatConversation");
+  declare readonly Parameters: Readonly<msdyn_JoinLinkedChatConversationRequestParameters>;
+
+  constructor(parameters: msdyn_JoinLinkedChatConversationRequestParameters) {
+    super("msdyn_JoinLinkedChatConversation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_JoinLinkedChatConversation`;
 
-    const body: Record<string, unknown> = {
-      msdyn_UserId: this.msdyn_UserId,
-      msdyn_RegardingEntityId: this.msdyn_RegardingEntityId,
-      msdyn_TeamsConversationId: this.msdyn_TeamsConversationId,
-    };
+    const body = requestBody({
+      msdyn_UserId: this.Parameters.msdyn_UserId,
+      msdyn_RegardingEntityId: this.Parameters.msdyn_RegardingEntityId,
+      msdyn_TeamsConversationId: this.Parameters.msdyn_TeamsConversationId,
+    });
 
     return {
       method: "POST",

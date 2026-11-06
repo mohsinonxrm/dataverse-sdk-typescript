@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetSubjectHierarchyData action
@@ -8,19 +9,27 @@ export interface msdyn_GetSubjectHierarchyDataResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetSubjectHierarchyData action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSubjectHierarchyDataActionParameters {
+  input: string;
+}
+
+/**
  * msdyn_GetSubjectHierarchyData action
  *
  * Unbound action
  */
 export class msdyn_GetSubjectHierarchyDataAction implements Executable<msdyn_GetSubjectHierarchyDataResponse> {
-  constructor(public readonly input: string) {}
+  constructor(public readonly parameters: msdyn_GetSubjectHierarchyDataActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetSubjectHierarchyData`;
 
-    const body: Record<string, unknown> = {
-      input: this.input,
-    };
+    const body = requestBody({
+      input: this.parameters.input,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_GetSubjectHierarchyDataAction implements Executable<msdyn_Get
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSubjectHierarchyDataResponse> {
-    const data = await response.json();
-    return data as msdyn_GetSubjectHierarchyDataResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetSubjectHierarchyDataResponse;
+    return (await response.json()) as msdyn_GetSubjectHierarchyDataResponse;
   }
 }

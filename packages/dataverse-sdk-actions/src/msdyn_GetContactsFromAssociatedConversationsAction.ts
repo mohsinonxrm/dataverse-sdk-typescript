@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetContactsFromAssociatedConversations action
@@ -8,25 +9,33 @@ export interface msdyn_GetContactsFromAssociatedConversationsResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetContactsFromAssociatedConversations action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetContactsFromAssociatedConversationsActionParameters {
+  EntityLogicalName: string;
+  RecordId: string;
+  CustomActionInputs?: string;
+}
+
+/**
  * msdyn_GetContactsFromAssociatedConversations action
  *
  * Unbound action
  */
 export class msdyn_GetContactsFromAssociatedConversationsAction implements Executable<msdyn_GetContactsFromAssociatedConversationsResponse> {
   constructor(
-    public readonly entityLogicalName: string,
-    public readonly recordId: string,
-    public readonly customActionInputs?: string
+    public readonly parameters: msdyn_GetContactsFromAssociatedConversationsActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetContactsFromAssociatedConversations`;
 
-    const body: Record<string, unknown> = {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      CustomActionInputs: this.customActionInputs,
-    };
+    const body = requestBody({
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      RecordId: this.parameters.RecordId,
+      CustomActionInputs: this.parameters.CustomActionInputs,
+    });
 
     return {
       method: "POST",
@@ -41,7 +50,8 @@ export class msdyn_GetContactsFromAssociatedConversationsAction implements Execu
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetContactsFromAssociatedConversationsResponse> {
-    const data = await response.json();
-    return data as msdyn_GetContactsFromAssociatedConversationsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetContactsFromAssociatedConversationsResponse;
+    return (await response.json()) as msdyn_GetContactsFromAssociatedConversationsResponse;
   }
 }

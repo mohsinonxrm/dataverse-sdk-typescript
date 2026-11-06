@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from _SkillToUser action
@@ -8,23 +9,29 @@ export interface _SkillToUserResponse {
 }
 
 /**
+ * Parameters of the _SkillToUser action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _SkillToUserActionParameters {
+  UpdatedBRC?: Record<string, unknown>[];
+  DeletedBRC?: Record<string, unknown>[];
+}
+
+/**
  * _SkillToUser action
  *
  * Unbound action
  */
 export class _SkillToUserAction implements Executable<_SkillToUserResponse> {
-  constructor(
-    public readonly updatedBRC?: Record<string, unknown>[],
-    public readonly deletedBRC?: Record<string, unknown>[]
-  ) {}
+  constructor(public readonly parameters: _SkillToUserActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_SkillToUser`;
 
-    const body: Record<string, unknown> = {
-      UpdatedBRC: this.updatedBRC,
-      DeletedBRC: this.deletedBRC,
-    };
+    const body = requestBody({
+      UpdatedBRC: this.parameters.UpdatedBRC,
+      DeletedBRC: this.parameters.DeletedBRC,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class _SkillToUserAction implements Executable<_SkillToUserResponse> {
   }
 
   async parseResponse(response: Response): Promise<_SkillToUserResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as _SkillToUserResponse;
+    return (await response.json()) as _SkillToUserResponse;
   }
 }

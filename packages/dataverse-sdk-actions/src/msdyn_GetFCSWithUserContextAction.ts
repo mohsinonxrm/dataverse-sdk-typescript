@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetFCSWithUserContext action
@@ -8,19 +9,27 @@ export interface msdyn_GetFCSWithUserContextResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetFCSWithUserContext action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetFCSWithUserContextActionParameters {
+  msdyn_GetFCSWithUserContextInput: string;
+}
+
+/**
  * msdyn_GetFCSWithUserContext action
  *
  * Unbound action
  */
 export class msdyn_GetFCSWithUserContextAction implements Executable<msdyn_GetFCSWithUserContextResponse> {
-  constructor(public readonly msdyn_GetFCSWithUserContextInput: string) {}
+  constructor(public readonly parameters: msdyn_GetFCSWithUserContextActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetFCSWithUserContext`;
 
-    const body: Record<string, unknown> = {
-      msdyn_GetFCSWithUserContextInput: this.msdyn_GetFCSWithUserContextInput,
-    };
+    const body = requestBody({
+      msdyn_GetFCSWithUserContextInput: this.parameters.msdyn_GetFCSWithUserContextInput,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_GetFCSWithUserContextAction implements Executable<msdyn_GetFC
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetFCSWithUserContextResponse> {
-    const data = await response.json();
-    return data as msdyn_GetFCSWithUserContextResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetFCSWithUserContextResponse;
+    return (await response.json()) as msdyn_GetFCSWithUserContextResponse;
   }
 }

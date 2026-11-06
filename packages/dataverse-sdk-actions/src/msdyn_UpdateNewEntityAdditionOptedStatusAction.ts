@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_UpdateNewEntityAdditionOptedStatus action
@@ -8,25 +9,33 @@ export interface msdyn_UpdateNewEntityAdditionOptedStatusResponse {
 }
 
 /**
+ * Parameters of the msdyn_UpdateNewEntityAdditionOptedStatus action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateNewEntityAdditionOptedStatusActionParameters {
+  PredictionName: string;
+  PredictionType: string;
+  IsNewEntityAdditionOpted: boolean;
+}
+
+/**
  * msdyn_UpdateNewEntityAdditionOptedStatus action
  *
  * Unbound action
  */
 export class msdyn_UpdateNewEntityAdditionOptedStatusAction implements Executable<msdyn_UpdateNewEntityAdditionOptedStatusResponse> {
   constructor(
-    public readonly predictionName: string,
-    public readonly predictionType: string,
-    public readonly isNewEntityAdditionOpted: boolean
+    public readonly parameters: msdyn_UpdateNewEntityAdditionOptedStatusActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateNewEntityAdditionOptedStatus`;
 
-    const body: Record<string, unknown> = {
-      PredictionName: this.predictionName,
-      PredictionType: this.predictionType,
-      IsNewEntityAdditionOpted: this.isNewEntityAdditionOpted,
-    };
+    const body = requestBody({
+      PredictionName: this.parameters.PredictionName,
+      PredictionType: this.parameters.PredictionType,
+      IsNewEntityAdditionOpted: this.parameters.IsNewEntityAdditionOpted,
+    });
 
     return {
       method: "POST",
@@ -41,7 +50,8 @@ export class msdyn_UpdateNewEntityAdditionOptedStatusAction implements Executabl
   async parseResponse(
     response: Response
   ): Promise<msdyn_UpdateNewEntityAdditionOptedStatusResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_UpdateNewEntityAdditionOptedStatusResponse;
+    return (await response.json()) as msdyn_UpdateNewEntityAdditionOptedStatusResponse;
   }
 }

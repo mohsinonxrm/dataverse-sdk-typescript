@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { InitializeTemporaryFileBlocksUploadResponse as InitializeTemporaryFileBlocksUploadResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the InitializeTemporaryFileBlocksUpload message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InitializeTemporaryFileBlocksUploadRequestParameters {
+  FileName: string;
+  FileSize: number;
+}
 
 /**
  * InitializeTemporaryFileBlocksUpload request message
@@ -12,20 +22,19 @@ export class InitializeTemporaryFileBlocksUploadRequest
   extends OrganizationRequest
   implements Executable<InitializeTemporaryFileBlocksUploadResponse>
 {
-  constructor(
-    public fileName: string,
-    public fileSize: number
-  ) {
-    super("InitializeTemporaryFileBlocksUpload");
+  declare readonly Parameters: Readonly<InitializeTemporaryFileBlocksUploadRequestParameters>;
+
+  constructor(parameters: InitializeTemporaryFileBlocksUploadRequestParameters) {
+    super("InitializeTemporaryFileBlocksUpload", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/InitializeTemporaryFileBlocksUpload`;
 
-    const body: Record<string, unknown> = {
-      FileName: this.fileName,
-      FileSize: this.fileSize,
-    };
+    const body = requestBody({
+      FileName: this.Parameters.FileName,
+      FileSize: this.Parameters.FileSize,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,10 @@ export class InitializeTemporaryFileBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<InitializeTemporaryFileBlocksUploadResponse> {
-    const data = await response.json();
-    return InitializeTemporaryFileBlocksUploadResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return InitializeTemporaryFileBlocksUploadResponse.fromResponse({});
+    return InitializeTemporaryFileBlocksUploadResponse.fromResponse(await response.json());
   }
 }
 

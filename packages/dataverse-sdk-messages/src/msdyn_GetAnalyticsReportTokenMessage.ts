@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetAnalyticsReportTokenResponse as msdyn_GetAnalyticsReportTokenResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetAnalyticsReportToken message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAnalyticsReportTokenRequestParameters {
+  AnalyticsRecordId: string;
+}
 
 /**
  * msdyn_GetAnalyticsReportToken request message
@@ -12,16 +21,18 @@ export class msdyn_GetAnalyticsReportTokenRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetAnalyticsReportTokenResponse>
 {
-  constructor(public analyticsRecordId: string) {
-    super("msdyn_GetAnalyticsReportToken");
+  declare readonly Parameters: Readonly<msdyn_GetAnalyticsReportTokenRequestParameters>;
+
+  constructor(parameters: msdyn_GetAnalyticsReportTokenRequestParameters) {
+    super("msdyn_GetAnalyticsReportToken", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAnalyticsReportToken`;
 
-    const body: Record<string, unknown> = {
-      AnalyticsRecordId: this.analyticsRecordId,
-    };
+    const body = requestBody({
+      AnalyticsRecordId: this.Parameters.AnalyticsRecordId,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetAnalyticsReportTokenRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAnalyticsReportTokenResponse> {
-    const data = await response.json();
-    return msdyn_GetAnalyticsReportTokenResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetAnalyticsReportTokenResponse.fromResponse({});
+    return msdyn_GetAnalyticsReportTokenResponse.fromResponse(await response.json());
   }
 }
 

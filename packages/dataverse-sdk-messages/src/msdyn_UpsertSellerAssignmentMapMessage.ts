@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_UpsertSellerAssignmentMapResponse as msdyn_UpsertSellerAssignmentMapResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_UpsertSellerAssignmentMap message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpsertSellerAssignmentMapRequestParameters {
+  SellerAssignmentMapArray: string;
+}
 
 /**
  * msdyn_UpsertSellerAssignmentMap request message
@@ -12,16 +21,18 @@ export class msdyn_UpsertSellerAssignmentMapRequest
   extends OrganizationRequest
   implements Executable<msdyn_UpsertSellerAssignmentMapResponse>
 {
-  constructor(public sellerAssignmentMapArray: string) {
-    super("msdyn_UpsertSellerAssignmentMap");
+  declare readonly Parameters: Readonly<msdyn_UpsertSellerAssignmentMapRequestParameters>;
+
+  constructor(parameters: msdyn_UpsertSellerAssignmentMapRequestParameters) {
+    super("msdyn_UpsertSellerAssignmentMap", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpsertSellerAssignmentMap`;
 
-    const body: Record<string, unknown> = {
-      SellerAssignmentMapArray: this.sellerAssignmentMapArray,
-    };
+    const body = requestBody({
+      SellerAssignmentMapArray: this.Parameters.SellerAssignmentMapArray,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_UpsertSellerAssignmentMapRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpsertSellerAssignmentMapResponse> {
-    const data = await response.json();
-    return msdyn_UpsertSellerAssignmentMapResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_UpsertSellerAssignmentMapResponse.fromResponse({});
+    return msdyn_UpsertSellerAssignmentMapResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from ImportSolutions action
@@ -8,33 +9,39 @@ export interface ImportSolutionsResponse {
 }
 
 /**
+ * Parameters of the ImportSolutions action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportSolutionsActionParameters {
+  OverwriteUnmanagedCustomizations: boolean;
+  PublishWorkflows: boolean;
+  CustomizationFiles: string;
+  ImportJobId: string;
+  ConvertToManaged?: boolean;
+  SkipProductUpdateDependencies?: boolean;
+  HoldingSolution?: boolean;
+}
+
+/**
  * ImportSolutions action
  *
  * Unbound action
  */
 export class ImportSolutionsAction implements Executable<ImportSolutionsResponse> {
-  constructor(
-    public readonly overwriteUnmanagedCustomizations: boolean,
-    public readonly publishWorkflows: boolean,
-    public readonly customizationFiles: string,
-    public readonly importJobId: string,
-    public readonly convertToManaged?: boolean,
-    public readonly skipProductUpdateDependencies?: boolean,
-    public readonly holdingSolution?: boolean
-  ) {}
+  constructor(public readonly parameters: ImportSolutionsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportSolutions`;
 
-    const body: Record<string, unknown> = {
-      OverwriteUnmanagedCustomizations: this.overwriteUnmanagedCustomizations,
-      PublishWorkflows: this.publishWorkflows,
-      CustomizationFiles: this.customizationFiles,
-      ImportJobId: this.importJobId,
-      ConvertToManaged: this.convertToManaged,
-      SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
-      HoldingSolution: this.holdingSolution,
-    };
+    const body = requestBody({
+      OverwriteUnmanagedCustomizations: this.parameters.OverwriteUnmanagedCustomizations,
+      PublishWorkflows: this.parameters.PublishWorkflows,
+      CustomizationFiles: this.parameters.CustomizationFiles,
+      ImportJobId: this.parameters.ImportJobId,
+      ConvertToManaged: this.parameters.ConvertToManaged,
+      SkipProductUpdateDependencies: this.parameters.SkipProductUpdateDependencies,
+      HoldingSolution: this.parameters.HoldingSolution,
+    });
 
     return {
       method: "POST",
@@ -47,7 +54,8 @@ export class ImportSolutionsAction implements Executable<ImportSolutionsResponse
   }
 
   async parseResponse(response: Response): Promise<ImportSolutionsResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ImportSolutionsResponse;
+    return (await response.json()) as ImportSolutionsResponse;
   }
 }

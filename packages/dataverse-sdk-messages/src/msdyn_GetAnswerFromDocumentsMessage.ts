@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetAnswerFromDocumentsResponse as msdyn_GetAnswerFromDocumentsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetAnswerFromDocuments message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAnswerFromDocumentsRequestParameters {
+  msdyn_activityId?: string;
+  msdyn_updatedUserQuery?: string;
+  msdyn_documentUrl: string;
+}
 
 /**
  * msdyn_GetAnswerFromDocuments request message
@@ -12,22 +23,20 @@ export class msdyn_GetAnswerFromDocumentsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetAnswerFromDocumentsResponse>
 {
-  constructor(
-    public msdyn_activityId: string | undefined,
-    public msdyn_updatedUserQuery: string | undefined,
-    public msdyn_documentUrl: string
-  ) {
-    super("msdyn_GetAnswerFromDocuments");
+  declare readonly Parameters: Readonly<msdyn_GetAnswerFromDocumentsRequestParameters>;
+
+  constructor(parameters: msdyn_GetAnswerFromDocumentsRequestParameters) {
+    super("msdyn_GetAnswerFromDocuments", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAnswerFromDocuments`;
 
-    const body: Record<string, unknown> = {
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_updatedUserQuery: this.msdyn_updatedUserQuery,
-      msdyn_documentUrl: this.msdyn_documentUrl,
-    };
+    const body = requestBody({
+      msdyn_activityId: this.Parameters.msdyn_activityId,
+      msdyn_updatedUserQuery: this.Parameters.msdyn_updatedUserQuery,
+      msdyn_documentUrl: this.Parameters.msdyn_documentUrl,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_GetAnswerFromDocumentsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAnswerFromDocumentsResponse> {
-    const data = await response.json();
-    return msdyn_GetAnswerFromDocumentsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetAnswerFromDocumentsResponse.fromResponse({});
+    return msdyn_GetAnswerFromDocumentsResponse.fromResponse(await response.json());
   }
 }
 

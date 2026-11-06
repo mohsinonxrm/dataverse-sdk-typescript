@@ -31,8 +31,12 @@ export class msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponse> {
-    const data = await response.json();
-    return msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponse.fromResponse({});
+    return msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

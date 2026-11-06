@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetAISuggestedContactsResponse as msdyn_GetAISuggestedContactsResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetAISuggestedContacts message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAISuggestedContactsRequestParameters {
+  EntityLogicalName: string;
+  RecordId: string;
+}
 
 /**
  * msdyn_GetAISuggestedContacts request message
@@ -12,20 +22,19 @@ export class msdyn_GetAISuggestedContactsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetAISuggestedContactsResponse>
 {
-  constructor(
-    public entityLogicalName: string,
-    public recordId: string
-  ) {
-    super("msdyn_GetAISuggestedContacts");
+  declare readonly Parameters: Readonly<msdyn_GetAISuggestedContactsRequestParameters>;
+
+  constructor(parameters: msdyn_GetAISuggestedContactsRequestParameters) {
+    super("msdyn_GetAISuggestedContacts", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAISuggestedContacts`;
 
-    const body: Record<string, unknown> = {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-    };
+    const body = requestBody({
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      RecordId: this.Parameters.RecordId,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdyn_GetAISuggestedContactsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAISuggestedContactsResponse> {
-    const data = await response.json();
-    return msdyn_GetAISuggestedContactsResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetAISuggestedContactsResponse.fromResponse({});
+    return msdyn_GetAISuggestedContactsResponse.fromResponse(await response.json());
   }
 }
 

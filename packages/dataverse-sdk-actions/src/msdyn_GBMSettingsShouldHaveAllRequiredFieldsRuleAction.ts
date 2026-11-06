@@ -30,7 +30,9 @@ export class msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleAction implements E
   async parseResponse(
     response: Response
   ): Promise<msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    return (await response.json()) as msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse;
   }
 }

@@ -2,8 +2,20 @@ import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ImmediateBookResponse as ImmediateBookResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the ImmediateBook message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImmediateBookRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+  AttachmentIds?: string[];
+  EWSUrl?: string;
+  AttachmentToken?: string;
+}
 
 /**
  * ImmediateBook request message
@@ -14,24 +26,21 @@ export class ImmediateBookRequest
   extends OrganizationRequest
   implements Executable<ImmediateBookResponse>
 {
-  constructor(
-    public target: EntityReference | AnyEntityPayload,
-    public attachmentIds?: string[],
-    public eWSUrl?: string,
-    public attachmentToken?: string
-  ) {
-    super("ImmediateBook");
+  declare readonly Parameters: Readonly<ImmediateBookRequestParameters>;
+
+  constructor(parameters: ImmediateBookRequestParameters) {
+    super("ImmediateBook", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImmediateBook`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      AttachmentIds: this.attachmentIds,
-      EWSUrl: this.eWSUrl,
-      AttachmentToken: this.attachmentToken,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      AttachmentIds: this.Parameters.AttachmentIds,
+      EWSUrl: this.Parameters.EWSUrl,
+      AttachmentToken: this.Parameters.AttachmentToken,
+    });
 
     return {
       method: "POST",
@@ -44,8 +53,9 @@ export class ImmediateBookRequest
   }
 
   async parseResponse(response: Response): Promise<ImmediateBookResponse> {
-    const data = await response.json();
-    return ImmediateBookResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return ImmediateBookResponse.fromResponse({});
+    return ImmediateBookResponse.fromResponse(await response.json());
   }
 }
 

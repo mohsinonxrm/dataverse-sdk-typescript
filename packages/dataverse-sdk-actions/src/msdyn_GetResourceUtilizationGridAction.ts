@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_GetResourceUtilizationGrid action
@@ -8,29 +9,35 @@ export interface msdyn_GetResourceUtilizationGridResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetResourceUtilizationGrid action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetResourceUtilizationGridActionParameters {
+  TargetUtils: string;
+  ResourceIds: string;
+  Start: string;
+  End: string;
+  Timescale: number;
+}
+
+/**
  * msdyn_GetResourceUtilizationGrid action
  *
  * Unbound action
  */
 export class msdyn_GetResourceUtilizationGridAction implements Executable<msdyn_GetResourceUtilizationGridResponse> {
-  constructor(
-    public readonly targetUtils: string,
-    public readonly resourceIds: string,
-    public readonly start: string,
-    public readonly end: string,
-    public readonly timescale: number
-  ) {}
+  constructor(public readonly parameters: msdyn_GetResourceUtilizationGridActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetResourceUtilizationGrid`;
 
-    const body: Record<string, unknown> = {
-      TargetUtils: this.targetUtils,
-      ResourceIds: this.resourceIds,
-      Start: this.start,
-      End: this.end,
-      Timescale: this.timescale,
-    };
+    const body = requestBody({
+      TargetUtils: this.parameters.TargetUtils,
+      ResourceIds: this.parameters.ResourceIds,
+      Start: this.parameters.Start,
+      End: this.parameters.End,
+      Timescale: this.parameters.Timescale,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class msdyn_GetResourceUtilizationGridAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetResourceUtilizationGridResponse> {
-    const data = await response.json();
-    return data as msdyn_GetResourceUtilizationGridResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetResourceUtilizationGridResponse;
+    return (await response.json()) as msdyn_GetResourceUtilizationGridResponse;
   }
 }

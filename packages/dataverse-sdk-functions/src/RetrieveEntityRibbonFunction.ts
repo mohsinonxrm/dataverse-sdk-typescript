@@ -10,15 +10,21 @@ export interface RetrieveEntityRibbonResponse {
 }
 
 /**
+ * Parameters of the RetrieveEntityRibbon function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveEntityRibbonFunctionParameters {
+  EntityName: string;
+  RibbonLocationFilter: RibbonLocationFilters | keyof typeof RibbonLocationFilters;
+}
+
+/**
  * RetrieveEntityRibbon function
  *
  * Unbound function
  */
 export class RetrieveEntityRibbonFunction implements Executable<RetrieveEntityRibbonResponse> {
-  constructor(
-    public readonly entityName: string,
-    public readonly ribbonLocationFilter: RibbonLocationFilters | keyof typeof RibbonLocationFilters
-  ) {}
+  constructor(public readonly parameters: RetrieveEntityRibbonFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveEntityRibbon`;
@@ -26,16 +32,16 @@ export class RetrieveEntityRibbonFunction implements Executable<RetrieveEntityRi
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityName !== undefined) {
+    if (this.parameters.EntityName !== undefined) {
       aliases.push(`EntityName=@p1`);
-      params.append("@p1", formatParameterAlias(this.entityName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.EntityName, "Edm.String"));
     }
-    if (this.ribbonLocationFilter !== undefined) {
+    if (this.parameters.RibbonLocationFilter !== undefined) {
       aliases.push(`RibbonLocationFilter=@p2`);
       params.append(
         "@p2",
         formatParameterAlias(
-          this.ribbonLocationFilter,
+          this.parameters.RibbonLocationFilter,
           "mscrm.RibbonLocationFilters",
           "EnumerationType"
         )
@@ -55,7 +61,8 @@ export class RetrieveEntityRibbonFunction implements Executable<RetrieveEntityRi
   }
 
   async parseResponse(response: Response): Promise<RetrieveEntityRibbonResponse> {
-    const data = await response.json();
-    return data as RetrieveEntityRibbonResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveEntityRibbonResponse;
+    return (await response.json()) as RetrieveEntityRibbonResponse;
   }
 }

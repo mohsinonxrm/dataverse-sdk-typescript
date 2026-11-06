@@ -29,8 +29,10 @@ export class msdyn_CheckIoTDeviceCategoryOfDeviceRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIoTDeviceCategoryOfDeviceResponse> {
-    const data = await response.json();
-    return msdyn_CheckIoTDeviceCategoryOfDeviceResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_CheckIoTDeviceCategoryOfDeviceResponse.fromResponse({});
+    return msdyn_CheckIoTDeviceCategoryOfDeviceResponse.fromResponse(await response.json());
   }
 }
 

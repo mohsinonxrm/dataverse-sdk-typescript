@@ -26,7 +26,8 @@ export class PublishAllXmlAsyncAction implements Executable<PublishAllXmlAsyncRe
   }
 
   async parseResponse(response: Response): Promise<PublishAllXmlAsyncResponse> {
-    const data = await response.json();
-    return data as PublishAllXmlAsyncResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PublishAllXmlAsyncResponse;
+    return (await response.json()) as PublishAllXmlAsyncResponse;
   }
 }

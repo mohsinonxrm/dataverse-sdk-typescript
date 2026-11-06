@@ -29,7 +29,8 @@ export class msdynmkt_RetrieveAllFeatureConfigurationsAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdynmkt_RetrieveAllFeatureConfigurationsResponse> {
-    const data = await response.json();
-    return data as msdynmkt_RetrieveAllFeatureConfigurationsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdynmkt_RetrieveAllFeatureConfigurationsResponse;
+    return (await response.json()) as msdynmkt_RetrieveAllFeatureConfigurationsResponse;
   }
 }

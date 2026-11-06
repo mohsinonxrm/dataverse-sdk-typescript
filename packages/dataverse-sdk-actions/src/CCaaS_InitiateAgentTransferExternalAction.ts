@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_InitiateAgentTransferExternal action
@@ -8,34 +9,44 @@ export interface CCaaS_InitiateAgentTransferExternalResponse {
 }
 
 /**
+ * Parameters of the CCaaS_InitiateAgentTransferExternal action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_InitiateAgentTransferExternalActionParameters {
+  ExternalParticipantChannel: string;
+  ExternalParticipantChannelType: string;
+  AgentName?: string;
+  ExternalReferenceId?: string;
+  ExternalReferenceType?: string;
+  ApiVersion: string;
+}
+
+/**
  * CCaaS_InitiateAgentTransferExternal action
  *
  * Bound action
  * Binding parameter: entity (mscrm.msdyn_ocliveworkitem)
+ *
+ * The first argument is the id of the msdyn_ocliveworkitem record to call it on.
  */
 export class CCaaS_InitiateAgentTransferExternalAction implements Executable<CCaaS_InitiateAgentTransferExternalResponse> {
   constructor(
     public readonly msdyn_ocliveworkitemId: string,
-    public readonly externalParticipantChannel: string,
-    public readonly externalParticipantChannelType: string,
-    public readonly agentName: string | undefined,
-    public readonly externalReferenceId: string | undefined,
-    public readonly externalReferenceType: string | undefined,
-    public readonly apiVersion: string
+    public readonly parameters: CCaaS_InitiateAgentTransferExternalActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_ocliveworkitems(${this.msdyn_ocliveworkitemId})/Microsoft.Dynamics.CRM.CCaaS_InitiateAgentTransferExternal`;
 
-    const body: Record<string, unknown> = {
-      ExternalParticipantChannel: this.externalParticipantChannel,
-      ExternalParticipantChannelType: this.externalParticipantChannelType,
-      AgentName: this.agentName,
-      ExternalReferenceId: this.externalReferenceId,
-      ExternalReferenceType: this.externalReferenceType,
-      ApiVersion: this.apiVersion,
-    };
+    const body = requestBody({
+      ExternalParticipantChannel: this.parameters.ExternalParticipantChannel,
+      ExternalParticipantChannelType: this.parameters.ExternalParticipantChannelType,
+      AgentName: this.parameters.AgentName,
+      ExternalReferenceId: this.parameters.ExternalReferenceId,
+      ExternalReferenceType: this.parameters.ExternalReferenceType,
+      ApiVersion: this.parameters.ApiVersion,
+    });
 
     return {
       method: "POST",
@@ -48,7 +59,8 @@ export class CCaaS_InitiateAgentTransferExternalAction implements Executable<CCa
   }
 
   async parseResponse(response: Response): Promise<CCaaS_InitiateAgentTransferExternalResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_InitiateAgentTransferExternalResponse;
+    return (await response.json()) as CCaaS_InitiateAgentTransferExternalResponse;
   }
 }

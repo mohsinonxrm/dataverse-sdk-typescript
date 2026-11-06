@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CCaaS_CloseConversation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_CloseConversationRequestParameters {
+  AgentId: string;
+  LiveworkitemId: string;
+  ActivityStatusCode: string;
+}
 
 /**
  * CCaaS_CloseConversation request message
@@ -10,22 +21,20 @@ export class CCaaS_CloseConversationRequest
   extends OrganizationRequest
   implements Executable<CCaaS_CloseConversationResponse>
 {
-  constructor(
-    public agentId: string,
-    public liveworkitemId: string,
-    public activityStatusCode: string
-  ) {
-    super("CCaaS_CloseConversation");
+  declare readonly Parameters: Readonly<CCaaS_CloseConversationRequestParameters>;
+
+  constructor(parameters: CCaaS_CloseConversationRequestParameters) {
+    super("CCaaS_CloseConversation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_CloseConversation`;
 
-    const body: Record<string, unknown> = {
-      AgentId: this.agentId,
-      LiveworkitemId: this.liveworkitemId,
-      ActivityStatusCode: this.activityStatusCode,
-    };
+    const body = requestBody({
+      AgentId: this.Parameters.AgentId,
+      LiveworkitemId: this.Parameters.LiveworkitemId,
+      ActivityStatusCode: this.Parameters.ActivityStatusCode,
+    });
 
     return {
       method: "POST",

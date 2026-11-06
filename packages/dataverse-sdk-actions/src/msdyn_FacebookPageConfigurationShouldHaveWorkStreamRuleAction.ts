@@ -30,7 +30,9 @@ export class msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleAction imple
   async parseResponse(
     response: Response
   ): Promise<msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse;
+    return (await response.json()) as msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse;
   }
 }

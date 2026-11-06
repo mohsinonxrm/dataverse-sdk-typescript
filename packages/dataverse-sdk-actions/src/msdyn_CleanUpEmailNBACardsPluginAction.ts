@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_CleanUpEmailNBACardsPlugin action
@@ -8,19 +9,27 @@ export interface msdyn_CleanUpEmailNBACardsPluginResponse {
 }
 
 /**
+ * Parameters of the msdyn_CleanUpEmailNBACardsPlugin action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CleanUpEmailNBACardsPluginActionParameters {
+  InputData?: string;
+}
+
+/**
  * msdyn_CleanUpEmailNBACardsPlugin action
  *
  * Unbound action
  */
 export class msdyn_CleanUpEmailNBACardsPluginAction implements Executable<msdyn_CleanUpEmailNBACardsPluginResponse> {
-  constructor(public readonly inputData?: string) {}
+  constructor(public readonly parameters: msdyn_CleanUpEmailNBACardsPluginActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CleanUpEmailNBACardsPlugin`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.parameters.InputData,
+    });
 
     return {
       method: "POST",
@@ -33,7 +42,8 @@ export class msdyn_CleanUpEmailNBACardsPluginAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_CleanUpEmailNBACardsPluginResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_CleanUpEmailNBACardsPluginResponse;
+    return (await response.json()) as msdyn_CleanUpEmailNBACardsPluginResponse;
   }
 }

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { campaignitem } from "./types/index.js";
 
@@ -11,24 +12,34 @@ export interface RemoveItemCampaignResponse {
 }
 
 /**
+ * Parameters of the RemoveItemCampaign action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveItemCampaignActionParameters {
+  CampaignItem: EntityReference | EntityPayload<campaignitem>;
+}
+
+/**
  * RemoveItemCampaign action
  *
  * Bound action
  * Binding parameter: entity (mscrm.campaign)
+ *
+ * The first argument is the id of the campaign record to call it on.
  */
 export class RemoveItemCampaignAction implements Executable<RemoveItemCampaignResponse> {
   constructor(
     public readonly campaignId: string,
-    public readonly campaignItem: EntityReference | EntityPayload<campaignitem>
+    public readonly parameters: RemoveItemCampaignActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/campaigns(${this.campaignId})/Microsoft.Dynamics.CRM.RemoveItemCampaign`;
 
-    const body: Record<string, unknown> = {
-      CampaignItem: this.campaignItem,
-    };
+    const body = requestBody({
+      CampaignItem: this.parameters.CampaignItem,
+    });
 
     return {
       method: "POST",
@@ -41,7 +52,8 @@ export class RemoveItemCampaignAction implements Executable<RemoveItemCampaignRe
   }
 
   async parseResponse(response: Response): Promise<RemoveItemCampaignResponse> {
-    // No return value (204 No Content)
-    return {};
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RemoveItemCampaignResponse;
+    return (await response.json()) as RemoveItemCampaignResponse;
   }
 }

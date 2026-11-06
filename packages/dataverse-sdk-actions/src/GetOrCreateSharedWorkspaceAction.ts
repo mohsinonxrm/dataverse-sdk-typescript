@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { sharedworkspace } from "./types/index.js";
 
@@ -14,23 +15,29 @@ export interface GetOrCreateSharedWorkspaceResponse extends sharedworkspace {
 }
 
 /**
+ * Parameters of the GetOrCreateSharedWorkspace action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetOrCreateSharedWorkspaceActionParameters {
+  customclaims?: EntityReference | AnyEntityPayload;
+  target: EntityReference | EntityPayload<sharedworkspace>;
+}
+
+/**
  * GetOrCreateSharedWorkspace action
  *
  * Unbound action
  */
 export class GetOrCreateSharedWorkspaceAction implements Executable<GetOrCreateSharedWorkspaceResponse> {
-  constructor(
-    public readonly customclaims: EntityReference | AnyEntityPayload | undefined,
-    public readonly target: EntityReference | EntityPayload<sharedworkspace>
-  ) {}
+  constructor(public readonly parameters: GetOrCreateSharedWorkspaceActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetOrCreateSharedWorkspace`;
 
-    const body: Record<string, unknown> = {
-      customclaims: this.customclaims,
-      target: this.target,
-    };
+    const body = requestBody({
+      customclaims: this.parameters.customclaims,
+      target: this.parameters.target,
+    });
 
     return {
       method: "POST",
@@ -43,7 +50,8 @@ export class GetOrCreateSharedWorkspaceAction implements Executable<GetOrCreateS
   }
 
   async parseResponse(response: Response): Promise<GetOrCreateSharedWorkspaceResponse> {
-    const data = await response.json();
-    return data as GetOrCreateSharedWorkspaceResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetOrCreateSharedWorkspaceResponse;
+    return (await response.json()) as GetOrCreateSharedWorkspaceResponse;
   }
 }

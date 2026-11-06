@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetFCSWithUserContextResponse as msdyn_GetFCSWithUserContextResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetFCSWithUserContext message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetFCSWithUserContextRequestParameters {
+  msdyn_GetFCSWithUserContextInput: string;
+}
 
 /**
  * msdyn_GetFCSWithUserContext request message
@@ -12,16 +21,18 @@ export class msdyn_GetFCSWithUserContextRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetFCSWithUserContextResponse>
 {
-  constructor(public msdyn_GetFCSWithUserContextInput: string) {
-    super("msdyn_GetFCSWithUserContext");
+  declare readonly Parameters: Readonly<msdyn_GetFCSWithUserContextRequestParameters>;
+
+  constructor(parameters: msdyn_GetFCSWithUserContextRequestParameters) {
+    super("msdyn_GetFCSWithUserContext", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetFCSWithUserContext`;
 
-    const body: Record<string, unknown> = {
-      msdyn_GetFCSWithUserContextInput: this.msdyn_GetFCSWithUserContextInput,
-    };
+    const body = requestBody({
+      msdyn_GetFCSWithUserContextInput: this.Parameters.msdyn_GetFCSWithUserContextInput,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class msdyn_GetFCSWithUserContextRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetFCSWithUserContextResponse> {
-    const data = await response.json();
-    return msdyn_GetFCSWithUserContextResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetFCSWithUserContextResponse.fromResponse({});
+    return msdyn_GetFCSWithUserContextResponse.fromResponse(await response.json());
   }
 }
 

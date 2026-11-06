@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { adx_GenerateSharedAccessSignatureResponse as adx_GenerateSharedAccessSignatureResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the adx_GenerateSharedAccessSignature message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface adx_GenerateSharedAccessSignatureRequestParameters {
+  Permissions?: number;
+  ResourceType?: number;
+  Resource?: string;
+}
 
 /**
  * adx_GenerateSharedAccessSignature request message
@@ -12,22 +23,20 @@ export class adx_GenerateSharedAccessSignatureRequest
   extends OrganizationRequest
   implements Executable<adx_GenerateSharedAccessSignatureResponse>
 {
-  constructor(
-    public permissions?: number,
-    public resourceType?: number,
-    public resource?: string
-  ) {
-    super("adx_GenerateSharedAccessSignature");
+  declare readonly Parameters: Readonly<adx_GenerateSharedAccessSignatureRequestParameters>;
+
+  constructor(parameters: adx_GenerateSharedAccessSignatureRequestParameters = {}) {
+    super("adx_GenerateSharedAccessSignature", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/adx_GenerateSharedAccessSignature`;
 
-    const body: Record<string, unknown> = {
-      Permissions: this.permissions,
-      ResourceType: this.resourceType,
-      Resource: this.resource,
-    };
+    const body = requestBody({
+      Permissions: this.Parameters.Permissions,
+      ResourceType: this.Parameters.ResourceType,
+      Resource: this.Parameters.Resource,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class adx_GenerateSharedAccessSignatureRequest
   }
 
   async parseResponse(response: Response): Promise<adx_GenerateSharedAccessSignatureResponse> {
-    const data = await response.json();
-    return adx_GenerateSharedAccessSignatureResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return adx_GenerateSharedAccessSignatureResponse.fromResponse({});
+    return adx_GenerateSharedAccessSignatureResponse.fromResponse(await response.json());
   }
 }
 

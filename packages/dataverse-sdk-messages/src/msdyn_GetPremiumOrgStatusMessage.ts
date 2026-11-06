@@ -29,8 +29,9 @@ export class msdyn_GetPremiumOrgStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPremiumOrgStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetPremiumOrgStatusResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetPremiumOrgStatusResponse.fromResponse({});
+    return msdyn_GetPremiumOrgStatusResponse.fromResponse(await response.json());
   }
 }
 

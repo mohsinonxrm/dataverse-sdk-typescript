@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_GetWorkListConfigurationResponse as msdyn_GetWorkListConfigurationResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_GetWorkListConfiguration message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetWorkListConfigurationRequestParameters {
+  Viewtype?: string;
+  GetData?: boolean;
+  DefaultViewType?: string;
+  QueryParams?: string;
+}
 
 /**
  * msdyn_GetWorkListConfiguration request message
@@ -12,24 +24,21 @@ export class msdyn_GetWorkListConfigurationRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetWorkListConfigurationResponse>
 {
-  constructor(
-    public viewtype?: string,
-    public getData?: boolean,
-    public defaultViewType?: string,
-    public queryParams?: string
-  ) {
-    super("msdyn_GetWorkListConfiguration");
+  declare readonly Parameters: Readonly<msdyn_GetWorkListConfigurationRequestParameters>;
+
+  constructor(parameters: msdyn_GetWorkListConfigurationRequestParameters = {}) {
+    super("msdyn_GetWorkListConfiguration", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetWorkListConfiguration`;
 
-    const body: Record<string, unknown> = {
-      Viewtype: this.viewtype,
-      GetData: this.getData,
-      DefaultViewType: this.defaultViewType,
-      QueryParams: this.queryParams,
-    };
+    const body = requestBody({
+      Viewtype: this.Parameters.Viewtype,
+      GetData: this.Parameters.GetData,
+      DefaultViewType: this.Parameters.DefaultViewType,
+      QueryParams: this.Parameters.QueryParams,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,9 @@ export class msdyn_GetWorkListConfigurationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetWorkListConfigurationResponse> {
-    const data = await response.json();
-    return msdyn_GetWorkListConfigurationResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetWorkListConfigurationResponse.fromResponse({});
+    return msdyn_GetWorkListConfigurationResponse.fromResponse(await response.json());
   }
 }
 

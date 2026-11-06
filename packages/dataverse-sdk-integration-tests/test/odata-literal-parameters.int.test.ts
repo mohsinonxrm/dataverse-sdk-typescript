@@ -17,12 +17,12 @@ describe.skipIf(!live)("live: one OData literal serializer (#254)", () => {
   it("an enum given as comma-separated names is read as flags", async () => {
     const { client } = liveClient();
     const result = (await client.execute(
-      new RetrieveEntityFunction(
-        "Entity, Attributes" as unknown as "Entity",
-        "account",
-        EMPTY_GUID,
-        false
-      )
+      new RetrieveEntityFunction({
+        EntityFilters: "Entity, Attributes" as unknown as "Entity",
+        LogicalName: "account",
+        MetadataId: EMPTY_GUID,
+        RetrieveAsIfPublished: false,
+      })
     )) as unknown as { EntityMetadata: { LogicalName: string; Attributes?: unknown[] } };
     expect(result.EntityMetadata.LogicalName).toBe("account");
     expect(result.EntityMetadata.Attributes?.length).toBeGreaterThan(0);
@@ -30,10 +30,12 @@ describe.skipIf(!live)("live: one OData literal serializer (#254)", () => {
 
   it("a DateTimeOffset given as a date alone or with an offset", async () => {
     const { client } = liveClient();
-    const dateOnly = await client.execute(new LocalTimeFromUtcTimeFunction(85, "2026-01-01"));
+    const dateOnly = await client.execute(
+      new LocalTimeFromUtcTimeFunction({ TimeZoneCode: 85, UtcTime: "2026-01-01" })
+    );
     expect(dateOnly.LocalTime).toMatch(/^2026-01-01T00:00:00/);
     const offset = await client.execute(
-      new LocalTimeFromUtcTimeFunction(85, "2026-01-01T00:00:00+02:00")
+      new LocalTimeFromUtcTimeFunction({ TimeZoneCode: 85, UtcTime: "2026-01-01T00:00:00+02:00" })
     );
     expect(offset.LocalTime).toMatch(/^2025-12-31T22:00:00/);
   });
@@ -61,7 +63,14 @@ describe.skipIf(!live)("live: one OData literal serializer (#254)", () => {
   it("a GUID that isn't one throws before the request (the Web API answers 500 to it)", async () => {
     const { client } = liveClient();
     await expect(
-      client.execute(new RetrieveEntityFunction("Entity", "account", "abc", false))
+      client.execute(
+        new RetrieveEntityFunction({
+          EntityFilters: "Entity",
+          LogicalName: "account",
+          MetadataId: "abc",
+          RetrieveAsIfPublished: false,
+        })
+      )
     ).rejects.toThrow(DataverseInvalidRequestError);
   });
 });

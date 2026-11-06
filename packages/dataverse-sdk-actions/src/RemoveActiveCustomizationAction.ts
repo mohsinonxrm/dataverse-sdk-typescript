@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from RemoveActiveCustomization action
@@ -8,23 +9,29 @@ export interface RemoveActiveCustomizationResponse {
 }
 
 /**
+ * Parameters of the RemoveActiveCustomization action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveActiveCustomizationActionParameters {
+  LogicalName: string;
+  Id: string;
+}
+
+/**
  * RemoveActiveCustomization action
  *
  * Unbound action
  */
 export class RemoveActiveCustomizationAction implements Executable<RemoveActiveCustomizationResponse> {
-  constructor(
-    public readonly logicalName: string,
-    public readonly id: string
-  ) {}
+  constructor(public readonly parameters: RemoveActiveCustomizationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RemoveActiveCustomization`;
 
-    const body: Record<string, unknown> = {
-      LogicalName: this.logicalName,
-      Id: this.id,
-    };
+    const body = requestBody({
+      LogicalName: this.parameters.LogicalName,
+      Id: this.parameters.Id,
+    });
 
     return {
       method: "POST",
@@ -37,7 +44,8 @@ export class RemoveActiveCustomizationAction implements Executable<RemoveActiveC
   }
 
   async parseResponse(response: Response): Promise<RemoveActiveCustomizationResponse> {
-    const data = await response.json();
-    return data as RemoveActiveCustomizationResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RemoveActiveCustomizationResponse;
+    return (await response.json()) as RemoveActiveCustomizationResponse;
   }
 }

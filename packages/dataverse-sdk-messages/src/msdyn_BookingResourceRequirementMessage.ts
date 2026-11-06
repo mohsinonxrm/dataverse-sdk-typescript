@@ -1,47 +1,60 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_BookingResourceRequirementResponse as msdyn_BookingResourceRequirementResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_BookingResourceRequirement message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_BookingResourceRequirementRequestParameters {
+  ResourceId: string;
+  BookingStatusId: string;
+  BookingMethod: number;
+  BookingType: number;
+  StartDateTime: string;
+  EndDateTime: string;
+  Timeframe?: number;
+  Hours?: number;
+  Percentage?: number;
+}
 
 /**
  * msdyn_BookingResourceRequirement request message
  *
  * Web API Action: msdyn_BookingResourceRequirement
+ *
+ * The first argument is the id of the msdyn_resourcerequirement record to call it on.
  */
 export class msdyn_BookingResourceRequirementRequest
   extends OrganizationRequest
   implements Executable<msdyn_BookingResourceRequirementResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_BookingResourceRequirementRequestParameters>;
+
   constructor(
     public msdyn_resourcerequirementId: string,
-    public resourceId: string,
-    public bookingStatusId: string,
-    public bookingMethod: number,
-    public bookingType: number,
-    public startDateTime: string,
-    public endDateTime: string,
-    public timeframe?: number,
-    public hours?: number,
-    public percentage?: number
+    parameters: msdyn_BookingResourceRequirementRequestParameters
   ) {
-    super("msdyn_BookingResourceRequirement");
+    super("msdyn_BookingResourceRequirement", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
     const url = `${baseUrl}/msdyn_resourcerequirements(${this.msdyn_resourcerequirementId})/Microsoft.Dynamics.CRM.msdyn_BookingResourceRequirement`;
 
-    const body: Record<string, unknown> = {
-      ResourceId: this.resourceId,
-      BookingStatusId: this.bookingStatusId,
-      BookingMethod: this.bookingMethod,
-      BookingType: this.bookingType,
-      StartDateTime: this.startDateTime,
-      EndDateTime: this.endDateTime,
-      Timeframe: this.timeframe,
-      Hours: this.hours,
-      Percentage: this.percentage,
-    };
+    const body = requestBody({
+      ResourceId: this.Parameters.ResourceId,
+      BookingStatusId: this.Parameters.BookingStatusId,
+      BookingMethod: this.Parameters.BookingMethod,
+      BookingType: this.Parameters.BookingType,
+      StartDateTime: this.Parameters.StartDateTime,
+      EndDateTime: this.Parameters.EndDateTime,
+      Timeframe: this.Parameters.Timeframe,
+      Hours: this.Parameters.Hours,
+      Percentage: this.Parameters.Percentage,
+    });
 
     return {
       method: "POST",
@@ -54,8 +67,9 @@ export class msdyn_BookingResourceRequirementRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_BookingResourceRequirementResponse> {
-    const data = await response.json();
-    return msdyn_BookingResourceRequirementResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_BookingResourceRequirementResponse.fromResponse({});
+    return msdyn_BookingResourceRequirementResponse.fromResponse(await response.json());
   }
 }
 

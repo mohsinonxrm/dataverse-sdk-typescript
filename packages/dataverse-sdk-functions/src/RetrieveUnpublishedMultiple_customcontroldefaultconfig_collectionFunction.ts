@@ -31,7 +31,9 @@ export class RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionFu
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionResponse> {
-    const data = await response.json();
-    return data as RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionResponse;
+    return (await response.json()) as RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionResponse;
   }
 }

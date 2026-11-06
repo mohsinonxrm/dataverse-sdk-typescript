@@ -28,8 +28,9 @@ export class RetrievePowerAppsConnectorApisRequest
   }
 
   async parseResponse(response: Response): Promise<RetrievePowerAppsConnectorApisResponse> {
-    const data = await response.json();
-    return RetrievePowerAppsConnectorApisResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return RetrievePowerAppsConnectorApisResponse.fromResponse({});
+    return RetrievePowerAppsConnectorApisResponse.fromResponse(await response.json());
   }
 }
 

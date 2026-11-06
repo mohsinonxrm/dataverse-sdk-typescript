@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { CanBeReferencedResponse as CanBeReferencedResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the CanBeReferenced message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CanBeReferencedRequestParameters {
+  EntityName: string;
+}
 
 /**
  * CanBeReferenced request message
@@ -12,16 +21,18 @@ export class CanBeReferencedRequest
   extends OrganizationRequest
   implements Executable<CanBeReferencedResponse>
 {
-  constructor(public entityName: string) {
-    super("CanBeReferenced");
+  declare readonly Parameters: Readonly<CanBeReferencedRequestParameters>;
+
+  constructor(parameters: CanBeReferencedRequestParameters) {
+    super("CanBeReferenced", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CanBeReferenced`;
 
-    const body: Record<string, unknown> = {
-      EntityName: this.entityName,
-    };
+    const body = requestBody({
+      EntityName: this.Parameters.EntityName,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,9 @@ export class CanBeReferencedRequest
   }
 
   async parseResponse(response: Response): Promise<CanBeReferencedResponse> {
-    const data = await response.json();
-    return CanBeReferencedResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return CanBeReferencedResponse.fromResponse({});
+    return CanBeReferencedResponse.fromResponse(await response.json());
   }
 }
 

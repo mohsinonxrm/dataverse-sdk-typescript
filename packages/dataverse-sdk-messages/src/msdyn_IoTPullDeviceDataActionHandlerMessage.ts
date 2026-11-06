@@ -1,7 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_IoTPullDeviceDataActionHandlerResponse as msdyn_IoTPullDeviceDataActionHandlerResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_IoTPullDeviceDataActionHandler message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IoTPullDeviceDataActionHandlerRequestParameters {
+  EntityCollection?: Record<string, unknown>[];
+}
 
 /**
  * msdyn_IoTPullDeviceDataActionHandler request message
@@ -12,16 +21,18 @@ export class msdyn_IoTPullDeviceDataActionHandlerRequest
   extends OrganizationRequest
   implements Executable<msdyn_IoTPullDeviceDataActionHandlerResponse>
 {
-  constructor(public entityCollection?: Record<string, unknown>[]) {
-    super("msdyn_IoTPullDeviceDataActionHandler");
+  declare readonly Parameters: Readonly<msdyn_IoTPullDeviceDataActionHandlerRequestParameters>;
+
+  constructor(parameters: msdyn_IoTPullDeviceDataActionHandlerRequestParameters = {}) {
+    super("msdyn_IoTPullDeviceDataActionHandler", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IoTPullDeviceDataActionHandler`;
 
-    const body: Record<string, unknown> = {
-      EntityCollection: this.entityCollection,
-    };
+    const body = requestBody({
+      EntityCollection: this.Parameters.EntityCollection,
+    });
 
     return {
       method: "POST",
@@ -34,8 +45,10 @@ export class msdyn_IoTPullDeviceDataActionHandlerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IoTPullDeviceDataActionHandlerResponse> {
-    const data = await response.json();
-    return msdyn_IoTPullDeviceDataActionHandlerResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_IoTPullDeviceDataActionHandlerResponse.fromResponse({});
+    return msdyn_IoTPullDeviceDataActionHandlerResponse.fromResponse(await response.json());
   }
 }
 

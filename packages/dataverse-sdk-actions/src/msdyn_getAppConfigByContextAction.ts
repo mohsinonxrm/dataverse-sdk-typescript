@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from msdyn_getAppConfigByContext action
@@ -9,27 +10,33 @@ export interface msdyn_getAppConfigByContextResponse {
 }
 
 /**
+ * Parameters of the msdyn_getAppConfigByContext action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_getAppConfigByContextActionParameters {
+  AppUniqueName: string;
+  UserId?: string;
+  Roles?: string;
+  FormFactor?: number;
+}
+
+/**
  * msdyn_getAppConfigByContext action
  *
  * Unbound action
  */
 export class msdyn_getAppConfigByContextAction implements Executable<msdyn_getAppConfigByContextResponse> {
-  constructor(
-    public readonly appUniqueName: string,
-    public readonly userId?: string,
-    public readonly roles?: string,
-    public readonly formFactor?: number
-  ) {}
+  constructor(public readonly parameters: msdyn_getAppConfigByContextActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_getAppConfigByContext`;
 
-    const body: Record<string, unknown> = {
-      AppUniqueName: this.appUniqueName,
-      UserId: this.userId,
-      Roles: this.roles,
-      FormFactor: this.formFactor,
-    };
+    const body = requestBody({
+      AppUniqueName: this.parameters.AppUniqueName,
+      UserId: this.parameters.UserId,
+      Roles: this.parameters.Roles,
+      FormFactor: this.parameters.FormFactor,
+    });
 
     return {
       method: "POST",
@@ -42,7 +49,8 @@ export class msdyn_getAppConfigByContextAction implements Executable<msdyn_getAp
   }
 
   async parseResponse(response: Response): Promise<msdyn_getAppConfigByContextResponse> {
-    const data = await response.json();
-    return data as msdyn_getAppConfigByContextResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_getAppConfigByContextResponse;
+    return (await response.json()) as msdyn_getAppConfigByContextResponse;
   }
 }

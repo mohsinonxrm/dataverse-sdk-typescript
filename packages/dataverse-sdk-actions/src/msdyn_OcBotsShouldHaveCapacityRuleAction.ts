@@ -28,7 +28,8 @@ export class msdyn_OcBotsShouldHaveCapacityRuleAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_OcBotsShouldHaveCapacityRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_OcBotsShouldHaveCapacityRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_OcBotsShouldHaveCapacityRuleResponse;
+    return (await response.json()) as msdyn_OcBotsShouldHaveCapacityRuleResponse;
   }
 }

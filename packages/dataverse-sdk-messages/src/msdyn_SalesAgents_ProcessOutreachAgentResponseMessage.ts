@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_SalesAgents_ProcessOutreachAgentResponseResponse as msdyn_SalesAgents_ProcessOutreachAgentResponseResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_ProcessOutreachAgentResponse message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_ProcessOutreachAgentResponseRequestParameters {
+  msdyn_SalesAgentRunId: string;
+  msdyn_TrackingId: string;
+  msdyn_Email: string;
+}
 
 /**
  * msdyn_SalesAgents_ProcessOutreachAgentResponse request message
@@ -12,22 +23,20 @@ export class msdyn_SalesAgents_ProcessOutreachAgentResponseRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_ProcessOutreachAgentResponseResponse>
 {
-  constructor(
-    public msdyn_SalesAgentRunId: string,
-    public msdyn_TrackingId: string,
-    public msdyn_Email: string
-  ) {
-    super("msdyn_SalesAgents_ProcessOutreachAgentResponse");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_ProcessOutreachAgentResponseRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_ProcessOutreachAgentResponseRequestParameters) {
+    super("msdyn_SalesAgents_ProcessOutreachAgentResponse", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_ProcessOutreachAgentResponse`;
 
-    const body: Record<string, unknown> = {
-      msdyn_SalesAgentRunId: this.msdyn_SalesAgentRunId,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_Email: this.msdyn_Email,
-    };
+    const body = requestBody({
+      msdyn_SalesAgentRunId: this.Parameters.msdyn_SalesAgentRunId,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+      msdyn_Email: this.Parameters.msdyn_Email,
+    });
 
     return {
       method: "POST",
@@ -42,8 +51,12 @@ export class msdyn_SalesAgents_ProcessOutreachAgentResponseRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_ProcessOutreachAgentResponseResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_ProcessOutreachAgentResponseResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return msdyn_SalesAgents_ProcessOutreachAgentResponseResponse.fromResponse({});
+    return msdyn_SalesAgents_ProcessOutreachAgentResponseResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 

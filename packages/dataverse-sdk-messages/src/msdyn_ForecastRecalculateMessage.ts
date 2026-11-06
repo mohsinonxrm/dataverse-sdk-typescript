@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_ForecastRecalculate message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ForecastRecalculateRequestParameters {
+  ForecastInstance: EntityReference | AnyEntityPayload;
+  IsRefreshHierarchy: boolean;
+}
 
 /**
  * msdyn_ForecastRecalculate request message
@@ -12,20 +22,19 @@ export class msdyn_ForecastRecalculateRequest
   extends OrganizationRequest
   implements Executable<msdyn_ForecastRecalculateResponse>
 {
-  constructor(
-    public forecastInstance: EntityReference | AnyEntityPayload,
-    public isRefreshHierarchy: boolean
-  ) {
-    super("msdyn_ForecastRecalculate");
+  declare readonly Parameters: Readonly<msdyn_ForecastRecalculateRequestParameters>;
+
+  constructor(parameters: msdyn_ForecastRecalculateRequestParameters) {
+    super("msdyn_ForecastRecalculate", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ForecastRecalculate`;
 
-    const body: Record<string, unknown> = {
-      ForecastInstance: this.forecastInstance,
-      IsRefreshHierarchy: this.isRefreshHierarchy,
-    };
+    const body = requestBody({
+      ForecastInstance: this.Parameters.ForecastInstance,
+      IsRefreshHierarchy: this.Parameters.IsRefreshHierarchy,
+    });
 
     return {
       method: "POST",

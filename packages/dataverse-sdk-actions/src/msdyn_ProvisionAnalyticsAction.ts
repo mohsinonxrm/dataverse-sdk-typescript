@@ -26,7 +26,8 @@ export class msdyn_ProvisionAnalyticsAction implements Executable<msdyn_Provisio
   }
 
   async parseResponse(response: Response): Promise<msdyn_ProvisionAnalyticsResponse> {
-    const data = await response.json();
-    return data as msdyn_ProvisionAnalyticsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_ProvisionAnalyticsResponse;
+    return (await response.json()) as msdyn_ProvisionAnalyticsResponse;
   }
 }

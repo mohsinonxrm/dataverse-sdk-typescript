@@ -29,8 +29,9 @@ export class msdyn_GetODOSMetadataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetODOSMetadataResponse> {
-    const data = await response.json();
-    return msdyn_GetODOSMetadataResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetODOSMetadataResponse.fromResponse({});
+    return msdyn_GetODOSMetadataResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
  * Response from CCaaS_BulkQueueAssignment action
@@ -8,25 +9,31 @@ export interface CCaaS_BulkQueueAssignmentResponse {
 }
 
 /**
+ * Parameters of the CCaaS_BulkQueueAssignment action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CCaaS_BulkQueueAssignmentActionParameters {
+  ApiVersion: string;
+  ConversationIds: string[];
+  TargetQueueId: string;
+}
+
+/**
  * CCaaS_BulkQueueAssignment action
  *
  * Unbound action
  */
 export class CCaaS_BulkQueueAssignmentAction implements Executable<CCaaS_BulkQueueAssignmentResponse> {
-  constructor(
-    public readonly apiVersion: string,
-    public readonly conversationIds: string[],
-    public readonly targetQueueId: string
-  ) {}
+  constructor(public readonly parameters: CCaaS_BulkQueueAssignmentActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CCaaS_BulkQueueAssignment`;
 
-    const body: Record<string, unknown> = {
-      ApiVersion: this.apiVersion,
-      ConversationIds: this.conversationIds,
-      TargetQueueId: this.targetQueueId,
-    };
+    const body = requestBody({
+      ApiVersion: this.parameters.ApiVersion,
+      ConversationIds: this.parameters.ConversationIds,
+      TargetQueueId: this.parameters.TargetQueueId,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class CCaaS_BulkQueueAssignmentAction implements Executable<CCaaS_BulkQue
   }
 
   async parseResponse(response: Response): Promise<CCaaS_BulkQueueAssignmentResponse> {
-    const data = await response.json();
-    return data as CCaaS_BulkQueueAssignmentResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as CCaaS_BulkQueueAssignmentResponse;
+    return (await response.json()) as CCaaS_BulkQueueAssignmentResponse;
   }
 }

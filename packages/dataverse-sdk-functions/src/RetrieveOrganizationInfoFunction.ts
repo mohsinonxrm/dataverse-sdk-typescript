@@ -27,7 +27,8 @@ export class RetrieveOrganizationInfoFunction implements Executable<RetrieveOrga
   }
 
   async parseResponse(response: Response): Promise<RetrieveOrganizationInfoResponse> {
-    const data = await response.json();
-    return data as RetrieveOrganizationInfoResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveOrganizationInfoResponse;
+    return (await response.json()) as RetrieveOrganizationInfoResponse;
   }
 }

@@ -29,8 +29,9 @@ export class msdyn_GetOrCreateExtUserSettingRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOrCreateExtUserSettingResponse> {
-    const data = await response.json();
-    return msdyn_GetOrCreateExtUserSettingResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_GetOrCreateExtUserSettingResponse.fromResponse({});
+    return msdyn_GetOrCreateExtUserSettingResponse.fromResponse(await response.json());
   }
 }
 

@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdynmkt_PredefinedPlaceholderAddCount message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_PredefinedPlaceholderAddCountRequestParameters {
+  PredefinedPlaceholderAddCountRequest?: string;
+}
 
 /**
  * msdynmkt_PredefinedPlaceholderAddCount request message
@@ -10,16 +19,18 @@ export class msdynmkt_PredefinedPlaceholderAddCountRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_PredefinedPlaceholderAddCountResponse>
 {
-  constructor(public predefinedPlaceholderAddCountRequest?: string) {
-    super("msdynmkt_PredefinedPlaceholderAddCount");
+  declare readonly Parameters: Readonly<msdynmkt_PredefinedPlaceholderAddCountRequestParameters>;
+
+  constructor(parameters: msdynmkt_PredefinedPlaceholderAddCountRequestParameters = {}) {
+    super("msdynmkt_PredefinedPlaceholderAddCount", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_PredefinedPlaceholderAddCount`;
 
-    const body: Record<string, unknown> = {
-      PredefinedPlaceholderAddCountRequest: this.predefinedPlaceholderAddCountRequest,
-    };
+    const body = requestBody({
+      PredefinedPlaceholderAddCountRequest: this.Parameters.PredefinedPlaceholderAddCountRequest,
+    });
 
     return {
       method: "POST",

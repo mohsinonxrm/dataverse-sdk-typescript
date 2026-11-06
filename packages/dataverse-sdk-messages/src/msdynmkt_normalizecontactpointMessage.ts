@@ -1,7 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdynmkt_normalizecontactpointResponse as msdynmkt_normalizecontactpointResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdynmkt_normalizecontactpoint message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdynmkt_normalizecontactpointRequestParameters {
+  msdynmkt_contactpointvalue: string;
+  msdynmkt_contactpointtype: number;
+}
 
 /**
  * msdynmkt_normalizecontactpoint request message
@@ -12,20 +22,19 @@ export class msdynmkt_normalizecontactpointRequest
   extends OrganizationRequest
   implements Executable<msdynmkt_normalizecontactpointResponse>
 {
-  constructor(
-    public msdynmkt_contactpointvalue: string,
-    public msdynmkt_contactpointtype: number
-  ) {
-    super("msdynmkt_normalizecontactpoint");
+  declare readonly Parameters: Readonly<msdynmkt_normalizecontactpointRequestParameters>;
+
+  constructor(parameters: msdynmkt_normalizecontactpointRequestParameters) {
+    super("msdynmkt_normalizecontactpoint", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdynmkt_normalizecontactpoint`;
 
-    const body: Record<string, unknown> = {
-      msdynmkt_contactpointvalue: this.msdynmkt_contactpointvalue,
-      msdynmkt_contactpointtype: this.msdynmkt_contactpointtype,
-    };
+    const body = requestBody({
+      msdynmkt_contactpointvalue: this.Parameters.msdynmkt_contactpointvalue,
+      msdynmkt_contactpointtype: this.Parameters.msdynmkt_contactpointtype,
+    });
 
     return {
       method: "POST",
@@ -38,8 +47,9 @@ export class msdynmkt_normalizecontactpointRequest
   }
 
   async parseResponse(response: Response): Promise<msdynmkt_normalizecontactpointResponse> {
-    const data = await response.json();
-    return msdynmkt_normalizecontactpointResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdynmkt_normalizecontactpointResponse.fromResponse({});
+    return msdynmkt_normalizecontactpointResponse.fromResponse(await response.json());
   }
 }
 

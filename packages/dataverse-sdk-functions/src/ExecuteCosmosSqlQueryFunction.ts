@@ -14,19 +14,25 @@ export interface ExecuteCosmosSqlQueryResponse {
 }
 
 /**
+ * Parameters of the ExecuteCosmosSqlQuery function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ExecuteCosmosSqlQueryFunctionParameters {
+  QueryText: string;
+  EntityLogicalName: string;
+  QueryParameters?: ParameterCollection;
+  PageSize?: number;
+  PagingCookie?: string;
+  PartitionId?: string;
+}
+
+/**
  * ExecuteCosmosSqlQuery function
  *
  * Unbound function
  */
 export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSqlQueryResponse> {
-  constructor(
-    public readonly queryText: string,
-    public readonly entityLogicalName: string,
-    public readonly queryParameters?: ParameterCollection,
-    public readonly pageSize?: number,
-    public readonly pagingCookie?: string,
-    public readonly partitionId?: string
-  ) {}
+  constructor(public readonly parameters: ExecuteCosmosSqlQueryFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/ExecuteCosmosSqlQuery`;
@@ -34,29 +40,29 @@ export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSq
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.queryText !== undefined) {
+    if (this.parameters.QueryText !== undefined) {
       aliases.push(`QueryText=@p1`);
-      params.append("@p1", formatParameterAlias(this.queryText, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.QueryText, "Edm.String"));
     }
-    if (this.entityLogicalName !== undefined) {
+    if (this.parameters.EntityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p2`);
-      params.append("@p2", formatParameterAlias(this.entityLogicalName, "Edm.String"));
+      params.append("@p2", formatParameterAlias(this.parameters.EntityLogicalName, "Edm.String"));
     }
-    if (this.queryParameters !== undefined) {
+    if (this.parameters.QueryParameters !== undefined) {
       aliases.push(`QueryParameters=@p3`);
-      params.append("@p3", JSON.stringify(this.queryParameters));
+      params.append("@p3", JSON.stringify(this.parameters.QueryParameters));
     }
-    if (this.pageSize !== undefined) {
+    if (this.parameters.PageSize !== undefined) {
       aliases.push(`PageSize=@p4`);
-      params.append("@p4", formatParameterAlias(this.pageSize, "Edm.Int64"));
+      params.append("@p4", formatParameterAlias(this.parameters.PageSize, "Edm.Int64"));
     }
-    if (this.pagingCookie !== undefined) {
+    if (this.parameters.PagingCookie !== undefined) {
       aliases.push(`PagingCookie=@p5`);
-      params.append("@p5", formatParameterAlias(this.pagingCookie, "Edm.String"));
+      params.append("@p5", formatParameterAlias(this.parameters.PagingCookie, "Edm.String"));
     }
-    if (this.partitionId !== undefined) {
+    if (this.parameters.PartitionId !== undefined) {
       aliases.push(`PartitionId=@p6`);
-      params.append("@p6", formatParameterAlias(this.partitionId, "Edm.String"));
+      params.append("@p6", formatParameterAlias(this.parameters.PartitionId, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -72,7 +78,8 @@ export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSq
   }
 
   async parseResponse(response: Response): Promise<ExecuteCosmosSqlQueryResponse> {
-    const data = await response.json();
-    return data as ExecuteCosmosSqlQueryResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as ExecuteCosmosSqlQueryResponse;
+    return (await response.json()) as ExecuteCosmosSqlQueryResponse;
   }
 }

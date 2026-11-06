@@ -9,12 +9,20 @@ export interface GetValidReferencedEntitiesResponse {
 }
 
 /**
+ * Parameters of the GetValidReferencedEntities function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetValidReferencedEntitiesFunctionParameters {
+  ReferencingEntityName?: string;
+}
+
+/**
  * GetValidReferencedEntities function
  *
  * Unbound function
  */
 export class GetValidReferencedEntitiesFunction implements Executable<GetValidReferencedEntitiesResponse> {
-  constructor(public readonly referencingEntityName?: string) {}
+  constructor(public readonly parameters: GetValidReferencedEntitiesFunctionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/GetValidReferencedEntities`;
@@ -22,9 +30,12 @@ export class GetValidReferencedEntitiesFunction implements Executable<GetValidRe
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.referencingEntityName !== undefined) {
+    if (this.parameters.ReferencingEntityName !== undefined) {
       aliases.push(`ReferencingEntityName=@p1`);
-      params.append("@p1", formatParameterAlias(this.referencingEntityName, "Edm.String"));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.ReferencingEntityName, "Edm.String")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +51,8 @@ export class GetValidReferencedEntitiesFunction implements Executable<GetValidRe
   }
 
   async parseResponse(response: Response): Promise<GetValidReferencedEntitiesResponse> {
-    const data = await response.json();
-    return data as GetValidReferencedEntitiesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as GetValidReferencedEntitiesResponse;
+    return (await response.json()) as GetValidReferencedEntitiesResponse;
   }
 }

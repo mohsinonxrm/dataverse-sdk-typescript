@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_JsonGetNumberResponse as msdyn_JsonGetNumberResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_JsonGetNumber message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_JsonGetNumberRequestParameters {
+  Json?: string;
+  PropertyPath: string;
+  DefaultReturnValue?: number;
+}
 
 /**
  * msdyn_JsonGetNumber request message
@@ -12,22 +23,20 @@ export class msdyn_JsonGetNumberRequest
   extends OrganizationRequest
   implements Executable<msdyn_JsonGetNumberResponse>
 {
-  constructor(
-    public json: string | undefined,
-    public propertyPath: string,
-    public defaultReturnValue?: number
-  ) {
-    super("msdyn_JsonGetNumber");
+  declare readonly Parameters: Readonly<msdyn_JsonGetNumberRequestParameters>;
+
+  constructor(parameters: msdyn_JsonGetNumberRequestParameters) {
+    super("msdyn_JsonGetNumber", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_JsonGetNumber`;
 
-    const body: Record<string, unknown> = {
-      Json: this.json,
-      PropertyPath: this.propertyPath,
-      DefaultReturnValue: this.defaultReturnValue,
-    };
+    const body = requestBody({
+      Json: this.Parameters.Json,
+      PropertyPath: this.Parameters.PropertyPath,
+      DefaultReturnValue: this.Parameters.DefaultReturnValue,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_JsonGetNumberRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_JsonGetNumberResponse> {
-    const data = await response.json();
-    return msdyn_JsonGetNumberResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_JsonGetNumberResponse.fromResponse({});
+    return msdyn_JsonGetNumberResponse.fromResponse(await response.json());
   }
 }
 

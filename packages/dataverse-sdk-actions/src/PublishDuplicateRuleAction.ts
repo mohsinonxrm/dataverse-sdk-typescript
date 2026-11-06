@@ -16,6 +16,8 @@ export interface PublishDuplicateRuleResponse extends asyncoperation {
  *
  * Bound action
  * Binding parameter: entity (mscrm.duplicaterule)
+ *
+ * The first argument is the id of the duplicaterule record to call it on.
  */
 export class PublishDuplicateRuleAction implements Executable<PublishDuplicateRuleResponse> {
   constructor(public readonly duplicateruleId: string) {}
@@ -34,7 +36,8 @@ export class PublishDuplicateRuleAction implements Executable<PublishDuplicateRu
   }
 
   async parseResponse(response: Response): Promise<PublishDuplicateRuleResponse> {
-    const data = await response.json();
-    return data as PublishDuplicateRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as PublishDuplicateRuleResponse;
+    return (await response.json()) as PublishDuplicateRuleResponse;
   }
 }

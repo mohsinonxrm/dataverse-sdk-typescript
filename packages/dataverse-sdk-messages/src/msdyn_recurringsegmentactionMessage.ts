@@ -1,7 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { responseObject } from "./internal/responseData.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_recurringsegmentactionResponse as msdyn_recurringsegmentactionResponseData } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_recurringsegmentaction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_recurringsegmentactionRequestParameters {
+  payload: string;
+  operationType: string;
+  segmentId: string;
+}
 
 /**
  * msdyn_recurringsegmentaction request message
@@ -12,22 +23,20 @@ export class msdyn_recurringsegmentactionRequest
   extends OrganizationRequest
   implements Executable<msdyn_recurringsegmentactionResponse>
 {
-  constructor(
-    public payload: string,
-    public operationType: string,
-    public segmentId: string
-  ) {
-    super("msdyn_recurringsegmentaction");
+  declare readonly Parameters: Readonly<msdyn_recurringsegmentactionRequestParameters>;
+
+  constructor(parameters: msdyn_recurringsegmentactionRequestParameters) {
+    super("msdyn_recurringsegmentaction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_recurringsegmentaction`;
 
-    const body: Record<string, unknown> = {
-      payload: this.payload,
-      operationType: this.operationType,
-      segmentId: this.segmentId,
-    };
+    const body = requestBody({
+      payload: this.Parameters.payload,
+      operationType: this.Parameters.operationType,
+      segmentId: this.Parameters.segmentId,
+    });
 
     return {
       method: "POST",
@@ -40,8 +49,9 @@ export class msdyn_recurringsegmentactionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_recurringsegmentactionResponse> {
-    const data = await response.json();
-    return msdyn_recurringsegmentactionResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_recurringsegmentactionResponse.fromResponse({});
+    return msdyn_recurringsegmentactionResponse.fromResponse(await response.json());
   }
 }
 

@@ -26,7 +26,8 @@ export class msdyn_GetAppModuleSettingsAction implements Executable<msdyn_GetApp
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAppModuleSettingsResponse> {
-    const data = await response.json();
-    return data as msdyn_GetAppModuleSettingsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetAppModuleSettingsResponse;
+    return (await response.json()) as msdyn_GetAppModuleSettingsResponse;
   }
 }

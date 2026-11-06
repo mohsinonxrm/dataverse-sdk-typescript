@@ -29,8 +29,9 @@ export class msdyn_MigrateArcProactiveRunRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_MigrateArcProactiveRunResponse> {
-    const data = await response.json();
-    return msdyn_MigrateArcProactiveRunResponse.fromResponse(data);
+    // 204 No Content is an empty result
+    if (response.status === 204) return msdyn_MigrateArcProactiveRunResponse.fromResponse({});
+    return msdyn_MigrateArcProactiveRunResponse.fromResponse(await response.json());
   }
 }
 

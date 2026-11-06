@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_ActivateRoutingRule message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ActivateRoutingRuleRequestParameters {
+  msdyn_ownerId: string;
+  msdyn_routingRuleId: string;
+}
 
 /**
  * msdyn_ActivateRoutingRule request message
@@ -10,20 +20,19 @@ export class msdyn_ActivateRoutingRuleRequest
   extends OrganizationRequest
   implements Executable<msdyn_ActivateRoutingRuleResponse>
 {
-  constructor(
-    public msdyn_ownerId: string,
-    public msdyn_routingRuleId: string
-  ) {
-    super("msdyn_ActivateRoutingRule");
+  declare readonly Parameters: Readonly<msdyn_ActivateRoutingRuleRequestParameters>;
+
+  constructor(parameters: msdyn_ActivateRoutingRuleRequestParameters) {
+    super("msdyn_ActivateRoutingRule", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ActivateRoutingRule`;
 
-    const body: Record<string, unknown> = {
-      msdyn_ownerId: this.msdyn_ownerId,
-      msdyn_routingRuleId: this.msdyn_routingRuleId,
-    };
+    const body = requestBody({
+      msdyn_ownerId: this.Parameters.msdyn_ownerId,
+      msdyn_routingRuleId: this.Parameters.msdyn_routingRuleId,
+    });
 
     return {
       method: "POST",

@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -11,33 +12,41 @@ export interface msdyn_GetOrganizationalUnitsWithinRadiusResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetOrganizationalUnitsWithinRadius action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetOrganizationalUnitsWithinRadiusActionParameters {
+  Version?: string;
+  Latitude: number;
+  Longitude: number;
+  Radius: number;
+  Unit: number;
+  EligibleOrganizationlUnitIds?: Record<string, unknown>[];
+  AdditionalCustomInput?: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_GetOrganizationalUnitsWithinRadius action
  *
  * Unbound action
  */
 export class msdyn_GetOrganizationalUnitsWithinRadiusAction implements Executable<msdyn_GetOrganizationalUnitsWithinRadiusResponse> {
   constructor(
-    public readonly version: string | undefined,
-    public readonly latitude: number,
-    public readonly longitude: number,
-    public readonly radius: number,
-    public readonly unit: number,
-    public readonly eligibleOrganizationlUnitIds?: Record<string, unknown>[],
-    public readonly additionalCustomInput?: EntityReference | AnyEntityPayload
+    public readonly parameters: msdyn_GetOrganizationalUnitsWithinRadiusActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetOrganizationalUnitsWithinRadius`;
 
-    const body: Record<string, unknown> = {
-      Version: this.version,
-      Latitude: this.latitude,
-      Longitude: this.longitude,
-      Radius: this.radius,
-      Unit: this.unit,
-      EligibleOrganizationlUnitIds: this.eligibleOrganizationlUnitIds,
-      AdditionalCustomInput: this.additionalCustomInput,
-    };
+    const body = requestBody({
+      Version: this.parameters.Version,
+      Latitude: this.parameters.Latitude,
+      Longitude: this.parameters.Longitude,
+      Radius: this.parameters.Radius,
+      Unit: this.parameters.Unit,
+      EligibleOrganizationlUnitIds: this.parameters.EligibleOrganizationlUnitIds,
+      AdditionalCustomInput: this.parameters.AdditionalCustomInput,
+    });
 
     return {
       method: "POST",
@@ -52,7 +61,8 @@ export class msdyn_GetOrganizationalUnitsWithinRadiusAction implements Executabl
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetOrganizationalUnitsWithinRadiusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetOrganizationalUnitsWithinRadiusResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetOrganizationalUnitsWithinRadiusResponse;
+    return (await response.json()) as msdyn_GetOrganizationalUnitsWithinRadiusResponse;
   }
 }

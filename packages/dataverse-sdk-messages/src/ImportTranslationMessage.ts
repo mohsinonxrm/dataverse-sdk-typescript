@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the ImportTranslation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportTranslationRequestParameters {
+  TranslationFile: string;
+  ImportJobId: string;
+}
 
 /**
  * ImportTranslation request message
@@ -10,20 +20,19 @@ export class ImportTranslationRequest
   extends OrganizationRequest
   implements Executable<ImportTranslationResponse>
 {
-  constructor(
-    public translationFile: string,
-    public importJobId: string
-  ) {
-    super("ImportTranslation");
+  declare readonly Parameters: Readonly<ImportTranslationRequestParameters>;
+
+  constructor(parameters: ImportTranslationRequestParameters) {
+    super("ImportTranslation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportTranslation`;
 
-    const body: Record<string, unknown> = {
-      TranslationFile: this.translationFile,
-      ImportJobId: this.importJobId,
-    };
+    const body = requestBody({
+      TranslationFile: this.Parameters.TranslationFile,
+      ImportJobId: this.Parameters.ImportJobId,
+    });
 
     return {
       method: "POST",

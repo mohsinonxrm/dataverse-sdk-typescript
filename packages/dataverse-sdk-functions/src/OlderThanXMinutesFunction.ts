@@ -9,15 +9,21 @@ export interface OlderThanXMinutesResponse {
 }
 
 /**
+ * Parameters of the OlderThanXMinutes function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface OlderThanXMinutesFunctionParameters {
+  PropertyName: string;
+  PropertyValue: number;
+}
+
+/**
  * OlderThanXMinutes function
  *
  * Unbound function
  */
 export class OlderThanXMinutesFunction implements Executable<OlderThanXMinutesResponse> {
-  constructor(
-    public readonly propertyName: string,
-    public readonly propertyValue: number
-  ) {}
+  constructor(public readonly parameters: OlderThanXMinutesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/OlderThanXMinutes`;
@@ -25,13 +31,13 @@ export class OlderThanXMinutesFunction implements Executable<OlderThanXMinutesRe
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.propertyName !== undefined) {
+    if (this.parameters.PropertyName !== undefined) {
       aliases.push(`PropertyName=@p1`);
-      params.append("@p1", formatParameterAlias(this.propertyName, "Edm.String"));
+      params.append("@p1", formatParameterAlias(this.parameters.PropertyName, "Edm.String"));
     }
-    if (this.propertyValue !== undefined) {
+    if (this.parameters.PropertyValue !== undefined) {
       aliases.push(`PropertyValue=@p2`);
-      params.append("@p2", formatParameterAlias(this.propertyValue, "Edm.Int64"));
+      params.append("@p2", formatParameterAlias(this.parameters.PropertyValue, "Edm.Int64"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -47,7 +53,8 @@ export class OlderThanXMinutesFunction implements Executable<OlderThanXMinutesRe
   }
 
   async parseResponse(response: Response): Promise<OlderThanXMinutesResponse> {
-    const data = await response.json();
-    return data as OlderThanXMinutesResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as OlderThanXMinutesResponse;
+    return (await response.json()) as OlderThanXMinutesResponse;
   }
 }

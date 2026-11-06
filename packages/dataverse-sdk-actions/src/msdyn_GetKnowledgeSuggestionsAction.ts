@@ -1,5 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
@@ -10,23 +11,29 @@ export interface msdyn_GetKnowledgeSuggestionsResponse {
 }
 
 /**
+ * Parameters of the msdyn_GetKnowledgeSuggestions action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetKnowledgeSuggestionsActionParameters {
+  Count?: number;
+  Target: EntityReference | AnyEntityPayload;
+}
+
+/**
  * msdyn_GetKnowledgeSuggestions action
  *
  * Unbound action
  */
 export class msdyn_GetKnowledgeSuggestionsAction implements Executable<msdyn_GetKnowledgeSuggestionsResponse> {
-  constructor(
-    public readonly count: number | undefined,
-    public readonly target: EntityReference | AnyEntityPayload
-  ) {}
+  constructor(public readonly parameters: msdyn_GetKnowledgeSuggestionsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetKnowledgeSuggestions`;
 
-    const body: Record<string, unknown> = {
-      Count: this.count,
-      Target: this.target,
-    };
+    const body = requestBody({
+      Count: this.parameters.Count,
+      Target: this.parameters.Target,
+    });
 
     return {
       method: "POST",
@@ -39,7 +46,8 @@ export class msdyn_GetKnowledgeSuggestionsAction implements Executable<msdyn_Get
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetKnowledgeSuggestionsResponse> {
-    const data = await response.json();
-    return data as msdyn_GetKnowledgeSuggestionsResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as msdyn_GetKnowledgeSuggestionsResponse;
+    return (await response.json()) as msdyn_GetKnowledgeSuggestionsResponse;
   }
 }

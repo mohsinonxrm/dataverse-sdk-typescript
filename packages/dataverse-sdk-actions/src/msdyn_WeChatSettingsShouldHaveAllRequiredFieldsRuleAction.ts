@@ -30,7 +30,9 @@ export class msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleAction implement
   async parseResponse(
     response: Response
   ): Promise<msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse> {
-    const data = await response.json();
-    return data as msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204)
+      return {} as msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse;
+    return (await response.json()) as msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse;
   }
 }

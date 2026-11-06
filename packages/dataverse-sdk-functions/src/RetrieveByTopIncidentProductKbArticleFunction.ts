@@ -13,6 +13,8 @@ export interface RetrieveByTopIncidentProductKbArticleResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.product)
+ *
+ * The first argument is the id of the product record to call it on.
  */
 export class RetrieveByTopIncidentProductKbArticleFunction implements Executable<RetrieveByTopIncidentProductKbArticleResponse> {
   constructor(public readonly productId: string) {}
@@ -31,7 +33,8 @@ export class RetrieveByTopIncidentProductKbArticleFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<RetrieveByTopIncidentProductKbArticleResponse> {
-    const data = await response.json();
-    return data as RetrieveByTopIncidentProductKbArticleResponse;
+    // 204 No Content is an empty result
+    if (response.status === 204) return {} as RetrieveByTopIncidentProductKbArticleResponse;
+    return (await response.json()) as RetrieveByTopIncidentProductKbArticleResponse;
   }
 }
