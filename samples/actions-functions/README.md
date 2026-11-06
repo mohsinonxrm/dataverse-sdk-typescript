@@ -81,7 +81,7 @@ AZURE_TENANT_ID=87654321-4321-4321-4321-cba987654321
 AZURE_CLIENT_SECRET=your-client-secret-here
 DATAVERSE_URL=https://your-org.crm.dynamics.com
 
-# Optional: For ExecuteWorkflow demo
+# Optional: For the ExecuteWorkflow demo
 # TEST_WORKFLOW_ID=00000000-0000-0000-0000-000000000000
 ```
 
@@ -115,7 +115,20 @@ The sample will:
 2. Run all 8 demos in sequence
 3. Show colored output for each demo
 4. Clean up test data automatically
-5. Display performance metrics
+5. Print timings for each demo
+
+## How actions and functions run
+
+Every action and function is an object that describes a request. You pass it to the client:
+
+```typescript
+const result = await client.execute(new SomeAction(/* positional arguments */));
+```
+
+The objects have no `execute()` method of their own. Constructor arguments are positional and
+follow the Web API parameter order. A parameter that is a record reference is made with
+`createEntityReference(logicalName, id)` from `@mohsinonxrm/dataverse-sdk-actions`, which gives the
+Web API shape `{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "<id>" }`.
 
 ## Demo 1: WhoAmI Function (GET)
 
@@ -124,8 +137,7 @@ The sample will:
 ```typescript
 import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 
-const whoAmiFn = new WhoAmIFunction();
-const result = await whoAmiFn.execute(client);
+const result = await client.execute(new WhoAmIFunction());
 
 console.log(`User ID: ${result.UserId}`);
 console.log(`Business Unit ID: ${result.BusinessUnitId}`);
@@ -153,7 +165,8 @@ console.log(`Organization ID: ${result.OrganizationId}`);
 
 ## Demo 2: CreateMultiple Action (Bulk Create)
 
-**Action**: Creates multiple records of the same entity type in a single request.
+**Action**: Creates multiple records of the same entity type in a single request. The constructor
+takes the entity set name and the targets: `new CreateMultipleAction(entitySetName, targets)`.
 
 ```typescript
 import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
@@ -179,11 +192,7 @@ const accounts = [
   },
 ];
 
-const createMultiple = new CreateMultipleAction({
-  Targets: accounts,
-});
-
-const result = await createMultiple.execute(client);
+const result = await client.execute(new CreateMultipleAction("accounts", accounts));
 
 console.log(`Created IDs: ${result.Ids.join(", ")}`);
 ```
@@ -200,18 +209,14 @@ console.log(`Created IDs: ${result.Ids.join(", ")}`);
 }
 ```
 
-**Performance:**
-
-- **3 records**: ~0.5-1s (2-6 records/sec) vs individual creates ~1.5-3s
-- **10 records**: ~1-2s (5-10 records/sec) vs individual creates ~5-15s
-- **100 records**: ~5-15s (6-20 records/sec) vs individual creates ~50-150s
+**Performance:** one request instead of one per record, so the saving grows with the number of
+records. Timings depend on your network and the table, so measure with your own data.
 
 **When to use:**
 
 - Creating multiple records of the same type
 - Need IDs returned
-- Don't need transactional guarantees across all records
-- Simpler than $batch for single entity type
+- Simpler than `$batch` for a single entity type
 
 ---
 
@@ -237,11 +242,7 @@ const updates = [
   },
 ];
 
-const updateMultiple = new UpdateMultipleAction({
-  Targets: updates,
-});
-
-await updateMultiple.execute(client);
+await client.execute(new UpdateMultipleAction("accounts", updates));
 // No response body - 204 No Content
 ```
 
@@ -275,24 +276,19 @@ const accounts = [
   },
 ];
 
-const upsertMultiple = new UpsertMultipleAction({
-  Targets: accounts,
-});
+await client.execute(new UpsertMultipleAction("accounts", accounts));
 
-await upsertMultiple.execute(client);
-
-// Run again with same alternate keys - updates instead of creates
+// Run again with the same alternate keys - updates instead of creates
 accounts[0].revenue = 320000;
 accounts[1].revenue = 370000;
 
-await upsertMultiple.execute(client);
+await client.execute(new UpsertMultipleAction("accounts", accounts));
 ```
 
 **Alternate Keys:**
 
-- Entity must have an alternate key defined (e.g., `accountnumber`)
+- The table must have an alternate key defined (e.g., on `accountnumber`)
 - Dataverse uses the key to determine create vs update
-- Atomicity: Each record is upserted independently
 
 **When to use:**
 
@@ -304,7 +300,8 @@ await upsertMultiple.execute(client);
 
 ## Demo 5: ExecuteWorkflow Action (Bound to workflow)
 
-**Action**: Executes an on-demand workflow against a record. Returns async operation ID.
+**Action**: Executes an on-demand workflow against a record. Returns the async operation ID.
+`new ExecuteWorkflowAction(workflowId, entityId, inputArguments)`:
 
 ```typescript
 import { ExecuteWorkflowAction } from "@mohsinonxrm/dataverse-sdk-actions";
@@ -312,11 +309,11 @@ import { ExecuteWorkflowAction } from "@mohsinonxrm/dataverse-sdk-actions";
 const workflowId = "12345678-1234-1234-1234-123456789abc";
 const targetAccountId = "11111111-1111-1111-1111-111111111111";
 
-const executeWorkflow = new ExecuteWorkflowAction(workflowId, {
-  EntityId: targetAccountId,
-});
-
-const result = await executeWorkflow.execute(client);
+const result = await client.execute(
+  new ExecuteWorkflowAction(workflowId, targetAccountId, {
+    Arguments: { Count: 0, IsReadOnly: false, Keys: [], Values: [] },
+  })
+);
 
 console.log(`Async Operation ID: ${result.asyncoperationid}`);
 ```
@@ -346,35 +343,31 @@ console.log(`Async Operation ID: ${result.asyncoperationid}`);
 ## Demo 6: WinOpportunity Action (Unbound)
 
 **Action**: Marks an opportunity as won and creates an opportunity close record.
+`new WinOpportunityAction(opportunityClose, caller, status)`:
 
 ```typescript
 import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
 const opportunityId = "11111111-1111-1111-1111-111111111111";
 
-const winOpp = new WinOpportunityAction({
-  OpportunityClose: {
-    "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
-    subject: "Won: Big Deal",
-    opportunityid: {
-      "@odata.type": "Microsoft.Dynamics.CRM.opportunity",
-      opportunityid: opportunityId,
-    },
-    actualrevenue: 52000,
-    actualend: new Date().toISOString(),
-  },
-  Status: -1, // Won (statuscode)
-});
+const opportunityClose = {
+  "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+  subject: "Won: Big Deal",
+  "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
+  actualrevenue: 52000,
+  actualend: new Date().toISOString(),
+};
 
-await winOpp.execute(client);
+// status 3 = Won (a statuscode of the Won state); "" = no caller override
+await client.execute(new WinOpportunityAction(opportunityClose, "", 3));
 ```
 
 **Result:**
 
 - Opportunity `statecode` = 1 (Won)
 - Opportunity `statuscode` = 3 (Won)
-- Creates `opportunityclose` activity record
-- Updates `actualrevenue` on opportunity
+- Creates an `opportunityclose` activity record
+- Sets `actualrevenue` on the opportunity
 
 **When to use:**
 
@@ -392,36 +385,31 @@ await winOpp.execute(client);
 
 ## Demo 7: Merge Action (Unbound)
 
-**Action**: Merges two records of the same entity type. Moves all related data to target and deletes subordinate.
+**Action**: Merges two records of the same entity type. Moves related data to the target and
+deletes the subordinate. `new MergeAction(target, subordinate, updateContent, performParentingChecks)`,
+where the first three are references to records:
 
 ```typescript
-import { MergeAction } from "@mohsinonxrm/dataverse-sdk-actions";
+import { MergeAction, createEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
 
 const targetId = "11111111-1111-1111-1111-111111111111";
 const subordinateId = "22222222-2222-2222-2222-222222222222";
 
-const merge = new MergeAction({
-  Target: {
-    "@odata.type": "Microsoft.Dynamics.CRM.account",
-    accountid: targetId,
-  },
-  Subordinate: subordinateId,
-  UpdateContent: {
-    "@odata.type": "Microsoft.Dynamics.CRM.account",
-    revenue: 800000, // Combined revenue
-  },
-  PerformParentingChecks: false,
-});
+const merge = new MergeAction(
+  createEntityReference("account", targetId),
+  createEntityReference("account", subordinateId),
+  createEntityReference("account", targetId), // UpdateContent, as the sample passes it
+  false // PerformParentingChecks
+);
 
-await merge.execute(client);
+await client.execute(merge);
 ```
 
 **What happens:**
 
-1. All activities, notes, relationships move from subordinate to target
-2. Target record is updated with `UpdateContent`
-3. Subordinate record is **deleted**
-4. Cannot be undone!
+1. Activities, notes and relationships move from the subordinate to the target
+2. The subordinate record is **deleted**
+3. This cannot be undone
 
 **Supported entities:**
 
@@ -440,33 +428,36 @@ await merge.execute(client);
 
 - Review related records before merging
 - Export subordinate data as backup
-- Communicate with users (record will be deleted)
-- Set `PerformParentingChecks: true` if hierarchical relationships exist
+- Communicate with users (the record will be deleted)
+- Set `performParentingChecks` to `true` if hierarchical relationships exist
 
 ---
 
 ## Demo 8: File Operations (Chunked Upload)
 
-**Actions**: Upload large files using three-step chunked upload process.
+**Actions**: Upload large files with the three-step chunked upload process. The sample does this
+by hand to show the actions; in your own code, `FileColumnClient` from
+`@mohsinonxrm/dataverse-sdk-files` runs all three steps (see its
+[README](../../packages/dataverse-sdk-files/README.md)).
 
 ### Step 1: Initialize Upload
 
 ```typescript
-import { InitializeFileBlocksUploadAction } from "@mohsinonxrm/dataverse-sdk-actions";
+import {
+  InitializeFileBlocksUploadAction,
+  createEntityReference,
+} from "@mohsinonxrm/dataverse-sdk-actions";
 
-const initialize = new InitializeFileBlocksUploadAction("accounts", accountId, {
-  Target: {
-    "@odata.type": "Microsoft.Dynamics.CRM.account",
-    accountid: accountId,
-  },
-  FileAttributeName: "entityimage", // or custom file column
-  FileName: "document.pdf",
-});
+// new InitializeFileBlocksUploadAction(target, fileName, fileAttributeName)
+const initialize = new InitializeFileBlocksUploadAction(
+  createEntityReference("account", accountId),
+  "document.pdf",
+  "entityimage" // or a custom file column
+);
 
-const initResult = await initialize.execute(client);
+const initResult = await client.execute(initialize);
 
-console.log(`Upload Token: ${initResult.UploadToken}`);
-console.log(`Block Size: ${initResult.BlockSize}`); // Default 4MB
+console.log(`Continuation token: ${initResult.FileContinuationToken}`);
 ```
 
 ### Step 2: Upload Blocks
@@ -475,24 +466,19 @@ console.log(`Block Size: ${initResult.BlockSize}`); // Default 4MB
 import { UploadBlockAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
 const fileData = await fs.readFile("document.pdf");
-const blockSize = initResult.BlockSize;
+const blockSize = 4 * 1024 * 1024; // 4 MB, the largest block Dataverse accepts
 const blockCount = Math.ceil(fileData.length / blockSize);
 const blockIds: string[] = [];
 
 for (let i = 0; i < blockCount; i++) {
-  const start = i * blockSize;
-  const end = Math.min(start + blockSize, fileData.length);
-  const blockData = fileData.slice(start, end);
+  const blockData = fileData.subarray(i * blockSize, (i + 1) * blockSize);
   const blockId = Buffer.from(`block-${i.toString().padStart(6, "0")}`).toString("base64");
-
   blockIds.push(blockId);
 
-  const uploadBlock = new UploadBlockAction(initResult.UploadToken, {
-    BlockId: blockId,
-    BlockData: blockData.toString("base64"),
-  });
-
-  await uploadBlock.execute(client);
+  // new UploadBlockAction(blockId, blockData, fileContinuationToken)
+  await client.execute(
+    new UploadBlockAction(blockId, blockData.toString("base64"), initResult.FileContinuationToken)
+  );
 
   console.log(`Uploaded block ${i + 1}/${blockCount}`);
 }
@@ -503,12 +489,15 @@ for (let i = 0; i < blockCount; i++) {
 ```typescript
 import { CommitFileBlocksUploadAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
-const commit = new CommitFileBlocksUploadAction(initResult.UploadToken, {
-  BlockList: blockIds,
-  FileName: "document.pdf",
-});
-
-await commit.execute(client);
+// new CommitFileBlocksUploadAction(fileName, mimeType, blockList, fileContinuationToken)
+await client.execute(
+  new CommitFileBlocksUploadAction(
+    "document.pdf",
+    "application/pdf",
+    blockIds,
+    initResult.FileContinuationToken
+  )
+);
 
 console.log("File upload complete!");
 ```
@@ -520,9 +509,9 @@ console.log("File upload complete!");
 
 **Limits:**
 
-- Max file size: 128 MB (configurable in environment settings)
-- Default chunk size: 4 MB
-- Block ID: base64-encoded string
+- Block size: 4 MB at most
+- The maximum file size is set per column (up to 10 GB for file columns)
+- Block IDs: base64-encoded strings of the same length
 
 **When to use:**
 
@@ -539,38 +528,49 @@ console.log("File upload complete!");
 | Scenario                          | Use Bulk Operations               | Use $batch                  |
 | --------------------------------- | --------------------------------- | --------------------------- |
 | **Single entity type**            | ✅ CreateMultiple, UpdateMultiple | ⚠️ Overkill                 |
-| **Multiple entity types**         | ❌ Not supported                  | ✅ $batch changeset         |
-| **Need transactional guarantees** | ❌ Independent operations         | ✅ $batch changeset         |
+| **Multiple entity types**         | ❌ Not supported                  | ✅ $batch                   |
+| **Need transactional guarantees** | ⚠️ One request, all or nothing    | ✅ $batch changeset         |
 | **Need Content-ID references**    | ❌ Not supported                  | ✅ $batch                   |
 | **Need all IDs returned**         | ✅ CreateMultiple returns IDs     | ⚠️ Parse responses          |
 | **Simplicity**                    | ✅ Single action call             | ⚠️ Complex multipart format |
-| **Performance (100+ records)**    | ✅ 6-20 records/sec               | ⚠️ 2-10 records/sec         |
 
 ### Example: When to use each
 
 **Use CreateMultiple:**
 
 ```typescript
-// Creating 50 accounts - simple, fast, get all IDs back
-const createMultiple = new CreateMultipleAction({
-  Targets: accounts,
-});
-const result = await createMultiple.execute(client);
+// Creating 50 accounts - simple, get all IDs back
+const result = await client.execute(new CreateMultipleAction("accounts", accounts));
 console.log(result.Ids); // All 50 IDs
 ```
 
-**Use $batch changeset:**
+**Use a $batch changeset:**
 
 ```typescript
-// Create account + 3 contacts + 2 opportunities - transactional
-const batch = client.batch();
+import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
+
+// Create an account and two contacts that reference it, in one transaction
+const batch = new BatchRequestBuilder(client);
 batch.beginChangeset();
-batch.addRequest(client.api("/accounts").post(account)); // $1
-batch.addRequest(client.api("/contacts").post({ ...contact1, parentcustomerid: "$1" }));
-batch.addRequest(client.api("/contacts").post({ ...contact2, parentcustomerid: "$1" }));
-batch.addRequest(client.api("/opportunities").post({ ...opp1, customerid: "$1" }));
+batch.addRequest("account", "POST", "accounts", undefined, account);
+batch.addRequest(
+  "contact1",
+  "POST",
+  "contacts",
+  undefined,
+  { ...contact1, "parentcustomerid_account@odata.bind": "$account" },
+  ["account"]
+);
+batch.addRequest(
+  "contact2",
+  "POST",
+  "contacts",
+  undefined,
+  { ...contact2, "parentcustomerid_account@odata.bind": "$account" },
+  ["account"]
+);
 batch.endChangeset();
-await batch.execute(); // All or nothing
+await batch.execute(); // All or nothing; throws DataverseBatchError on failure
 ```
 
 ---
@@ -632,13 +632,12 @@ InvalidArgument: No alternate key attributes are defined for entity 'account'
 **Error:**
 
 ```
-NotSupported: Merge operation is not supported for entity 'lead'
+NotSupported: Merge operation is not supported for entity 'opportunity'
 ```
 
 **Fix:**
 
 - Merge only supports: `account`, `contact`, `lead`, `incident`
-- For leads, use `MergeLead` message instead (not in v1)
 
 ### 5. File Size Limit Exceeded
 
@@ -650,9 +649,8 @@ InvalidArgument: The file size exceeds the maximum allowed size
 
 **Fix:**
 
-1. Check environment file size limit: **Settings > Email Configuration > Set file size limit**
-2. Default: 5MB (can increase to 128MB)
-3. Split files if > 128MB
+1. Check the maximum file size of the file column (it is a column setting)
+2. Split or compress the file if it is larger
 
 ---
 
@@ -671,31 +669,29 @@ const targets = accounts.map((account) => ({
 
 ### 2. Batch Bulk Operations
 
-For thousands of records, split into batches:
+For thousands of records, split into chunks:
 
 ```typescript
-const batchSize = 100;
-for (let i = 0; i < accounts.length; i += batchSize) {
-  const batch = accounts.slice(i, i + batchSize);
-  const createMultiple = new CreateMultipleAction({ Targets: batch });
-  const result = await createMultiple.execute(client);
+const chunkSize = 100;
+for (let i = 0; i < accounts.length; i += chunkSize) {
+  const chunk = accounts.slice(i, i + chunkSize);
+  const result = await client.execute(new CreateMultipleAction("accounts", chunk));
   console.log(`Created ${result.Ids.length} accounts`);
 }
 ```
 
-### 3. Handle Partial Failures
+### 3. Handle Failures
 
-Bulk operations fail atomically per record:
+`CreateMultiple` is all or nothing: if one target is invalid, the request fails and none of the
+records is created. The error says what was wrong:
 
 ```typescript
 try {
-  const result = await createMultiple.execute(client);
+  const result = await client.execute(new CreateMultipleAction("accounts", accounts));
   console.log(`Created ${result.Ids.length} records`);
 } catch (error) {
-  // Check if partial success
-  if (error.response?.CreatedIds) {
-    console.log(`Partial success: ${error.response.CreatedIds.length} created`);
-  }
+  // Nothing was created. Fix the data, or create the records one by one to find the bad one.
+  console.error(error);
 }
 ```
 
@@ -704,15 +700,14 @@ try {
 When syncing from external systems:
 
 ```typescript
-// Map external ID to Dataverse alternate key
+// Map external ID to a Dataverse alternate key
 const accounts = externalAccounts.map((ext) => ({
   "@odata.type": "Microsoft.Dynamics.CRM.account",
   accountnumber: ext.externalId, // Alternate key
   name: ext.name,
 }));
 
-const upsert = new UpsertMultipleAction({ Targets: accounts });
-await upsert.execute(client); // Creates or updates
+await client.execute(new UpsertMultipleAction("accounts", accounts)); // Creates or updates
 ```
 
 ### 5. Monitor Async Operations
@@ -720,7 +715,7 @@ await upsert.execute(client); // Creates or updates
 For long-running workflows:
 
 ```typescript
-const result = await executeWorkflow.execute(client);
+const result = await client.execute(executeWorkflow);
 
 // Poll for completion
 let status;
@@ -729,18 +724,18 @@ do {
   status = await client
     .api(`/asyncoperations(${result.asyncoperationid})`)
     .select("statuscode", "message")
-    .get();
-} while (status.statuscode === 0); // 0 = In Progress
+    .get<{ statuscode: number; message?: string }>();
+} while (status.statuscode < 30); // 0-21: waiting or running; 30 = succeeded
 
 console.log(status.statuscode === 30 ? "Succeeded" : "Failed");
 ```
 
 ### 6. Backup Before Merge
 
-Always backup subordinate data:
+Always keep a copy of the subordinate data:
 
 ```typescript
-// Export subordinate record
+// Export the subordinate record with some related records
 const subordinate = await client
   .api(`/accounts(${subordinateId})`)
   .expand("contact_customer_accounts", "opportunity_customer_accounts")
@@ -749,7 +744,7 @@ const subordinate = await client
 await fs.writeFile("backup.json", JSON.stringify(subordinate, null, 2));
 
 // Now safe to merge
-await merge.execute(client);
+await client.execute(merge);
 ```
 
 ---
@@ -758,7 +753,8 @@ await merge.execute(client);
 
 ### Pattern 1: Bulk Create with Parent-Child Relationships
 
-Since `CreateMultiple` doesn't support Content-ID references, create parents first:
+`CreateMultiple` has no Content-ID references, so create the parents first and bind the children
+to their ids:
 
 ```typescript
 // Step 1: Create parent accounts
@@ -767,21 +763,17 @@ const accounts = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Parent 2" },
 ];
 
-const createAccounts = new CreateMultipleAction({ Targets: accounts });
-const accountResult = await createAccounts.execute(client);
+const accountResult = await client.execute(new CreateMultipleAction("accounts", accounts));
 
-// Step 2: Create child contacts with parent references
+// Step 2: Create child contacts bound to their parent
 const contacts = accountResult.Ids.map((accountId) => ({
   "@odata.type": "Microsoft.Dynamics.CRM.contact",
   firstname: "Child",
   lastname: "Contact",
-  parentcustomerid_account: {
-    "@odata.id": `/accounts(${accountId})`,
-  },
+  "parentcustomerid_account@odata.bind": `/accounts(${accountId})`,
 }));
 
-const createContacts = new CreateMultipleAction({ Targets: contacts });
-await createContacts.execute(client);
+await client.execute(new CreateMultipleAction("contacts", contacts));
 ```
 
 ### Pattern 2: Conditional Bulk Update
@@ -794,120 +786,73 @@ const accountsToUpdate = await client
   .api("/accounts")
   .filter("revenue lt 100000 and statecode eq 0")
   .select("accountid")
-  .getAll();
+  .getAll<{ accountid: string }>();
 
 // Build update targets
 const updates = accountsToUpdate.map((account) => ({
   "@odata.type": "Microsoft.Dynamics.CRM.account",
   accountid: account.accountid,
   description: "Low revenue account - needs attention",
-  customertypecode: 3, // Low priority
 }));
 
-const updateMultiple = new UpdateMultipleAction({ Targets: updates });
-await updateMultiple.execute(client);
+await client.execute(new UpdateMultipleAction("accounts", updates));
 
 console.log(`Updated ${updates.length} low-revenue accounts`);
 ```
 
 ### Pattern 3: Chunked File Upload with Progress
 
+Use `FileColumnClient`, which sends the three upload actions for you and reports progress:
+
 ```typescript
-async function uploadFileWithProgress(
-  client: DataverseClient,
-  entitySetName: string,
-  recordId: string,
-  filePath: string,
-  columnName: string,
-  onProgress?: (percent: number) => void
-): Promise<void> {
-  const fileData = await fs.readFile(filePath);
-  const fileName = path.basename(filePath);
+import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
 
-  // Initialize
-  const initialize = new InitializeFileBlocksUploadAction(entitySetName, recordId, {
-    Target: {
-      "@odata.type": `Microsoft.Dynamics.CRM.${entitySetName}`,
-      [`${entitySetName}id`]: recordId,
-    },
-    FileAttributeName: columnName,
-    FileName: fileName,
-  });
+const files = new FileColumnClient(client);
 
-  const initResult = await initialize.execute(client);
-  const blockSize = initResult.BlockSize;
-  const blockCount = Math.ceil(fileData.length / blockSize);
-  const blockIds: string[] = [];
-
-  // Upload blocks with progress
-  for (let i = 0; i < blockCount; i++) {
-    const start = i * blockSize;
-    const end = Math.min(start + blockSize, fileData.length);
-    const blockData = fileData.slice(start, end);
-    const blockId = Buffer.from(`block-${i.toString().padStart(6, "0")}`).toString("base64");
-
-    blockIds.push(blockId);
-
-    const uploadBlock = new UploadBlockAction(initResult.UploadToken, {
-      BlockId: blockId,
-      BlockData: blockData.toString("base64"),
-    });
-
-    await uploadBlock.execute(client);
-
-    if (onProgress) {
-      onProgress(((i + 1) / blockCount) * 100);
-    }
-  }
-
-  // Commit
-  const commit = new CommitFileBlocksUploadAction(initResult.UploadToken, {
-    BlockList: blockIds,
-    FileName: fileName,
-  });
-
-  await commit.execute(client);
-}
-
-// Usage
-await uploadFileWithProgress(
-  client,
-  "accounts",
+await files.upload(
+  "accounts", // entity set name
   accountId,
-  "./large-file.pdf",
-  "new_attachment",
-  (percent) => console.log(`Upload progress: ${percent.toFixed(1)}%`)
+  "new_attachment", // file column
+  await fs.readFile("./large-file.pdf"),
+  "large-file.pdf",
+  {
+    onProgress: ({ percentage }) => console.log(`Upload progress: ${percentage}%`),
+  }
 );
 ```
 
 ### Pattern 4: Merge with Conflict Resolution
 
-Handle merge conflicts by updating target with combined data:
+Merge keeps the target's values. To combine data, update the target before you merge:
 
 ```typescript
 // Retrieve both records
 const [target, subordinate] = await Promise.all([
-  client.api(`/accounts(${targetId})`).select("name", "revenue", "description").get(),
-  client.api(`/accounts(${subordinateId})`).select("name", "revenue", "description").get(),
+  client
+    .api(`/accounts(${targetId})`)
+    .select("name", "revenue", "description")
+    .get<{ name: string; revenue?: number; description?: string }>(),
+  client
+    .api(`/accounts(${subordinateId})`)
+    .select("name", "revenue", "description")
+    .get<{ name: string; revenue?: number; description?: string }>(),
 ]);
 
-// Resolve conflicts
-const updateContent = {
-  "@odata.type": "Microsoft.Dynamics.CRM.account",
-  name: target.name, // Keep target name
-  revenue: (target.revenue || 0) + (subordinate.revenue || 0), // Sum revenues
-  description: `${target.description || ""}\n\nMerged from ${subordinate.name}: ${subordinate.description || ""}`, // Combine descriptions
-};
-
-// Merge with resolved data
-const merge = new MergeAction({
-  Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: targetId },
-  Subordinate: subordinateId,
-  UpdateContent: updateContent,
-  PerformParentingChecks: false,
+// Resolve conflicts on the target
+await client.api(`/accounts(${targetId})`).patch({
+  revenue: (target.revenue ?? 0) + (subordinate.revenue ?? 0), // Sum revenues
+  description: `${target.description ?? ""}\n\nMerged from ${subordinate.name}: ${subordinate.description ?? ""}`,
 });
 
-await merge.execute(client);
+// Then merge
+await client.execute(
+  new MergeAction(
+    createEntityReference("account", targetId),
+    createEntityReference("account", subordinateId),
+    createEntityReference("account", targetId),
+    false
+  )
+);
 ```
 
 ---
@@ -919,25 +864,26 @@ This sample demonstrated:
 ✅ **Functions** (GET, read-only): `WhoAmI`  
 ✅ **Bulk Operations**: `CreateMultiple`, `UpdateMultiple`, `UpsertMultiple`  
 ✅ **Business Actions**: `ExecuteWorkflow`, `WinOpportunity`, `Merge`  
-✅ **File Operations**: Chunked upload with progress  
+✅ **File Operations**: Chunked upload with the file actions  
 ✅ **Decision matrix**: When to use bulk operations vs $batch  
-✅ **Best practices**: @odata.type, batching, error handling, monitoring  
+✅ **Best practices**: @odata.type, chunking, error handling, monitoring  
 ✅ **Advanced patterns**: Parent-child, conditional updates, progress tracking, merge conflicts
 
 **Key Takeaways:**
 
 1. **Functions** are GET operations with no side effects
 2. **Actions** are POST operations that modify data
-3. **Bulk operations** are faster than individual calls but not transactional
-4. **$batch changesets** provide transactional guarantees across entity types
-5. **@odata.type** is required for all bulk operation targets
-6. **File operations** use three-step chunked upload for large files
+3. Both run with `client.execute(new XxxAction(...))`; the constructor arguments are positional
+4. **Bulk operations** are faster than individual calls; each request is all or nothing
+5. **$batch changesets** provide transactions across entity types
+6. **@odata.type** is required for all bulk operation targets
+7. **File operations** use a three-step chunked upload for large files
 
 **Next Steps:**
 
 - Explore `@mohsinonxrm/dataverse-sdk-batch` for transactional operations
-- See `messages-sales-cs` sample for OrganizationService.execute() pattern
-- Review `docs/mapping/supported-actions.md` for complete action list
+- See the `messages-sales-cs` sample for the `OrganizationService.execute()` pattern
+- Review `docs/mapping/supported-operations.md` for the complete list
 
 ## License
 

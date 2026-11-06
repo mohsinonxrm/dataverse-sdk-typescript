@@ -136,6 +136,5 @@ The client attaches the bearer token only to requests for its own `baseUrl` orig
 | Limit                                                                                                | Tracking                                                                   |
 | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | Claims challenges can't be read (`WWW-Authenticate` isn't exposed); 401 recovery is a forced refresh | Dataverse CORS behaviour                                                   |
-| `FileColumnClient.upload()` with a `Blob` throws `ReferenceError: Buffer is not defined`             | [#58](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/58)   |
 | No chunked `PATCH`, ranged download or streaming for file columns                                    | [#95](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/95)   |
 | Application Insights adapter is Node.js only                                                         | [#158](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/158) |

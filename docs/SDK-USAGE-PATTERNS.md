@@ -778,7 +778,7 @@ User Code
    ↓
 client.execute() OR client.api()
    ↓
-Pipeline (ODataHeaders → Concurrency → Retry → Auth → Telemetry → Logging)
+Pipeline (ODataHeaders → Retry → Concurrency → Auth → Telemetry → Logging)
    ↓
 FetchRequestAdapter
    ↓

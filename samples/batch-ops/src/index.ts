@@ -1,7 +1,7 @@
 /**
  * Comprehensive $batch operations sample demonstrating:
  * - Changesets (transactional groups)
- * - Content-ID references ($1, $2, etc.)
+ * - Content-ID references ($<id>: a change set request's id is its Content-ID)
  * - Prefer: odata.continue-on-error
  * - Partial success handling
  * - Mixed operations (create, update, delete, query)
@@ -182,19 +182,20 @@ async function changesetDemo(client: DataverseClient): Promise<void> {
 
 /**
  * Demo 3: Content-ID references
- * Link created records using $1, $2 references
+ * Inside a change set a request's id is its Content-ID, so a later request can refer to the
+ * record an earlier one creates as $<id>
  */
 async function contentIdReferenceDemo(client: DataverseClient): Promise<void> {
   console.log(chalk.bold.blue("\n=== Demo 3: Content-ID References ===\n"));
-  console.log(chalk.gray("Creating account and linking 2 contacts using $1 reference..."));
+  console.log(chalk.gray("Creating account and linking 2 contacts using a $account reference..."));
 
   const batch = new BatchRequestBuilder(client);
 
   batch.beginChangeset();
 
-  // Create parent account with Content-ID = 1
+  // Create parent account; its id, "account", is also its Content-ID
   batch.addRequest(
-    "1",
+    "account",
     "POST",
     "/accounts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
@@ -204,9 +205,9 @@ async function contentIdReferenceDemo(client: DataverseClient): Promise<void> {
     }
   );
 
-  // Create first contact and link to parent using $1
+  // Create first contact and link to the parent with $account
   batch.addRequest(
-    "2",
+    "contact1",
     "POST",
     "/contacts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
@@ -214,14 +215,15 @@ async function contentIdReferenceDemo(client: DataverseClient): Promise<void> {
       firstname: "Child",
       lastname: "Contact 1",
       telephone1: "555-3002",
-      // Reference the account created in Content-ID 1
-      "parentcustomerid_account@odata.bind": "$1",
-    }
+      // Reference the account created by the request with id "account"
+      "parentcustomerid_account@odata.bind": "$account",
+    },
+    ["account"]
   );
 
-  // Create second contact and link to parent using $1
+  // Create second contact and link to the parent with $account
   batch.addRequest(
-    "3",
+    "contact2",
     "POST",
     "/contacts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
@@ -230,8 +232,9 @@ async function contentIdReferenceDemo(client: DataverseClient): Promise<void> {
       lastname: "Contact 2",
       telephone1: "555-3003",
       // Reference the same account
-      "parentcustomerid_account@odata.bind": "$1",
-    }
+      "parentcustomerid_account@odata.bind": "$account",
+    },
+    ["account"]
   );
 
   batch.endChangeset();
@@ -597,9 +600,11 @@ async function main() {
     // Summary
     console.log(chalk.bold.cyan("Key Takeaways:"));
     console.log(chalk.gray("  1. Use changesets for transactional operations"));
-    console.log(chalk.gray("  2. Content-ID references ($1, $2) link related records"));
+    console.log(
+      chalk.gray("  2. Content-ID references ($<id>) link related records in a change set")
+    );
     console.log(chalk.gray("  3. continue-on-error enables partial success"));
-    console.log(chalk.gray("  4. Batch is 3-5x faster than individual calls"));
+    console.log(chalk.gray("  4. Batch is usually faster than individual calls"));
     console.log(chalk.gray("  5. Use bulk operations for same-entity creates/updates"));
     console.log(chalk.gray("  6. Use batch for mixed operations and relationships\n"));
   } catch (error: unknown) {

@@ -14,7 +14,7 @@ Content-Security-Policy: default-src 'self'; script-src 'self'; connect-src 'sel
 - the production bundle has no `eval(` or `new Function(` (#20);
 - a GET runs through the real `DataverseClient` pipeline in the browser;
 - the default logger is silent in the browser (**#33, pinned with `it.fails`**: 2 console calls per request today);
-- `FileColumnClient.upload()` works with a `Blob` (**#58, pinned**: `ReferenceError: Buffer is not defined` today).
+- `FileColumnClient.upload()` works with a `Blob` (#58).
 
 The scenarios use an in-page fake `fetch`, so nothing reaches a real org.
 

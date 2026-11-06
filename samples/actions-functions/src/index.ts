@@ -29,6 +29,7 @@ import {
   InitializeFileBlocksUploadAction,
   UploadBlockAction,
   CommitFileBlocksUploadAction,
+  createEntityReference,
 } from "@mohsinonxrm/dataverse-sdk-actions";
 
 config();
@@ -385,21 +386,9 @@ async function mergeDemo(client: DataverseClient): Promise<void> {
   console.log("\nMerging accounts...");
 
   const merge = new MergeAction(
-    {
-      "@odata.type": "Microsoft.Dynamics.CRM.EntityReference",
-      logicalName: "account",
-      id: targetId,
-    },
-    {
-      "@odata.type": "Microsoft.Dynamics.CRM.EntityReference",
-      logicalName: "account",
-      id: subordinateId,
-    },
-    {
-      "@odata.type": "Microsoft.Dynamics.CRM.EntityReference",
-      logicalName: "account",
-      id: targetId,
-    },
+    createEntityReference("account", targetId),
+    createEntityReference("account", subordinateId),
+    createEntityReference("account", targetId),
     false
   );
 
@@ -471,11 +460,7 @@ async function fileOperationsDemo(client: DataverseClient): Promise<void> {
   console.log("\n1. Initializing file upload...");
 
   const initialize = new InitializeFileBlocksUploadAction(
-    {
-      "@odata.type": "Microsoft.Dynamics.CRM.EntityReference",
-      logicalName: "account",
-      id: targetAccount,
-    },
+    createEntityReference("account", targetAccount),
     fileName,
     "entityimage" // Standard image column
   );

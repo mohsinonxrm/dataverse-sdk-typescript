@@ -57,12 +57,12 @@ The app registration needs to be registered as an **Application User** in Datave
 6. **Security role:** Assign appropriate role (e.g., "System Administrator" for testing)
 7. Click **Create**
 
-### 3. Node.js 18+
+### 3. Node.js 22+
 
-Ensure you have Node.js 18 or later:
+Ensure you have Node.js 22 or later:
 
 ```bash
-node --version  # Should be v18.0.0 or higher
+node --version  # Should be v22.0.0 or higher
 ```
 
 ---
@@ -279,7 +279,7 @@ import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 const orgService = new OrganizationService(client);
 
 for (const id of accountIds) {
-  await orgService.delete("account", id);
+  await orgService.delete("accounts", id);
 }
 ```
 
@@ -305,7 +305,7 @@ for (const id of accountIds) {
 
 - Operations span **multiple entity types**
 - You need **transactions** (changesets with rollback)
-- You need **Content-ID references** ($1, $2, etc.)
+- You need **Content-ID references** (`$<id>`)
 - You have **mixed operations** (creates, updates, deletes, queries)
 - Up to 1000 operations total
 
@@ -457,7 +457,7 @@ README.md               This file
 
 ```typescript
 // Add structured logging
-import { createLogger } from "winston";
+import winston, { createLogger } from "winston";
 
 const logger = createLogger({
   level: "info",
@@ -513,26 +513,30 @@ await client.execute(action);
 ### Combine with $batch for Complex Workflows
 
 ```typescript
-import { BatchClient } from "@mohsinonxrm/dataverse-sdk-batch";
+import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 
-const batchClient = new BatchClient(client);
+const batch = new BatchRequestBuilder(client);
 
-// Create parent records
-const batchBuilder = batchClient.createBatch();
-batchBuilder.beginChangeset();
-batchBuilder.addCreate("accounts", { name: "Parent 1" }, "1");
-batchBuilder.addCreate("accounts", { name: "Parent 2" }, "2");
-batchBuilder.endChangeset();
+// A change set is one transaction. A Content-ID reference ($<id>) only works inside the change
+// set that created the record, so the parent and its children go together.
+batch.beginChangeset();
+batch.addRequest("parent", "POST", "accounts", undefined, { name: "Parent 1" });
+batch.addRequest(
+  "child",
+  "POST",
+  "contacts",
+  undefined,
+  {
+    firstname: "Child",
+    lastname: "Contact",
+    "parentcustomerid_account@odata.bind": "$parent",
+  },
+  ["parent"]
+);
+batch.endChangeset();
 
-// Create child records referencing parents
-batchBuilder.beginChangeset();
-batchBuilder.addCreate("contacts", {
-  firstname: "Child",
-  "parentcustomerid@odata.bind": "$1",
-});
-batchBuilder.endChangeset();
-
-await batchClient.executeBatch(batchBuilder);
+const result = await batch.execute(); // throws DataverseBatchError if a request fails
+console.log(result.success);
 ```
 
 ---

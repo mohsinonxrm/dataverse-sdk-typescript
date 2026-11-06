@@ -27,13 +27,13 @@ This guide will walk you through setting up and using the Dataverse SDK for Type
 
 ```bash
 # Using pnpm (recommended)
-pnpm add @mohsinonxrm/dataverse-sdk-core @mohsinonxrm/dataverse-sdk-auth-msal-node
+pnpm add @mohsinonxrm/dataverse-sdk-core @mohsinonxrm/dataverse-sdk-auth-msal-node @azure/msal-node
 
 # Using npm
-npm install @mohsinonxrm/dataverse-sdk-core @mohsinonxrm/dataverse-sdk-auth-msal-node
+npm install @mohsinonxrm/dataverse-sdk-core @mohsinonxrm/dataverse-sdk-auth-msal-node @azure/msal-node
 
 # Using yarn
-yarn add @mohsinonxrm/dataverse-sdk-core @mohsinonxrm/dataverse-sdk-auth-msal-node
+yarn add @mohsinonxrm/dataverse-sdk-core @mohsinonxrm/dataverse-sdk-auth-msal-node @azure/msal-node
 ```
 
 ### Optional Packages
@@ -415,7 +415,7 @@ const accounts = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Account 3", revenue: 100000 },
 ];
 
-const action = new CreateMultipleAction(accounts, "Default");
+const action = new CreateMultipleAction("accounts", accounts);
 const result = await client.execute(action);
 
 console.log(`Created ${result.Ids.length} accounts`);
@@ -432,42 +432,38 @@ import { readFileSync } from "fs";
 
 const fileClient = new FileColumnClient(client);
 
-// Read file content
+// Read the file; a Node.js Buffer is accepted as it is (Blob, ArrayBuffer and Uint8Array too)
 const fileContent = readFileSync("./documents/proposal.pdf");
-const base64Content = fileContent.toString("base64");
 
-// Upload with chunking (auto-chunks files >4MB)
-await fileClient.upload({
-  entitySetName: "accounts",
-  entityId: accountId,
-  attributeName: "entityimage", // or any file column
-  fileName: "proposal.pdf",
-  mimeType: "application/pdf",
-  fileContent: base64Content,
-  onProgress: (progress) => {
-    console.log(`Upload progress: ${progress.percentage}%`);
+// Upload (entity set, record id, file column, data, file name, options).
+// Files over 4 MB (the default and maximum chunkSize) are sent in chunks.
+await fileClient.upload("accounts", accountId, "new_document", fileContent, "proposal.pdf", {
+  onProgress: ({ percentage }) => {
+    console.log(`Upload progress: ${percentage}%`);
   },
 });
 
 console.log("File uploaded successfully");
 ```
 
+The same call works for image columns such as `entityimage`. The MIME type comes from the `Blob` you pass (`application/octet-stream` for other data).
+
 ### Download a File
 
 ```typescript
-const fileData = await fileClient.download({
-  entitySetName: "accounts",
-  entityId: accountId,
-  attributeName: "entityimage",
-});
+import { writeFileSync } from "fs";
 
-console.log("File name:", fileData.fileName);
-console.log("File size:", fileData.fileSize);
-console.log("MIME type:", fileData.mimeType);
+// download() resolves to a Blob
+const blob = await fileClient.download("accounts", accountId, "new_document");
+
+console.log("File size:", blob.size);
+console.log("MIME type:", blob.type);
 
 // Save to disk
-writeFileSync("./downloaded-file.pdf", Buffer.from(fileData.fileContent, "base64"));
+writeFileSync("./downloaded-file.pdf", Buffer.from(await blob.arrayBuffer()));
 ```
+
+A column with no file is a 404 `DataverseODataError`. `fileClient.delete("accounts", accountId, "new_document")` removes the file.
 
 ## OrganizationService Pattern
 
@@ -529,7 +525,6 @@ Check out the `samples/` directory for complete working examples:
 - `node-cli-devicecode/` - CLI app with device code authentication
 - `daemon-clientcredentials/` - Background service with client credentials
 - `batch-ops/` - Batch operations demonstrations
-- `file-ops/` - File upload/download examples
 - `metadata-ops/` - Metadata operations
 - `messages-sales-cs/` - OrganizationService message examples
 

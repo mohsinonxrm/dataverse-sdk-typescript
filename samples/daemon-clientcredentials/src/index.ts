@@ -211,7 +211,7 @@ async function bulkDeleteAccounts(
       const batch = accountIds.slice(i, i + batchSize);
       await Promise.all(
         batch.map(async (id) => {
-          await orgService.delete("account", id);
+          await orgService.delete("accounts", id);
           deletedCount++;
         })
       );

@@ -20,21 +20,17 @@ Packages the code imports today:
 | `@mohsinonxrm/dataverse-sdk-xrm`               | `OrganizationService` (create, associate, disassociate)                               |
 | `@mohsinonxrm/dataverse-sdk-batch`             | `BatchRequestBuilder` on the Batch page                                               |
 | `@mohsinonxrm/dataverse-sdk-discovery`         | `DiscoveryClient` on the Discovery page                                               |
+| `@mohsinonxrm/dataverse-sdk-files`             | `FileColumnClient` on the Files page                                                  |
 
 ## Known gaps
 
 - **Typed packages are not wired in yet.** `dataverse-sdk-actions`, `-functions`, `-messages`,
-  `-metadata` and `-files` are dependencies of the sample but nothing imports them. The Bulk,
-  Actions & Functions, Messages, Metadata and Files pages call the Web API endpoints directly
-  through `client.api(...)` (for example `/CreateMultiple`, `/WhoAmI`, `/InitializeFileBlocksUpload`).
+  and `-metadata` are dependencies of the sample but nothing imports them. The Bulk,
+  Actions & Functions, Messages and Metadata pages call the Web API endpoints directly
+  through `client.api(...)` (for example `/CreateMultiple` and `/WhoAmI`).
 - **The Observability page is simulated.** Its retry, backoff and concurrency demos use timers and
   `Math.random`; they do not run the SDK's middleware.
-- **FetchXML and `$expand`** on the Querying page are built by hand (a `?fetchXml=` query string and a
-  string `$expand`). They will move to `client.fetchXml(...)` and nested `expand()` options once
-  those SDK changes are released.
 - **Not audited** for accessibility (WCAG) or responsive layout.
-- **The Files page** builds the entity set name by appending `s` to the entity name, which works for
-  `annotation`, `account` and `contact` but not for names such as `opportunity` (`opportunities`).
 
 ## Run it
 
@@ -88,7 +84,7 @@ Other scripts: `pnpm build` (type-check, then `vite build`), `pnpm typecheck`, `
 | `/scenarios/batch`         | Batch Operations    | `BatchRequestBuilder` with a changeset and `continueOnError`                    |
 | `/scenarios/relationships` | Relationships       | Associate, disassociate, bind on create, retrieve related                       |
 | `/scenarios/metadata`      | Metadata Explorer   | Create an entity and attributes, `RetrieveMetadataChanges`                      |
-| `/scenarios/files`         | File Operations     | Chunked upload, download                                                        |
+| `/scenarios/files`         | File Operations     | Upload and download with `FileColumnClient`                                     |
 | `/scenarios/actions`       | Actions & Functions | `WhoAmI`, `RetrieveVersion`, `WinOpportunity`, `ExecuteWorkflow`, `GrantAccess` |
 | `/scenarios/messages`      | Messages            | `Assign`, `SetState`, `Merge`, solution export and import                       |
 | `/scenarios/discovery`     | Discovery           | `DiscoveryClient.listOrganizations()`                                           |
