@@ -16,6 +16,7 @@ npm install @mohsinonxrm/dataverse-sdk-auth-azure-identity @mohsinonxrm/datavers
 - ✅ **Azure CLI**: Local development using `az login`
 - ✅ **Environment Variables**: Credential configuration via environment
 - ✅ **Workload Identity**: Kubernetes workload identity support
+- ✅ **Token cache**: tokens are reused until 5 minutes before expiry, so `az` / `pwsh` start once per token, not once per request
 - ✅ **TypeScript first**: Fully typed with comprehensive IntelliSense
 
 ## Supported Credentials
@@ -35,6 +36,42 @@ Works with **any** `TokenCredential` from `@azure/identity`:
 | `InteractiveBrowserCredential` | Desktop apps                                      | Browser popup                            |
 | `UsernamePasswordCredential`   | Legacy scenarios                                  | Username + password                      |
 | `WorkloadIdentityCredential`   | Kubernetes                                        | Workload identity federation             |
+
+## Token Caching
+
+The SDK asks the provider for a token on **every request**. The provider keeps tokens in memory,
+per scope set and tenant, so the credential is called about once per token lifetime:
+
+- A cached token is used until **5 minutes before it expires** (`refreshMarginMs`), or until the
+  credential's `refreshAfterTimestamp` if that is earlier (managed identity sets it). A token that
+  lives less than 10 minutes is refreshed at half its lifetime.
+- Concurrent requests that need a new token share **one** credential call.
+- If a refresh fails while the cached token is still valid, the cached token is used and the next
+  request tries again. Once the token has expired, the error is thrown.
+- After a 401, the SDK calls `getToken` with `forceRefresh` (or with the claims of a Conditional
+  Access challenge). Both skip this cache and call the credential, and the new token replaces the
+  cached one.
+- `cacheTokens: false` turns the cache off; `clearTokenCache()` empties it.
+
+Why it matters, per credential (`@azure/identity` 4.x):
+
+| Credential                                                                                                                                                                 | Caches tokens itself?                                                             |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `AzureCliCredential`, `AzurePowerShellCredential`, `AzureDeveloperCliCredential`                                                                                           | No: each `getToken` starts an `az` / `pwsh` / `azd` process (about a second each) |
+| `DefaultAzureCredential`, `ChainedTokenCredential`                                                                                                                         | No: each call walks the chain from the first credential                           |
+| `ClientSecretCredential`, `ClientCertificateCredential`, `ManagedIdentityCredential`, `WorkloadIdentityCredential`, `DeviceCodeCredential`, `InteractiveBrowserCredential` | Yes, in MSAL's in-memory cache                                                    |
+
+For the credentials that do cache, the provider's cache only saves the call into MSAL. For them,
+`forceRefresh` reaches the credential, but `@azure/identity` has no option to skip MSAL's cache,
+so the credential may return the same token until MSAL refreshes it.
+
+```typescript
+const tokenProvider = new AzureIdentityTokenProvider(new AzureCliCredential(), {
+  scopes: ["https://your-org.crm.dynamics.com/.default"],
+  refreshMarginMs: 10 * 60 * 1000, // refresh 10 minutes before expiry (default 5)
+  // cacheTokens: false,           // call the credential on every request
+});
+```
 
 ## Usage
 
@@ -300,6 +337,10 @@ constructor(
 - `scopes` (required): Default scopes (e.g., `['https://org.crm.dynamics.com/.default']`)
 - `tenantId` (optional): Tenant ID for multi-tenant scenarios
 - `getTokenOptions` (optional): Additional `GetTokenOptions` for Azure Identity
+- `cacheTokens` (optional, default `true`): keep tokens in memory until they are close to
+  expiry ([Token Caching](#token-caching))
+- `refreshMarginMs` (optional, default `300000`, exported as `DEFAULT_REFRESH_MARGIN_MS`): how
+  long before expiry a cached token is replaced
 
 ### Methods
 
@@ -312,10 +353,12 @@ Acquires an access token using the configured credential.
 - `scopes` (optional): String or array of scopes to override default scopes
 - `options` (optional): Token options
   - `tenantId`: Override tenant ID for multi-tenant scenarios
-  - `claims`: Claims challenge from server (Conditional Access)
+  - `claims`: Claims challenge from server (Conditional Access). Skips the cache and is passed to
+    the credential
   - `correlationId`: Correlation ID for telemetry (not passed to Azure Identity)
-  - `forceRefresh`: ignored. `@azure/identity`'s `GetTokenOptions` has no option to skip the
-    cache; each credential decides when to get a new token
+  - `forceRefresh`: skips the provider's cache and calls the credential (the SDK sets it after a
+    401). MSAL-based credentials may still answer from their own cache
+    ([Token Caching](#token-caching))
 
 **Returns:** `Promise<string>` - Access token
 
@@ -361,6 +404,11 @@ const options = tokenProvider.getOptions();
 console.log("Default scopes:", options.scopes);
 console.log("Tenant ID:", options.tenantId);
 ```
+
+#### `clearTokenCache(): void`
+
+Removes every cached token, so the next `getToken()` calls the credential (for example after
+`az login` as another user).
 
 ## Error Handling
 
