@@ -67,7 +67,7 @@ git push
 
 ### 4. Create PR
 
-- CI validates changeset is present
+- PRs to `main` must include a changeset (CI checks it). PRs to `dev` don't need one, but add one whenever the change affects package consumers, so it isn't forgotten when `dev` is merged to `main`
 - Reviewer sees what will be released
 - Merge when approved
 
@@ -213,10 +213,11 @@ batches with thousands of requests.
 
 ### Pre-release Versions
 
+Maintainers publish prereleases from `dev` with the **Release (next)** workflow (see [release.md](./release.md#prerelease-channel-next)). It runs the equivalent of:
+
 ```bash
-# Publish alpha version
-pnpm changeset --snapshot alpha
-# Creates: @mohsinonxrm/dataverse-sdk-core@1.0.0-alpha.20250115
+pnpm changeset version --snapshot next   # e.g. 2.0.0-next-20261105123456, not committed
+pnpm changeset publish --tag next --no-git-tag
 ```
 
 ### Linked Packages (Always Version Together)
@@ -295,7 +296,7 @@ git commit -m "chore: remove incorrect changeset"
 - Add changesets for internal build script changes
 - Manually edit package.json versions
 - Manually edit CHANGELOG.md
-- Run `changeset version` manually (CI does this)
+- Commit the output of `changeset version` yourself (the Release workflow does this in the "Version Packages" PR)
 
 ---
 
@@ -308,7 +309,7 @@ A: Whenever you make changes that affect package consumers (API changes, bug fix
 A: Yes! Useful if you have logically separate changes.
 
 **Q: What happens if I forget a changeset?**  
-A: CI will fail with "No changeset detected" message.
+A: On a PR to `main`, CI fails with "No changeset detected". On a PR to `dev` it doesn't, so add one yourself for any consumer-facing change.
 
 **Q: Can I edit a changeset after creating it?**  
 A: Yes - it's just a markdown file in `.changeset/`.
@@ -320,7 +321,7 @@ A: Maintainers only. Merging triggers npm publish.
 A: `pnpm changeset status` shows pending changes.
 
 **Q: Can I preview the CHANGELOG?**  
-A: Run `pnpm changeset version` locally (don't commit).
+A: Run `pnpm changeset version` locally, look at the result, then discard it (`git checkout -- .`). Don't commit it.
 
 ---
 
@@ -328,8 +329,8 @@ A: Run `pnpm changeset version` locally (don't commit).
 
 - [Changesets Docs](https://github.com/changesets/changesets)
 - [SemVer Specification](https://semver.org/)
-- [Our CI Workflows](../../.github/workflows/)
+- [Our CI Workflows](../.github/workflows/)
 
 ---
 
-**Questions?** Ask in #dev-dataverse-sdk channel.
+**Questions?** Open an issue with the **Question** template.

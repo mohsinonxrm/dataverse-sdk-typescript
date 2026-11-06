@@ -330,7 +330,6 @@ Shows what would be generated without writing files.
 - [ADR 0001: Architecture](../../docs/adr/0001-architecture.md)
 - [ADR 0003: Actions and Functions](../../docs/adr/0003-actions-functions.md)
 - [ADR 0004: Messages](../../docs/adr/0004-messages.md)
-- [Copilot Instructions](../../.github/copilot-instructions.md) - Full project plan
 
 ---
 

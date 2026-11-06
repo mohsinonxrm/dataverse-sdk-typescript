@@ -96,7 +96,7 @@ git push -u origin release/vX.Y.Z
 
 ### 5. Automated Release Process
 
-When PR is merged to `main`, the [Release workflow](.github/workflows/changeset-version.yml) triggers:
+When PR is merged to `main`, the [Release workflow](../.github/workflows/changeset-version.yml) triggers:
 
 1. **Changesets reads all `.changeset/*.md` files**
 2. **Creates "Version Packages" PR** with:
@@ -147,10 +147,7 @@ git push --follow-tags
 
 ## Release Gates
 
-- ✅ Unit + contract + type tests must pass
-- ✅ Build succeeds for all packages
-- ✅ Lint passes with 0 errors
-- ⚠️ Integration tests recommended (manual trigger via workflow_dispatch)
+See [Release gates](#release-gates) at the top: build, tests (with core's coverage gate), package checks, browser tests and the live integration suite must all pass before anything is versioned or published.
 
 ## Emergency Hotfix
 
@@ -200,6 +197,7 @@ git push
 ## References
 
 - [Changesets Documentation](https://github.com/changesets/changesets/blob/main/docs/intro-to-using-changesets.md)
-- [CI Workflow](.github/workflows/ci.yml)
-- [Release Workflow](.github/workflows/changeset-version.yml)
+- [CI Workflow](../.github/workflows/ci.yml)
+- [Release Workflow](../.github/workflows/changeset-version.yml)
 - [Changesets Guide](./changesets-guide.md)
+- [Migrating to 2.0](./migration-2.0.md)

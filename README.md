@@ -3,8 +3,10 @@
 A modern, enterprise-grade TypeScript SDK for Microsoft Dataverse (Online), designed for both Node.js 22+ and modern browsers. Built with ESM-only architecture, native `fetch`, and comprehensive TypeScript typing.
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3%2B-blue.svg)](https://www.typescriptlang.org/)
+
+> **Upgrading from 1.x?** See the [2.0 migration guide](./docs/migration-2.0.md).
 
 ## 🎯 Project Vision
 
