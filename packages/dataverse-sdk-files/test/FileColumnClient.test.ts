@@ -53,23 +53,27 @@ describe("FileColumnClient", () => {
     });
 
     it("should upload large file in multiple chunks", async () => {
-      const fileData = Buffer.from("a".repeat(10 * 1024 * 1024)); // 10MB = 3 chunks at 4MB
+      // Small chunks keep the test fast; the 4 MB default has its own test below (#217).
+      const fileData = new Uint8Array(10 * 1024).fill(97); // 10 KB = 3 chunks at 4 KB
 
       vi.mocked(mockAdapter.send).mockImplementation(fileResponses("token-456"));
 
-      await client.upload("accounts", "guid-456", "new_document", fileData, "large.pdf");
+      await client.upload("accounts", "guid-456", "new_document", fileData, "large.pdf", {
+        chunkSize: 4 * 1024,
+      });
 
       // 1 table lookup + 1 init + 3 uploads + 1 commit = 6 calls
       expect(mockAdapter.send).toHaveBeenCalledTimes(6);
     });
 
     it("should report progress during upload", async () => {
-      const fileData = Buffer.from("a".repeat(8 * 1024 * 1024)); // 8MB = 2 chunks
+      const fileData = new Uint8Array(8 * 1024).fill(97); // 8 KB = 2 chunks at 4 KB
 
       vi.mocked(mockAdapter.send).mockImplementation(fileResponses("token-789"));
 
       const progressUpdates: number[] = [];
       await client.upload("accounts", "guid-789", "new_file", fileData, "medium.pdf", {
+        chunkSize: 4 * 1024,
         onProgress: (progress) => {
           progressUpdates.push(progress.percentage);
         },
@@ -152,7 +156,7 @@ describe("FileColumnClient", () => {
 
   describe("chunking logic", () => {
     it("should generate correct number of chunks for file size", async () => {
-      const fileData = Buffer.from("a".repeat(10 * 1024 * 1024)); // 10MB
+      const fileData = new Uint8Array(10 * 1024 + 1).fill(97); // 10 KB + 1 byte
 
       let uploadCount = 0;
       const respond = fileResponses("token");
@@ -163,10 +167,30 @@ describe("FileColumnClient", () => {
         return respond(request);
       });
 
+      await client.upload("accounts", "guid", "field", fileData, "file.dat", {
+        chunkSize: 1024,
+      });
+
+      // ceil((10 KB + 1) / 1 KB) = 11 chunks
+      expect(uploadCount).toBe(11);
+    });
+
+    it("splits at 4 MB by default (#217: one chunk boundary, not 10 MB of data)", async () => {
+      const fileData = new Uint8Array(4 * 1024 * 1024 + 1).fill(97); // 4 MB + 1 byte
+
+      const blockSizes: number[] = [];
+      const respond = fileResponses("token");
+      vi.mocked(mockAdapter.send).mockImplementation((request) => {
+        if (request.url.includes("UploadBlock")) {
+          const body = request.body as { BlockData: string };
+          blockSizes.push(atob(body.BlockData).length);
+        }
+        return respond(request);
+      });
+
       await client.upload("accounts", "guid", "field", fileData, "file.dat");
 
-      // 10MB / 4MB per chunk = 3 chunks
-      expect(uploadCount).toBe(3);
+      expect(blockSizes).toEqual([4 * 1024 * 1024, 1]);
     });
   });
 });
