@@ -76,7 +76,7 @@ export default function Header() {
   const user = accounts[0];
 
   const handleLogout = () => {
-    instance.logoutRedirect({
+    void instance.logoutRedirect({
       postLogoutRedirectUri: "/login",
     });
   };

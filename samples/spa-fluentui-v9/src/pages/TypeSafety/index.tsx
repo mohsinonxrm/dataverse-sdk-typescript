@@ -15,7 +15,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   grid: {
@@ -28,9 +28,9 @@ const useStyles = makeStyles({
     padding: "24px",
   },
   codeBlock: {
-    backgroundColor: (tokens as any).colorNeutralBackground3,
+    backgroundColor: tokens.colorNeutralBackground3,
     padding: "16px",
-    borderRadius: (tokens as any).borderRadiusMedium,
+    borderRadius: tokens.borderRadiusMedium,
     fontFamily: "monospace",
     fontSize: "12px",
     marginTop: "12px",
@@ -52,26 +52,26 @@ export default function TypeSafety() {
   const styles = useStyles();
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>Type Safety Demonstrations</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           Compile-time type checking, strict metadata types, and preventing runtime errors
         </Text>
       </div>
 
-      <div className={(styles as any).grid}>
-        <Card className={(styles as any).card}>
+      <div className={styles.grid}>
+        <Card className={styles.card}>
           <Title3>Metadata Type Strictness</Title3>
           <Text>Generated metadata types enforce strict typing at compile time</Text>
 
-          <div className={(styles as any).example}>
-            <div className={(styles as any).exampleTitle}>
-              <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />
+          <div className={styles.example}>
+            <div className={styles.exampleTitle}>
+              <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} />
               <Text weight="semibold">✅ Valid - Compiles Successfully</Text>
             </div>
             <div
-              className={(styles as any).codeBlock}
+              className={styles.codeBlock}
             >{`import { AccountCreate } from '@mohsinonxrm/dataverse-sdk-metadata';
 
 const account: AccountCreate = {
@@ -84,13 +84,13 @@ const account: AccountCreate = {
 await client.api('/accounts').post(account);`}</div>
           </div>
 
-          <div className={(styles as any).example}>
-            <div className={(styles as any).exampleTitle}>
-              <ErrorCircleRegular color={(tokens as any).colorStatusDangerForeground1} />
+          <div className={styles.example}>
+            <div className={styles.exampleTitle}>
+              <ErrorCircleRegular color={tokens.colorStatusDangerForeground1} />
               <Text weight="semibold">❌ Invalid - Won't Compile</Text>
             </div>
             <div
-              className={(styles as any).codeBlock}
+              className={styles.codeBlock}
             >{`import { AccountCreate } from '@mohsinonxrm/dataverse-sdk-metadata';
 
 const account: AccountCreate = {
@@ -106,17 +106,17 @@ const account: AccountCreate = {
           </div>
         </Card>
 
-        <Card className={(styles as any).card}>
+        <Card className={styles.card}>
           <Title3>Read vs Create/Update Types</Title3>
           <Text>Separate types for read and write operations prevent invalid payloads</Text>
 
-          <div className={(styles as any).example}>
-            <div className={(styles as any).exampleTitle}>
-              <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />
+          <div className={styles.example}>
+            <div className={styles.exampleTitle}>
+              <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} />
               <Text weight="semibold">Read Type (All Fields)</Text>
             </div>
             <div
-              className={(styles as any).codeBlock}
+              className={styles.codeBlock}
             >{`import { AccountRead } from '@mohsinonxrm/dataverse-sdk-metadata';
 
 const account: AccountRead = await client
@@ -130,13 +130,13 @@ console.log(account.name);           // Normal field
 console.log(account.revenue);        // Normal field`}</div>
           </div>
 
-          <div className={(styles as any).example}>
-            <div className={(styles as any).exampleTitle}>
-              <ShieldCheckmarkRegular color={(tokens as any).colorStatusSuccessForeground1} />
+          <div className={styles.example}>
+            <div className={styles.exampleTitle}>
+              <ShieldCheckmarkRegular color={tokens.colorStatusSuccessForeground1} />
               <Text weight="semibold">Create Type (Writable Only)</Text>
             </div>
             <div
-              className={(styles as any).codeBlock}
+              className={styles.codeBlock}
             >{`import { AccountCreate } from '@mohsinonxrm/dataverse-sdk-metadata';
 
 const account: AccountCreate = {
@@ -151,16 +151,16 @@ await client.api('/accounts').post(account);`}</div>
           </div>
         </Card>
 
-        <Card className={(styles as any).card}>
+        <Card className={styles.card}>
           <Title3>OData Type Discrimination</Title3>
           <Text>@odata.type enforcement for polymorphic operations</Text>
 
-          <div className={(styles as any).example}>
-            <div className={(styles as any).exampleTitle}>
-              <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />
+          <div className={styles.example}>
+            <div className={styles.exampleTitle}>
+              <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} />
               <Text weight="semibold">Correct Type Annotation</Text>
             </div>
-            <div className={(styles as any).codeBlock}>{`// Bulk operations require @odata.type
+            <div className={styles.codeBlock}>{`// Bulk operations require @odata.type
 await client.api('/CreateMultiple').post({
   Targets: [
     {
@@ -175,12 +175,12 @@ await client.api('/CreateMultiple').post({
 });`}</div>
           </div>
 
-          <div className={(styles as any).example}>
-            <div className={(styles as any).exampleTitle}>
-              <ErrorCircleRegular color={(tokens as any).colorStatusDangerForeground1} />
+          <div className={styles.example}>
+            <div className={styles.exampleTitle}>
+              <ErrorCircleRegular color={tokens.colorStatusDangerForeground1} />
               <Text weight="semibold">Missing Type (Runtime Error)</Text>
             </div>
-            <div className={(styles as any).codeBlock}>{`// ❌ Runtime error: @odata.type required
+            <div className={styles.codeBlock}>{`// ❌ Runtime error: @odata.type required
 await client.api('/CreateMultiple').post({
   Targets: [
     {
@@ -192,16 +192,16 @@ await client.api('/CreateMultiple').post({
           </div>
         </Card>
 
-        <Card className={(styles as any).card}>
+        <Card className={styles.card}>
           <Title3>Action/Function Type Safety</Title3>
           <Text>Typed request and response parameters for actions and functions</Text>
 
-          <div className={(styles as any).example}>
-            <div className={(styles as any).exampleTitle}>
-              <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />
+          <div className={styles.example}>
+            <div className={styles.exampleTitle}>
+              <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} />
               <Text weight="semibold">Typed Action Call</Text>
             </div>
-            <div className={(styles as any).codeBlock}>{`import { 
+            <div className={styles.codeBlock}>{`import { 
   WinOpportunityRequest,
   WinOpportunityResponse 
 } from '@mohsinonxrm/dataverse-sdk-actions';
@@ -222,17 +222,17 @@ const response: WinOpportunityResponse =
           </div>
         </Card>
 
-        <Card className={(styles as any).card}>
+        <Card className={styles.card}>
           <Title3>OptionSet Type Safety</Title3>
           <Text>Strongly typed option sets with numeric values</Text>
 
-          <div className={(styles as any).example}>
-            <div className={(styles as any).exampleTitle}>
-              <CheckmarkCircleRegular color={(tokens as any).colorStatusSuccessForeground1} />
+          <div className={styles.example}>
+            <div className={styles.exampleTitle}>
+              <CheckmarkCircleRegular color={tokens.colorStatusSuccessForeground1} />
               <Text weight="semibold">Typed OptionSet Values</Text>
             </div>
             <div
-              className={(styles as any).codeBlock}
+              className={styles.codeBlock}
             >{`import { AccountCreate } from '@mohsinonxrm/dataverse-sdk-metadata';
 
 const account: AccountCreate = {
@@ -249,7 +249,7 @@ const account: AccountCreate = {
           </div>
         </Card>
 
-        <Card className={(styles as any).card}>
+        <Card className={styles.card}>
           <Title3>Benefits of Type Safety</Title3>
           <Text>Compile-time guarantees prevent runtime errors</Text>
 
@@ -299,7 +299,7 @@ const account: AccountCreate = {
         <Text>Generate types for your custom entities and fields</Text>
 
         <div
-          className={(styles as any).codeBlock}
+          className={styles.codeBlock}
           style={{ marginTop: "16px" }}
         >{`# Generate types from your Dataverse environment
 pnpm dataverse-sdk-generator \\

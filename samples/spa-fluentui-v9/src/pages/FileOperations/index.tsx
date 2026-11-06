@@ -20,6 +20,12 @@ import { LoadingState } from "../../components/demo/LoadingState";
 import { ErrorDisplay } from "../../components/errors/ErrorDisplay";
 import { ProgressTracker } from "../../components/demo/ProgressTracker";
 import { CodeComparison } from "../../components/demo/CodeComparison";
+import {
+  patchProgress,
+  type ResultView,
+  type ProgressState,
+  type JsonObject,
+} from "../../types/common";
 
 const useStyles = makeStyles({
   container: {
@@ -31,7 +37,7 @@ const useStyles = makeStyles({
     marginBottom: "24px",
   },
   description: {
-    color: (tokens as any).colorNeutralForeground2,
+    color: tokens.colorNeutralForeground2,
     marginTop: "8px",
   },
   grid: {
@@ -61,8 +67,8 @@ const useStyles = makeStyles({
     marginTop: "16px",
     maxWidth: "200px",
     maxHeight: "200px",
-    border: `1px solid ${(tokens as any).colorNeutralStroke1}`,
-    borderRadius: (tokens as any).borderRadiusMedium,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusMedium,
   },
 });
 
@@ -73,8 +79,8 @@ export default function FileOperations() {
   const { client, isReady } = useDataverse();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const [results, setResults] = useState<any>(null);
-  const [progress, setProgress] = useState<any>(null);
+  const [results, setResults] = useState<ResultView | null>(null);
+  const [progress, setProgress] = useState<ProgressState | null>(null);
 
   // Upload state
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -117,16 +123,18 @@ export default function FileOperations() {
       });
 
       // Step 1: Initialize upload
-      const initResponse = await client.api("/InitializeFileBlocksUpload").post({
-        Target: {
-          "@odata.type": `Microsoft.Dynamics.CRM.${entityName}`,
-          [`${entityName}id`]: recordId,
-        },
-        FileAttributeName: columnName,
-        FileName: selectedFile.name,
-      });
+      const initResponse = await client
+        .api("/InitializeFileBlocksUpload")
+        .post<{ FileContinuationToken: string }>({
+          Target: {
+            "@odata.type": `Microsoft.Dynamics.CRM.${entityName}`,
+            [`${entityName}id`]: recordId,
+          },
+          FileAttributeName: columnName,
+          FileName: selectedFile.name,
+        });
 
-      const fileContinuationToken = (initResponse as any).FileContinuationToken;
+      const fileContinuationToken = initResponse.FileContinuationToken;
 
       // Step 2: Upload chunks
       const reader = new FileReader();
@@ -149,7 +157,7 @@ export default function FileOperations() {
         });
 
         // Upload chunk
-        await client.api("/UploadBlock").post({
+        await client.api("/UploadBlock").post<JsonObject>({
           BlockId: blockId,
           BlockData: base64,
           FileContinuationToken: fileContinuationToken,
@@ -158,16 +166,12 @@ export default function FileOperations() {
         chunkIndex++;
         offset += CHUNK_SIZE;
 
-        setProgress((prev: any) => ({
-          ...prev,
-          current: chunkIndex,
-          successCount: chunkIndex,
-        }));
+        setProgress(patchProgress({ current: chunkIndex, successCount: chunkIndex }));
       }
 
       // Step 3: Commit upload
       const blockList = Array.from({ length: totalChunks }, (_, i) => btoa(`block-${i}`));
-      await client.api("/CommitFileBlocksUpload").post({
+      await client.api("/CommitFileBlocksUpload").post<JsonObject>({
         FileContinuationToken: fileContinuationToken,
         BlockList: blockList,
         FileName: selectedFile.name,
@@ -184,7 +188,7 @@ export default function FileOperations() {
       });
     } catch (err) {
       setError(err as Error);
-      setProgress((prev: any) => ({ ...prev, errorCount: 1 }));
+      setProgress(patchProgress({ errorCount: 1 }));
     } finally {
       setLoading(false);
     }
@@ -235,11 +239,18 @@ export default function FileOperations() {
 
     try {
       // Download file data
-      const response = await client.api(`/${entityName}s(${downloadRecordId})`).select().get();
+      const response = await client
+        .api(`/${entityName}s(${downloadRecordId})`)
+        .select()
+        .get<JsonObject>();
 
-      const base64Data = (response as any)[columnName];
-      const fileName = (response as any).filename || "download.bin";
-      const mimeType = (response as any).mimetype || "application/octet-stream";
+      const base64Data = response[columnName];
+      if (typeof base64Data !== "string") {
+        throw new Error(`The ${columnName} column has no file data for this record.`);
+      }
+      const fileName = typeof response.filename === "string" ? response.filename : "download.bin";
+      const mimeType =
+        typeof response.mimetype === "string" ? response.mimetype : "application/octet-stream";
 
       // Convert base64 to blob and trigger download
       const byteCharacters = atob(base64Data);
@@ -251,19 +262,19 @@ export default function FileOperations() {
       const blob = new Blob([byteArray], { type: mimeType });
 
       // Create download link
-      const url = (URL as any).createObjectURL(blob);
-      const a = (document as any).createElement("a");
-      (a as any).href = url;
-      (a as any).download = fileName;
-      (document as any).body.appendChild(a);
-      (a as any).click();
-      (document as any).body.removeChild(a);
-      (URL as any).revokeObjectURL(url);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
       setResults({
         operation: "Download",
         fileName,
-        fileSize: (blob as any).size,
+        fileSize: blob.size,
         mimeType,
         status: "Success",
       });
@@ -275,25 +286,25 @@ export default function FileOperations() {
   };
 
   return (
-    <div className={(styles as any).container}>
-      <div className={(styles as any).header}>
+    <div className={styles.container}>
+      <div className={styles.header}>
         <Title3>File Operations</Title3>
-        <Text className={(styles as any).description}>
+        <Text className={styles.description}>
           Upload and download files with chunked transfer for large files (4MB chunks)
         </Text>
       </div>
 
-      <div className={(styles as any).grid}>
-        <Card className={(styles as any).card}>
+      <div className={styles.grid}>
+        <Card className={styles.card}>
           <Title3>Chunked Upload</Title3>
           <Text>For large files (&gt;4MB) - uses InitializeFileBlocksUpload action</Text>
 
-          <div className={(styles as any).form}>
+          <div className={styles.form}>
             <div>
               <Label>Entity Name</Label>
               <Input
                 value={entityName}
-                onChange={(_e, data) => setEntityName((data as any).value)}
+                onChange={(_e, data) => setEntityName(data.value)}
                 placeholder="annotation"
               />
             </div>
@@ -301,7 +312,7 @@ export default function FileOperations() {
               <Label>Record ID</Label>
               <Input
                 value={recordId}
-                onChange={(_e, data) => setRecordId((data as any).value)}
+                onChange={(_e, data) => setRecordId(data.value)}
                 placeholder="GUID of record"
               />
             </div>
@@ -309,7 +320,7 @@ export default function FileOperations() {
               <Label>Column Name</Label>
               <Input
                 value={columnName}
-                onChange={(_e, data) => setColumnName((data as any).value)}
+                onChange={(_e, data) => setColumnName(data.value)}
                 placeholder="documentbody"
               />
             </div>
@@ -318,13 +329,10 @@ export default function FileOperations() {
               <input
                 ref={fileInputRef}
                 type="file"
-                className={(styles as any).fileInput}
+                className={styles.fileInput}
                 onChange={handleFileSelect}
               />
-              <Button
-                icon={<DocumentRegular />}
-                onClick={() => (fileInputRef as any).current?.click()}
-              >
+              <Button icon={<DocumentRegular />} onClick={() => fileInputRef.current?.click()}>
                 Choose File
               </Button>
               {selectedFile && (
@@ -336,7 +344,7 @@ export default function FileOperations() {
             </div>
           </div>
 
-          <div className={(styles as any).actions}>
+          <div className={styles.actions}>
             <Button
               appearance="primary"
               icon={<ArrowUploadRegular />}
@@ -355,23 +363,23 @@ export default function FileOperations() {
           </div>
         </Card>
 
-        <Card className={(styles as any).card}>
+        <Card className={styles.card}>
           <Title3>Download File</Title3>
           <Text>Download file from a file/image column</Text>
 
-          <div className={(styles as any).form}>
+          <div className={styles.form}>
             <div>
               <Label>Record ID</Label>
               <Input
                 value={downloadRecordId}
-                onChange={(_e, data) => setDownloadRecordId((data as any).value)}
+                onChange={(_e, data) => setDownloadRecordId(data.value)}
                 placeholder="GUID of record with file"
               />
             </div>
             <Text size={200}>Uses same entity and column settings from upload section</Text>
           </div>
 
-          <div className={(styles as any).actions}>
+          <div className={styles.actions}>
             <Button
               appearance="primary"
               icon={<ArrowDownloadRegular />}
@@ -383,11 +391,11 @@ export default function FileOperations() {
           </div>
         </Card>
 
-        <Card className={(styles as any).card}>
+        <Card className={styles.card}>
           <Title3>Image Column</Title3>
           <Text>Upload images to entityimage column</Text>
 
-          <div className={(styles as any).form}>
+          <div className={styles.form}>
             <Text size={200}>
               Same operations work for image columns. Set columnName to 'entityimage' for profile
               pictures.
@@ -408,12 +416,12 @@ export default function FileOperations() {
 
       {loading && progress && (
         <ProgressTracker
-          total={(progress as any).total}
-          current={(progress as any).current}
+          total={progress.total}
+          current={progress.current}
           label="Uploading file chunks..."
-          successCount={(progress as any).successCount}
-          errorCount={(progress as any).errorCount}
-          customStats={(progress as any).customStats}
+          successCount={progress.successCount}
+          errorCount={progress.errorCount}
+          customStats={progress.customStats}
         />
       )}
 
@@ -425,11 +433,11 @@ export default function FileOperations() {
             {
               label: "Operation Result",
               code:
-                (results as any).operation === "Chunked Upload"
+                results.operation === "Chunked Upload"
                   ? `// 1. Initialize
 const init = await client.api('/InitializeFileBlocksUpload').post({...});
 
-// 2. Upload chunks (${(results as any).chunks} chunks)
+// 2. Upload chunks (${String(results.chunks)} chunks)
 for (const chunk of chunks) {
   await client.api('/UploadBlock').post({
     BlockId: blockId,
@@ -443,16 +451,16 @@ await client.api('/CommitFileBlocksUpload').post({
   FileContinuationToken: token,
   BlockList: blockIds
 });`
-                  : (results as any).operation === "Simple Upload"
+                  : results.operation === "Simple Upload"
                     ? `await client.api('/${entityName}s(${recordId})').patch({
   ${columnName}: base64Data,
-  filename: '${(results as any).fileName}',
-  mimetype: '${(results as any).mimeType}'
+  filename: '${String(results.fileName)}',
+  mimetype: '${String(results.mimeType)}'
 })`
                     : `const file = await client.api('/${entityName}s(${downloadRecordId})')
   .select()
   .get();`,
-              result: (JSON as any).stringify(results, null, 2),
+              result: JSON.stringify(results, null, 2),
             },
           ]}
         />

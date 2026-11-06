@@ -13,7 +13,7 @@ import "./index.css";
 const msalInstance = new PublicClientApplication(msalConfig);
 
 // initializeMsal() initializes MSAL, completes a pending redirect sign-in and sets the active account.
-initializeMsal(msalInstance)
+void initializeMsal(msalInstance)
   .catch((error: unknown) => {
     console.error("Error handling redirect:", error);
   })
