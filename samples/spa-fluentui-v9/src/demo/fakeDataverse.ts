@@ -372,12 +372,13 @@ function getCollection(state: DemoState, table: TableDef, req: FakeRequest): Fak
     .get("$select")
     ?.split(",")
     .map((s) => s.trim());
-  const rows = query(table, {
+  // $count counts every match; $top limits the rows returned.
+  const matching = query(table, {
     select,
     filter: q.get("$filter") ?? undefined,
     orderBy: q.get("$orderby") ?? undefined,
-    top: q.has("$top") ? Number(q.get("$top")) : undefined,
   });
+  const rows = q.has("$top") ? matching.slice(0, Number(q.get("$top"))) : matching;
   const pageSize = Number(prefs.get("odata.maxpagesize") ?? 0) || 5000;
   if (prefs.has("odata.maxpagesize")) applied.push(`odata.maxpagesize=${pageSize}`);
   const skip = Number(q.get("$skiptoken") ?? 0);
@@ -388,7 +389,7 @@ function getCollection(state: DemoState, table: TableDef, req: FakeRequest): Fak
       project(state, table, r, { select, expand: q.get("$expand") ?? undefined, annotations })
     ),
   };
-  if (q.get("$count") === "true") body["@odata.count"] = Math.min(rows.length, 5000);
+  if (q.get("$count") === "true") body["@odata.count"] = Math.min(matching.length, 5000);
   if (skip + pageSize < rows.length) {
     const next = new URL(req.url.href);
     next.searchParams.set("$skiptoken", String(skip + pageSize));
@@ -508,6 +509,9 @@ function create(
     _ownerid_value: user.systemuserid,
     _createdby_value: user.systemuserid,
     _modifiedby_value: user.systemuserid,
+    // Impersonated: createdby is the user acted for, createdonbehalfby the caller.
+    _createdonbehalfby_value:
+      req.headers.callerobjectid || req.headers.mscrmcallerid ? DEMO_USER.systemuserid : null,
   };
   const required = table.attributes.find((a) => a.required && body[a.logicalName] === undefined);
   if (required && !presetId) {

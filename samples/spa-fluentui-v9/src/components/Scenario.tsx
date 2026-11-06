@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import {
+  Badge,
   Body1,
   Button,
   Card,
@@ -36,6 +37,8 @@ import { TOASTER_ID } from "./toaster";
 
 const useStyles = makeStyles({
   card: { padding: tokens.spacingHorizontalL, gap: tokens.spacingVerticalL },
+  // Keep the badge on one line: in the CardHeader action slot it would otherwise wrap.
+  badge: { flexShrink: 0, whiteSpace: "nowrap" },
   form: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalM },
   fields: {
     display: "grid",
@@ -86,6 +89,8 @@ export interface ScenarioProps<T> {
   /** A toast after a successful run, for changes the result doesn't show. */
   successMessage?: (result: T) => string;
   onResult?: (result: T) => void;
+  /** The scenario shows an error on purpose (labelled as such). */
+  failsOnPurpose?: boolean;
 }
 
 /**
@@ -105,6 +110,7 @@ export function Scenario<T>(props: ScenarioProps<T>) {
     renderResult,
     successMessage,
     onResult,
+    failsOnPurpose,
   } = props;
   const styles = useStyles();
   const headingId = useId();
@@ -145,7 +151,13 @@ export function Scenario<T>(props: ScenarioProps<T>) {
           : "";
 
   return (
-    <Card className={styles.card} aria-labelledby={headingId} role="region" data-scenario={title}>
+    <Card
+      className={styles.card}
+      aria-labelledby={headingId}
+      role="region"
+      data-scenario={title}
+      data-expect={failsOnPurpose ? "error" : "success"}
+    >
       <CardHeader
         header={
           <Subtitle1 as="h2" id={headingId}>
@@ -153,6 +165,13 @@ export function Scenario<T>(props: ScenarioProps<T>) {
           </Subtitle1>
         }
         description={<Body1>{description}</Body1>}
+        action={
+          failsOnPurpose ? (
+            <Badge appearance="tint" color="warning" shape="rounded" className={styles.badge}>
+              Fails on purpose
+            </Badge>
+          ) : undefined
+        }
       />
 
       <form className={styles.form} onSubmit={submit} aria-label={`${title} inputs`}>
