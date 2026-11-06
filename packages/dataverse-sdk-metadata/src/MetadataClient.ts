@@ -986,7 +986,8 @@ export class MetadataClient {
 
     const fromHeader = GUID_AT_END.exec(res.headers.get("odata-entityid") ?? "")?.[1];
     if (fromHeader) {
-      await res.body?.cancel();
+      // Don't await: cancelling a stream that was tee'd (e.g. by logging) can wait forever.
+      res.body?.cancel().catch(() => undefined);
       return fromHeader;
     }
 
