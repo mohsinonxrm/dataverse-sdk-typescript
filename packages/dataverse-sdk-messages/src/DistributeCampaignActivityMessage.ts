@@ -29,7 +29,7 @@ export class DistributeCampaignActivityRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/campaignactivitys(${this.campaignactivityId})/Microsoft.Dynamics.CRM.DistributeCampaignActivity`;
+    const url = `${baseUrl}/campaignactivities(${this.campaignactivityId})/Microsoft.Dynamics.CRM.DistributeCampaignActivity`;
 
     const body: Record<string, unknown> = {
       Propagate: this.propagate,

@@ -9,7 +9,7 @@ import {
   csdlTypeToTsWithExpansion as _csdlTypeToTsWithExpansion,
   toPascalCase as _toPascalCase,
   toCamelCase,
-  getEntitySetName as _getEntitySetName,
+  getEntitySetName,
   isCollectionType,
   extractEntityTypeName,
 } from "../utils/typescript-writer.js";
@@ -414,11 +414,17 @@ function generateToRequestInformation(
 
     code += `    // Bound action\n`;
 
-    // Extract entity type name and build entity set name using simple pluralization
-    const entityTypeName = extractEntityTypeName(action.bindingParameter.type);
-    const entitySetName = `${entityTypeName.toLowerCase()}s`; // Simple pluralization
+    // The entity set from the CSDL, as in the actions generator; not pluralized by hand (#76)
+    const entitySetName = getEntitySetName(action.bindingParameter.type, csdl.entitySetMap);
 
-    code += `    const url = \`\${baseUrl}/${entitySetName}(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
+    if (entitySetName) {
+      code += `    const url = \`\${baseUrl}/${entitySetName}(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
+    } else {
+      // Fallback: extract entity type name from binding parameter type
+      const entityTypeName = extractEntityTypeName(action.bindingParameter.type);
+      code += `    // WARNING: Entity set not found in metadata, using entity type name as fallback\n`;
+      code += `    const url = \`\${baseUrl}/${entityTypeName}s(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
+    }
   } else if (isCollectionBound && action.bindingParameter) {
     // Collection-bound action: POST /{entityset}/Microsoft.Dynamics.CRM.{name} (#69)
     const collection = collectionBinding(csdl, action.bindingParameter.type);
