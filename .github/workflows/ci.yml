@@ -55,6 +55,19 @@ jobs:
       - run: pnpm format:check
         if: matrix.node == 22
       - run: pnpm build
+      # The actions, functions and messages packages and their docs must be exactly what the
+      # generator makes from the committed $metadata snapshot (#293). It reads only the
+      # snapshot: no org, no credentials.
+      - name: Generated packages match the $metadata snapshot
+        if: matrix.node == 22
+        run: |
+          pnpm --filter generate-sdk-types regen > /dev/null
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain | head -50
+            git diff --stat | tail -5
+            echo "::error::Run 'pnpm --filter generate-sdk-types regen' and commit the result."
+            exit 1
+          fi
       - run: pnpm typecheck
       - run: pnpm lint
         if: matrix.node == 22
