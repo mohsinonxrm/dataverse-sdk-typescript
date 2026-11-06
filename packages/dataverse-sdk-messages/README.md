@@ -429,6 +429,10 @@ numeric, so you can combine flags with `|`, and the messages send member names. 
 parameters and enums inside complex types, such as `PrincipalAccess.AccessMask` and the operators
 of a `QueryExpression`. The enums are exported from the package root.
 
+An entity member of a complex type, such as `PrincipalAccess.Principal`, takes a reference or a
+payload, like an entity-typed parameter:
+`new GrantAccessRequest(createEntityReference("account", id), { Principal: createEntityReference("team", teamId), AccessMask: AccessRights.ReadAccess })`.
+
 ---
 
 ## Utilities

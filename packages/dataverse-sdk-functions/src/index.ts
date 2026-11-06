@@ -997,6 +997,7 @@ export {
   createEntityReference,
   getEntitySetNameFromReference,
 } from "./types/EntityReference.js";
+export type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 
 export {
   AccessRights,

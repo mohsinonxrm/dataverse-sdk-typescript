@@ -264,7 +264,19 @@ const { FetchXml } = await client.execute(
 ```
 
 A flags value such as `AccessRights.ReadAccess | AccessRights.WriteAccess` is sent as
-`"ReadAccess, WriteAccess"`, and a member name passed as a string is sent as it is. The enums are
+`"ReadAccess, WriteAccess"`. An entity member of a complex type, such as
+`PrincipalAccess.Principal`, takes a reference or a payload, like an entity-typed parameter:
+
+```typescript
+await client.execute(
+  new GrantAccessAction(createEntityReference("account", accountId), {
+    Principal: createEntityReference("team", teamId),
+    AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess, // "ReadAccess, WriteAccess"
+  })
+);
+```
+
+A a member name passed as a string is sent as it is. The enums are
 exported from the package root, as in the functions package.
 
 ## Bulk Operations

@@ -79,19 +79,20 @@ describe.skipIf(!live)("live: enum values in action bodies (#232)", () => {
     const { client } = liveClient();
     const target = createEntityReference("account", accountId);
     const team = createEntityReference("team", teamId);
-    // PrincipalAccess doesn't type Principal yet (#231); a variable isn't checked for extra properties.
-    const grant = {
-      Principal: team,
-      AccessMask: AccessRights.ReadAccess | AccessRights.AppendAccess,
-    };
-    await client.execute(new GrantAccessAction(target, grant));
+    await client.execute(
+      new GrantAccessAction(target, {
+        Principal: team,
+        AccessMask: AccessRights.ReadAccess | AccessRights.AppendAccess,
+      })
+    );
     expect(await teamAccess()).toBe("ReadAccess, AppendAccess");
 
-    const modify = {
-      Principal: team,
-      AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess | AccessRights.ShareAccess,
-    };
-    await client.execute(new ModifyAccessAction(target, modify));
+    await client.execute(
+      new ModifyAccessAction(target, {
+        Principal: team,
+        AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess | AccessRights.ShareAccess,
+      })
+    );
     expect(await teamAccess()).toBe("ReadAccess, WriteAccess, ShareAccess");
 
     await client.execute(new RevokeAccessAction(target, team));

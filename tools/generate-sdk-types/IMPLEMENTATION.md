@@ -260,6 +260,21 @@ any entity parameter. `WebApiEntityReference` is the JSON shape, for a reference
 The functions package's `EntityReference` has no brand: a function parameter reads `logicalName`,
 `id` and `entitySetName` itself, so a literal works there.
 
+### Navigation properties of complex types
+
+Complex types can have `NavigationProperty` members, such as `PrincipalAccess.Principal` (#231). The
+parser reads them, with `Nullable`, and `generateComplexTypes` writes them after the properties. In a
+request body their value is an entity, so they are typed like entity-typed action parameters:
+
+- `crmbaseentity`: `EntityReference | AnyEntityPayload`;
+- a table: `EntityReference | EntityPayload<table>`, or an array of that for a collection;
+- `Collection(crmbaseentity)`: `Record<string, unknown>[]`;
+- `principal` and the other abstract system types: `EntityReference`.
+
+A member is required only with `Nullable="false"`. The `target` argument of `generateComplexTypes`
+says where `EntityReference` is: `../EntityReference.js` in messages, `./EntityReference.js`
+otherwise. The functions package now also gets `types/EntityPayload.ts`.
+
 ### Enum values in bodies
 
 The Web API reads an enum value in a JSON body only as a string, and answers 400 to a number

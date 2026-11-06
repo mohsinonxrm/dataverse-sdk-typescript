@@ -1,4 +1,6 @@
 import type { ShareAccessRights } from "./ShareAccessRights.js";
+import type { EntityReference } from "../EntityReference.js";
+import type { AnyEntityPayload } from "./EntityPayload.js";
 
 /**
  * ComponentPrincipalAccess complex type
@@ -6,4 +8,5 @@ import type { ShareAccessRights } from "./ShareAccessRights.js";
 export interface ComponentPrincipalAccess {
   ShareAccessMask?: ShareAccessRights;
   RequestType?: number;
+  SharePrincipal: EntityReference | AnyEntityPayload;
 }

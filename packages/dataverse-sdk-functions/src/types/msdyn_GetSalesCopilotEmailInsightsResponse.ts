@@ -2,5 +2,6 @@
  * msdyn_GetSalesCopilotEmailInsightsResponse complex type
  */
 export interface msdyn_GetSalesCopilotEmailInsightsResponse {
-  // No properties defined
+  msdyn_extractedquestions?: Record<string, unknown>[];
+  msdyn_salescopilotemailinsights?: Record<string, unknown>[];
 }
