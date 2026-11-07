@@ -1,6 +1,6 @@
 # Supported Operations - Complete Reference
 
-This document provides a complete reference of all **<!-- count:operations -->2,424<!-- /count --> typed operations** available in the Dataverse TypeScript SDK.
+This document provides a complete reference of all **<!-- count:operations -->2,353<!-- /count --> typed operations** available in the Dataverse TypeScript SDK.
 
 ## Overview
 
@@ -8,11 +8,11 @@ The SDK provides comprehensive coverage of Dataverse Web API operations through 
 
 | Package                                  | Count                                       | Description                            | HTTP Method |
 | ---------------------------------------- | ------------------------------------------- | -------------------------------------- | ----------- |
-| **@mohsinonxrm/dataverse-sdk-functions** | <!-- count:functions -->280<!-- /count -->  | Read-only operations (query, retrieve) | GET         |
+| **@mohsinonxrm/dataverse-sdk-functions** | <!-- count:functions -->209<!-- /count -->  | Read-only operations (query, retrieve) | GET         |
 | **@mohsinonxrm/dataverse-sdk-actions**   | <!-- count:actions -->1,072<!-- /count -->  | Operations with side effects           | POST        |
 | **@mohsinonxrm/dataverse-sdk-messages**  | <!-- count:messages -->1,072<!-- /count --> | Organization Service message pattern   | POST        |
 
-**Total Coverage:** <!-- count:operations -->2,424<!-- /count --> typed operations
+**Total Coverage:** <!-- count:operations -->2,353<!-- /count --> typed operations
 
 ## Two Front Doors
 
@@ -225,7 +225,7 @@ const accounts = await service.retrieveMultiple("accounts", {
 
 ## Detailed References
 
-- [Supported Functions (<!-- count:functions -->280<!-- /count -->)](./supported-functions.md) - Complete list of all GET operations
+- [Supported Functions (<!-- count:functions -->209<!-- /count -->)](./supported-functions.md) - Complete list of all GET operations
 - [Supported Actions (<!-- count:actions -->1,072<!-- /count -->)](./supported-actions.md) - Complete list of all POST operations
 - [Supported Messages (<!-- count:messages -->1,072<!-- /count -->)](./supported-messages.md) - Complete list of all Organization Service messages
 

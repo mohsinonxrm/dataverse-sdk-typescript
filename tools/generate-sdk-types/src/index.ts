@@ -13,6 +13,7 @@ import {
   withSupplementalMetadata,
 } from "./supplemental/supplemental-metadata.js";
 import { type PrebuiltFilter, selectPrebuilt } from "./prebuilt.js";
+import { checkQueryFunctions } from "./generators/query-functions-generator.js";
 import {
   type CollectionReader,
   operationSolutionsFrom,
@@ -156,6 +157,9 @@ export async function generateFromCsdl(
   // Operations Dataverse runs but leaves out of $metadata, such as ExportToExcel (#75)
   let operations = withSupplementalMetadata(csdl);
   if (prebuilt) {
+    // The query functions (filter helpers, not classes) are exactly the operations with no SDK
+    // message (#342)
+    checkQueryFunctions(csdl.functions, prebuilt.operationSolutions);
     // Platform + Sales + Customer Service only (#304); the supplemental operations are platform
     const supplemental = parseEdmx(SUPPLEMENTAL_METADATA);
     const platform = [...supplemental.actions, ...supplemental.functions].map((op) => op.name);
@@ -282,6 +286,12 @@ export async function fetchMetadata(source: SdkGeneratorConfig | DataverseClient
 export { canonicalizeCsdl } from "./parsers/canonical.js";
 export { ORG_SPECIFIC_PREFIXES, snapshotCsdl } from "./snapshot.js";
 export * from "./prebuilt.js";
+export {
+  checkQueryFunctions,
+  isQueryFunction,
+  queryFunctionKey,
+  queryFunctionsSource,
+} from "./generators/query-functions-generator.js";
 export * from "./solutions.js";
 export {
   SUPPLEMENTAL_METADATA,

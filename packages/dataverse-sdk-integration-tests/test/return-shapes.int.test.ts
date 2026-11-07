@@ -5,7 +5,8 @@
  * action's. Read-only: nothing is created.
  *
  * The only primitive returns in the CSDL (`Edm.Boolean`) are the $filter query functions such as
- * `Today` and `Above`; the Web API doesn't run one on its own (404), as the last test shows.
+ * `Today` and `Above`, which the Web API doesn't run on their own (404): the functions package has
+ * `queryFunctions` helpers for them instead of classes (#342, query-functions.int.test.ts).
  * Operations with one primitive output are typed with a `<Name>Response` complex type instead.
  */
 import { describe, expect, it } from "vitest";
@@ -15,7 +16,6 @@ import {
   GetPreferredSolutionFunction,
   GetTimeZoneCodeByLocalizedNameFunction,
   RetrievePrivilegeSetFunction,
-  TodayFunction,
   WhoAmIFunction,
 } from "@mohsinonxrm/dataverse-sdk-functions";
 import { CanBeReferencedRequest } from "@mohsinonxrm/dataverse-sdk-messages";
@@ -73,12 +73,5 @@ describe.skipIf(!live)("live: return shapes (#300)", () => {
     const message = await client.execute(new CanBeReferencedRequest({ EntityName: "account" }));
     expect(action.CanBeReferenced).toBe(true);
     expect(message.result).toEqual(action);
-  });
-
-  it("a query function (the only primitive returns) can't be called on its own", async () => {
-    const { client } = liveClient();
-    await expect(
-      client.execute(new TodayFunction({ PropertyName: "createdon" }))
-    ).rejects.toMatchObject({ status: 404 });
   });
 });

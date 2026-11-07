@@ -321,13 +321,14 @@ Message classes implement the `Executable<TResponse>` interface from `@mohsinonx
 
 ### 9.1 Generated functions
 
-280 generated classes, one per function of the platform, Sales and Customer Service in the committed `$metadata` snapshot (see [supported-functions.md](./mapping/supported-functions.md)): `class <Name>Function implements Executable<<Name>Response>`, with a `<Name>FunctionParameters` interface when it has parameters. A function bound to several tables has one class per binding (`RetrievePrincipalAccess_systemuserFunction`, …). For example:
+209 generated classes, one per function of the platform, Sales and Customer Service in the committed `$metadata` snapshot, except the query functions (9.2) (see [supported-functions.md](./mapping/supported-functions.md)): `class <Name>Function implements Executable<<Name>Response>`, with a `<Name>FunctionParameters` interface when it has parameters. A function bound to several tables has one class per binding (`RetrievePrincipalAccess_systemuserFunction`, …). For example:
 
 - `class WhoAmIFunction`, `interface WhoAmIResponse`
 - `class RetrieveMetadataChangesFunction`, `interface RetrieveMetadataChangesResponse`
 
 ### 9.2 Helpers
 
+- `const queryFunctions`: one function per Web API query function (`lastXDays`, `in`, `under`, `equalUserId`, …, 71 in all), taking the `$metadata` parameters and returning the `$filter` expression as a string (#342). The query functions run only inside `$filter`, so they have no `Executable` class.
 - `function createEntityReference(...)`, `function getEntitySetNameFromReference(...)`, `type EntityReference`, `type EntityReferenceOptions`, `type WebApiEntityReference` _(re-exported from entities-runtime)_
 - The enums the functions use, as values (`EntityFilters`, …)
 

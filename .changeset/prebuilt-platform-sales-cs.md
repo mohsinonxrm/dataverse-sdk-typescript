@@ -10,6 +10,6 @@ The snapshot org also has Contact Center, Customer Insights - Journeys, Universa
 
 - **Classes exported:** actions 1,556 → 1,072, functions 300 → 280, messages 1,556 → 1,072 (1.0 had 1,356, 229 and 1,356).
 - **Left out:** 504 of the snapshot's 1,798 operations, those of Contact Center (Omnichannel, unified routing, voice: `CCaaS_*`), Universal Resource Scheduling, Customer Insights - Journeys (`msdynmkt_*`), Customer Voice, Connected Customer Service (IoT), Power Pages and Process Mining. Field Service and Project Operations aren't in the snapshot org, and their solutions would be left out the same way. `docs/migration-2.0.md` lists the operations 1.0 had that 2.0 hasn't.
-- **Kept:** the Web API's query functions (`LastXDays`, …), `ExportToExcel`, and every operation in a platform, Sales or Customer Service solution, Sales Insights, Copilot in Sales and Customer Service and the sales agents included.
+- **Kept:** the Web API's query functions (`LastXDays`, …, as `queryFunctions` `$filter` helpers since #342), `ExportToExcel`, and every operation in a platform, Sales or Customer Service solution, Sales Insights, Copilot in Sales and Customer Service and the sales agents included.
 - **Types:** each package's `types/` has only the complex, entity and enum types its operations use, so the package root exports fewer enums.
 - **The rest:** generate typed classes for another app's operations, or your custom APIs, from your org with `dataverse-gen`: see "Generate the rest with dataverse-gen" in `docs/getting-started.md`.
