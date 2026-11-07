@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -32,7 +36,7 @@ export class msdyn_AITestRunRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/msdyn_aitestcases(${this.msdyn_aitestcaseId})/Microsoft.Dynamics.CRM.msdyn_AITestRun`;
+    const url = `${baseUrl}/msdyn_aitestcases(${odataLiteral.guid(this.msdyn_aitestcaseId)})/Microsoft.Dynamics.CRM.msdyn_AITestRun`;
 
     const body = requestBody({
       request: this.Parameters.request,

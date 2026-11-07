@@ -39,12 +39,14 @@ describe("#75: ExportToExcel and action overloads", () => {
     fake.on("POST", /AddItemCampaign/, () => jsonResponse({ CampaignItemId: "i1" }));
 
     await client.execute(
-      new actions.AddItemCampaign_listAction("l1", {
+      new actions.AddItemCampaign_listAction("00000000-0000-0000-0000-0000000000d1", {
         Campaign: createEntityReference("campaign", "c1"),
       })
     );
 
-    expect(fake.last().path).toBe("/lists(l1)/Microsoft.Dynamics.CRM.AddItemCampaign");
+    expect(fake.last().path).toBe(
+      "/lists(00000000-0000-0000-0000-0000000000d1)/Microsoft.Dynamics.CRM.AddItemCampaign"
+    );
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({
       Campaign: { "@odata.type": "Microsoft.Dynamics.CRM.campaign", campaignid: "c1" },
     });

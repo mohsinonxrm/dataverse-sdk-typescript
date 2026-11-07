@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * AddRequiredUIElementCollectionComponentsToSolutions request message
@@ -18,7 +22,7 @@ export class AddRequiredUIElementCollectionComponentsToSolutionsRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/desktopflowmodules(${this.desktopflowmoduleId})/Microsoft.Dynamics.CRM.AddRequiredUIElementCollectionComponentsToSolutions`;
+    const url = `${baseUrl}/desktopflowmodules(${odataLiteral.guid(this.desktopflowmoduleId)})/Microsoft.Dynamics.CRM.AddRequiredUIElementCollectionComponentsToSolutions`;
 
     return {
       method: "POST",

@@ -165,16 +165,17 @@ describe("rootTypeExports (#333)", () => {
   });
 
   it("lists the complex and entity types and their Typed unions, not the enums", () => {
+    // By code unit (#386): upper case before lower case, whatever the machine's locale
     expect(exportedTypeNames(parseEdmx(EDMX))).toEqual([
       "CountResponse",
       "FetchExpression",
       "Label",
-      "opportunityclose",
       "QueryBase",
       "TypedQueryBase",
       "ShareResponse",
-      "solution",
       "Solution",
+      "opportunityclose",
+      "solution",
     ]);
   });
 });

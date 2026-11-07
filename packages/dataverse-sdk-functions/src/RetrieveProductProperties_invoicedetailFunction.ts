@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { dynamicproperty } from "./types/index.js";
 
 /**
@@ -24,7 +28,7 @@ export class RetrieveProductProperties_invoicedetailFunction implements Executab
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/invoicedetails(${this.invoicedetailId})/Microsoft.Dynamics.CRM.RetrieveProductProperties`;
+    let url = `${baseUrl}/invoicedetails(${odataLiteral.guid(this.invoicedetailId)})/Microsoft.Dynamics.CRM.RetrieveProductProperties`;
 
     return {
       method: "GET",

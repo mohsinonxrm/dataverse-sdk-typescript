@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -31,7 +35,7 @@ export class GetRunMapRequest extends OrganizationRequest implements Executable<
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/businessprocesses(${this.businessprocessId})/Microsoft.Dynamics.CRM.GetRunMap`;
+    const url = `${baseUrl}/businessprocesses(${odataLiteral.guid(this.businessprocessId)})/Microsoft.Dynamics.CRM.GetRunMap`;
 
     const body = requestBody({
       continuationToken: this.Parameters.continuationToken,

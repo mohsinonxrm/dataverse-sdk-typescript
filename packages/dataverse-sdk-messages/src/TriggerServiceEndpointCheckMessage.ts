@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * TriggerServiceEndpointCheck request message
@@ -18,7 +22,7 @@ export class TriggerServiceEndpointCheckRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/serviceendpoints(${this.serviceendpointId})/Microsoft.Dynamics.CRM.TriggerServiceEndpointCheck`;
+    const url = `${baseUrl}/serviceendpoints(${odataLiteral.guid(this.serviceendpointId)})/Microsoft.Dynamics.CRM.TriggerServiceEndpointCheck`;
 
     return {
       method: "POST",

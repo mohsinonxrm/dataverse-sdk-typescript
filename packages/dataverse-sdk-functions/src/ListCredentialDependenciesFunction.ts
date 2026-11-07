@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the ListCredentialDependencies function.
@@ -23,7 +27,7 @@ export class ListCredentialDependenciesFunction implements Executable<ListCreden
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/credentials(${this.credentialId})/Microsoft.Dynamics.CRM.ListCredentialDependencies`;
+    let url = `${baseUrl}/credentials(${odataLiteral.guid(this.credentialId)})/Microsoft.Dynamics.CRM.ListCredentialDependencies`;
 
     return {
       method: "GET",

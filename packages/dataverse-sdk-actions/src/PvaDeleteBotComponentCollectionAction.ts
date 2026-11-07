@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the PvaDeleteBotComponentCollection action.
@@ -20,7 +24,7 @@ export class PvaDeleteBotComponentCollectionAction implements Executable<PvaDele
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/botcomponentcollections(${this.botcomponentcollectionId})/Microsoft.Dynamics.CRM.PvaDeleteBotComponentCollection`;
+    const url = `${baseUrl}/botcomponentcollections(${odataLiteral.guid(this.botcomponentcollectionId)})/Microsoft.Dynamics.CRM.PvaDeleteBotComponentCollection`;
 
     return {
       method: "POST",

@@ -4,6 +4,7 @@ import type {
   CsdlParameter as _CsdlParameter,
 } from "../parsers/csdl-types.js";
 import { resolve, join } from "path";
+import { compareStrings } from "../parsers/canonical.js";
 import {
   csdlTypeToTs,
   toPascalCase as _toPascalCase,
@@ -26,7 +27,13 @@ import {
   exportedTypeNames,
   rootTypeExports,
 } from "./complex-types-generator.js";
-import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
+import {
+  collectionBinding,
+  coreImport,
+  ENTITY_SET_PARAM,
+  isRecordBound,
+  recordSegment,
+} from "../utils/binding.js";
 import { bodyEnumType, ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
 import {
   bindingDoc,
@@ -355,8 +362,8 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
     }
   }
 
-  const coreImport = `import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';\n`;
-  let code = coreImport;
+  const core = coreImport(isRecordBound(func));
+  let code = core;
   // Set when a parameter alias is written with formatParameterAlias, or its value goes through
   // enumBody (the imports are added at the end)
   const uses = { aliasLiteral: false, enumBody: false };
@@ -514,12 +521,12 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
     const entitySetName = getEntitySetName(func.bindingParameter.type, csdl.entitySetMap);
 
     if (entitySetName) {
-      code += `    let url = \`\${baseUrl}/${entitySetName}(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${func.name}\`;\n\n`;
+      code += `    let url = \`\${baseUrl}/${recordSegment(entitySetName, bindingParam.name)}/Microsoft.Dynamics.CRM.${func.name}\`;\n\n`;
     } else {
       // Fallback: extract entity type name from binding parameter type
       const entityTypeName = extractEntityTypeName(func.bindingParameter.type);
       code += `    // WARNING: Entity set not found in metadata, using entity type name as fallback\n`;
-      code += `    let url = \`\${baseUrl}/${entityTypeName}s(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${func.name}\`;\n\n`;
+      code += `    let url = \`\${baseUrl}/${recordSegment(`${entityTypeName}s`, bindingParam.name)}/Microsoft.Dynamics.CRM.${func.name}\`;\n\n`;
     }
 
     // Add query parameters for non-binding parameters using parameter aliases
@@ -591,10 +598,10 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
 
   if (uses.aliasLiteral) {
     code =
-      coreImport +
+      core +
       (uses.enumBody ? `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n` : "") +
       `import { formatParameterAlias } from './${ODATA_LITERAL_MODULE}.js';\n` +
-      code.slice(coreImport.length);
+      code.slice(core.length);
   }
 
   return code;
@@ -623,7 +630,7 @@ function generateFunctionsIndex(
       stem: stems.get(op) ?? op.name,
       hasParameters: op.parameters.some((p) => p.name),
     }))
-    .sort((a, b) => a.stem.localeCompare(b.stem));
+    .sort((a, b) => compareStrings(a.stem, b.stem));
   for (const { stem, hasParameters } of entries) {
     // The parameters interface of the constructor (#96)
     const parameters = hasParameters ? `, type ${parametersInterfaceName(`${stem}Function`)}` : "";

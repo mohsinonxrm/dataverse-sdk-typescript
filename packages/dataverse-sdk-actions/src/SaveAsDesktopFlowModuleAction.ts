@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -35,7 +39,7 @@ export class SaveAsDesktopFlowModuleAction implements Executable<SaveAsDesktopFl
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/desktopflowmodules(${this.desktopflowmoduleId})/Microsoft.Dynamics.CRM.SaveAsDesktopFlowModule`;
+    const url = `${baseUrl}/desktopflowmodules(${odataLiteral.guid(this.desktopflowmoduleId)})/Microsoft.Dynamics.CRM.SaveAsDesktopFlowModule`;
 
     const body = requestBody({
       desktopFlowModuleName: this.parameters.desktopFlowModuleName,

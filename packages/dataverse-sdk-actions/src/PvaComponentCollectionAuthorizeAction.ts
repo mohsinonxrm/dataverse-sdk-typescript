@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -34,7 +38,7 @@ export class PvaComponentCollectionAuthorizeAction implements Executable<PvaComp
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/botcomponentcollections(${this.botcomponentcollectionId})/Microsoft.Dynamics.CRM.PvaComponentCollectionAuthorize`;
+    const url = `${baseUrl}/botcomponentcollections(${odataLiteral.guid(this.botcomponentcollectionId)})/Microsoft.Dynamics.CRM.PvaComponentCollectionAuthorize`;
 
     const body = requestBody({
       Users: this.parameters.Users,

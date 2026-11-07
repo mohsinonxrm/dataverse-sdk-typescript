@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { asyncoperation } from "./types/index.js";
 
 /**
@@ -19,7 +23,7 @@ export class ParseImportRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/imports(${this.importId})/Microsoft.Dynamics.CRM.ParseImport`;
+    const url = `${baseUrl}/imports(${odataLiteral.guid(this.importId)})/Microsoft.Dynamics.CRM.ParseImport`;
 
     return {
       method: "POST",

@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
@@ -35,7 +39,7 @@ export class RemoveItemCampaignActivityAction implements Executable<RemoveItemCa
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/campaignactivities(${this.campaignactivityId})/Microsoft.Dynamics.CRM.RemoveItemCampaignActivity`;
+    const url = `${baseUrl}/campaignactivities(${odataLiteral.guid(this.campaignactivityId)})/Microsoft.Dynamics.CRM.RemoveItemCampaignActivity`;
 
     const body = requestBody({
       CampaignActivityItem: this.parameters.CampaignActivityItem,

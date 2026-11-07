@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { resourcegroup } from "./types/index.js";
 
 /**
@@ -24,7 +28,7 @@ export class RetrieveByResourceResourceGroupFunction implements Executable<Retri
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/resources(${this.resourceId})/Microsoft.Dynamics.CRM.RetrieveByResourceResourceGroup`;
+    let url = `${baseUrl}/resources(${odataLiteral.guid(this.resourceId)})/Microsoft.Dynamics.CRM.RetrieveByResourceResourceGroup`;
 
     return {
       method: "GET",

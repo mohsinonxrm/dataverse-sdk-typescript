@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { aipluginoperationparameter } from "./types/index.js";
 
 /**
@@ -28,7 +32,7 @@ export class RetrieveUnpublished_aipluginoperationparameterFunction implements E
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/aipluginoperationparameters(${this.aipluginoperationparameterId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
+    let url = `${baseUrl}/aipluginoperationparameters(${odataLiteral.guid(this.aipluginoperationparameterId)})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
 
     return {
       method: "GET",

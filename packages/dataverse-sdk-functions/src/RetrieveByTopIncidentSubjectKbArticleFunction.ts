@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { kbarticle } from "./types/index.js";
 
 /**
@@ -24,7 +28,7 @@ export class RetrieveByTopIncidentSubjectKbArticleFunction implements Executable
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/subjects(${this.subjectId})/Microsoft.Dynamics.CRM.RetrieveByTopIncidentSubjectKbArticle`;
+    let url = `${baseUrl}/subjects(${odataLiteral.guid(this.subjectId)})/Microsoft.Dynamics.CRM.RetrieveByTopIncidentSubjectKbArticle`;
 
     return {
       method: "GET",

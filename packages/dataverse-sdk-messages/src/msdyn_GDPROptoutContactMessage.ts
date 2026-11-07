@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -32,7 +36,7 @@ export class msdyn_GDPROptoutContactRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/contacts(${this.contactId})/Microsoft.Dynamics.CRM.msdyn_GDPROptoutContact`;
+    const url = `${baseUrl}/contacts(${odataLiteral.guid(this.contactId)})/Microsoft.Dynamics.CRM.msdyn_GDPROptoutContact`;
 
     const body = requestBody({
       optout: this.Parameters.optout,

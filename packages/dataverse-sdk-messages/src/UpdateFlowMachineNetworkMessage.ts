@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -34,7 +38,7 @@ export class UpdateFlowMachineNetworkRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowmachinenetworks(${this.flowmachinenetworkId})/Microsoft.Dynamics.CRM.UpdateFlowMachineNetwork`;
+    const url = `${baseUrl}/flowmachinenetworks(${odataLiteral.guid(this.flowmachinenetworkId)})/Microsoft.Dynamics.CRM.UpdateFlowMachineNetwork`;
 
     const body = requestBody({
       description: this.Parameters.description,

@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
@@ -24,7 +28,7 @@ export class RetrieveTeamPrivilegesFunction implements Executable<RetrieveTeamPr
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/teams(${this.teamId})/Microsoft.Dynamics.CRM.RetrieveTeamPrivileges`;
+    let url = `${baseUrl}/teams(${odataLiteral.guid(this.teamId)})/Microsoft.Dynamics.CRM.RetrieveTeamPrivileges`;
 
     return {
       method: "GET",

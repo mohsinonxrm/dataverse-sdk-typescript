@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { AuditDetail } from "./types/index.js";
 
 /**
@@ -24,7 +28,7 @@ export class RetrieveAuditDetailsFunction implements Executable<RetrieveAuditDet
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/audits(${this.auditId})/Microsoft.Dynamics.CRM.RetrieveAuditDetails`;
+    let url = `${baseUrl}/audits(${odataLiteral.guid(this.auditId)})/Microsoft.Dynamics.CRM.RetrieveAuditDetails`;
 
     return {
       method: "GET",

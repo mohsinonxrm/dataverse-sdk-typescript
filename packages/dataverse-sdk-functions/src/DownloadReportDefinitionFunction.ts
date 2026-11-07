@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the DownloadReportDefinition function.
@@ -23,7 +27,7 @@ export class DownloadReportDefinitionFunction implements Executable<DownloadRepo
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/reports(${this.reportId})/Microsoft.Dynamics.CRM.DownloadReportDefinition`;
+    let url = `${baseUrl}/reports(${odataLiteral.guid(this.reportId)})/Microsoft.Dynamics.CRM.DownloadReportDefinition`;
 
     return {
       method: "GET",
