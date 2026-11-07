@@ -2,7 +2,9 @@
  * A small but realistic $metadata document and RetrieveMetadataChanges responses, shaped like a
  * real Dataverse org: the schema uses the `mscrm` alias for its own types, entities derive from
  * the abstract `crmbaseentity`, lookups have `_x_value` properties and polymorphic lookups have
- * one navigation property per target.
+ * one navigation property per target. Activities derive from `activitypointer` and leave out the
+ * columns they inherit, and the metadata types (`EntityDefinitions`, `GlobalOptionSetDefinitions`,
+ * `ManagedPropertyDefinitions`) have entity sets but are not tables (#360).
  */
 import type {
   MetadataService,
@@ -52,13 +54,69 @@ export const TYPECHECK_EDMX = `<?xml version="1.0" encoding="utf-8"?>
         <Property Name="iscustomizable" Type="mscrm.BooleanManagedProperty" />
       </EntityType>
       <EntityType Name="principal" BaseType="mscrm.crmbaseentity" Abstract="true" />
-      <EntityType Name="task" BaseType="mscrm.crmbaseentity">
+      <EntityType Name="activitypointer" BaseType="mscrm.crmbaseentity" Abstract="true">
         <Key><PropertyRef Name="activityid" /></Key>
+        <Property Name="_ownerid_value" Type="Edm.Guid" />
+        <Property Name="_regardingobjectid_value" Type="Edm.Guid" />
         <Property Name="activityid" Type="Edm.Guid" />
+        <Property Name="description" Type="Edm.String" Unicode="false" />
+        <Property Name="scheduledend" Type="Edm.DateTimeOffset" />
+        <Property Name="subject" Type="Edm.String" Unicode="false" />
+        <NavigationProperty Name="ownerid" Type="mscrm.principal" Nullable="false" Partner="owner_activitypointers">
+          <ReferentialConstraint Property="_ownerid_value" ReferencedProperty="ownerid" />
+        </NavigationProperty>
+        <NavigationProperty Name="regardingobjectid_account" Type="mscrm.account" Nullable="false" Partner="Account_ActivityPointers" />
+        <NavigationProperty Name="regardingobjectid_contact" Type="mscrm.contact" Nullable="false" Partner="Contact_ActivityPointers" />
       </EntityType>
-      <EntityType Name="opportunityclose" BaseType="mscrm.crmbaseentity">
+      <EntityType Name="task" BaseType="mscrm.activitypointer">
         <Key><PropertyRef Name="activityid" /></Key>
-        <Property Name="activityid" Type="Edm.Guid" />
+        <Property Name="percentcomplete" Type="Edm.Int32" />
+      </EntityType>
+      <!-- Like the real email: no key of its own, and none of the activitypointer columns (#360) -->
+      <EntityType Name="email" BaseType="mscrm.activitypointer">
+        <Property Name="directioncode" Type="Edm.Boolean" />
+        <Property Name="sender" Type="Edm.String" Unicode="false" />
+        <NavigationProperty Name="ownerid_email" Type="mscrm.principal" Nullable="false" Partner="owner_emails" />
+        <NavigationProperty Name="regardingobjectid_account_email" Type="mscrm.account" Nullable="false" Partner="Account_Emails" />
+      </EntityType>
+      <EntityType Name="opportunityclose" BaseType="mscrm.activitypointer">
+        <Key><PropertyRef Name="activityid" /></Key>
+        <Property Name="_opportunityid_value" Type="Edm.Guid" />
+        <NavigationProperty Name="opportunityid" Type="mscrm.opportunity" Nullable="false" Partner="Opportunity_OpportunityClose">
+          <ReferentialConstraint Property="_opportunityid_value" ReferencedProperty="opportunityid" />
+        </NavigationProperty>
+      </EntityType>
+      <EntityType Name="opportunity" BaseType="mscrm.crmbaseentity">
+        <Key><PropertyRef Name="opportunityid" /></Key>
+        <Property Name="opportunityid" Type="Edm.Guid" />
+        <Property Name="name" Type="Edm.String" Unicode="false" />
+      </EntityType>
+      <!-- The "entity" table: its metadata const is EntityMetadata, the runtime type's name -->
+      <EntityType Name="entity" BaseType="mscrm.crmbaseentity">
+        <Key><PropertyRef Name="entityid" /></Key>
+        <Property Name="entityid" Type="Edm.Guid" />
+        <Property Name="name" Type="Edm.String" Unicode="false" />
+      </EntityType>
+      <!-- A table RetrieveMetadataChanges returns nothing for -->
+      <EntityType Name="contoso_retired" BaseType="mscrm.crmbaseentity">
+        <Key><PropertyRef Name="contoso_retiredid" /></Key>
+        <Property Name="contoso_retiredid" Type="Edm.Guid" />
+      </EntityType>
+      <!-- The metadata types: entity sets, but not tables (they derive from crmmodelbaseentity) -->
+      <EntityType Name="crmmodelbaseentity" Abstract="true" />
+      <EntityType Name="MetadataBase" BaseType="mscrm.crmmodelbaseentity" Abstract="true">
+        <Key><PropertyRef Name="MetadataId" /></Key>
+        <Property Name="HasChanged" Type="Edm.Boolean" />
+        <Property Name="MetadataId" Type="Edm.Guid" />
+      </EntityType>
+      <EntityType Name="EntityMetadata" BaseType="mscrm.MetadataBase">
+        <Property Name="LogicalName" Type="Edm.String" Unicode="false" />
+      </EntityType>
+      <EntityType Name="OptionSetMetadataBase" BaseType="mscrm.MetadataBase">
+        <Property Name="Name" Type="Edm.String" Unicode="false" />
+      </EntityType>
+      <EntityType Name="ManagedPropertyMetadata" BaseType="mscrm.MetadataBase">
+        <Property Name="LogicalName" Type="Edm.String" Unicode="false" />
       </EntityType>
       <ComplexType Name="BooleanManagedProperty">
         <Property Name="Value" Type="Edm.Boolean" />
@@ -91,6 +149,14 @@ export const TYPECHECK_EDMX = `<?xml version="1.0" encoding="utf-8"?>
         <Property Name="Rights" Type="mscrm.AccessRights" />
         <Property Name="Rows" Type="Collection(mscrm.crmbaseentity)" />
       </ComplexType>
+      <ComplexType Name="PrincipalAccess">
+        <Property Name="AccessMask" Type="mscrm.AccessRights" />
+        <NavigationProperty Name="Principal" Type="mscrm.crmbaseentity" Nullable="false" />
+      </ComplexType>
+      <ComplexType Name="ScheduleResponse">
+        <Property Name="ScheduledOn" Type="Edm.DateTimeOffset" Nullable="false" />
+        <NavigationProperty Name="Tasks" Type="Collection(mscrm.task)" />
+      </ComplexType>
       <EnumType Name="AccessRights" IsFlags="true">
         <Member Name="None" Value="0" />
         <Member Name="ReadAccess" Value="1" />
@@ -107,6 +173,20 @@ export const TYPECHECK_EDMX = `<?xml version="1.0" encoding="utf-8"?>
         <ReturnType Type="mscrm.ExportSolutionResponse" Nullable="false" />
       </Action>
       <Action Name="PublishAllXml" />
+      <Action Name="GrantAccess">
+        <Parameter Name="Target" Type="mscrm.crmbaseentity" Nullable="false" />
+        <Parameter Name="PrincipalAccess" Type="mscrm.PrincipalAccess" />
+      </Action>
+      <Action Name="contoso_Schedule">
+        <Parameter Name="When" Type="Edm.DateTimeOffset" Nullable="false" />
+        <Parameter Name="Retries" Type="Collection(Edm.DateTimeOffset)" />
+        <Parameter Name="Rights" Type="mscrm.AccessRights" />
+        <Parameter Name="Tasks" Type="Collection(mscrm.task)" />
+        <ReturnType Type="mscrm.ScheduleResponse" Nullable="false" />
+      </Action>
+      <Action Name="contoso_NextRun">
+        <ReturnType Type="Edm.DateTimeOffset" Nullable="false" />
+      </Action>
       <Action Name="CalculatePrice">
         <Parameter Name="Target" Type="mscrm.crmbaseentity" Nullable="false" />
         <Parameter Name="ParentId" Type="Edm.Guid" />
@@ -180,8 +260,16 @@ export const TYPECHECK_EDMX = `<?xml version="1.0" encoding="utf-8"?>
         <EntitySet Name="accounts" EntityType="Microsoft.Dynamics.CRM.account" />
         <EntitySet Name="contacts" EntityType="Microsoft.Dynamics.CRM.contact" />
         <EntitySet Name="imports" EntityType="Microsoft.Dynamics.CRM.import" />
+        <EntitySet Name="activitypointers" EntityType="Microsoft.Dynamics.CRM.activitypointer" />
         <EntitySet Name="tasks" EntityType="Microsoft.Dynamics.CRM.task" />
+        <EntitySet Name="emails" EntityType="Microsoft.Dynamics.CRM.email" />
         <EntitySet Name="opportunitycloses" EntityType="Microsoft.Dynamics.CRM.opportunityclose" />
+        <EntitySet Name="opportunities" EntityType="Microsoft.Dynamics.CRM.opportunity" />
+        <EntitySet Name="entities" EntityType="Microsoft.Dynamics.CRM.entity" />
+        <EntitySet Name="contoso_retireds" EntityType="Microsoft.Dynamics.CRM.contoso_retired" />
+        <EntitySet Name="EntityDefinitions" EntityType="Microsoft.Dynamics.CRM.EntityMetadata" />
+        <EntitySet Name="GlobalOptionSetDefinitions" EntityType="Microsoft.Dynamics.CRM.OptionSetMetadataBase" />
+        <EntitySet Name="ManagedPropertyDefinitions" EntityType="Microsoft.Dynamics.CRM.ManagedPropertyMetadata" />
       </EntityContainer>
     </Schema>
   </edmx:DataServices>
@@ -324,12 +412,74 @@ export const TYPECHECK_ENTITY_METADATA: Record<string, RetrieveMetadataChangesRe
   task: {
     EntityMetadata: [{ LogicalName: "task", SchemaName: "Task", EntitySetName: "tasks" }],
   },
+  // RetrieveMetadataChanges returns the inherited (activitypointer) columns of an activity
+  email: {
+    EntityMetadata: [
+      {
+        LogicalName: "email",
+        SchemaName: "Email",
+        EntitySetName: "emails",
+        PrimaryIdAttribute: "activityid",
+        PrimaryNameAttribute: "subject",
+        Keys: [],
+        Attributes: [
+          { LogicalName: "activityid", SchemaName: "ActivityId", AttributeType: "Uniqueidentifier" },
+          { LogicalName: "subject", SchemaName: "Subject", AttributeType: "String" },
+          { LogicalName: "description", SchemaName: "Description", AttributeType: "Memo" },
+          {
+            LogicalName: "scheduledend",
+            SchemaName: "ScheduledEnd",
+            AttributeType: "DateTime",
+            DateTimeBehavior: { Value: "UserLocal" },
+          },
+          {
+            LogicalName: "regardingobjectid",
+            SchemaName: "RegardingObjectId",
+            AttributeType: "Lookup",
+            Targets: ["account", "contact"],
+          },
+          {
+            LogicalName: "ownerid",
+            SchemaName: "OwnerId",
+            AttributeType: "Owner",
+            Targets: ["systemuser", "team"],
+          },
+          { LogicalName: "sender", SchemaName: "Sender", AttributeType: "String" },
+          { LogicalName: "directioncode", SchemaName: "DirectionCode", AttributeType: "Boolean" },
+        ],
+      },
+    ],
+  },
   opportunityclose: {
     EntityMetadata: [
       {
         LogicalName: "opportunityclose",
         SchemaName: "OpportunityClose",
         EntitySetName: "opportunitycloses",
+        Attributes: [
+          { LogicalName: "subject", SchemaName: "Subject", AttributeType: "String" },
+          {
+            LogicalName: "opportunityid",
+            SchemaName: "OpportunityId",
+            AttributeType: "Lookup",
+            Targets: ["opportunity"],
+          },
+        ],
+      },
+    ],
+  },
+  opportunity: {
+    EntityMetadata: [
+      { LogicalName: "opportunity", SchemaName: "Opportunity", EntitySetName: "opportunities" },
+    ],
+  },
+  entity: {
+    EntityMetadata: [
+      {
+        LogicalName: "entity",
+        SchemaName: "Entity",
+        EntitySetName: "entities",
+        PrimaryNameAttribute: "name",
       },
     ],
   },

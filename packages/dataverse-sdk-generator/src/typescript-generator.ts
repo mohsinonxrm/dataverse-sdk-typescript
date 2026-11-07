@@ -913,14 +913,18 @@ export * from './metadata${suffix}.js';
     self: EntityType
   ): string {
     const targets = nav.IsPolymorphic && nav.Targets?.length ? nav.Targets : [nav.TargetType];
+    const selfName = this.entityTypeName(self);
+    // Resolved without importing first: a target that is not generated widens the type to
+    // IEntity, which covers the others, and they would be unused imports.
     const resolved = [
       ...new Set(
-        targets.map((t) => this.resolveReference(t, "entities", imports, this.entityTypeName(self)))
+        targets.map((t) => this.resolveReference(t, "entities", new ImportCollector(), selfName))
       ),
     ];
-    // A target that is not generated widens the type to IEntity, which covers the others.
-    const types =
-      resolved.includes("IEntity") || resolved.includes("unknown") ? ["IEntity"] : resolved;
+    const widened = resolved.includes("IEntity") || resolved.includes("unknown");
+    const types = widened
+      ? ["IEntity"]
+      : [...new Set(targets.map((t) => this.resolveReference(t, "entities", imports, selfName)))];
     if (types.includes("IEntity")) imports.type("IEntity", RUNTIME_PACKAGE);
     const union = types.join(" | ");
     if (nav.IsCollection) return types.length > 1 ? `(${union})[]` : `${union}[]`;
