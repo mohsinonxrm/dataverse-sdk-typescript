@@ -90,241 +90,257 @@ ids, no unmanaged or org-made solutions, no org-specific publisher prefixes.
 ### Borderline solutions
 
 A solution that isn't plainly platform, Sales or Customer Service is marked `Borderline` in the
-table. The rule for those: in when a plain Sales + Customer Service trial ships it, out when it
-belongs to another app or add-on. "Customer Service" means cases, knowledge, SLAs, entitlements
-and classic routing rules, not Omnichannel, Contact Center or unified routing.
+table, so the maintainer can review it. The rule for those: **in only when a plain Sales +
+Customer Service trial ships it**, out when it belongs to another app or add-on, even if the
+snapshot org has it. The assumptions behind the calls:
+
+- "Customer Service" means cases, knowledge, SLAs, entitlements, classic routing rules, the
+  Customer Service workspace and its Copilot, not Omnichannel, Contact Center or unified routing
+  (licensed separately as Dynamics 365 Contact Center).
+- A solution a trial installs is in when it is part of the app (Sales Insights, Copilot in Sales,
+  Copilot in Customer Service) and out when it is a separate product or add-on that needs its own
+  setup or licence (Connected Customer Service needs Azure IoT; Power Pages, Process Mining and
+  Customer Voice are products of their own).
+- In the snapshot org nearly every app solution was installed on the same two days, so its
+  `installedon` dates can't tell which app installed what; the calls rest on the solutions'
+  names, publishers and operations.
+
+The calls:
 
 - **In:** Sales Insights, Copilot in Sales and the sales agents (they come with the Sales trial);
-  Copilot in Customer Service and the case and knowledge agents; Copilot Studio, AI Builder and the
-  AI test framework (installed with the platform solutions); the agent guardrail, tuning and
-  onboarding solutions installed with the sales agents; Insights and analytics for Dynamics 365.
+  Copilot in Customer Service and the case and knowledge agents; Copilot Studio, AI Builder, the
+  AI test framework, Copilot for Dataverse (`SummarizeRecord`, the `Mcp*` table tools), the
+  Dataverse MCP server and the Fabric data tools (installed with the platform solutions); the
+  agent guardrail, tuning and onboarding solutions installed with the sales agents; Insights and
+  analytics for Dynamics 365, Copilot email assist and the CE foundation insights.
 - **Out:** Universal Resource Scheduling (it is Field Service and Project Operations
-  scheduling); Connected Customer Service (IoT), although Customer Service installs it; Power
-  Pages and Process Mining, although they are installed with the platform solutions; Customer
-  Voice; the Channel Integration Framework, channel definitions, post-conversation surveys,
-  quality management, the customer intent agent and the transformation agent (Contact Center);
-  routing for records (`msdynce_AnyEntityRoutingRule`, unified routing).
+  scheduling); Connected Customer Service (IoT) and the asset hierarchy it shares with Field
+  Service, although Customer Service installs them; Power Pages and Process Mining, although they
+  are installed with the platform solutions; Customer Voice; the Channel Integration Framework,
+  channel definitions, post-conversation surveys, quality management, the customer intent agent
+  and the transformation agent (Contact Center); routing for records (`msdynce_AnyEntityRoutingRule`,
+  unified routing).
 
 To change a decision, flip `prebuilt` in `prebuilt-solutions.json` and run `regen`.
 
 <!-- solutions -->
 
-| Solution                                        | App                              | Operations | Prebuilt | Note                                                                            |
-| ----------------------------------------------- | -------------------------------- | ---------: | -------- | ------------------------------------------------------------------------------- |
-| _(none: built into the Web API)_                | Platform                         |         71 | yes      |                                                                                 |
-| `AutomaticRecordCreationExtension`              | Customer Service                 |          5 | yes      |                                                                                 |
-| `msdyn_AIPlugins`                               | Customer Service                 |          1 | yes      | Borderline: Copilot in Customer Service                                         |
-| `msdyn_AppProfileManager`                       | Customer Service                 |          4 | yes      | Customer Service workspace app profiles                                         |
-| `msdyn_CaseManagementIntelligence`              | Customer Service                 |         30 | yes      | Borderline: Case management agents                                              |
-| `msdyn_CSAdminCenterApp`                        | Customer Service                 |         12 | yes      | Customer Service admin center                                                   |
-| `msdyn_CSCopilotPlugins`                        | Customer Service                 |          1 | yes      | Borderline: Copilot in Customer Service                                         |
-| `msdyn_CSIntelligence`                          | Customer Service                 |         40 | yes      | Borderline: Copilot in Customer Service                                         |
-| `msdyn_CustomerServiceHealth`                   | Customer Service                 |         10 | yes      |                                                                                 |
-| `msdyn_ModernCaseManagement`                    | Customer Service                 |          3 | yes      | Enhanced case experience                                                        |
-| `msdyn_Swarming`                                | Customer Service                 |          6 | yes      |                                                                                 |
-| `msdynce_ArcMigration`                          | Customer Service                 |          2 | yes      |                                                                                 |
-| `msdynce_KnowledgeManagementFeatures`           | Customer Service                 |         12 | yes      |                                                                                 |
-| `msdynce_KnowledgeManagementHarvestingSolution` | Customer Service                 |          7 | yes      | Borderline: Knowledge harvesting agent                                          |
-| `msdynce_KnowledgeManagementOnlineFeatures`     | Customer Service                 |          5 | yes      |                                                                                 |
-| `msdynce_KnowledgeManagementPatch`              | Customer Service                 |          1 | yes      |                                                                                 |
-| `msdynce_RoutingRule`                           | Customer Service                 |          4 | yes      | Classic routing rule sets (not unified routing)                                 |
-| `msdynce_Service`                               | Customer Service                 |         29 | yes      |                                                                                 |
-| `msdynce_ServiceLevelAgreementExtension`        | Customer Service                 |          7 | yes      |                                                                                 |
-| `msdynce_ServiceLevelAgreementMigration`        | Customer Service                 |          2 | yes      |                                                                                 |
-| `msdynce_ServiceManagementControlsExtension`    | Customer Service                 |          3 | yes      |                                                                                 |
-| `msdynce_ServicePatch201911`                    | Customer Service                 |          9 | yes      |                                                                                 |
-| `msdynce_ServiceUpgradeScripts`                 | Customer Service                 |          1 | yes      |                                                                                 |
-| `msdyn_cef_core`                                | Dynamics 365 (shared)            |          7 | yes      | Borderline: CE foundation insights, installed with the Sales agents             |
-| `msdyn_Collaboration`                           | Dynamics 365 (shared)            |         11 | yes      | Embedded Teams collaboration (Sales and Customer Service)                       |
-| `msdyn_DataInsightsAndAnalytics`                | Dynamics 365 (shared)            |          6 | yes      | Borderline: Insights and analytics for Dynamics 365                             |
-| `msdyn_EmailIntelligence`                       | Dynamics 365 (shared)            |         18 | yes      | Borderline: Copilot email assist (Sales and Customer Service)                   |
-| `msdyn_GovernanceAgentIntelligence`             | Dynamics 365 (shared)            |          6 | yes      | Borderline: Agent guardrails, installed with the Sales agents                   |
-| `msdyn_IntelligentAgentEnhancer`                | Dynamics 365 (shared)            |          5 | yes      | Borderline: Agent tuning, installed with the Sales agents                       |
-| `msdyn_TrustCenterAdoptCore`                    | Dynamics 365 (shared)            |          2 | yes      | Borderline: Feature rollout scheduling                                          |
-| `msdynce_ActivitiesPatch`                       | Dynamics 365 (shared)            |          4 | yes      |                                                                                 |
-| `msdynce_CRMExtensions`                         | Dynamics 365 (shared)            |          1 | yes      |                                                                                 |
-| `msdynce_EmailTemplateConfigSolution`           | Dynamics 365 (shared)            |          2 | yes      |                                                                                 |
-| `msdynce_OfficeProductivity`                    | Dynamics 365 (shared)            |          7 | yes      | SharePoint and Teams integration                                                |
-| `msdynce_Scheduling`                            | Dynamics 365 (shared)            |          5 | yes      | Service scheduling (classic)                                                    |
-| `msdynce_SchedulingUpgrade`                     | Dynamics 365 (shared)            |          1 | yes      |                                                                                 |
-| `SolutionUpgradeInfrastructure`                 | Dynamics 365 (shared)            |          1 | yes      |                                                                                 |
-| `AccessTeam`                                    | Platform                         |          4 | yes      |                                                                                 |
-| `ApiMessagesExtension`                          | Platform                         |          7 | yes      |                                                                                 |
-| `AppModule`                                     | Platform                         |          2 | yes      |                                                                                 |
-| `AppModuleMetadataSolution`                     | Platform                         |          1 | yes      |                                                                                 |
-| `AuthorizationCore`                             | Platform                         |         16 | yes      |                                                                                 |
-| `BulkDeleteExtensionSolution`                   | Platform                         |          1 | yes      |                                                                                 |
-| `CanvasAppMetadataExtensionSolution`            | Platform                         |          2 | yes      |                                                                                 |
-| `DataEngineCascading`                           | Platform                         |          5 | yes      |                                                                                 |
-| `DataEngineCascadingXRM`                        | Platform                         |          1 | yes      |                                                                                 |
-| `datalakeworkspaces`                            | Platform                         |          1 | yes      |                                                                                 |
-| `EnvironmentVariables`                          | Platform                         |          8 | yes      |                                                                                 |
-| `EnvironmentVariablesV2`                        | Platform                         |          8 | yes      |                                                                                 |
-| `ExportSolutionUpload`                          | Platform                         |          2 | yes      |                                                                                 |
-| `FileStoreServiceExtension`                     | Platform                         |          3 | yes      |                                                                                 |
-| `LicenseEnforcement`                            | Platform                         |          1 | yes      |                                                                                 |
-| `MCPPlatform_Extensions`                        | Platform                         |          4 | yes      |                                                                                 |
-| `MetadataExtension`                             | Platform                         |          8 | yes      |                                                                                 |
-| `MicrosoftFlowExtensionsCore`                   | Platform                         |         39 | yes      | Power Automate core components                                                  |
-| `MobileOfflineMembership`                       | Platform                         |          2 | yes      |                                                                                 |
-| `msdyn_AISolution`                              | Platform                         |         33 | yes      | AI Builder                                                                      |
-| `msdyn_AISolutionFullAdditions`                 | Platform                         |          1 | yes      | Borderline: AI Builder; installed with the platform solutions                   |
-| `msdyn_AITestFrameworkSolution`                 | Platform                         |          6 | yes      | Borderline: AI test framework; installed with the platform solutions            |
-| `msdyn_CDSReportSchemaChanges`                  | Platform                         |          2 | yes      |                                                                                 |
-| `msdyn_ComponentVersioning`                     | Platform                         |          4 | yes      |                                                                                 |
-| `msdyn_ConnectionInstances`                     | Platform                         |          2 | yes      |                                                                                 |
-| `msdyn_Copresence`                              | Platform                         |          1 | yes      |                                                                                 |
-| `msdyn_FeatureControlSettingPlugin`             | Platform                         |          7 | yes      |                                                                                 |
-| `msdyn_InsightsAppPlatform`                     | Platform                         |          5 | yes      |                                                                                 |
-| `msdyn_MobileAppsSolution`                      | Platform                         |          5 | yes      |                                                                                 |
-| `msdyn_PowerAIExtensionsBase`                   | Platform                         |          7 | yes      |                                                                                 |
-| `msdyn_PowerAppsChecker`                        | Platform                         |         22 | yes      | Solution checker                                                                |
-| `msdyn_RelevanceSearch`                         | Platform                         |          7 | yes      | Dataverse search                                                                |
-| `msdyn_SmartDataImportBase`                     | Platform                         |          3 | yes      |                                                                                 |
-| `msdyn_SourceControlIntegration`                | Platform                         |         18 | yes      | Dataverse Git integration                                                       |
-| `msdyn_SynapseLink`                             | Platform                         |          1 | yes      |                                                                                 |
-| `msdyn_UCICalendar`                             | Platform                         |          3 | yes      |                                                                                 |
-| `msdyn_userrating`                              | Platform                         |          1 | yes      |                                                                                 |
-| `msdynce_SolutionsFrameworkExtensions`          | Platform                         |         23 | yes      |                                                                                 |
-| `msdynce_SolutionsFrameworkMetadata`            | Platform                         |          5 | yes      |                                                                                 |
-| `msft_ActivitiesInfra_Extensions`               | Platform                         |          3 | yes      |                                                                                 |
-| `msft_authenticationextension`                  | Platform                         |          2 | yes      |                                                                                 |
-| `msft_BackgroundJobs`                           | Platform                         |          1 | yes      |                                                                                 |
-| `msft_ColumnLevelSecurity`                      | Platform                         |          1 | yes      |                                                                                 |
-| `msft_ConnectorProvider`                        | Platform                         |          2 | yes      | Virtual connector provider                                                      |
-| `msft_ContactAndAccount_Extensions`             | Platform                         |          2 | yes      |                                                                                 |
-| `msft_DataArchivalBaseComponents`               | Platform                         |          5 | yes      |                                                                                 |
-| `msft_DataEngineIndexMgmt`                      | Platform                         |          3 | yes      |                                                                                 |
-| `msft_DelegatedAuthorization`                   | Platform                         |          2 | yes      |                                                                                 |
-| `msft_DVInfoProtectionComponents`               | Platform                         |          1 | yes      |                                                                                 |
-| `msft_PowerAppsCards`                           | Platform                         |          2 | yes      |                                                                                 |
-| `msft_PowerfxRuleSolutionApi`                   | Platform                         |         12 | yes      |                                                                                 |
-| `msft_powerplatformmanagedidentityextension`    | Platform                         |          5 | yes      |                                                                                 |
-| `msft_PrivilegeChecker`                         | Platform                         |          1 | yes      |                                                                                 |
-| `msft_RealTimeCollaboration`                    | Platform                         |          2 | yes      |                                                                                 |
-| `msft_RecycleBinBaseComponents`                 | Platform                         |          3 | yes      |                                                                                 |
-| `msft_RuntimeExtensions`                        | Platform                         |          3 | yes      |                                                                                 |
-| `msft_RuntimeIntegration`                       | Platform                         |          3 | yes      |                                                                                 |
-| `msft_StorageAdvisorComponents`                 | Platform                         |          3 | yes      |                                                                                 |
-| `NonRelationalCustomActions`                    | Platform                         |          2 | yes      |                                                                                 |
-| `PowerPlatformConnectionReferences`             | Platform                         |          1 | yes      |                                                                                 |
-| `PowerVirtualAgents`                            | Platform                         |         15 | yes      | Borderline: Copilot Studio; installed with the platform solutions               |
-| `SolutionComponentConfiguration`                | Platform                         |          5 | yes      |                                                                                 |
-| `System`                                        | Platform                         |        242 | yes      |                                                                                 |
-| `AutoDataCapture`                               | Sales                            |         18 | yes      | Borderline: Sales Insights                                                      |
-| `msdyn_acceleratedsales`                        | Sales                            |          6 | yes      | Borderline: Sales accelerator                                                   |
-| `msdyn_AutonomousSQA`                           | Sales                            |          8 | yes      | Borderline: Sales agent (qualification)                                         |
-| `msdyn_connectiongraph`                         | Sales                            |          4 | yes      | Borderline: Sales Insights (who knows whom)                                     |
-| `msdyn_DataQualityAgent`                        | Sales                            |         11 | yes      | Borderline: Sales agent (data quality)                                          |
-| `msdyn_DealClosingAgent`                        | Sales                            |          2 | yes      | Borderline: Sales agent (close)                                                 |
-| `msdyn_entityintelligence`                      | Sales                            |          5 | yes      | Borderline: Sales Insights (field predictions)                                  |
-| `msdyn_Forecasting`                             | Sales                            |          9 | yes      |                                                                                 |
-| `msdyn_leadhygiene`                             | Sales                            |          6 | yes      |                                                                                 |
-| `msdyn_LinkedInExtensions`                      | Sales                            |          3 | yes      |                                                                                 |
-| `msdyn_NextBestActionAgent`                     | Sales                            |          6 | yes      | Borderline: Sales agent (recommended actions)                                   |
-| `msdyn_OnboardingAgent`                         | Sales                            |          8 | yes      | Borderline: Agent onboarding, added by an update after the Sales agents         |
-| `msdyn_PredictiveScoringCommon`                 | Sales                            |         11 | yes      | Borderline: Sales Insights                                                      |
-| `msdyn_SalesAgentsCommon`                       | Sales                            |         55 | yes      | Borderline: Sales agents                                                        |
-| `msdyn_SalesConfigurationAgent`                 | Sales                            |          7 | yes      | Borderline: Sales agents                                                        |
-| `msdyn_SalesCopilot`                            | Sales                            |         50 | yes      | Borderline: Copilot in Sales                                                    |
-| `msdyn_SalesLeadResearch`                       | Sales                            |         13 | yes      | Borderline: Sales agent (lead research)                                         |
-| `msdyn_SalesOpportunityResearch`                | Sales                            |         24 | yes      | Borderline: Sales agent (opportunity research)                                  |
-| `msdyn_SalesProfilerAgent`                      | Sales                            |          7 | yes      | Borderline: Sales agents                                                        |
-| `msdyn_SalesRouting`                            | Sales                            |         10 | yes      | Assignment rules                                                                |
-| `msdyn_SalesSequences`                          | Sales                            |          5 | yes      |                                                                                 |
-| `msdyn_segment`                                 | Sales                            |          3 | yes      |                                                                                 |
-| `msdyn_Sequence`                                | Sales                            |         21 | yes      |                                                                                 |
-| `msdyn_TeamsConfigForSales`                     | Sales                            |          2 | yes      |                                                                                 |
-| `msdynce_LeadManagement`                        | Sales                            |          7 | yes      |                                                                                 |
-| `msdynce_LeadManagementPatch`                   | Sales                            |          1 | yes      |                                                                                 |
-| `msdynce_Marketing`                             | Sales                            |         22 | yes      | Campaigns and marketing lists, part of Sales (not Customer Insights - Journeys) |
-| `msdynce_MarketingEntitiesUpdateMetadata`       | Sales                            |          2 | yes      |                                                                                 |
-| `msdynce_MarketingPatch`                        | Sales                            |          1 | yes      |                                                                                 |
-| `msdynce_MarketingPatch201905`                  | Sales                            |          6 | yes      |                                                                                 |
-| `msdynce_MarketingSales`                        | Sales                            |          1 | yes      |                                                                                 |
-| `msdynce_MarketingSalesPatch`                   | Sales                            |          1 | yes      |                                                                                 |
-| `msdynce_MarketingUpdateListMetadata`           | Sales                            |          1 | yes      |                                                                                 |
-| `msdynce_Notesanalysis`                         | Sales                            |          2 | yes      | Borderline: Sales Insights                                                      |
-| `msdynce_ProductManagement`                     | Sales                            |          6 | yes      |                                                                                 |
-| `msdynce_RelationshipAssistantAddOn`            | Sales                            |          2 | yes      | Borderline: Sales Insights                                                      |
-| `msdynce_Sales`                                 | Sales                            |         31 | yes      |                                                                                 |
-| `msdynce_SalesHealth`                           | Sales                            |          7 | yes      |                                                                                 |
-| `msdynce_SalesPatch`                            | Sales                            |          1 | yes      |                                                                                 |
-| `msdynce_SalesPatch201904`                      | Sales                            |          3 | yes      |                                                                                 |
-| `msdynce_SalesPatch202001`                      | Sales                            |          4 | yes      |                                                                                 |
-| `msdynce_Talkingpoints`                         | Sales                            |          2 | yes      | Borderline: Sales Insights                                                      |
-| `PredictiveLeadScoring`                         | Sales                            |          8 | yes      | Borderline: Sales Insights                                                      |
-| `PredictiveOpportunityScoring`                  | Sales                            |          8 | yes      | Borderline: Sales Insights                                                      |
-| `RelationshipAnalytics`                         | Sales                            |          6 | yes      | Borderline: Sales Insights                                                      |
-| `Relationshipassistant`                         | Sales                            |         14 | yes      | Borderline: Sales Insights                                                      |
-| `SICommon`                                      | Sales                            |         52 | yes      | Borderline: Sales Insights                                                      |
-| `IoTConnector`                                  | Connected Customer Service (IoT) |         22 | no       | Borderline: Installed with Customer Service, but an IoT add-on                  |
-| `IoTProviders`                                  | Connected Customer Service (IoT) |          6 | no       | Borderline: Installed with Customer Service, but an IoT add-on                  |
-| `msdyn_AssetCommon`                             | Connected Customer Service (IoT) |          1 | no       | Borderline: Asset hierarchy, shared with Field Service                          |
-| `msdyn_ConnectedCustomerService`                | Connected Customer Service (IoT) |          1 | no       | Borderline: Installed with Customer Service, but an IoT add-on                  |
-| `DecisionEngine`                                | Contact Center                   |          1 | no       | Unified routing                                                                 |
-| `msdyn_AgentCoach`                              | Contact Center                   |          3 | no       |                                                                                 |
-| `msdyn_AgentGroupManager`                       | Contact Center                   |          1 | no       |                                                                                 |
-| `msdyn_BulkManagement`                          | Contact Center                   |          1 | no       | Unified routing                                                                 |
-| `msdyn_CIFrameworkPatch`                        | Contact Center                   |          1 | no       | Borderline: Channel Integration Framework                                       |
-| `msdyn_ContactCenterClientSolution`             | Contact Center                   |          1 | no       |                                                                                 |
-| `msdyn_ConversationOrchestration`               | Contact Center                   |          4 | no       |                                                                                 |
-| `msdyn_CSSurveyBase`                            | Contact Center                   |          4 | no       | Borderline: Post-conversation surveys                                           |
-| `msdyn_D365ChannelDefinitions`                  | Contact Center                   |          5 | no       | Borderline: Messaging channel definitions (Contact Center and Journeys)         |
-| `msdyn_IntentEngineCore`                        | Contact Center                   |          4 | no       | Borderline: Customer intent agent                                               |
-| `msdyn_OCIER`                                   | Contact Center                   |          5 | no       |                                                                                 |
-| `msdyn_OCIntelligence`                          | Contact Center                   |          9 | no       |                                                                                 |
-| `msdyn_OmnichannelAuthenticationAntifraudAgent` | Contact Center                   |         19 | no       |                                                                                 |
-| `msdyn_OmnichannelBotEnablerPatch`              | Contact Center                   |          4 | no       |                                                                                 |
-| `msdyn_OmnichannelCCaaSAnalytics`               | Contact Center                   |          1 | no       |                                                                                 |
-| `msdyn_OmnichannelCCaaSAPI`                     | Contact Center                   |         64 | no       |                                                                                 |
-| `msdyn_OmnichannelCCaaSPESApi`                  | Contact Center                   |         13 | no       |                                                                                 |
-| `msdyn_OmnichannelCCaaSVoiceAPI`                | Contact Center                   |         20 | no       |                                                                                 |
-| `msdyn_OmnichannelEngagementHubPatch`           | Contact Center                   |          1 | no       |                                                                                 |
-| `msdyn_OmnichannelFacebookPatch`                | Contact Center                   |          3 | no       |                                                                                 |
-| `msdyn_OmnichannelRealtimeMonitoring`           | Contact Center                   |          4 | no       |                                                                                 |
-| `msdyn_OmnichannelSharedBase`                   | Contact Center                   |          2 | no       |                                                                                 |
-| `msdyn_OmnichannelSMSPatch`                     | Contact Center                   |          4 | no       |                                                                                 |
-| `msdyn_OmnichannelSocialChannelsPatch`          | Contact Center                   |         21 | no       |                                                                                 |
-| `msdyn_OmnichannelTeamsPatch`                   | Contact Center                   |          3 | no       |                                                                                 |
-| `msdyn_QMS`                                     | Contact Center                   |         12 | no       | Borderline: Quality management (quality evaluation agent)                       |
-| `msdyn_QMSConversation`                         | Contact Center                   |          1 | no       | Borderline: Quality management                                                  |
-| `msdyn_QMSIntelligence`                         | Contact Center                   |          7 | no       | Borderline: Quality management                                                  |
-| `msdyn_screenrecording_manager`                 | Contact Center                   |          2 | no       |                                                                                 |
-| `msdyn_SimulationAgent`                         | Contact Center                   |         13 | no       |                                                                                 |
-| `msdyn_TransformationAgentUX`                   | Contact Center                   |          7 | no       | Borderline: Transformation agent, installed with Contact Center                 |
-| `msdyn_TransformContactCenter`                  | Contact Center                   |          1 | no       |                                                                                 |
-| `msdyn_UnifiedRoutingFirstPartyIntegration`     | Contact Center                   |          4 | no       | Unified routing                                                                 |
-| `msdyn_UnifiedRoutingForEntity`                 | Contact Center                   |          2 | no       | Unified routing                                                                 |
-| `msdyn_UnifiedRoutingRuleTracker`               | Contact Center                   |          3 | no       | Unified routing                                                                 |
-| `msdynce_AnyEntityRoutingRule`                  | Contact Center                   |          2 | no       | Borderline: Unified routing for records                                         |
-| `msdynce_EntityRouting`                         | Contact Center                   |          8 | no       | Unified routing core                                                            |
-| `OCBaseURBase`                                  | Contact Center                   |         10 | no       | Unified routing                                                                 |
-| `OCISBR`                                        | Contact Center                   |          8 | no       | Unified routing                                                                 |
-| `OmnichannelBase`                               | Contact Center                   |         31 | no       |                                                                                 |
-| `OmnichannelBotEnabler`                         | Contact Center                   |          3 | no       |                                                                                 |
-| `OmnichannelChat`                               | Contact Center                   |          2 | no       |                                                                                 |
-| `OmnichannelCommunicationBase`                  | Contact Center                   |         14 | no       |                                                                                 |
-| `OmnichannelOutbound`                           | Contact Center                   |          1 | no       |                                                                                 |
-| `OmnichannelSMS`                                | Contact Center                   |          1 | no       |                                                                                 |
-| `OmnichannelSocialChannels`                     | Contact Center                   |          4 | no       |                                                                                 |
-| `OmnichannelTelephony`                          | Contact Center                   |          9 | no       |                                                                                 |
-| `DynamicsMKT_AnalyticsUx`                       | Customer Insights - Journeys     |          3 | no       |                                                                                 |
-| `DynamicsMKT_BaseSolution`                      | Customer Insights - Journeys     |          1 | no       |                                                                                 |
-| `DynamicsMKT_Consent`                           | Customer Insights - Journeys     |         28 | no       |                                                                                 |
-| `DynamicsMKT_ConsentProvider`                   | Customer Insights - Journeys     |          1 | no       |                                                                                 |
-| `DynamicsMKT_CxpAnalytics`                      | Customer Insights - Journeys     |          2 | no       |                                                                                 |
-| `DynamicsMKT_FeatureConfiguration`              | Customer Insights - Journeys     |          2 | no       |                                                                                 |
-| `DynamicsMKT_MetadataStore`                     | Customer Insights - Journeys     |          5 | no       |                                                                                 |
-| `DynamicsMKT_PersonalizationUI`                 | Customer Insights - Journeys     |          9 | no       |                                                                                 |
-| `DynamicsMKT_SharedChannelExtensions`           | Customer Insights - Journeys     |          1 | no       |                                                                                 |
-| `MicrosoftDynamics_DigitalAssets`               | Customer Insights - Journeys     |          5 | no       |                                                                                 |
-| `MicrosoftFormsPro`                             | Customer Voice                   |          1 | no       | Borderline: Surveys                                                             |
-| `PowerPages_RuntimeCore`                        | Power Pages                      |          6 | no       | Borderline: Installed with the platform solutions, but not Dataverse itself     |
-| `PowerPages_RuntimeExtensions`                  | Power Pages                      |          1 | no       | Borderline: Installed with the platform solutions, but not Dataverse itself     |
-| `ProcessMining`                                 | Process Mining                   |          6 | no       | Borderline: Installed with the platform solutions, but a separate product       |
-| `MicrosoftDynamicsScheduling`                   | Universal Resource Scheduling    |         50 | no       | Borderline: Shared by Field Service and Project Operations                      |
-| `MicrosoftDynamicsScheduling3_CumulativePatch`  | Universal Resource Scheduling    |         31 | no       | Borderline: Shared by Field Service and Project Operations                      |
+| Solution                                        | App                              | Operations | Prebuilt | Note                                                                                                         |
+| ----------------------------------------------- | -------------------------------- | ---------: | -------- | ------------------------------------------------------------------------------------------------------------ |
+| _(none: built into the Web API)_                | Platform                         |         71 | yes      |                                                                                                              |
+| `AutomaticRecordCreationExtension`              | Customer Service                 |          5 | yes      |                                                                                                              |
+| `msdyn_AIPlugins`                               | Customer Service                 |          1 | yes      | Borderline: Copilot in Customer Service                                                                      |
+| `msdyn_AppProfileManager`                       | Customer Service                 |          4 | yes      | Customer Service workspace app profiles                                                                      |
+| `msdyn_CaseManagementIntelligence`              | Customer Service                 |         30 | yes      | Borderline: Case management agents                                                                           |
+| `msdyn_CSAdminCenterApp`                        | Customer Service                 |         12 | yes      | Customer Service admin center                                                                                |
+| `msdyn_CSCopilotPlugins`                        | Customer Service                 |          1 | yes      | Borderline: Copilot in Customer Service                                                                      |
+| `msdyn_CSIntelligence`                          | Customer Service                 |         40 | yes      | Borderline: Copilot in Customer Service                                                                      |
+| `msdyn_CustomerServiceHealth`                   | Customer Service                 |         10 | yes      |                                                                                                              |
+| `msdyn_ModernCaseManagement`                    | Customer Service                 |          3 | yes      | Enhanced case experience                                                                                     |
+| `msdyn_Swarming`                                | Customer Service                 |          6 | yes      |                                                                                                              |
+| `msdynce_ArcMigration`                          | Customer Service                 |          2 | yes      |                                                                                                              |
+| `msdynce_KnowledgeManagementFeatures`           | Customer Service                 |         12 | yes      |                                                                                                              |
+| `msdynce_KnowledgeManagementHarvestingSolution` | Customer Service                 |          7 | yes      | Borderline: Knowledge harvesting agent                                                                       |
+| `msdynce_KnowledgeManagementOnlineFeatures`     | Customer Service                 |          5 | yes      |                                                                                                              |
+| `msdynce_KnowledgeManagementPatch`              | Customer Service                 |          1 | yes      |                                                                                                              |
+| `msdynce_RoutingRule`                           | Customer Service                 |          4 | yes      | Classic routing rule sets (not unified routing)                                                              |
+| `msdynce_Service`                               | Customer Service                 |         29 | yes      |                                                                                                              |
+| `msdynce_ServiceLevelAgreementExtension`        | Customer Service                 |          7 | yes      |                                                                                                              |
+| `msdynce_ServiceLevelAgreementMigration`        | Customer Service                 |          2 | yes      |                                                                                                              |
+| `msdynce_ServiceManagementControlsExtension`    | Customer Service                 |          3 | yes      |                                                                                                              |
+| `msdynce_ServicePatch201911`                    | Customer Service                 |          9 | yes      |                                                                                                              |
+| `msdynce_ServiceUpgradeScripts`                 | Customer Service                 |          1 | yes      |                                                                                                              |
+| `msdyn_cef_core`                                | Dynamics 365 (shared)            |          7 | yes      | Borderline: CE foundation insights, installed with the Sales agents                                          |
+| `msdyn_Collaboration`                           | Dynamics 365 (shared)            |         11 | yes      | Embedded Teams collaboration (Sales and Customer Service)                                                    |
+| `msdyn_DataInsightsAndAnalytics`                | Dynamics 365 (shared)            |          6 | yes      | Borderline: Insights and analytics for Dynamics 365                                                          |
+| `msdyn_EmailIntelligence`                       | Dynamics 365 (shared)            |         18 | yes      | Borderline: Copilot email assist (Sales and Customer Service)                                                |
+| `msdyn_GovernanceAgentIntelligence`             | Dynamics 365 (shared)            |          6 | yes      | Borderline: Agent guardrails, installed with the Sales agents                                                |
+| `msdyn_IntelligentAgentEnhancer`                | Dynamics 365 (shared)            |          5 | yes      | Borderline: Agent tuning, installed with the Sales agents                                                    |
+| `msdyn_TrustCenterAdoptCore`                    | Dynamics 365 (shared)            |          2 | yes      | Borderline: Feature rollout scheduling                                                                       |
+| `msdynce_ActivitiesPatch`                       | Dynamics 365 (shared)            |          4 | yes      |                                                                                                              |
+| `msdynce_CRMExtensions`                         | Dynamics 365 (shared)            |          1 | yes      |                                                                                                              |
+| `msdynce_EmailTemplateConfigSolution`           | Dynamics 365 (shared)            |          2 | yes      |                                                                                                              |
+| `msdynce_OfficeProductivity`                    | Dynamics 365 (shared)            |          7 | yes      | SharePoint and Teams integration                                                                             |
+| `msdynce_Scheduling`                            | Dynamics 365 (shared)            |          5 | yes      | Service scheduling (classic)                                                                                 |
+| `msdynce_SchedulingUpgrade`                     | Dynamics 365 (shared)            |          1 | yes      |                                                                                                              |
+| `SolutionUpgradeInfrastructure`                 | Dynamics 365 (shared)            |          1 | yes      |                                                                                                              |
+| `AccessTeam`                                    | Platform                         |          4 | yes      |                                                                                                              |
+| `ApiMessagesExtension`                          | Platform                         |          7 | yes      |                                                                                                              |
+| `AppModule`                                     | Platform                         |          2 | yes      |                                                                                                              |
+| `AppModuleMetadataSolution`                     | Platform                         |          1 | yes      |                                                                                                              |
+| `AuthorizationCore`                             | Platform                         |         16 | yes      |                                                                                                              |
+| `BulkDeleteExtensionSolution`                   | Platform                         |          1 | yes      |                                                                                                              |
+| `CanvasAppMetadataExtensionSolution`            | Platform                         |          2 | yes      |                                                                                                              |
+| `DataEngineCascading`                           | Platform                         |          5 | yes      |                                                                                                              |
+| `DataEngineCascadingXRM`                        | Platform                         |          1 | yes      |                                                                                                              |
+| `datalakeworkspaces`                            | Platform                         |          1 | yes      |                                                                                                              |
+| `EnvironmentVariables`                          | Platform                         |          8 | yes      |                                                                                                              |
+| `EnvironmentVariablesV2`                        | Platform                         |          8 | yes      |                                                                                                              |
+| `ExportSolutionUpload`                          | Platform                         |          2 | yes      |                                                                                                              |
+| `FileStoreServiceExtension`                     | Platform                         |          3 | yes      |                                                                                                              |
+| `LicenseEnforcement`                            | Platform                         |          1 | yes      |                                                                                                              |
+| `MCPPlatform_Extensions`                        | Platform                         |          4 | yes      | Borderline: Dataverse MCP server and Work IQ tasks; installed with the platform solutions                    |
+| `MetadataExtension`                             | Platform                         |          8 | yes      |                                                                                                              |
+| `MicrosoftFlowExtensionsCore`                   | Platform                         |         39 | yes      | Power Automate core components                                                                               |
+| `MobileOfflineMembership`                       | Platform                         |          2 | yes      |                                                                                                              |
+| `msdyn_AISolution`                              | Platform                         |         33 | yes      | Borderline: AI Builder; installed with the platform solutions                                                |
+| `msdyn_AISolutionFullAdditions`                 | Platform                         |          1 | yes      | Borderline: AI Builder; installed with the platform solutions                                                |
+| `msdyn_AITestFrameworkSolution`                 | Platform                         |          6 | yes      | Borderline: AI test framework; installed with the platform solutions                                         |
+| `msdyn_CDSReportSchemaChanges`                  | Platform                         |          2 | yes      |                                                                                                              |
+| `msdyn_ComponentVersioning`                     | Platform                         |          4 | yes      |                                                                                                              |
+| `msdyn_ConnectionInstances`                     | Platform                         |          2 | yes      |                                                                                                              |
+| `msdyn_Copresence`                              | Platform                         |          1 | yes      |                                                                                                              |
+| `msdyn_FeatureControlSettingPlugin`             | Platform                         |          7 | yes      |                                                                                                              |
+| `msdyn_InsightsAppPlatform`                     | Platform                         |          5 | yes      | Borderline: Fabric and unstructured-data AI; installed with the platform solutions                           |
+| `msdyn_MobileAppsSolution`                      | Platform                         |          5 | yes      |                                                                                                              |
+| `msdyn_PowerAIExtensionsBase`                   | Platform                         |          7 | yes      | Borderline: Copilot for Dataverse (SummarizeRecord, Mcp* table tools); installed with the platform solutions |
+| `msdyn_PowerAppsChecker`                        | Platform                         |         22 | yes      | Solution checker                                                                                             |
+| `msdyn_RelevanceSearch`                         | Platform                         |          7 | yes      | Dataverse search                                                                                             |
+| `msdyn_SmartDataImportBase`                     | Platform                         |          3 | yes      |                                                                                                              |
+| `msdyn_SourceControlIntegration`                | Platform                         |         18 | yes      | Dataverse Git integration                                                                                    |
+| `msdyn_SynapseLink`                             | Platform                         |          1 | yes      |                                                                                                              |
+| `msdyn_UCICalendar`                             | Platform                         |          3 | yes      |                                                                                                              |
+| `msdyn_userrating`                              | Platform                         |          1 | yes      |                                                                                                              |
+| `msdynce_SolutionsFrameworkExtensions`          | Platform                         |         23 | yes      |                                                                                                              |
+| `msdynce_SolutionsFrameworkMetadata`            | Platform                         |          5 | yes      |                                                                                                              |
+| `msft_ActivitiesInfra_Extensions`               | Platform                         |          3 | yes      |                                                                                                              |
+| `msft_authenticationextension`                  | Platform                         |          2 | yes      |                                                                                                              |
+| `msft_BackgroundJobs`                           | Platform                         |          1 | yes      |                                                                                                              |
+| `msft_ColumnLevelSecurity`                      | Platform                         |          1 | yes      |                                                                                                              |
+| `msft_ConnectorProvider`                        | Platform                         |          2 | yes      | Virtual connector provider                                                                                   |
+| `msft_ContactAndAccount_Extensions`             | Platform                         |          2 | yes      |                                                                                                              |
+| `msft_DataArchivalBaseComponents`               | Platform                         |          5 | yes      |                                                                                                              |
+| `msft_DataEngineIndexMgmt`                      | Platform                         |          3 | yes      |                                                                                                              |
+| `msft_DelegatedAuthorization`                   | Platform                         |          2 | yes      |                                                                                                              |
+| `msft_DVInfoProtectionComponents`               | Platform                         |          1 | yes      |                                                                                                              |
+| `msft_PowerAppsCards`                           | Platform                         |          2 | yes      |                                                                                                              |
+| `msft_PowerfxRuleSolutionApi`                   | Platform                         |         12 | yes      |                                                                                                              |
+| `msft_powerplatformmanagedidentityextension`    | Platform                         |          5 | yes      |                                                                                                              |
+| `msft_PrivilegeChecker`                         | Platform                         |          1 | yes      |                                                                                                              |
+| `msft_RealTimeCollaboration`                    | Platform                         |          2 | yes      |                                                                                                              |
+| `msft_RecycleBinBaseComponents`                 | Platform                         |          3 | yes      |                                                                                                              |
+| `msft_RuntimeExtensions`                        | Platform                         |          3 | yes      |                                                                                                              |
+| `msft_RuntimeIntegration`                       | Platform                         |          3 | yes      |                                                                                                              |
+| `msft_StorageAdvisorComponents`                 | Platform                         |          3 | yes      |                                                                                                              |
+| `NonRelationalCustomActions`                    | Platform                         |          2 | yes      |                                                                                                              |
+| `PowerPlatformConnectionReferences`             | Platform                         |          1 | yes      |                                                                                                              |
+| `PowerVirtualAgents`                            | Platform                         |         15 | yes      | Borderline: Copilot Studio; installed with the platform solutions                                            |
+| `SolutionComponentConfiguration`                | Platform                         |          5 | yes      |                                                                                                              |
+| `System`                                        | Platform                         |        242 | yes      |                                                                                                              |
+| `AutoDataCapture`                               | Sales                            |         18 | yes      | Borderline: Sales Insights                                                                                   |
+| `msdyn_acceleratedsales`                        | Sales                            |          6 | yes      | Borderline: Sales accelerator                                                                                |
+| `msdyn_AutonomousSQA`                           | Sales                            |          8 | yes      | Borderline: Sales agent (qualification)                                                                      |
+| `msdyn_connectiongraph`                         | Sales                            |          4 | yes      | Borderline: Sales Insights (who knows whom)                                                                  |
+| `msdyn_DataQualityAgent`                        | Sales                            |         11 | yes      | Borderline: Sales agent (data quality)                                                                       |
+| `msdyn_DealClosingAgent`                        | Sales                            |          2 | yes      | Borderline: Sales agent (close)                                                                              |
+| `msdyn_entityintelligence`                      | Sales                            |          5 | yes      | Borderline: Sales Insights (field predictions)                                                               |
+| `msdyn_Forecasting`                             | Sales                            |          9 | yes      |                                                                                                              |
+| `msdyn_leadhygiene`                             | Sales                            |          6 | yes      |                                                                                                              |
+| `msdyn_LinkedInExtensions`                      | Sales                            |          3 | yes      |                                                                                                              |
+| `msdyn_NextBestActionAgent`                     | Sales                            |          6 | yes      | Borderline: Sales agent (recommended actions)                                                                |
+| `msdyn_OnboardingAgent`                         | Sales                            |          8 | yes      | Borderline: Agent onboarding, added by an update after the Sales agents                                      |
+| `msdyn_PredictiveScoringCommon`                 | Sales                            |         11 | yes      | Borderline: Sales Insights                                                                                   |
+| `msdyn_SalesAgentsCommon`                       | Sales                            |         55 | yes      | Borderline: Sales agents                                                                                     |
+| `msdyn_SalesConfigurationAgent`                 | Sales                            |          7 | yes      | Borderline: Sales agents                                                                                     |
+| `msdyn_SalesCopilot`                            | Sales                            |         50 | yes      | Borderline: Copilot in Sales                                                                                 |
+| `msdyn_SalesLeadResearch`                       | Sales                            |         13 | yes      | Borderline: Sales agent (lead research)                                                                      |
+| `msdyn_SalesOpportunityResearch`                | Sales                            |         24 | yes      | Borderline: Sales agent (opportunity research)                                                               |
+| `msdyn_SalesProfilerAgent`                      | Sales                            |          7 | yes      | Borderline: Sales agents                                                                                     |
+| `msdyn_SalesRouting`                            | Sales                            |         10 | yes      | Assignment rules                                                                                             |
+| `msdyn_SalesSequences`                          | Sales                            |          5 | yes      |                                                                                                              |
+| `msdyn_segment`                                 | Sales                            |          3 | yes      |                                                                                                              |
+| `msdyn_Sequence`                                | Sales                            |         21 | yes      |                                                                                                              |
+| `msdyn_TeamsConfigForSales`                     | Sales                            |          2 | yes      |                                                                                                              |
+| `msdynce_LeadManagement`                        | Sales                            |          7 | yes      |                                                                                                              |
+| `msdynce_LeadManagementPatch`                   | Sales                            |          1 | yes      |                                                                                                              |
+| `msdynce_Marketing`                             | Sales                            |         22 | yes      | Campaigns and marketing lists, part of Sales (not Customer Insights - Journeys)                              |
+| `msdynce_MarketingEntitiesUpdateMetadata`       | Sales                            |          2 | yes      |                                                                                                              |
+| `msdynce_MarketingPatch`                        | Sales                            |          1 | yes      |                                                                                                              |
+| `msdynce_MarketingPatch201905`                  | Sales                            |          6 | yes      |                                                                                                              |
+| `msdynce_MarketingSales`                        | Sales                            |          1 | yes      |                                                                                                              |
+| `msdynce_MarketingSalesPatch`                   | Sales                            |          1 | yes      |                                                                                                              |
+| `msdynce_MarketingUpdateListMetadata`           | Sales                            |          1 | yes      |                                                                                                              |
+| `msdynce_Notesanalysis`                         | Sales                            |          2 | yes      | Borderline: Sales Insights                                                                                   |
+| `msdynce_ProductManagement`                     | Sales                            |          6 | yes      |                                                                                                              |
+| `msdynce_RelationshipAssistantAddOn`            | Sales                            |          2 | yes      | Borderline: Sales Insights                                                                                   |
+| `msdynce_Sales`                                 | Sales                            |         31 | yes      |                                                                                                              |
+| `msdynce_SalesHealth`                           | Sales                            |          7 | yes      |                                                                                                              |
+| `msdynce_SalesPatch`                            | Sales                            |          1 | yes      |                                                                                                              |
+| `msdynce_SalesPatch201904`                      | Sales                            |          3 | yes      |                                                                                                              |
+| `msdynce_SalesPatch202001`                      | Sales                            |          4 | yes      |                                                                                                              |
+| `msdynce_Talkingpoints`                         | Sales                            |          2 | yes      | Borderline: Sales Insights                                                                                   |
+| `PredictiveLeadScoring`                         | Sales                            |          8 | yes      | Borderline: Sales Insights                                                                                   |
+| `PredictiveOpportunityScoring`                  | Sales                            |          8 | yes      | Borderline: Sales Insights                                                                                   |
+| `RelationshipAnalytics`                         | Sales                            |          6 | yes      | Borderline: Sales Insights                                                                                   |
+| `Relationshipassistant`                         | Sales                            |         14 | yes      | Borderline: Sales Insights                                                                                   |
+| `SICommon`                                      | Sales                            |         52 | yes      | Borderline: Sales Insights                                                                                   |
+| `IoTConnector`                                  | Connected Customer Service (IoT) |         22 | no       | Borderline: Installed with Customer Service, but an IoT add-on                                               |
+| `IoTProviders`                                  | Connected Customer Service (IoT) |          6 | no       | Borderline: Installed with Customer Service, but an IoT add-on                                               |
+| `msdyn_AssetCommon`                             | Connected Customer Service (IoT) |          1 | no       | Borderline: Asset hierarchy, shared with Field Service                                                       |
+| `msdyn_ConnectedCustomerService`                | Connected Customer Service (IoT) |          1 | no       | Borderline: Installed with Customer Service, but an IoT add-on                                               |
+| `DecisionEngine`                                | Contact Center                   |          1 | no       | Unified routing                                                                                              |
+| `msdyn_AgentCoach`                              | Contact Center                   |          3 | no       |                                                                                                              |
+| `msdyn_AgentGroupManager`                       | Contact Center                   |          1 | no       |                                                                                                              |
+| `msdyn_BulkManagement`                          | Contact Center                   |          1 | no       | Unified routing                                                                                              |
+| `msdyn_CIFrameworkPatch`                        | Contact Center                   |          1 | no       | Borderline: Channel Integration Framework                                                                    |
+| `msdyn_ContactCenterClientSolution`             | Contact Center                   |          1 | no       |                                                                                                              |
+| `msdyn_ConversationOrchestration`               | Contact Center                   |          4 | no       |                                                                                                              |
+| `msdyn_CSSurveyBase`                            | Contact Center                   |          4 | no       | Borderline: Post-conversation surveys                                                                        |
+| `msdyn_D365ChannelDefinitions`                  | Contact Center                   |          5 | no       | Borderline: Messaging channel definitions (Contact Center and Journeys)                                      |
+| `msdyn_IntentEngineCore`                        | Contact Center                   |          4 | no       | Borderline: Customer intent agent                                                                            |
+| `msdyn_OCIER`                                   | Contact Center                   |          5 | no       |                                                                                                              |
+| `msdyn_OCIntelligence`                          | Contact Center                   |          9 | no       |                                                                                                              |
+| `msdyn_OmnichannelAuthenticationAntifraudAgent` | Contact Center                   |         19 | no       |                                                                                                              |
+| `msdyn_OmnichannelBotEnablerPatch`              | Contact Center                   |          4 | no       |                                                                                                              |
+| `msdyn_OmnichannelCCaaSAnalytics`               | Contact Center                   |          1 | no       |                                                                                                              |
+| `msdyn_OmnichannelCCaaSAPI`                     | Contact Center                   |         64 | no       |                                                                                                              |
+| `msdyn_OmnichannelCCaaSPESApi`                  | Contact Center                   |         13 | no       |                                                                                                              |
+| `msdyn_OmnichannelCCaaSVoiceAPI`                | Contact Center                   |         20 | no       |                                                                                                              |
+| `msdyn_OmnichannelEngagementHubPatch`           | Contact Center                   |          1 | no       |                                                                                                              |
+| `msdyn_OmnichannelFacebookPatch`                | Contact Center                   |          3 | no       |                                                                                                              |
+| `msdyn_OmnichannelRealtimeMonitoring`           | Contact Center                   |          4 | no       |                                                                                                              |
+| `msdyn_OmnichannelSharedBase`                   | Contact Center                   |          2 | no       |                                                                                                              |
+| `msdyn_OmnichannelSMSPatch`                     | Contact Center                   |          4 | no       |                                                                                                              |
+| `msdyn_OmnichannelSocialChannelsPatch`          | Contact Center                   |         21 | no       |                                                                                                              |
+| `msdyn_OmnichannelTeamsPatch`                   | Contact Center                   |          3 | no       |                                                                                                              |
+| `msdyn_QMS`                                     | Contact Center                   |         12 | no       | Borderline: Quality management (quality evaluation agent)                                                    |
+| `msdyn_QMSConversation`                         | Contact Center                   |          1 | no       | Borderline: Quality management                                                                               |
+| `msdyn_QMSIntelligence`                         | Contact Center                   |          7 | no       | Borderline: Quality management                                                                               |
+| `msdyn_screenrecording_manager`                 | Contact Center                   |          2 | no       |                                                                                                              |
+| `msdyn_SimulationAgent`                         | Contact Center                   |         13 | no       |                                                                                                              |
+| `msdyn_TransformationAgentUX`                   | Contact Center                   |          7 | no       | Borderline: Transformation agent, installed with Contact Center                                              |
+| `msdyn_TransformContactCenter`                  | Contact Center                   |          1 | no       |                                                                                                              |
+| `msdyn_UnifiedRoutingFirstPartyIntegration`     | Contact Center                   |          4 | no       | Unified routing                                                                                              |
+| `msdyn_UnifiedRoutingForEntity`                 | Contact Center                   |          2 | no       | Unified routing                                                                                              |
+| `msdyn_UnifiedRoutingRuleTracker`               | Contact Center                   |          3 | no       | Unified routing                                                                                              |
+| `msdynce_AnyEntityRoutingRule`                  | Contact Center                   |          2 | no       | Borderline: Unified routing for records                                                                      |
+| `msdynce_EntityRouting`                         | Contact Center                   |          8 | no       | Unified routing core                                                                                         |
+| `OCBaseURBase`                                  | Contact Center                   |         10 | no       | Unified routing                                                                                              |
+| `OCISBR`                                        | Contact Center                   |          8 | no       | Unified routing                                                                                              |
+| `OmnichannelBase`                               | Contact Center                   |         31 | no       |                                                                                                              |
+| `OmnichannelBotEnabler`                         | Contact Center                   |          3 | no       |                                                                                                              |
+| `OmnichannelChat`                               | Contact Center                   |          2 | no       |                                                                                                              |
+| `OmnichannelCommunicationBase`                  | Contact Center                   |         14 | no       |                                                                                                              |
+| `OmnichannelOutbound`                           | Contact Center                   |          1 | no       |                                                                                                              |
+| `OmnichannelSMS`                                | Contact Center                   |          1 | no       |                                                                                                              |
+| `OmnichannelSocialChannels`                     | Contact Center                   |          4 | no       |                                                                                                              |
+| `OmnichannelTelephony`                          | Contact Center                   |          9 | no       |                                                                                                              |
+| `DynamicsMKT_AnalyticsUx`                       | Customer Insights - Journeys     |          3 | no       |                                                                                                              |
+| `DynamicsMKT_BaseSolution`                      | Customer Insights - Journeys     |          1 | no       |                                                                                                              |
+| `DynamicsMKT_Consent`                           | Customer Insights - Journeys     |         28 | no       |                                                                                                              |
+| `DynamicsMKT_ConsentProvider`                   | Customer Insights - Journeys     |          1 | no       |                                                                                                              |
+| `DynamicsMKT_CxpAnalytics`                      | Customer Insights - Journeys     |          2 | no       |                                                                                                              |
+| `DynamicsMKT_FeatureConfiguration`              | Customer Insights - Journeys     |          2 | no       |                                                                                                              |
+| `DynamicsMKT_MetadataStore`                     | Customer Insights - Journeys     |          5 | no       |                                                                                                              |
+| `DynamicsMKT_PersonalizationUI`                 | Customer Insights - Journeys     |          9 | no       |                                                                                                              |
+| `DynamicsMKT_SharedChannelExtensions`           | Customer Insights - Journeys     |          1 | no       |                                                                                                              |
+| `MicrosoftDynamics_DigitalAssets`               | Customer Insights - Journeys     |          5 | no       |                                                                                                              |
+| `MicrosoftFormsPro`                             | Customer Voice                   |          1 | no       | Borderline: Surveys                                                                                          |
+| `PowerPages_RuntimeCore`                        | Power Pages                      |          6 | no       | Borderline: Installed with the platform solutions, but not Dataverse itself                                  |
+| `PowerPages_RuntimeExtensions`                  | Power Pages                      |          1 | no       | Borderline: Installed with the platform solutions, but not Dataverse itself                                  |
+| `ProcessMining`                                 | Process Mining                   |          6 | no       | Borderline: Installed with the platform solutions, but a separate product                                    |
+| `MicrosoftDynamicsScheduling`                   | Universal Resource Scheduling    |         50 | no       | Borderline: Shared by Field Service and Project Operations                                                   |
+| `MicrosoftDynamicsScheduling3_CumulativePatch`  | Universal Resource Scheduling    |         31 | no       | Borderline: Shared by Field Service and Project Operations                                                   |
 
 <!-- /solutions -->
 

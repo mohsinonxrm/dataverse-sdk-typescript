@@ -14,7 +14,7 @@ export default function OperationsPage() {
   return (
     <ScenarioPage
       title="Actions, functions and messages"
-      description="The generated packages wrap every Dataverse function (a GET) and action (a POST) in a typed class: @mohsinonxrm/dataverse-sdk-functions and -actions run with client.execute(), and -messages are the C# SDK's Request classes for OrganizationService.execute()."
+      description="The prebuilt packages wrap each Dataverse function (a GET) and action (a POST) of the platform, Sales and Customer Service in a typed class: @mohsinonxrm/dataverse-sdk-functions and -actions run with client.execute(), and -messages are the C# SDK's Request classes for OrganizationService.execute(). Other apps' operations and your custom APIs are generated from your org with dataverse-gen."
     >
       <Scenario
         title="Functions: RetrieveVersion and RetrieveTotalRecordCount"

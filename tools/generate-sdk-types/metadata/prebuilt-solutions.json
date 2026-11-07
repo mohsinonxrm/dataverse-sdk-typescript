@@ -43,7 +43,11 @@
       "note": "Borderline: Installed with Customer Service, but an IoT add-on"
     },
     "LicenseEnforcement": { "app": "Platform", "prebuilt": true },
-    "MCPPlatform_Extensions": { "app": "Platform", "prebuilt": true },
+    "MCPPlatform_Extensions": {
+      "app": "Platform",
+      "prebuilt": true,
+      "note": "Borderline: Dataverse MCP server and Work IQ tasks; installed with the platform solutions"
+    },
     "MetadataExtension": { "app": "Platform", "prebuilt": true },
     "MicrosoftDynamics_DigitalAssets": { "app": "Customer Insights - Journeys", "prebuilt": false },
     "MicrosoftDynamicsScheduling": {
@@ -79,7 +83,11 @@
       "prebuilt": true,
       "note": "Borderline: Copilot in Customer Service"
     },
-    "msdyn_AISolution": { "app": "Platform", "prebuilt": true, "note": "AI Builder" },
+    "msdyn_AISolution": {
+      "app": "Platform",
+      "prebuilt": true,
+      "note": "Borderline: AI Builder; installed with the platform solutions"
+    },
     "msdyn_AISolutionFullAdditions": {
       "app": "Platform",
       "prebuilt": true,
@@ -204,7 +212,11 @@
       "prebuilt": true,
       "note": "Borderline: Agent guardrails, installed with the Sales agents"
     },
-    "msdyn_InsightsAppPlatform": { "app": "Platform", "prebuilt": true },
+    "msdyn_InsightsAppPlatform": {
+      "app": "Platform",
+      "prebuilt": true,
+      "note": "Borderline: Fabric and unstructured-data AI; installed with the platform solutions"
+    },
     "msdyn_IntelligentAgentEnhancer": {
       "app": "Dynamics 365 (shared)",
       "prebuilt": true,
@@ -248,7 +260,11 @@
       "prebuilt": true,
       "note": "Borderline: Agent onboarding, added by an update after the Sales agents"
     },
-    "msdyn_PowerAIExtensionsBase": { "app": "Platform", "prebuilt": true },
+    "msdyn_PowerAIExtensionsBase": {
+      "app": "Platform",
+      "prebuilt": true,
+      "note": "Borderline: Copilot for Dataverse (SummarizeRecord, Mcp* table tools); installed with the platform solutions"
+    },
     "msdyn_PowerAppsChecker": { "app": "Platform", "prebuilt": true, "note": "Solution checker" },
     "msdyn_PredictiveScoringCommon": {
       "app": "Sales",
