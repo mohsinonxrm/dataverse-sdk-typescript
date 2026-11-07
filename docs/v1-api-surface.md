@@ -1,6 +1,6 @@
 # v1-api-surface.md
 
-> **Status**: Reconciled with the exports on `dev` (packages at 1.0.x), November 2026.
+> **Status**: Reconciled with the exports on `dev` for 2.0.0, November 2026. (The file name dates from 1.0; the content describes 2.0.0.)
 >
 > **Scope**: The public API surface of every published `@mohsinonxrm/dataverse-sdk-*` package.
 >
@@ -11,7 +11,7 @@
 > - This is an **API contract**. Changes require an ADR + SemVer discipline.
 > - All packages are **ESM-only**, require **Node 22+** (`engines.node: ">=22"`), and the browser-facing ones run in modern browsers (see [browser.md](./browser.md)).
 > - Generated packages (actions, functions, messages, metadata types) are described by naming pattern and count rather than every generated name.
-> - Known defects in exported APIs are tracked in the [v1.1.0](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/1) and [v1.2.0](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/2) milestones.
+> - What changed since 1.0.0 is in [migration-2.0.md](./migration-2.0.md) and each package's CHANGELOG.
 
 ---
 
@@ -20,7 +20,7 @@
 ### 1.1 Client & request builder
 
 - `class DataverseClient`
-  - `api(pathOrAbsoluteUrl)`, `execute(executable, options?)`, `send(request)`, `resolveUrl(pathOrUrl)`, `getBaseUrl()`, `bind(navigationProperty, entitySetName, id)`
+  - `api(pathOrAbsoluteUrl)`, `execute(executable, options?)`, `send(request)`, `resolveUrl(pathOrUrl)`, `getBaseUrl()`, `bind(navigationProperty, entitySetName, id)`, `fetchXml(entitySetName, fetchXml, options?)`, `savedQuery(entitySetName, id, options?)`, `userQuery(entitySetName, id, options?)`
 - `interface DataverseClientOptions`
 - `type ApiVersion` (`` `v${number}.${number}` ``)
 - `class DataverseRequestBuilder`
@@ -28,6 +28,9 @@
 - `interface CreateAndGetIdOptions` (`RequestOptions` plus `primaryIdAttribute`, for `createAndGetId()` with `Prefer: return=representation`)
 - `class PreferBuilder`
 - `const odata` _(OData filter helpers)_
+- `const odataLiteral`, `function odataKey(key)`, `type ODataKey`, `type ODataScalar`, `type ODataParameterKind`, `type ODataRecordReference` _(OData literals for keys, filters and operation parameters)_
+- `interface ExpandOptions` _(`expand(navigationProperty, { select, filter, orderBy, top, expand })`)_
+- FetchXML: `interface FetchXmlPage<T>`, `interface FetchXmlOptions`, `function parsePagingCookie(annotation)`, `function buildPagedFetchXml(xml, paging)`, `interface ParsedPagingCookie`, `interface FetchXmlPaging`
 
 ### 1.2 Execution model (typed operations)
 
@@ -44,6 +47,7 @@
 - `class FetchRequestAdapter`
 - `type RawBody`
 - `function entityIdFromResponse(res: Response): string`
+- `function buildUrl(request: RequestInformation): string` _(the exact URL `fetch` receives)_
 - Header utilities: `type HeadersLike`, `getRequestHeader`, `setRequestHeader`, `appendRequestHeader`, `normalizeHeaderKey`, `normalizeHeaders`, `headersToObject`, `parseRetryAfter`, `serializeContent`, `isStreamContent`, `generateUUID`
 
 ### 1.4 Auth adapter abstraction
@@ -177,7 +181,7 @@ Peer dependency: `@azure/identity` `^4.0.0`.
 
 ### 5.1 OrganizationService facade
 
-- `class OrganizationService` (`new OrganizationService(client: DataverseClient)`)
+- `class OrganizationService` (`new OrganizationService(client: DataverseClient, options?: OrganizationServiceOptions)`)
   - `create(entitySetName: string, entity: object, options?: CreateOptions): Promise<string>`; with `returnRepresentation: true`, `create<T = EntityRecord>(…): Promise<T>`
   - `retrieve<T = EntityRecord>(entitySetName: string, id: string, options?: RetrieveOptions): Promise<T>`
   - `update(entitySetName: string, id: string, entity: object, options?: UpdateOptions): Promise<void>`; with `returnRepresentation: true`, `update<T = EntityRecord>(…): Promise<T>`
@@ -185,15 +189,17 @@ Peer dependency: `@azure/identity` `^4.0.0`.
   - `retrieveMultiple<T = EntityRecord>(entitySetName: string, options?: RetrieveMultipleOptions): Promise<RetrieveMultipleResult<T>>`
   - `associate(entitySetName: string, id: string, relationship: string, relatedEntities: EntityReference[], options?: AssociateOptions): Promise<void>`
   - `disassociate(entitySetName: string, id: string, relationship: string, relatedId?: string, options?: DisassociateOptions): Promise<void>`
-  - `whoAmI(): Promise<{ UserId: string; BusinessUnitId: string; OrganizationId: string }>`
-  - `assign(entityName: string, recordId: string, assigneeId: string, assigneeType?: "systemuser" | "team"): Promise<void>`
-  - `setState(entityName: string, recordId: string, stateCode: number, statusCode: number): Promise<void>`
+  - `whoAmI(options?: OperationOptions): Promise<{ UserId: string; BusinessUnitId: string; OrganizationId: string }>`
+  - `assign(entityName: string, recordId: string, assigneeId: string, assigneeType?: "systemuser" | "team", options?: OperationOptions): Promise<void>`
+  - `setState(entityName: string, recordId: string, stateCode: number, statusCode: number, options?: OperationOptions): Promise<void>`
+  - `getEntitySetName(logicalName: string, options?: OperationOptions): Promise<string>`, `setEntitySetName(logicalName: string, entitySetName: string): void`
   - `execute<T>(request: Executable<T>, options?: OperationOptions): Promise<T>` _(the response type comes from the request)_
 
 ### 5.2 Types
 
 - `interface EntityRecord` _(a record: `@odata.etag`, `@odata.context`, and `unknown` columns)_
-- `interface EntityReference`
+- `interface OrganizationServiceOptions` (`entitySetNames`), `interface OperationOptions` (`signal`), `interface ExpandOption`
+- `interface EntityReference`, `function createEntityReference(...)`, `function getEntitySetNameFromReference(...)`, `type EntityReferenceOptions`, `type WebApiEntityReference` _(re-exported from entities-runtime: one `EntityReference` for the whole SDK)_
 - `interface CreateOptions`
 - `interface RetrieveOptions`
 - `interface RetrieveMultipleOptions`
@@ -211,19 +217,21 @@ Peer dependency: `@azure/identity` `^4.0.0`.
 
 ### 6.1 Base classes and types
 
-- `class OrganizationRequest` _(generic request; it can't be executed yet, #80)_
+- `class OrganizationRequest` _(generic request: `new OrganizationRequest(messageName, parameters?, { boundTo? })` runs as a Web API action)_, `type OrganizationRequestOptions`
 - `class OrganizationResponse` _(generic response)_
 - `interface MessageRequest`
 - `interface MessageResponse`
-- `type EntityReference`
-- `function createEntityReference(...)`
+- `type EntityReference`, `function createEntityReference(...)`, `function getEntitySetNameFromReference(...)`, `type EntityReferenceOptions`, `type WebApiEntityReference` _(re-exported from entities-runtime)_
+- `type EntityPayload<T>`, `type AnyEntityPayload` _(entity-typed parameters)_
 
 ### 6.2 Message exports (direct exports, no namespaces)
 
-1,356 generated message pairs, one per Web API **action** in the v9.2 CSDL, following the pattern:
+1,072 generated message pairs, one per Web API **action** of the platform, Sales and Customer Service in the committed `$metadata` snapshot (see [supported-messages.md](./mapping/supported-messages.md)), following the pattern:
 
-- `<MessageName>Request`
-- `<MessageName>Response`
+- `<MessageName>Request`, with its parameters in a `<MessageName>RequestParameters` object
+- `<MessageName>Response`, whose `result` is a `<MessageName>Result` (when the action returns something)
+
+An action bound to several tables has one pair per binding (`AddItemCampaign_campaignRequest`, …).
 
 Function-backed and CRUD messages (for example `WhoAmIRequest`) are not generated yet: see [Planned](#16-planned-not-exported-yet).
 
@@ -245,7 +253,7 @@ import {
 - `ImportSolutionRequest`, `ImportSolutionResponse`
 - `PublishXmlRequest`, `PublishXmlResponse`
 - `PublishAllXmlRequest`, `PublishAllXmlResponse`
-- ... and about 1,350 more
+- ... and about 1,060 more
 
 ### 6.3 Execution model
 
@@ -277,7 +285,8 @@ Message classes implement the `Executable<TResponse>` interface from `@mohsinonx
 
 - `interface BatchResponseStep<TBody = unknown>` _(`body` is `unknown` unless the caller names its type)_
 - `interface BatchExecutionResult` (`responses`, `results`, `errors`, `success`, `skippedRequestIds`, `stoppedEarly`, counts)
-- `class DataverseBatchError` _(this package's own class, with `result`, `requestErrors` and `totalRequests`; distinct from core's `DataverseBatchError`)_, `interface DataverseBatchErrorInit`
+- `class DataverseBatchError` _(re-exported from core, so `instanceof` works with either import; with `result`, `partErrors`, `requestErrors` and `totalRequests`)_, `interface DataverseBatchErrorInit`
+- `function entityIdFromBatchResponse(part, options?)` _(the id a create in the batch made)_
 
 ### 7.3 Codec
 
@@ -293,15 +302,16 @@ Message classes implement the `Executable<TResponse>` interface from `@mohsinonx
 
 ### 8.1 Generated actions
 
-1,356 generated classes, one per action in the v9.2 CSDL: `class <Name>Action implements Executable<<Name>Response>`, each with its `<Name>Response` type. For example:
+1,072 generated classes, one per action of the platform, Sales and Customer Service in the committed `$metadata` snapshot (see [supported-actions.md](./mapping/supported-actions.md)): `class <Name>Action implements Executable<<Name>Response>`, each with a `<Name>ActionParameters` interface when it has parameters, and its `<Name>Response` type (the value `client.execute()` resolves). An action bound to several tables has one class per binding. For example:
 
-- `class ExecuteWorkflowAction`, `interface ExecuteWorkflowResponse`
-- `class WinOpportunityAction`, `interface WinOpportunityResponse`
+- `class ExecuteWorkflowAction`, `type ExecuteWorkflowResponse`
+- `class WinOpportunityAction`, `type WinOpportunityResponse`
 
 ### 8.2 Helpers
 
-- `function createEntityReference(...)`
-- `function getEntitySetNameFromReference(...)`
+- `function createEntityReference(...)`, `function getEntitySetNameFromReference(...)`, `type EntityReference`, `type EntityReferenceOptions`, `type WebApiEntityReference` _(re-exported from entities-runtime)_
+- `type EntityPayload<T>`, `type AnyEntityPayload`
+- The enums the actions use, as values (`AccessRights`, …)
 
 ---
 
@@ -311,15 +321,15 @@ Message classes implement the `Executable<TResponse>` interface from `@mohsinonx
 
 ### 9.1 Generated functions
 
-229 generated classes, one per function in the v9.2 CSDL: `class <Name>Function implements Executable<<Name>Response>`. For example:
+280 generated classes, one per function of the platform, Sales and Customer Service in the committed `$metadata` snapshot (see [supported-functions.md](./mapping/supported-functions.md)): `class <Name>Function implements Executable<<Name>Response>`, with a `<Name>FunctionParameters` interface when it has parameters. A function bound to several tables has one class per binding (`RetrievePrincipalAccess_systemuserFunction`, …). For example:
 
 - `class WhoAmIFunction`, `interface WhoAmIResponse`
 - `class RetrieveMetadataChangesFunction`, `interface RetrieveMetadataChangesResponse`
 
 ### 9.2 Helpers
 
-- `function createEntityReference(...)`
-- `function getEntitySetNameFromReference(...)`
+- `function createEntityReference(...)`, `function getEntitySetNameFromReference(...)`, `type EntityReference`, `type EntityReferenceOptions`, `type WebApiEntityReference` _(re-exported from entities-runtime)_
+- The enums the functions use, as values (`EntityFilters`, …)
 
 ---
 
@@ -378,15 +388,16 @@ Strict metadata builders (`const Metadata`) are [planned](#16-planned-not-export
 ### 12.1 Types
 
 - `interface IEntity`
-- `interface EntityReference`
+- `interface EntityReference`, `type EntityReferenceOptions`, `type WebApiEntityReference` _(the SDK's one `EntityReference`; actions, functions, messages and xrm re-export it)_
 - `interface EntityMetadata`, `interface AttributeMetadata`, `interface NavigationMetadata`
 - `interface EntityOperationOptions`
 
 ### 12.2 Base classes and helpers
 
 - `abstract class ActionBase<TResponse>`, `abstract class FunctionBase<TResponse>`
-- `createEntityReference(logicalName, id, name?)`, `isEntityReference(value)`, `isEntity(value)`
-- `getODataType(entityMetadata)`, `getCollectionUrl(entityMetadata, baseUrl)`, `getEntityUrl(entityMetadata, id, baseUrl)`, `formatEntityForWrite(entity, entityMetadata)`
+- `createEntityReference(logicalName, id, options?)` (`{ primaryIdAttribute?, entitySetName?, name? }`), `getEntitySetNameFromReference(reference)`, `isEntityReference(value)`, `isEntity(value)`
+- `getODataType(entityMetadata)`, `getCollectionUrl(entityMetadata, baseUrl)`, `getEntityUrl(entityMetadata, id, baseUrl)`, `formatEntityForWrite(entity, entityMetadata, options?)`
+- `formatParameterAlias(value, odataType, kind)`, `formatRecordPath(reference)`, `type ParameterKind` _(OData literals for generated functions)_
 
 ---
 
@@ -401,7 +412,8 @@ Strict metadata builders (`const Metadata`) are [planned](#16-planned-not-export
 ### 13.2 Programmatic API
 
 - `function generateCode(config: DataverseGenConfig, accessToken?: string): Promise<void>`
-- `interface DataverseGenConfig`, `const DEFAULT_CONFIG`
+- `interface DataverseGenConfig`, `const DEFAULT_CONFIG`, `type DataverseGenAuthConfig`
+- `function createCliTokenProvider(...)`, `function acquireCliToken(...)`, `function dataverseScope(environmentUrl)`, `type CliAuthOptions` _(the CLI's device code / client credentials sign-in)_
 - `class SchemaModel`, `class TypescriptGenerator`, `class MetadataService`
 - Schema types: `EntityType`, `EnumType`, `EnumMember`, `ActionType`, `FunctionType`, `ComplexType`, `PropertyType`, `NavigationPropertyType`, `ParameterType`, `TypeScriptType`
 
@@ -410,10 +422,11 @@ Strict metadata builders (`const Metadata`) are [planned](#16-planned-not-export
 ## 14) `@mohsinonxrm/dataverse-sdk-files`
 
 - `class FileColumnClient` (`new FileColumnClient(client: DataverseClient)`, or `new FileColumnClient(adapter: RequestAdapter, baseUrl?: string)` for your own adapter; the base URL is `client.getBaseUrl()`)
-  - `upload(entitySetName, recordId, columnName, file: Blob | ArrayBuffer | ArrayBufferView, fileName, options?): Promise<void>`
+  - `upload(entitySetName, recordId, columnName, file: Blob | ArrayBuffer | ArrayBufferView | ReadableStream<Uint8Array>, fileName, options?): Promise<void>`
   - `download(entitySetName, recordId, columnName, options?): Promise<Blob>`
-  - `delete(entitySetName, recordId, columnName): Promise<void>`
-- `interface FileUploadOptions`, `interface FileDownloadOptions`, `interface UploadProgress`
+  - `downloadStream(entitySetName, recordId, columnName, options?): Promise<ReadableStream<Uint8Array>>`
+  - `delete(entitySetName, recordId, columnName, options?: { signal?: AbortSignal }): Promise<void>`
+- `interface FileUploadOptions`, `interface FileDownloadOptions`, `interface UploadProgress`, `interface DownloadProgress`, `type UploadMethod`, `type DownloadMethod`
 
 ---
 
@@ -447,7 +460,7 @@ Removed because the real API has a different shape (see the package sections abo
 - `deviceCodeFlow()` / `clientCredentialsFlow()`: use `new MsalNodeTokenProvider(app, { flow: "deviceCode" | "clientCredentials", … })`.
 - `generateEntities()` / `GenerateEntitiesOptions` / `GenerateEntitiesResult`: use `generateCode(config, accessToken?)`.
 - `entity()`, `EntityDescriptor`, `EntityWithEtag`: the runtime exports `EntityMetadata`, `IEntity` and the helpers in §12.
-- `BatchRequest`, `ChangeSet`, `BatchOptions`, `BatchResponse`, `BatchResponsePart`: use `BatchRequestBuilder`, `BatchExecutionOptions`, `BatchExecutionResult` and `BatchResponseStep`.
+- `BatchRequest`, `ChangeSet`, `BatchOptions`, `BatchResponse`: use `BatchRequestBuilder`, `BatchExecutionOptions`, `BatchExecutionResult` and `BatchResponseStep` (`BatchResponsePart` exists again, as the codec's decoded part, §7.3).
 - `RetrieveMetadataChangesRequest` / `RetrieveMetadataChangesResponse` classes: use `MetadataClient.retrieveMetadataChanges()` or `RetrieveMetadataChangesFunction`; `RetrieveMetadataChangesResponse` is an interface.
 - `namespace MicrosoftDynamicsCRM`: the metadata types are flat exports.
 - `DiscoveredOrganization`, `type Cloud`: use `OrganizationDetail` / `DiscoveredEnvironment` and `DiscoveryCloud`.
@@ -471,7 +484,7 @@ Removed because the real API has a different shape (see the package sections abo
 
 ---
 
-## 18) Backward-compatibility expectations (v1)
+## 18) Backward-compatibility expectations
 
 - Adding new exports is a **minor** bump.
 - Changing signatures/removing exports is **major**.

@@ -921,12 +921,14 @@ export function getLogicalName(schemaName: string): string | undefined {
 
 ## 🔮 Future Enhancements
 
+✅ shipped; ⏳ planned, tracked in [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100).
+
 - ✅ Three-phase pipeline (Load → Filter → Enrich)
 - ✅ RetrieveMetadataChanges enrichment
 - ✅ Local option set enums
 - ✅ Polymorphic lookup consolidation
 - ✅ Calculated/rollup field annotations
-- ✅ Alternate keys support
+- ✅ Alternate keys read into the schema model (`EntityType.Keys`); the generated files don't use them yet
 - ✅ MSAL authentication flows (device code, client credentials)
 - ⏳ Create/Update type splitting (exclude read-only fields)
 - ⏳ Custom template support (eject command)
