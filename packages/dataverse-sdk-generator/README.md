@@ -634,8 +634,10 @@ value is written as the OData literal for its type by `formatParameterAlias()` f
 - GUIDs, numbers and booleans are written bare; `Date` values become ISO strings (`Edm.Date` takes
   only the date part);
 - enum values become enum literals: `Microsoft.Dynamics.CRM.EntityFilters'1'`;
-- collections and complex values are written as JSON, and an entity reference as
-  `{"@odata.id":"accounts(<id>)"}`.
+- collections and complex values are written as JSON, with the enum values in them as member
+  names (`{"Rights":"ReadAccess, WriteAccess"}`: Dataverse reads an enum in JSON only by name),
+  through `parameterValue()` from the generated `internal/functionParameters.ts`; an entity
+  reference is written as `{"@odata.id":"accounts(<id>)"}`.
 
 Nullable parameters are optional; a parameter left out or `undefined` is left out of the call.
 

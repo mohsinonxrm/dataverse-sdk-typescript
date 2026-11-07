@@ -14,6 +14,8 @@ import {
   actionBodySource,
   actionBodyTables,
   bodyValueType,
+  FUNCTION_PARAMETERS_MODULE,
+  functionParametersSource,
 } from "./action-body.js";
 import type { SchemaModel } from "./schema-model.js";
 import type {
@@ -180,6 +182,7 @@ export class TypescriptGenerator {
   private strictNulls: boolean;
   private outputNamesCache?: Map<string, string>;
   private actionBodyTablesCache?: ActionBodyTables;
+  private functionParameterTablesCache?: ActionBodyTables;
 
   constructor(
     private model: SchemaModel,
@@ -310,6 +313,12 @@ export class TypescriptGenerator {
     return this.actionBodyTablesCache;
   }
 
+  /** The enums the functions' complex and collection parameters can hold (#358). */
+  private get functionParameterTables(): ActionBodyTables {
+    this.functionParameterTablesCache ??= actionBodyTables(this.model, "functions");
+    return this.functionParameterTablesCache;
+  }
+
   /**
    * Generate function classes
    */
@@ -334,6 +343,27 @@ export class TypescriptGenerator {
       });
 
       await this.writeFile(dir, className, imports, body);
+    }
+
+    // The parameterValue() helper the functions use, when one does (#358)
+    const tables = this.functionParameterTables;
+    const used = this.model.Functions.some((f) =>
+      f.Parameters.some((p) => {
+        const kind = this.model.getStructuralType(p.Type);
+        return (
+          (kind === "ComplexType" || kind === "Collection") &&
+          bodyValueType(tables, p.Type) !== undefined
+        );
+      })
+    );
+    if (used) {
+      const internal = path.join(this.outputRoot, "internal");
+      await fs.mkdir(internal, { recursive: true });
+      await fs.writeFile(
+        path.join(internal, `${FUNCTION_PARAMETERS_MODULE}${this.fileSuffix}.ts`),
+        functionParametersSource(tables),
+        "utf-8"
+      );
     }
   }
 
@@ -700,17 +730,26 @@ export * from './metadata${suffix}.js';
       }
       return tsType;
     };
-    // An action parameter that can hold an enum or an entity goes through bodyValue() (#361).
-    const bodyValueTypeOf = (param: ParameterType): string | undefined =>
-      isFunction ? undefined : bodyValueType(this.actionBodyTables, param.Type);
+    // An action parameter that can hold an enum or an entity goes through bodyValue() (#361); a
+    // function's complex or collection parameter that can hold an enum goes through
+    // parameterValue() before it's written as JSON (#358).
+    const bodyValueTypeOf = (param: ParameterType): string | undefined => {
+      if (!isFunction) return bodyValueType(this.actionBodyTables, param.Type);
+      const kind = kindOf(param);
+      return kind === "ComplexType" || kind === "Collection"
+        ? bodyValueType(this.functionParameterTables, param.Type)
+        : undefined;
+    };
+    const helperName = isFunction ? "parameterValue" : "bodyValue";
     if (params.some((p) => bodyValueTypeOf(p) !== undefined)) {
-      imports.value("bodyValue", `../internal/${ACTION_BODY_MODULE}${this.fileSuffix}.js`);
+      const module = isFunction ? FUNCTION_PARAMETERS_MODULE : ACTION_BODY_MODULE;
+      imports.value(helperName, `../internal/${module}${this.fileSuffix}.js`);
     }
-    /** The value sent for a parameter: `this.parameters.X`, through bodyValue() when needed. */
+    /** The value sent for a parameter: `this.parameters.X`, through the helper when needed. */
     const bodyExpression = (param: ParameterType): string => {
       const value = `this.parameters${access(param.Name)}`;
       const type = bodyValueTypeOf(param);
-      return type === undefined ? value : `bodyValue(${value}, ${JSON.stringify(type)})`;
+      return type === undefined ? value : `${helperName}(${value}, ${JSON.stringify(type)})`;
     };
 
     // The record or collection a bound operation is called on: the first constructor argument.

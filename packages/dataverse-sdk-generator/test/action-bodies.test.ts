@@ -61,7 +61,7 @@ beforeAll(async () => {
       "contoso_Schedule",
       "contoso_NextRun",
     ],
-    functions: ["contoso_Search"],
+    functions: ["contoso_Search", "contoso_FindByRights"],
     output: { outputRoot: path.join(outputRoot, "ts") },
   };
   const model = new SchemaModel(createFixtureMetadataService(), config);
@@ -249,6 +249,28 @@ describe("#361: action request bodies", () => {
     expect(await read("actions/contoso_ScheduleAction.ts")).toContain(
       "  Tasks?: Array<IEntity | EntityReference> | null;"
     );
+  });
+});
+
+describe("#358: enum values in complex and collection function parameters", () => {
+  it("are sent as member names in the JSON parameter alias; an enum parameter stays an enum literal", async () => {
+    const { client, fake } = createTestClient();
+    fake.on("GET", /contoso_FindByRights/, () => jsonResponse({ value: 1 }));
+    const Find = await load(
+      "functions/contoso_FindByRightsFunction.js",
+      "contoso_FindByRightsFunction"
+    );
+
+    await client.execute(
+      new Find({ Filter: { Name: "x", Rights: 1 | 2 }, RightsList: [1, 2], Rights: 2 })
+    );
+    const query = new URL(fake.last().url).searchParams;
+    expect(JSON.parse(query.get("@p1") ?? "")).toEqual({
+      Name: "x",
+      Rights: "ReadAccess, WriteAccess",
+    });
+    expect(JSON.parse(query.get("@p2") ?? "")).toEqual(["ReadAccess", "WriteAccess"]);
+    expect(query.get("@p3")).toBe("Microsoft.Dynamics.CRM.AccessRights'2'");
   });
 });
 

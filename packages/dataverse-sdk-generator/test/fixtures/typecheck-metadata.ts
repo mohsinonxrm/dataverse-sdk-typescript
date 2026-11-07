@@ -153,6 +153,10 @@ export const TYPECHECK_EDMX = `<?xml version="1.0" encoding="utf-8"?>
         <Property Name="AccessMask" Type="mscrm.AccessRights" />
         <NavigationProperty Name="Principal" Type="mscrm.crmbaseentity" Nullable="false" />
       </ComplexType>
+      <ComplexType Name="RightsFilter">
+        <Property Name="Name" Type="Edm.String" Unicode="false" />
+        <Property Name="Rights" Type="mscrm.AccessRights" />
+      </ComplexType>
       <ComplexType Name="ScheduleResponse">
         <Property Name="ScheduledOn" Type="Edm.DateTimeOffset" Nullable="false" />
         <NavigationProperty Name="Tasks" Type="Collection(mscrm.task)" />
@@ -224,6 +228,12 @@ export const TYPECHECK_EDMX = `<?xml version="1.0" encoding="utf-8"?>
       <Function Name="RetrieveUnpublished" IsBound="true">
         <Parameter Name="entity" Type="mscrm.account" Nullable="false" />
         <ReturnType Type="mscrm.account" Nullable="false" />
+      </Function>
+      <Function Name="contoso_FindByRights">
+        <Parameter Name="Filter" Type="mscrm.RightsFilter" Nullable="false" />
+        <Parameter Name="RightsList" Type="Collection(mscrm.AccessRights)" />
+        <Parameter Name="Rights" Type="mscrm.AccessRights" />
+        <ReturnType Type="Edm.Int32" Nullable="false" />
       </Function>
       <Function Name="RetrieveUnpublished" IsBound="true">
         <Parameter Name="entity" Type="mscrm.contact" Nullable="false" />
