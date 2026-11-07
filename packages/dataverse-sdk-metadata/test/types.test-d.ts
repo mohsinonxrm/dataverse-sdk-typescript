@@ -451,3 +451,207 @@ expectNotAssignable<CreatePolymorphicLookupAttributeParams>({
   Lookup: { SchemaName: "new_RegardingId" },
   OneToManyRelationships: [],
 });
+
+// ==================== Accurate create and action types (#324) ====================
+
+import type {
+  DateTimeAttributeMetadataCreate,
+  DeleteOptionValueParams,
+  InsertOptionValueParams,
+  InsertStatusValueParams,
+  MoneyAttributeMetadataCreate,
+  MultiSelectPicklistAttributeMetadataCreate,
+  OrderOptionParams,
+  PicklistAttributeMetadataCreate,
+  UpdateOptionValueParams,
+} from "../src/types/index.js";
+
+const choiceLabel: Label = { LocalizedLabels: [{ Label: "Choice", LanguageCode: 1033 }] };
+
+// A date column needs no MinSupportedValue / MaxSupportedValue: Dataverse sets them.
+const dueDate: DateTimeAttributeMetadataCreate = {
+  "@odata.type": "Microsoft.Dynamics.CRM.DateTimeAttributeMetadata",
+  SchemaName: "new_DueDate",
+  DisplayName: choiceLabel,
+  RequiredLevel: { Value: "None" },
+  Format: "DateOnly",
+};
+expectAssignable<AttributeMetadataCreateTypes>(dueDate);
+expectType<Promise<string>>(metadata.createAttributeDefinition("account", dueDate));
+
+// ... and doesn't accept them, nor other read-only properties.
+expectError<DateTimeAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.DateTimeAttributeMetadata",
+  SchemaName: "new_DueDate",
+  MinSupportedValue: "1753-01-01T00:00:00Z",
+});
+expectError<StringAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+  SchemaName: "new_field",
+  DatabaseLength: 200,
+});
+expectError<StringAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+  SchemaName: "new_field",
+  AttributeType: "String",
+});
+expectError<StringAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+  SchemaName: "new_field",
+  IsValidForRead: true,
+});
+expectError<MoneyAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.MoneyAttributeMetadata",
+  SchemaName: "new_amount",
+  IsBaseCurrency: true,
+});
+expectError<OptionSetMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
+  Name: "new_colors",
+  Options: [{ Value: 1, Label: choiceLabel, MetadataId: "00000000-0000-0000-0000-000000000001" }],
+});
+// A table create ignores these (checked live), so they aren't accepted.
+expectError<EntityMetadataCreate>({ SchemaName: "new_custom", IsImportable: false });
+expectError<EntityMetadataCreate>({ SchemaName: "new_custom", LogicalCollectionName: "x" });
+expectAssignable<EntityMetadataCreate>({ SchemaName: "new_custom", IsBPFEntity: false });
+
+// A choice column binds to an existing global choice by MetadataId ...
+const boundById: PicklistAttributeMetadataCreate = {
+  "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
+  SchemaName: "new_Color",
+  DisplayName: choiceLabel,
+  "GlobalOptionSet@odata.bind": "/GlobalOptionSetDefinitions(00000000-0000-0000-0000-000000000001)",
+};
+expectAssignable<AttributeMetadataCreateTypes>(boundById);
+expectAssignable<MultiSelectPicklistAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.MultiSelectPicklistAttributeMetadata",
+  SchemaName: "new_Colors",
+  "GlobalOptionSet@odata.bind": "/GlobalOptionSetDefinitions(00000000-0000-0000-0000-000000000001)",
+});
+expectType<Promise<string>>(metadata.createAttributeDefinition("account", boundById));
+// An id read at run time is interpolated without a cast.
+declare const globalChoiceId: string;
+expectAssignable<PicklistAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
+  SchemaName: "new_Color",
+  "GlobalOptionSet@odata.bind": `/GlobalOptionSetDefinitions(${globalChoiceId})`,
+});
+
+// ... or has its own options, without @odata.type on the nested OptionSet but with
+// IsGlobal: false, which Dataverse requires ("IsGlobal is not specified").
+const localChoice: PicklistAttributeMetadataCreate = {
+  "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
+  SchemaName: "new_Size",
+  OptionSet: {
+    IsGlobal: false,
+    OptionSetType: "Picklist",
+    Options: [{ Value: 1, Label: choiceLabel }],
+  },
+};
+expectAssignable<AttributeMetadataCreateTypes>(localChoice);
+expectAssignable<MultiSelectPicklistAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.MultiSelectPicklistAttributeMetadata",
+  SchemaName: "new_Sizes",
+  OptionSet: { IsGlobal: false, Options: [{ Value: 1, Label: choiceLabel }] },
+});
+expectNotAssignable<PicklistAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
+  SchemaName: "new_Size",
+  OptionSet: { Options: [{ Value: 1, Label: choiceLabel }] },
+});
+
+// Exactly one of the two (Dataverse accepts both and picks one), and the bind is a
+// GlobalOptionSetDefinitions path.
+expectNotAssignable<PicklistAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
+  SchemaName: "new_Color",
+  "GlobalOptionSet@odata.bind": "/GlobalOptionSetDefinitions(00000000-0000-0000-0000-000000000001)",
+  OptionSet: { IsGlobal: false, Options: [] },
+});
+expectNotAssignable<PicklistAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
+  SchemaName: "new_Color",
+});
+expectNotAssignable<PicklistAttributeMetadataCreate>({
+  "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
+  SchemaName: "new_Color",
+  "GlobalOptionSet@odata.bind": "new_colors",
+});
+
+// Option-value actions target a local choice or a global choice: exactly one.
+expectAssignable<InsertOptionValueParams>({ OptionSetName: "new_colors", Label: choiceLabel });
+expectAssignable<InsertOptionValueParams>({
+  EntityLogicalName: "account",
+  AttributeLogicalName: "new_size",
+  Label: choiceLabel,
+  Value: 100000003,
+  Description: choiceLabel,
+  Color: "#FF0000",
+  IsHidden: false,
+  SolutionUniqueName: "MySolution",
+});
+expectNotAssignable<InsertOptionValueParams>({
+  OptionSetName: "new_colors",
+  EntityLogicalName: "account",
+  AttributeLogicalName: "new_size",
+  Label: choiceLabel,
+});
+expectNotAssignable<InsertOptionValueParams>({ Label: choiceLabel });
+expectNotAssignable<InsertOptionValueParams>({ EntityLogicalName: "account", Label: choiceLabel });
+
+expectAssignable<UpdateOptionValueParams>({
+  OptionSetName: "new_colors",
+  Value: 1,
+  Label: choiceLabel,
+  MergeLabels: true,
+});
+expectNotAssignable<UpdateOptionValueParams>({ OptionSetName: "new_colors", Value: 1 });
+expectNotAssignable<UpdateOptionValueParams>({
+  OptionSetName: "new_colors",
+  EntityLogicalName: "account",
+  AttributeLogicalName: "new_size",
+  Value: 1,
+  MergeLabels: true,
+});
+
+expectAssignable<DeleteOptionValueParams>({ OptionSetName: "new_colors", Value: 1 });
+expectAssignable<DeleteOptionValueParams>({
+  EntityLogicalName: "account",
+  AttributeLogicalName: "new_size",
+  Value: 1,
+  SolutionUniqueName: "MySolution",
+});
+expectNotAssignable<DeleteOptionValueParams>({
+  OptionSetName: "new_colors",
+  AttributeLogicalName: "new_size",
+  Value: 1,
+});
+
+expectAssignable<OrderOptionParams>({ OptionSetName: "new_colors", Values: [2, 1] });
+expectAssignable<OrderOptionParams>({
+  EntityLogicalName: "account",
+  AttributeLogicalName: "new_size",
+  Values: [2, 1],
+});
+expectNotAssignable<OrderOptionParams>({
+  OptionSetName: "new_colors",
+  EntityLogicalName: "account",
+  AttributeLogicalName: "new_size",
+  Values: [2, 1],
+});
+
+// Status reasons belong to a table's statuscode column: a local target only.
+expectAssignable<InsertStatusValueParams>({
+  EntityLogicalName: "account",
+  AttributeLogicalName: "statuscode",
+  StateCode: 1,
+  Label: choiceLabel,
+  Description: choiceLabel,
+});
+expectNotAssignable<InsertStatusValueParams>({
+  OptionSetName: "new_colors",
+  StateCode: 1,
+  Label: choiceLabel,
+});
+
+expectType<Promise<void>>(metadata.deleteOptionValue({ OptionSetName: "new_colors", Value: 1 }));

@@ -5,13 +5,25 @@ import type {
 } from "./AttributeMetadataCreateTypes.js";
 import type { EntityMetadata } from "./EntityMetadata.js";
 
-/** Table properties Dataverse computes; a create must not send them. */
+/**
+ * Table properties Dataverse computes (read-only in the SDK's `EntityMetadata`, and ignored in a
+ * create); a create must not send them.
+ */
 export type ServerSetEntityProperty =
   | ServerSetMetadataProperty
+  | "CanTriggerWorkflow"
+  | "IsAIRUpdated"
+  | "IsChildEntity"
   | "IsCustomEntity"
+  | "IsEnabledForCharts"
+  | "IsEnabledForTrace"
+  | "IsImportable"
   | "IsIntersect"
   | "IsLogicalEntity"
+  | "IsOptimisticConcurrencyEnabled"
   | "IsPrivate"
+  | "IsStateModelAware"
+  | "LogicalCollectionName"
   | "ObjectTypeCode"
   | "OwnerId"
   | "OwnerIdType"
