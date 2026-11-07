@@ -502,8 +502,8 @@ export class OrganizationService {
       builder.top(options.top);
     }
 
-    if (options?.skip !== undefined) {
-      builder.skip(options.skip);
+    if (options?.maxPageSize !== undefined) {
+      builder.preferRaw(`odata.maxpagesize=${String(options.maxPageSize)}`);
     }
 
     if (options?.count) {
