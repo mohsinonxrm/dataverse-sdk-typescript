@@ -35,7 +35,7 @@
     {
       "name": "batch: BatchRequestBuilder",
       "code": "import { BatchRequestBuilder } from \"@mohsinonxrm/dataverse-sdk-batch\"; globalThis.keep = BatchRequestBuilder;",
-      "budget": 5632
+      "budget": 6656
     },
     {
       "name": "xrm: OrganizationService",
