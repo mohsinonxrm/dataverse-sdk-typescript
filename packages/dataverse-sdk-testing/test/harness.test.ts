@@ -4,6 +4,7 @@ import {
   batchResponse,
   createFakeFetch,
   createTestClient,
+  createdResponse,
   jsonResponse,
   noContent,
 } from "../src/index.js";
@@ -62,6 +63,69 @@ describe("createFakeFetch", () => {
     ).rejects.toMatchObject({ name: "AbortError" });
     expect(fake.requests).toHaveLength(0);
   });
+
+  it("rejects like fetch when the signal aborts while the responder runs", async () => {
+    const fake = createFakeFetch();
+    const controller = new AbortController();
+    fake.on("GET", "/x", () => {
+      controller.abort();
+      return noContent();
+    });
+    await expect(
+      fake.fetchProvider.fetch(`${TEST_API_URL}/x`, { signal: controller.signal })
+    ).rejects.toMatchObject({ name: "AbortError" });
+    expect(fake.requests).toHaveLength(1);
+  });
+
+  it("rejects without waiting for a responder that never answers", { timeout: 1000 }, async () => {
+    const fake = createFakeFetch();
+    const controller = new AbortController();
+    let started!: () => void;
+    const responderStarted = new Promise<void>((resolve) => (started = resolve));
+    fake.on("GET", "/slow", () => {
+      started();
+      return new Promise<Response>(() => undefined);
+    });
+    const pending = fake.fetchProvider.fetch(`${TEST_API_URL}/slow`, {
+      signal: controller.signal,
+    });
+    await responderStarted;
+    controller.abort();
+    await expect(pending).rejects.toMatchObject({ name: "AbortError" });
+  });
+
+  it("answers normally when the signal aborts after the response", async () => {
+    const fake = createFakeFetch();
+    const controller = new AbortController();
+    fake.on("GET", "/x", () => noContent());
+    const res = await fake.fetchProvider.fetch(`${TEST_API_URL}/x`, {
+      signal: controller.signal,
+    });
+    controller.abort();
+    expect(res.status).toBe(204);
+  });
+
+  it("passes a responder's own error through", async () => {
+    const fake = createFakeFetch();
+    fake.on("GET", "/x", () => Promise.reject(new TypeError("fetch failed")));
+    await expect(
+      fake.fetchProvider.fetch(`${TEST_API_URL}/x`, { signal: new AbortController().signal })
+    ).rejects.toThrow(TypeError);
+  });
+});
+
+describe("createdResponse", () => {
+  it("points OData-EntityId at the default Web API root", () => {
+    const res = createdResponse("accounts", "1");
+    expect(res.status).toBe(204);
+    expect(res.headers.get("odata-entityid")).toBe(`${TEST_API_URL}/accounts(1)`);
+  });
+
+  it("honours a custom apiUrl", () => {
+    const apiUrl = "https://fabrikam.crm4.dynamics.com/api/data/v9.1";
+    const res = createdResponse("accounts", "1", `${apiUrl}/`);
+    expect(res.headers.get("odata-entityid")).toBe(`${apiUrl}/accounts(1)`);
+  });
 });
 
 describe("batchResponse", () => {
@@ -76,6 +140,25 @@ describe("batchResponse", () => {
     expect(text).toContain("Content-Type: multipart/mixed; boundary=changesetresponse_");
     expect(text).toContain("Content-ID: 1\r\n\r\nHTTP/1.1 204 No Content\r\n");
     expect(text.trimEnd().endsWith("--")).toBe(true);
+    expect(res.status).toBe(200);
+  });
+
+  it("models a stop-on-error $batch answered with the failing request's status", async () => {
+    const res = batchResponse(
+      [{ status: 404, body: { error: { code: "0x80040217", message: "Does Not Exist" } } }],
+      { status: 404, boundary: "batchresponse_custom" }
+    );
+    expect(res.status).toBe(404);
+    expect(res.ok).toBe(false);
+    expect(res.headers.get("content-type")).toBe("multipart/mixed; boundary=batchresponse_custom");
+    const text = await res.text();
+    expect(text).toContain("--batchresponse_custom\r\n");
+    expect(text).toContain("HTTP/1.1 404 Not Found\r\n");
+  });
+
+  it("adds extra headers to the $batch response", () => {
+    const res = batchResponse([{ status: 204 }], { headers: { "x-ms-service-request-id": "r1" } });
+    expect(res.headers.get("x-ms-service-request-id")).toBe("r1");
   });
 });
 

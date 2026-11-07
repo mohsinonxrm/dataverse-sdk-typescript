@@ -94,25 +94,29 @@ export function createFakeFetch(options: FakeFetchOptions = {}): FakeFetch {
     requests,
     fetchProvider: {
       fetch: async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
-        if (init?.signal?.aborted) {
-          throw new DOMException("The operation was aborted.", "AbortError");
-        }
+        const signal = init?.signal ?? undefined;
+        if (signal?.aborted) throw abortError();
         const recorded = await record(input, init, apiUrl);
         requests.push(recorded);
-        const pathOnly = recorded.path.split("?")[0] ?? recorded.path;
-        // Later routes take precedence.
-        for (const route of [...routes].reverse()) {
-          if (route.times <= 0) continue;
-          if (route.method !== "*" && route.method !== recorded.method) continue;
-          if (!route.match(pathOnly)) continue;
-          const res = await route.respond(recorded);
-          if (res) {
-            route.times--;
-            return res;
+        if (signal?.aborted) throw abortError();
+        const respond = async (): Promise<Response> => {
+          const pathOnly = recorded.path.split("?")[0] ?? recorded.path;
+          // Later routes take precedence.
+          for (const route of [...routes].reverse()) {
+            if (route.times <= 0) continue;
+            if (route.method !== "*" && route.method !== recorded.method) continue;
+            if (!route.match(pathOnly)) continue;
+            const res = await route.respond(recorded);
+            if (res) {
+              route.times--;
+              return res;
+            }
           }
-        }
-        if (typeof options.onUnhandled === "function") return options.onUnhandled(recorded);
-        throw new Error(`Unhandled fake fetch request: ${recorded.method} ${recorded.url}`);
+          if (typeof options.onUnhandled === "function") return options.onUnhandled(recorded);
+          throw new Error(`Unhandled fake fetch request: ${recorded.method} ${recorded.url}`);
+        };
+        // Like fetch, reject as soon as the signal aborts, even while a (slow) responder runs.
+        return signal ? raceAbort(respond, signal) : respond();
       },
     },
     on(method, path, respond, times = Number.POSITIVE_INFINITY) {
@@ -131,6 +135,29 @@ export function createFakeFetch(options: FakeFetchOptions = {}): FakeFetch {
     },
   };
   return fake;
+}
+
+/** The error fetch rejects with when its signal aborts. */
+function abortError(): DOMException {
+  return new DOMException("The operation was aborted.", "AbortError");
+}
+
+/**
+ * Settle like `run()`, or reject with an `AbortError` as soon as `signal` aborts, including an
+ * abort from inside `run()` itself.
+ */
+function raceAbort<T>(run: () => Promise<T>, signal: AbortSignal): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = (): void => {
+      reject(abortError());
+    };
+    signal.addEventListener("abort", onAbort, { once: true });
+    void run()
+      .then(resolve, reject)
+      .finally(() => {
+        signal.removeEventListener("abort", onAbort);
+      });
+  });
 }
 
 /** Remove trailing `/` characters in linear time (a `/\/+$/` regex is quadratic on long runs of `/`). */
@@ -213,9 +240,18 @@ export function noContent(headers: Record<string, string> = {}): Response {
   return new Response(null, { status: 204, headers: dataverseHeaders(headers) });
 }
 
-/** The response Dataverse sends for a create: 204 with `OData-EntityId`. */
-export function createdResponse(entitySetName: string, id: string): Response {
-  return noContent({ "odata-entityid": `${TEST_API_URL}/${entitySetName}(${id})` });
+/**
+ * The response Dataverse sends for a create: 204 with `OData-EntityId`. Pass `apiUrl` when the
+ * client uses another Web API root (the `apiUrl` given to {@link createFakeFetch}).
+ */
+export function createdResponse(
+  entitySetName: string,
+  id: string,
+  apiUrl: string = TEST_API_URL
+): Response {
+  return noContent({
+    "odata-entityid": `${trimTrailingSlashes(apiUrl)}/${entitySetName}(${id})`,
+  });
 }
 
 /** A Dataverse OData error response. */
@@ -254,6 +290,20 @@ export interface BatchResponseChangeset {
   changeset: BatchResponsePart[];
 }
 
+/** Options for {@link batchResponse}. */
+export interface BatchResponseOptions {
+  /**
+   * HTTP status of the `$batch` response itself (default 200). Without
+   * `Prefer: odata.continue-on-error`, Dataverse stops at the first failed request and answers
+   * the `$batch` with that request's status (e.g. 404), the multipart body still attached.
+   */
+  status?: number;
+  /** Boundary of the batch response. */
+  boundary?: string;
+  /** Extra headers for the `$batch` response. */
+  headers?: Record<string, string>;
+}
+
 const STATUS_TEXT: Partial<Record<number, string>> = {
   200: "OK",
   201: "Created",
@@ -270,8 +320,9 @@ const STATUS_TEXT: Partial<Record<number, string>> = {
  */
 export function batchResponse(
   items: Array<BatchResponsePart | BatchResponseChangeset>,
-  boundary = "batchresponse_00000000-0000-0000-0000-000000000001"
+  options: BatchResponseOptions = {}
 ): Response {
+  const boundary = options.boundary ?? "batchresponse_00000000-0000-0000-0000-000000000001";
   const CRLF = "\r\n";
   const encodePart = (p: BatchResponsePart): string => {
     const head = [
@@ -315,8 +366,11 @@ export function batchResponse(
   }
   out += `--${boundary}--${CRLF}`;
   return new Response(out, {
-    status: 200,
-    headers: dataverseHeaders({ "content-type": `multipart/mixed; boundary=${boundary}` }),
+    status: options.status ?? 200,
+    headers: dataverseHeaders({
+      "content-type": `multipart/mixed; boundary=${boundary}`,
+      ...options.headers,
+    }),
   });
 }
 
