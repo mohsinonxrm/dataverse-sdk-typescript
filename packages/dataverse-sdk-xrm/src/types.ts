@@ -272,9 +272,10 @@ export interface RetrieveMultipleOptions extends OperationOptions {
   top?: number;
 
   /**
-   * Number of records to skip (for paging)
+   * Records per page (`Prefer: odata.maxpagesize`, at most 5,000). Dataverse has no `$skip`:
+   * page with the result's `@odata.nextLink` instead, passing the same `maxPageSize`.
    */
-  skip?: number;
+  maxPageSize?: number;
 
   /**
    * Include count of total matching records

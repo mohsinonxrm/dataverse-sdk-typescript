@@ -110,11 +110,6 @@ export class DataverseRequestBuilder {
     return this;
   }
 
-  skip(n: number): this {
-    this.state.$skip = n;
-    return this;
-  }
-
   count(enabled = true): this {
     this.state.$count = enabled;
     return this;

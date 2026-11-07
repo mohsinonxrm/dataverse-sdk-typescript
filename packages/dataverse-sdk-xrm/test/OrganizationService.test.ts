@@ -222,7 +222,7 @@ describe("OrganizationService", () => {
         filter: "revenue gt 1000000",
         orderBy: ["revenue desc", "name"],
         top: 10,
-        skip: 5,
+        maxPageSize: 5,
         count: true,
         expand: [{ navigationProperty: "primarycontactid", select: ["fullname"] }],
         impersonateUserId: USER,
@@ -234,7 +234,8 @@ describe("OrganizationService", () => {
       expect(query(req, "$filter")).toBe("revenue gt 1000000");
       expect(query(req, "$orderby")).toBe("revenue desc,name");
       expect(query(req, "$top")).toBe("10");
-      expect(query(req, "$skip")).toBe("5");
+      expect(query(req, "$skip")).toBeNull();
+      expect(req.headers.prefer).toContain("odata.maxpagesize=5");
       expect(query(req, "$count")).toBe("true");
       expect(query(req, "$expand")).toBe("primarycontactid($select=fullname)");
       expect(req.headers.mscrmcallerid).toBe(USER);

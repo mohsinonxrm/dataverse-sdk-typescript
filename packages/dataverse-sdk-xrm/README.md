@@ -344,7 +344,7 @@ retrieveMultiple<T = EntityRecord>(
 - `filter?: string` - OData filter expression
 - `orderBy?: string | string[]` - Columns to sort by
 - `top?: number` - Maximum number of records to return
-- `skip?: number` - Number of records to skip
+- `maxPageSize?: number` - Records per page (`Prefer: odata.maxpagesize`). Dataverse doesn't support `$skip`; follow `@odata.nextLink` for the next page
 - `count?: boolean` - Include total count in response
 - `expand?: string | ExpandOption[]` - Related entities to expand
 - `impersonateUserId?: string` - User ID to impersonate
