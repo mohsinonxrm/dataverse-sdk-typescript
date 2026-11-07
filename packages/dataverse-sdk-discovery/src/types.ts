@@ -160,9 +160,11 @@ export interface DiscoveryOptions extends DiscoveryRequestOptions {
   filter?: string;
 
   /**
-   * Select specific properties
+   * The {@link OrganizationDetail} properties to return (`$select`). Only those come back, so
+   * `listOrganizations({ select })` resolves `Pick<OrganizationDetail, K>[]` for the selected
+   * properties `K`.
    */
-  select?: string[];
+  select?: ReadonlyArray<keyof OrganizationDetail>;
 
   /**
    * Order results

@@ -96,7 +96,7 @@ create<T = EntityRecord>(entitySetName: string, entity: object, options?: Create
 - `headers?: Record<string, string>` - Additional custom headers
 - `signal?: AbortSignal` - Cancels the request; see [Cancellation](#cancellation)
 
-**Returns:** Entity ID (GUID string, read from the `OData-EntityId` response header) by default, or the created record (`T`, an `EntityRecord` unless you pass a type) if `returnRepresentation: true`
+**Returns:** Entity ID (GUID string, read from the `OData-EntityId` response header) by default, or the created record (`T`, an `EntityRecord` unless you pass a type) if `returnRepresentation: true`. With `returnRepresentation`, a response with no record (a `204 No Content` or an empty body) rejects with `DataverseInvalidRequestError` instead of resolving an empty object
 
 **Examples:**
 
@@ -237,7 +237,7 @@ Like the C# `Update`, this never creates a record. The PATCH carries `If-Match: 
 - `headers?: Record<string, string>` - Additional custom headers
 - `signal?: AbortSignal` - Cancels the request; see [Cancellation](#cancellation)
 
-**Returns:** nothing by default, or the updated record (`T`, an `EntityRecord` unless you pass a type) if `returnRepresentation: true`
+**Returns:** nothing by default, or the updated record (`T`, an `EntityRecord` unless you pass a type) if `returnRepresentation: true`. With `returnRepresentation`, a response with no record (a `204 No Content` or an empty body) rejects with `DataverseInvalidRequestError` instead of resolving an empty object
 
 **Examples:**
 
@@ -529,8 +529,8 @@ execute<T>(request: Executable<T>, options?: OperationOptions): Promise<T>
 resolves a `WhoAmIResponse`, `new ExecuteWorkflowRequest(…)` an `ExecuteWorkflowResponse`. No
 type argument is needed.
 
-**Throws:** Error if request doesn't implement `Executable<T>` interface (the type rules this
-out, so only JavaScript callers or a cast can reach it)
+**Throws:** `DataverseInvalidRequestError` if the request doesn't implement the `Executable<T>`
+interface (the type rules this out, so only JavaScript callers or a cast can reach it)
 
 **Examples:**
 
@@ -614,7 +614,8 @@ Methods that take a logical name (`assign()`, `setState()` and the `EntityRefere
 `associate()`) use this. Entity set names are not always the logical name plus "s"
 (`opportunity` → `opportunities`, custom tables can use any name), so the service reads
 `EntityDefinitions(LogicalName='…')?$select=EntitySetName` once per logical name and caches it.
-An unknown table rejects with the 404 `DataverseError` instead of a guessed URL.
+An unknown table rejects with the 404 `DataverseError` instead of a guessed URL, and a definition
+with no `EntitySetName` rejects with `DataverseInvalidRequestError`.
 
 Concurrent calls for the same name share one lookup. Aborting one caller's `signal` rejects that
 call only; the lookup request is cancelled once every caller waiting on it has aborted.
