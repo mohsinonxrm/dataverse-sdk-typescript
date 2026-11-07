@@ -159,7 +159,13 @@ export type BindManyExecutor = (
   pathOrUrl: string,
   navigationProperty: string,
   entitySetName: string,
-  ids: string[]
+  ids: string[],
+  /**
+   * The caller's request options, with `headers` holding every header the associations must
+   * carry: the builder's impersonation (`MSCRMCallerID` / `CallerObjectId`) and custom headers,
+   * then the options' own.
+   */
+  options: RequestOptions & { headers: Record<string, string> }
 ) => Promise<void>;
 
 export interface RequestOptions {
