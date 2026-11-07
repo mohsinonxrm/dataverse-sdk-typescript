@@ -28,16 +28,16 @@ To let consumer apps try unreleased fixes from `dev`:
 
 Both workflows publish with provenance (`id-token: write`) and authenticate with the `NPM_TOKEN` secret.
 
-### First release (nothing published yet)
+### Releasing 2.0.0
 
-None of the 16 packages exists on npm before the first publish, so there is no package page to add a trusted publisher to yet. The first publish therefore uses the token:
+All 16 packages are already on npm as **1.0.0** (published 2026-02-11, with provenance), so each has a package page, and trusted publishing can be set up **before** the next publish:
 
-1. Create an npm **granular access token** with read and write access to the `@mohsinonxrm` scope, and save it as the `NPM_TOKEN` repository secret.
-2. Run **Release (next)** from `dev`. This creates all 16 packages on npm under the `next` dist-tag (`2.0.0-next-…`), with provenance. `latest` is not set yet.
-3. Try the prerelease in an app: `npm i @mohsinonxrm/dataverse-sdk-core@next …`.
-4. Configure trusted publishing on each package (below), then cut 2.0.0 from `main`.
+1. On npmjs.com, add the trusted publishers for every package (next section). The 2.0.0 publishes can then go through OIDC with no long-lived token. Until that's done, both workflows fall back to the `NPM_TOKEN` secret.
+2. Run **Release (next)** from `dev`. It publishes `2.0.0-next-…` under the `next` dist-tag; `latest` stays 1.0.0.
+3. Try the prerelease in an app: `npm i @mohsinonxrm/dataverse-sdk-core@next …`. 2.0.0 is a major release with breaking changes; see `docs/migration-2.0.md`.
+4. Merge `dev` into `main`, then merge the "Version Packages" PR. That publishes 2.0.0 as `latest`.
 
-Checked locally before the first release:
+Checked locally before the release:
 
 - `changeset publish` uses `pnpm publish`, so the `workspace:*` dependencies become real versions in the published `package.json`.
 - All 16 tarballs contain only `dist/` (plus the generator's `templates/` and notices), `README.md` and `LICENSE`.
@@ -46,7 +46,7 @@ Checked locally before the first release:
 
 ### Moving to trusted publishing
 
-**Moving to npm trusted publishing (OIDC)** removes the long-lived token. It's a maintainer step on npmjs.com, done once per package after it exists:
+**Moving to npm trusted publishing (OIDC)** removes the long-lived token. It's a maintainer step on npmjs.com, done once per package:
 
 1. For each of the 16 `@mohsinonxrm/dataverse-sdk-*` packages, open its Settings on npmjs.com → Trusted Publisher → GitHub Actions. Enter the repository `mohsinonxrm/dataverse-sdk-typescript`, the workflow file `changeset-version.yml`, and add a second entry for `release-next.yml`.
 2. Trusted publishing needs npm CLI 11.5.1 or later in the publish step. Check which client `changeset publish` uses under pnpm before relying on it; if needed, add a step that installs a current npm.
