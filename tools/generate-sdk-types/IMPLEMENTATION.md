@@ -22,6 +22,8 @@ regeneration (see README, Maintenance Notes).
 
 **Key Implementation Details:**
 
+<!-- no-check -->
+
 ```typescript
 parseEdmx(xmlContent: string): CsdlSchema
 parseEntityTypes(schema): CsdlEntityType[]
@@ -101,6 +103,8 @@ parseFunctions(schema): CsdlFunction[]    // Handles binding detection
 - Generates type-safe response interfaces
 
 **Generated Class Structure:**
+
+<!-- no-check -->
 
 ```typescript
 /** Parameters of the WinOpportunity action, by their CSDL names. */
@@ -216,6 +220,8 @@ For bound operations (actions/functions):
 ## Implementation Details
 
 ### CSDL Type Mapping
+
+<!-- no-check -->
 
 ```typescript
 // typescript-writer.ts
@@ -375,6 +381,8 @@ root; the complex and entity types are type-only exports of both (#333).
 ### Namespace Filtering
 
 All generators filter to `Microsoft.Dynamics.CRM` namespace:
+
+<!-- no-check -->
 
 ```typescript
 const filtered = csdl.actions.filter((a) => a.namespace === "Microsoft.Dynamics.CRM");

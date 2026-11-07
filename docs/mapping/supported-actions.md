@@ -113,7 +113,7 @@ Unbound actions; the record is the `Target` parameter, not the route.
 
 <!-- operations:actions
 InitializeFileBlocksUpload: Start a chunked upload to a file column; returns `{ FileContinuationToken }`.
-UploadBlock: Upload one block (base64 `blockData`, base64 `blockId`).
+UploadBlock: Upload one block (`BlockId` and `BlockData` are base64).
 CommitFileBlocksUpload: Commit the uploaded blocks, in order, as the file.
 InitializeFileBlocksDownload: Start a chunked download of a file column.
 DownloadBlock: Download one block.
@@ -124,7 +124,7 @@ CommitAttachmentBlocksUpload: Commit an attachment's blocks.
 -->
 
 - `new InitializeFileBlocksUploadAction({ Target, FileName, FileAttributeName })` (`POST /InitializeFileBlocksUpload`): Start a chunked upload to a file column; returns `{ FileContinuationToken }`.
-- `new UploadBlockAction({ BlockId, BlockData, FileContinuationToken })` (`POST /UploadBlock`): Upload one block (base64 `blockData`, base64 `blockId`).
+- `new UploadBlockAction({ BlockId, BlockData, FileContinuationToken })` (`POST /UploadBlock`): Upload one block (`BlockId` and `BlockData` are base64).
 - `new CommitFileBlocksUploadAction({ FileName, MimeType, BlockList, FileContinuationToken })` (`POST /CommitFileBlocksUpload`): Commit the uploaded blocks, in order, as the file.
 - `new InitializeFileBlocksDownloadAction({ Target, FileAttributeName, DataSource? })` (`POST /InitializeFileBlocksDownload`): Start a chunked download of a file column.
 - `new DownloadBlockAction({ Offset, BlockLength, FileContinuationToken })` (`POST /DownloadBlock`): Download one block.
