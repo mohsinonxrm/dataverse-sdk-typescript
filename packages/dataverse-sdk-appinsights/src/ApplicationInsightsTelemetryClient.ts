@@ -19,14 +19,28 @@ const CUSTOM_EVENT_NAME = "microsoft.custom_event.name";
 /** Attribute the Azure Monitor exporter reads custom event measurements from (JSON object). */
 const CUSTOM_MEASUREMENTS = "microsoft.custom_measurements";
 
-let azureMonitorStarted = false;
+/**
+ * The connection string the adapter started Azure Monitor with; `useAzureMonitor()` registers
+ * global providers, so it runs once per process.
+ */
+let azureMonitorConnectionString: string | undefined;
+/** Whether the console warning about a second connection string was already written. */
+let warnedOnConsole = false;
+
+const OTHER_CONNECTION_STRING_WARNING =
+  "ApplicationInsightsTelemetryClient: Azure Monitor was already started in this process with a " +
+  "different connectionString. This client's connectionString and cloudRoleName are ignored, " +
+  "and its telemetry goes to the first resource. To send to several resources, set up " +
+  "OpenTelemetry yourself and pass each client its own tracerProvider and loggerProvider.";
 
 /**
  * Application Insights implementation of the SDK's `TelemetryClient`, built on the Azure Monitor
  * OpenTelemetry distro (`@azure/monitor-opentelemetry`, Node.js only).
  *
  * - `trackDependency` records an OpenTelemetry CLIENT span per Dataverse HTTP call, which
- *   Application Insights shows as an HTTP dependency (URL query values redacted).
+ *   Application Insights shows as an HTTP dependency (URL as core redacted it with the app's
+ *   `redactUrl`). The span is recorded after the call, so it is never active during it: the
+ *   adapter propagates no `traceparent`.
  * - `trackEvent` emits a log record that Application Insights stores as a custom event.
  * - `trackException` emits a log record that Application Insights stores as an exception.
  *
@@ -52,7 +66,12 @@ export class ApplicationInsightsTelemetryClient implements TelemetryClient {
 
   constructor(config: ApplicationInsightsConfig = {}) {
     this.config = config;
-    if (config.connectionString && !config.disableTelemetry && !azureMonitorStarted) {
+    if (!config.connectionString || config.disableTelemetry) return;
+    if (azureMonitorConnectionString !== undefined) {
+      if (config.connectionString !== azureMonitorConnectionString) {
+        this.warnOtherConnectionString();
+      }
+    } else {
       const { useAzureMonitor } = requirePeer(azureMonitor(), "connectionString");
       const resource = config.cloudRoleName
         ? requirePeer(otelResources(), "cloudRoleName").resourceFromAttributes({
@@ -63,7 +82,30 @@ export class ApplicationInsightsTelemetryClient implements TelemetryClient {
         azureMonitorExporterOptions: { connectionString: config.connectionString },
         ...(resource ? { resource } : {}),
       });
-      azureMonitorStarted = true;
+      azureMonitorConnectionString = config.connectionString;
+    }
+  }
+
+  /**
+   * A later client can't redirect the process-wide Azure Monitor setup: say so through the
+   * configured logger, or else once on the console. The connection strings are never logged.
+   */
+  private warnOtherConnectionString(): void {
+    try {
+      if (this.config.logger || this.config.loggerProvider) {
+        this.logger().emit({
+          severityNumber: SeverityNumber.WARN,
+          severityText: "WARN",
+          body: OTHER_CONNECTION_STRING_WARNING,
+        });
+        return;
+      }
+      if (!warnedOnConsole) {
+        warnedOnConsole = true;
+        console.warn(OTHER_CONNECTION_STRING_WARNING);
+      }
+    } catch {
+      // Telemetry must never break the caller.
     }
   }
 
