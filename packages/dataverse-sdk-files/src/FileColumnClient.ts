@@ -180,9 +180,21 @@ export class FileColumnClient {
     const size = knownSize(file) ?? options?.size;
     const columnUrl = `${this.baseUrl}/${entitySetName}(${normalizeGuid(recordId)})/${columnName}`;
 
-    // An empty file has no blocks or chunks to send: one PATCH with no body stores it on every
-    // route (the actions route would commit an empty block list, #383).
-    if (method === "single" || size === 0) {
+    // Dataverse stores an empty file only through the actions route, as an empty block list: a
+    // PATCH with no body is refused (400, 0x80060888) and so is an empty chunk (416), checked
+    // against a live org (#383). So a 0-byte file takes that route whatever `method` says.
+    if (size === 0) {
+      await this.uploadActions(
+        entitySetName,
+        recordId,
+        columnName,
+        file,
+        fileName,
+        size,
+        requestedChunk ?? DEFAULT_CHUNK_SIZE,
+        options
+      );
+    } else if (method === "single") {
       await this.uploadSingle(columnUrl, file, fileName, options);
     } else if (method === "patch-chunked") {
       if (size === undefined) {
@@ -194,7 +206,6 @@ export class FileColumnClient {
       await this.uploadPatchChunked(columnUrl, file, fileName, size, options);
     } else {
       await this.uploadActions(
-        columnUrl,
         entitySetName,
         recordId,
         columnName,
@@ -209,7 +220,6 @@ export class FileColumnClient {
 
   /** `InitializeFileBlocksUpload` + `UploadBlock` per chunk + `CommitFileBlocksUpload`. */
   private async uploadActions(
-    columnUrl: string,
     entitySetName: string,
     recordId: string,
     columnName: string,
@@ -256,13 +266,7 @@ export class FileColumnClient {
       index++;
     }
 
-    if (blockIds.length === 0) {
-      // A stream of unknown size that turned out empty: no blocks to commit (#383). The started
-      // session is left to expire; store the empty file the way a known 0-byte file is stored.
-      await this.uploadSingle(columnUrl, new Uint8Array(0), fileName, options);
-      return;
-    }
-
+    // An empty file has no blocks: committing an empty block list stores it (#383).
     // Step 3: Commit upload
     const mimeType =
       options?.mimeType ?? ((isBlob(file) && file.type) || "application/octet-stream");
