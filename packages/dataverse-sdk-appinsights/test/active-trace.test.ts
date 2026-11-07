@@ -8,6 +8,7 @@
  * `@opentelemetry/api-logs`), which is why they are peer dependencies.
  */
 
+import { createRequire } from "node:module";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SpanKind, context, trace } from "@opentelemetry/api";
 import { logs } from "@opentelemetry/api-logs";
@@ -23,9 +24,13 @@ import {
   SimpleSpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
 import { createTestClient, jsonResponse } from "@mohsinonxrm/dataverse-sdk-testing";
+import { setPeerLoader } from "../src/optionalPeers.js";
 
 // The adapter must not start the real distro here; the app's providers stand in for it.
-vi.mock("@azure/monitor-opentelemetry", () => ({ useAzureMonitor: vi.fn() }));
+const realRequire = createRequire(import.meta.url);
+setPeerLoader((name) =>
+  name === "@azure/monitor-opentelemetry" ? { useAzureMonitor: vi.fn() } : realRequire(name)
+);
 
 const { ApplicationInsightsTelemetryClient } = await import("../src/index.js");
 
