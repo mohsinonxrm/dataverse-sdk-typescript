@@ -53,6 +53,24 @@ In 1.0 the actions, functions, messages, entities-runtime and xrm packages each 
 - **Default middleware order:** ODataHeaders, Retry, Concurrency, Auth, Telemetry, Logging. A request waiting to be retried no longer holds a concurrency slot. If you replace the pipeline with the `middleware` option, keep this order.
 - **Query encoding.** Query options are encoded like `encodeURIComponent`: spaces become `%20`, not `+`. A query string you put in the path yourself is left as written.
 - **`expand()`.** Calls add up instead of replacing each other, and `expand(nav, { select, filter, orderBy, top, expand })` takes options.
+- **`skip()` is removed (#357).** Dataverse doesn't support `$skip`, so a request with it failed with 400. Page with `@odata.nextLink`: `iterate()` or `getAll()`, or `getPage()` and then `client.api(nextLink).getPage()`, with `.prefer().maxPageSize(n)` for the page size.
+
+  <!-- no-check -->
+
+  ```typescript
+  // 1.0: a 400 from Dataverse
+  const page = await client.api("accounts").top(50).skip(100).get();
+  ```
+
+  ```typescript
+  // 2.0
+  for await (const account of client.api("accounts").prefer().maxPageSize(50).done().iterate()) {
+    console.log(account);
+  }
+  ```
+
+- **Concurrency settings are honoured (#356).** `concurrency.maxConcurrentRequests` is used exactly; in 1.0 it was clamped to 2..16, so `1` sent two requests at once. When you set it, `max` defaults to it, so the `x-ms-dop-hint` header can lower your limit but no longer raise it: add `max` (for example `{ maxConcurrentRequests: 4, max: 16 }`) to let it rise. Settings that aren't whole numbers of at least 1, or don't fit `min <= maxConcurrentRequests <= max`, throw `DataverseInvalidRequestError` when the client is created. The per-request `{ type: "concurrency", maxConcurrent }` option is removed: it never had an effect.
+- **`associate()`, `disassociate()` and `bindMany()` keep the builder's impersonation and headers (#355).** In 1.0, `client.api(…).impersonate(userId).associate(…)` ran as the calling identity. If you worked around that by sending the `$ref` request yourself, you can go back to `associate()`. A custom `BindManyExecutor` now gets a sixth argument with those headers and the request options; send them with your requests.
 
 ## auth-msal-browser
 
@@ -84,12 +102,31 @@ A configured `account` object no longer overrides MSAL's active account. Pass `a
 - **Ids come from the response header.** `create*` methods return the new `MetadataId` from `OData-EntityId`, and creates and updates take `{ solutionUniqueName }`.
 - **The types follow the 2.0 `$metadata` snapshot** (#295), like the actions, functions and messages packages. The response types of the operations the snapshot doesn't have are removed, for example `QuerySalesforceUnstructuredDataResponse`, `QueryZendeskUnstructuredArticlesResponse` and the Field Service `msdyn_…Response` types, and the types of the operations 2.0 adds are new. Interface members are in name order.
 - **Escaping and validation.** Key values are escaped, and invalid `MetadataId` keys or `DeletedMetadataFilters` values throw `DataverseInvalidRequestError`.
+- **Updates take the whole definition (#359).** A metadata update is a PUT that replaces the definition, so `updateAttributeDefinition`, `updateGlobalOptionSet` and the entity and relationship updates take a full definition with `@odata.type` required; a partial body no longer compiles. To change a few properties, use the merge helpers, which read the current definition (with `Consistency: Strong`), merge your changes and PUT the result: `mergeAndUpdateEntityDefinition`, `mergeAndUpdateAttributeDefinition`, `mergeAndUpdateRelationship` and `mergeAndUpdateGlobalOptionSet`. The type of `mergeAndUpdateEntityDefinition`'s changes is `EntityMetadataChanges` (was `EntityMetadataUpdate`).
+
+  <!-- no-check -->
+
+  ```typescript
+  // 1.0: compiled, then reset the column's other properties (or failed)
+  await md.updateAttributeDefinition("new_project", "new_note", { DisplayName });
+  ```
+
+  <!-- no-check -->
+
+  ```typescript
+  // 2.0: only the changes
+  await md.mergeAndUpdateAttributeDefinition("new_project", "new_note", {
+    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+    DisplayName,
+  });
+  ```
 
 ## xrm
 
 - `create()`, `retrieve()`, `retrieveMultiple()` and `update()` now work: in 1.0 they threw `TypeError`.
 - `assign()`, `setState()` and the `EntityReference`s of `associate()` take logical names. The entity set is read from metadata instead of being guessed as a plural. `associate()` takes references from `createEntityReference`, which carry the entity set of the tables in the SDK's `$metadata` snapshot (see [One `EntityReference`](#one-entityreference-all-packages)).
 - Record ids must be GUIDs. A malformed id throws `DataverseInvalidRequestError` before any request is sent.
+- **`retrieveMultiple({ skip })` is replaced by `maxPageSize` (#357).** Dataverse doesn't support `$skip`. `{ maxPageSize: 50 }` sends `Prefer: odata.maxpagesize=50`; read the next page from the result's `@odata.nextLink` with `client.api(nextLink).get()`.
 - **Typed results.** `execute(request)` returns the request's response type (`await service.execute(new WhoAmIFunction())` is a `WhoAmIResponse`), and takes only an `Executable<T>`; drop type arguments it can now infer. `retrieve()`, `retrieveMultiple()`, and `create()`/`update()` with `returnRepresentation` return an `EntityRecord` instead of `any` when you pass no type, so a column is `unknown` until you narrow it: pass your record type (`service.retrieve<Account>(…)`) where you read columns. `update()` without `returnRepresentation` returns `Promise<void>`.
 
 ## discovery
