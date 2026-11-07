@@ -69,4 +69,25 @@ describe.skipIf(!live)("live: file column upload and download (#60)", () => {
     expect(downloaded.byteLength).toBe(content.byteLength);
     expect(Buffer.compare(downloaded, content)).toBe(0);
   });
+
+  // #362: the PATCH routes sent the name in the x-ms-file-name header, which carries only ASCII.
+  for (const method of ["actions", "single", "patch-chunked"] as const) {
+    for (const fileName of ["合同.pdf", "résumé.pdf"]) {
+      it(`uploads ${fileName} with method "${method}" and keeps the name`, async () => {
+        const { client } = liveClient();
+        const files = new FileColumnClient(client);
+        const content = Buffer.from(`${fileName} via ${method} ${runId}`);
+        await files.upload(SET, id, COLUMN, content, fileName, { method });
+        const row = await client
+          .api(`${SET}(${id})`)
+          .select(`${COLUMN}_name`)
+          .get<Record<string, unknown>>();
+        expect(row[`${COLUMN}_name`]).toBe(fileName);
+        const downloaded = await bytesOf(
+          await files.download(SET, id, COLUMN, { method: "range" })
+        );
+        expect(Buffer.compare(downloaded, content)).toBe(0);
+      });
+    }
+  }
 });
