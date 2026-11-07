@@ -192,3 +192,7 @@ Publishing uses npm **trusted publishing** (OIDC): no npm token is stored anywhe
   names another file or environment (`npm trust list <package>`).
 - **The live suite fails on a timeout or `ECONNRESET`:** the org is slow at times; re-run the
   `live` job before treating it as a bug.
+- **The `live` job was cancelled:** it shares the `integration-tests` concurrency group with the
+  nightly and manual Integration Tests runs, and GitHub keeps only one pending run per group, so
+  a run queued after it cancels it while it waits. Re-run the failed jobs once the other run is
+  done. For the same reason, start manual Integration Tests runs one at a time.
