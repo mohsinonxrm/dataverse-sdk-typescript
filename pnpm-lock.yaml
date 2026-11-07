@@ -526,9 +526,6 @@ importers:
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
-      '@mohsinonxrm/dataverse-sdk-messages':
-        specifier: workspace:*
-        version: link:../dataverse-sdk-messages
     devDependencies:
       '@mohsinonxrm/dataverse-sdk-testing':
         specifier: workspace:*

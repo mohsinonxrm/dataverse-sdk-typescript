@@ -235,23 +235,37 @@ export class MetadataClient {
   }
 
   /**
-   * Create a new entity definition
+   * Create a new entity definition (a table).
+   *
+   * A table create needs `SchemaName`, `DisplayName`, `DisplayCollectionName`, `OwnershipType`,
+   * `IsActivity`, `HasActivities` and `HasNotes`, and its primary name column: a text column with
+   * `IsPrimaryName: true`, first in `Attributes`. Other columns may follow it; lookups are created
+   * with their relationship ({@link createOneToManyRelationship}) once the table exists.
    * @param entity Entity metadata to create
    * @param options Solution to add the new component to
    * @returns Metadata ID of the created entity (GUID), read from the `OData-EntityId` response header
    * @example
    * ```typescript
    * const metadataId = await metadataClient.createEntityDefinition({
-   *   '@odata.type': 'Microsoft.Dynamics.CRM.EntityMetadata',
-   *   SchemaName: 'new_CustomEntity',
-   *   DisplayName: {
-   *     LocalizedLabels: [{ Label: 'Custom Entity', LanguageCode: 1033 }]
-   *   },
-   *   DisplayCollectionName: {
-   *     LocalizedLabels: [{ Label: 'Custom Entities', LanguageCode: 1033 }]
-   *   },
+   *   "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+   *   SchemaName: "new_CustomEntity",
+   *   DisplayName: { LocalizedLabels: [{ Label: "Custom Entity", LanguageCode: 1033 }] },
+   *   DisplayCollectionName: { LocalizedLabels: [{ Label: "Custom Entities", LanguageCode: 1033 }] },
+   *   Description: { LocalizedLabels: [{ Label: "A custom table", LanguageCode: 1033 }] },
    *   OwnershipType: "UserOwned",
-   *   HasActivities: true
+   *   IsActivity: false,
+   *   HasActivities: true,
+   *   HasNotes: false,
+   *   Attributes: [
+   *     {
+   *       "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+   *       SchemaName: "new_Name",
+   *       DisplayName: { LocalizedLabels: [{ Label: "Name", LanguageCode: 1033 }] },
+   *       RequiredLevel: { Value: "ApplicationRequired" },
+   *       MaxLength: 100,
+   *       IsPrimaryName: true,
+   *     },
+   *   ],
    * });
    * ```
    */
@@ -415,7 +429,8 @@ export class MetadataClient {
   }
 
   /**
-   * Create a new attribute definition
+   * Create a new attribute definition. A lookup column is not created here: create it with its
+   * relationship, as the `Lookup` of {@link createOneToManyRelationship}.
    * @param entityLogicalName Entity logical name
    * @param attribute Attribute metadata to create
    * @param options Solution to add the new component to

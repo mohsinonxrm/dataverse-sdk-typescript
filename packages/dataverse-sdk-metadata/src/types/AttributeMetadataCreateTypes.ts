@@ -54,15 +54,20 @@ export type ServerSetAttributeProperty =
 /**
  * A create payload for metadata type `T`: the server-set properties (`ServerSetAttributeProperty`
  * and the type's own `ServerSet`) removed, and `@odata.type` (as `Microsoft.Dynamics.CRM.<Name>`)
- * and `SchemaName` required.
+ * and `SchemaName` required. `IsPrimaryName` can only be `false`: a table's primary name column
+ * is created with the table (`PrimaryNameAttributeMetadataCreate` in `EntityMetadataCreate`).
  */
 export type AttributeMetadataCreate<
   T extends AttributeMetadata,
   Name extends string,
   ServerSet extends string = never,
-> = Omit<T, ServerSetAttributeProperty | ServerSet | "@odata.type" | "SchemaName"> & {
+> = Omit<
+  T,
+  ServerSetAttributeProperty | ServerSet | "@odata.type" | "SchemaName" | "IsPrimaryName"
+> & {
   "@odata.type": MetadataODataType<Name>;
   SchemaName: string;
+  IsPrimaryName?: false;
 };
 
 /** An option of a choice in a create payload: the server-set properties removed. */
@@ -181,7 +186,8 @@ export type MultiSelectPicklistAttributeMetadataCreate = ChoiceAttributeMetadata
 >;
 /**
  * Create payload for a lookup column. A lookup is created through its 1:N relationship
- * (`createOneToManyRelationship`), as the relationship's `Lookup`.
+ * (`createOneToManyRelationship`), as the relationship's `Lookup`, so it is not one of the
+ * `AttributeMetadataCreateTypes` that `createAttributeDefinition` takes.
  */
 export type LookupAttributeMetadataCreate = AttributeMetadataCreate<
   LookupAttributeMetadata,
@@ -212,7 +218,9 @@ export type UniqueIdentifierAttributeMetadataCreate = AttributeMetadataCreate<
  * ```
  *
  * The abstract `AttributeMetadata` and `EnumAttributeMetadata` are not included: Dataverse
- * rejects them ("Attribute of type AttributeMetadata cannot be created").
+ * rejects them ("Attribute of type AttributeMetadata cannot be created"). Nor is a lookup: it is
+ * created with its relationship, as the `Lookup` of `createOneToManyRelationship`
+ * (`LookupAttributeMetadataCreate`).
  */
 export type AttributeMetadataCreateTypes =
   | StringAttributeMetadataCreate
@@ -226,7 +234,6 @@ export type AttributeMetadataCreateTypes =
   | BooleanAttributeMetadataCreate
   | PicklistAttributeMetadataCreate
   | MultiSelectPicklistAttributeMetadataCreate
-  | LookupAttributeMetadataCreate
   | FileAttributeMetadataCreate
   | ImageAttributeMetadataCreate
   | UniqueIdentifierAttributeMetadataCreate;
