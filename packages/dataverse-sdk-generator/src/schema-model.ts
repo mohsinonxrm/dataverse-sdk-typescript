@@ -29,6 +29,19 @@ export class SchemaModel {
   ComplexTypes: ComplexType[] = [];
 
   /**
+   * Messages about the configuration, such as a listed function that is not generated. The CLI
+   * prints them after generating.
+   */
+  Warnings: string[] = [];
+
+  /**
+   * Names of the Web API's query functions (`LastXDays`, `Between`, `EqualUserId`, …). `$metadata`
+   * declares them as functions, but Dataverse runs them only inside `$filter`, so they are not
+   * generated: use `queryFunctions` from `@mohsinonxrm/dataverse-sdk-functions` instead.
+   */
+  QueryFunctionNames = new Set<string>();
+
+  /**
    * Names of every entity type in $metadata, before filtering. Generated code types references
    * to entities that were not generated (and abstract ones such as `crmbaseentity`) as `IEntity`.
    */
@@ -91,7 +104,17 @@ export class SchemaModel {
       this.Actions = this.Actions.filter((a) => actions.includes(a.Name));
     }
 
+    // Query functions can't be called on their own (GET /LastXDays(...) is a 404), so they are
+    // never generated, even when listed.
+    this.Functions = this.Functions.filter((f) => !this.QueryFunctionNames.has(f.Name));
     if (functions && functions.length > 0) {
+      const skipped = functions.filter((name) => this.QueryFunctionNames.has(name));
+      if (skipped.length > 0) {
+        this.Warnings.push(
+          `Not generated: ${skipped.join(", ")}. Query functions run only inside $filter; ` +
+            `use queryFunctions from @mohsinonxrm/dataverse-sdk-functions instead.`
+        );
+      }
       this.Functions = this.Functions.filter((f) => functions.includes(f.Name));
     }
   }
@@ -549,9 +572,12 @@ export class SchemaModel {
       const parameters = this.readParameters(func.Parameter);
       const bindingType = isBound && parameters.length > 0 ? parameters[0].Type : undefined;
 
-      const returnType = func.ReturnType
-        ? this.getTypeScriptType(this.getAttribute(func.ReturnType, "Type"))
-        : undefined;
+      const rawReturnType = func.ReturnType ? this.getAttribute(func.ReturnType, "Type") : "";
+      const returnType = rawReturnType ? this.getTypeScriptType(rawReturnType) : undefined;
+
+      if (this.isQueryFunction(name, isBound, parameters, rawReturnType)) {
+        this.QueryFunctionNames.add(name);
+      }
 
       this.Functions.push({
         Name: name,
@@ -566,6 +592,28 @@ export class SchemaModel {
         IsComposable: isComposable,
       });
     }
+  }
+
+  /**
+   * A Web API query function, such as `LastXDays(PropertyName=...,PropertyValue=...)`: unbound,
+   * returns `Edm.Boolean`, and takes the column to test as its first parameter, `PropertyName`.
+   * Custom APIs always have a publisher prefix (`contoso_`), and no query function has an
+   * underscore, so a custom function of the same shape is still generated.
+   */
+  private isQueryFunction(
+    name: string,
+    isBound: boolean,
+    parameters: ParameterType[],
+    returnType: string
+  ): boolean {
+    const first = parameters.at(0);
+    return (
+      !isBound &&
+      !name.includes("_") &&
+      returnType === "Edm.Boolean" &&
+      first?.Name === "PropertyName" &&
+      first.Type === "Edm.String"
+    );
   }
 
   /**

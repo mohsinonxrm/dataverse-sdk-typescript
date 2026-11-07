@@ -106,9 +106,10 @@ program
 
       // Generate code
       spinner.text = "Fetching $metadata...";
-      await generateCode(config, accessToken);
+      const { warnings } = await generateCode(config, accessToken);
 
       spinner.succeed(chalk.green("✓ Code generation complete!"));
+      for (const warning of warnings) console.error(chalk.yellow(`⚠ ${warning}`));
 
       console.log(chalk.dim("\nGenerated files:"));
       console.log(chalk.cyan(`  ${config.output?.outputRoot ?? "./generated"}/`));
