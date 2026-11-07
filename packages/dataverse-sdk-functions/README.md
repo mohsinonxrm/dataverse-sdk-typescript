@@ -142,8 +142,9 @@ The SDK includes **<!-- count:functions -->280<!-- /count --> typed functions** 
 
 - `CalculateTotalTimeIncidentFunction` - Total time spent on a case
 - `GetDefaultPriceLevelFunction` - The default price list for a product
-- `GetQuantityDecimal_quoteFunction` (and `_opportunityFunction`, `_salesorderFunction`,
-  `_invoiceFunction`) - The decimal precision of a product's quantity
+- `GetQuantityDecimal_quoteFunction` (and `GetQuantityDecimal_opportunityFunction`,
+  `GetQuantityDecimal_salesorderFunction`, `GetQuantityDecimal_invoiceFunction`) - The decimal
+  precision of a product's quantity
 - `msdyn_*` functions of the Sales and Customer Service solutions
 
 Contact Center (`CCaaS_*`), Field Service and the other apps' functions aren't in this package:

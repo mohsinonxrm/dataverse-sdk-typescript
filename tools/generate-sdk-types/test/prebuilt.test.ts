@@ -265,15 +265,20 @@ describe("operationSolutionsFrom (#304)", () => {
 
   it("joins requests, messages, custom APIs and workflows to Microsoft-managed solutions", () => {
     expect(
-      operationSolutionsFrom(data, ["winopportunity", "CCaaS_GetAgents", "CopyCampaign", "Bare"])
+      operationSolutionsFrom(data, ["winopportunity", "CCaaS_GetAgents", "CopyCampaign"])
     ).toEqual({
-      Bare: [],
       CCaaS_GetAgents: ["msdyn_OmnichannelCCaaSAPI"],
       CopyCampaign: ["msdynce_Marketing"],
       winopportunity: ["System", "msdynce_SalesPatch201904"],
     });
     // A query function has no SDK message at all
     expect(operationSolutionsFrom(data, ["LastXDays"])).toEqual({ LastXDays: [] });
+  });
+
+  it("refuses an operation whose SDK message is in no solution, instead of calling it platform", () => {
+    expect(() => operationSolutionsFrom(data, ["WinOpportunity", "Bare"])).toThrow(
+      /SDK message in no solution: Bare\./
+    );
   });
 
   it("refuses an operation only org-specific solutions name", () => {

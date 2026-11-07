@@ -20,11 +20,15 @@
  *    ({@link MICROSOFT_PUBLISHERS}). Unmanaged solutions (`Default`, `Active`, `Basic` and the
  *    org's own) and ISV solutions name the org, not the product, and are dropped.
  *
- * An operation with no SDK message (the Web API query functions, such as `LastXDays`) or with no
- * solution component is recorded with no solutions (`[]`): it is built into the Web API, so it
- * counts as platform. An operation that only org-specific solutions name (it is in some solution,
- * but in no Microsoft-managed one) is an error: it was made in the org, and its publisher prefix
- * belongs in `ORG_SPECIFIC_PREFIXES` so the snapshot leaves it out.
+ * An operation with no SDK message (the Web API query functions, such as `LastXDays`) is
+ * recorded with no solutions (`[]`): it is built into the OData endpoint, so it counts as
+ * platform. Two cases are errors, so that no app's operation is counted as platform by accident:
+ *
+ * - an operation that has an SDK message but whose message (or custom API, or workflow) is in no
+ *   solution at all: nothing says which product it belongs to;
+ * - an operation that only org-specific solutions name (it is in some solution, but in no
+ *   Microsoft-managed one): it was made in the org, and its publisher prefix belongs in
+ *   `ORG_SPECIFIC_PREFIXES` so the snapshot leaves it out.
  */
 
 /** Publishers of Microsoft's managed solutions. A managed solution of any other publisher is an ISV's. */
@@ -107,18 +111,28 @@ export function operationSolutionsFrom(
   }
 
   const orgOnly: string[] = [];
+  const unplaced: string[] = [];
   const result = new Map<string, string[]>();
   for (const op of new Set(operations)) {
     const ids = new Set<string>();
-    for (const message of messages.get(op.toLowerCase()) ?? []) {
+    const opMessages = messages.get(op.toLowerCase()) ?? [];
+    for (const message of opMessages) {
       const keys = [`${String(SDK_MESSAGE_COMPONENT)}:${message}`, ...(objects.get(message) ?? [])];
       for (const key of keys) for (const id of componentSolutions.get(key) ?? []) ids.add(id);
     }
     const names = new Set(
       [...ids].filter(isMicrosoft).map((id) => solutions.get(id)?.uniquename ?? "")
     );
+    if (opMessages.length > 0 && ids.size === 0) unplaced.push(op);
     if (ids.size > 0 && names.size === 0) orgOnly.push(op);
     result.set(op, [...names].sort());
+  }
+  if (unplaced.length > 0) {
+    throw new Error(
+      `snapshot: ${String(unplaced.length)} operation(s) have an SDK message in no solution: ` +
+        `${unplaced.sort().join(", ")}. Find out which product they belong to before taking ` +
+        "the snapshot: they can't be counted as platform."
+    );
   }
   if (orgOnly.length > 0) {
     throw new Error(

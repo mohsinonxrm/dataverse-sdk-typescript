@@ -42,10 +42,12 @@ The snapshot org has more installed than Sales and Customer Service, so the set 
   `prebuilt-solutions.json`), or when it has no solution at all. So `WinOpportunity` (in `System`
   and a Sales patch) is in, `CCaaS_GetAgents` (only in `msdyn_OmnichannelCCaaSAPI`) is out, and
   an operation in a Contact Center and a Sales solution is in.
-- **No solution** means the operation has no SDK message, or its message is in no solution: the
-  Web API's query functions (`LastXDays`, `Between`, `EqualUserId`, …) are built into the OData
-  endpoint. They count as platform. So do the supplemental operations the generator adds
-  (`ExportToExcel`, see `src/supplemental/`).
+- **No solution** means the operation has no SDK message at all: the 71 query functions of the
+  Web API (`LastXDays`, `Between`, `EqualUserId`, …) are built into the OData endpoint. They count
+  as platform. So do the supplemental operations the generator adds (`ExportToExcel`, see
+  `src/supplemental/`). An operation that has an SDK message in no solution stops `snapshot`
+  instead: nothing would say which product it belongs to, and it mustn't be counted as platform
+  by accident. (The 2026-11-06 snapshot has none.)
 - `System` is the platform's own solution. The classic Sales and Customer Service messages
   (`WinOpportunity`, `CloseIncident`, `QualifyLead`) are in it as well as in their app's
   solutions.
@@ -73,6 +75,13 @@ The snapshot org has more installed than Sales and Customer Service, so the set 
    product; the org's own solutions and ISV solutions are dropped too. An operation only those
    name is an error: it was made in the org, and its publisher prefix belongs in
    `ORG_SPECIFIC_PREFIXES`.
+
+`solutioncomponent` is used rather than `customapi.solutionid`, because it lists every solution
+a component is in (a base solution and its patches), not only the one that installed its current
+layer. For the 2026-11-06 snapshot the join was checked against the org: of the 1,798 operations,
+416 are found through their SDK message, 776 through their custom API and 561 through a custom
+process action (some through more than one), the 71 with no solution have no SDK message, and for
+each of the 776 custom APIs the solution `customapi.solutionid` names is among the ones recorded.
 
 `operation-solutions.json` holds operation names and Microsoft solution unique names only: no
 ids, no unmanaged or org-made solutions, no org-specific publisher prefixes.
