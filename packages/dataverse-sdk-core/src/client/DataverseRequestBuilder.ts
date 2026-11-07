@@ -249,13 +249,19 @@ export class DataverseRequestBuilder {
    * @param entitySetName - The target entity set
    * @param id - The target record: a GUID, or an alternate key object
    */
-  async associate(navigationProperty: string, entitySetName: string, id: ODataKey): Promise<void> {
+  async associate(
+    navigationProperty: string,
+    entitySetName: string,
+    id: ODataKey,
+    options?: RequestOptions
+  ): Promise<void> {
     const refUrl = `${this.pathOrUrl}/${navigationProperty}/$ref`;
     // Dataverse rejects a relative @odata.id here ("the odata.context annotation is missing"),
     // so the reference is the absolute URL of the target record.
-    await this.client.api(refUrl).post({
-      "@odata.id": `${this.client.getBaseUrl()}/${entitySetName}(${odataKey(id)})`,
-    });
+    await this.related(refUrl).post(
+      { "@odata.id": `${this.client.getBaseUrl()}/${entitySetName}(${odataKey(id)})` },
+      options
+    );
   }
 
   /**
@@ -263,9 +269,25 @@ export class DataverseRequestBuilder {
    * @param navigationProperty - The navigation property name
    * @param id - The related record to remove: a GUID, or an alternate key object
    */
-  async disassociate(navigationProperty: string, id: ODataKey): Promise<void> {
+  async disassociate(
+    navigationProperty: string,
+    id: ODataKey,
+    options?: RequestOptions
+  ): Promise<void> {
     const refUrl = `${this.pathOrUrl}/${navigationProperty}(${odataKey(id)})/$ref`;
-    await this.client.api(refUrl).delete();
+    await this.related(refUrl).delete(options);
+  }
+
+  /**
+   * A builder for a request this one makes on the caller's behalf (`$ref` requests): it carries
+   * this builder's impersonation and custom headers (#355), but not its query, conditional
+   * headers or bindings, which belong to this request only.
+   */
+  private related(pathOrUrl: string): DataverseRequestBuilder {
+    const builder = this.client.api(pathOrUrl);
+    builder.headers = { ...this.headers };
+    builder.impersonation = this.impersonation;
+    return builder;
   }
 
   /**
@@ -275,7 +297,8 @@ export class DataverseRequestBuilder {
    * other, through the client (so auth, retry and the rest of the pipeline apply). It stops at the
    * first failure and rejects with that error; ids before it stay associated. Pass an executor,
    * such as `createBindManyExecutor()` from `@mohsinonxrm/dataverse-sdk-batch`, to send them as a
-   * single `$batch` instead.
+   * single `$batch` instead. Either way the associations carry this builder's impersonation and
+   * custom headers.
    *
    * @example
    * ```typescript
@@ -286,12 +309,14 @@ export class DataverseRequestBuilder {
    * @param entitySetName - The target entity set
    * @param ids - Target record ids
    * @param executor - Optional; how to send the associations (default: one request per id)
+   * @param options - Request options for the associations (headers, signal, timeout, …)
    */
   async bindMany(
     navigationProperty: string,
     entitySetName: string,
     ids: string[],
-    executor?: BindManyExecutor
+    executor?: BindManyExecutor,
+    options?: RequestOptions
   ): Promise<void> {
     if (executor !== undefined) {
       // Guard for JavaScript callers passing something that isn't an executor.
@@ -300,11 +325,17 @@ export class DataverseRequestBuilder {
           "bindMany(): the executor must be a function, e.g. createBindManyExecutor() from @mohsinonxrm/dataverse-sdk-batch."
         );
       }
-      await executor(this.client, this.pathOrUrl, navigationProperty, entitySetName, ids);
+      const { headers } = this.related(this.pathOrUrl).buildRequest("POST", undefined, options, {
+        validate: false,
+      });
+      await executor(this.client, this.pathOrUrl, navigationProperty, entitySetName, ids, {
+        ...options,
+        headers,
+      });
       return;
     }
     for (const id of ids) {
-      await this.associate(navigationProperty, entitySetName, id);
+      await this.associate(navigationProperty, entitySetName, id, options);
     }
   }
 

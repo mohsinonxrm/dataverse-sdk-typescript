@@ -1,11 +1,13 @@
-import type { BindManyExecutor } from "@mohsinonxrm/dataverse-sdk-core";
+import { odataKey, type BindManyExecutor } from "@mohsinonxrm/dataverse-sdk-core";
 import { BatchRequestBuilder } from "./BatchRequestBuilder.js";
 
 /**
  * Creates a BindManyExecutor that uses batch requests to efficiently associate
  * multiple records with a collection-valued navigation property.
  *
- * Pass the returned executor to `DataverseRequestBuilder.bindMany()`.
+ * Pass the returned executor to `DataverseRequestBuilder.bindMany()`. The `$batch` carries the
+ * builder's impersonation and custom headers, as the one-request-per-id default does. An empty
+ * list sends nothing, and an id listed twice is associated once.
  *
  * @example
  * ```typescript
@@ -14,17 +16,22 @@ import { BatchRequestBuilder } from "./BatchRequestBuilder.js";
  * ```
  */
 export function createBindManyExecutor(): BindManyExecutor {
-  return async (client, pathOrUrl, navigationProperty, entitySetName, ids) => {
+  return async (client, pathOrUrl, navigationProperty, entitySetName, ids, options) => {
+    const unique = [...new Set(ids)];
+    if (unique.length === 0) return;
     const batch = new BatchRequestBuilder(client);
-    for (const id of ids) {
+    unique.forEach((id, i) => {
       batch.addRequest(
-        `assoc-${id}`,
+        `assoc-${String(i + 1)}`,
         "POST",
         `${pathOrUrl}/${navigationProperty}/$ref`,
         undefined,
-        { "@odata.id": `${client.getBaseUrl()}/${entitySetName}(${id})` }
+        // Absolute, as core's associate() sends it; keys formatted the same way (odataKey).
+        { "@odata.id": `${client.getBaseUrl()}/${entitySetName}(${odataKey(id)})` }
       );
-    }
-    await batch.execute();
+    });
+    // Older callers (a hand-written executor call) may not pass options.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    await batch.execute({ headers: options?.headers });
   };
 }
