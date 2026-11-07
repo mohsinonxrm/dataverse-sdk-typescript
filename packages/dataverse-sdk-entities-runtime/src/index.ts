@@ -68,8 +68,14 @@ export interface AttributeMetadata {
   /** OData type of the property (e.g. "Edm.String") */
   odataType?: string;
 
-  /** Is the attribute required (ApplicationRequired)? */
+  /** Business-required: a caller must supply a value (`RequiredLevel` is ApplicationRequired). */
   isRequired?: boolean;
+
+  /**
+   * The column's `RequiredLevel` when it isn't None. SystemRequired columns (the primary key,
+   * `ownerid`, …) are filled in by Dataverse, so they aren't `isRequired`.
+   */
+  requiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
 
   /** Calculated or rollup column */
   sourceType?: "calculated" | "rollup";

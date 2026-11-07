@@ -169,6 +169,10 @@ export interface EntityMetadataDetail {
   MetadataId?: string;
 }
 
+/** `RequiredLevel.Value` as the Web API sends it (the enum member name). */
+export type AttributeRequiredLevel =
+  "None" | "SystemRequired" | "ApplicationRequired" | "Recommended";
+
 /**
  * Detailed attribute metadata
  */
@@ -178,7 +182,12 @@ export interface AttributeMetadataDetail {
   AttributeType?: string;
   AttributeTypeName?: { Value?: string };
   SourceType?: number; // 0 = simple, 1 = calculated, 2 = rollup
-  RequiredLevel?: { Value?: number; CanBeChanged?: boolean; ManagedPropertyLogicalName?: string };
+  /** The Web API sends the AttributeRequiredLevel member name, not a number. */
+  RequiredLevel?: {
+    Value?: AttributeRequiredLevel;
+    CanBeChanged?: boolean;
+    ManagedPropertyLogicalName?: string;
+  };
   AttributeOf?: string; // For 'virtual' attributes that reference a base attribute
   IsPrimaryId?: boolean;
   IsPrimaryName?: boolean;
