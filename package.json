@@ -18,7 +18,6 @@
     "clean": "turbo run clean && rimraf node_modules",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "changeset publish",
     "sdk:generate": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate",
     "sdk:generate:purge": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate --purge",
     "sdk:generate:metadata": "pnpm --filter generate-sdk-types build && pnpm --filter generate-sdk-types generate metadata",
