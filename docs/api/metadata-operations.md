@@ -96,6 +96,7 @@ await metadataClient.createAttributeDefinition("new_project", {
   "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
   SchemaName: "new_Status",
   OptionSet: {
+    IsGlobal: false, // required: Dataverse rejects a column OptionSet without it
     Options: [
       { Value: 1, Label: { LocalizedLabels: [{ Label: "Active", LanguageCode: 1033 }] } },
       { Value: 2, Label: { LocalizedLabels: [{ Label: "Inactive", LanguageCode: 1033 }] } },
@@ -109,11 +110,19 @@ await metadataClient.createAttributeDefinition("new_project", {
 
 **Choice Column (Global):**
 
+The column uses an existing global choice, bound as `/GlobalOptionSetDefinitions(<MetadataId>)`,
+instead of an `OptionSet` of its own. A choice or choices (multi-select) create takes exactly one
+of the two. Dataverse binds by `MetadataId` only (`(Name='…')` is rejected), so use the id
+`createGlobalOptionSet` returns, or read it by name:
+
 ```typescript
+const { MetadataId } = await metadataClient.getGlobalOptionSet("new_priorities", {
+  select: ["MetadataId"],
+});
 await metadataClient.createAttributeDefinition("new_project", {
   "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
   SchemaName: "new_Priority",
-  "GlobalOptionSet@odata.bind": "/GlobalOptionSetDefinitions(new_priorities)",
+  "GlobalOptionSet@odata.bind": `/GlobalOptionSetDefinitions(${MetadataId})`,
   DisplayName: {
     LocalizedLabels: [{ Label: "Priority", LanguageCode: 1033 }],
   },
@@ -217,9 +226,15 @@ const optionSetId = await metadataClient.createGlobalOptionSet({
 
 ## Option Value Management
 
+Each option-value method targets one choice: a column's own (local) choice, with
+`EntityLogicalName` and `AttributeLogicalName`, or a global choice, with `OptionSetName`. Passing
+both, or neither, is a type error, and throws `DataverseInvalidRequestError` before the request is
+sent. A column bound to a global choice has no options of its own: change the global choice.
+
 ### Insert Option Value
 
 ```typescript
+// A local choice
 const response = await metadataClient.insertOptionValue({
   EntityLogicalName: "new_project",
   AttributeLogicalName: "new_status",
@@ -229,9 +244,18 @@ const response = await metadataClient.insertOptionValue({
   },
 });
 console.log("New value:", response.NewOptionValue);
+
+// A global choice
+await metadataClient.insertOptionValue({
+  OptionSetName: "new_priorities",
+  Value: 4,
+  Label: { LocalizedLabels: [{ Label: "Urgent", LanguageCode: 1033 }] },
+});
 ```
 
 ### Update Option Value
+
+`MergeLabels` is required: `true` keeps the labels of the languages you leave out.
 
 ```typescript
 await metadataClient.updateOptionValue({
@@ -253,6 +277,8 @@ await metadataClient.deleteOptionValue({
   AttributeLogicalName: "new_status",
   Value: 3,
 });
+
+await metadataClient.deleteOptionValue({ OptionSetName: "new_priorities", Value: 4 });
 ```
 
 ### Reorder Options
@@ -266,6 +292,9 @@ await metadataClient.orderOptions({
 ```
 
 ### Insert Status Value
+
+Status reasons belong to a table's `statuscode` column, so this always takes `EntityLogicalName`
+and `AttributeLogicalName`.
 
 ```typescript
 const response = await metadataClient.insertStatusValue({
