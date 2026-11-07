@@ -6,7 +6,7 @@
 
 Complex types have their navigation properties (#231).
 
-- The type generator ignored `NavigationProperty` elements on complex types, so `PrincipalAccess.Principal` was missing and `GrantAccess` and `ModifyAccess` needed a cast. 46 complex types in each package gain their entity members, for example `PrincipalAccess.Principal`, `AuditDetail.AuditRecord`, `EntityCollection.Items` and `AttributeAuditDetail.OldValue` / `NewValue`.
+- The type generator ignored `NavigationProperty` elements on complex types, so `PrincipalAccess.Principal` was missing and `GrantAccess` and `ModifyAccess` needed a cast. Complex types now have their entity members, for example `PrincipalAccess.Principal`, `AuditDetail.AuditRecord`, `EntityCollection.Items` and `AttributeAuditDetail.OldValue` / `NewValue`.
 - They are typed like entity-typed parameters:
   - `crmbaseentity` members are `EntityReference | AnyEntityPayload`;
   - a table is `EntityReference | EntityPayload<table>`;
