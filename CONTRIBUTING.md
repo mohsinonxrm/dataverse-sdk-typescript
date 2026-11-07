@@ -179,13 +179,9 @@ Select:
 
 ### Release (Maintainers Only)
 
-```bash
-# Version packages based on changesets
-pnpm run version
-
-# Publish to npm
-pnpm run release
-```
+Releases are cut with a release-prep PR that runs `pnpm changeset version`, then published by CI
+when the maintainer pushes a `vX.Y.Z` tag. Nobody publishes from a local machine. See
+[RELEASING.md](./RELEASING.md).
 
 ## Architectural Decision Records (ADRs)
 
