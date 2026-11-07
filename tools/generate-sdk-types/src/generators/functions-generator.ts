@@ -21,7 +21,11 @@ import { operationReturn, parseResponseMethod } from "../utils/operation-return.
 import { ENTITY_REFERENCE_EXPORT, ENTITY_REFERENCE_IMPORT } from "../utils/entity-reference.js";
 import { ENTITY_PAYLOAD_MODULE, ENTITY_PAYLOAD_SOURCE } from "../utils/entity-payload.js";
 import { operationNames } from "../utils/overloads.js";
-import { exportedEnumNames } from "./complex-types-generator.js";
+import {
+  exportedEnumNames,
+  exportedTypeNames,
+  rootTypeExports,
+} from "./complex-types-generator.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
 import {
   bindingDoc,
@@ -237,7 +241,12 @@ export async function generateFunctions(
   }
 
   // Generate index.ts
-  const indexContent = generateFunctionsIndex(functions, stems, exportedEnumNames(csdl));
+  const indexContent = generateFunctionsIndex(
+    functions,
+    stems,
+    exportedEnumNames(csdl),
+    exportedTypeNames(csdl)
+  );
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
@@ -563,7 +572,8 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
 function generateFunctionsIndex(
   operations: CsdlFunction[],
   stems: Map<CsdlFunction, string>,
-  enumNames: string[]
+  enumNames: string[],
+  typeNames: string[]
 ): string {
   let code = `/**\n`;
   code += ` * @mohsinonxrm/dataverse-sdk-functions\n`;
@@ -593,6 +603,9 @@ function generateFunctionsIndex(
   if (enumNames.length > 0) {
     code += `\nexport { ${enumNames.join(", ")} } from './types/index.js';\n`;
   }
+
+  const responses = new Set(entries.map(({ stem }) => `${stem}Response`));
+  code += rootTypeExports(typeNames, code, responses);
 
   return code;
 }

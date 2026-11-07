@@ -24,7 +24,11 @@ import {
 } from "../utils/operation-parameters.js";
 import { writeTypeScriptFile, purgeDirectory } from "../utils/file-writer.js";
 import { bodyEnumType, ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
-import { exportedEnumNames } from "./complex-types-generator.js";
+import {
+  exportedEnumNames,
+  exportedTypeNames,
+  rootTypeExports,
+} from "./complex-types-generator.js";
 import {
   ENTITY_PAYLOAD_MODULE,
   ENTITY_PAYLOAD_SOURCE,
@@ -151,7 +155,12 @@ export async function generateMessages(
   }
 
   // Generate index
-  const indexContent = generateMessagesIndex(allActions, stems, exportedEnumNames(csdl));
+  const indexContent = generateMessagesIndex(
+    allActions,
+    stems,
+    exportedEnumNames(csdl),
+    exportedTypeNames(csdl)
+  );
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
@@ -459,7 +468,8 @@ function generateToRequestInformation(
 function generateMessagesIndex(
   operations: CsdlAction[],
   stems: Map<CsdlAction, string>,
-  enumNames: string[]
+  enumNames: string[],
+  typeNames: string[]
 ): string {
   let code = `/**\n`;
   code += ` * Web API Action Messages\n`;
@@ -500,6 +510,10 @@ function generateMessagesIndex(
   if (enumNames.length > 0) {
     code += `\n// Enums\nexport { ${enumNames.join(", ")} } from './types/index.js';\n`;
   }
+
+  // A message's response is the `<stem>Response` class
+  const responses = new Set(entries.map(({ stem }) => `${stem}Response`));
+  code += rootTypeExports(typeNames, code, responses);
 
   return code;
 }

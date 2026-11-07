@@ -29,7 +29,11 @@ import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { operationReturn, parseResponseMethod } from "../utils/operation-return.js";
 import { ENTITY_REFERENCE_EXPORT, ENTITY_REFERENCE_IMPORT } from "../utils/entity-reference.js";
 import { bodyEnumType, ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
-import { exportedEnumNames } from "./complex-types-generator.js";
+import {
+  exportedEnumNames,
+  exportedTypeNames,
+  rootTypeExports,
+} from "./complex-types-generator.js";
 import { operationNames } from "../utils/overloads.js";
 import {
   ENTITY_PAYLOAD_MODULE,
@@ -152,7 +156,12 @@ export async function generateActions(
   }
 
   // Generate index.ts
-  const indexContent = generateActionsIndex(actions, stems, exportedEnumNames(csdl));
+  const indexContent = generateActionsIndex(
+    actions,
+    stems,
+    exportedEnumNames(csdl),
+    exportedTypeNames(csdl)
+  );
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
@@ -423,7 +432,8 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
 function generateActionsIndex(
   operations: CsdlAction[],
   stems: Map<CsdlAction, string>,
-  enumNames: string[]
+  enumNames: string[],
+  typeNames: string[]
 ): string {
   let code = `/**\n`;
   code += ` * @mohsinonxrm/dataverse-sdk-actions\n`;
@@ -454,6 +464,9 @@ function generateActionsIndex(
   if (enumNames.length > 0) {
     code += `\nexport { ${enumNames.join(", ")} } from './types/index.js';\n`;
   }
+
+  const responses = new Set(entries.map(({ stem }) => `${stem}Response`));
+  code += rootTypeExports(typeNames, code, responses);
 
   return code;
 }

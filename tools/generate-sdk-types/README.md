@@ -31,6 +31,32 @@ The actions, functions and messages are chosen by the solution each operation co
 which solutions are prebuilt. The [solution table](metadata/README.md#which-operations-are-prebuilt)
 lists them. The other apps' operations are left to `dataverse-gen`.
 
+### What each package root exports
+
+Each generated `index.ts` exports the operation classes with their `<Name>Parameters`,
+`<Name>Response` (and, in messages, `<Name>Result`) types, `EntityReference` and the other
+entities-runtime re-exports, `EntityPayload` and `AnyEntityPayload`, the enums as values, and
+(#333) the complex and entity types under `types/` (with their `Typed<Name>` unions) as a
+type-only `export type { … }` list, so they add no runtime code:
+
+```ts
+import type {
+  ComplexLookupAttributeMetadata,
+  opportunityclose,
+} from "@mohsinonxrm/dataverse-sdk-actions";
+```
+
+**Names that collide.** Dataverse declares a complex type `<Operation>Response` for an operation
+with several output parameters, and the package root already exports the operation's own
+`<Operation>Response`: the type `execute()` resolves, with its `@odata.context` (in messages, the
+response class, whose `result` is `<Operation>Result`). That one stays, and the complex type of
+the same name isn't re-exported (683 of them in actions and messages, 103 in functions, in the 2026-11-06
+snapshot). No other name may collide: `rootTypeExports` throws on any other, and
+`test/root-type-exports.test.ts` checks the committed packages, so a new snapshot can't shadow a
+type quietly. A type whose name an operation package doesn't use is exported from it under its
+CSDL name, so a complex type named for another package's operation (functions exports the complex
+type `AddToQueueResponse`; actions exports the `AddToQueue` action's response) has the CSDL shape.
+
 ## Regenerating the packages (no org needed)
 
 Everything above is generated from the committed snapshot
@@ -161,7 +187,7 @@ packages/
     WinOpportunityMessage.ts
     ...
     types/                              # complex types, entity types and enums from the CSDL
-    index.ts                            # re-exports EntityReference from entities-runtime
+    index.ts                            # also re-exports EntityReference and the types/ types
     OrganizationRequest.ts, types.ts    # hand-written, not generated
 
   dataverse-sdk-actions/src/            # flat: one file per action
@@ -169,7 +195,7 @@ packages/
     ExecuteWorkflowAction.ts
     ...
     types/                              # complex types, entity types, enums, EntityPayload.ts
-    index.ts                            # re-exports EntityReference from entities-runtime
+    index.ts                            # also re-exports EntityReference and the types/ types
 
   dataverse-sdk-entities-runtime/src/   # hand-written, except:
     generated/entity-tables.ts          # entity sets and primary keys for createEntityReference

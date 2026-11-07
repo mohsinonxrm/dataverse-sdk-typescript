@@ -480,12 +480,12 @@ Actions for a chunked upload to a file or image column. They are **unbound**: th
 
 <!-- operations:actions
 InitializeFileBlocksUpload: Start the upload; returns `{ FileContinuationToken }`.
-UploadBlock: Upload one block (`blockId` and `blockData` are base64).
+UploadBlock: Upload one block (`BlockId` and `BlockData` are base64).
 CommitFileBlocksUpload: Commit the blocks, in order, as the file.
 -->
 
 - `new InitializeFileBlocksUploadAction({ Target, FileName, FileAttributeName })` (`POST /InitializeFileBlocksUpload`): Start the upload; returns `{ FileContinuationToken }`.
-- `new UploadBlockAction({ BlockId, BlockData, FileContinuationToken })` (`POST /UploadBlock`): Upload one block (`blockId` and `blockData` are base64).
+- `new UploadBlockAction({ BlockId, BlockData, FileContinuationToken })` (`POST /UploadBlock`): Upload one block (`BlockId` and `BlockData` are base64).
 - `new CommitFileBlocksUploadAction({ FileName, MimeType, BlockList, FileContinuationToken })` (`POST /CommitFileBlocksUpload`): Commit the blocks, in order, as the file.
 
 <!-- /operations -->
