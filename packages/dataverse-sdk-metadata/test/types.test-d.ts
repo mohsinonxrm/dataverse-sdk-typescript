@@ -19,6 +19,7 @@ import type {
   IntegerAttributeMetadataCreate,
   LookupAttributeMetadataCreate,
   AttributeMetadataCreateTypes,
+  PrimaryNameAttributeMetadataCreate,
   OneToManyRelationshipMetadataCreate,
   ManyToManyRelationshipMetadataCreate,
   OptionSetMetadataCreate,
@@ -37,38 +38,42 @@ import type {
 
 // ==================== Entity Metadata Type Tests ====================
 
-// EntityMetadataCreate takes a typed @odata.type and string enum members
+const tableLabel = (text: string): Label => ({
+  "@odata.type": "Microsoft.Dynamics.CRM.Label",
+  LocalizedLabels: [
+    { "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel", Label: text, LanguageCode: 1033 },
+  ],
+});
+
+// The primary name column of a table create (#385): a text column with IsPrimaryName: true
+const primaryName: PrimaryNameAttributeMetadataCreate = {
+  "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+  SchemaName: "new_Name",
+  DisplayName: tableLabel("Name"),
+  RequiredLevel: { Value: "ApplicationRequired" },
+  MaxLength: 100,
+  IsPrimaryName: true,
+};
+
+// EntityMetadataCreate takes a typed @odata.type and string enum members, and requires what a
+// table create needs (#385)
 const entityCreate: EntityMetadataCreate = {
   "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
   SchemaName: "new_custom",
-  DisplayName: {
-    "@odata.type": "Microsoft.Dynamics.CRM.Label",
-    LocalizedLabels: [
-      {
-        "@odata.type": "Microsoft.Dynamics.CRM.LocalizedLabel",
-        Label: "Custom Entity",
-        LanguageCode: 1033,
-      },
-    ],
-  },
+  DisplayName: tableLabel("Custom Entity"),
+  DisplayCollectionName: tableLabel("Custom Entities"),
   OwnershipType: "UserOwned",
+  IsActivity: false,
   HasActivities: false,
   HasNotes: false,
+  Attributes: [primaryName],
 };
 
 expectType<EntityMetadataCreate>(entityCreate);
 
 // EntityMetadataCreate should reject read-only fields
 expectError<EntityMetadataCreate>({
-  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-  SchemaName: "new_custom",
-  DisplayName: {
-    "@odata.type": "Microsoft.Dynamics.CRM.Label",
-    LocalizedLabels: [],
-  },
-  OwnershipType: "UserOwned",
-  HasActivities: false,
-  HasNotes: false,
+  ...entityCreate,
   // MetadataId is set by Dataverse: excess property
   MetadataId: "00000000-0000-0000-0000-000000000001",
 });
@@ -155,7 +160,8 @@ const lookupAttrCreate: LookupAttributeMetadataCreate = {
 };
 
 expectType<LookupAttributeMetadataCreate>(lookupAttrCreate);
-expectAssignable<AttributeMetadataCreateTypes>(lookupAttrCreate);
+// A lookup is created with its relationship, not as a column (#385)
+expectNotAssignable<AttributeMetadataCreateTypes>(lookupAttrCreate);
 
 // Attribute create should reject wrong @odata.type
 expectError<StringAttributeMetadataCreate>({
@@ -343,11 +349,7 @@ expectNotAssignable<OwnershipTypes>("userowned");
 declare const readEntity: EntityMetadata;
 expectType<OwnershipTypes | undefined>(readEntity.OwnershipType);
 
-expectError<EntityMetadataCreate>({
-  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-  SchemaName: "new_custom",
-  OwnershipType: 1,
-});
+expectError<EntityMetadataCreate>({ ...entityCreate, OwnershipType: 1 });
 
 expectError<StringAttributeMetadataCreate>({
   "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
@@ -358,12 +360,12 @@ expectError<StringAttributeMetadataCreate>({
 // ==================== Create payloads (#171) ====================
 
 // Column, relationship and choice creates need @odata.type (their collections hold several
-// types); a table create needs SchemaName, and @odata.type is optional.
-expectAssignable<EntityMetadataCreate>({ SchemaName: "new_custom" });
-expectError<EntityMetadataCreate>({ DisplayName: { LocalizedLabels: [] } });
+// types); for a table create it is optional.
+const { "@odata.type": _tableType, ...withoutODataType } = entityCreate;
+expectAssignable<EntityMetadataCreate>(withoutODataType);
 expectError<EntityMetadataCreate>({
+  ...entityCreate,
   "@odata.type": "Microsoft.Dynamics.CRM.AttributeMetadata",
-  SchemaName: "new_custom",
 });
 expectError<OptionSetMetadataCreate>({ Name: "new_colors" });
 expectError<StringAttributeMetadataCreate>({
@@ -377,13 +379,70 @@ expectNotAssignable<AttributeMetadataCreateTypes>({
   SchemaName: "new_field",
 });
 
-// A table create can carry its primary name column as a column create payload.
+// ==================== A table create needs what Dataverse needs (#385) ====================
+
+// SchemaName, DisplayName, DisplayCollectionName, OwnershipType, IsActivity, HasActivities,
+// HasNotes and the primary name column are required; Description is optional.
 expectAssignable<EntityMetadataCreate>({
-  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
   SchemaName: "new_project",
+  DisplayName: tableLabel("Project"),
+  DisplayCollectionName: tableLabel("Projects"),
+  Description: tableLabel("Projects and their tasks"),
   OwnershipType: OwnershipTypes.UserOwned,
+  IsActivity: false,
   HasActivities: false,
-  Attributes: [stringAttrCreate],
+  HasNotes: true,
+  Attributes: [primaryName],
+});
+expectError<EntityMetadataCreate>({ SchemaName: "new_custom" });
+const { SchemaName: _schema, ...noSchemaName } = entityCreate;
+expectNotAssignable<EntityMetadataCreate>(noSchemaName);
+const { DisplayName: _display, ...noDisplayName } = entityCreate;
+expectNotAssignable<EntityMetadataCreate>(noDisplayName);
+const { DisplayCollectionName: _collection, ...noCollectionName } = entityCreate;
+expectNotAssignable<EntityMetadataCreate>(noCollectionName);
+const { OwnershipType: _ownership, ...noOwnership } = entityCreate;
+expectNotAssignable<EntityMetadataCreate>(noOwnership);
+const { IsActivity: _activity, ...noIsActivity } = entityCreate;
+expectNotAssignable<EntityMetadataCreate>(noIsActivity);
+const { HasActivities: _activities, ...noHasActivities } = entityCreate;
+expectNotAssignable<EntityMetadataCreate>(noHasActivities);
+const { HasNotes: _notes, ...noHasNotes } = entityCreate;
+expectNotAssignable<EntityMetadataCreate>(noHasNotes);
+const { Attributes: _attributes, ...noAttributes } = entityCreate;
+expectNotAssignable<EntityMetadataCreate>(noAttributes);
+
+// Attributes holds exactly one primary name column, first: a text column with IsPrimaryName: true.
+expectNotAssignable<EntityMetadataCreate>({ ...entityCreate, Attributes: [] });
+// A text column that doesn't say it is the primary name
+expectNotAssignable<EntityMetadataCreate>({ ...entityCreate, Attributes: [stringAttrCreate] });
+expectNotAssignable<PrimaryNameAttributeMetadataCreate>(stringAttrCreate);
+// A primary name that isn't a text column
+expectNotAssignable<EntityMetadataCreate>({
+  ...entityCreate,
+  Attributes: [{ ...intAttrCreate, IsPrimaryName: true }],
+});
+// Two primary names
+expectNotAssignable<EntityMetadataCreate>({
+  ...entityCreate,
+  Attributes: [primaryName, { ...primaryName, SchemaName: "new_OtherName" }],
+});
+expectNotAssignable<AttributeMetadataCreateTypes>(primaryName);
+// A table's primary name column is created with the table, not added later
+expectError(metadata.createAttributeDefinition("account", primaryName));
+// Other columns follow the primary name; a lookup isn't one of them
+expectAssignable<EntityMetadataCreate>({
+  ...entityCreate,
+  Attributes: [
+    primaryName,
+    stringAttrCreate,
+    intAttrCreate,
+    { ...intAttrCreate, IsPrimaryName: false },
+  ],
+});
+expectNotAssignable<EntityMetadataCreate>({
+  ...entityCreate,
+  Attributes: [primaryName, lookupAttrCreate],
 });
 
 // A retrieved definition can be sent back as an update, with its @odata.type (#359).
@@ -404,6 +463,9 @@ expectError<OneToManyRelationshipMetadataCreate>({
 declare const metadata: MetadataClient;
 expectType<Promise<string>>(metadata.createEntityDefinition(entityCreate));
 expectType<Promise<string>>(metadata.createAttributeDefinition("account", intAttrCreate));
+// A lookup column is created with its relationship (createOneToManyRelationship), not as a
+// column (#385).
+expectError(metadata.createAttributeDefinition("account", lookupAttrCreate));
 expectType<Promise<string>>(metadata.createOneToManyRelationship(oneToManyCreate));
 expectType<Promise<string>>(metadata.createManyToManyRelationship(manyToManyCreate));
 expectType<Promise<string>>(metadata.createGlobalOptionSet(optionSetCreate));
@@ -601,9 +663,9 @@ expectError<OptionSetMetadataCreate>({
   Options: [{ Value: 1, Label: choiceLabel, MetadataId: "00000000-0000-0000-0000-000000000001" }],
 });
 // A table create ignores these (checked live), so they aren't accepted.
-expectError<EntityMetadataCreate>({ SchemaName: "new_custom", IsImportable: false });
-expectError<EntityMetadataCreate>({ SchemaName: "new_custom", LogicalCollectionName: "x" });
-expectAssignable<EntityMetadataCreate>({ SchemaName: "new_custom", IsBPFEntity: false });
+expectError<EntityMetadataCreate>({ ...entityCreate, IsImportable: false });
+expectError<EntityMetadataCreate>({ ...entityCreate, LogicalCollectionName: "x" });
+expectAssignable<EntityMetadataCreate>({ ...entityCreate, IsBPFEntity: false });
 
 // A choice column binds to an existing global choice by MetadataId ...
 const boundById: PicklistAttributeMetadataCreate = {

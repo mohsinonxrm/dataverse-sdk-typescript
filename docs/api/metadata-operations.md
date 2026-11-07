@@ -28,7 +28,10 @@ const metadataId = await metadataClient.createEntityDefinition({
     LocalizedLabels: [{ Label: "Projects", LanguageCode: 1033 }],
   },
   OwnershipType: "UserOwned", // or OwnershipTypes.UserOwned
+  IsActivity: false,
   HasActivities: true,
+  HasNotes: false,
+  // The primary name column first (required), then any other columns
   Attributes: [
     {
       "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",

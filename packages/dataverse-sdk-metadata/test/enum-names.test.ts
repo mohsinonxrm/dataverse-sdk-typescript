@@ -56,7 +56,8 @@ const enums = Object.entries(types).filter(
 
 describe("#66: metadata enums are member names", () => {
   it("exports the generated enums", () => {
-    expect(enums.length).toBeGreaterThanOrEqual(60);
+    // The enums of the metadata types only (#385), not every Web API enum
+    expect(enums.length).toBe(23);
     expect(enums.map(([name]) => name)).toEqual(
       expect.arrayContaining(["OwnershipTypes", "AttributeRequiredLevel", "DeletedMetadataFilters"])
     );

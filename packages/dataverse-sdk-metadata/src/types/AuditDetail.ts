@@ -1,4 +1,0 @@
-/**
- * AuditDetail
- */
-export interface AuditDetail {}
