@@ -1,5 +1,6 @@
 import {
   DataverseInvalidRequestError,
+  DataverseODataError,
   type DataverseClient,
   type RequestAdapter,
   type RequestInformation,
@@ -43,6 +44,23 @@ function normalizeGuid(guid: string): string {
 function baseUrlOf(adapter: RequestAdapter): string | undefined {
   const candidate = adapter as Partial<Pick<DataverseClient, "getBaseUrl">>;
   return typeof candidate.getBaseUrl === "function" ? candidate.getBaseUrl() : undefined;
+}
+
+/**
+ * `url` with the file name as the `x-ms-file-name` query parameter, percent-encoded as UTF-8.
+ * The `x-ms-file-name` header carries only ASCII: `fetch` throws on a name like `合同.pdf`, and
+ * Dataverse garbles one like `résumé.pdf`. The query parameter takes any name (#362).
+ */
+function withFileName(url: string, fileName: string): string {
+  return `${url}${url.includes("?") ? "&" : "?"}x-ms-file-name=${encodeURIComponent(fileName)}`;
+}
+
+/**
+ * Dataverse's `0x80090017` (`UploadingAndDownloadingInMultipleChunksNotSupported`): the file is
+ * stored where it can't be read in parts (on-premises, or an environment with a self-managed key).
+ */
+function isChunkingNotSupported(error: unknown): boolean {
+  return error instanceof DataverseODataError && error.code?.toLowerCase() === "0x80090017";
 }
 
 /** Remove trailing `/` characters in linear time. */
@@ -263,8 +281,8 @@ export class FileColumnClient {
       this.adapter,
       {
         method: "PATCH",
-        url: columnUrl,
-        headers: { "x-ms-transfer-mode": "chunked", "x-ms-file-name": fileName },
+        url: withFileName(columnUrl, fileName),
+        headers: { "x-ms-transfer-mode": "chunked" },
       },
       signal
     );
@@ -281,6 +299,9 @@ export class FileColumnClient {
     // Dataverse rejects any chunk (but the last) that is not exactly x-ms-chunk-size long.
     const chunkSize = serverChunkSize;
 
+    // Each chunk names the file too, as Dataverse documents; the Location already has a query.
+    const chunkUrl = withFileName(location, fileName);
+
     let offset = 0;
     let index = 0;
     const totalChunks = Math.ceil(size / chunkSize);
@@ -296,10 +317,9 @@ export class FileColumnClient {
         this.adapter,
         {
           method: "PATCH",
-          url: location,
+          url: chunkUrl,
           headers: {
             "content-type": "application/octet-stream",
-            "x-ms-file-name": fileName,
             "content-range": `bytes ${String(offset)}-${String(end - 1)}/${String(size)}`,
           },
           body: bytes,
@@ -338,8 +358,8 @@ export class FileColumnClient {
       this.adapter,
       {
         method: "PATCH",
-        url: columnUrl,
-        headers: { "content-type": "application/octet-stream", "x-ms-file-name": fileName },
+        url: withFileName(columnUrl, fileName),
+        headers: { "content-type": "application/octet-stream" },
         body: bytes,
       },
       signal
@@ -482,6 +502,8 @@ export class FileColumnClient {
   ): AsyncGenerator<{ bytes: Uint8Array; contentType?: string }> {
     const signal = options?.signal;
     const chunkSize = checkChunkSize(options?.chunkSize ?? DEFAULT_CHUNK_SIZE);
+    // The bytes read per request: the whole file when Dataverse can't read it in parts.
+    let blockSize = chunkSize;
     let offset = 0;
     let index = 0;
     let total: number | undefined;
@@ -494,7 +516,7 @@ export class FileColumnClient {
         total: total ?? 0,
         percentage: total ? Math.round((offset / total) * 100) : 0,
         chunkIndex: index,
-        totalChunks: total ? Math.ceil(total / chunkSize) : 0,
+        totalChunks: total ? Math.ceil(total / blockSize) : 0,
       });
       index++;
     };
@@ -526,6 +548,10 @@ export class FileColumnClient {
       );
       total = initBody.FileSizeInBytes;
       token = initBody.FileContinuationToken;
+      // IsChunkingSupported false: a partial DownloadBlock fails with 0x80090017, so read the
+      // whole file as one block (#362). A response without the flag is read in chunks as before.
+      const chunking = initBody.IsChunkingSupported as boolean | undefined;
+      if (chunking === false) blockSize = Math.max(total, 1);
     }
 
     for (;;) {
@@ -533,7 +559,7 @@ export class FileColumnClient {
       if (method === "actions") {
         const action = new DownloadBlockAction({
           Offset: offset,
-          BlockLength: chunkSize,
+          BlockLength: blockSize,
           FileContinuationToken: token,
         });
         const res = await sendChecked(
@@ -550,14 +576,33 @@ export class FileColumnClient {
         continue;
       }
 
-      const res = await sendChecked(
-        this.adapter,
-        this.getRequest(entitySetName, recordId, columnName, options, {
-          Range: `bytes=${String(offset)}-${String(offset + chunkSize - 1)}`,
-        }),
-        signal,
-        options?.timeout
-      );
+      let res: Response;
+      try {
+        res = await sendChecked(
+          this.adapter,
+          this.getRequest(entitySetName, recordId, columnName, options, {
+            Range: `bytes=${String(offset)}-${String(offset + chunkSize - 1)}`,
+          }),
+          signal,
+          options?.timeout
+        );
+      } catch (error) {
+        if (!isChunkingNotSupported(error)) throw error;
+        // The file can't be read in parts (#362): one GET for all of it, less what was yielded.
+        const whole = await sendChecked(
+          this.adapter,
+          this.getRequest(entitySetName, recordId, columnName, options),
+          signal,
+          options?.timeout
+        );
+        const type = whole.headers.get("content-type") ?? undefined;
+        const rest = new Uint8Array(await whole.arrayBuffer()).subarray(offset);
+        total = offset + rest.byteLength;
+        blockSize = Math.max(total, 1);
+        yield { bytes: rest, ...(type ? { contentType: type } : {}) };
+        report(rest.byteLength);
+        return;
+      }
       const contentType = res.headers.get("content-type") ?? undefined;
       const bytes = new Uint8Array(await res.arrayBuffer());
       const part = { bytes, ...(contentType ? { contentType } : {}) };

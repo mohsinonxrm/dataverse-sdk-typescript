@@ -403,9 +403,7 @@ describe("files: file names outside ASCII (#362)", () => {
     fake.on("PATCH", COLUMN_PATH, () => noContent());
     await files.upload("accounts", ID, "new_file", TEN, "合同.pdf", { method: "single" });
     const request = fake.last();
-    expect(request.url).toBe(
-      `${TEST_API_URL}${COLUMN_PATH}?x-ms-file-name=%E5%90%88%E5%90%8C.pdf`
-    );
+    expect(request.url).toBe(`${TEST_API_URL}${COLUMN_PATH}?x-ms-file-name=%E5%90%88%E5%90%8C.pdf`);
     expect(nameParam(request.url)).toBe("合同.pdf");
     expect(request.headers["x-ms-file-name"]).toBeUndefined();
     expect([...(request.bodyBytes ?? [])]).toEqual([...TEN]);
