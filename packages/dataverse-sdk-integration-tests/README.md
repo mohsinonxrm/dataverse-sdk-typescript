@@ -9,6 +9,7 @@ These are live integration tests that run against a real Dataverse org. This pac
 - **Query encoding and URL length:** a `$filter` with spaces, sent `+`-encoded (#52), and a 2,000+ character `$filter` (#10).
 - **`$batch`:** a hand-built batch that records Dataverse's real response format (#55, #56), and `BatchRequestBuilder` itself (#54).
 - **Metadata:** entity definitions, `retrieveMetadataChanges` (#62) and `canBeReferenced` (#63).
+- **The other areas, one file each** (`test/<area>.int.test.ts`): core (paging, FetchXML, impersonation, timeouts, duplicate detection, OData literals, `createAndGetId`, the 401 refresh, errors), `OrganizationService`, files, discovery, MSAL Node, entities-runtime, the generated actions, functions and messages (parameters, entity references and payloads, return values, overloads, collection-bound operations, enum bodies) and `dataverse-gen`.
 
 Each record a run creates has a unique `sdk-it-…` name and is deleted in `afterAll`. `it.fails("#NN: …")` pins a bug that reproduces live, and the PR that fixes the issue flips it to `it`.
 

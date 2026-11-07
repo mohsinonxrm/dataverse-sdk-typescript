@@ -94,7 +94,7 @@ const client = new DataverseClient({
 
   // Optional: Concurrency configuration
   concurrency: {
-    maxConcurrentRequests: 8, // Default: 8 for Node.js
+    maxConcurrentRequests: 8, // Default: 8 (Node.js and browsers)
     adaptiveFromDopHint: true, // Default: true (adjusts based on x-ms-dop-hint)
     min: 2, // Default: 2 (minimum concurrent requests)
     max: 16, // Default: 16 (maximum concurrent requests)
@@ -406,7 +406,7 @@ client.api("contacts").filter(`_parentcustomerid_value eq ${odataLiteral.guid(ac
 
 // Keys: a GUID, or an alternate key object (escaped, and safe for the URL path)
 client.api(`accounts(${odataKey({ accountnumber: input })})`); // accounts(accountnumber='O''Brien')
-client.api(`EntityDefinitions(${odataKey({ LogicalName: name })})`);
+client.api(`EntityDefinitions(${odataKey({ LogicalName: "account" })})`);
 
 // Function parameters, inline or as an alias (URL-encode an alias value)
 client.api(`MyFunction(Name=${odataLiteral.string(input)})`);
@@ -870,7 +870,7 @@ console.log(`Organization: ${result.OrganizationId}`);
 const account = await client
   .api(`/accounts(${accountId})`)
   .select("name", "revenue", "telephone1")
-  .get<Account>();
+  .get<Account & { "@odata.etag": string }>(); // every record comes back with its ETag
 
 const etag = account["@odata.etag"]; // e.g., 'W/"12345678"'
 
@@ -1003,7 +1003,7 @@ User Code (typed result)
     tokenProvider,
     retry: {
       onRetry: ({ attempt, maxRetries, status, delayMs }) =>
-        setStatus(
+        console.log(
           `HTTP ${status}, retrying in ${Math.round(delayMs / 1000)} s (${attempt}/${maxRetries})`
         ),
     },
@@ -1016,18 +1016,18 @@ User Code (typed result)
   `client.api("accounts").get({ middlewareOptions: new MiddlewareRequestOptions([{ type: "retry", maxRetries: 0 }]) })`.
 - **Retry-Attempt header:** Added to retried requests for server-side diagnostics (turn off with
   `diagnosticHeaders: { retryAttempt: false }`)
-- **Stream content:** Not retried (detected via Content-Type header)
+- **Streams:** a request with a `ReadableStream` body is never retried (it can be read only once), and neither is a response whose `Content-Type` is binary (`application/octet-stream`, `application/pdf`, `image/*`, `video/*`, `audio/*`)
 - **Discarded responses:** the body of a response that is retried is cancelled at once, so the
   connection goes back to the pool instead of waiting for garbage collection. The response you
   get back (success, or the last failure when retries run out) is never read by the retry logic.
 
 #### Adaptive Concurrency
 
-- **Default max concurrent requests:** 8 (Node.js), browser may differ
+- **Default max concurrent requests:** 8 (`concurrency.maxConcurrentRequests`), in Node.js and browsers
 - **Adaptive tuning:** Enabled by default via `x-ms-dop-hint` response header
   - Dataverse recommends optimal concurrency level per tenant/environment
   - SDK automatically adjusts semaphore limit within bounds
-- **Bounds:** `min: 2`, `max: 16` (configurable)
+- **Bounds:** `min: 2`, `max: 16` (`concurrency.min` / `concurrency.max`)
 - **Semaphore:** Queue-based implementation with `acquire()` and `release()`
 - **Clamp function:** Ensures concurrency stays within `[min, max]` range
 - **A slot per attempt:** each attempt takes a slot and releases it when its response arrives, so a
@@ -1049,24 +1049,24 @@ own through the `middleware` option.
 // After normalization: 'https://org.crm.dynamics.com/api/data/v9.2'
 
 // Relative path
-client.api('accounts')
-→ 'https://org.crm.dynamics.com/api/data/v9.2/accounts'
+client.api("accounts");
+// → 'https://org.crm.dynamics.com/api/data/v9.2/accounts'
 
 // Absolute path (starts with /)
-client.api('/contacts')
-→ 'https://org.crm.dynamics.com/api/data/v9.2/contacts'
+client.api("/contacts");
+// → 'https://org.crm.dynamics.com/api/data/v9.2/contacts'
 
 // Full URL (for nextLink)
-client.api('https://org.crm.dynamics.com/api/data/v9.2/accounts?$skiptoken=...')
-→ 'https://org.crm.dynamics.com/api/data/v9.2/accounts?$skiptoken=...'
+client.api("https://org.crm.dynamics.com/api/data/v9.2/accounts?$skiptoken=...");
+// → 'https://org.crm.dynamics.com/api/data/v9.2/accounts?$skiptoken=...'
 
 // Query building
-client.api('accounts').select('name').filter('revenue gt 1000000')
-→ 'https://org.crm.dynamics.com/api/data/v9.2/accounts?$select=name&$filter=revenue%20gt%201000000'
+client.api("accounts").select("name").filter("revenue gt 1000000");
+// → 'https://org.crm.dynamics.com/api/data/v9.2/accounts?$select=name&$filter=revenue%20gt%201000000'
 
 // A query string you encoded yourself is kept as written; builder options are added after it
-client.api("accounts?$filter=name%20eq%20'a%26b'").select('name')
-→ "https://org.crm.dynamics.com/api/data/v9.2/accounts?$filter=name%20eq%20'a%26b'&$select=name"
+client.api("accounts?$filter=name%20eq%20'a%26b'").select("name");
+// → "https://org.crm.dynamics.com/api/data/v9.2/accounts?$filter=name%20eq%20'a%26b'&$select=name"
 ```
 
 Query option values are encoded with `encodeURIComponent` (a space is `%20`, not `+`), keeping `$`,

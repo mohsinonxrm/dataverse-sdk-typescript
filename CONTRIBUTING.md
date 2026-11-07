@@ -10,7 +10,7 @@ This project follows a **planned, milestone-driven workflow**. Every change star
 2. **The maintainer triages it.** New issues are labelled `needs-triage`. The maintainer analyses and reviews each one, then:
    - adds a type label (`bug`, `enhancement`, `documentation`, `ci`, `security`) and package labels (`pkg:*`);
    - sets a priority (`P0` to `P3`, defined below);
-   - assigns a milestone (`v1.1.0`, `v1.2.0` or `Backlog`);
+   - assigns a milestone (the next release, for example `v2.0.1` or `v2.1.0`, or `Backlog`);
    - replaces `needs-triage` with `accepted`, or closes the issue with a reason (duplicate, won't fix, needs more information).
 3. **Work follows the milestones.** Issues are worked in milestone order, highest priority first. See the [milestones](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestones) and the tracking issue pinned to each one.
 4. **Want to work on an issue?** Comment on an `accepted` issue and wait for the maintainer to assign it to you before you start. This avoids duplicated effort and work that conflicts with the plan.
@@ -91,10 +91,12 @@ Before submitting a PR, ensure:
 - [ ] Changeset added (if user-facing change): `pnpm changeset`
 - [ ] All checks pass:
   ```bash
-  pnpm lint
-  pnpm typecheck
-  pnpm test
+  pnpm format:check
   pnpm build
+  pnpm typecheck
+  pnpm lint
+  pnpm test
+  pnpm test:browser   # browser smoke tests, after pnpm build
   ```
 - [ ] Commit messages follow convention:
   - `feat: add bulk operations support`
@@ -120,6 +122,11 @@ packages/
   dataverse-sdk-entities-runtime/ # Runtime for generated entities
   dataverse-sdk-appinsights/   # Application Insights telemetry
   dataverse-sdk-otel/          # OpenTelemetry adapter
+  dataverse-sdk-testing/       # Test harness: a real client with a fake fetch (private)
+  dataverse-sdk-browser-tests/ # Chromium smoke tests under a strict CSP (private)
+  dataverse-sdk-integration-tests/ # Live tests against a dev org (private)
+samples/                      # Runnable samples (private)
+tools/generate-sdk-types/     # Generates actions, functions, messages and metadata types from the committed $metadata snapshot
 ```
 
 ## Testing Strategy
@@ -130,8 +137,9 @@ packages/
 - Mock external dependencies
 - Coverage: core enforces its thresholds on every `pnpm test`; don't lower them, raise them as tests grow
 
-### Contract Tests (MSW)
+### Contract Tests
 
+- Use a real `DataverseClient` with the fake fetch from `@mohsinonxrm/dataverse-sdk-testing` (see its README), and assert on what reaches `fetch`
 - Test HTTP request/response contracts
 - Verify retry/throttle behavior
 - Validate request formats
@@ -140,12 +148,16 @@ packages/
 
 - Verify TypeScript type correctness
 - Ensure invalid payloads don't compile
-- Test metadata Read vs Create vs Update types
+- Test the metadata read types against the `*Create` / `*Update` types
 
 ### Integration Tests (Gated)
 
-- Run against real Dataverse environment
-- Require environment secrets (CI only)
+- Run against a real Dataverse dev org: `pnpm test:integration` after `pnpm build` (see `packages/dataverse-sdk-integration-tests/README.md`)
+- Need the `DATAVERSE_*` variables; CI runs them nightly with repository secrets
+
+### Browser Tests
+
+- `pnpm test:browser` runs Chromium smoke tests under a strict Content-Security-Policy (see `packages/dataverse-sdk-browser-tests/README.md`)
 
 ## Release Process
 

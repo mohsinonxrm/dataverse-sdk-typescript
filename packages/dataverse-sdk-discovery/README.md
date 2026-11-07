@@ -87,6 +87,8 @@ Pass `scopes` to request something else, for example the delegated permission
 
 #### Constructor
 
+<!-- no-check -->
+
 ```typescript
 new DiscoveryClient(tokenProvider: AccessTokenProvider, options?: DiscoveryClientOptions)
 new DiscoveryClient(tokenProvider: AccessTokenProvider, baseUrl?: string) // same as { baseUrl }
@@ -310,7 +312,7 @@ async function selectOrganization() {
     scopes: [`${selected.url}/.default`],
   });
 
-  const whoami = await client.api("/WhoAmI").get();
+  const whoami = await client.api("/WhoAmI").get<{ UserId: string }>();
   console.log("User ID:", whoami.UserId);
 }
 
@@ -322,7 +324,7 @@ selectOrganization().catch(console.error);
 Error responses are thrown as the core SDK's typed errors: `DataverseODataError`, or
 `DataverseThrottleError` for a 429 that is still throttled after the retries. Both extend
 `DataverseError` and carry `status`, `code`, `requestId` and `raw`; `DataverseThrottleError` also has
-`retryAfterMs`. Aborting rejects with an `AbortError`.
+`retryAfterMs`. Aborting rejects with a `DataverseAbortError` (name `"AbortError"`).
 
 ```typescript
 import { DataverseError, DataverseThrottleError } from "@mohsinonxrm/dataverse-sdk-core";

@@ -1,4 +1,4 @@
-# Message ↔ Web API Mapping Guide (v1)
+# Message ↔ Web API Mapping Guide
 
 This document explains how **Organization Service messages** (SDK.Messages) map to **Dataverse Web API** operations:
 
@@ -41,9 +41,14 @@ Microsoft recommends using **parameter aliases** for function parameters to avoi
 - ExecuteMultipleRequest ↔ `$batch` (up to 1000 requests)
 - ExecuteTransactionRequest ↔ `$batch` change sets (transactional group)
 
+The messages package has no ExecuteMultiple or ExecuteTransaction message
+([#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100)): use
+`BatchRequestBuilder` from `@mohsinonxrm/dataverse-sdk-batch`, with `beginChangeset()` for a
+transaction.
+
 ---
 
-## 2. Minimal v1 mapping table (initial set)
+## 2. Common messages
 
 ### 2.1 WhoAmI
 
@@ -132,12 +137,10 @@ await client.api(`accounts(${accountId})`).patch({
 ### 5.3 ExecuteWorkflow (bound)
 
 ```typescript
-import {
-  ExecuteWorkflowRequest,
-  ExecuteWorkflowResponse,
-} from "@mohsinonxrm/dataverse-sdk-messages";
+import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const response = await service.execute<ExecuteWorkflowResponse>(
+// execute() infers the response type (ExecuteWorkflowResponse) from the request
+const response = await service.execute(
   new ExecuteWorkflowRequest(workflowId, { EntityId: recordId }) // InputArguments is optional
 );
 console.log("Async Operation ID:", response.result?.asyncoperationid);
@@ -171,5 +174,5 @@ For each operation we document:
 - Request/response shape
 - Examples using:
   - `service.execute(message)`
-  - `client.execute(action|function request)` (Phase 7)
+  - `client.execute(action|function request)`
   - raw `client.api(...)` (escape hatch)

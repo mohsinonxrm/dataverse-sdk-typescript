@@ -73,5 +73,6 @@ The Node samples read these from a `.env` file (copy `.env.example`):
 The SPA sample reads `VITE_AZURE_CLIENT_ID`, `VITE_AZURE_TENANT_ID`, `VITE_AZURE_REDIRECT_URI` and
 `VITE_DATAVERSE_URL`, and needs a redirect URI registered on its app registration.
 
-The `dataverse-gen` tool reads its own `DATAVERSE_URL`, `DATAVERSE_TENANT_ID`,
-`DATAVERSE_CLIENT_ID` and `DATAVERSE_CLIENT_SECRET` (see the generator README).
+The `dataverse-gen` tool reads the org URL from `environmentUrl` in `.dataverse-gen.json`, and
+its own `DATAVERSE_TENANT_ID`, `DATAVERSE_CLIENT_ID` and `DATAVERSE_CLIENT_SECRET` (see the
+generator README).

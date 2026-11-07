@@ -149,11 +149,14 @@ const result = await batch.execute({ continueOnError: true });
 **Why:** Single entity type, all creates, want simple API with ID array response
 
 ```typescript
+import { readFile } from "node:fs/promises";
 import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
 import { parse } from "csv-parse/sync";
 
-const csvData = await fs.readFile("contacts.csv", "utf-8");
-const records = parse(csvData, { columns: true });
+const csvData = await readFile("contacts.csv", "utf-8");
+const records: Array<{ FirstName: string; LastName: string; Email: string }> = parse(csvData, {
+  columns: true,
+});
 
 const contacts = records.map((row) => ({
   "@odata.type": "Microsoft.Dynamics.CRM.contact",
@@ -217,6 +220,7 @@ await batch.execute();
 ```typescript
 import { UpdateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
+// accountIds: string[], the ids of the accounts to update
 const accounts = accountIds.map((id) => ({
   "@odata.type": "Microsoft.Dynamics.CRM.account",
   accountid: id,
@@ -236,10 +240,14 @@ console.log("Updated", accounts.length, "accounts");
 
 ```typescript
 import { UpsertMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
+import { odataKey } from "@mohsinonxrm/dataverse-sdk-core";
 
+// externalData: Array<{ sku: string; name: string; price: number }>, from the other system
 const products = externalData.map((item) => ({
   "@odata.type": "Microsoft.Dynamics.CRM.product",
-  productnumber: item.sku, // Alternate key
+  // An alternate key (here productnumber) names the record to create or update
+  "@odata.id": `products(${odataKey({ productnumber: item.sku })})`,
+  productnumber: item.sku,
   name: item.name,
   price: item.price,
 }));
@@ -309,14 +317,29 @@ try {
 ### Bulk Operations (Elastic Tables with Partial Success)
 
 ```typescript
-const action = new CreateMultipleAction("accounts", { Targets: accounts });
-const response = await client.execute(action, {
-  prefer: ["odata.include-annotations=Microsoft.PowerApps.CDS.ErrorDetails.*"],
-});
+import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
+import { DataverseError, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
 
-// Check for per-entity errors in annotations
-// Partial success possible with elastic tables
+// An elastic table keeps the records that succeeded. Ask for the error details annotations, and
+// the error body says which records failed.
+const readings = [
+  { "@odata.type": "Microsoft.Dynamics.CRM.contoso_sensordata", contoso_value: 21.5 },
+];
+try {
+  await client.execute(new CreateMultipleAction("contoso_sensordatas", { Targets: readings }), {
+    prefer: [Prefer.includeAnnotations("Microsoft.PowerApps.CDS.ErrorDetails.*")],
+  });
+} catch (error) {
+  if (error instanceof DataverseError) {
+    // The OData error, with Microsoft.PowerApps.CDS.ErrorDetails.* annotations per failed record
+    console.error(error.status, error.body);
+  }
+}
 ```
+
+The SDK doesn't parse those annotations into per-record results yet
+([#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100); per-record results
+for bulk helpers are [#310](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/310)).
 
 ### $batch with continue-on-error
 

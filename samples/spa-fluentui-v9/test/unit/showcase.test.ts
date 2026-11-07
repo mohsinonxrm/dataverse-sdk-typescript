@@ -54,33 +54,40 @@ describe("metadata browser", () => {
 });
 
 describe("files and images (demo)", () => {
-  it("uploads in blocks with progress, downloads the same bytes, and deletes", async () => {
-    const h = withDemo();
-    const { id } = await files.firstAccount(h.sdk, signal());
-    const target = { entitySetName: "accounts", recordId: id, column: "entityimage" };
-    const bytes = new Uint8Array(200_000).map((_, i) => i % 251);
-    const progress: number[] = [];
-    await files.uploadFile(
-      h.sdk,
-      {
-        ...target,
-        file: new Blob([bytes], { type: "image/png" }),
-        fileName: "a.png",
-        chunkSize: 64 * 1024,
-      },
-      (p) => progress.push(p.percentage),
-      signal()
-    );
-    expect(progress).toEqual([33, 66, 98, 100]);
-    expect(h.exchanges.filter((e) => e.url.endsWith("/UploadBlock"))).toHaveLength(4);
+  // Every byte goes through the demo backend's base64 handling, which is pure JS. Under CI's
+  // parallel turbo run this test was hitting vitest's 5 s default with 200 KB, so it uses 50 KB in
+  // 16 KB blocks (the same four blocks and progress steps) and an explicit 30 s timeout.
+  it(
+    "uploads in blocks with progress, downloads the same bytes, and deletes",
+    { timeout: 30_000 },
+    async () => {
+      const h = withDemo();
+      const { id } = await files.firstAccount(h.sdk, signal());
+      const target = { entitySetName: "accounts", recordId: id, column: "entityimage" };
+      const bytes = new Uint8Array(50_000).map((_, i) => i % 251);
+      const progress: number[] = [];
+      await files.uploadFile(
+        h.sdk,
+        {
+          ...target,
+          file: new Blob([bytes], { type: "image/png" }),
+          fileName: "a.png",
+          chunkSize: 16 * 1024,
+        },
+        (p) => progress.push(p.percentage),
+        signal()
+      );
+      expect(progress).toEqual([33, 66, 98, 100]);
+      expect(h.exchanges.filter((e) => e.url.endsWith("/UploadBlock"))).toHaveLength(4);
 
-    const blob = await files.downloadFile(h.sdk, target);
-    expect(blob.type).toBe("image/png");
-    expect(new Uint8Array(await blob.arrayBuffer())).toEqual(bytes);
+      const blob = await files.downloadFile(h.sdk, target);
+      expect(blob.type).toBe("image/png");
+      expect(new Uint8Array(await blob.arrayBuffer())).toEqual(bytes);
 
-    await files.deleteFile(h.sdk, target);
-    await expect(files.downloadFile(h.sdk, target)).rejects.toMatchObject({ status: 404 });
-  });
+      await files.deleteFile(h.sdk, target);
+      await expect(files.downloadFile(h.sdk, target)).rejects.toMatchObject({ status: 404 });
+    }
+  );
 });
 
 describe("environments", () => {

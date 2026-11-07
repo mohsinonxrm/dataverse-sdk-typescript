@@ -488,14 +488,22 @@ has no options of its own, so change the global choice. `insertStatusValue` alwa
 table and its `statuscode` column. `updateOptionValue` requires `MergeLabels`.
 
 ```typescript
-// Add new option to existing global choice
+// Add a new option to a column's own (local) choice
 const result = await metadataClient.insertOptionValue({
+  EntityLogicalName: "new_project",
+  AttributeLogicalName: "new_status",
+  Label: { LocalizedLabels: [{ Label: "On Hold", LanguageCode: 1033 }] },
+  Value: 4, // Optional, auto-assigned if omitted
+});
+console.log("New option value:", result.NewOptionValue);
+
+// Add a new option to a global choice
+const added = await metadataClient.insertOptionValue({
   OptionSetName: "new_projecttype",
   Label: { LocalizedLabels: [{ Label: "Maintenance", LanguageCode: 1033 }] },
-  Value: 100003, // Optional, auto-assigned if omitted
+  Value: 100003,
 });
-
-console.log("New option value:", result.NewOptionValue);
+console.log("New option value:", added.NewOptionValue);
 ```
 
 ---

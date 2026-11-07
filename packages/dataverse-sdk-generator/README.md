@@ -114,6 +114,8 @@ code ...") and continues once you have signed in. `"interactive"` is not support
 
 ### 4. Use Generated Types
 
+<!-- no-check -->
+
 ```typescript
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import {
@@ -123,7 +125,7 @@ import {
 import { type Account, AccountMetadata } from "./generated/entities/Account.js";
 import { EntityMetadataCache } from "./generated/metadata.js";
 
-const client = new DataverseClient({/* ... */});
+const client = new DataverseClient({ baseUrl: "https://contoso.crm.dynamics.com", tokenProvider });
 
 // Type-safe entity creation. Lookups take an EntityReference.
 const account: Account = {
@@ -271,6 +273,8 @@ With strict nulls, each complex type an operation returns (directly, nested in a
 a base type) also gets a `<Name>Output` interface with that exact shape, and `<Class>Response` uses
 it:
 
+<!-- no-check -->
+
 ```typescript
 // $metadata
 // <ComplexType Name="contoso_AssessResponse">
@@ -299,6 +303,8 @@ export interface contoso_AssessFunctionResponse extends contoso_AssessResponseOu
   "@odata.context"?: string;
 }
 ```
+
+<!-- no-check -->
 
 ```typescript
 const result = await client.execute(new contoso_AssessFunction());
@@ -363,6 +369,8 @@ imported, and the output type-checks under `strict`, `verbatimModuleSyntax` and 
 (the package's tests generate code from a fixture and run the TypeScript compiler on it).
 
 ### Entity Interface
+
+<!-- no-check -->
 
 ```typescript
 // generated/entities/Account.ts
@@ -444,6 +452,8 @@ such as `ownerid`'s `principal`) is typed as `IEntity`. Interfaces have no `logi
 API rejects unknown properties, and the metadata already names the table.
 
 ### Enum Type
+
+<!-- no-check -->
 
 ```typescript
 // generated/enums/account_industrycode.ts
@@ -533,6 +543,8 @@ Dataverse answers `204 No Content` for an entity or entity-collection output tha
 didn't set, although `$metadata` declares the return `Nullable="false"`: that's `null` for an
 entity and `[]` for a collection. A complex output that wasn't set is still a 200, with the
 properties `null`.
+
+<!-- no-check -->
 
 ```typescript
 import { WhoAmIFunction } from "./generated/functions/WhoAmIFunction.js";
@@ -657,6 +669,8 @@ Without an access token, `generateCode(config)` signs in with `config.auth`, as 
 
 Generated types work seamlessly with the core SDK:
 
+<!-- no-check -->
+
 ```typescript
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import { DataverseClient, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
@@ -729,6 +743,8 @@ The generator follows Scott Durow's proven three-phase pipeline architecture fro
 
 For each entity, the generator calls the `RetrieveMetadataChanges` function
 (`GET RetrieveMetadataChanges(Query=@q)?@q={...}`) to fetch detailed metadata:
+
+<!-- no-check -->
 
 ```typescript
 // The Query parameter (an EntityQueryExpression)
@@ -825,6 +841,8 @@ generated/
 
 ### Entity File Example: rollup columns and polymorphic lookups
 
+<!-- no-check -->
+
 ```typescript
 // Contact.ts (generated)
 export interface Contact extends IEntity {
@@ -869,6 +887,8 @@ for that table (`parentcustomerid_account@odata.bind` for an account).
 
 ### Metadata File Example
 
+<!-- no-check -->
+
 ```typescript
 // metadata.ts (generated)
 import type { EntityMetadata } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
@@ -901,12 +921,14 @@ export function getLogicalName(schemaName: string): string | undefined {
 
 ## 🔮 Future Enhancements
 
+✅ shipped; ⏳ planned, tracked in [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100).
+
 - ✅ Three-phase pipeline (Load → Filter → Enrich)
 - ✅ RetrieveMetadataChanges enrichment
 - ✅ Local option set enums
 - ✅ Polymorphic lookup consolidation
 - ✅ Calculated/rollup field annotations
-- ✅ Alternate keys support
+- ✅ Alternate keys read into the schema model (`EntityType.Keys`); the generated files don't use them yet
 - ✅ MSAL authentication flows (device code, client credentials)
 - ⏳ Create/Update type splitting (exclude read-only fields)
 - ⏳ Custom template support (eject command)

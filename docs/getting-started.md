@@ -18,7 +18,7 @@ This guide will walk you through setting up and using the Dataverse SDK for Type
 
 ## Prerequisites
 
-- **Node.js**: Version 18 or higher
+- **Node.js**: Version 22 or higher (or a modern browser)
 - **Package Manager**: pnpm, npm, or yarn
 - **Dataverse Environment**: Access to a Microsoft Dataverse organization
 - **Azure AD App Registration**: For authentication (see [Authentication Setup](#authentication-setup))
@@ -237,8 +237,14 @@ console.log("Account updated successfully");
 ### Update with Optimistic Concurrency
 
 ```typescript
+// Read the record's ETag (every retrieved record has @odata.etag)
+const { "@odata.etag": etag } = await client
+  .api(`/accounts(${accountId})`)
+  .select("revenue")
+  .get<{ "@odata.etag": string; revenue: number }>();
+
 // .ifMatch(etag) sets the If-Match header; a 412 means the record changed since you read it
-await client.api(`/accounts(${accountId})`).ifMatch(account["@odata.etag"]).patch({
+await client.api(`/accounts(${accountId})`).ifMatch(etag).patch({
   revenue: 6000000,
 });
 ```
@@ -338,7 +344,7 @@ const recentOpportunities = await client
   .get();
 
 // Filter with contains
-const accounts = await client.api("/accounts").filter("contains(name, 'Contoso')").get();
+const contosoAccounts = await client.api("/accounts").filter("contains(name, 'Contoso')").get();
 ```
 
 ## Batch Operations
@@ -644,9 +650,11 @@ Check out the `samples/` directory for complete working examples:
 
 - `node-cli-devicecode/` - CLI app with device code authentication
 - `daemon-clientcredentials/` - Background service with client credentials
+- `actions-functions/` - Typed actions and functions
 - `batch-ops/` - Batch operations demonstrations
 - `metadata-ops/` - Metadata operations
 - `messages-sales-cs/` - OrganizationService message examples
+- `spa-fluentui-v9/` - Browser SPA (React, Fluent UI v9) with a page per SDK area
 
 ### Read Documentation
 

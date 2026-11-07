@@ -231,7 +231,7 @@ const request = new ExecuteWorkflowRequest(workflowId, {
 
 const response = await orgService.execute<ExecuteWorkflowResponse>(request);
 
-console.log(`Async Operation ID: ${response.result.asyncoperationid}`);
+console.log(`Async Operation ID: ${response.result?.asyncoperationid}`);
 ```
 
 **Constructor:** the workflow id, then the parameters by their Web API names.
@@ -249,7 +249,8 @@ new ExecuteWorkflowRequest(workflowId: string, {
 **Monitoring Workflow Execution:**
 
 ```typescript
-const asyncOperationId = response.result.asyncoperationid;
+const asyncOperationId = response.result?.asyncoperationid; // null if Dataverse answered 204
+if (!asyncOperationId) throw new Error("The workflow did not start");
 
 // Poll for completion
 let asyncOp;
@@ -670,7 +671,8 @@ const executeWf = new ExecuteWorkflowRequest(workflowId, {
 const response = await orgService.execute<ExecuteWorkflowResponse>(executeWf);
 
 // Monitor completion
-const asyncOpId = response.result.asyncoperationid;
+const asyncOpId = response.result?.asyncoperationid; // null if Dataverse answered 204
+if (!asyncOpId) throw new Error("The workflow did not start");
 let completed = false;
 
 while (!completed) {
@@ -851,7 +853,7 @@ async function executeWorkflowWithRetry(
       });
 
       const response = await orgService.execute<ExecuteWorkflowResponse>(request);
-      return response.result.asyncoperationid ?? ""; // asyncoperationid
+      return response.result?.asyncoperationid ?? ""; // asyncoperationid
     } catch (error: unknown) {
       attempt++;
 
