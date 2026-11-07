@@ -66,8 +66,11 @@ export async function throttled(
 // #region network
 export async function offline(sdk: Sdk, signal: AbortSignal) {
   // fetch() rejecting (offline, DNS, CORS) becomes DataverseNetworkError ("ConnectionFailed").
+  // A GET is retried first, like after a 503 (POST isn't). The retries are short here so the
+  // error shows at once; retry: { retryNetworkErrors: false } turns them off.
   const client = sdk.createClient({
     fetchProvider: { fetch: () => Promise.reject(new TypeError("Failed to fetch")) },
+    retry: { maxRetries: 2, baseDelayMs: 200 },
   });
   return client.api("WhoAmI").get({ signal });
 }

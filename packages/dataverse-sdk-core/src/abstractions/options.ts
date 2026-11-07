@@ -76,7 +76,7 @@ export interface RetryOptions {
   retryableStatusCodes?: number[];
   /**
    * Also retry POST, and PATCH without `If-Match`, after 502/503/504 (and after network errors,
-   * when `retryNetworkErrors` is on). Default `false`: a gateway error can arrive after Dataverse
+   * when `retryNetworkErrors` is also set to `true`). Default `false`: a gateway error can arrive after Dataverse
    * already applied the request, so replaying a create or an action can apply it twice. 429
    * responses are always retried, for every method, because Dataverse rejects throttled requests
    * before doing any work.
@@ -84,8 +84,16 @@ export interface RetryOptions {
   retryNonIdempotent?: boolean;
   /**
    * Retry when `fetch` itself fails (a `DataverseNetworkError` named `ConnectionFailed`, such as
-   * a dropped connection), for idempotent methods only unless `retryNonIdempotent` is set.
-   * Aborts and timeouts are never retried. @default false
+   * a dropped connection or a reset socket).
+   *
+   * - Unset (the default): idempotent requests are retried: GET, HEAD, OPTIONS, PUT, DELETE, and
+   *   PATCH with `If-Match`. POST and other PATCHes aren't, even with `retryNonIdempotent`,
+   *   because the connection can drop after Dataverse applied the request.
+   * - `true`: the same, and with `retryNonIdempotent: true` every request is retried.
+   * - `false`: never retried; the error is thrown at once (the 1.x behaviour).
+   *
+   * Aborts, timeouts and requests with a stream body are never retried.
+   * @default undefined (idempotent requests are retried)
    */
   retryNetworkErrors?: boolean;
   /**

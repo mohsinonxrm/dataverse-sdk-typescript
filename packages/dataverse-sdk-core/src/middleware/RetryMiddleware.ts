@@ -43,7 +43,6 @@ const DEFAULTS = {
   jitter: true,
   retryableStatusCodes: [429, 502, 503, 504],
   retryNonIdempotent: false,
-  retryNetworkErrors: false,
 };
 
 export class RetryMiddleware implements Middleware {
@@ -197,15 +196,17 @@ export class RetryMiddleware implements Middleware {
     if (request.signal?.aborted) return false;
     if (!(err instanceof DataverseNetworkError) || err.name !== "ConnectionFailed") return false;
     if (opt.shouldRetry) return opt.shouldRetry(0, err);
-    return (
-      opt.retryNetworkErrors &&
-      (opt.retryNonIdempotent || isIdempotent(request.method, request.headers))
-    );
+    if (opt.retryNetworkErrors === false) return false;
+    // Left unset, only idempotent requests are retried, even with `retryNonIdempotent`: a dropped
+    // connection can come after Dataverse applied a create or an action. Replaying those after a
+    // network error takes `retryNetworkErrors: true` as well as `retryNonIdempotent: true`.
+    if (opt.retryNetworkErrors === true && opt.retryNonIdempotent) return true;
+    return isIdempotent(request.method, request.headers);
   }
 }
 
 type ResolvedOptions = typeof DEFAULTS &
-  Pick<RetryOptions, "shouldRetry" | "onRetry"> & {
+  Pick<RetryOptions, "shouldRetry" | "onRetry" | "retryNetworkErrors"> & {
     maxRetryAfterMs: number;
   };
 

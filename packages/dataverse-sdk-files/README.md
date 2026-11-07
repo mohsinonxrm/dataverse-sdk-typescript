@@ -423,7 +423,7 @@ interface UploadProgress {
 
 ### Retry Logic
 
-When the `FileColumnClient` sends through a `DataverseClient`, the client's retry settings apply to every request: a 429 is retried for any request. A block (`UploadBlock`) is also retried after a 502, 503 or 504 (and after a dropped connection when `retry.retryNetworkErrors` is on), because sending a block again with the same block id replaces it; the client retries other POSTs only after a 429. The number of retries is the client's `retry.maxRetries`. A raw adapter such as `FetchRequestAdapter` doesn't retry.
+When the `FileColumnClient` sends through a `DataverseClient`, the client's retry settings apply to every request: a 429 is retried for any request. A block (`UploadBlock`) is also retried after a 502, 503 or 504 (and after a dropped connection when the client sets `retry.retryNetworkErrors: true`; a block is a POST, so the default retries for idempotent requests don't cover it), because sending a block again with the same block id replaces it; the client retries other POSTs only after a 429. The number of retries is the client's `retry.maxRetries`. A raw adapter such as `FetchRequestAdapter` doesn't retry.
 
 ## Browser Compatibility
 

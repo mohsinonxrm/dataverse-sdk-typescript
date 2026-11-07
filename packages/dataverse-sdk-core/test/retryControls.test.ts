@@ -189,12 +189,82 @@ describe("#17: one RetryOptions type", () => {
 describe("#17: network errors", () => {
   const failed = () => new TypeError("fetch failed");
 
-  it("a fetch rejection becomes a DataverseNetworkError and is not retried by default", async () => {
-    const { client, calls } = setup([failed(), status(204)], { baseDelayMs: 1 });
+  it("a fetch rejection becomes a DataverseNetworkError", async () => {
+    const { client, calls } = setup([failed()], { baseDelayMs: 1, maxRetries: 0 });
     const err = await send(client).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(DataverseNetworkError);
     expect((err as Error).name).toBe("ConnectionFailed");
     expect((err as Error).cause).toBeInstanceOf(TypeError);
+    expect(calls()).toBe(1);
+  });
+
+  it("retries an idempotent request after a dropped connection by default (#351)", async () => {
+    const { client, calls } = setup([failed(), status(204)], { baseDelayMs: 1 });
+    expect((await send(client)).status).toBe(204);
+    expect(calls()).toBe(2);
+  });
+
+  it.each(["PUT", "DELETE"] as const)(
+    "retries %s after a dropped connection by default",
+    async (m) => {
+      const { client, calls } = setup([failed(), status(204)], { baseDelayMs: 1 });
+      expect((await send(client, m)).status).toBe(204);
+      expect(calls()).toBe(2);
+    }
+  );
+
+  it("does not replay a POST after a dropped connection by default", async () => {
+    const { client, calls } = setup([failed(), status(204)], { baseDelayMs: 1 });
+    await expect(send(client, "POST")).rejects.toMatchObject({ name: "ConnectionFailed" });
+    expect(calls()).toBe(1);
+  });
+
+  it("does not replay a PATCH without If-Match by default, but does with it", async () => {
+    const plain = setup([failed(), status(204)], { baseDelayMs: 1 });
+    await expect(send(plain.client, "PATCH")).rejects.toMatchObject({ name: "ConnectionFailed" });
+    expect(plain.calls()).toBe(1);
+    const guarded = setup([failed(), status(204)], { baseDelayMs: 1 });
+    const res = await send(guarded.client, "PATCH", { headers: { "if-match": "*" } });
+    expect(res.status).toBe(204);
+    expect(guarded.calls()).toBe(2);
+  });
+
+  it("retryNonIdempotent alone does not replay a POST after a dropped connection", async () => {
+    const { client, calls } = setup([failed(), status(204)], {
+      retryNonIdempotent: true,
+      baseDelayMs: 1,
+    });
+    await expect(send(client, "POST")).rejects.toMatchObject({ name: "ConnectionFailed" });
+    expect(calls()).toBe(1);
+  });
+
+  it("retryNetworkErrors: true with retryNonIdempotent replays a POST", async () => {
+    const { client, calls } = setup([failed(), status(204)], {
+      retryNetworkErrors: true,
+      retryNonIdempotent: true,
+      baseDelayMs: 1,
+    });
+    expect((await send(client, "POST")).status).toBe(204);
+    expect(calls()).toBe(2);
+  });
+
+  it("retryNetworkErrors: false throws at once", async () => {
+    const { client, calls } = setup([failed(), status(204)], {
+      retryNetworkErrors: false,
+      baseDelayMs: 1,
+    });
+    await expect(send(client)).rejects.toMatchObject({ name: "ConnectionFailed" });
+    expect(calls()).toBe(1);
+  });
+
+  it("a per-request retryNetworkErrors: false overrides the default", async () => {
+    const { client, calls } = setup([failed(), status(204)], { baseDelayMs: 1 });
+    const middlewareOptions = new MiddlewareRequestOptions([
+      { type: "retry", retryNetworkErrors: false },
+    ]);
+    await expect(send(client, "GET", { middlewareOptions })).rejects.toMatchObject({
+      name: "ConnectionFailed",
+    });
     expect(calls()).toBe(1);
   });
 

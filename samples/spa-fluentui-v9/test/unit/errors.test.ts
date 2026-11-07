@@ -51,9 +51,10 @@ describe("error scenarios (recording fake fetch)", () => {
     if (c.kind === "throttle") expect(c.error.retryAfterMs).toBe(30_000);
   });
 
-  it("a failing fetch is a DataverseNetworkError", async () => {
-    const { sdk } = withFakeFetch();
+  it("a failing fetch is retried, then a DataverseNetworkError", async () => {
+    const { sdk, exchanges } = withFakeFetch();
     expect((await kindOf(errors.offline(sdk, signal()))).kind).toBe("network");
+    expect(exchanges).toHaveLength(3);
   });
 
   it("an aborted request is a DataverseAbortError", async () => {
