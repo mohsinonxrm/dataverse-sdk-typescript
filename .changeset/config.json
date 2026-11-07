@@ -2,7 +2,26 @@
   "$schema": "https://unpkg.com/@changesets/config@3.1.2/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [],
+  "fixed": [
+    [
+      "@mohsinonxrm/dataverse-sdk-actions",
+      "@mohsinonxrm/dataverse-sdk-appinsights",
+      "@mohsinonxrm/dataverse-sdk-auth-azure-identity",
+      "@mohsinonxrm/dataverse-sdk-auth-msal-browser",
+      "@mohsinonxrm/dataverse-sdk-auth-msal-node",
+      "@mohsinonxrm/dataverse-sdk-batch",
+      "@mohsinonxrm/dataverse-sdk-core",
+      "@mohsinonxrm/dataverse-sdk-discovery",
+      "@mohsinonxrm/dataverse-sdk-entities-runtime",
+      "@mohsinonxrm/dataverse-sdk-files",
+      "@mohsinonxrm/dataverse-sdk-functions",
+      "@mohsinonxrm/dataverse-sdk-generator",
+      "@mohsinonxrm/dataverse-sdk-messages",
+      "@mohsinonxrm/dataverse-sdk-metadata",
+      "@mohsinonxrm/dataverse-sdk-otel",
+      "@mohsinonxrm/dataverse-sdk-xrm"
+    ]
+  ],
   "linked": [],
   "access": "public",
   "baseBranch": "main",

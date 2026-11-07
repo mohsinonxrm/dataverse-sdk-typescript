@@ -429,7 +429,7 @@ Shows what would be generated without writing files.
 - [x] Commit the generated types (1,356 actions, 229 functions, 1,356 messages, metadata types)
 - [x] Compile check of the generated code (each package's `typecheck`)
 - [x] Parser/generator tests (`test/generators.test.ts`, on small EDMX fixtures)
-- [x] `generate-metadata-types.yml` (manual workflow; opens a PR)
+- [x] Snapshot refresh instead of a live-metadata workflow: `generate-metadata-types.yml` was removed (#314); refresh `metadata/` and run `regen`
 
 ### Open
 
