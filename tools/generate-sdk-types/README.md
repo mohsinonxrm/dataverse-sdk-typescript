@@ -18,13 +18,18 @@ This tool generates the **SDK's internal types**:
    - One `<Name>Message.ts` per Web API action, exporting `<Name>Request` and `<Name>Response`
      (direct exports, no `CrmSdkMessages`/`XrmSdkMessages` namespaces; see ADR-0004)
 3. **Typed Actions** → `packages/dataverse-sdk-actions/src/`
-   - All Web API actions (bound and unbound)
+   - The Web API actions (bound and unbound) of the platform, Sales and Customer Service
 4. **Typed Functions** → `packages/dataverse-sdk-functions/src/`
-   - All Web API functions (bound and unbound)
+   - The Web API functions (bound and unbound) of the platform, Sales and Customer Service
 5. **Entity tables** → `packages/dataverse-sdk-entities-runtime/src/generated/entity-tables.ts`
    - The entity set and primary key of every table, which `createEntityReference` reads. The
      SDK has one `EntityReference`, hand-written in entities-runtime; the generated actions,
      functions and messages import it from there and re-export it (#295).
+
+The actions, functions and messages are chosen by the solution each operation comes from (#304):
+`metadata/operation-solutions.json` records them, and `metadata/prebuilt-solutions.json` says
+which solutions are prebuilt. The [solution table](metadata/README.md#which-operations-are-prebuilt)
+lists them. The other apps' operations are left to `dataverse-gen`.
 
 ## Regenerating the packages (no org needed)
 
@@ -40,7 +45,7 @@ package's `src/types/` and entities-runtime's `src/generated/`, formats them, an
 generated docs (operation lists and `<!-- count:… -->` blocks). CI runs it and fails on any diff, so change the
 generator and commit the regenerated packages together. [`metadata/README.md`](metadata/README.md)
 says which org the snapshot came from and how to refresh it (`pnpm --filter generate-sdk-types
-snapshot`, the only step that needs an org).
+snapshot`, the only step that needs an org; it also records the operations' solutions).
 
 ## Prerequisites (live `$metadata` only)
 

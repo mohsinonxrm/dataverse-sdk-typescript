@@ -4,13 +4,28 @@ Typed Web API functions for Dataverse. Functions are read-only operations that e
 
 ## Features
 
-- ✅ **<!-- count:functions -->300<!-- /count --> typed functions** - Complete CSDL-generated coverage of all Dataverse Web API functions
+- ✅ **<!-- count:functions -->280<!-- /count --> typed functions** - The Web API functions of the platform, Sales and Customer Service, generated from `$metadata`
 - ✅ **Parameter aliases** - Proper query string parameter handling per Microsoft guidance
 - ✅ **Type-safe responses** - Full TypeScript typing for request and response
 - ✅ **Common operations** - WhoAmI, InitializeFrom, CalculateRollupField, RetrieveMetadataChanges, and more
 - ✅ **Query helpers** - Fiscal period, date range, and conditional operator functions
 - ✅ **Security & access** - Privilege, role, and permission retrieval functions
 - ✅ **Metadata operations** - Entity, attribute, and relationship metadata functions
+
+## What this package covers
+
+The functions of the **platform** (Dataverse and the Power Platform solutions every environment
+has, including the Web API's query functions such as `LastXDays`) and of the two core Dynamics
+365 apps of a plain trial, **Sales** and **Customer Service**. They are chosen by the solution
+each function comes from, not by what the org the SDK was generated from has installed: the
+[solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt)
+lists every solution and whether its operations are in.
+
+Not in the package: the functions of Contact Center (Omnichannel, unified routing, voice,
+`CCaaS_*`), Field Service, Project Operations, Universal Resource Scheduling, Customer Insights -
+Journeys (`msdynmkt_*`), Customer Voice, Connected Customer Service (IoT), Power Pages and Process
+Mining, and your own custom API functions. Generate those from your org with `dataverse-gen`: see
+[Generate the rest with dataverse-gen](../../docs/getting-started.md#generate-the-rest-with-dataverse-gen).
 
 ## Installation
 
@@ -65,7 +80,7 @@ console.log(solution?.uniquename, solution?.["@odata.etag"]);
 
 ## Function Categories
 
-The SDK includes **<!-- count:functions -->300<!-- /count --> typed functions** organized into the following categories:
+The SDK includes **<!-- count:functions -->280<!-- /count --> typed functions** organized into the following categories:
 
 ### Platform Functions (Core Operations)
 
@@ -123,20 +138,17 @@ The SDK includes **<!-- count:functions -->300<!-- /count --> typed functions** 
 - `UnderFunction`, `UnderOrEqualFunction`, `NotUnderFunction`
 - `EqualUserIdFunction`, `EqualBusinessIdFunction`
 
-### Service-Specific Functions
+### Sales and Customer Service Functions
 
-**Customer Service (CCaaS):**
+- `CalculateTotalTimeIncidentFunction` - Total time spent on a case
+- `GetDefaultPriceLevelFunction` - The default price list for a product
+- `GetQuantityDecimal_quoteFunction` (and `GetQuantityDecimal_opportunityFunction`,
+  `GetQuantityDecimal_salesorderFunction`, `GetQuantityDecimal_invoiceFunction`) - The decimal
+  precision of a product's quantity
+- `msdyn_*` functions of the Sales and Customer Service solutions
 
-- `CCaaS_GetAgentsFunction` - Get available agents
-- `CCaaS_GetPresenceFunction` - Get agent presence status
-
-**Sales & Marketing:**
-
-- `msdyn_*` functions for Dynamics 365 Sales operations
-
-**Field Service:**
-
-- Resource scheduling and availability functions
+Contact Center (`CCaaS_*`), Field Service and the other apps' functions aren't in this package:
+see [What this package covers](#what-this-package-covers).
 
 ### Common Functions
 
@@ -277,7 +289,7 @@ followed by a required parameter stays in its position and takes `undefined`.
 
 ## Complete Function Reference
 
-For a complete list of all <!-- count:functions -->300<!-- /count --> functions with descriptions and examples, see [docs/mapping/supported-functions.md](../../docs/mapping/supported-functions.md).
+For a complete list of all <!-- count:functions -->280<!-- /count --> functions with descriptions and examples, see [docs/mapping/supported-functions.md](../../docs/mapping/supported-functions.md).
 
 ## Architecture
 

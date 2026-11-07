@@ -29,76 +29,6 @@ export {
   type CalculateTotalTimeIncidentResponse,
 } from "./CalculateTotalTimeIncidentFunction.js";
 export {
-  CCaaS_GetAgentsFunction,
-  type CCaaS_GetAgentsFunctionParameters,
-  type CCaaS_GetAgentsResponse,
-} from "./CCaaS_GetAgentsFunction.js";
-export {
-  CCaaS_GetAgentsForConsultAndTransferFunction,
-  type CCaaS_GetAgentsForConsultAndTransferFunctionParameters,
-  type CCaaS_GetAgentsForConsultAndTransferResponse,
-} from "./CCaaS_GetAgentsForConsultAndTransferFunction.js";
-export {
-  CCaaS_GetClientLWIContextFunction,
-  type CCaaS_GetClientLWIContextFunctionParameters,
-  type CCaaS_GetClientLWIContextResponse,
-} from "./CCaaS_GetClientLWIContextFunction.js";
-export {
-  CCaaS_GetDeliveryBatchFunction,
-  type CCaaS_GetDeliveryBatchFunctionParameters,
-  type CCaaS_GetDeliveryBatchResponse,
-} from "./CCaaS_GetDeliveryBatchFunction.js";
-export {
-  CCaaS_GetDeliveryTasksFunction,
-  type CCaaS_GetDeliveryTasksFunctionParameters,
-  type CCaaS_GetDeliveryTasksResponse,
-} from "./CCaaS_GetDeliveryTasksFunction.js";
-export {
-  CCaaS_GetPlatformObservabilityCheckAlertStateFunction,
-  type CCaaS_GetPlatformObservabilityCheckAlertStateFunctionParameters,
-  type CCaaS_GetPlatformObservabilityCheckAlertStateResponse,
-} from "./CCaaS_GetPlatformObservabilityCheckAlertStateFunction.js";
-export {
-  CCaaS_GetPlatformObservabilityCheckAlertStateV2Function,
-  type CCaaS_GetPlatformObservabilityCheckAlertStateV2FunctionParameters,
-  type CCaaS_GetPlatformObservabilityCheckAlertStateV2Response,
-} from "./CCaaS_GetPlatformObservabilityCheckAlertStateV2Function.js";
-export {
-  CCaaS_GetPlatformObservabilityLandingFunction,
-  type CCaaS_GetPlatformObservabilityLandingFunctionParameters,
-  type CCaaS_GetPlatformObservabilityLandingResponse,
-} from "./CCaaS_GetPlatformObservabilityLandingFunction.js";
-export {
-  CCaaS_GetPlatformObservabilityPerformanceDataFunction,
-  type CCaaS_GetPlatformObservabilityPerformanceDataFunctionParameters,
-  type CCaaS_GetPlatformObservabilityPerformanceDataResponse,
-} from "./CCaaS_GetPlatformObservabilityPerformanceDataFunction.js";
-export {
-  CCaaS_GetPlatformObservabilityServiceHealthFunction,
-  type CCaaS_GetPlatformObservabilityServiceHealthFunctionParameters,
-  type CCaaS_GetPlatformObservabilityServiceHealthResponse,
-} from "./CCaaS_GetPlatformObservabilityServiceHealthFunction.js";
-export {
-  CCaaS_GetPluginFixAnalysisStatusFunction,
-  type CCaaS_GetPluginFixAnalysisStatusFunctionParameters,
-  type CCaaS_GetPluginFixAnalysisStatusResponse,
-} from "./CCaaS_GetPluginFixAnalysisStatusFunction.js";
-export {
-  CCaaS_GetPresenceFunction,
-  type CCaaS_GetPresenceFunctionParameters,
-  type CCaaS_GetPresenceResponse,
-} from "./CCaaS_GetPresenceFunction.js";
-export {
-  CCaaS_GetTeamsPresenceSubscriptionConfigFunction,
-  type CCaaS_GetTeamsPresenceSubscriptionConfigFunctionParameters,
-  type CCaaS_GetTeamsPresenceSubscriptionConfigResponse,
-} from "./CCaaS_GetTeamsPresenceSubscriptionConfigFunction.js";
-export {
-  CCaaS_GuidedAgentGroupTransferConsultFunction,
-  type CCaaS_GuidedAgentGroupTransferConsultFunctionParameters,
-  type CCaaS_GuidedAgentGroupTransferConsultResponse,
-} from "./CCaaS_GuidedAgentGroupTransferConsultFunction.js";
-export {
   CheckIncomingEmailFunction,
   type CheckIncomingEmailFunctionParameters,
   type CheckIncomingEmailResponse,
@@ -444,42 +374,15 @@ export {
   type McpGetGlobalOptionSetResponse,
 } from "./McpGetGlobalOptionSetFunction.js";
 export {
-  msdyn_getchannelendpointurlFunction,
-  type msdyn_getchannelendpointurlFunctionParameters,
-  type msdyn_getchannelendpointurlResponse,
-} from "./msdyn_getchannelendpointurlFunction.js";
-export {
   msdyn_GetEntityLinkChatConfigurationFunction,
   type msdyn_GetEntityLinkChatConfigurationFunctionParameters,
   type msdyn_GetEntityLinkChatConfigurationResponse,
 } from "./msdyn_GetEntityLinkChatConfigurationFunction.js";
 export {
-  msdyn_getinboundurlFunction,
-  type msdyn_getinboundurlFunctionParameters,
-  type msdyn_getinboundurlResponse,
-} from "./msdyn_getinboundurlFunction.js";
-export {
-  msdyn_getnotificationurlFunction,
-  type msdyn_getnotificationurlFunctionParameters,
-  type msdyn_getnotificationurlResponse,
-} from "./msdyn_getnotificationurlFunction.js";
-export {
-  msdyn_getsimulationorgdetailsFunction,
-  type msdyn_getsimulationorgdetailsResponse,
-} from "./msdyn_getsimulationorgdetailsFunction.js";
-export {
   msdyn_GetSwarmParticipantDetailsFunction,
   type msdyn_GetSwarmParticipantDetailsFunctionParameters,
   type msdyn_GetSwarmParticipantDetailsResponse,
 } from "./msdyn_GetSwarmParticipantDetailsFunction.js";
-export {
-  msdyn_IsCSEnterpriseLicensedUserFunction,
-  type msdyn_IsCSEnterpriseLicensedUserResponse,
-} from "./msdyn_IsCSEnterpriseLicensedUserFunction.js";
-export {
-  msdynmkt_retrievegdprconfigurationFunction,
-  type msdynmkt_retrievegdprconfigurationResponse,
-} from "./msdynmkt_retrievegdprconfigurationFunction.js";
 export {
   msft_DataEngineIndexMgmt_GetIndexInfoFunction,
   type msft_DataEngineIndexMgmt_GetIndexInfoFunctionParameters,
@@ -1409,7 +1312,6 @@ export {
   ConditionOperator,
   DateTimeFormat,
   DeletedMetadataFilters,
-  DependencyDepth,
   EndpointAccessType,
   EndpointType,
   EntityClusterMode,
@@ -1437,17 +1339,12 @@ export {
   PrivilegeDepth,
   PrivilegeType,
   PropagationOwnershipOptions,
-  ProvisionLanguageForUserStatusType,
-  RecentlyViewedRecordType,
   RelationshipType,
-  ResultCode,
   RibbonLocationFilters,
   RollupType,
   SearchDirection,
   SecurityTypes,
   ShareAccessRights,
-  SolutionOperationStatus,
-  SolutionOperationType,
   SolutionValidationResultType,
   StageSolutionStatus,
   StringFormat,
@@ -1455,7 +1352,6 @@ export {
   SubstitutionStatus,
   TargetFieldType,
   TimeCode,
-  ValidateSolutionStatus,
   XrmAggregateType,
   XrmDateTimeGrouping,
 } from "./types/index.js";
