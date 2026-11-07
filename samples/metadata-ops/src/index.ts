@@ -25,8 +25,7 @@ import {
 import type {
   EntityMetadataCreate,
   EntityMetadata,
-  ComplexStringAttributeMetadata,
-  OneToManyRelationshipMetadata,
+  OneToManyRelationshipMetadataCreate,
   StringAttributeMetadataCreate,
   IntegerAttributeMetadataCreate,
   OptionSetMetadataCreate,
@@ -105,6 +104,7 @@ async function demo1A_CreateEntityHttpFirst(
   console.log(chalk.gray("Using client.api() directly with typed payloads..."));
 
   const entityDefinition: EntityMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
     SchemaName: `${schemaPrefix}_project`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }],
@@ -128,15 +128,11 @@ async function demo1A_CreateEntityHttpFirst(
   const startTime = Date.now();
 
   // Direct HTTP POST to /EntityDefinitions
-  // Add @odata.type at runtime for Web API
   const response = await client
     .api("/EntityDefinitions")
     .header("Content-Type", "application/json")
     .preferRaw("return=representation")
-    .post<EntityMetadata>({
-      "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-      ...entityDefinition,
-    });
+    .post<EntityMetadata>(entityDefinition);
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2);
   const metadataId = response.MetadataId;
@@ -153,23 +149,21 @@ async function demo1A_CreateEntityHttpFirst(
   // Now add primary name attribute (required for custom entities)
   console.log(chalk.gray("\nAdding primary name column..."));
 
-  const primaryNameAttr: ComplexStringAttributeMetadata = {
+  const primaryNameAttr: StringAttributeMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
     SchemaName: `${schemaPrefix}_Name`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Project Name", LanguageCode: 1033 }],
     },
     RequiredLevel: { Value: AttributeRequiredLevel.None },
     MaxLength: 100,
+    IsPrimaryName: true,
   };
 
   await client
     .api(`/EntityDefinitions(LogicalName='${schemaPrefix}_project')/Attributes`)
     .header("Content-Type", "application/json")
-    .post({
-      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-      ...primaryNameAttr,
-      IsPrimaryName: true,
-    });
+    .post(primaryNameAttr);
 
   console.log(chalk.green("  ✓ Primary name column added"));
 
@@ -257,7 +251,8 @@ async function demo2A_AddAttributeHttpFirst(
   console.log(chalk.bold.blue("\n════ Demo 2A: Add Attribute (HTTP-First) ════\n"));
   console.log(chalk.gray("Adding description column via client.api()..."));
 
-  const attributeDefinition: ComplexStringAttributeMetadata = {
+  const attributeDefinition: StringAttributeMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
     SchemaName: `${schemaPrefix}_Description`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Description", LanguageCode: 1033 }],
@@ -274,10 +269,7 @@ async function demo2A_AddAttributeHttpFirst(
   await client
     .api(`/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes`)
     .header("Content-Type", "application/json")
-    .post({
-      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-      ...attributeDefinition,
-    });
+    .post(attributeDefinition);
 
   console.log(chalk.green("✓ Attribute created (HTTP POST)"));
   console.log(chalk.gray(`  Logical Name: ${schemaPrefix.toLowerCase()}_description`));
@@ -406,31 +398,28 @@ async function demo4_CreateRelationshipHttpFirst(
   console.log(chalk.bold.blue("\n════ Demo 4: Create 1:N Relationship (HTTP-First) ════\n"));
   console.log(chalk.gray("Creating project-to-milestones relationship via client.api()..."));
 
-  const relationship: OneToManyRelationshipMetadata = {
+  const relationship: OneToManyRelationshipMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
     SchemaName: `${schemaPrefix}_project_milestones`,
     ReferencedEntity: projectEntity,
     ReferencedAttribute: `${schemaPrefix}_projectid`,
     ReferencingEntity: milestoneEntity,
+    Lookup: {
+      "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
+      SchemaName: `${schemaPrefix}_ProjectId`,
+      DisplayName: {
+        LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }],
+      },
+      RequiredLevel: { Value: AttributeRequiredLevel.ApplicationRequired },
+    },
   };
 
   // Direct HTTP POST to RelationshipDefinitions
-  // Add @odata.type and Lookup at runtime
   const _response = await client
     .api("/RelationshipDefinitions")
     .header("Content-Type", "application/json")
     .preferRaw("return=representation")
-    .post({
-      "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
-      ...relationship,
-      Lookup: {
-        "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
-        SchemaName: `${schemaPrefix}_ProjectId`,
-        DisplayName: {
-          LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }],
-        },
-        RequiredLevel: { Value: AttributeRequiredLevel.ApplicationRequired },
-      },
-    });
+    .post(relationship);
 
   console.log(chalk.green("✓ 1:N relationship created (HTTP POST)"));
   console.log(chalk.gray(`  Schema Name: ${schemaPrefix}_project_milestones`));
