@@ -1,0 +1,139 @@
+name: Release
+
+# The one workflow that publishes to npm, so each package needs a single trusted publisher
+# (`npm trust github <pkg> --repo mohsinonxrm/dataverse-sdk-typescript --file release.yml
+# --env npm --allow-publish`; see docs/release.md).
+#
+# - publish-next: run by hand on `dev`. Publishes snapshot versions (2.0.0-next-<datetime>) of
+#   every package with a pending changeset under the `next` dist-tag. Nothing is committed.
+# - release: on a push to `main` (or run by hand on `main`). The changesets action opens or
+#   updates the "Version Packages" PR; once that PR is merged, it publishes `latest`.
+#
+# Both jobs publish through the `npm` environment. Give it a required reviewer in the repo
+# settings so nothing reaches npm without an approval.
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish-next:
+    name: Publish snapshot to next (dev)
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    environment: npm
+    concurrency: release-next
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing (OIDC) and provenance
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+      # Trusted publishing needs npm 11.5.1 or later.
+      - name: Use a current npm
+        run: npm install -g npm@11 && npm --version
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm test
+      - name: Check package exports and types (publint, attw)
+        run: pnpm check:packages
+      - name: Version as snapshots (e.g. 2.0.0-next-20261107123456)
+        run: pnpm changeset version --snapshot next
+      - name: Rebuild with the snapshot versions
+        run: pnpm build
+      - name: Publish to the next dist-tag
+        run: pnpm changeset publish --tag next --no-git-tag
+        env:
+          # Fallback until a publish has gone through trusted publishing (docs/release.md);
+          # then remove this line and the NPM_TOKEN secret.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: "true"
+
+  release:
+    name: Version Packages PR or publish latest (main)
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: npm
+    concurrency: ${{ github.workflow }}-${{ github.ref }}
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write # npm trusted publishing (OIDC) and provenance
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: "pnpm"
+          registry-url: "https://registry.npmjs.org"
+
+      # Trusted publishing needs npm 11.5.1 or later.
+      - name: Use a current npm
+        run: npm install -g npm@11 && npm --version
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Run tests
+        run: pnpm test
+
+      # Release gates (#108): nothing is versioned or published unless the packages are well
+      # formed, the browser bundle works under a strict CSP, and the live suite passes.
+      - name: Check package exports and types (publint, attw)
+        run: pnpm check:packages
+
+      - name: Install Chromium for Playwright
+        run: pnpm --filter @mohsinonxrm/dataverse-sdk-browser-tests exec playwright install --with-deps chromium
+
+      - name: Browser smoke tests
+        run: pnpm test:browser
+
+      - name: Live integration tests (dev org)
+        env:
+          DATAVERSE_URL: ${{ secrets.DATAVERSE_URL }}
+          DATAVERSE_TENANT_ID: ${{ secrets.DATAVERSE_TENANT_ID }}
+          DATAVERSE_CLIENT_ID: ${{ secrets.DATAVERSE_CLIENT_ID }}
+          DATAVERSE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
+          DATAVERSE_INTEGRATION_REQUIRED: "1"
+        run: pnpm test:integration
+
+      - name: Create Release Pull Request or Publish
+        id: changesets
+        uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
+        with:
+          version: pnpm changeset version
+          publish: pnpm changeset publish
+          title: "chore(release): version packages"
+          commit: "chore(release): version packages"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Fallback until a publish has gone through trusted publishing (docs/release.md);
+          # then remove these two lines and the NPM_TOKEN secret.
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Send notification on release
+        if: steps.changesets.outputs.published == 'true'
+        run: echo "📦 Packages published - ${{ steps.changesets.outputs.publishedPackages }}"

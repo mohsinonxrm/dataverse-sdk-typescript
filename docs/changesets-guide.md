@@ -173,7 +173,7 @@ check-changeset:
 
 ### Release Automation
 
-`.github/workflows/changeset-version.yml` runs on merge to main:
+The `release` job of `.github/workflows/release.yml` runs on merge to main:
 
 ```yaml
 1. Detects pending changesets
@@ -213,7 +213,7 @@ batches with thousands of requests.
 
 ### Pre-release Versions
 
-Maintainers publish prereleases from `dev` with the **Release (next)** workflow (see [release.md](./release.md#prerelease-channel-next)). It runs the equivalent of:
+Maintainers publish prereleases from `dev` by running the **Release** workflow on `dev` (its `publish-next` job) (see [release.md](./release.md#prerelease-channel-next)). It runs the equivalent of:
 
 ```bash
 pnpm changeset version --snapshot next   # e.g. 2.0.0-next-20261105123456, not committed
