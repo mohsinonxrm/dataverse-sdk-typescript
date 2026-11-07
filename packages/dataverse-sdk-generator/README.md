@@ -167,6 +167,8 @@ dataverse-gen generate [options]
 Options:
   -c, --config <path>  Path to configuration file (default: ".dataverse-gen.json")
   --token <token>      Access token to use instead of the configured auth flow
+  --strict-nulls       Type operation responses exactly as $metadata declares them
+                       (the same as "strictNulls": true; see Strict nulls)
 ```
 
 ### `validate`
@@ -215,6 +217,9 @@ interface DataverseGenConfig {
     fileSuffix?: string;
   };
 
+  /** Type operation responses exactly as $metadata declares them (default: false; see Strict nulls) */
+  strictNulls?: boolean;
+
   /** How `generate` signs in (see Authentication) */
   auth?: {
     flow: "deviceCode" | "clientCredentials" | "clientSecret";
@@ -252,6 +257,73 @@ Generate all entities (leave empty or omit):
   "functions": ["WhoAmI", "RetrieveVersion"]
 }
 ```
+
+### Strict nulls
+
+`"strictNulls": true` in the configuration file, `--strict-nulls` on `generate`, or
+`strictNulls: true` in the config passed to `generateCode()` types operation responses exactly as
+`$metadata` declares them. It's off by default, and without it the output is the same as before.
+
+By default a complex type's properties are all optional, and `T | null` unless the CSDL declares
+them `Nullable="false"`, so reading one means handling both `undefined` and `null`. The Web API
+sends every property of a returned complex type, though, with `null` for an output that wasn't set.
+With strict nulls, each complex type an operation returns (directly, nested in another one, or as
+a base type) also gets a `<Name>Output` interface with that exact shape, and `<Class>Response` uses
+it:
+
+```typescript
+// $metadata
+// <ComplexType Name="contoso_AssessResponse">
+//   <Property Name="Score" Type="Edm.Int32" Nullable="false" />
+//   <Property Name="Reason" Type="Edm.String" />
+//   <Property Name="Detail" Type="mscrm.contoso_AssessDetail" />
+// </ComplexType>
+
+// Default
+export interface contoso_AssessResponse {
+  Score?: number;
+  Reason?: string | null;
+  Detail?: contoso_AssessDetail | null;
+}
+export interface contoso_AssessFunctionResponse extends contoso_AssessResponse {
+  "@odata.context"?: string;
+}
+
+// strictNulls: contoso_AssessResponse stays as it is, and the response uses the Output interface
+export interface contoso_AssessResponseOutput {
+  Score: number; // Nullable="false"
+  Reason: string | null; // an output that wasn't set is null
+  Detail: contoso_AssessDetailOutput | null; // nested complex types get an Output interface too
+}
+export interface contoso_AssessFunctionResponse extends contoso_AssessResponseOutput {
+  "@odata.context"?: string;
+}
+```
+
+```typescript
+const result = await client.execute(new contoso_AssessFunction());
+result.Score.toFixed(0); // number
+result.Reason?.trim(); // string | null: check for null, there's no undefined
+```
+
+The same option applies to the other kinds of return, where the CSDL says whether a value can be
+null:
+
+| Return in `$metadata`                                 | Default                     | `strictNulls`                                           |
+| ----------------------------------------------------- | --------------------------- | ------------------------------------------------------- |
+| complex type, `Nullable="false"` (all of Dataverse's) | `extends <ComplexType>`     | `extends <ComplexType>Output`                           |
+| complex type without `Nullable="false"`               | `extends <ComplexType>`     | `(<ComplexType>Output & { … }) \| null` (204 is `null`) |
+| primitive or enum without `Nullable="false"`          | `string`, `number`, …       | `string \| null`, … (204 is `null`)                     |
+| collection without `Nullable="false"`                 | `string[]`, `<Complex>[]`   | `Array<string \| null>`: the items can be null          |
+| entity, or a collection of entities                   | `<Entity> \| null`, records | the same                                                |
+
+Every return in Dataverse's `$metadata` is `Nullable="false"`, so in practice the option changes
+complex responses; the other rows matter for a CSDL that leaves returns nullable.
+
+Parameters don't change: they keep the `<ComplexType>` interfaces, whose properties are optional,
+so a caller sends only what it sets. Strict nulls is about values you read; an input you build
+doesn't have to spell out every property as `null`. An Output name that's already taken (a
+complex type called `<Name>Output`) gets a suffix (`<Name>Output_2`).
 
 ---
 

@@ -7,3 +7,15 @@ export interface <%- typeName %><%- baseType ? ' extends ' + baseType : '' %> {
   <%- propertyKey(prop.Name) %>?: <%- formatType(prop.TypeScriptType) %><%- prop.Nullable ? ' | null' : '' %>;
 <%_ }) _%>
 }
+<%_ if (output) { _%>
+
+/**
+ * <%- doc(complexType.Name) %> as an operation returns it (strictNulls): every property is there,
+ * and is `null` unless the CSDL declares it `Nullable="false"`. Parameters take <%- typeName %>.
+ */
+export interface <%- output.name %><%- output.baseType ? ' extends ' + output.baseType : '' %> {
+<%_ complexType.Properties.forEach(function(prop){ _%>
+  <%- propertyKey(prop.Name) %>: <%- output.formatType(prop.TypeScriptType) %><%- prop.Nullable ? ' | null' : '' %>;
+<%_ }) _%>
+}
+<%_ } _%>

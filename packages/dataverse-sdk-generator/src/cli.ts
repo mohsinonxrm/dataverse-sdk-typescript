@@ -47,6 +47,7 @@ program
       actions: [],
       functions: [],
       output: DEFAULT_CONFIG.output,
+      strictNulls: DEFAULT_CONFIG.strictNulls,
       auth: {
         tenantId: "your-tenant-id",
         clientId: "your-client-id",
@@ -69,7 +70,11 @@ program
   .description("Generate TypeScript code from $metadata")
   .option("-c, --config <path>", "Path to configuration file", ".dataverse-gen.json")
   .option("--token <token>", "Access token to use instead of the configured auth flow")
-  .action(async (options: { config: string; token?: string }) => {
+  .option(
+    "--strict-nulls",
+    'Type operation responses exactly as $metadata declares them: every property of a returned complex type is there, and "T | null" unless Nullable="false" (the same as "strictNulls": true in the configuration file)'
+  )
+  .action(async (options: { config: string; token?: string; strictNulls?: boolean }) => {
     const spinner = ora("Loading configuration...").start();
 
     try {
@@ -77,6 +82,7 @@ program
       const configPath = path.resolve(process.cwd(), options.config);
       const configContent = await fs.readFile(configPath, "utf-8");
       const config: DataverseGenConfig = JSON.parse(configContent);
+      if (options.strictNulls) config.strictNulls = true;
 
       spinner.text = "Validating configuration...";
 
@@ -155,6 +161,10 @@ program
         errors.push("functions must be an array");
       }
 
+      if (config.strictNulls !== undefined && typeof config.strictNulls !== "boolean") {
+        errors.push("strictNulls must be true or false");
+      }
+
       if (config.auth) {
         const flow = config.auth.flow;
         if (flow !== "deviceCode" && flow !== "clientCredentials" && flow !== "clientSecret") {
@@ -214,6 +224,7 @@ program
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         chalk.cyan(`  Output: ${config.output?.outputRoot ?? DEFAULT_CONFIG.output?.outputRoot}`)
       );
+      console.log(chalk.cyan(`  Strict nulls: ${config.strictNulls === true ? "on" : "off"}`));
     } catch (error: unknown) {
       console.log(chalk.red("✗ Validation failed"));
       console.error(chalk.red(errorMessage(error)));
@@ -226,4 +237,5 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-program.parse();
+// Awaited, so the process (and a test that imports this module) waits for the command
+await program.parseAsync();
