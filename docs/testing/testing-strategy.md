@@ -1,4 +1,4 @@
-# Testing Strategy (v1)
+# Testing Strategy
 
 ## Goals
 
@@ -6,55 +6,55 @@
 - Validate resiliency policies (retry, throttling, concurrency).
 - Validate batch formatting and parsing correctness.
 - Validate strict metadata typing (compile-time) and runtime metadata operations.
-- Validate typed actions/functions execution paths.
+- Validate typed actions/functions/messages execution paths and return values.
+- Validate the browser packages under a strict Content-Security-Policy.
 
 ## Test layers
 
-### 1) Unit tests (fast, deterministic)
+### 1) Unit and contract tests (fast, deterministic)
 
-Use vitest.
+Every package has a Vitest suite (`pnpm test`). Tests that cross the HTTP boundary use a real
+`DataverseClient` with the recording fake fetch of the private
+[`@mohsinonxrm/dataverse-sdk-testing`](../../packages/dataverse-sdk-testing/README.md) package, and
+assert on the method, URL, headers and body bytes that reach `fetch` (see
+[Contract tests](#contract-tests-fake-fetch)). Some core and metadata tests use MSW.
 
 - request builder URL/query/header generation
 - Prefer helpers produce correct header values (typed)
 - middleware pipeline order and behavior
-- retry backoff calculation and Retry-After parsing
-- concurrency limiter behavior and adaptation to `x-ms-dop-hint` (when provided by mock response)
+- retries on 429 for every method, and on 502/503/504 for idempotent requests; Retry-After parsing
+  and `maxRetryAfterMs`
+- concurrency limiter behavior and adaptation to `x-ms-dop-hint` (when provided by the mock response)
+- batch body is multipart/mixed and parsed correctly; batches split at 1000 requests and keep
+  change set boundaries
 
-### 2) Contract tests (HTTP shape correctness)
+Core's suite enforces a coverage gate (85% statements, functions and lines, 80% branches).
 
-Use MSW (browser-like) or a small fetch mock server.
+### 2) Compile-time type tests
 
-- ensure retries happen on 429 / >=502 and honor Retry-After
-- ensure batch body is multipart/mixed and parsed correctly
-- ensure batch splits at <=1000 requests and preserves change set boundaries
+The actions, functions, messages and metadata packages run `tsd` (`test:types`, part of their
+`test` script).
 
-### 3) Compile-time type tests (metadata strictness)
+- invalid metadata payloads don't compile; the `*Create` types are discriminated on `@odata.type`
+- the generated constructors and `<Name>Response` types (the #300 return contract)
 
-Use `tsd` (or `expectType` style).
+### 3) Browser smoke tests
 
-- invalid metadata payload should not compile
-- Read vs Create/Update split correctness:
-  - write type must not accept read-only/internal-use fields
-  - derived metadata types require correct discriminator and required fields
+`pnpm test:browser` bundles the browser packages with Vite and runs them in Chromium under a
+strict Content-Security-Policy ([browser-tests](../../packages/dataverse-sdk-browser-tests)).
 
-Metadata entity type model and derived types are explicitly documented.
+### 4) Integration tests (gated)
 
-### 4) Integration tests (optional, gated)
-
-Run only when env vars present.
-
-- WhoAmI typed function (GET) returns expected response shape
-- ExecuteWorkflow typed action (POST) returns asyncoperation
-- create/update attribute definition via metadata endpoints using documented patterns
-- RetrieveMetadataChanges typed call
+`pnpm test:integration` runs live tests against a real Dataverse org, only when the `DATAVERSE_*`
+variables are set ([integration-tests](../../packages/dataverse-sdk-integration-tests/README.md)
+lists what they cover).
 
 ## Test gating
 
-- Unit/contract/type tests run on every PR.
-- Integration tests run on:
-  - manual workflow dispatch
-  - nightly schedule
-  - release candidate pipeline
+- Unit, contract and type tests run on every PR, on Node 22, 24 and 26; browser tests run on
+  every PR too.
+- Integration tests run nightly and on manual workflow dispatch
+  (`.github/workflows/integration-tests.yml`).
 
 ## Contract tests (fake fetch)
 

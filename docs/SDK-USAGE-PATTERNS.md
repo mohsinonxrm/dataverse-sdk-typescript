@@ -271,16 +271,20 @@ await service.disassociate("accounts", accountId, "contact_customer_accounts", c
 import type { Account, Contact } from "./generated/entities";
 
 // ========== With client.api() ==========
-const account = await client.api("/accounts").select("name", "revenue").get<{ value: Account[] }>();
+const accounts = await client
+  .api("/accounts")
+  .select("name", "revenue")
+  .get<{ value: Account[] }>();
 
 // ========== With OrganizationService ==========
 const accountTyped = await service.retrieve<Account>("accounts", accountId, {
   select: ["name", "revenue", "telephone1"],
 });
 
-// TypeScript knows about the properties!
+// The columns the generated interface declares have their types. Any other property is
+// `unknown` (IEntity has `[key: string]: unknown`), so it must be checked before use.
 console.log(accountTyped.name); // ✅ Type-safe
-console.log(accountTyped.invalidProp); // ❌ Compile error
+const other = accountTyped.new_undeclared; // unknown
 
 // With returnRepresentation: true, create() resolves the record as T. The entity argument is
 // not checked against T.
@@ -305,13 +309,17 @@ Actions are **POST** operations that may have side effects. They return results.
 ### 1. Using Typed Action Classes with `client.execute()`
 
 ```typescript
-import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
-import type { opportunityclose } from "@mohsinonxrm/dataverse-sdk-actions";
+import {
+  WinOpportunityAction,
+  type WinOpportunityActionParameters,
+} from "@mohsinonxrm/dataverse-sdk-actions";
 
 // ========== Win Opportunity (Unbound Action) ==========
-const opportunityClose: opportunityclose = {
+// An entity parameter takes the table's columns, its @odata.type, and lookups as @odata.bind
+const opportunityClose: WinOpportunityActionParameters["OpportunityClose"] = {
+  "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
   subject: "Won the deal!",
-  opportunityid: opportunityId,
+  "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
   actualrevenue: 50000,
   actualend: new Date().toISOString(),
 };
@@ -325,34 +333,28 @@ await client.execute(winAction);
 console.log("Opportunity marked as won");
 
 // ========== CreateCustomerRelationships (Special Metadata Action) ==========
+// Lookup is a ComplexLookupAttributeMetadata and each relationship a
+// ComplexOneToManyRelationshipMetadata; MetadataClient.createCustomerRelationship() wraps this action
 import { CreateCustomerRelationshipsAction } from "@mohsinonxrm/dataverse-sdk-actions";
-import type {
-  ComplexLookupAttributeMetadata,
-  ComplexOneToManyRelationshipMetadata,
-} from "@mohsinonxrm/dataverse-sdk-actions";
-
-const lookup: ComplexLookupAttributeMetadata = {
-  SchemaName: "new_CustomerId",
-  DisplayName: { LocalizedLabels: [{ Label: "Customer", LanguageCode: 1033 }] },
-};
-
-const relationships: ComplexOneToManyRelationshipMetadata[] = [
-  {
-    SchemaName: "new_account_custom",
-    ReferencedEntity: "account",
-    ReferencingEntity: "new_customentity",
-  },
-  {
-    SchemaName: "new_contact_custom",
-    ReferencedEntity: "contact",
-    ReferencingEntity: "new_customentity",
-  },
-];
 
 const createCustAction = new CreateCustomerRelationshipsAction({
-  Lookup: lookup,
-  OneToManyRelationships: relationships,
-  SolutionUniqueName: "MyPublisher",
+  Lookup: {
+    SchemaName: "new_CustomerId",
+    DisplayName: { LocalizedLabels: [{ Label: "Customer", LanguageCode: 1033 }] },
+  },
+  OneToManyRelationships: [
+    {
+      SchemaName: "new_account_custom",
+      ReferencedEntity: "account",
+      ReferencingEntity: "new_customentity",
+    },
+    {
+      SchemaName: "new_contact_custom",
+      ReferencedEntity: "contact",
+      ReferencingEntity: "new_customentity",
+    },
+  ],
+  SolutionUniqueName: "MySolution",
 });
 
 const response = await client.execute(createCustAction);
@@ -374,10 +376,10 @@ const winResponse = await client.api("/WinOpportunity").post({
 });
 
 // ========== Bound Actions ==========
-// ExecuteWorkflow is bound to workflow entity
+// ExecuteWorkflow is bound to workflow entity; it returns the asyncoperation it started
 const executeResponse = await client
   .api(`/workflows(${workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`)
-  .post({
+  .post<{ asyncoperationid: string }>({
     EntityId: recordId,
   });
 
@@ -544,6 +546,8 @@ Each message class encapsulates:
 
 **OrganizationService.execute() implementation:**
 
+<!-- no-check -->
+
 ```typescript
 // FROM: packages/dataverse-sdk-xrm/src/OrganizationService.ts (OrganizationService.execute)
 // T comes from the request, so `await service.execute(new WhoAmIFunction())` is a WhoAmIResponse
@@ -700,7 +704,7 @@ const entities = await client
   .api("/EntityDefinitions")
   .select("LogicalName", "DisplayName")
   .filter("IsCustomEntity eq true")
-  .get();
+  .get<{ value: Array<{ LogicalName: string }> }>();
 
 console.log(`Found ${entities.value.length} entities`);
 
@@ -800,11 +804,20 @@ Dataverse Web API
 
 OrganizationService is built **on top of** HTTP primitives:
 
+<!-- no-check -->
+
 ```typescript
-// OrganizationService.create() internally does:
+// FROM: packages/dataverse-sdk-xrm/src/OrganizationService.ts (OrganizationService.create)
 const builder = this.client.api(`/${entitySetName}`);
-if (options?.impersonateUserId) builder.impersonate(options.impersonateUserId);
-const id = await builder.createAndGetId(entity, { headers: options?.headers });
+// Prefer return=representation and $select, duplicate detection, impersonation, headers, signal
+const requestOptions = this.applyWriteOptions(builder, options);
+
+if (options?.returnRepresentation) {
+  const created = await builder.post<T | undefined>(entity, requestOptions);
+  return created ?? ({} as T);
+}
+
+return builder.createAndGetId(entity, requestOptions);
 ```
 
 It's a **convenience layer**, not a separate execution path.
@@ -817,19 +830,19 @@ Metadata types use `ComplexLookupAttributeMetadata` and `ComplexOneToManyRelatio
 
 ## Summary Table
 
-| Operation        | HTTP-First (`client.api()`)                              | Typed Executable (`client.execute()`)             | OrganizationService                                | Best For            |
-| ---------------- | -------------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------- | ------------------- |
-| **Create**       | `client.api('/accounts').post({...})`                    | N/A (use HTTP or OrgService)                      | `service.create('accounts', {...})`                | Standard CRUD       |
-| **Retrieve**     | `client.api('/accounts(id)').get()`                      | N/A                                               | `service.retrieve('accounts', id)`                 | Standard CRUD       |
-| **Update**       | `client.api('/accounts(id)').patch({...})`               | N/A                                               | `service.update('accounts', id, {...})`            | Standard CRUD       |
-| **Delete**       | `client.api('/accounts(id)').delete()`                   | N/A                                               | `service.delete('accounts', id)`                   | Standard CRUD       |
-| **Query**        | `client.api('/accounts').filter(...).get()`              | N/A                                               | `service.retrieveMultiple('accounts', {...})`      | Queries             |
-| **Actions**      | `client.api('/WinOpportunity').post({...})`              | `client.execute(new WinOpportunityAction(...))`   | `service.execute(new WinOpportunityAction(...))`   | Business operations |
-| **Functions**    | `client.api('/WhoAmI').get()`                            | `client.execute(new WhoAmIFunction())`            | `service.execute(new WhoAmIFunction())`            | Read operations     |
-| **Messages**     | N/A (use messages)                                       | `client.execute(new ExecuteWorkflowRequest(...))` | `service.execute(new ExecuteWorkflowRequest(...))` | SDK messages        |
-| **Metadata**     | `client.api('/EntityDefinitions').post({...})`           | Use MetadataClient                                | N/A                                                | Schema management   |
-| **Associate**    | `client.api('/accounts(id)/contacts/$ref').post({...})`  | N/A                                               | `service.associate(...)`                           | Relationships       |
-| **Disassociate** | `client.api('/accounts(id)/contacts(id)/$ref').delete()` | N/A                                               | `service.disassociate(...)`                        | Relationships       |
+| Operation        | HTTP-First (`client.api()`)                                               | Typed Executable (`client.execute()`)             | OrganizationService                                | Best For            |
+| ---------------- | ------------------------------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------- | ------------------- |
+| **Create**       | `client.api('/accounts').post({...})`                                     | N/A (use HTTP or OrgService)                      | `service.create('accounts', {...})`                | Standard CRUD       |
+| **Retrieve**     | `client.api('/accounts(id)').get()`                                       | N/A                                               | `service.retrieve('accounts', id)`                 | Standard CRUD       |
+| **Update**       | `client.api('/accounts(id)').patch({...})`                                | N/A                                               | `service.update('accounts', id, {...})`            | Standard CRUD       |
+| **Delete**       | `client.api('/accounts(id)').delete()`                                    | N/A                                               | `service.delete('accounts', id)`                   | Standard CRUD       |
+| **Query**        | `client.api('/accounts').filter(...).get()`                               | N/A                                               | `service.retrieveMultiple('accounts', {...})`      | Queries             |
+| **Actions**      | `client.api('/WinOpportunity').post({...})`                               | `client.execute(new WinOpportunityAction(...))`   | `service.execute(new WinOpportunityAction(...))`   | Business operations |
+| **Functions**    | `client.api('/WhoAmI').get()`                                             | `client.execute(new WhoAmIFunction())`            | `service.execute(new WhoAmIFunction())`            | Read operations     |
+| **Messages**     | N/A (use messages)                                                        | `client.execute(new ExecuteWorkflowRequest(...))` | `service.execute(new ExecuteWorkflowRequest(...))` | SDK messages        |
+| **Metadata**     | `client.api('/EntityDefinitions').post({...})`                            | Use MetadataClient                                | N/A                                                | Schema management   |
+| **Associate**    | `client.api('/accounts(id)/contact_customer_accounts/$ref').post({...})`  | N/A                                               | `service.associate(...)`                           | Relationships       |
+| **Disassociate** | `client.api('/accounts(id)/contact_customer_accounts(id)/$ref').delete()` | N/A                                               | `service.disassociate(...)`                        | Relationships       |
 
 ---
 

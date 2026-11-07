@@ -264,6 +264,7 @@ tables, or a change set that must succeed or fail as a whole.
 ```typescript
 import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
+const names = ["Contoso", "Fabrikam", "Northwind"];
 const { Ids } = await client.execute(
   new CreateMultipleAction("accounts", {
     Targets: names.map((name) => ({ "@odata.type": "Microsoft.Dynamics.CRM.account", name })),
@@ -275,12 +276,15 @@ console.log(`Created ${String(Ids.length)} accounts`);
 ## Chunked file upload
 
 ```typescript
+import { readFile } from "node:fs/promises";
 import {
   CommitFileBlocksUploadAction,
   InitializeFileBlocksUploadAction,
   UploadBlockAction,
   createEntityReference,
 } from "@mohsinonxrm/dataverse-sdk-actions";
+
+const file = await readFile("contract.pdf"); // a Buffer
 
 const { FileContinuationToken } = await client.execute(
   new InitializeFileBlocksUploadAction({
@@ -298,7 +302,7 @@ for (let offset = 0, n = 0; offset < file.length; offset += blockSize, n++) {
   await client.execute(
     new UploadBlockAction({
       BlockId: blockId,
-      BlockData: Buffer.from(file.subarray(offset, offset + blockSize)).toString("base64"),
+      BlockData: file.subarray(offset, offset + blockSize).toString("base64"),
       FileContinuationToken: FileContinuationToken,
     })
   );
