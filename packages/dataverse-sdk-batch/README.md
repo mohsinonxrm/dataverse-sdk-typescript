@@ -78,13 +78,13 @@ addRequest(
 ```
 
 - **id**: Unique identifier for this request; results are keyed by it. Inside a changeset it is also sent as the part's `Content-ID`, so it may only contain letters, digits, `.`, `_`, `~` and `-`.
-- **method**: HTTP method (GET, POST, PATCH, DELETE, etc.)
-- **url**: Request URL: relative to the Web API root (`accounts`, `/accounts`), absolute, or a `$<id>` reference to an earlier request in the same changeset. Relative URLs are resolved against the client's Web API root.
-- **headers**: Optional HTTP headers for this request
+- **method**: HTTP method (GET, POST, PATCH, DELETE, etc.). Dataverse doesn't allow a GET inside a changeset, so that throws.
+- **url**: Request URL: relative to the Web API root (`accounts`, `/accounts`), absolute, or a `$<id>` reference to an earlier request in the same changeset. Relative URLs are resolved against the client's Web API root. A URL starting with `$` is a `$<id>` reference: outside a changeset, or naming no earlier request of the open changeset, it throws. Write a path such as `$metadata` as `/$metadata`.
+- **headers**: Optional HTTP headers for this request. Names must be HTTP tokens, and values can't contain CR, LF or NUL, which would add lines to the batch body.
 - **body**: Optional request body. Strings are sent as they are; anything else is JSON-encoded (`null` and `undefined` send no body). The part gets `Content-Type: application/json; type=entry` unless `headers` sets a content type.
 - **dependsOn**: Optional ids of earlier requests in the same changeset that this request refers to with `$<id>`. They are checked when the request is added: an id that isn't an earlier request of the open changeset throws. It doesn't change what is sent.
 
-Returns the builder for method chaining.
+Returns the builder for method chaining. Invalid input throws `DataverseInvalidRequestError` and the request isn't added.
 
 ##### beginChangeset()
 
@@ -125,6 +125,10 @@ execute(options?: BatchExecutionOptions): Promise<BatchExecutionResult>
 - **continueOnError**: Run every request even when one fails (`Prefer: odata.continue-on-error`), and return the result instead of throwing (default: false)
 - **batchSize**: Maximum requests per `$batch`, 1 to 1000 (default: 1000, the Dataverse limit). Larger batches are split, keeping each changeset whole.
 - **headers**: Additional HTTP headers for the `$batch` request
+- **signal**: Cancels the execution: the `$batch` in flight is aborted and no later `$batch` of a split batch is sent. Requests Dataverse already ran aren't undone.
+- **timeoutMs**: Time limit for the whole execution, in ms, every `$batch` of a split batch and its retries included. It covers the whole execution, not each `$batch`.
+- **attemptTimeoutMs**: Time limit for each attempt of each `$batch` request, in ms
+- **correlationId**: Sent with every `$batch` request (`x-ms-correlation-id`), so the requests of a split batch can be found together. A new one is generated per `$batch` when omitted.
 
 **Returns:** a `BatchExecutionResult` with every response, keyed by request id and in request order.
 
@@ -132,7 +136,21 @@ execute(options?: BatchExecutionOptions): Promise<BatchExecutionResult>
 
 - `DataverseBatchError` when a request fails and `continueOnError` is not set. Its `result` holds everything that was received.
 - `DataverseODataError` or `DataverseThrottleError` when the batch fails as a whole (a malformed batch, auth, throttling).
-- `DataverseBatchError` with that typed error as its `cause`, when a later batch of a split one fails as a whole. Its `result` holds the batches that ran.
+- `DataverseAbortError` when `signal` aborts, or `DataverseNetworkError` (`RequestTimeout`) when `timeoutMs` passes, before or during the first `$batch`.
+- `DataverseBatchError` with that typed error as its `cause`, when a later batch of a split one fails as a whole, is aborted or times out. Its `result` holds the batches that ran, and the requests that weren't sent are in `skippedRequestIds`.
+
+<!-- no-check -->
+
+```typescript
+const controller = new AbortController();
+try {
+  await batch.execute({ signal: controller.signal, timeoutMs: 120_000 });
+} catch (err) {
+  if (err instanceof DataverseBatchError && err.cause instanceof DataverseAbortError) {
+    // Aborted after one or more $batch requests ran: err.result holds what they returned.
+  }
+}
+```
 
 ##### encode(boundary)
 
@@ -426,6 +444,7 @@ const result = await batch.execute();
 - **Content-IDs**: Each request's id is its Content-ID, so ids stay unique across the whole batch
 - **Cannot nest**: Only one changeset can be active at a time
 - **Cannot be empty**: Must contain at least one request
+- **No GET**: Dataverse doesn't allow a GET inside a changeset, so `addRequest()` throws for one
 - **Failure**: When a request in a changeset fails, Dataverse rolls the changeset back and answers only with the failing request's response
 
 ### Content-ID References
@@ -459,6 +478,10 @@ interface BatchExecutionOptions {
   continueOnError?: boolean;
   batchSize?: number;
   headers?: Record<string, string>;
+  signal?: AbortSignal;
+  timeoutMs?: number;
+  attemptTimeoutMs?: number;
+  correlationId?: string;
 }
 ```
 

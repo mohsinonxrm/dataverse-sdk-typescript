@@ -170,6 +170,30 @@ export interface BatchExecutionOptions {
    * Additional headers to include in the batch request
    */
   headers?: Record<string, string>;
+
+  /**
+   * Cancels the execution. The `$batch` in flight is aborted and no later `$batch` of a split
+   * batch is sent. `execute()` rejects with `DataverseAbortError`; once a `$batch` of a split
+   * batch has run, it rejects with a `DataverseBatchError` whose `cause` is that error and
+   * whose `result` holds what ran. An abort doesn't undo requests Dataverse already ran.
+   */
+  signal?: AbortSignal;
+
+  /**
+   * Time limit for the whole execution, in ms: every `$batch` of a split batch, with its retries
+   * and waits. When it passes, `execute()` rejects with `DataverseNetworkError` (`RequestTimeout`),
+   * wrapped like an abort once a `$batch` has run (see `signal`).
+   */
+  timeoutMs?: number;
+
+  /** Time limit for each attempt of each `$batch` request, in ms. A timed-out attempt is not retried. */
+  attemptTimeoutMs?: number;
+
+  /**
+   * Correlation id sent with every `$batch` request (`x-ms-correlation-id`), so the requests of a
+   * split batch can be found together. A new one is generated per `$batch` when omitted.
+   */
+  correlationId?: string;
 }
 
 /**
