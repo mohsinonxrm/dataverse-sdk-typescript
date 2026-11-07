@@ -8,6 +8,7 @@ import {
 } from "@mohsinonxrm/dataverse-sdk-testing";
 import type { RecordedRequest } from "@mohsinonxrm/dataverse-sdk-testing";
 import {
+  DataverseAbortError,
   DataverseError,
   DataverseInvalidRequestError,
   DataverseODataError,
@@ -75,7 +76,7 @@ describe("DiscoveryClient pipeline (#30)", () => {
   });
 
   describe("abort", () => {
-    it("rejects with AbortError and sends nothing when the signal is already aborted", async () => {
+    it("rejects with DataverseAbortError and sends nothing when the signal is already aborted", async () => {
       const { fake, client } = setup();
       fake.on("GET", "/Instances", () => jsonResponse({ value: [] }));
       const controller = new AbortController();
@@ -83,7 +84,7 @@ describe("DiscoveryClient pipeline (#30)", () => {
 
       await expect(
         client.getEnabledOrganizations({ signal: controller.signal })
-      ).rejects.toMatchObject({ name: "AbortError" });
+      ).rejects.toBeInstanceOf(DataverseAbortError);
       expect(fake.requests).toHaveLength(0);
     });
 
@@ -110,7 +111,7 @@ describe("DiscoveryClient pipeline (#30)", () => {
         controller.abort();
       }, 20);
 
-      await expect(pending).rejects.toMatchObject({ name: "AbortError" });
+      await expect(pending).rejects.toBeInstanceOf(DataverseAbortError);
       expect(Date.now() - started).toBeLessThan(5000);
       expect(fake.requests).toHaveLength(1);
     });
@@ -208,7 +209,8 @@ describe("DiscoveryClient pipeline (#30)", () => {
 
       await client.listOrganizations({
         filter: "contains(FriendlyName,'A&B+C#1')",
-        select: ["FriendlyName", "Odd&Name=1"],
+        // Only OrganizationDetail names type-check (#381); a JavaScript caller can send any.
+        select: ["FriendlyName", "Odd&Name=1" as keyof OrganizationDetail],
         orderby: "FriendlyName desc",
       });
 

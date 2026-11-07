@@ -5,7 +5,11 @@
  * which is how #83 shipped; see #39.)
  */
 import { describe, it, expect } from "vitest";
-import { DataverseDuplicateError, DataverseError } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  DataverseDuplicateError,
+  DataverseError,
+  DataverseInvalidRequestError,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import {
   TEST_API_URL,
   createTestClient,
@@ -92,6 +96,24 @@ describe("OrganizationService", () => {
       const req = fake.last();
       expect(req.headers.prefer).toBe("return=representation");
       expect(query(req, "$select")).toBe("accountid,name");
+    });
+
+    // #381: an empty answer resolved `{}`, a made-up record typed as `T`.
+    it.each([
+      ["a 204", () => createdResponse("accounts", ID)],
+      ["an empty 201", () => new Response("", { status: 201 })],
+    ])("returnRepresentation rejects %s with no record", async (_, response) => {
+      const { fake, service } = setup();
+      fake.on("POST", "/accounts", response);
+
+      const created = service.create(
+        "accounts",
+        { name: "Contoso" },
+        { returnRepresentation: true }
+      );
+
+      await expect(created).rejects.toBeInstanceOf(DataverseInvalidRequestError);
+      await expect(created).rejects.toThrow(/no representation/);
     });
 
     it("sends impersonation, duplicate detection and custom headers", async () => {
@@ -315,6 +337,25 @@ describe("OrganizationService", () => {
       expect(query(fake.last(), "$select")).toBe("name");
     });
 
+    // #381: an empty answer resolved `{}`, a made-up record typed as `T`.
+    it.each([
+      ["a 204", () => noContent()],
+      ["an empty 200", () => new Response("", { status: 200 })],
+    ])("returnRepresentation rejects %s with no record", async (_, response) => {
+      const { fake, service } = setup();
+      fake.on("PATCH", `/accounts(${ID})`, response);
+
+      const updated = service.update(
+        "accounts",
+        ID,
+        { name: "Renamed" },
+        { returnRepresentation: true }
+      );
+
+      await expect(updated).rejects.toBeInstanceOf(DataverseInvalidRequestError);
+      await expect(updated).rejects.toThrow(/no representation/);
+    });
+
     it("detectDuplicates sends MSCRM.SuppressDuplicateDetection: false", async () => {
       const { fake, service } = setup();
       fake.on("PATCH", `/contacts(${ID})`, () => noContent());
@@ -473,6 +514,14 @@ describe("OrganizationService", () => {
       // @ts-expect-error -- not an Executable<T>
       await expect(service.execute({ name: "NotExecutable" })).rejects.toThrow(
         /Executable<T> interface/
+      );
+    });
+
+    it("rejects a request that isn't Executable with DataverseInvalidRequestError (#381)", async () => {
+      const { service } = setup();
+      // @ts-expect-error -- not an Executable<T>
+      await expect(service.execute({ name: "NotExecutable" })).rejects.toBeInstanceOf(
+        DataverseInvalidRequestError
       );
     });
   });
