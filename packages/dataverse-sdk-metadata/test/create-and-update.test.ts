@@ -1,7 +1,8 @@
 /**
  * #64: metadata creates return `204 No Content` with the new id in `OData-EntityId`, not a body.
  * Creates and updates also take a solution, and `mergeAndUpdateEntityDefinition` keeps the
- * properties a `PUT` would otherwise reset.
+ * properties a `PUT` would otherwise reset. #359: updates take the full definition, and the
+ * attribute, relationship and global choice merge helpers read it with `Consistency: Strong`.
  */
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { http, HttpResponse } from "msw";
@@ -66,6 +67,23 @@ function created(collection: string): Response {
 }
 
 const label = { LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }] };
+
+/** A retrieved table and text column, as the GETs of the merge helpers return them. */
+const currentTable = {
+  MetadataId: ID,
+  LogicalName: "new_project",
+  SchemaName: "new_Project",
+  HasNotes: true,
+};
+const currentNote = {
+  MetadataId: ID,
+  LogicalName: "new_note",
+  SchemaName: "new_Note",
+  MaxLength: 200,
+  FormatName: { Value: "Text" as const },
+  RequiredLevel: { Value: "None" as const, CanBeChanged: true },
+  DisplayName: { LocalizedLabels: [{ Label: "Note", LanguageCode: 1033 }] },
+};
 
 const creates = [
   {
@@ -159,11 +177,48 @@ describe("#64: metadata updates", () => {
     reply = () => new HttpResponse(null, { status: 204 });
     const o = { solutionUniqueName: "SdkTests" };
 
-    await metadata.updateEntityDefinition("new_project", { DisplayName: label }, o);
-    await metadata.updateAttributeDefinition("new_project", "new_note", { DisplayName: label }, o);
-    await metadata.updateOneToManyRelationship("new_account_project", {}, o);
-    await metadata.updateManyToManyRelationship("new_project_contact", {}, o);
-    await metadata.updateGlobalOptionSet("new_colors", {}, o);
+    // Full definitions, as a PUT replaces the definition: `@odata.type` is required (#359).
+    await metadata.updateEntityDefinition(
+      "new_project",
+      { ...currentTable, "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata" },
+      o
+    );
+    await metadata.updateAttributeDefinition(
+      "new_project",
+      "new_note",
+      { ...currentNote, "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata" },
+      o
+    );
+    await metadata.updateOneToManyRelationship(
+      "new_account_project",
+      {
+        "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+        SchemaName: "new_account_project",
+        ReferencedEntity: "account",
+        ReferencingEntity: "new_project",
+      },
+      o
+    );
+    await metadata.updateManyToManyRelationship(
+      "new_project_contact",
+      {
+        "@odata.type": "Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata",
+        SchemaName: "new_project_contact",
+        Entity1LogicalName: "new_project",
+        Entity2LogicalName: "contact",
+      },
+      o
+    );
+    await metadata.updateGlobalOptionSet(
+      "new_colors",
+      {
+        "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
+        Name: "new_colors",
+        DisplayName: label,
+        IsGlobal: true,
+      },
+      o
+    );
 
     expect(requests.map((r) => `${r.method} ${r.path}`)).toEqual([
       "PUT /EntityDefinitions(LogicalName='new_project')",
@@ -198,6 +253,8 @@ describe("#64: metadata updates", () => {
       "GET /EntityDefinitions(LogicalName='new_project')",
       "PUT /EntityDefinitions(LogicalName='new_project')",
     ]);
+    // #359: a cached copy, up to ~30 s old, would make the PUT revert a recent change.
+    expect(requests[0].headers.get("consistency")).toBe("Strong");
     const put = requests[1];
     expect(put.headers.get("mscrm.mergelabels")).toBe("true");
     expect(JSON.parse(put.body)).toEqual({
@@ -209,5 +266,166 @@ describe("#64: metadata updates", () => {
       IsAuditEnabled: { Value: true, CanBeChanged: true },
       Description: description,
     });
+  });
+});
+
+/** Answer GETs with `body` (plus OData annotations) and everything else with 204. */
+function answerGet(context: string, body: Record<string, unknown>): void {
+  reply = (r) =>
+    r.method === "GET"
+      ? HttpResponse.json({
+          "@odata.context": `${API}/$metadata#${context}/$entity`,
+          "@odata.etag": 'W/"1"',
+          "DisplayName@odata.type": "#Microsoft.Dynamics.CRM.Label",
+          ...body,
+        })
+      : new HttpResponse(null, { status: 204 });
+}
+
+describe("#359: merge helpers read the current definition (Consistency: Strong) and PUT it back", () => {
+  it("mergeAndUpdateAttributeDefinition casts the GET to the column's type and keeps MaxLength", async () => {
+    answerGet(
+      "EntityDefinitions('new_project')/Attributes/Microsoft.Dynamics.CRM.StringAttributeMetadata",
+      currentNote
+    );
+
+    const displayName = { LocalizedLabels: [{ Label: "Comment", LanguageCode: 1033 }] };
+    await metadata.mergeAndUpdateAttributeDefinition(
+      "new_project",
+      "new_note",
+      { "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata", DisplayName: displayName },
+      { solutionUniqueName: "SdkTests" }
+    );
+
+    expect(requests.map((r) => `${r.method} ${r.path}`)).toEqual([
+      "GET /EntityDefinitions(LogicalName='new_project')/Attributes(LogicalName='new_note')/Microsoft.Dynamics.CRM.StringAttributeMetadata",
+      "PUT /EntityDefinitions(LogicalName='new_project')/Attributes(LogicalName='new_note')",
+    ]);
+    const [get, put] = requests;
+    expect(get.headers.get("consistency")).toBe("Strong");
+    expect(put.headers.get("mscrm.mergelabels")).toBe("true");
+    expect(put.headers.get("mscrm.solutionuniquename")).toBe("SdkTests");
+    expect(JSON.parse(put.body)).toEqual({
+      ...currentNote,
+      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+      DisplayName: displayName,
+    });
+  });
+
+  it("mergeAndUpdateRelationship casts the GET to the relationship's type", async () => {
+    const current = {
+      MetadataId: ID,
+      SchemaName: "new_account_project",
+      ReferencedEntity: "account",
+      ReferencingEntity: "new_project",
+      CascadeConfiguration: { Delete: "RemoveLink", Assign: "NoCascade" },
+      IsValidForAdvancedFind: true,
+    };
+    answerGet(
+      "RelationshipDefinitions/Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+      current
+    );
+
+    await metadata.mergeAndUpdateRelationship("new_account_project", {
+      "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+      IsValidForAdvancedFind: false,
+    });
+
+    expect(requests.map((r) => `${r.method} ${r.path}`)).toEqual([
+      "GET /RelationshipDefinitions(SchemaName='new_account_project')/Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+      "PUT /RelationshipDefinitions(SchemaName='new_account_project')",
+    ]);
+    expect(requests[0].headers.get("consistency")).toBe("Strong");
+    expect(JSON.parse(requests[1].body)).toEqual({
+      ...current,
+      "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+      IsValidForAdvancedFind: false,
+    });
+  });
+
+  it("mergeAndUpdateRelationship reads an N:N relationship as ManyToManyRelationshipMetadata", async () => {
+    answerGet("RelationshipDefinitions/Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata", {
+      SchemaName: "new_project_contact",
+    });
+
+    await metadata.mergeAndUpdateRelationship("new_project_contact", {
+      "@odata.type": "Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata",
+      IsValidForAdvancedFind: false,
+    });
+
+    expect(requests[0].path).toBe(
+      "/RelationshipDefinitions(SchemaName='new_project_contact')/Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata"
+    );
+    expect(JSON.parse(requests[1].body)).toEqual({
+      "@odata.type": "Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata",
+      SchemaName: "new_project_contact",
+      IsValidForAdvancedFind: false,
+    });
+  });
+
+  it("mergeAndUpdateGlobalOptionSet keeps the other properties and leaves the options out", async () => {
+    const current = {
+      MetadataId: ID,
+      Name: "new_colors",
+      IsGlobal: true,
+      OptionSetType: "Picklist",
+      DisplayName: { LocalizedLabels: [{ Label: "Colors", LanguageCode: 1033 }] },
+      Options: [{ Value: 1, Label: { LocalizedLabels: [{ Label: "Red", LanguageCode: 1033 }] } }],
+    };
+    answerGet("GlobalOptionSetDefinitions/Microsoft.Dynamics.CRM.OptionSetMetadata", current);
+
+    const description = { LocalizedLabels: [{ Label: "Paint colors", LanguageCode: 1033 }] };
+    await metadata.mergeAndUpdateGlobalOptionSet("new_colors", { Description: description });
+
+    expect(requests.map((r) => `${r.method} ${r.path}`)).toEqual([
+      "GET /GlobalOptionSetDefinitions(Name='new_colors')/Microsoft.Dynamics.CRM.OptionSetMetadata",
+      "PUT /GlobalOptionSetDefinitions(Name='new_colors')",
+    ]);
+    expect(requests[0].headers.get("consistency")).toBe("Strong");
+    const { Options: _options, ...rest } = current;
+    // Options aren't updated by a PUT: InsertOptionValue, UpdateOptionValue and friends do that.
+    expect(JSON.parse(requests[1].body)).toEqual({
+      ...rest,
+      "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
+      Description: description,
+    });
+  });
+
+  it("mergeAndUpdateGlobalOptionSet takes a MetadataId", async () => {
+    answerGet("GlobalOptionSetDefinitions/Microsoft.Dynamics.CRM.OptionSetMetadata", { Name: "x" });
+    await metadata.mergeAndUpdateGlobalOptionSet(ID, { IsCustomizable: { Value: true } });
+    expect(requests.map((r) => `${r.method} ${r.path}`)).toEqual([
+      `GET /GlobalOptionSetDefinitions(${ID})/Microsoft.Dynamics.CRM.OptionSetMetadata`,
+      `PUT /GlobalOptionSetDefinitions(${ID})`,
+    ]);
+  });
+
+  it("rejects changes without a usable @odata.type before sending anything", async () => {
+    const untyped = metadata as unknown as {
+      mergeAndUpdateAttributeDefinition(e: string, a: string, c: object): Promise<void>;
+      mergeAndUpdateRelationship(s: string, c: object): Promise<void>;
+    };
+    await expect(
+      untyped.mergeAndUpdateAttributeDefinition("new_project", "new_note", { MaxLength: 1 })
+    ).rejects.toBeInstanceOf(DataverseInvalidRequestError);
+    await expect(
+      untyped.mergeAndUpdateRelationship("new_rel", { "@odata.type": "x)/../../Things" })
+    ).rejects.toBeInstanceOf(DataverseInvalidRequestError);
+    expect(requests).toEqual([]);
+  });
+
+  it("a failed GET is thrown and nothing is PUT", async () => {
+    reply = () =>
+      HttpResponse.json(
+        { error: { code: "0x80040217", message: "Could not find the attribute." } },
+        { status: 404 }
+      );
+    await expect(
+      metadata.mergeAndUpdateAttributeDefinition("new_project", "new_nope", {
+        "@odata.type": "Microsoft.Dynamics.CRM.MemoAttributeMetadata",
+        MaxLength: 4000,
+      })
+    ).rejects.toBeInstanceOf(DataverseODataError);
+    expect(requests.map((r) => r.method)).toEqual(["GET"]);
   });
 });
