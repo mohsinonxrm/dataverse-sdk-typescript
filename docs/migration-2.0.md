@@ -89,6 +89,7 @@ A configured `account` object no longer overrides MSAL's active account. Pass `a
 - `download()` returns a `Blob`.
 - `delete()` sends `DELETE`.
 - Every failed step rejects with a typed error.
+- **File names go in the query string (#362).** The `single` and `patch-chunked` uploads send the name as the `?x-ms-file-name=` query parameter instead of the `x-ms-file-name` header, which can't carry names outside ASCII (`合同.pdf` made `fetch` throw). A proxy or custom fetch provider that reads the header should read the query parameter instead.
 
 ## otel
 
