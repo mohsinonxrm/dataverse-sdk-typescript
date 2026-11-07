@@ -1,6 +1,6 @@
-import type { Label } from './Label.js';
-import type { StateOptionMetadata } from './StateOptionMetadata.js';
-import type { StatusOptionMetadata } from './StatusOptionMetadata.js';
+import type { Label } from "./Label.js";
+import type { StateOptionMetadata } from "./StateOptionMetadata.js";
+import type { StatusOptionMetadata } from "./StatusOptionMetadata.js";
 
 /**
  * OptionMetadata complex type
@@ -26,5 +26,4 @@ export interface OptionMetadata {
 export type TypedOptionMetadata =
   | (OptionMetadata & { "@odata.type": "Microsoft.Dynamics.CRM.OptionMetadata" })
   | (StateOptionMetadata & { "@odata.type": "Microsoft.Dynamics.CRM.StateOptionMetadata" })
-  | (StatusOptionMetadata & { "@odata.type": "Microsoft.Dynamics.CRM.StatusOptionMetadata" })
-;
+  | (StatusOptionMetadata & { "@odata.type": "Microsoft.Dynamics.CRM.StatusOptionMetadata" });

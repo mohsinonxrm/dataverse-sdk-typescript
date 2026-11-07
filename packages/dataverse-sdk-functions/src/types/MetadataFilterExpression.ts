@@ -1,5 +1,5 @@
-import type { LogicalOperator } from './LogicalOperator.js';
-import type { MetadataConditionExpression } from './MetadataConditionExpression.js';
+import type { LogicalOperator } from "./LogicalOperator.js";
+import type { MetadataConditionExpression } from "./MetadataConditionExpression.js";
 
 /**
  * MetadataFilterExpression complex type

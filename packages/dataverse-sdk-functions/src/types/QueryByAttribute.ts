@@ -1,8 +1,8 @@
-import type { ColumnSet } from './ColumnSet.js';
-import type { Object } from './Object.js';
-import type { OrderExpression } from './OrderExpression.js';
-import type { PagingInfo } from './PagingInfo.js';
-import type { QueryBase } from './QueryBase.js';
+import type { ColumnSet } from "./ColumnSet.js";
+import type { Object } from "./Object.js";
+import type { OrderExpression } from "./OrderExpression.js";
+import type { PagingInfo } from "./PagingInfo.js";
+import type { QueryBase } from "./QueryBase.js";
 
 /**
  * QueryByAttribute complex type

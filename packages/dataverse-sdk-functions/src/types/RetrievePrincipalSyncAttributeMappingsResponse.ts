@@ -1,4 +1,4 @@
-import type { AttributeMapping } from './AttributeMapping.js';
+import type { AttributeMapping } from "./AttributeMapping.js";
 
 /**
  * RetrievePrincipalSyncAttributeMappingsResponse complex type

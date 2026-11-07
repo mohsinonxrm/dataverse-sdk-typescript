@@ -1,4 +1,4 @@
-import type { SubstitutionResult } from './SubstitutionResult.js';
+import type { SubstitutionResult } from "./SubstitutionResult.js";
 
 /**
  * SubstituteForComponentResponse complex type

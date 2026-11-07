@@ -1,4 +1,4 @@
-import type { QueryBase } from './QueryBase.js';
+import type { QueryBase } from "./QueryBase.js";
 
 /**
  * FetchExpression complex type

@@ -1,5 +1,5 @@
-import type { AssociatedMenuConfiguration } from './AssociatedMenuConfiguration.js';
-import type { RelationshipMetadataBase } from './RelationshipMetadataBase.js';
+import type { AssociatedMenuConfiguration } from "./AssociatedMenuConfiguration.js";
+import type { RelationshipMetadataBase } from "./RelationshipMetadataBase.js";
 
 /**
  * ManyToManyRelationshipMetadata entity type

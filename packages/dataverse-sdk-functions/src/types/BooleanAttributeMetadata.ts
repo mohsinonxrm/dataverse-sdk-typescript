@@ -1,4 +1,4 @@
-import type { AttributeMetadata } from './AttributeMetadata.js';
+import type { AttributeMetadata } from "./AttributeMetadata.js";
 
 /**
  * BooleanAttributeMetadata entity type

@@ -1,4 +1,4 @@
-import type { BusinessNotificationParameterType } from './BusinessNotificationParameterType.js';
+import type { BusinessNotificationParameterType } from "./BusinessNotificationParameterType.js";
 
 /**
  * BusinessNotificationParameter complex type

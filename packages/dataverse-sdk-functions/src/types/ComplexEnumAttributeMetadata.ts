@@ -1,5 +1,5 @@
-import type { ComplexAttributeMetadata } from './ComplexAttributeMetadata.js';
-import type { ComplexOptionSetMetadata } from './ComplexOptionSetMetadata.js';
+import type { ComplexAttributeMetadata } from "./ComplexAttributeMetadata.js";
+import type { ComplexOptionSetMetadata } from "./ComplexOptionSetMetadata.js";
 
 /**
  * ComplexEnumAttributeMetadata complex type

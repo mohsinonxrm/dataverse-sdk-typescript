@@ -1,4 +1,4 @@
-import type { MissingPackage } from './MissingPackage.js';
+import type { MissingPackage } from "./MissingPackage.js";
 
 /**
  * MissingDependency complex type

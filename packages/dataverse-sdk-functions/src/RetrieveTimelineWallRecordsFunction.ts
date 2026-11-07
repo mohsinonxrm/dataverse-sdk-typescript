@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
-import type { EntityReference } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 /**
  * Response from the RetrieveTimelineWallRecords function.
@@ -29,9 +29,7 @@ export interface RetrieveTimelineWallRecordsFunctionParameters {
  * Binding parameter: entityset (Collection(mscrm.activitypointer))
  */
 export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveTimelineWallRecordsResponse> {
-  constructor(
-    public readonly parameters: RetrieveTimelineWallRecordsFunctionParameters,
-  ) {}
+  constructor(public readonly parameters: RetrieveTimelineWallRecordsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function (entity collection)
@@ -42,25 +40,28 @@ export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveT
     const aliases: string[] = [];
     if (this.parameters.FetchXml !== undefined) {
       aliases.push(`FetchXml=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.FetchXml, 'Edm.String'));
+      params.append("@p1", formatParameterAlias(this.parameters.FetchXml, "Edm.String"));
     }
     if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p2`);
-      params.append('@p2', formatParameterAlias(this.parameters.Target, 'mscrm.crmbaseentity', 'EntityType'));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
+      );
     }
     if (this.parameters.RollupType !== undefined) {
       aliases.push(`RollupType=@p3`);
-      params.append('@p3', formatParameterAlias(this.parameters.RollupType, 'Edm.Int32'));
+      params.append("@p3", formatParameterAlias(this.parameters.RollupType, "Edm.Int32"));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

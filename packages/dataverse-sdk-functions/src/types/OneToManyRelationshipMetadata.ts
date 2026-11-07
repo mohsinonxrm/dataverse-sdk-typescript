@@ -1,7 +1,7 @@
-import type { AssociatedMenuConfiguration } from './AssociatedMenuConfiguration.js';
-import type { CascadeConfiguration } from './CascadeConfiguration.js';
-import type { RelationshipAttribute } from './RelationshipAttribute.js';
-import type { RelationshipMetadataBase } from './RelationshipMetadataBase.js';
+import type { AssociatedMenuConfiguration } from "./AssociatedMenuConfiguration.js";
+import type { CascadeConfiguration } from "./CascadeConfiguration.js";
+import type { RelationshipAttribute } from "./RelationshipAttribute.js";
+import type { RelationshipMetadataBase } from "./RelationshipMetadataBase.js";
 
 /**
  * OneToManyRelationshipMetadata entity type

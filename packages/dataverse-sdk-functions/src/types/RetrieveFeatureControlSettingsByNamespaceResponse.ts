@@ -1,4 +1,4 @@
-import type { FeatureControlSettingData } from './FeatureControlSettingData.js';
+import type { FeatureControlSettingData } from "./FeatureControlSettingData.js";
 
 /**
  * RetrieveFeatureControlSettingsByNamespaceResponse complex type

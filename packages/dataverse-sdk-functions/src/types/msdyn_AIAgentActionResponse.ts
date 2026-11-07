@@ -1,6 +1,6 @@
-import type { msdyn_aiagentstatus } from './msdyn_aiagentstatus.js';
-import type { EntityReference } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
-import type { EntityPayload } from './EntityPayload.js';
+import type { msdyn_aiagentstatus } from "./msdyn_aiagentstatus.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type { EntityPayload } from "./EntityPayload.js";
 
 /**
  * msdyn_AIAgentActionResponse complex type

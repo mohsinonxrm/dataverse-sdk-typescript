@@ -1,4 +1,4 @@
-import type { ErrorInfo } from './ErrorInfo.js';
+import type { ErrorInfo } from "./ErrorInfo.js";
 
 /**
  * TraceInfo complex type

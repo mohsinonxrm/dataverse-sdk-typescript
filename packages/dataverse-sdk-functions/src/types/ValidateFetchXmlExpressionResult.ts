@@ -1,4 +1,4 @@
-import type { ValidatorIssue } from './ValidatorIssue.js';
+import type { ValidatorIssue } from "./ValidatorIssue.js";
 
 /**
  * ValidateFetchXmlExpressionResult complex type

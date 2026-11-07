@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
-import type { RolePrivilege } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { RolePrivilege } from "./types/index.js";
 
 /**
  * Response from the RetrieveRolePrivilegesRole function.
@@ -26,9 +26,7 @@ export interface RetrieveRolePrivilegesRoleFunctionParameters {
  * Unbound function
  */
 export class RetrieveRolePrivilegesRoleFunction implements Executable<RetrieveRolePrivilegesRoleResponse> {
-  constructor(
-    public readonly parameters: RetrieveRolePrivilegesRoleFunctionParameters,
-  ) {}
+  constructor(public readonly parameters: RetrieveRolePrivilegesRoleFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveRolePrivilegesRole`;
@@ -38,17 +36,17 @@ export class RetrieveRolePrivilegesRoleFunction implements Executable<RetrieveRo
     const aliases: string[] = [];
     if (this.parameters.RoleId !== undefined) {
       aliases.push(`RoleId=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.RoleId, 'Edm.Guid'));
+      params.append("@p1", formatParameterAlias(this.parameters.RoleId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

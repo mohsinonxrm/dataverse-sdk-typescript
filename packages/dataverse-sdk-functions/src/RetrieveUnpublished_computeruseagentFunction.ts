@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import type { computeruseagent } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { computeruseagent } from "./types/index.js";
 
 /**
  * Response from the RetrieveUnpublished function.
@@ -7,7 +7,13 @@ import type { computeruseagent } from './types/index.js';
  * The record: the response body itself, with its annotations (not wrapped in `value`).
  * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export type RetrieveUnpublished_computeruseagentResponse = (computeruseagent & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
+export type RetrieveUnpublished_computeruseagentResponse =
+  | (computeruseagent & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
 
 /**
  * RetrieveUnpublished function
@@ -18,19 +24,17 @@ export type RetrieveUnpublished_computeruseagentResponse = (computeruseagent & {
  * The first argument is the id of the computeruseagent record to call it on.
  */
 export class RetrieveUnpublished_computeruseagentFunction implements Executable<RetrieveUnpublished_computeruseagentResponse> {
-  constructor(
-    public readonly computeruseagentId: string,
-  ) {}
+  constructor(public readonly computeruseagentId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
     let url = `${baseUrl}/computeruseagents(${this.computeruseagentId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

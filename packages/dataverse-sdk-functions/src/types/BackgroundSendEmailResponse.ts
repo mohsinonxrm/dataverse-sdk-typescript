@@ -1,6 +1,6 @@
-import type { email } from './email.js';
-import type { EntityReference } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
-import type { EntityPayload } from './EntityPayload.js';
+import type { email } from "./email.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type { EntityPayload } from "./EntityPayload.js";
 
 /**
  * BackgroundSendEmailResponse complex type

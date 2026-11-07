@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import type { EntityRecordCountCollection } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityRecordCountCollection } from "./types/index.js";
 
 /**
  * Response from the RetrieveTotalRecordCount function.
@@ -25,9 +25,7 @@ export interface RetrieveTotalRecordCountFunctionParameters {
  * Unbound function
  */
 export class RetrieveTotalRecordCountFunction implements Executable<RetrieveTotalRecordCountResponse> {
-  constructor(
-    public readonly parameters: RetrieveTotalRecordCountFunctionParameters,
-  ) {}
+  constructor(public readonly parameters: RetrieveTotalRecordCountFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveTotalRecordCount`;
@@ -37,17 +35,17 @@ export class RetrieveTotalRecordCountFunction implements Executable<RetrieveTota
     const aliases: string[] = [];
     if (this.parameters.EntityNames !== undefined) {
       aliases.push(`EntityNames=@p1`);
-      params.append('@p1', JSON.stringify(this.parameters.EntityNames));
+      params.append("@p1", JSON.stringify(this.parameters.EntityNames));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

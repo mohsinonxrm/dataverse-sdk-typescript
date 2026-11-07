@@ -1,4 +1,4 @@
-import type { ComplexEntityMetadata } from './ComplexEntityMetadata.js';
+import type { ComplexEntityMetadata } from "./ComplexEntityMetadata.js";
 
 /**
  * RetrieveAllEntitiesResponse complex type

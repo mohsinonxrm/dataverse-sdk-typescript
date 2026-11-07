@@ -1,4 +1,4 @@
-import type { UserName } from './UserName.js';
+import type { UserName } from "./UserName.js";
 
 /**
  * PreferredSolutionDetails complex type

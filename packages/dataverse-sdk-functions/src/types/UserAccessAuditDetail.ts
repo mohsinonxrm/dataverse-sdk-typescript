@@ -1,4 +1,4 @@
-import type { AuditDetail } from './AuditDetail.js';
+import type { AuditDetail } from "./AuditDetail.js";
 
 /**
  * UserAccessAuditDetail complex type

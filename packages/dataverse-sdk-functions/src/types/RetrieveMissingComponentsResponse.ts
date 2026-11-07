@@ -1,4 +1,4 @@
-import type { MissingComponent } from './MissingComponent.js';
+import type { MissingComponent } from "./MissingComponent.js";
 
 /**
  * RetrieveMissingComponentsResponse complex type

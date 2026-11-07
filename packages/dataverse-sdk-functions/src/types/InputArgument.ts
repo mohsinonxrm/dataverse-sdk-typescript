@@ -1,4 +1,4 @@
-import type { Object } from './Object.js';
+import type { Object } from "./Object.js";
 
 /**
  * InputArgument complex type

@@ -1,5 +1,5 @@
-import type { ComplexAttributeMetadata } from './ComplexAttributeMetadata.js';
-import type { ImeMode } from './ImeMode.js';
+import type { ComplexAttributeMetadata } from "./ComplexAttributeMetadata.js";
+import type { ImeMode } from "./ImeMode.js";
 
 /**
  * ComplexMoneyAttributeMetadata complex type

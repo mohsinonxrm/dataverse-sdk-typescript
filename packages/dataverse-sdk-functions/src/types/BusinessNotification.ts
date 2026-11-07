@@ -1,5 +1,5 @@
-import type { BusinessNotificationParameter } from './BusinessNotificationParameter.js';
-import type { BusinessNotificationSeverity } from './BusinessNotificationSeverity.js';
+import type { BusinessNotificationParameter } from "./BusinessNotificationParameter.js";
+import type { BusinessNotificationSeverity } from "./BusinessNotificationSeverity.js";
 
 /**
  * BusinessNotification complex type

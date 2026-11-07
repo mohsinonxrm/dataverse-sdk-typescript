@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import type { RolePrivilege } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { RolePrivilege } from "./types/index.js";
 
 /**
  * Response from the RetrieveUserPrivileges function.
@@ -20,19 +20,17 @@ export interface RetrieveUserPrivilegesResponse {
  * The first argument is the id of the systemuser record to call it on.
  */
 export class RetrieveUserPrivilegesFunction implements Executable<RetrieveUserPrivilegesResponse> {
-  constructor(
-    public readonly systemuserId: string,
-  ) {}
+  constructor(public readonly systemuserId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
     let url = `${baseUrl}/systemusers(${this.systemuserId})/Microsoft.Dynamics.CRM.RetrieveUserPrivileges`;
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

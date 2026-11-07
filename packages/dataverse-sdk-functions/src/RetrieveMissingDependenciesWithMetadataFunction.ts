@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
-import type { DependencyMetadataCollection } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { DependencyMetadataCollection } from "./types/index.js";
 
 /**
  * Response from the RetrieveMissingDependenciesWithMetadata function.
@@ -28,7 +28,7 @@ export interface RetrieveMissingDependenciesWithMetadataFunctionParameters {
  */
 export class RetrieveMissingDependenciesWithMetadataFunction implements Executable<RetrieveMissingDependenciesWithMetadataResponse> {
   constructor(
-    public readonly parameters: RetrieveMissingDependenciesWithMetadataFunctionParameters,
+    public readonly parameters: RetrieveMissingDependenciesWithMetadataFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -39,26 +39,31 @@ export class RetrieveMissingDependenciesWithMetadataFunction implements Executab
     const aliases: string[] = [];
     if (this.parameters.SolutionUniqueName !== undefined) {
       aliases.push(`SolutionUniqueName=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.SolutionUniqueName, 'Edm.String'));
+      params.append("@p1", formatParameterAlias(this.parameters.SolutionUniqueName, "Edm.String"));
     }
     if (this.parameters.SkipManagedDependencies !== undefined) {
       aliases.push(`SkipManagedDependencies=@p2`);
-      params.append('@p2', formatParameterAlias(this.parameters.SkipManagedDependencies, 'Edm.Boolean'));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.SkipManagedDependencies, "Edm.Boolean")
+      );
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<RetrieveMissingDependenciesWithMetadataResponse> {
+  async parseResponse(
+    response: Response
+  ): Promise<RetrieveMissingDependenciesWithMetadataResponse> {
     // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveMissingDependenciesWithMetadataResponse;
   }

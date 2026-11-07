@@ -1,4 +1,4 @@
-import type { ComplexAttributeMetadata } from './ComplexAttributeMetadata.js';
+import type { ComplexAttributeMetadata } from "./ComplexAttributeMetadata.js";
 
 /**
  * ComplexUniqueIdentifierAttributeMetadata complex type

@@ -1,4 +1,4 @@
-import type { FileSasUrlResponse } from './FileSasUrlResponse.js';
+import type { FileSasUrlResponse } from "./FileSasUrlResponse.js";
 
 /**
  * GetFileSasUrlResponse complex type

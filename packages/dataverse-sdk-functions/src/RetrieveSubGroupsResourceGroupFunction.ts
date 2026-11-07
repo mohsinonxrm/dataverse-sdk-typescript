@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import type { resourcegroup } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { resourcegroup } from "./types/index.js";
 
 /**
  * Response from the RetrieveSubGroupsResourceGroup function.
@@ -7,7 +7,9 @@ import type { resourcegroup } from './types/index.js';
  * The collection, read from the `value` of the response body.
  * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export type RetrieveSubGroupsResourceGroupResponse = Array<resourcegroup & { "@odata.etag"?: string; "@odata.type"?: string }>;
+export type RetrieveSubGroupsResourceGroupResponse = Array<
+  resourcegroup & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * RetrieveSubGroupsResourceGroup function
@@ -18,19 +20,17 @@ export type RetrieveSubGroupsResourceGroupResponse = Array<resourcegroup & { "@o
  * The first argument is the id of the resourcegroup record to call it on.
  */
 export class RetrieveSubGroupsResourceGroupFunction implements Executable<RetrieveSubGroupsResourceGroupResponse> {
-  constructor(
-    public readonly resourcegroupId: string,
-  ) {}
+  constructor(public readonly resourcegroupId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
     let url = `${baseUrl}/resourcegroups(${this.resourcegroupId})/Microsoft.Dynamics.CRM.RetrieveSubGroupsResourceGroup`;
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

@@ -1,4 +1,4 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the RetrieveProvisionedLanguages function.
@@ -20,10 +20,10 @@ export class RetrieveProvisionedLanguagesFunction implements Executable<Retrieve
     let url = `${baseUrl}/RetrieveProvisionedLanguages`;
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

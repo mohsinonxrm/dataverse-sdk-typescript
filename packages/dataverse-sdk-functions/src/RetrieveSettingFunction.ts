@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
-import type { SettingDetail } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { SettingDetail } from "./types/index.js";
 
 /**
  * Response from the RetrieveSetting function.
@@ -27,9 +27,7 @@ export interface RetrieveSettingFunctionParameters {
  * Unbound function
  */
 export class RetrieveSettingFunction implements Executable<RetrieveSettingResponse> {
-  constructor(
-    public readonly parameters: RetrieveSettingFunctionParameters,
-  ) {}
+  constructor(public readonly parameters: RetrieveSettingFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveSetting`;
@@ -39,21 +37,21 @@ export class RetrieveSettingFunction implements Executable<RetrieveSettingRespon
     const aliases: string[] = [];
     if (this.parameters.AppUniqueName !== undefined) {
       aliases.push(`AppUniqueName=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.AppUniqueName, 'Edm.String'));
+      params.append("@p1", formatParameterAlias(this.parameters.AppUniqueName, "Edm.String"));
     }
     if (this.parameters.SettingName !== undefined) {
       aliases.push(`SettingName=@p2`);
-      params.append('@p2', formatParameterAlias(this.parameters.SettingName, 'Edm.String'));
+      params.append("@p2", formatParameterAlias(this.parameters.SettingName, "Edm.String"));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

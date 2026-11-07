@@ -1,5 +1,5 @@
-import type { MetadataConditionOperator } from './MetadataConditionOperator.js';
-import type { Object } from './Object.js';
+import type { MetadataConditionOperator } from "./MetadataConditionOperator.js";
+import type { Object } from "./Object.js";
 
 /**
  * MetadataConditionExpression complex type

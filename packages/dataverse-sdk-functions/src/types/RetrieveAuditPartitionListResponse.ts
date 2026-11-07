@@ -1,4 +1,4 @@
-import type { AuditPartitionDetail } from './AuditPartitionDetail.js';
+import type { AuditPartitionDetail } from "./AuditPartitionDetail.js";
 
 /**
  * RetrieveAuditPartitionListResponse complex type

@@ -1,4 +1,4 @@
-import type { ChannelAccessProfileWithPrivileges } from './ChannelAccessProfileWithPrivileges.js';
+import type { ChannelAccessProfileWithPrivileges } from "./ChannelAccessProfileWithPrivileges.js";
 
 /**
  * RetrieveChannelAccessProfilePrivilegesResponse complex type

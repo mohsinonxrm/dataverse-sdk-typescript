@@ -1,5 +1,5 @@
-import type { ComplexAttributeMetadata } from './ComplexAttributeMetadata.js';
-import type { LookupFormat } from './LookupFormat.js';
+import type { ComplexAttributeMetadata } from "./ComplexAttributeMetadata.js";
+import type { LookupFormat } from "./LookupFormat.js";
 
 /**
  * ComplexLookupAttributeMetadata complex type

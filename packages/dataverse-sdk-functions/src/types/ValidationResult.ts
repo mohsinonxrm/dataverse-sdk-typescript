@@ -1,4 +1,4 @@
-import type { TraceInfo } from './TraceInfo.js';
+import type { TraceInfo } from "./TraceInfo.js";
 
 /**
  * ValidationResult complex type

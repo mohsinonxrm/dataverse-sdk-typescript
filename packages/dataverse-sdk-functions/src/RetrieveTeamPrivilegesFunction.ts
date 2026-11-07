@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import type { RolePrivilege } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { RolePrivilege } from "./types/index.js";
 
 /**
  * Response from the RetrieveTeamPrivileges function.
@@ -20,19 +20,17 @@ export interface RetrieveTeamPrivilegesResponse {
  * The first argument is the id of the team record to call it on.
  */
 export class RetrieveTeamPrivilegesFunction implements Executable<RetrieveTeamPrivilegesResponse> {
-  constructor(
-    public readonly teamId: string,
-  ) {}
+  constructor(public readonly teamId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
     let url = `${baseUrl}/teams(${this.teamId})/Microsoft.Dynamics.CRM.RetrieveTeamPrivileges`;
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

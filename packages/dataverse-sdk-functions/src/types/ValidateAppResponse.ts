@@ -1,4 +1,4 @@
-import type { AppValidationResponse } from './AppValidationResponse.js';
+import type { AppValidationResponse } from "./AppValidationResponse.js";
 
 /**
  * ValidateAppResponse complex type

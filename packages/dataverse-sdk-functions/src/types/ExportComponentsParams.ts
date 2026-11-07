@@ -1,4 +1,4 @@
-import type { ExportComponentDetails } from './ExportComponentDetails.js';
+import type { ExportComponentDetails } from "./ExportComponentDetails.js";
 
 /**
  * ExportComponentsParams complex type

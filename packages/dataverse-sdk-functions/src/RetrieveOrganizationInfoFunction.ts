@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import type { OrganizationInfo } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { OrganizationInfo } from "./types/index.js";
 
 /**
  * Response from the RetrieveOrganizationInfo function.
@@ -21,10 +21,10 @@ export class RetrieveOrganizationInfoFunction implements Executable<RetrieveOrga
     let url = `${baseUrl}/RetrieveOrganizationInfo`;
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

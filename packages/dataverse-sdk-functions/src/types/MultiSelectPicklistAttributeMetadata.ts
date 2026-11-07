@@ -1,4 +1,4 @@
-import type { EnumAttributeMetadata } from './EnumAttributeMetadata.js';
+import type { EnumAttributeMetadata } from "./EnumAttributeMetadata.js";
 
 /**
  * MultiSelectPicklistAttributeMetadata entity type

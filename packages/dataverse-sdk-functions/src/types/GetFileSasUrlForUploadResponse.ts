@@ -1,4 +1,4 @@
-import type { InitializeUploadUsingSasResponse } from './InitializeUploadUsingSasResponse.js';
+import type { InitializeUploadUsingSasResponse } from "./InitializeUploadUsingSasResponse.js";
 
 /**
  * GetFileSasUrlForUploadResponse complex type

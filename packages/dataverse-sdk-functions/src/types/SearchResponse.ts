@@ -1,4 +1,4 @@
-import type { SearchResults } from './SearchResults.js';
+import type { SearchResults } from "./SearchResults.js";
 
 /**
  * SearchResponse complex type

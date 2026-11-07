@@ -1,8 +1,8 @@
-import type { Label } from './Label.js';
-import type { ManagedPropertyEvaluationPriority } from './ManagedPropertyEvaluationPriority.js';
-import type { ManagedPropertyOperation } from './ManagedPropertyOperation.js';
-import type { ManagedPropertyType } from './ManagedPropertyType.js';
-import type { MetadataBase } from './MetadataBase.js';
+import type { Label } from "./Label.js";
+import type { ManagedPropertyEvaluationPriority } from "./ManagedPropertyEvaluationPriority.js";
+import type { ManagedPropertyOperation } from "./ManagedPropertyOperation.js";
+import type { ManagedPropertyType } from "./ManagedPropertyType.js";
+import type { MetadataBase } from "./MetadataBase.js";
 
 /**
  * ManagedPropertyMetadata entity type

@@ -1,4 +1,4 @@
-import type { ProposalParty } from './ProposalParty.js';
+import type { ProposalParty } from "./ProposalParty.js";
 
 /**
  * AppointmentProposal complex type

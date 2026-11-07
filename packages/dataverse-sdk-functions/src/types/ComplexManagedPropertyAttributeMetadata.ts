@@ -1,5 +1,5 @@
-import type { AttributeTypeCode } from './AttributeTypeCode.js';
-import type { ComplexAttributeMetadata } from './ComplexAttributeMetadata.js';
+import type { AttributeTypeCode } from "./AttributeTypeCode.js";
+import type { ComplexAttributeMetadata } from "./ComplexAttributeMetadata.js";
 
 /**
  * ComplexManagedPropertyAttributeMetadata complex type

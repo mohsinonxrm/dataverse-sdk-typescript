@@ -1,9 +1,9 @@
-import type { BooleanManagedProperty } from './BooleanManagedProperty.js';
-import type { ManyToManyRelationshipMetadata } from './ManyToManyRelationshipMetadata.js';
-import type { MetadataBase } from './MetadataBase.js';
-import type { OneToManyRelationshipMetadata } from './OneToManyRelationshipMetadata.js';
-import type { RelationshipType } from './RelationshipType.js';
-import type { SecurityTypes } from './SecurityTypes.js';
+import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
+import type { ManyToManyRelationshipMetadata } from "./ManyToManyRelationshipMetadata.js";
+import type { MetadataBase } from "./MetadataBase.js";
+import type { OneToManyRelationshipMetadata } from "./OneToManyRelationshipMetadata.js";
+import type { RelationshipType } from "./RelationshipType.js";
+import type { SecurityTypes } from "./SecurityTypes.js";
 
 /**
  * RelationshipMetadataBase entity type
@@ -24,6 +24,9 @@ export interface RelationshipMetadataBase extends MetadataBase {
  * Dataverse which one it is.
  */
 export type TypedRelationshipMetadataBase =
-  | (ManyToManyRelationshipMetadata & { "@odata.type": "Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata" })
-  | (OneToManyRelationshipMetadata & { "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata" })
-;
+  | (ManyToManyRelationshipMetadata & {
+      "@odata.type": "Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata";
+    })
+  | (OneToManyRelationshipMetadata & {
+      "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata";
+    });

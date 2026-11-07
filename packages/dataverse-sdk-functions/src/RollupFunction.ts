@@ -1,7 +1,7 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
-import type { EntityReference } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
-import type { RollupType, TypedQueryBase } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type { RollupType, TypedQueryBase } from "./types/index.js";
 
 /**
  * Response from the Rollup function.
@@ -9,7 +9,11 @@ import type { RollupType, TypedQueryBase } from './types/index.js';
  * The collection, read from the `value` of the response body.
  * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export type RollupResponse = Array<{ "@odata.etag"?: string; "@odata.type"?: string; [column: string]: unknown }>;
+export type RollupResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the Rollup function, by their CSDL names. A parameter the CSDL declares
@@ -27,9 +31,7 @@ export interface RollupFunctionParameters {
  * Unbound function
  */
 export class RollupFunction implements Executable<RollupResponse> {
-  constructor(
-    public readonly parameters: RollupFunctionParameters,
-  ) {}
+  constructor(public readonly parameters: RollupFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/Rollup`;
@@ -39,25 +41,31 @@ export class RollupFunction implements Executable<RollupResponse> {
     const aliases: string[] = [];
     if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.Target, 'mscrm.crmbaseentity', 'EntityType'));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
+      );
     }
     if (this.parameters.Query !== undefined) {
       aliases.push(`Query=@p2`);
-      params.append('@p2', JSON.stringify(this.parameters.Query));
+      params.append("@p2", JSON.stringify(this.parameters.Query));
     }
     if (this.parameters.RollupType !== undefined) {
       aliases.push(`RollupType=@p3`);
-      params.append('@p3', formatParameterAlias(this.parameters.RollupType, 'mscrm.RollupType', 'EnumerationType'));
+      params.append(
+        "@p3",
+        formatParameterAlias(this.parameters.RollupType, "mscrm.RollupType", "EnumerationType")
+      );
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

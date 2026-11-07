@@ -1,4 +1,4 @@
-import type { EntityRecordCountCollection } from './EntityRecordCountCollection.js';
+import type { EntityRecordCountCollection } from "./EntityRecordCountCollection.js";
 
 /**
  * BulkRetainResponse complex type

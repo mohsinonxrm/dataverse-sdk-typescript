@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from the msft_DataEngineIndexMgmt_GetIndexInfo function.
@@ -29,7 +29,7 @@ export interface msft_DataEngineIndexMgmt_GetIndexInfoFunctionParameters {
  */
 export class msft_DataEngineIndexMgmt_GetIndexInfoFunction implements Executable<msft_DataEngineIndexMgmt_GetIndexInfoResponse> {
   constructor(
-    public readonly parameters: msft_DataEngineIndexMgmt_GetIndexInfoFunctionParameters,
+    public readonly parameters: msft_DataEngineIndexMgmt_GetIndexInfoFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -40,21 +40,27 @@ export class msft_DataEngineIndexMgmt_GetIndexInfoFunction implements Executable
     const aliases: string[] = [];
     if (this.parameters.GetIndexInfo_KeyColumnsJson !== undefined) {
       aliases.push(`GetIndexInfo_KeyColumnsJson=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.GetIndexInfo_KeyColumnsJson, 'Edm.String'));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.GetIndexInfo_KeyColumnsJson, "Edm.String")
+      );
     }
     if (this.parameters.GetIndexInfo_LogicalTableName !== undefined) {
       aliases.push(`GetIndexInfo_LogicalTableName=@p2`);
-      params.append('@p2', formatParameterAlias(this.parameters.GetIndexInfo_LogicalTableName, 'Edm.String'));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.GetIndexInfo_LogicalTableName, "Edm.String")
+      );
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

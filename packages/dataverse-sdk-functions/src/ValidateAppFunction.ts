@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
-import type { AppValidationResponse } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { AppValidationResponse } from "./types/index.js";
 
 /**
  * Response from the ValidateApp function.
@@ -26,9 +26,7 @@ export interface ValidateAppFunctionParameters {
  * Unbound function
  */
 export class ValidateAppFunction implements Executable<ValidateAppResponse> {
-  constructor(
-    public readonly parameters: ValidateAppFunctionParameters,
-  ) {}
+  constructor(public readonly parameters: ValidateAppFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/ValidateApp`;
@@ -38,17 +36,17 @@ export class ValidateAppFunction implements Executable<ValidateAppResponse> {
     const aliases: string[] = [];
     if (this.parameters.AppModuleId !== undefined) {
       aliases.push(`AppModuleId=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.AppModuleId, 'Edm.Guid'));
+      params.append("@p1", formatParameterAlias(this.parameters.AppModuleId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

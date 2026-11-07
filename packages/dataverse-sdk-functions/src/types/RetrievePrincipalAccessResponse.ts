@@ -1,4 +1,4 @@
-import type { AccessRights } from './AccessRights.js';
+import type { AccessRights } from "./AccessRights.js";
 
 /**
  * RetrievePrincipalAccessResponse complex type

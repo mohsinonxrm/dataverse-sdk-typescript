@@ -1,5 +1,5 @@
-import type { SubCode } from './SubCode.js';
-import type { TimeCode } from './TimeCode.js';
+import type { SubCode } from "./SubCode.js";
+import type { TimeCode } from "./TimeCode.js";
 
 /**
  * TimeInfo complex type

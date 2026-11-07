@@ -1,5 +1,5 @@
-import type { AttributeMetadata } from './AttributeMetadata.js';
-import type { IntegerFormat } from './IntegerFormat.js';
+import type { AttributeMetadata } from "./AttributeMetadata.js";
+import type { IntegerFormat } from "./IntegerFormat.js";
 
 /**
  * IntegerAttributeMetadata entity type

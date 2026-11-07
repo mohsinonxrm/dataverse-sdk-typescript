@@ -1,7 +1,7 @@
-import type { AttributeMetadata } from './AttributeMetadata.js';
-import type { ImeMode } from './ImeMode.js';
-import type { StringFormat } from './StringFormat.js';
-import type { StringFormatName } from './StringFormatName.js';
+import type { AttributeMetadata } from "./AttributeMetadata.js";
+import type { ImeMode } from "./ImeMode.js";
+import type { StringFormat } from "./StringFormat.js";
+import type { StringFormatName } from "./StringFormatName.js";
 
 /**
  * StringAttributeMetadata entity type

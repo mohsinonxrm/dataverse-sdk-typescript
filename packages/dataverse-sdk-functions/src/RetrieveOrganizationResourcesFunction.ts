@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import type { OrganizationResources } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { OrganizationResources } from "./types/index.js";
 
 /**
  * Response from the RetrieveOrganizationResources function.
@@ -21,10 +21,10 @@ export class RetrieveOrganizationResourcesFunction implements Executable<Retriev
     let url = `${baseUrl}/RetrieveOrganizationResources`;
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

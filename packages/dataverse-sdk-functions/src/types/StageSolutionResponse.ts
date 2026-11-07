@@ -1,4 +1,4 @@
-import type { StageSolutionResults } from './StageSolutionResults.js';
+import type { StageSolutionResults } from "./StageSolutionResults.js";
 
 /**
  * StageSolutionResponse complex type

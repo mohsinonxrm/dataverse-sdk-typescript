@@ -1,9 +1,9 @@
-import type { BooleanManagedProperty } from './BooleanManagedProperty.js';
-import type { BooleanOptionSetMetadata } from './BooleanOptionSetMetadata.js';
-import type { Label } from './Label.js';
-import type { MetadataBase } from './MetadataBase.js';
-import type { OptionSetMetadata } from './OptionSetMetadata.js';
-import type { OptionSetType } from './OptionSetType.js';
+import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
+import type { BooleanOptionSetMetadata } from "./BooleanOptionSetMetadata.js";
+import type { Label } from "./Label.js";
+import type { MetadataBase } from "./MetadataBase.js";
+import type { OptionSetMetadata } from "./OptionSetMetadata.js";
+import type { OptionSetType } from "./OptionSetType.js";
 
 /**
  * OptionSetMetadataBase entity type
@@ -26,7 +26,8 @@ export interface OptionSetMetadataBase extends MetadataBase {
  * Dataverse which one it is.
  */
 export type TypedOptionSetMetadataBase =
-  | (BooleanOptionSetMetadata & { "@odata.type": "Microsoft.Dynamics.CRM.BooleanOptionSetMetadata" })
+  | (BooleanOptionSetMetadata & {
+      "@odata.type": "Microsoft.Dynamics.CRM.BooleanOptionSetMetadata";
+    })
   | (OptionSetMetadata & { "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata" })
-  | (OptionSetMetadataBase & { "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadataBase" })
-;
+  | (OptionSetMetadataBase & { "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadataBase" });

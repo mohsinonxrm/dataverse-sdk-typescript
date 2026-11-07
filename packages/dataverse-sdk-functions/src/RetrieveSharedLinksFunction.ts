@@ -1,7 +1,7 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
-import type { EntityReference } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
-import type { team } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type { team } from "./types/index.js";
 
 /**
  * Response from the RetrieveSharedLinks function.
@@ -9,7 +9,9 @@ import type { team } from './types/index.js';
  * The collection, read from the `value` of the response body.
  * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export type RetrieveSharedLinksResponse = Array<team & { "@odata.etag"?: string; "@odata.type"?: string }>;
+export type RetrieveSharedLinksResponse = Array<
+  team & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * Parameters of the RetrieveSharedLinks function, by their CSDL names. A parameter the CSDL declares
@@ -25,9 +27,7 @@ export interface RetrieveSharedLinksFunctionParameters {
  * Unbound function
  */
 export class RetrieveSharedLinksFunction implements Executable<RetrieveSharedLinksResponse> {
-  constructor(
-    public readonly parameters: RetrieveSharedLinksFunctionParameters,
-  ) {}
+  constructor(public readonly parameters: RetrieveSharedLinksFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveSharedLinks`;
@@ -37,17 +37,20 @@ export class RetrieveSharedLinksFunction implements Executable<RetrieveSharedLin
     const aliases: string[] = [];
     if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.Target, 'mscrm.crmbaseentity', 'EntityType'));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
+      );
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

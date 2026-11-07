@@ -1,5 +1,5 @@
-import type { Object } from './Object.js';
-import type { _Type } from './Type.js';
+import type { Object } from "./Object.js";
+import type { _Type } from "./Type.js";
 
 /**
  * FeatureControlSettingData complex type

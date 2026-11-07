@@ -1,4 +1,4 @@
-import type { XrmAttributeExpression } from './XrmAttributeExpression.js';
+import type { XrmAttributeExpression } from "./XrmAttributeExpression.js";
 
 /**
  * ColumnSet complex type

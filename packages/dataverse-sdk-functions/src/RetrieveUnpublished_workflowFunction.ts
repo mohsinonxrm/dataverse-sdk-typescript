@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import type { workflow } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { workflow } from "./types/index.js";
 
 /**
  * Response from the RetrieveUnpublished function.
@@ -7,7 +7,8 @@ import type { workflow } from './types/index.js';
  * The record: the response body itself, with its annotations (not wrapped in `value`).
  * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export type RetrieveUnpublished_workflowResponse = (workflow & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
+export type RetrieveUnpublished_workflowResponse =
+  (workflow & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
 
 /**
  * RetrieveUnpublished function
@@ -18,19 +19,17 @@ export type RetrieveUnpublished_workflowResponse = (workflow & { "@odata.context
  * The first argument is the id of the workflow record to call it on.
  */
 export class RetrieveUnpublished_workflowFunction implements Executable<RetrieveUnpublished_workflowResponse> {
-  constructor(
-    public readonly workflowId: string,
-  ) {}
+  constructor(public readonly workflowId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
     let url = `${baseUrl}/workflows(${this.workflowId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

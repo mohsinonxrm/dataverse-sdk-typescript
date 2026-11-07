@@ -1,4 +1,4 @@
-import type { DependencyMetadataInfo } from './DependencyMetadataInfo.js';
+import type { DependencyMetadataInfo } from "./DependencyMetadataInfo.js";
 
 /**
  * DependencyMetadataCollection complex type

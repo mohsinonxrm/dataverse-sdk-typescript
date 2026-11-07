@@ -1,4 +1,4 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the RetrieveFinanceAndOperationsIntegrationDetails function.
@@ -24,15 +24,17 @@ export class RetrieveFinanceAndOperationsIntegrationDetailsFunction implements E
     let url = `${baseUrl}/RetrieveFinanceAndOperationsIntegrationDetails`;
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<RetrieveFinanceAndOperationsIntegrationDetailsResponse> {
+  async parseResponse(
+    response: Response
+  ): Promise<RetrieveFinanceAndOperationsIntegrationDetailsResponse> {
     // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveFinanceAndOperationsIntegrationDetailsResponse;
   }

@@ -1,4 +1,4 @@
-import type { PrivilegeDepth } from './PrivilegeDepth.js';
+import type { PrivilegeDepth } from "./PrivilegeDepth.js";
 
 /**
  * RolePrivilege complex type

@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import type { AttributePrivilege } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { AttributePrivilege } from "./types/index.js";
 
 /**
  * Response from the RetrievePrincipalAttributePrivileges function.
@@ -20,24 +20,24 @@ export interface RetrievePrincipalAttributePrivileges_teamResponse {
  * The first argument is the id of the team record to call it on.
  */
 export class RetrievePrincipalAttributePrivileges_teamFunction implements Executable<RetrievePrincipalAttributePrivileges_teamResponse> {
-  constructor(
-    public readonly teamId: string,
-  ) {}
+  constructor(public readonly teamId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
     let url = `${baseUrl}/teams(${this.teamId})/Microsoft.Dynamics.CRM.RetrievePrincipalAttributePrivileges`;
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<RetrievePrincipalAttributePrivileges_teamResponse> {
+  async parseResponse(
+    response: Response
+  ): Promise<RetrievePrincipalAttributePrivileges_teamResponse> {
     // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrievePrincipalAttributePrivileges_teamResponse;
   }

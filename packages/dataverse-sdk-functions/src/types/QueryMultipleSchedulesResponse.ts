@@ -1,4 +1,4 @@
-import type { TimeInfoCollection } from './TimeInfoCollection.js';
+import type { TimeInfoCollection } from "./TimeInfoCollection.js";
 
 /**
  * QueryMultipleSchedulesResponse complex type

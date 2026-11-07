@@ -1,4 +1,4 @@
-import type { PreferredSolutionDetails } from './PreferredSolutionDetails.js';
+import type { PreferredSolutionDetails } from "./PreferredSolutionDetails.js";
 
 /**
  * PreferredSolutionUsedByResponse complex type

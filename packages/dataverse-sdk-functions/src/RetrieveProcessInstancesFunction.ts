@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from the RetrieveProcessInstances function.
@@ -7,7 +7,11 @@ import { formatParameterAlias } from './internal/odataLiteral.js';
  * The collection, read from the `value` of the response body.
  * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export type RetrieveProcessInstancesResponse = Array<{ "@odata.etag"?: string; "@odata.type"?: string; [column: string]: unknown }>;
+export type RetrieveProcessInstancesResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the RetrieveProcessInstances function, by their CSDL names. A parameter the CSDL declares
@@ -24,9 +28,7 @@ export interface RetrieveProcessInstancesFunctionParameters {
  * Unbound function
  */
 export class RetrieveProcessInstancesFunction implements Executable<RetrieveProcessInstancesResponse> {
-  constructor(
-    public readonly parameters: RetrieveProcessInstancesFunctionParameters,
-  ) {}
+  constructor(public readonly parameters: RetrieveProcessInstancesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveProcessInstances`;
@@ -36,21 +38,21 @@ export class RetrieveProcessInstancesFunction implements Executable<RetrieveProc
     const aliases: string[] = [];
     if (this.parameters.EntityId !== undefined) {
       aliases.push(`EntityId=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.EntityId, 'Edm.Guid'));
+      params.append("@p1", formatParameterAlias(this.parameters.EntityId, "Edm.Guid"));
     }
     if (this.parameters.EntityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p2`);
-      params.append('@p2', formatParameterAlias(this.parameters.EntityLogicalName, 'Edm.String'));
+      params.append("@p2", formatParameterAlias(this.parameters.EntityLogicalName, "Edm.String"));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

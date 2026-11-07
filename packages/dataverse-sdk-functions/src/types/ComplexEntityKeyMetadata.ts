@@ -1,6 +1,6 @@
-import type { BooleanManagedProperty } from './BooleanManagedProperty.js';
-import type { EntityKeyIndexStatus } from './EntityKeyIndexStatus.js';
-import type { Label } from './Label.js';
+import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
+import type { EntityKeyIndexStatus } from "./EntityKeyIndexStatus.js";
+import type { Label } from "./Label.js";
 
 /**
  * ComplexEntityKeyMetadata complex type

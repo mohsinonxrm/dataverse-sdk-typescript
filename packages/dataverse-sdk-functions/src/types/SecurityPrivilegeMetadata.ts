@@ -1,4 +1,4 @@
-import type { PrivilegeType } from './PrivilegeType.js';
+import type { PrivilegeType } from "./PrivilegeType.js";
 
 /**
  * SecurityPrivilegeMetadata complex type

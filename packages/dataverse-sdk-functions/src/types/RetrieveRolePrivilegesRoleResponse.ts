@@ -1,4 +1,4 @@
-import type { RolePrivilege } from './RolePrivilege.js';
+import type { RolePrivilege } from "./RolePrivilege.js";
 
 /**
  * RetrieveRolePrivilegesRoleResponse complex type

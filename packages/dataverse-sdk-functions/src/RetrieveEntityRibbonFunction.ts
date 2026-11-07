@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
-import type { RibbonLocationFilters } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { RibbonLocationFilters } from "./types/index.js";
 
 /**
  * Response from the RetrieveEntityRibbon function.
@@ -27,9 +27,7 @@ export interface RetrieveEntityRibbonFunctionParameters {
  * Unbound function
  */
 export class RetrieveEntityRibbonFunction implements Executable<RetrieveEntityRibbonResponse> {
-  constructor(
-    public readonly parameters: RetrieveEntityRibbonFunctionParameters,
-  ) {}
+  constructor(public readonly parameters: RetrieveEntityRibbonFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveEntityRibbon`;
@@ -39,21 +37,28 @@ export class RetrieveEntityRibbonFunction implements Executable<RetrieveEntityRi
     const aliases: string[] = [];
     if (this.parameters.EntityName !== undefined) {
       aliases.push(`EntityName=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.EntityName, 'Edm.String'));
+      params.append("@p1", formatParameterAlias(this.parameters.EntityName, "Edm.String"));
     }
     if (this.parameters.RibbonLocationFilter !== undefined) {
       aliases.push(`RibbonLocationFilter=@p2`);
-      params.append('@p2', formatParameterAlias(this.parameters.RibbonLocationFilter, 'mscrm.RibbonLocationFilters', 'EnumerationType'));
+      params.append(
+        "@p2",
+        formatParameterAlias(
+          this.parameters.RibbonLocationFilter,
+          "mscrm.RibbonLocationFilters",
+          "EnumerationType"
+        )
+      );
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

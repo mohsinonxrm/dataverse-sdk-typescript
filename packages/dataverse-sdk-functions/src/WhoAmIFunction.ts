@@ -1,4 +1,4 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the WhoAmI function.
@@ -22,10 +22,10 @@ export class WhoAmIFunction implements Executable<WhoAmIResponse> {
     let url = `${baseUrl}/WhoAmI`;
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

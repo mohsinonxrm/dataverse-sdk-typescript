@@ -1,4 +1,4 @@
-import type { AddComponentToSolutionParameters } from './AddComponentToSolutionParameters.js';
+import type { AddComponentToSolutionParameters } from "./AddComponentToSolutionParameters.js";
 
 /**
  * AddComponentToSolutionParametersCollection complex type

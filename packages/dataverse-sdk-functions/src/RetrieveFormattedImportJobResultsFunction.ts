@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from the RetrieveFormattedImportJobResults function.
@@ -25,9 +25,7 @@ export interface RetrieveFormattedImportJobResultsFunctionParameters {
  * Unbound function
  */
 export class RetrieveFormattedImportJobResultsFunction implements Executable<RetrieveFormattedImportJobResultsResponse> {
-  constructor(
-    public readonly parameters: RetrieveFormattedImportJobResultsFunctionParameters,
-  ) {}
+  constructor(public readonly parameters: RetrieveFormattedImportJobResultsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveFormattedImportJobResults`;
@@ -37,17 +35,17 @@ export class RetrieveFormattedImportJobResultsFunction implements Executable<Ret
     const aliases: string[] = [];
     if (this.parameters.ImportJobId !== undefined) {
       aliases.push(`ImportJobId=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.ImportJobId, 'Edm.Guid'));
+      params.append("@p1", formatParameterAlias(this.parameters.ImportJobId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

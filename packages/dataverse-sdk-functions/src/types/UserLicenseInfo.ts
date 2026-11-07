@@ -1,4 +1,4 @@
-import type { ServicePlan } from './ServicePlan.js';
+import type { ServicePlan } from "./ServicePlan.js";
 
 /**
  * UserLicenseInfo complex type

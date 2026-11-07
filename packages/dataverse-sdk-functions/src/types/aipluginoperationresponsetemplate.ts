@@ -1,4 +1,4 @@
-import type { BooleanManagedProperty } from './BooleanManagedProperty.js';
+import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
 
 /**
  * aipluginoperationresponsetemplate entity type

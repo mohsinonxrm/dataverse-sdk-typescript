@@ -1,4 +1,4 @@
-import type { OrganizationDetail } from './OrganizationDetail.js';
+import type { OrganizationDetail } from "./OrganizationDetail.js";
 
 /**
  * RetrieveCurrentOrganizationResponse complex type

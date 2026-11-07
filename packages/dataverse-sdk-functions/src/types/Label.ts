@@ -1,4 +1,4 @@
-import type { LocalizedLabel } from './LocalizedLabel.js';
+import type { LocalizedLabel } from "./LocalizedLabel.js";
 
 /**
  * Label complex type

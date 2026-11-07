@@ -1,7 +1,7 @@
-import type { ComplexAttributeMetadata } from './ComplexAttributeMetadata.js';
-import type { ImeMode } from './ImeMode.js';
-import type { StringFormat } from './StringFormat.js';
-import type { StringFormatName } from './StringFormatName.js';
+import type { ComplexAttributeMetadata } from "./ComplexAttributeMetadata.js";
+import type { ImeMode } from "./ImeMode.js";
+import type { StringFormat } from "./StringFormat.js";
+import type { StringFormatName } from "./StringFormatName.js";
 
 /**
  * ComplexStringAttributeMetadata complex type

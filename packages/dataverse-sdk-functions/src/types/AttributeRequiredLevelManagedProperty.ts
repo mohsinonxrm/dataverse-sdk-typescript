@@ -1,4 +1,4 @@
-import type { AttributeRequiredLevel } from './AttributeRequiredLevel.js';
+import type { AttributeRequiredLevel } from "./AttributeRequiredLevel.js";
 
 /**
  * AttributeRequiredLevelManagedProperty complex type

@@ -1,4 +1,4 @@
-import type { AuditDetailCollection } from './AuditDetailCollection.js';
+import type { AuditDetailCollection } from "./AuditDetailCollection.js";
 
 /**
  * RetrieveRecordChangeHistoryResponse complex type

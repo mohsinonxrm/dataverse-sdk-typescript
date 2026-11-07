@@ -1,4 +1,4 @@
-import type { MissingPackageResolutionAction } from './MissingPackageResolutionAction.js';
+import type { MissingPackageResolutionAction } from "./MissingPackageResolutionAction.js";
 
 /**
  * MissingPackage complex type

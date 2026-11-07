@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from the RetrieveLicenseInfo function.
@@ -26,9 +26,7 @@ export interface RetrieveLicenseInfoFunctionParameters {
  * Unbound function
  */
 export class RetrieveLicenseInfoFunction implements Executable<RetrieveLicenseInfoResponse> {
-  constructor(
-    public readonly parameters: RetrieveLicenseInfoFunctionParameters,
-  ) {}
+  constructor(public readonly parameters: RetrieveLicenseInfoFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveLicenseInfo`;
@@ -38,17 +36,17 @@ export class RetrieveLicenseInfoFunction implements Executable<RetrieveLicenseIn
     const aliases: string[] = [];
     if (this.parameters.AccessMode !== undefined) {
       aliases.push(`AccessMode=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.AccessMode, 'Edm.Int32'));
+      params.append("@p1", formatParameterAlias(this.parameters.AccessMode, "Edm.Int32"));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

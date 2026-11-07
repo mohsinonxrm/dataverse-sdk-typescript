@@ -1,6 +1,6 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import { formatParameterAlias } from './internal/odataLiteral.js';
-import type { EndpointAccessType, OrganizationDetail } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EndpointAccessType, OrganizationDetail } from "./types/index.js";
 
 /**
  * Response from the RetrieveCurrentOrganization function.
@@ -26,9 +26,7 @@ export interface RetrieveCurrentOrganizationFunctionParameters {
  * Unbound function
  */
 export class RetrieveCurrentOrganizationFunction implements Executable<RetrieveCurrentOrganizationResponse> {
-  constructor(
-    public readonly parameters: RetrieveCurrentOrganizationFunctionParameters,
-  ) {}
+  constructor(public readonly parameters: RetrieveCurrentOrganizationFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveCurrentOrganization`;
@@ -38,17 +36,24 @@ export class RetrieveCurrentOrganizationFunction implements Executable<RetrieveC
     const aliases: string[] = [];
     if (this.parameters.AccessType !== undefined) {
       aliases.push(`AccessType=@p1`);
-      params.append('@p1', formatParameterAlias(this.parameters.AccessType, 'mscrm.EndpointAccessType', 'EnumerationType'));
+      params.append(
+        "@p1",
+        formatParameterAlias(
+          this.parameters.AccessType,
+          "mscrm.EndpointAccessType",
+          "EnumerationType"
+        )
+      );
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

@@ -1,4 +1,4 @@
-import type { OrderType } from './OrderType.js';
+import type { OrderType } from "./OrderType.js";
 
 /**
  * OrderExpression complex type

@@ -1,5 +1,5 @@
-import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
-import type { AppointmentRequest, SearchResults } from './types/index.js';
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { AppointmentRequest, SearchResults } from "./types/index.js";
 
 /**
  * Response from the Search function.
@@ -25,9 +25,7 @@ export interface SearchFunctionParameters {
  * Unbound function
  */
 export class SearchFunction implements Executable<SearchResponse> {
-  constructor(
-    public readonly parameters: SearchFunctionParameters = {},
-  ) {}
+  constructor(public readonly parameters: SearchFunctionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/Search`;
@@ -37,17 +35,17 @@ export class SearchFunction implements Executable<SearchResponse> {
     const aliases: string[] = [];
     if (this.parameters.AppointmentRequest !== undefined) {
       aliases.push(`AppointmentRequest=@p1`);
-      params.append('@p1', JSON.stringify(this.parameters.AppointmentRequest));
+      params.append("@p1", JSON.stringify(this.parameters.AppointmentRequest));
     }
     if (aliases.length > 0) {
-      url += `(${aliases.join(',')})?${params.toString()}`;
+      url += `(${aliases.join(",")})?${params.toString()}`;
     }
 
     return {
-      method: 'GET',
+      method: "GET",
       url,
       headers: {
-        'Accept': 'application/json',
+        Accept: "application/json",
       },
     };
   }

@@ -1,5 +1,5 @@
-import type { XrmAggregateType } from './XrmAggregateType.js';
-import type { XrmDateTimeGrouping } from './XrmDateTimeGrouping.js';
+import type { XrmAggregateType } from "./XrmAggregateType.js";
+import type { XrmDateTimeGrouping } from "./XrmDateTimeGrouping.js";
 
 /**
  * XrmAttributeExpression complex type
