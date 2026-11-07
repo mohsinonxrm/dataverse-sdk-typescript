@@ -193,7 +193,7 @@ export const TYPECHECK_ENTITY_METADATA: Record<string, RetrieveMetadataChangesRe
             LogicalName: "name",
             SchemaName: "Name",
             AttributeType: "String",
-            RequiredLevel: { Value: 2 },
+            RequiredLevel: { Value: "ApplicationRequired" },
             DisplayName: label("Account Name"),
             Description: label("Type the company or business name. */ It ends here."),
           },

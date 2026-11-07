@@ -424,6 +424,7 @@ export const AccountMetadata: EntityMetadata = {
       typescriptType: "string",
       odataType: "Edm.String",
       isRequired: true,
+      requiredLevel: "ApplicationRequired",
     },
     industrycode: {
       logicalName: "industrycode",
@@ -786,8 +787,9 @@ This enrichment enables:
   - Metadata includes `sourceType: 'calculated' | 'rollup'`
 
 - **Required Field Detection**:
-  - `RequiredLevel.Value === 2` → `IsRequired: true`
-  - Enables validation and better IntelliSense
+  - `RequiredLevel.Value` is the member name the Web API sends (`"ApplicationRequired"`, …)
+  - `ApplicationRequired` (business-required) → `isRequired: true`
+  - Any level other than `None` → `requiredLevel` (`SystemRequired`, `ApplicationRequired` or `Recommended`)
 
 - **Alternate Keys Support**:
   - Extracts `Keys[]` from metadata

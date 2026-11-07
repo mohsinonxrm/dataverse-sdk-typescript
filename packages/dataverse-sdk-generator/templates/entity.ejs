@@ -44,6 +44,9 @@ export const <%- metadataName %>: EntityMetadata = {
       <%_ if (prop.IsRequired) { _%>
       isRequired: true,
       <%_ } _%>
+      <%_ if (prop.RequiredLevel) { _%>
+      requiredLevel: <%- literal(prop.RequiredLevel) %>,
+      <%_ } _%>
       <%_ if (prop.SourceType === 1) { _%>
       sourceType: "calculated",
       <%_ } else if (prop.SourceType === 2) { _%>
