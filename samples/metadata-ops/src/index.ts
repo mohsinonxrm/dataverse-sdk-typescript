@@ -26,9 +26,10 @@ import type {
   EntityMetadataCreate,
   EntityMetadata,
   ComplexStringAttributeMetadata,
-  ComplexIntegerAttributeMetadata,
   OneToManyRelationshipMetadata,
-  ComplexOptionSetMetadata,
+  StringAttributeMetadataCreate,
+  IntegerAttributeMetadataCreate,
+  OptionSetMetadataCreate,
 } from "@mohsinonxrm/dataverse-sdk-metadata";
 
 // Load environment variables
@@ -212,8 +213,7 @@ async function demo1B_CreateEntityMetadataClient(
   const metadataId = await metadataClient.createEntityDefinition({
     "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
     ...entityDefinition,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  });
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
@@ -228,21 +228,18 @@ async function demo1B_CreateEntityMetadataClient(
   // Add primary name attribute
   console.log(chalk.gray("\nAdding primary name column..."));
 
-  const primaryNameAttr: ComplexStringAttributeMetadata = {
+  const primaryNameAttr: StringAttributeMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
     SchemaName: `${schemaPrefix}_Name`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Milestone Name", LanguageCode: 1033 }],
     },
     RequiredLevel: { Value: AttributeRequiredLevel.None },
     MaxLength: 100,
+    IsPrimaryName: true,
   };
 
-  await metadataClient.createAttributeDefinition(`${schemaPrefix}_milestone`, {
-    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-    ...primaryNameAttr,
-    IsPrimaryName: true,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  await metadataClient.createAttributeDefinition(`${schemaPrefix}_milestone`, primaryNameAttr);
 
   console.log(chalk.green("  ✓ Primary name column added"));
 
@@ -299,7 +296,8 @@ async function demo2B_AddAttributeMetadataClient(
   console.log(chalk.bold.blue("\n════ Demo 2B: Add Attribute (MetadataClient) ════\n"));
   console.log(chalk.gray("Adding priority column via MetadataClient..."));
 
-  const attributeDefinition: ComplexIntegerAttributeMetadata = {
+  const attributeDefinition: IntegerAttributeMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.IntegerAttributeMetadata",
     SchemaName: `${schemaPrefix}_Priority`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Priority", LanguageCode: 1033 }],
@@ -309,11 +307,7 @@ async function demo2B_AddAttributeMetadataClient(
     MaxValue: 10,
   };
 
-  await metadataClient.createAttributeDefinition(entityLogicalName, {
-    "@odata.type": "Microsoft.Dynamics.CRM.IntegerAttributeMetadata",
-    ...attributeDefinition,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  await metadataClient.createAttributeDefinition(entityLogicalName, attributeDefinition);
 
   console.log(chalk.green("✓ Attribute created (MetadataClient)"));
   console.log(chalk.gray(`  Logical Name: ${schemaPrefix.toLowerCase()}_priority`));
@@ -457,7 +451,8 @@ async function demo5_CreateGlobalChoice(
   console.log(chalk.bold.blue("\n════ Demo 5: Create Global Choice (MetadataClient) ════\n"));
   console.log(chalk.gray("Creating project type global choice..."));
 
-  const optionSet: ComplexOptionSetMetadata = {
+  const optionSet: OptionSetMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
     Name: `${schemaPrefix}_projecttype`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Project Type", LanguageCode: 1033 }],
@@ -483,11 +478,7 @@ async function demo5_CreateGlobalChoice(
     ],
   };
 
-  const metadataId = await metadataClient.createGlobalOptionSet({
-    "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
-    ...optionSet,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  const metadataId = await metadataClient.createGlobalOptionSet(optionSet);
 
   console.log(chalk.green("✓ Global choice created"));
   console.log(chalk.gray(`  Metadata ID: ${metadataId}`));
