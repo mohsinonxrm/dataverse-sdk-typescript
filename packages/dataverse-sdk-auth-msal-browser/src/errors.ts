@@ -93,6 +93,21 @@ export function isPopupBlockedError(error: unknown): boolean {
   return code !== undefined && POPUP_BLOCKED_ERROR_CODES.has(code);
 }
 
+/** MSAL's code for a silent call's hidden iframe that never came back. */
+const IFRAME_TIMEOUT = "monitor_window_timeout";
+
+/**
+ * True when a silent call's hidden iframe timed out: `errorCode` `monitor_window_timeout` (MSAL 3
+ * and 4), or `timed_out` with `subError` `monitor_window_timeout` (MSAL 5). It happens when the
+ * refresh token has expired and the browser blocks third-party cookies, so the iframe can't use the
+ * Entra ID session, and under throttling; Microsoft's guidance for both is an interactive call.
+ */
+export function isSilentIframeTimeout(error: unknown): boolean {
+  return (
+    getMsalErrorCode(error) === IFRAME_TIMEOUT || stringField(error, "subError") === IFRAME_TIMEOUT
+  );
+}
+
 function stringField(error: unknown, field: keyof MsalErrorLike): string | undefined {
   const value = asMsalError(error)?.[field];
   return typeof value === "string" && value.length > 0 ? value : undefined;

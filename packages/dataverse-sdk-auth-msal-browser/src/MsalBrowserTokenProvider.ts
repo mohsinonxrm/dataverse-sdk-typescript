@@ -21,8 +21,22 @@ import {
   MsalBrowserAuthenticationError,
   isInteractionRequiredError,
   isPopupBlockedError,
+  isSilentIframeTimeout,
 } from "./errors.js";
-import { AUTHORITY_HOSTS, assertValidTenant } from "./authority.js";
+import { tenantAuthority, type ConfiguredAuthority, type TenantAuthority } from "./authority.js";
+
+/**
+ * True when a silent call failed in a way an interactive call can fix: MSAL says interaction is
+ * required, or the silent iframe timed out (third-party cookies blocked, throttling).
+ */
+function needsInteraction(error: unknown): boolean {
+  return isInteractionRequiredError(error) || isSilentIframeTimeout(error);
+}
+
+/** Identifies a scope set regardless of order. */
+function scopeKey(scopes: string[]): string {
+  return [...scopes].sort().join(" ");
+}
 
 /**
  * Wraps a failure as `MsalBrowserAuthenticationError` (keeping MSAL's details and the error as
@@ -77,7 +91,12 @@ export interface MsalBrowserTokenProviderOptions {
   fallbackToRedirect?: boolean;
 
   /**
-   * Additional claims to request (e.g., for Conditional Access)
+   * Claims to request (JSON), for example a Conditional Access authentication context.
+   *
+   * MSAL skips its token cache for a silent request with `claims`, so they are sent only when the
+   * request goes to Entra ID anyway: the interactive flow, the first token for each account, scope
+   * set and tenant, and a forced refresh. Later silent calls get the token from MSAL's cache. A
+   * claims challenge (`TokenOptions.claims`) is always sent.
    */
   claims?: string;
 
@@ -128,6 +147,8 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
   private interactionQueue: Promise<void> = Promise.resolve();
   /** Number of interactive acquisitions that succeeded. */
   private completedInteractions = 0;
+  /** Account, scope set and tenant combinations that already got a token with the configured claims. */
+  private readonly claimsSent = new Set<string>();
 
   /**
    * Creates a new MSAL Browser token provider
@@ -170,7 +191,12 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
    *
    * `options.tenantId` requests the token from that tenant
    * (`https://login.microsoftonline.com/<tenantId>`, on the host of the MSAL configuration's
-   * authority), for example for a guest user in the Dataverse organization's tenant.
+   * authority, or its `azureCloudOptions` cloud), for example for a guest user in the Dataverse
+   * organization's tenant.
+   *
+   * A silent call that needs interaction (`InteractionRequiredAuthError`, or the silent iframe's
+   * `monitor_window_timeout` when third-party cookies are blocked) falls back to the configured
+   * interaction type.
    *
    * @throws {MsalBrowserAuthenticationError} When token acquisition fails. It is a
    *   `DataverseAuthenticationError` that keeps MSAL's `errorCode`, `subError`, `correlationId`
@@ -188,7 +214,7 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
       throw DataverseInvalidRequestError.emptyScopes();
     }
 
-    const authority = this.tenantAuthority(options);
+    const target = this.tenantTarget(options);
 
     // Resolved on every call: the app may have switched accounts since the last one.
     const account = this.resolveAccount();
@@ -196,21 +222,21 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
     // No signed-in account: a silent call can only fail with no_account_error, and the user has
     // to sign in. Go straight to the interactive flow.
     if (!account) {
-      return this.acquireTokenInteractive(requestScopes, authority, options, false);
+      return this.acquireTokenInteractive(requestScopes, target, options, false);
     }
 
     const completedBefore = this.completedInteractions;
     try {
-      return await this.acquireTokenSilent(requestScopes, account, authority, options);
+      return await this.acquireTokenSilent(requestScopes, account, target, options);
     } catch (error) {
       // If interaction is required, use configured interaction type. Detected by name/errorCode,
       // not instanceof: the app's MSAL copy is not this package's copy.
-      if (isInteractionRequiredError(error)) {
+      if (needsInteraction(error)) {
         // If another call finished an interaction while this silent call was running, the cache
         // may now hold a usable token: try silently once more before prompting again.
         return this.acquireTokenInteractive(
           requestScopes,
-          authority,
+          target,
           options,
           this.completedInteractions !== completedBefore
         );
@@ -223,14 +249,15 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
   private async acquireTokenSilent(
     scopes: string[],
     account: AccountInfo,
-    authority: string | undefined,
+    target: TenantAuthority | undefined,
     options?: TokenOptions
   ): Promise<string> {
+    const key = this.claimsKey(scopes, target, account);
     const silentRequest: SilentRequest = {
       scopes,
       account,
-      authority,
-      claims: options?.claims ?? this.options.claims,
+      ...target,
+      claims: this.silentClaims(key, options),
       correlationId: options?.correlationId ?? this.options.correlationId,
       // After a 401 the SDK asks for a new token: bypass MSAL's cached access token (#167).
       ...(options?.forceRefresh ? { forceRefresh: true } : {}),
@@ -245,7 +272,33 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
       );
     }
 
+    this.claimsSent.add(key);
     return response.accessToken;
+  }
+
+  /**
+   * The claims for a silent request. A claims challenge (`TokenOptions.claims`) is always sent.
+   * The configured claims are sent on the first silent request for the account, scope set and
+   * tenant, and on a forced refresh, which go to Entra ID anyway: MSAL skips its cache for a
+   * request with claims, so sending them every time would send every request to Entra ID.
+   */
+  private silentClaims(key: string, options?: TokenOptions): string | undefined {
+    if (options?.claims) {
+      return options.claims;
+    }
+    return options?.forceRefresh || !this.claimsSent.has(key) ? this.options.claims : undefined;
+  }
+
+  private claimsKey(
+    scopes: string[],
+    target: TenantAuthority | undefined,
+    account: AccountInfo | null
+  ): string {
+    return JSON.stringify([
+      scopeKey(scopes),
+      target?.authority ?? null,
+      account?.homeAccountId ?? null,
+    ]);
   }
 
   /**
@@ -260,12 +313,12 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
    */
   private acquireTokenInteractive(
     scopes: string[],
-    authority: string | undefined,
+    target: TenantAuthority | undefined,
     options: TokenOptions | undefined,
     retrySilentFirst: boolean
   ): Promise<string> {
     const claims = options?.claims ?? this.options.claims;
-    const key = JSON.stringify([[...scopes].sort(), claims ?? null, authority ?? null]);
+    const key = JSON.stringify([[...scopes].sort(), claims ?? null, target?.authority ?? null]);
 
     const inFlight = this.interactions.get(key);
     if (inFlight) {
@@ -274,7 +327,7 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
 
     const waitsForAnother = this.interactions.size > 0;
     const run = this.interactionQueue.then(() =>
-      this.runInteraction(scopes, authority, options, retrySilentFirst || waitsForAnother)
+      this.runInteraction(scopes, target, options, retrySilentFirst || waitsForAnother)
     );
     // The next interaction starts after this one settles, whatever the outcome.
     this.interactionQueue = run.then(
@@ -290,7 +343,7 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
 
   private async runInteraction(
     scopes: string[],
-    authority: string | undefined,
+    target: TenantAuthority | undefined,
     options: TokenOptions | undefined,
     retrySilentFirst: boolean
   ): Promise<string> {
@@ -298,9 +351,9 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
 
     if (retrySilentFirst && account) {
       try {
-        return await this.acquireTokenSilent(scopes, account, authority, options);
+        return await this.acquireTokenSilent(scopes, account, target, options);
       } catch (error) {
-        if (!isInteractionRequiredError(error)) {
+        if (!needsInteraction(error)) {
           throw toAuthenticationError(error);
         }
       }
@@ -312,7 +365,7 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
       scopes,
       account: account ?? undefined,
       loginHint: account?.username,
-      authority,
+      ...target,
       claims: options?.claims ?? this.options.claims,
       correlationId: options?.correlationId ?? this.options.correlationId,
     };
@@ -347,6 +400,8 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
     if (response.account) {
       this.publicClientApplication.setActiveAccount(response.account);
     }
+    // The interaction sent the configured claims: silent calls for these scopes can use the cache.
+    this.claimsSent.add(this.claimsKey(scopes, target, response.account));
     this.completedInteractions++;
 
     return response.accessToken;
@@ -392,28 +447,25 @@ export class MsalBrowserTokenProvider implements AccessTokenProvider {
   }
 
   /**
-   * Maps `TokenOptions.tenantId` to an authority on the configured authority's host, so the
-   * token is issued by that tenant (guest users, multi-tenant apps).
+   * Maps `TokenOptions.tenantId` to an authority on the configured cloud (the `azureCloudOptions`
+   * cloud, else the configured authority's host), so the token is issued by that tenant (guest
+   * users, multi-tenant apps).
    */
-  private tenantAuthority(options?: TokenOptions): string | undefined {
+  private tenantTarget(options?: TokenOptions): TenantAuthority | undefined {
     const tenantId = options?.tenantId;
     if (!tenantId) {
       return undefined;
     }
-    assertValidTenant(tenantId);
-    return `${this.authorityHost()}/${tenantId}`;
+    return tenantAuthority(this.configuredAuthority(), tenantId);
   }
 
-  private authorityHost(): string {
+  private configuredAuthority(): ConfiguredAuthority | undefined {
     try {
-      const configured = this.publicClientApplication.getConfiguration().auth.authority;
-      if (configured) {
-        return new URL(configured).origin;
-      }
+      return this.publicClientApplication.getConfiguration().auth;
     } catch {
-      // No configuration (a minimal IPublicClientApplication) or an unparsable authority.
+      // No configuration (a minimal IPublicClientApplication).
+      return undefined;
     }
-    return AUTHORITY_HOSTS.public;
   }
 
   /**
