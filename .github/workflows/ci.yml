@@ -1,9 +1,11 @@
 name: CI
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [main, dev, "release/**", "support/**"]
   push:
-    branches: [main, dev]
+    branches: [main, dev, "release/**", "support/**"]
+  # Run by hand on any branch, e.g. to get the checks onto a PR whose pushes didn't start CI
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -12,11 +14,14 @@ jobs:
   check-changeset:
     name: Check for Changeset
     runs-on: ubuntu-latest
-    # Only require changeset for PRs to main (not for dev branch PRs)
+    # PRs into the release branches (main, release/X.Y, support/X.Y) are hotfixes and need a
+    # changeset; release-prep PRs (chore/release-*) consume the changesets and forward merges
+    # (merge/*) carry existing ones, so they're skipped (RELEASING.md).
     if: >
-      github.event_name == 'pull_request' && 
-      github.base_ref == 'main' &&
-      !startsWith(github.head_ref, 'changeset-release/')
+      github.event_name == 'pull_request' &&
+      (github.base_ref == 'main' || startsWith(github.base_ref, 'release/') || startsWith(github.base_ref, 'support/')) &&
+      !startsWith(github.head_ref, 'chore/release-') &&
+      !startsWith(github.head_ref, 'merge/')
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -54,6 +59,12 @@ jobs:
         run: pnpm audit --audit-level=high
       - run: pnpm format:check
         if: matrix.node == 22
+      # Every published package has one version and a CHANGELOG section for it (#365)
+      - name: Release metadata
+        if: matrix.node == 22
+        run: |
+          node --test scripts/check-release.test.mjs
+          node scripts/check-release.mjs
       - run: pnpm build
       # The actions, functions and messages packages and their docs must be exactly what the
       # generator makes from the committed $metadata snapshot (#293). It reads only the

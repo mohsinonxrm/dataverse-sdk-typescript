@@ -27,10 +27,6 @@
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
   "ignore": [],
-  "snapshot": {
-    "useCalculatedVersion": true,
-    "prereleaseTemplate": "{tag}-{datetime}"
-  },
   "privatePackages": {
     "version": false,
     "tag": false

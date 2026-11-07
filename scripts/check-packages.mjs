@@ -7,9 +7,21 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
-const root = new URL("..", import.meta.url).pathname;
-const bin = (name) => join(root, "node_modules", ".bin", name);
+// fileURLToPath, not URL.pathname: on Windows that is "/C:/…" with %20 for spaces (#365).
+const root = fileURLToPath(new URL("..", import.meta.url));
+
+/**
+ * `node <the package's bin script>`: the same on every platform, where spawning
+ * `node_modules/.bin/<name>` needs a shell for the `.cmd` shim on Windows.
+ */
+function bin(pkgName, binName) {
+  const dir = join(root, "node_modules", pkgName);
+  const { bin: bins } = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
+  const script = typeof bins === "string" ? bins : bins[binName];
+  return [process.execPath, [join(dir, script)]];
+}
 let failed = 0;
 
 for (const dir of readdirSync(join(root, "packages")).sort()) {
@@ -23,12 +35,16 @@ for (const dir of readdirSync(join(root, "packages")).sort()) {
   if (pkg.private) continue;
 
   const checks = [
-    ["publint", [bin("publint"), ["--level", "error"]]],
-    ["attw", [bin("attw"), ["--pack", ".", "--profile", "esm-only", "--format", "ascii"]]],
+    ["publint", bin("publint", "publint"), ["--level", "error"]],
+    [
+      "attw",
+      bin("@arethetypeswrong/cli", "attw"),
+      ["--pack", ".", "--profile", "esm-only", "--format", "ascii"],
+    ],
   ];
   let ok = true;
-  for (const [label, [cmd, args]] of checks) {
-    const r = spawnSync(cmd, args, { cwd: pkgDir, encoding: "utf8" });
+  for (const [label, [cmd, prefix], args] of checks) {
+    const r = spawnSync(cmd, [...prefix, ...args], { cwd: pkgDir, encoding: "utf8" });
     if (r.status !== 0) {
       ok = false;
       failed++;
