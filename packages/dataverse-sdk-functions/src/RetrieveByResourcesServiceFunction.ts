@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { resource, service } from "./types/index.js";
 
 /**
@@ -35,7 +36,10 @@ export class RetrieveByResourcesServiceFunction implements Executable<RetrieveBy
     const aliases: string[] = [];
     if (this.parameters.Resource !== undefined) {
       aliases.push(`Resource=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.Resource));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Resource, "Collection(mscrm.resource)", "Collection")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

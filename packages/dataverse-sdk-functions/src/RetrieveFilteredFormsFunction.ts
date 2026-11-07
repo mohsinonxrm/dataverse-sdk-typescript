@@ -48,7 +48,10 @@ export class RetrieveFilteredFormsFunction implements Executable<RetrieveFiltere
     }
     if (this.parameters.User !== undefined) {
       aliases.push(`User=@p3`);
-      params.append("@p3", JSON.stringify(this.parameters.User));
+      params.append(
+        "@p3",
+        formatParameterAlias(this.parameters.User, "mscrm.systemuser", "EntityType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

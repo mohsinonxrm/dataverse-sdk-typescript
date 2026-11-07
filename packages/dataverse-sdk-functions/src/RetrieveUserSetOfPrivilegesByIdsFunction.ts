@@ -44,7 +44,10 @@ export class RetrieveUserSetOfPrivilegesByIdsFunction implements Executable<Retr
     const aliases: string[] = [];
     if (this.parameters.PrivilegeIds !== undefined) {
       aliases.push(`PrivilegeIds=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.PrivilegeIds));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.PrivilegeIds, "Collection(Edm.Guid)", "Collection")
+      );
     }
     if (this.parameters.ExcludeTeamBasic !== undefined) {
       aliases.push(`ExcludeTeamBasic=@p2`);

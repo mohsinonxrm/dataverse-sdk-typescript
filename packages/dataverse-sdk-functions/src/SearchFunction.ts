@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { AppointmentRequest, SearchResults } from "./types/index.js";
 
 /**
@@ -35,7 +37,14 @@ export class SearchFunction implements Executable<SearchResponse> {
     const aliases: string[] = [];
     if (this.parameters.AppointmentRequest !== undefined) {
       aliases.push(`AppointmentRequest=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.AppointmentRequest));
+      params.append(
+        "@p1",
+        formatParameterAlias(
+          enumBody(this.parameters.AppointmentRequest, "AppointmentRequest"),
+          "mscrm.AppointmentRequest",
+          "ComplexType"
+        )
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

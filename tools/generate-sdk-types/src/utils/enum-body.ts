@@ -8,6 +8,10 @@
  * into member names. It knows the positions from two tables taken from the CSDL: the members of each
  * enum a body can hold, and, for each complex type that holds one (directly, below, or in a derived
  * type), which properties are enums or such complex types.
+ *
+ * Functions take the same values in their JSON parameter aliases (complex types and collections,
+ * `?@p1={"Criteria":{...}}`) and Dataverse reads enum members there only by name too (#358), so the
+ * functions package gets its own `internal/enumBody.ts`, with the tables its parameters reach.
  */
 import type { CsdlComplexType, CsdlSchema } from "../parsers/csdl-types.js";
 
@@ -23,7 +27,13 @@ interface BodyEnums {
   types: Map<string, Array<[string, string]>>;
 }
 
-const cache = new WeakMap<CsdlSchema, BodyEnums>();
+/**
+ * Whose parameters the tables cover: the actions' bodies (actions and messages packages), or the
+ * functions' JSON parameter aliases (#358).
+ */
+export type EnumBodyScope = "actions" | "functions";
+
+const cache = new WeakMap<CsdlSchema, Map<EnumBodyScope, BodyEnums>>();
 
 function localName(type: string): string {
   return type
@@ -34,9 +44,23 @@ function localName(type: string): string {
 const byName = (a: [string, unknown], b: [string, unknown]): number =>
   a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0;
 
+/**
+ * The parameter types the tables start from. A function's enum parameter is an OData enum literal
+ * (`Microsoft.Dynamics.CRM.EntityFilters'3'`), not JSON, so only its complex and collection
+ * parameters count.
+ */
+function rootTypes(csdl: CsdlSchema, scope: EnumBodyScope): string[] {
+  if (scope === "actions") return csdl.actions.flatMap((a) => a.parameters.map((p) => p.type));
+  return csdl.functions
+    .flatMap((f) => f.parameters.map((p) => p.type))
+    .filter(
+      (t) => t.startsWith("Collection(") || !csdl.enumTypes.some((e) => e.name === localName(t))
+    );
+}
+
 /** The enums and complex types that put an enum value in a body, from the CSDL. */
-function bodyEnums(csdl: CsdlSchema): BodyEnums {
-  const cached = cache.get(csdl);
+function bodyEnums(csdl: CsdlSchema, scope: EnumBodyScope): BodyEnums {
+  const cached = cache.get(csdl)?.get(scope);
   if (cached) return cached;
   const allEnums = new Map(
     csdl.enumTypes.filter((e) => e.namespace === CRM).map((e) => [e.name, e] as const)
@@ -82,7 +106,7 @@ function bodyEnums(csdl: CsdlSchema): BodyEnums {
 
   const types = new Map<string, Array<[string, string]>>();
   const used = new Set<string>();
-  // Only what an action parameter can reach: its type, the types of their properties, and
+  // Only what a parameter in scope can reach: its type, the types of their properties, and
   // their derived types.
   const pending: string[] = [];
   const reach = (t: string): void => {
@@ -92,9 +116,7 @@ function bodyEnums(csdl: CsdlSchema): BodyEnums {
       pending.push(t);
     }
   };
-  for (const action of csdl.actions) {
-    for (const p of action.parameters) reach(localName(p.type));
-  }
+  for (const type of rootTypes(csdl, scope)) reach(localName(type));
   for (let name = pending.pop(); name !== undefined; name = pending.pop()) {
     const members = new Map<string, string>();
     for (const p of propertiesOf(name)) {
@@ -118,23 +140,30 @@ function bodyEnums(csdl: CsdlSchema): BodyEnums {
     });
   }
   const result = { enums, types };
-  cache.set(csdl, result);
+  const scopes = cache.get(csdl) ?? new Map<EnumBodyScope, BodyEnums>();
+  scopes.set(scope, result);
+  cache.set(csdl, scopes);
   return result;
 }
 
 /**
- * The type to pass to `enumBody` for a body parameter of `csdlType`: the enum or complex type name,
- * or `undefined` when no value of the type can hold an enum.
+ * The type to pass to `enumBody` for a body parameter of `csdlType` (or, with `scope` "functions",
+ * a function's JSON parameter): the enum or complex type name, or `undefined` when no value of the
+ * type can hold an enum.
  */
-export function bodyEnumType(csdl: CsdlSchema, csdlType: string): string | undefined {
+export function bodyEnumType(
+  csdl: CsdlSchema,
+  csdlType: string,
+  scope: EnumBodyScope = "actions"
+): string | undefined {
   const name = localName(csdlType);
-  const { enums, types } = bodyEnums(csdl);
+  const { enums, types } = bodyEnums(csdl, scope);
   return enums.has(name) || types.has(name) ? name : undefined;
 }
 
-/** Source of the generated `internal/enumBody.ts`. */
-export function enumBodySource(csdl: CsdlSchema): string {
-  const { enums, types } = bodyEnums(csdl);
+/** Source of the generated `internal/enumBody.ts`, with the tables of `scope`. */
+export function enumBodySource(csdl: CsdlSchema, scope: EnumBodyScope = "actions"): string {
+  const { enums, types } = bodyEnums(csdl, scope);
   const enumLines = [...enums]
     .map(([name, e]) => {
       const members = e.members.map(([m, v]) => `${JSON.stringify(m)}: ${String(v)}`).join(", ");
@@ -147,7 +176,19 @@ export function enumBodySource(csdl: CsdlSchema): string {
       return `  ${name}: ${body ? `{ ${body} }` : "{}"},`;
     })
     .join("\n");
-  return `/**
+  const header =
+    scope === "functions"
+      ? `/**
+ * Enum values in JSON function parameters.
+ * Generated by tools/generate-sdk-types from the CSDL $metadata. Do not edit by hand.
+ *
+ * A complex or collection function parameter is JSON in a parameter alias
+ * (\`?@p1={"Criteria":{"FilterOperator":"And"}}\`), and the Web API reads an enum member in it only
+ * by name: \`"Equals"\`, or for a flags enum \`"ReadAccess, WriteAccess"\`. The generated enums are
+ * numeric, so the generated functions pass each such parameter that can hold an enum through
+ * {@link enumBody}, which writes member names, before formatting the alias.
+ */`
+      : `/**
  * Enum values in request bodies.
  * Generated by tools/generate-sdk-types from the CSDL $metadata. Do not edit by hand.
  *
@@ -155,7 +196,8 @@ export function enumBodySource(csdl: CsdlSchema): string {
  * enum \`"ReadAccess, WriteAccess"\`. It rejects a number ("Cannot read the value '1' as a quoted
  * JSON string value"). The generated enums are numeric, so the generated operations pass each body
  * parameter that can hold an enum through {@link enumBody}, which writes member names.
- */
+ */`;
+  return `${header}
 
 /** The enums a body can hold: whether it is a flags enum, and its members. */
 const ENUMS: Record<string, [flags: boolean, members: Record<string, number>]> = {

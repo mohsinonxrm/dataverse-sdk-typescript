@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { TimeCode, TimeInfo } from "./types/index.js";
 
@@ -51,7 +52,14 @@ export class QueryScheduleFunction implements Executable<QueryScheduleResponse> 
     }
     if (this.parameters.TimeCodes !== undefined) {
       aliases.push(`TimeCodes=@p4`);
-      params.append("@p4", JSON.stringify(this.parameters.TimeCodes));
+      params.append(
+        "@p4",
+        formatParameterAlias(
+          enumBody(this.parameters.TimeCodes, "TimeCode"),
+          "Collection(mscrm.TimeCode)",
+          "Collection"
+        )
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

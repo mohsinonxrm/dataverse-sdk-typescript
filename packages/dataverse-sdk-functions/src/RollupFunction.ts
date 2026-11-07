@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { RollupType, TypedQueryBase } from "./types/index.js";
@@ -48,7 +49,14 @@ export class RollupFunction implements Executable<RollupResponse> {
     }
     if (this.parameters.Query !== undefined) {
       aliases.push(`Query=@p2`);
-      params.append("@p2", JSON.stringify(this.parameters.Query));
+      params.append(
+        "@p2",
+        formatParameterAlias(
+          enumBody(this.parameters.Query, "QueryBase"),
+          "mscrm.QueryBase",
+          "ComplexType"
+        )
+      );
     }
     if (this.parameters.RollupType !== undefined) {
       aliases.push(`RollupType=@p3`);

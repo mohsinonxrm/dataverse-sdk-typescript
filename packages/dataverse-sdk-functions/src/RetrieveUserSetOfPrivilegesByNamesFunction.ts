@@ -44,7 +44,10 @@ export class RetrieveUserSetOfPrivilegesByNamesFunction implements Executable<Re
     const aliases: string[] = [];
     if (this.parameters.PrivilegeNames !== undefined) {
       aliases.push(`PrivilegeNames=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.PrivilegeNames));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.PrivilegeNames, "Collection(Edm.String)", "Collection")
+      );
     }
     if (this.parameters.ExcludeTeamBasic !== undefined) {
       aliases.push(`ExcludeTeamBasic=@p2`);

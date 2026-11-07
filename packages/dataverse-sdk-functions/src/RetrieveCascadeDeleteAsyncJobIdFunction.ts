@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from the RetrieveCascadeDeleteAsyncJobId function.
@@ -35,7 +36,10 @@ export class RetrieveCascadeDeleteAsyncJobIdFunction implements Executable<Retri
     const aliases: string[] = [];
     if (this.parameters.ParentEntityIds !== undefined) {
       aliases.push(`ParentEntityIds=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.ParentEntityIds));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.ParentEntityIds, "Collection(Edm.Guid)", "Collection")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

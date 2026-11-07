@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { TimeCode, TimeInfoCollection, resource } from "./types/index.js";
 
@@ -39,7 +40,10 @@ export class QueryMultipleSchedulesFunction implements Executable<QueryMultipleS
     const aliases: string[] = [];
     if (this.parameters.Resource !== undefined) {
       aliases.push(`Resource=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.Resource));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Resource, "Collection(mscrm.resource)", "Collection")
+      );
     }
     if (this.parameters.Start !== undefined) {
       aliases.push(`Start=@p2`);
@@ -51,7 +55,14 @@ export class QueryMultipleSchedulesFunction implements Executable<QueryMultipleS
     }
     if (this.parameters.TimeCodes !== undefined) {
       aliases.push(`TimeCodes=@p4`);
-      params.append("@p4", JSON.stringify(this.parameters.TimeCodes));
+      params.append(
+        "@p4",
+        formatParameterAlias(
+          enumBody(this.parameters.TimeCodes, "TimeCode"),
+          "Collection(mscrm.TimeCode)",
+          "Collection"
+        )
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

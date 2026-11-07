@@ -41,7 +41,10 @@ export class RetrieveAadUserSetOfPrivilegesByIdsFunction implements Executable<R
     }
     if (this.parameters.PrivilegeIds !== undefined) {
       aliases.push(`PrivilegeIds=@p2`);
-      params.append("@p2", JSON.stringify(this.parameters.PrivilegeIds));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.PrivilegeIds, "Collection(Edm.Guid)", "Collection")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { product, uom } from "./types/index.js";
 
 /**
@@ -43,11 +44,14 @@ export class GetQuantityDecimal_quoteFunction implements Executable<GetQuantityD
     const aliases: string[] = [];
     if (this.parameters.Product !== undefined) {
       aliases.push(`Product=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.Product));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Product, "mscrm.product", "EntityType")
+      );
     }
     if (this.parameters.UoM !== undefined) {
       aliases.push(`UoM=@p2`);
-      params.append("@p2", JSON.stringify(this.parameters.UoM));
+      params.append("@p2", formatParameterAlias(this.parameters.UoM, "mscrm.uom", "EntityType"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
  * Response from the RetrieveEnvironmentVariables function.
@@ -36,7 +37,10 @@ export class RetrieveEnvironmentVariablesFunction implements Executable<Retrieve
     const aliases: string[] = [];
     if (this.parameters.SchemaNames !== undefined) {
       aliases.push(`SchemaNames=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.SchemaNames));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.SchemaNames, "Collection(Edm.String)", "Collection")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
