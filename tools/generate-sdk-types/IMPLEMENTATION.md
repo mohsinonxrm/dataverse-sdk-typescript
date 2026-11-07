@@ -346,8 +346,8 @@ from `src/internal/odataLiteral.ts`. That file only calls `odataLiteral.paramete
 `ODATA_LITERAL_SOURCE`, and `test/odata-literal-source.test.ts` checks that it matches the committed
 file. Strings are quoted with `'` doubled. GUIDs and DateTimeOffsets are bare (a `Date` is
 accepted). Enums are written as `Microsoft.Dynamics.CRM.<Enum>'<value>'`, and enum parameters also
-take a member name. The enums are exported as values from `types/index.ts` and from the functions
-package root.
+take a member name. The enums are exported as values from `types/index.ts` and from each package
+root; the complex and entity types are type-only exports of both (#333).
 
 ### Base types and `@odata.type`
 

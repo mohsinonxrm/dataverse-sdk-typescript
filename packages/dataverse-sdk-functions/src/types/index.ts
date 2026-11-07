@@ -1100,6 +1100,7 @@ export type { sitemap } from "./sitemap.js";
 export type { SnapshotDatasourceResponse } from "./SnapshotDatasourceResponse.js";
 export type { socialactivity } from "./socialactivity.js";
 export type { socialprofile } from "./socialprofile.js";
+export type { solution } from "./solution_entity.js";
 export type { Solution } from "./Solution.js";
 export type { solutioncomponent } from "./solutioncomponent.js";
 export type { SolutionComponentDetails } from "./SolutionComponentDetails.js";

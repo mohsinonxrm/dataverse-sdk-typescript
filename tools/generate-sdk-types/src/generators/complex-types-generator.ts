@@ -25,8 +25,59 @@ export async function generateComplexTypes(
   purge = false
 ): Promise<void> {
   const absolutePath = resolve(outputPath);
+  const { complexTypes, entityTypes, enumTypes, entityFile } = crmTypes(csdl);
 
-  // Filter to Microsoft.Dynamics.CRM types and exclude system entities
+  console.log(`📝 Generating complex types, entity types, and enums...`);
+
+  // Purge output directory if requested
+  if (purge) {
+    console.log(`\n  🗑️  Purging ${absolutePath}...`);
+    await purgeDirectory(absolutePath);
+    console.log(`  ✅ Directory purged`);
+  }
+
+  // Generate one file per complex type
+  for (const complexType of complexTypes) {
+    const content = generateComplexTypeInterface(csdl, complexType, entityFile);
+    const filename = `${complexType.name}.ts`;
+    await writeTypeScriptFile(join(absolutePath, filename), content);
+  }
+
+  // Generate one file per entity type (with conflict resolution)
+  for (const entityType of entityTypes) {
+    const content = generateEntityTypeInterface(csdl, entityType);
+    // On a case conflict (case-insensitive filesystems) the file is suffixed with _entity
+    const filename = `${entityFile(entityType.name)}.ts`;
+    await writeTypeScriptFile(join(absolutePath, filename), content);
+  }
+
+  // Generate one file per enum type
+  for (const enumType of enumTypes) {
+    const content = generateEnumTypeDefinition(enumType);
+    const filename = `${enumType.name}.ts`;
+    await writeTypeScriptFile(join(absolutePath, filename), content);
+  }
+
+  // Generate index.ts that exports all types with correct filenames
+  await writeTypeScriptFile(join(absolutePath, "index.ts"), generateIndexFile(csdl));
+
+  console.log(`  ✅ Generated ${String(complexTypes.length)} complex type files`);
+  console.log(`  ✅ Generated ${String(entityTypes.length)} entity type files`);
+  console.log(`  ✅ Generated ${String(enumTypes.length)} enum type files`);
+  console.log(`  ✅ Generated index.ts`);
+}
+
+/**
+ * The CRM types the `types/` folder holds: the complex types, the entity types (not the abstract
+ * system ones) and the enums, and the file of each entity type.
+ */
+function crmTypes(csdl: CsdlSchema): {
+  complexTypes: CsdlComplexType[];
+  entityTypes: CsdlEntityType[];
+  enumTypes: CsdlEnumType[];
+  /** The file of an entity type: `<name>_entity` when it would collide with another type. */
+  entityFile: (name: string) => string;
+} {
   // Case-sensitive conflicts: entity types that collide with complex/enum types on case-insensitive filesystems
   // Format: { entityName: conflictingTypeName }
   const caseConflicts: Record<string, string> = {
@@ -53,59 +104,68 @@ export async function generateComplexTypes(
   for (const et of enumTypes) {
     existingTypeNames.add(et.name.toLowerCase());
   }
-  /** The file of an entity type: `<name>_entity` when it would collide with another type. */
   const entityFile = (name: string): string =>
     existingTypeNames.has(name.toLowerCase()) && name.toLowerCase() in caseConflicts
       ? `${name}_entity`
       : name;
+  return { complexTypes, entityTypes, enumTypes, entityFile };
+}
 
-  console.log(`📝 Generating complex types, entity types, and enums...`);
+/** One type that `types/index.ts` exports. */
+interface TypeIndexEntry {
+  /** The exported name: the CSDL name, with a `_` prefix when it is a reserved word. */
+  name: string;
+  /** The file it is in, without `.ts`. */
+  file: string;
+  kind: "complex" | "entity" | "enum";
+  /** The `Typed<Name>` union the file also exports, for a type other types derive from (#73). */
+  union?: string;
+}
 
-  // Purge output directory if requested
-  if (purge) {
-    console.log(`\n  🗑️  Purging ${absolutePath}...`);
-    await purgeDirectory(absolutePath);
-    console.log(`  ✅ Directory purged`);
+/**
+ * The types `types/index.ts` exports, sorted by name. A name that differs only in case from an
+ * earlier one (complex types, then enums, then entity types) is left out when both would be in
+ * the same file on a case-insensitive filesystem; an entity type written to `<name>_entity.ts`,
+ * such as `solution` next to the complex type `Solution`, has its own file and is exported (#333).
+ */
+function typeIndexEntries(csdl: CsdlSchema): TypeIndexEntry[] {
+  const { complexTypes, entityTypes, enumTypes, entityFile } = crmTypes(csdl);
+  const all = [
+    ...complexTypes.map((t) => ({ name: t.name, file: t.name, kind: "complex" as const })),
+    ...enumTypes.map((t) => ({ name: t.name, file: t.name, kind: "enum" as const })),
+    ...entityTypes.map((t) => ({
+      name: t.name,
+      file: entityFile(t.name),
+      kind: "entity" as const,
+    })),
+  ];
+  // Keep the first type per file (case-insensitive) and per exported name
+  const files = new Set<string>();
+  const names = new Set<string>();
+  const entries: Array<TypeIndexEntry & { csdlName: string }> = [];
+  for (const type of all) {
+    const name = makeCodeSafe(type.name);
+    if (files.has(type.file.toLowerCase()) || names.has(name)) continue;
+    files.add(type.file.toLowerCase());
+    names.add(name);
+    const union =
+      type.kind !== "enum" && concreteTypesOf(csdl, type.name).length > 0
+        ? typedUnionName(type.name)
+        : undefined;
+    entries.push({ name, file: type.file, kind: type.kind, union, csdlName: type.name });
   }
+  // By CSDL name: `_import` sorts as `import`
+  return entries.sort((a, b) => a.csdlName.localeCompare(b.csdlName));
+}
 
-  // Generate one file per complex type
-  for (const complexType of complexTypes) {
-    const content = generateComplexTypeInterface(csdl, complexType, entityFile);
-    const filename = `${complexType.name}.ts`;
-    await writeTypeScriptFile(join(absolutePath, filename), content);
-  }
-
-  // Generate one file per entity type (with conflict resolution)
-  const entityTypeMetadata: Array<{ type: CsdlEntityType; filename: string }> = [];
-  for (const entityType of entityTypes) {
-    const content = generateEntityTypeInterface(csdl, entityType);
-    // On a case conflict (case-insensitive filesystems) the file is suffixed with _entity
-    const filename = `${entityFile(entityType.name)}.ts`;
-
-    await writeTypeScriptFile(join(absolutePath, filename), content);
-    entityTypeMetadata.push({ type: entityType, filename: filename.replace(".ts", "") });
-  }
-
-  // Generate one file per enum type
-  for (const enumType of enumTypes) {
-    const content = generateEnumTypeDefinition(enumType);
-    const filename = `${enumType.name}.ts`;
-    await writeTypeScriptFile(join(absolutePath, filename), content);
-  }
-
-  // Generate index.ts that exports all types with correct filenames
-  const indexContent = generateIndexFile(
-    csdl,
-    complexTypes.map((ct) => ({ name: ct.name, filename: ct.name })),
-    enumTypes.map((et) => ({ name: et.name, filename: et.name, isEnum: true })),
-    entityTypeMetadata.map((et) => ({ name: et.type.name, filename: et.filename }))
-  );
-  await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
-
-  console.log(`  ✅ Generated ${String(complexTypes.length)} complex type files`);
-  console.log(`  ✅ Generated ${String(entityTypes.length)} entity type files`);
-  console.log(`  ✅ Generated ${String(enumTypes.length)} enum type files`);
-  console.log(`  ✅ Generated index.ts`);
+/**
+ * The type-only names `types/index.ts` exports: the complex and entity types and their
+ * `Typed<Name>` unions, sorted like the index. The package roots re-export them (#333).
+ */
+export function exportedTypeNames(csdl: CsdlSchema): string[] {
+  return typeIndexEntries(csdl)
+    .filter((t) => t.kind !== "enum")
+    .flatMap((t) => (t.union ? [t.name, t.union] : [t.name]));
 }
 
 /**
@@ -409,58 +469,75 @@ function makeCodeSafe(name: string): string {
 /**
  * Generate index.ts that exports all types (complex + entity + enum).
  */
-function generateIndexFile(
-  csdl: CsdlSchema,
-  complexTypes: Array<{ name: string; filename: string }>,
-  enumTypes: Array<{ name: string; filename: string; isEnum: true }>,
-  entityTypes: Array<{ name: string; filename: string }>
-): string {
-  // Combine all types
-  const allTypes: Array<{ name: string; filename: string; isEnum?: boolean }> = [
-    ...complexTypes,
-    ...enumTypes,
-    ...entityTypes,
-  ];
-
-  // Deduplicate by name (case-insensitive) - keep first occurrence
-  // Also filter out array types (names ending with [])
-  const seen = new Map<string, { name: string; filename: string; isEnum?: boolean }>();
-
-  for (const type of allTypes) {
-    const lowerName = type.name.toLowerCase();
-    // Skip array types and duplicates
-    if (!type.name.endsWith("[]") && !seen.has(lowerName)) {
-      seen.set(lowerName, type);
-    }
-  }
-
-  const deduplicated = Array.from(seen.values());
-  const sorted = deduplicated.sort((a, b) => a.name.localeCompare(b.name));
-
+function generateIndexFile(csdl: CsdlSchema): string {
   let code = `/**\n`;
   code += ` * Type definitions from Dataverse CSDL (Complex Types + Entity Types + Enums)\n`;
   code += ` * Auto-generated - do not modify manually\n`;
   code += ` */\n\n`;
 
-  for (const type of sorted) {
-    const safeName = makeCodeSafe(type.name);
-    // When the safe name differs, the file exports safeName, not the original name
-    // So we should export { safeName } without alias if they match,
-    // or export { safeName } as well if they differ
-    // Use the filename from metadata (may have _entity suffix for conflicts)
-    // The file also exports the Typed<Name> union when other types derive from this one
-    const union =
-      concreteTypesOf(csdl, type.name).length > 0 ? `, ${typedUnionName(type.name)}` : "";
-    if (type.isEnum) {
+  for (const type of typeIndexEntries(csdl)) {
+    if (type.kind === "enum") {
       // Enums are values too: callers need `EntityFilters.Entity` at runtime (#67)
-      code += `export { ${safeName} } from './${type.filename}.js';\n`;
-    } else if (safeName !== type.name) {
-      // File exports safeName (escaped), we just export it as-is
-      code += `export type { ${safeName}${union} } from './${type.filename}.js';\n`;
+      code += `export { ${type.name} } from './${type.file}.js';\n`;
     } else {
-      code += `export type { ${type.name}${union} } from './${type.filename}.js';\n`;
+      // The file may have an _entity suffix (case conflicts), and also exports the Typed<Name>
+      // union when other types derive from this one
+      const union = type.union ? `, ${type.union}` : "";
+      code += `export type { ${type.name}${union} } from './${type.file}.js';\n`;
     }
   }
 
   return code;
+}
+
+/** The names `code` exports: `export { a, type B }`, `export type { C }`, `x as Y` as `Y`. */
+export function exportedNames(code: string): Set<string> {
+  const names = new Set<string>();
+  for (const m of code.matchAll(/export\s+(?:type\s+)?\{([^}]*)\}/g)) {
+    for (const part of m[1].split(",")) {
+      const name = part
+        .trim()
+        .replace(/^type\s+/, "")
+        .split(/\s+as\s+/)
+        .pop();
+      if (name) names.add(name);
+    }
+  }
+  return names;
+}
+
+/**
+ * The package root's re-export of the CSDL complex and entity types (#333), appended to the
+ * generated `index` code. The export is type-only, so it adds no runtime code.
+ *
+ * The rule for names: a CSDL type is exported under its own name unless the root already exports
+ * that name. The only such names allowed are the operations' responses: a complex type
+ * `<Operation>Response` (Dataverse declares one for each operation with several output
+ * parameters) is left out where the package has that operation, whose `<Operation>Response` is what
+ * `execute()` resolves. Any other collision throws, so a new snapshot can't shadow a type quietly.
+ *
+ * @param typeNames - The type-only names of `types/index.ts` ({@link exportedTypeNames}).
+ * @param code - The index so far.
+ * @param responses - The operations' `<stem>Response` names.
+ */
+export function rootTypeExports(
+  typeNames: readonly string[],
+  code: string,
+  responses: ReadonlySet<string>
+): string {
+  const taken = exportedNames(code);
+  const exported: string[] = [];
+  for (const name of typeNames) {
+    if (!taken.has(name)) exported.push(name);
+    else if (!responses.has(name)) {
+      throw new Error(
+        `The CSDL type ${name} has the name of another export of the package root, which isn't an operation response. Decide how to export it (#333).`
+      );
+    }
+  }
+  if (exported.length === 0) return "";
+  let out = `\n// The CSDL complex and entity types (#333), type-only. A complex type named like an operation's\n`;
+  out += `// response (<Operation>Response) isn't re-exported: that name is the operation's response.\n`;
+  out += `export type { ${exported.join(", ")} } from './types/index.js';\n`;
+  return out;
 }

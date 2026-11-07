@@ -55,9 +55,9 @@ The snapshot org has more installed than Sales and Customer Service, so the set 
   `prebuilt-solutions.json`, or when `prebuilt-solutions.json` names a solution no operation is
   in. A new snapshot can't add an app's operations without someone deciding about them.
 - The types under each package's `types/` follow: only the complex, entity and enum types the
-  prebuilt operations can reach are generated, so the package root exports only the enums those
-  operations use. The metadata package's types and entities-runtime's entity tables don't depend
-  on operations and still come from the whole `$metadata`.
+  prebuilt operations can reach are generated, so the package root exports only the types (#333)
+  and enums those operations use. The metadata package's types and entities-runtime's entity
+  tables don't depend on operations and still come from the whole `$metadata`.
 
 ### How an operation's solutions are found
 
