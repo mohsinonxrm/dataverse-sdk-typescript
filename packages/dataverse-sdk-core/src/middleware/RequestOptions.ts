@@ -22,17 +22,11 @@ export interface MiddlewareOptions {
 export type RetryOptions = ClientRetryOptions;
 
 /**
- * Concurrency middleware options for per-request overrides
+ * Per-request concurrency options. The limit itself is the client's (`DataverseClientOptions.concurrency`).
  */
 export interface ConcurrencyOptions extends MiddlewareOptions {
   /**
-   * Maximum number of concurrent requests
-   * If not specified, uses client-level default
-   */
-  maxConcurrent?: number;
-
-  /**
-   * Whether to bypass concurrency limiting for this request
+   * Send this request without waiting for a concurrency slot, and without taking one.
    * @default false
    */
   bypass?: boolean;

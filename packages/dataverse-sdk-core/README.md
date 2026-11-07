@@ -94,10 +94,10 @@ const client = new DataverseClient({
 
   // Optional: Concurrency configuration
   concurrency: {
-    maxConcurrentRequests: 8, // Default: 8 (Node.js and browsers)
-    adaptiveFromDopHint: true, // Default: true (adjusts based on x-ms-dop-hint)
-    min: 2, // Default: 2 (minimum concurrent requests)
-    max: 16, // Default: 16 (maximum concurrent requests)
+    maxConcurrentRequests: 8, // Default: 8 (Node.js and browsers); a value you set is used exactly
+    adaptiveFromDopHint: true, // Default: true (follows x-ms-dop-hint, within min..max)
+    min: 2, // Default: 2 (lowest limit the hint can set)
+    max: 16, // Default: maxConcurrentRequests when set, otherwise 16 (highest limit the hint can set)
   },
 
   // Optional: Logger (implements Logger interface)
@@ -1026,13 +1026,17 @@ User Code (typed result)
 
 #### Adaptive Concurrency
 
-- **Default max concurrent requests:** 8 (`concurrency.maxConcurrentRequests`), in Node.js and browsers
-- **Adaptive tuning:** Enabled by default via `x-ms-dop-hint` response header
-  - Dataverse recommends optimal concurrency level per tenant/environment
-  - SDK automatically adjusts semaphore limit within bounds
-- **Bounds:** `min: 2`, `max: 16` (`concurrency.min` / `concurrency.max`)
-- **Semaphore:** Queue-based implementation with `acquire()` and `release()`
-- **Clamp function:** Ensures concurrency stays within `[min, max]` range
+- **Default limit:** 8 requests at once (`concurrency.maxConcurrentRequests`), in Node.js and browsers.
+  A value you set is used exactly: `maxConcurrentRequests: 1` sends one request at a time.
+- **Adaptive tuning:** on by default (`adaptiveFromDopHint`). The limit follows Dataverse's
+  `x-ms-dop-hint` response header (its recommended degree of parallelism), within `min` and `max`.
+- **Bounds:** `min` defaults to 2 and `max` to 16. When you set `maxConcurrentRequests`, `max`
+  defaults to that value, so the hint can lower your limit but never raise it; set `max` as well
+  to let it rise. Settings that aren't whole numbers of at least 1, or don't fit
+  `min <= maxConcurrentRequests <= max`, throw `DataverseInvalidRequestError` when the client is
+  created.
+- **Per request:** `new MiddlewareRequestOptions([{ type: "concurrency", bypass: true }])` sends a
+  request without waiting for a slot.
 - **A slot per attempt:** each attempt takes a slot and releases it when its response arrives, so a
   request waiting on `Retry-After` or a backoff doesn't block other requests. A retry queues for
   a slot again like any new request.
@@ -1448,7 +1452,7 @@ See [LICENSE](../../LICENSE) file in repository root.
 
 - SDK automatically retries with exponential backoff
 - Check `RetryMiddleware` configuration
-- Consider reducing concurrency: `concurrency: { max: 4 }`
+- Consider reducing concurrency: `concurrency: { maxConcurrentRequests: 4 }`
 
 **URL too long (DataverseUrlError):**
 

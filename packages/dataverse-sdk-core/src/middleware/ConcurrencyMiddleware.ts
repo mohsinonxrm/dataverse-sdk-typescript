@@ -1,6 +1,7 @@
 import type { Middleware, NextMiddleware } from "../abstractions/middleware.js";
 import type { MiddlewareContext, RequestInformation } from "../abstractions/http.js";
-import type { DataverseClientOptions } from "../abstractions/options.js";
+import type { ConcurrencyOptions, DataverseClientOptions } from "../abstractions/options.js";
+import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 import { abortError } from "../utils/signals.js";
 
 class Semaphore {
@@ -57,7 +58,43 @@ class Semaphore {
   }
 }
 
-const DEFAULT_MAX_NODE = 8;
+const DEFAULT_START = 8;
+const DEFAULT_MIN = 2;
+const DEFAULT_MAX = 16;
+
+/** The limits a client's concurrency settings resolve to (see `ConcurrencyOptions`). */
+export interface ResolvedConcurrency {
+  start: number;
+  min: number;
+  max: number;
+}
+
+/**
+ * Resolve `ConcurrencyOptions`: an explicit `maxConcurrentRequests` is used exactly and caps the
+ * DOP hint unless `max` is set (#356). Throws `DataverseInvalidRequestError` for values that
+ * aren't positive integers or don't fit `min <= maxConcurrentRequests <= max`.
+ */
+export function resolveConcurrency(options: ConcurrencyOptions = {}): ResolvedConcurrency {
+  for (const name of ["maxConcurrentRequests", "min", "max"] as const) {
+    const value = options[name];
+    if (value !== undefined && !(Number.isInteger(value) && value >= 1)) {
+      throw DataverseInvalidRequestError.invalidParameter(
+        `concurrency.${name}`,
+        `must be a whole number of at least 1 (got ${String(value)})`
+      );
+    }
+  }
+  const max = options.max ?? options.maxConcurrentRequests ?? DEFAULT_MAX;
+  const start = options.maxConcurrentRequests ?? Math.min(DEFAULT_START, max);
+  const min = options.min ?? Math.min(DEFAULT_MIN, start);
+  if (!(min <= start && start <= max)) {
+    throw DataverseInvalidRequestError.invalidParameter(
+      "concurrency",
+      `needs min <= maxConcurrentRequests <= max (got min ${String(min)}, maxConcurrentRequests ${String(start)}, max ${String(max)})`
+    );
+  }
+  return { start, min, max };
+}
 
 export class ConcurrencyMiddleware implements Middleware {
   name = "ConcurrencyMiddleware";
@@ -67,12 +104,11 @@ export class ConcurrencyMiddleware implements Middleware {
   private max: number;
 
   constructor(private options: DataverseClientOptions) {
-    const configured = options.concurrency?.maxConcurrentRequests;
-    const initial = configured ?? DEFAULT_MAX_NODE;
-    this.min = options.concurrency?.min ?? 2;
-    this.max = options.concurrency?.max ?? 16;
+    const { start, min, max } = resolveConcurrency(options.concurrency);
+    this.min = min;
+    this.max = max;
     this.adaptive = options.concurrency?.adaptiveFromDopHint ?? true;
-    this.sem = new Semaphore(clamp(initial, this.min, this.max));
+    this.sem = new Semaphore(start);
   }
 
   async execute(
