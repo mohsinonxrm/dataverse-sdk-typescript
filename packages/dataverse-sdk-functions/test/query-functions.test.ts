@@ -135,7 +135,7 @@ describe("queryFunctions (#342)", () => {
     expect(sentFilter(fake).decoded).toBe(filter);
   });
 
-  it("numbers are written as integers; a bad value throws before any request", async () => {
+  it("numbers are written as integers; a bad value throws before any request", () => {
     const { client, fake } = accountsClient();
     expect(
       queryFunctions.inFiscalPeriodAndYear({

@@ -30,7 +30,7 @@ export const QUERY_FUNCTIONS_MODULE = "queryFunctions";
  * that return a boolean value take no `PropertyName`).
  */
 export function isQueryFunction(fn: CsdlFunction): boolean {
-  const first = fn.parameters[0];
+  const first = fn.parameters.at(0);
   return (
     fn.namespace === CRM &&
     !fn.isBound &&

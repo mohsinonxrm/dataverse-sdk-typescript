@@ -107,7 +107,7 @@ describe.skipIf(!live)("live: query functions in $filter (#342)", () => {
     "Under, UnderOrEqual, Above and AboveOrEqual on a hierarchy return 200 and walk it",
     async () => {
       // The business unit hierarchy: the root has no parent, so every unit is under or equal it
-      const [root] = await units("_parentbusinessunitid_value eq null");
+      const root = (await units("_parentbusinessunitid_value eq null")).at(0);
       if (!root) throw new Error("No root business unit");
       const id = String(root.businessunitid);
       const has = (list: Row[]): boolean => list.some((r) => r.businessunitid === id);

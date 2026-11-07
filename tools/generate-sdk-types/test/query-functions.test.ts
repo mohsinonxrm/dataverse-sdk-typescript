@@ -82,9 +82,14 @@ beforeAll(async () => {
   await generateFunctions(parseEdmx(EDMX), dir, false);
   files = await readdir(dir);
   index = await readFile(join(dir, "index.ts"), "utf8");
-  ({ queryFunctions: q } = (await import(join(dir, "queryFunctions.ts"))) as {
-    queryFunctions: Record<string, Helper>;
-  });
+  // An empty object when the file is missing, so that each test fails on its own
+  q = files.includes("queryFunctions.ts")
+    ? (
+        (await import(join(dir, "queryFunctions.ts"))) as {
+          queryFunctions: Record<string, Helper>;
+        }
+      ).queryFunctions
+    : {};
 });
 
 afterAll(async () => {
@@ -212,7 +217,7 @@ describe("detecting query functions (#342)", () => {
     const names = queryFunctions.map((f) => f.name).sort();
     expect(names).toHaveLength(71);
     expect(new Set(names).size).toBe(71);
-    const noMessage = Object.keys(solutions).filter((n) => solutions[n]?.length === 0);
+    const noMessage = Object.entries(solutions).flatMap(([n, s]) => (s.length === 0 ? [n] : []));
     expect(names).toEqual(noMessage.sort());
     expect(names).toEqual(expect.arrayContaining(["Above", "Between", "EqualUserId", "In"]));
     expect(names).toEqual(expect.arrayContaining(["InFiscalYear", "LastXDays", "Today", "Under"]));

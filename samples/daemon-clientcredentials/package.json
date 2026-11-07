@@ -17,6 +17,7 @@
     "@mohsinonxrm/dataverse-sdk-actions": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-auth-msal-node": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-functions": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-xrm": "workspace:*",
     "chalk": "^5.6.2"
   },
