@@ -200,7 +200,12 @@ function aliasValue(
   if (kind === "complex") {
     const enumType = bodyEnumType(csdl, paramType, "functions");
     const json = enumType ? `enumBody(${value}, ${JSON.stringify(enumType)})` : value;
-    const odataKind = isCollectionType(paramType) ? "Collection" : "ComplexType";
+    const isEntity = csdl.entityTypes.some((et) => `mscrm.${et.name}` === paramType);
+    const odataKind = isCollectionType(paramType)
+      ? "Collection"
+      : isEntity
+        ? "EntityType"
+        : "ComplexType";
     return {
       code: `formatParameterAlias(${json}, '${paramType}', '${odataKind}')`,
       usesEnumBody: enumType !== undefined,
@@ -354,14 +359,13 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
   let code = coreImport;
   // Set when a parameter alias is written with formatParameterAlias, or its value goes through
   // enumBody (the imports are added at the end)
-  let usesAliasLiteral = false;
-  let usesEnumBody = false;
+  const uses = { aliasLiteral: false, enumBody: false };
 
   /** The statements that add one parameter alias, when the parameter is set. */
   const aliasStatement = (name: string, alias: string, paramType: string): string => {
     const value = aliasValue(csdl, `this.parameters.${name}`, paramType);
-    usesAliasLiteral = true;
-    if (value.usesEnumBody) usesEnumBody = true;
+    uses.aliasLiteral = true;
+    if (value.usesEnumBody) uses.enumBody = true;
     let statement = `    if (this.parameters.${name} !== undefined) {\n`;
     statement += `      aliases.push(\`${name}=${alias}\`);\n`;
     statement += `      params.append('${alias}', ${value.code});\n`;
@@ -585,10 +589,10 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
 
   code += `}\n`;
 
-  if (usesAliasLiteral) {
+  if (uses.aliasLiteral) {
     code =
       coreImport +
-      (usesEnumBody ? `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n` : "") +
+      (uses.enumBody ? `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n` : "") +
       `import { formatParameterAlias } from './${ODATA_LITERAL_MODULE}.js';\n` +
       code.slice(coreImport.length);
   }

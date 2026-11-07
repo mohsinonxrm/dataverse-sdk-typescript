@@ -67,7 +67,10 @@ export class CheckIncomingEmailFunction implements Executable<CheckIncomingEmail
     }
     if (this.parameters.ExtraProperties !== undefined) {
       aliases.push(`ExtraProperties=@p7`);
-      params.append("@p7", JSON.stringify(this.parameters.ExtraProperties));
+      params.append(
+        "@p7",
+        formatParameterAlias(this.parameters.ExtraProperties, "mscrm.email", "EntityType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

@@ -159,7 +159,11 @@ describe("enum values inside JSON function parameters (#358)", () => {
       Criteria: {
         FilterOperator: 1,
         Conditions: [
-          { PropertyName: "LogicalName", ConditionOperator: 0, Value: { Type: "System.String", Value: "account" } },
+          {
+            PropertyName: "LogicalName",
+            ConditionOperator: 0,
+            Value: { Type: "System.String", Value: "account" },
+          },
         ],
         Filters: [{ FilterOperator: 0, Conditions: [{ ConditionOperator: 1 }] }],
       },

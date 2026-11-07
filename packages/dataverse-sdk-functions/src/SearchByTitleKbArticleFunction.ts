@@ -44,7 +44,10 @@ export class SearchByTitleKbArticleFunction implements Executable<SearchByTitleK
     }
     if (this.parameters.Subject !== undefined) {
       aliases.push(`Subject=@p2`);
-      params.append("@p2", JSON.stringify(this.parameters.Subject));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.Subject, "mscrm.subject", "EntityType")
+      );
     }
     if (this.parameters.UseInflection !== undefined) {
       aliases.push(`UseInflection=@p3`);

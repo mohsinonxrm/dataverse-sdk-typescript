@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type {
   ComplexEntityMetadata,
@@ -47,7 +48,14 @@ export class RetrieveMetadataChangesFunction implements Executable<RetrieveMetad
     const aliases: string[] = [];
     if (this.parameters.Query !== undefined) {
       aliases.push(`Query=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.Query));
+      params.append(
+        "@p1",
+        formatParameterAlias(
+          enumBody(this.parameters.Query, "EntityQueryExpression"),
+          "mscrm.EntityQueryExpression",
+          "ComplexType"
+        )
+      );
     }
     if (this.parameters.DeletedMetadataFilters !== undefined) {
       aliases.push(`DeletedMetadataFilters=@p2`);

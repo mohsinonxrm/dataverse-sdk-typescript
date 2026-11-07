@@ -43,7 +43,10 @@ export class RetrieveAadUserSetOfPrivilegesByNamesFunction implements Executable
     }
     if (this.parameters.PrivilegeNames !== undefined) {
       aliases.push(`PrivilegeNames=@p2`);
-      params.append("@p2", JSON.stringify(this.parameters.PrivilegeNames));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.PrivilegeNames, "Collection(Edm.String)", "Collection")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
