@@ -43,6 +43,7 @@ describe("request inspector middleware", () => {
     const { sdk, exchanges } = withFakeFetch();
     const client = sdk.createClient({
       fetchProvider: { fetch: () => Promise.reject(new TypeError("Failed to fetch")) },
+      retry: { maxRetries: 0 },
     });
 
     await expect(client.api("WhoAmI").get()).rejects.toThrow();

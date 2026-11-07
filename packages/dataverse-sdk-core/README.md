@@ -89,7 +89,7 @@ const client = new DataverseClient({
     jitter: true, // Default: true (±20% on the computed backoff, never on Retry-After)
     retryableStatusCodes: [429, 502, 503, 504], // Default codes
     retryNonIdempotent: false, // Default: false (POST / PATCH without If-Match not replayed after 5xx)
-    retryNetworkErrors: false, // Default: false (retry idempotent requests when fetch itself fails)
+    retryNetworkErrors: undefined, // Default: unset (idempotent requests are retried when fetch itself fails; false turns it off)
   },
 
   // Optional: Concurrency configuration
@@ -976,7 +976,7 @@ User Code (typed result)
   - `maxDelayMs: 30000` (30 seconds)
   - `maxRetryAfterMs`: same as `maxDelayMs`
   - `jitter: true` (±20% on the computed backoff)
-  - `retryNonIdempotent: false`, `retryNetworkErrors: false`
+  - `retryNonIdempotent: false`; `retryNetworkErrors` unset (idempotent requests are retried after a network error)
 - **Retry-After header:** Waited out exactly (no jitter) when it is at most `maxRetryAfterMs`. A longer
   `Retry-After` is not waited out: the response is returned at once (a 429 throws
   `DataverseThrottleError` with `retryAfterMs`), so your code decides whether to wait. Delta-seconds
@@ -988,8 +988,11 @@ User Code (typed result)
   POST) whose 429 response has a `multipart/mixed` body is handed back, not replayed, because
   Dataverse processed the batch and some of its parts may have run.
 - **Network errors:** a `fetch` rejection becomes a `DataverseNetworkError` named `ConnectionFailed`
-  (the original error is its `cause`). With `retryNetworkErrors: true` idempotent requests are retried
-  with backoff. Aborts and timeouts are never retried.
+  (the original error is its `cause`). By default, idempotent requests (GET, HEAD, OPTIONS, PUT,
+  DELETE, and PATCH with `If-Match`) are retried with backoff, as after a 503. POST and other PATCHes
+  aren't, because the connection can drop after Dataverse applied them. They are retried only with both
+  `retryNetworkErrors: true` and `retryNonIdempotent: true`. `retryNetworkErrors: false` turns
+  network-error retries off. Aborts, timeouts and requests with a stream body are never retried.
 - **`shouldRetry(statusCode, error?)`:** replaces the status-code, method and network-error checks
   (called with status `0` for a network error); the counts and delays still apply.
 - **Watching retries:** `onRetry(info)` runs once before each retry, with `attempt`, `maxRetries`,

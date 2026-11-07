@@ -31,8 +31,9 @@ export async function sendChecked(
 
 /**
  * Retry options for one `UploadBlock` request. Sending a block again with the same block id
- * replaces it, so a block is safe to retry after a 5xx or a dropped connection, which the client
- * otherwise does only for idempotent methods. The number of retries is still the client's.
+ * replaces it, so a block is safe to retry after a 5xx, which the client otherwise does only for
+ * idempotent methods. After a dropped connection it is retried when the client sets
+ * `retry.retryNetworkErrors: true`. The number of retries is still the client's.
  */
 export function blockRetryOptions(): MiddlewareRequestOptions {
   return new MiddlewareRequestOptions([{ type: "retry", retryNonIdempotent: true }]);

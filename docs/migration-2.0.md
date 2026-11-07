@@ -31,6 +31,7 @@ In 1.0 the actions, functions, messages, entities-runtime and xrm packages each 
   - A 429 or 503 whose `Retry-After` is longer than `retry.maxRetryAfterMs` (default 30 s) is returned at once instead of being waited out. A 429 throws `DataverseThrottleError` with `retryAfterMs`. Set `maxRetryAfterMs: Infinity` for the old behaviour.
   - POST, and PATCH without `If-Match`, are no longer replayed after a 502, 503 or 504, because Dataverse may already have applied them. A 429 is still retried for every method.
   - A `$batch` answered with a 429 and a multipart body is handed back instead of replayed.
+  - Idempotent requests (GET, HEAD, OPTIONS, PUT, DELETE, and PATCH with `If-Match`) are retried with backoff when `fetch` itself fails, such as on a dropped connection or a reset socket (#351). In 1.0 the error was thrown at once. POST and other PATCHes aren't retried after a network error. Set `retry: { retryNetworkErrors: false }` for the 1.0 behaviour.
 - **`timeoutMs` is a deadline for the whole request**, including every retry wait and the wait for a concurrency slot. Use the new `attemptTimeoutMs` for a per-attempt limit. A caller's signal that times out (`AbortSignal.timeout()`) rejects the same way: `DataverseNetworkError` named `RequestTimeout`, not `DataverseAbortError`.
 - **Errors.**
   - Every SDK error extends `DataverseError`.

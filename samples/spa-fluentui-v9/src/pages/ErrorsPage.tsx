@@ -116,7 +116,7 @@ export default function ErrorsPage() {
       <Scenario
         failsOnPurpose
         title="Network failure"
-        description="fetch() itself fails, as it does offline or when CORS blocks a request: DataverseNetworkError."
+        description="fetch() itself fails, as it does offline or when CORS blocks a request: the GET is retried, then DataverseNetworkError."
         code={snippet(source, "network")}
         run={(sdk, signal) => errors.offline(sdk, signal)}
       />
