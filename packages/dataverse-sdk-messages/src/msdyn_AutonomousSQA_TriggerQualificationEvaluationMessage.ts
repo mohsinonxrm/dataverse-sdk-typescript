@@ -51,11 +51,11 @@ export class msdyn_AutonomousSQA_TriggerQualificationEvaluationRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse> {
     // No return value (204 No Content)
-    return new msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse();
+    return Promise.resolve(new msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse());
   }
 }
 
@@ -67,7 +67,7 @@ export class msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse extends 
     super("msdyn_AutonomousSQA_TriggerQualificationEvaluation");
   }
 
-  static fromResponse(_data: unknown): msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse {
+  static fromResponse(_data?: unknown): msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse {
     return new msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse();
   }
 }

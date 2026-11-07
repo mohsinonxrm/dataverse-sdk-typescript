@@ -42,11 +42,11 @@ export class msdyn_SalesAcceleratorMailNotificationToAdminRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAcceleratorMailNotificationToAdminResponse> {
     // No return value (204 No Content)
-    return new msdyn_SalesAcceleratorMailNotificationToAdminResponse();
+    return Promise.resolve(new msdyn_SalesAcceleratorMailNotificationToAdminResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_SalesAcceleratorMailNotificationToAdminResponse extends Organ
     super("msdyn_SalesAcceleratorMailNotificationToAdmin");
   }
 
-  static fromResponse(_data: unknown): msdyn_SalesAcceleratorMailNotificationToAdminResponse {
+  static fromResponse(_data?: unknown): msdyn_SalesAcceleratorMailNotificationToAdminResponse {
     return new msdyn_SalesAcceleratorMailNotificationToAdminResponse();
   }
 }

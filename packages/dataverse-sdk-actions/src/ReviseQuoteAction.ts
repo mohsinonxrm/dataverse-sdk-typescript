@@ -4,14 +4,13 @@ import { enumBody } from "./internal/enumBody.js";
 import type { ColumnSet, quote } from "./types/index.js";
 
 /**
- * Response from ReviseQuote action
+ * Response from the ReviseQuote action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface ReviseQuoteResponse extends quote {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type ReviseQuoteResponse =
+  (quote & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
 
 /**
  * Parameters of the ReviseQuote action, by their CSDL names. A parameter the CSDL declares
@@ -49,8 +48,9 @@ export class ReviseQuoteAction implements Executable<ReviseQuoteResponse> {
   }
 
   async parseResponse(response: Response): Promise<ReviseQuoteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ReviseQuoteResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as ReviseQuoteResponse;
   }
 }

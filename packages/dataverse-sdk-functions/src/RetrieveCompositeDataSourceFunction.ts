@@ -1,13 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "./types/EntityReference.js";
 
 /**
- * Response from RetrieveCompositeDataSource function
+ * Response from the RetrieveCompositeDataSource function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveCompositeDataSourceResponse {
-  value: EntityReference[];
-}
+export type RetrieveCompositeDataSourceResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the RetrieveCompositeDataSource function, by their CSDL names. A parameter the CSDL declares
@@ -54,8 +58,9 @@ export class RetrieveCompositeDataSourceFunction implements Executable<RetrieveC
   }
 
   async parseResponse(response: Response): Promise<RetrieveCompositeDataSourceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveCompositeDataSourceResponse;
-    return (await response.json()) as RetrieveCompositeDataSourceResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveCompositeDataSourceResponse }).value;
   }
 }

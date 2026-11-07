@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from NextXYears function
+ * Response from the NextXYears function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface NextXYearsResponse {
-  value: boolean;
-}
+export type NextXYearsResponse = boolean;
 
 /**
  * Parameters of the NextXYears function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class NextXYearsFunction implements Executable<NextXYearsResponse> {
   }
 
   async parseResponse(response: Response): Promise<NextXYearsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as NextXYearsResponse;
-    return (await response.json()) as NextXYearsResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: NextXYearsResponse }).value;
   }
 }

@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -52,9 +52,9 @@ export class ReassignObjectsSystemUserRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ReassignObjectsSystemUserResponse> {
+  parseResponse(_response: Response): Promise<ReassignObjectsSystemUserResponse> {
     // No return value (204 No Content)
-    return new ReassignObjectsSystemUserResponse();
+    return Promise.resolve(new ReassignObjectsSystemUserResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class ReassignObjectsSystemUserResponse extends OrganizationResponse {
     super("ReassignObjectsSystemUser");
   }
 
-  static fromResponse(_data: unknown): ReassignObjectsSystemUserResponse {
+  static fromResponse(_data?: unknown): ReassignObjectsSystemUserResponse {
     return new ReassignObjectsSystemUserResponse();
   }
 }

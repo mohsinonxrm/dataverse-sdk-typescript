@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GenerateFieldDescriptionsResponse as msdyn_GenerateFieldDescriptionsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GenerateFieldDescriptions message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,37 @@ export class msdyn_GenerateFieldDescriptionsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GenerateFieldDescriptionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GenerateFieldDescriptionsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GenerateFieldDescriptionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GenerateFieldDescriptions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GenerateFieldDescriptionsResult {
+  "@odata.context"?: string;
+  msdyn_CandidateValue: string;
+  msdyn_Description: string;
+  msdyn_Prompt: string;
+}
+
+/**
  * msdyn_GenerateFieldDescriptions response message
+ *
+ * `result` is the value the msdyn_GenerateFieldDescriptions action returns (see {@link msdyn_GenerateFieldDescriptionsResult}).
  */
 export class msdyn_GenerateFieldDescriptionsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GenerateFieldDescriptionsResponseData) {
+  constructor(public result: msdyn_GenerateFieldDescriptionsResult) {
     super("msdyn_GenerateFieldDescriptions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GenerateFieldDescriptionsResponse {
     return new msdyn_GenerateFieldDescriptionsResponse(
-      responseObject<msdyn_GenerateFieldDescriptionsResponseData>(data)
+      data as msdyn_GenerateFieldDescriptionsResult
     );
   }
 }

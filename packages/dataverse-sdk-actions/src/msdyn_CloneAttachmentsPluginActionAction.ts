@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CloneAttachmentsPluginAction action
+ * Response from the msdyn_CloneAttachmentsPluginAction action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CloneAttachmentsPluginActionResponse {
-  // No content returned
-}
+export type msdyn_CloneAttachmentsPluginActionResponse = void;
 
 /**
  * Parameters of the msdyn_CloneAttachmentsPluginAction action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_CloneAttachmentsPluginActionAction implements Executable<msdy
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CloneAttachmentsPluginActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CloneAttachmentsPluginActionResponse;
-    return (await response.json()) as msdyn_CloneAttachmentsPluginActionResponse;
+  parseResponse(_response: Response): Promise<msdyn_CloneAttachmentsPluginActionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

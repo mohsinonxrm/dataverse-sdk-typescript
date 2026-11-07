@@ -3,14 +3,13 @@ import { requestBody } from "./internal/requestBody.js";
 import type { workflow } from "./types/index.js";
 
 /**
- * Response from CreateWorkflowFromTemplate action
+ * Response from the CreateWorkflowFromTemplate action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface CreateWorkflowFromTemplateResponse extends workflow {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type CreateWorkflowFromTemplateResponse =
+  (workflow & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
 
 /**
  * Parameters of the CreateWorkflowFromTemplate action, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +52,9 @@ export class CreateWorkflowFromTemplateAction implements Executable<CreateWorkfl
   }
 
   async parseResponse(response: Response): Promise<CreateWorkflowFromTemplateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateWorkflowFromTemplateResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as CreateWorkflowFromTemplateResponse;
   }
 }

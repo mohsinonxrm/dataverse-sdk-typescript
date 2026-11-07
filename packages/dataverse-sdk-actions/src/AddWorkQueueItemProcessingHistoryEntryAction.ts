@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from AddWorkQueueItemProcessingHistoryEntry action
+ * Response from the AddWorkQueueItemProcessingHistoryEntry action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AddWorkQueueItemProcessingHistoryEntryResponse {
-  // No content returned
-}
+export type AddWorkQueueItemProcessingHistoryEntryResponse = void;
 
 /**
  * Parameters of the AddWorkQueueItemProcessingHistoryEntry action, by their CSDL names. A parameter the CSDL declares
@@ -50,9 +50,8 @@ export class AddWorkQueueItemProcessingHistoryEntryAction implements Executable<
     };
   }
 
-  async parseResponse(response: Response): Promise<AddWorkQueueItemProcessingHistoryEntryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddWorkQueueItemProcessingHistoryEntryResponse;
-    return (await response.json()) as AddWorkQueueItemProcessingHistoryEntryResponse;
+  parseResponse(_response: Response): Promise<AddWorkQueueItemProcessingHistoryEntryResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

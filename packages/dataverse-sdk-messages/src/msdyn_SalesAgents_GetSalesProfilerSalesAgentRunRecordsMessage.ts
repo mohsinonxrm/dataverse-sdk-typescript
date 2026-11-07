@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResponse as msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecords message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResponse.fromResponse(
       await response.json()
     );
@@ -59,18 +55,31 @@ export class msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecords action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResult {
+  "@odata.context"?: string;
+  msdyn_ProfilerSARs: string;
+}
+
+/**
  * msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecords response message
+ *
+ * `result` is the value the msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecords action returns (see {@link msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResult}).
  */
 export class msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResponseData) {
+  constructor(public result: msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResult) {
     super("msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecords");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResponse {
     return new msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResponse(
-      responseObject<msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResponseData>(data)
+      data as msdyn_SalesAgents_GetSalesProfilerSalesAgentRunRecordsResult
     );
   }
 }

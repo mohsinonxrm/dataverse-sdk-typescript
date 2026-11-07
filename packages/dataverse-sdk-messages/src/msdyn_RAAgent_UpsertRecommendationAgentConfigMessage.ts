@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RAAgent_UpsertRecommendationAgentConfigResponse as msdyn_RAAgent_UpsertRecommendationAgentConfigResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RAAgent_UpsertRecommendationAgentConfig message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_RAAgent_UpsertRecommendationAgentConfigRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_RAAgent_UpsertRecommendationAgentConfigResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RAAgent_UpsertRecommendationAgentConfigResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RAAgent_UpsertRecommendationAgentConfigResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,29 @@ export class msdyn_RAAgent_UpsertRecommendationAgentConfigRequest
 }
 
 /**
+ * Response from the msdyn_RAAgent_UpsertRecommendationAgentConfig action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RAAgent_UpsertRecommendationAgentConfigResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_RAAgent_UpsertRecommendationAgentConfig response message
+ *
+ * `result` is the value the msdyn_RAAgent_UpsertRecommendationAgentConfig action returns (see {@link msdyn_RAAgent_UpsertRecommendationAgentConfigResult}).
  */
 export class msdyn_RAAgent_UpsertRecommendationAgentConfigResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RAAgent_UpsertRecommendationAgentConfigResponseData) {
+  constructor(public result: msdyn_RAAgent_UpsertRecommendationAgentConfigResult) {
     super("msdyn_RAAgent_UpsertRecommendationAgentConfig");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RAAgent_UpsertRecommendationAgentConfigResponse {
     return new msdyn_RAAgent_UpsertRecommendationAgentConfigResponse(
-      responseObject<msdyn_RAAgent_UpsertRecommendationAgentConfigResponseData>(data)
+      data as msdyn_RAAgent_UpsertRecommendationAgentConfigResult
     );
   }
 }

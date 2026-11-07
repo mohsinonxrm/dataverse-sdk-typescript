@@ -2,15 +2,17 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAgents_GetSalesAgentProcessingState action
+ * Response from the msdyn_SalesAgents_GetSalesAgentProcessingState action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface msdyn_SalesAgents_GetSalesAgentProcessingStateResponse {
+export type msdyn_SalesAgents_GetSalesAgentProcessingStateResponse = {
   "@odata.context"?: string;
   "@odata.etag"?: string;
+  "@odata.type"?: string;
   [column: string]: unknown;
-}
+} | null;
 
 /**
  * Parameters of the msdyn_SalesAgents_GetSalesAgentProcessingState action, by their CSDL names. A parameter the CSDL declares
@@ -54,9 +56,9 @@ export class msdyn_SalesAgents_GetSalesAgentProcessingStateAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetSalesAgentProcessingStateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_SalesAgents_GetSalesAgentProcessingStateResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as msdyn_SalesAgents_GetSalesAgentProcessingStateResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_BulkAITestRunResponse as msdyn_BulkAITestRunResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_BulkAITestRun message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,33 @@ export class msdyn_BulkAITestRunRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_BulkAITestRunResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_BulkAITestRunResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_BulkAITestRunResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_BulkAITestRun action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_BulkAITestRunResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * msdyn_BulkAITestRun response message
+ *
+ * `result` is the value the msdyn_BulkAITestRun action returns (see {@link msdyn_BulkAITestRunResult}).
  */
 export class msdyn_BulkAITestRunResponse extends OrganizationResponse {
-  constructor(public result: msdyn_BulkAITestRunResponseData) {
+  constructor(public result: msdyn_BulkAITestRunResult) {
     super("msdyn_BulkAITestRun");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_BulkAITestRunResponse {
-    return new msdyn_BulkAITestRunResponse(responseObject<msdyn_BulkAITestRunResponseData>(data));
+    return new msdyn_BulkAITestRunResponse(data as msdyn_BulkAITestRunResult);
   }
 }

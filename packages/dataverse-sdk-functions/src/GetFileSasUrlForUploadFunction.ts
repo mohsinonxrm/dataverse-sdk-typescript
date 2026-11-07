@@ -1,12 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { InitializeUploadUsingSasResponse } from "./types/index.js";
 
 /**
- * Response from GetFileSasUrlForUpload function
+ * Response from the GetFileSasUrlForUpload function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetFileSasUrlForUploadResponse {
+  "@odata.context"?: string;
   Result: InitializeUploadUsingSasResponse;
 }
 
@@ -63,8 +66,7 @@ export class GetFileSasUrlForUploadFunction implements Executable<GetFileSasUrlF
   }
 
   async parseResponse(response: Response): Promise<GetFileSasUrlForUploadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetFileSasUrlForUploadResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetFileSasUrlForUploadResponse;
   }
 }

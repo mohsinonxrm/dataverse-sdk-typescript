@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrievePersonalizationFiltersResponse as msdyn_RetrievePersonalizationFiltersResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrievePersonalizationFilters message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,35 @@ export class msdyn_RetrievePersonalizationFiltersRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrievePersonalizationFiltersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RetrievePersonalizationFiltersResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrievePersonalizationFiltersResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrievePersonalizationFilters action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrievePersonalizationFiltersResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_RetrievePersonalizationFilters response message
+ *
+ * `result` is the value the msdyn_RetrievePersonalizationFilters action returns (see {@link msdyn_RetrievePersonalizationFiltersResult}).
  */
 export class msdyn_RetrievePersonalizationFiltersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrievePersonalizationFiltersResponseData) {
+  constructor(public result: msdyn_RetrievePersonalizationFiltersResult) {
     super("msdyn_RetrievePersonalizationFilters");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrievePersonalizationFiltersResponse {
     return new msdyn_RetrievePersonalizationFiltersResponse(
-      responseObject<msdyn_RetrievePersonalizationFiltersResponseData>(data)
+      data as msdyn_RetrievePersonalizationFiltersResult
     );
   }
 }

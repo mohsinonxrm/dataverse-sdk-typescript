@@ -1,19 +1,18 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet, invoice } from "./types/index.js";
 
 /**
- * Response from ConvertSalesOrderToInvoice action
+ * Response from the ConvertSalesOrderToInvoice action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface ConvertSalesOrderToInvoiceResponse extends invoice {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type ConvertSalesOrderToInvoiceResponse =
+  (invoice & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
 
 /**
  * Parameters of the ConvertSalesOrderToInvoice action, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +52,9 @@ export class ConvertSalesOrderToInvoiceAction implements Executable<ConvertSales
   }
 
   async parseResponse(response: Response): Promise<ConvertSalesOrderToInvoiceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ConvertSalesOrderToInvoiceResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as ConvertSalesOrderToInvoiceResponse;
   }
 }

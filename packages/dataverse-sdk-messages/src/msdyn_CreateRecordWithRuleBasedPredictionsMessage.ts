@@ -1,7 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -52,24 +51,41 @@ export class msdyn_CreateRecordWithRuleBasedPredictionsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CreateRecordWithRuleBasedPredictionsResponse> {
-    // 204 No Content is an empty result
+    // An entity output that wasn't set answers 204 No Content
     if (response.status === 204)
-      return msdyn_CreateRecordWithRuleBasedPredictionsResponse.fromResponse({});
+      return msdyn_CreateRecordWithRuleBasedPredictionsResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return msdyn_CreateRecordWithRuleBasedPredictionsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateRecordWithRuleBasedPredictions action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type msdyn_CreateRecordWithRuleBasedPredictionsResult = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
  * msdyn_CreateRecordWithRuleBasedPredictions response message
+ *
+ * `result` is the value the msdyn_CreateRecordWithRuleBasedPredictions action returns (see {@link msdyn_CreateRecordWithRuleBasedPredictionsResult}).
  */
 export class msdyn_CreateRecordWithRuleBasedPredictionsResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>) {
+  constructor(public result: msdyn_CreateRecordWithRuleBasedPredictionsResult) {
     super("msdyn_CreateRecordWithRuleBasedPredictions");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateRecordWithRuleBasedPredictionsResponse {
     return new msdyn_CreateRecordWithRuleBasedPredictionsResponse(
-      responseObject<Record<string, unknown>>(data)
+      (data ?? null) as msdyn_CreateRecordWithRuleBasedPredictionsResult
     );
   }
 }

@@ -5,6 +5,6 @@ import type { AuditDetail } from "./AuditDetail.js";
  * Extends: AuditDetail
  */
 export interface UserAccessAuditDetail extends AuditDetail {
-  Interval?: number;
   AccessTime?: string;
+  Interval?: number;
 }

@@ -3,9 +3,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { FeatureControlStringSettingData } from "./types/index.js";
 
 /**
- * Response from GetFeatureControlStringSettingsForNamespaceWithUserContext action
+ * Response from the GetFeatureControlStringSettingsForNamespaceWithUserContext action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetFeatureControlStringSettingsForNamespaceWithUserContextResponse {
+  "@odata.context"?: string;
   FeatureControlStringSettingCollection: FeatureControlStringSettingData[];
 }
 
@@ -53,9 +56,7 @@ export class GetFeatureControlStringSettingsForNamespaceWithUserContextAction im
   async parseResponse(
     response: Response
   ): Promise<GetFeatureControlStringSettingsForNamespaceWithUserContextResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as GetFeatureControlStringSettingsForNamespaceWithUserContextResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as GetFeatureControlStringSettingsForNamespaceWithUserContextResponse;
   }
 }

@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -46,9 +46,9 @@ export class CalculatePriceRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CalculatePriceResponse> {
+  parseResponse(_response: Response): Promise<CalculatePriceResponse> {
     // No return value (204 No Content)
-    return new CalculatePriceResponse();
+    return Promise.resolve(new CalculatePriceResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class CalculatePriceResponse extends OrganizationResponse {
     super("CalculatePrice");
   }
 
-  static fromResponse(_data: unknown): CalculatePriceResponse {
+  static fromResponse(_data?: unknown): CalculatePriceResponse {
     return new CalculatePriceResponse();
   }
 }

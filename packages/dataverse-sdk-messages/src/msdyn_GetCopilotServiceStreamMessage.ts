@@ -44,9 +44,9 @@ export class msdyn_GetCopilotServiceStreamRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_GetCopilotServiceStreamResponse> {
+  parseResponse(_response: Response): Promise<msdyn_GetCopilotServiceStreamResponse> {
     // No return value (204 No Content)
-    return new msdyn_GetCopilotServiceStreamResponse();
+    return Promise.resolve(new msdyn_GetCopilotServiceStreamResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_GetCopilotServiceStreamResponse extends OrganizationResponse 
     super("msdyn_GetCopilotServiceStream");
   }
 
-  static fromResponse(_data: unknown): msdyn_GetCopilotServiceStreamResponse {
+  static fromResponse(_data?: unknown): msdyn_GetCopilotServiceStreamResponse {
     return new msdyn_GetCopilotServiceStreamResponse();
   }
 }

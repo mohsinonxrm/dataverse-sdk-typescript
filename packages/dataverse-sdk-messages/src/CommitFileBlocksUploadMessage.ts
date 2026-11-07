@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { CommitFileBlocksUploadResponse as CommitFileBlocksUploadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the CommitFileBlocksUpload message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,34 @@ export class CommitFileBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<CommitFileBlocksUploadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CommitFileBlocksUploadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CommitFileBlocksUploadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CommitFileBlocksUpload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CommitFileBlocksUploadResult {
+  "@odata.context"?: string;
+  FileId: string;
+  FileSizeInBytes: number;
+}
+
+/**
  * CommitFileBlocksUpload response message
+ *
+ * `result` is the value the CommitFileBlocksUpload action returns (see {@link CommitFileBlocksUploadResult}).
  */
 export class CommitFileBlocksUploadResponse extends OrganizationResponse {
-  constructor(public result: CommitFileBlocksUploadResponseData) {
+  constructor(public result: CommitFileBlocksUploadResult) {
     super("CommitFileBlocksUpload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CommitFileBlocksUploadResponse {
-    return new CommitFileBlocksUploadResponse(
-      responseObject<CommitFileBlocksUploadResponseData>(data)
-    );
+    return new CommitFileBlocksUploadResponse(data as CommitFileBlocksUploadResult);
   }
 }

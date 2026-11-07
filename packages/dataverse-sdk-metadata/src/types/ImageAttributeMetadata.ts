@@ -5,9 +5,9 @@ import type { AttributeMetadata } from "./AttributeMetadata.js";
  * Extends: AttributeMetadata
  */
 export interface ImageAttributeMetadata extends AttributeMetadata {
+  CanStoreFullImage?: boolean;
   IsPrimaryImage?: boolean;
   MaxHeight?: number;
-  MaxWidth?: number;
   MaxSizeInKB?: number;
-  CanStoreFullImage?: boolean;
+  MaxWidth?: number;
 }

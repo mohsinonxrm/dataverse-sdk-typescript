@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { GetTrackingTokenEmailResponse as GetTrackingTokenEmailResponseData } from "./types/index.js";
 
 /**
  * Parameters of the GetTrackingTokenEmail message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class GetTrackingTokenEmailRequest
   }
 
   async parseResponse(response: Response): Promise<GetTrackingTokenEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GetTrackingTokenEmailResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return GetTrackingTokenEmailResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GetTrackingTokenEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface GetTrackingTokenEmailResult {
+  "@odata.context"?: string;
+  TrackingToken: string;
+}
+
+/**
  * GetTrackingTokenEmail response message
+ *
+ * `result` is the value the GetTrackingTokenEmail action returns (see {@link GetTrackingTokenEmailResult}).
  */
 export class GetTrackingTokenEmailResponse extends OrganizationResponse {
-  constructor(public result: GetTrackingTokenEmailResponseData) {
+  constructor(public result: GetTrackingTokenEmailResult) {
     super("GetTrackingTokenEmail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GetTrackingTokenEmailResponse {
-    return new GetTrackingTokenEmailResponse(
-      responseObject<GetTrackingTokenEmailResponseData>(data)
-    );
+    return new GetTrackingTokenEmailResponse(data as GetTrackingTokenEmailResult);
   }
 }

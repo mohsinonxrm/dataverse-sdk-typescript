@@ -1,11 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type {
-  CreateVirtualConnectorTableMetadata,
-  CreateVirtualConnectorTableResponse as CreateVirtualConnectorTableResponseData,
-} from "./types/index.js";
+import type { CreateVirtualConnectorTableMetadata } from "./types/index.js";
 
 /**
  * Parameters of the CreateVirtualConnectorTable message, by their CSDL names. A parameter the CSDL declares
@@ -48,23 +44,33 @@ export class CreateVirtualConnectorTableRequest
   }
 
   async parseResponse(response: Response): Promise<CreateVirtualConnectorTableResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CreateVirtualConnectorTableResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CreateVirtualConnectorTableResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateVirtualConnectorTable action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateVirtualConnectorTableResult {
+  "@odata.context"?: string;
+  EntityId: string;
+}
+
+/**
  * CreateVirtualConnectorTable response message
+ *
+ * `result` is the value the CreateVirtualConnectorTable action returns (see {@link CreateVirtualConnectorTableResult}).
  */
 export class CreateVirtualConnectorTableResponse extends OrganizationResponse {
-  constructor(public result: CreateVirtualConnectorTableResponseData) {
+  constructor(public result: CreateVirtualConnectorTableResult) {
     super("CreateVirtualConnectorTable");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateVirtualConnectorTableResponse {
-    return new CreateVirtualConnectorTableResponse(
-      responseObject<CreateVirtualConnectorTableResponseData>(data)
-    );
+    return new CreateVirtualConnectorTableResponse(data as CreateVirtualConnectorTableResult);
   }
 }

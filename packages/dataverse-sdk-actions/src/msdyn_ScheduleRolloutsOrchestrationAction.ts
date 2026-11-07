@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_ScheduleRolloutsOrchestration action
+ * Response from the msdyn_ScheduleRolloutsOrchestration action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ScheduleRolloutsOrchestrationResponse {
-  // No content returned
-}
+export type msdyn_ScheduleRolloutsOrchestrationResponse = void;
 
 /**
  * msdyn_ScheduleRolloutsOrchestration action
@@ -25,9 +25,8 @@ export class msdyn_ScheduleRolloutsOrchestrationAction implements Executable<msd
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ScheduleRolloutsOrchestrationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ScheduleRolloutsOrchestrationResponse;
-    return (await response.json()) as msdyn_ScheduleRolloutsOrchestrationResponse;
+  parseResponse(_response: Response): Promise<msdyn_ScheduleRolloutsOrchestrationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

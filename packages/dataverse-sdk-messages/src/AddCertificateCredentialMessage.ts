@@ -46,9 +46,9 @@ export class AddCertificateCredentialRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AddCertificateCredentialResponse> {
+  parseResponse(_response: Response): Promise<AddCertificateCredentialResponse> {
     // No return value (204 No Content)
-    return new AddCertificateCredentialResponse();
+    return Promise.resolve(new AddCertificateCredentialResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class AddCertificateCredentialResponse extends OrganizationResponse {
     super("AddCertificateCredential");
   }
 
-  static fromResponse(_data: unknown): AddCertificateCredentialResponse {
+  static fromResponse(_data?: unknown): AddCertificateCredentialResponse {
     return new AddCertificateCredentialResponse();
   }
 }

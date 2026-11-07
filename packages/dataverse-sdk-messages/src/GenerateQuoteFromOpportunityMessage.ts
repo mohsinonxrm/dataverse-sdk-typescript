@@ -1,7 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
@@ -52,21 +51,41 @@ export class GenerateQuoteFromOpportunityRequest
   }
 
   async parseResponse(response: Response): Promise<GenerateQuoteFromOpportunityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GenerateQuoteFromOpportunityResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204)
+      return GenerateQuoteFromOpportunityResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return GenerateQuoteFromOpportunityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GenerateQuoteFromOpportunity action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type GenerateQuoteFromOpportunityResult = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
  * GenerateQuoteFromOpportunity response message
+ *
+ * `result` is the value the GenerateQuoteFromOpportunity action returns (see {@link GenerateQuoteFromOpportunityResult}).
  */
 export class GenerateQuoteFromOpportunityResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>) {
+  constructor(public result: GenerateQuoteFromOpportunityResult) {
     super("GenerateQuoteFromOpportunity");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GenerateQuoteFromOpportunityResponse {
-    return new GenerateQuoteFromOpportunityResponse(responseObject<Record<string, unknown>>(data));
+    return new GenerateQuoteFromOpportunityResponse(
+      (data ?? null) as GenerateQuoteFromOpportunityResult
+    );
   }
 }

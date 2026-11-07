@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrieveInstalledLanguagePackVersion function
+ * Response from the RetrieveInstalledLanguagePackVersion function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveInstalledLanguagePackVersionResponse {
+  "@odata.context"?: string;
   Version: string;
 }
 
@@ -48,8 +51,7 @@ export class RetrieveInstalledLanguagePackVersionFunction implements Executable<
   }
 
   async parseResponse(response: Response): Promise<RetrieveInstalledLanguagePackVersionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveInstalledLanguagePackVersionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveInstalledLanguagePackVersionResponse;
   }
 }

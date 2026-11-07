@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesOpportunityCatchup action
+ * Response from the msdyn_SalesOpportunityCatchup action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesOpportunityCatchupResponse {
+  "@odata.context"?: string;
   msdyn_sales_copilot_output: string;
   msdyn_summary: string;
   msdyn_summary_raw: string;
@@ -57,8 +60,7 @@ export class msdyn_SalesOpportunityCatchupAction implements Executable<msdyn_Sal
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesOpportunityCatchupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SalesOpportunityCatchupResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SalesOpportunityCatchupResponse;
   }
 }

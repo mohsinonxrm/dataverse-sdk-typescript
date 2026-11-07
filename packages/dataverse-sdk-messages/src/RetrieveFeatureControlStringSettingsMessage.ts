@@ -1,7 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { RetrieveFeatureControlStringSettingsResponse as RetrieveFeatureControlStringSettingsResponseData } from "./types/index.js";
+import type { FeatureControlStringSettingData } from "./types/index.js";
 
 /**
  * RetrieveFeatureControlStringSettings request message
@@ -29,24 +28,35 @@ export class RetrieveFeatureControlStringSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<RetrieveFeatureControlStringSettingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return RetrieveFeatureControlStringSettingsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RetrieveFeatureControlStringSettingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RetrieveFeatureControlStringSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RetrieveFeatureControlStringSettingsResult {
+  "@odata.context"?: string;
+  FeatureControlStringSettingCollection: FeatureControlStringSettingData[];
+}
+
+/**
  * RetrieveFeatureControlStringSettings response message
+ *
+ * `result` is the value the RetrieveFeatureControlStringSettings action returns (see {@link RetrieveFeatureControlStringSettingsResult}).
  */
 export class RetrieveFeatureControlStringSettingsResponse extends OrganizationResponse {
-  constructor(public result: RetrieveFeatureControlStringSettingsResponseData) {
+  constructor(public result: RetrieveFeatureControlStringSettingsResult) {
     super("RetrieveFeatureControlStringSettings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RetrieveFeatureControlStringSettingsResponse {
     return new RetrieveFeatureControlStringSettingsResponse(
-      responseObject<RetrieveFeatureControlStringSettingsResponseData>(data)
+      data as RetrieveFeatureControlStringSettingsResult
     );
   }
 }

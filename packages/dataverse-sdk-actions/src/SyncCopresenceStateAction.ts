@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from SyncCopresenceState action
+ * Response from the SyncCopresenceState action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface SyncCopresenceStateResponse {
+  "@odata.context"?: string;
   CopresenceInfo: string;
 }
 
@@ -46,8 +49,7 @@ export class SyncCopresenceStateAction implements Executable<SyncCopresenceState
   }
 
   async parseResponse(response: Response): Promise<SyncCopresenceStateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SyncCopresenceStateResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as SyncCopresenceStateResponse;
   }
 }

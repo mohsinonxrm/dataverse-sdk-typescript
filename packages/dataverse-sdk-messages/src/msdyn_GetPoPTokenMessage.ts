@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetPoPTokenResponse as msdyn_GetPoPTokenResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetPoPToken message, by their CSDL names. A parameter the CSDL declares
@@ -53,21 +51,33 @@ export class msdyn_GetPoPTokenRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPoPTokenResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetPoPTokenResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetPoPTokenResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetPoPToken action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetPoPTokenResult {
+  "@odata.context"?: string;
+  popToken: string;
+}
+
+/**
  * msdyn_GetPoPToken response message
+ *
+ * `result` is the value the msdyn_GetPoPToken action returns (see {@link msdyn_GetPoPTokenResult}).
  */
 export class msdyn_GetPoPTokenResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetPoPTokenResponseData) {
+  constructor(public result: msdyn_GetPoPTokenResult) {
     super("msdyn_GetPoPToken");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetPoPTokenResponse {
-    return new msdyn_GetPoPTokenResponse(responseObject<msdyn_GetPoPTokenResponseData>(data));
+    return new msdyn_GetPoPTokenResponse(data as msdyn_GetPoPTokenResult);
   }
 }

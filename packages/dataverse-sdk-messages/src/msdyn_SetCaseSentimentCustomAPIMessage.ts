@@ -42,9 +42,9 @@ export class msdyn_SetCaseSentimentCustomAPIRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SetCaseSentimentCustomAPIResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SetCaseSentimentCustomAPIResponse> {
     // No return value (204 No Content)
-    return new msdyn_SetCaseSentimentCustomAPIResponse();
+    return Promise.resolve(new msdyn_SetCaseSentimentCustomAPIResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_SetCaseSentimentCustomAPIResponse extends OrganizationRespons
     super("msdyn_SetCaseSentimentCustomAPI");
   }
 
-  static fromResponse(_data: unknown): msdyn_SetCaseSentimentCustomAPIResponse {
+  static fromResponse(_data?: unknown): msdyn_SetCaseSentimentCustomAPIResponse {
     return new msdyn_SetCaseSentimentCustomAPIResponse();
   }
 }

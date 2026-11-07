@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from ValidateUnpublished action
+ * Response from the ValidateUnpublished action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ValidateUnpublishedResponse {
-  // No content returned
-}
+export type ValidateUnpublishedResponse = void;
 
 /**
  * Parameters of the ValidateUnpublished action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class ValidateUnpublishedAction implements Executable<ValidateUnpublished
     };
   }
 
-  async parseResponse(response: Response): Promise<ValidateUnpublishedResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ValidateUnpublishedResponse;
-    return (await response.json()) as ValidateUnpublishedResponse;
+  parseResponse(_response: Response): Promise<ValidateUnpublishedResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

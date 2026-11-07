@@ -2,16 +2,16 @@
  * QueryMetadata
  */
 export interface QueryMetadata {
-  QueryId?: string;
-  ReturnedTypeCode?: string;
   ComponentState?: number;
-  Name?: string;
   Description?: string;
   FetchXml?: string;
-  LayoutXml?: string;
-  IsDefault?: boolean;
-  ModifiedOn?: string;
-  QueryApi?: string;
-  QueryType?: number;
   IsCustomizable?: boolean;
+  IsDefault?: boolean;
+  LayoutXml?: string;
+  ModifiedOn?: string;
+  Name?: string;
+  QueryApi?: string;
+  QueryId?: string;
+  QueryType?: number;
+  ReturnedTypeCode?: string;
 }

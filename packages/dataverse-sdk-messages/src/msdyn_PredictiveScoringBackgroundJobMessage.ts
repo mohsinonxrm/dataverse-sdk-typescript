@@ -42,9 +42,9 @@ export class msdyn_PredictiveScoringBackgroundJobRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_PredictiveScoringBackgroundJobResponse> {
+  parseResponse(_response: Response): Promise<msdyn_PredictiveScoringBackgroundJobResponse> {
     // No return value (204 No Content)
-    return new msdyn_PredictiveScoringBackgroundJobResponse();
+    return Promise.resolve(new msdyn_PredictiveScoringBackgroundJobResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_PredictiveScoringBackgroundJobResponse extends OrganizationRe
     super("msdyn_PredictiveScoringBackgroundJob");
   }
 
-  static fromResponse(_data: unknown): msdyn_PredictiveScoringBackgroundJobResponse {
+  static fromResponse(_data?: unknown): msdyn_PredictiveScoringBackgroundJobResponse {
     return new msdyn_PredictiveScoringBackgroundJobResponse();
   }
 }

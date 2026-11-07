@@ -1,11 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type {
-  ExportComponentsParams,
-  ExportSolutionResponse as ExportSolutionResponseData,
-} from "./types/index.js";
+import type { ExportComponentsParams } from "./types/index.js";
 
 /**
  * Parameters of the ExportSolution message, by their CSDL names. A parameter the CSDL declares
@@ -76,21 +72,33 @@ export class ExportSolutionRequest
   }
 
   async parseResponse(response: Response): Promise<ExportSolutionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ExportSolutionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ExportSolutionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ExportSolution action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ExportSolutionResult {
+  "@odata.context"?: string;
+  ExportSolutionFile: string;
+}
+
+/**
  * ExportSolution response message
+ *
+ * `result` is the value the ExportSolution action returns (see {@link ExportSolutionResult}).
  */
 export class ExportSolutionResponse extends OrganizationResponse {
-  constructor(public result: ExportSolutionResponseData) {
+  constructor(public result: ExportSolutionResult) {
     super("ExportSolution");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ExportSolutionResponse {
-    return new ExportSolutionResponse(responseObject<ExportSolutionResponseData>(data));
+    return new ExportSolutionResponse(data as ExportSolutionResult);
   }
 }

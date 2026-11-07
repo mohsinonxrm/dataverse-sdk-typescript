@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { privilege } from "./types/index.js";
@@ -51,9 +51,9 @@ export class RemovePrivilegeRoleRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RemovePrivilegeRoleResponse> {
+  parseResponse(_response: Response): Promise<RemovePrivilegeRoleResponse> {
     // No return value (204 No Content)
-    return new RemovePrivilegeRoleResponse();
+    return Promise.resolve(new RemovePrivilegeRoleResponse());
   }
 }
 
@@ -65,7 +65,7 @@ export class RemovePrivilegeRoleResponse extends OrganizationResponse {
     super("RemovePrivilegeRole");
   }
 
-  static fromResponse(_data: unknown): RemovePrivilegeRoleResponse {
+  static fromResponse(_data?: unknown): RemovePrivilegeRoleResponse {
     return new RemovePrivilegeRoleResponse();
   }
 }

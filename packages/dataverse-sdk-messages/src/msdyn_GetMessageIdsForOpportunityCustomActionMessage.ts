@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetMessageIdsForOpportunityCustomActionResponse as msdyn_GetMessageIdsForOpportunityCustomActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetMessageIdsForOpportunityCustomAction message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_GetMessageIdsForOpportunityCustomActionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetMessageIdsForOpportunityCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetMessageIdsForOpportunityCustomActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetMessageIdsForOpportunityCustomActionResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,32 @@ export class msdyn_GetMessageIdsForOpportunityCustomActionRequest
 }
 
 /**
+ * Response from the msdyn_GetMessageIdsForOpportunityCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetMessageIdsForOpportunityCustomActionResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+  MessageIds: string;
+  StatusCode: number;
+}
+
+/**
  * msdyn_GetMessageIdsForOpportunityCustomAction response message
+ *
+ * `result` is the value the msdyn_GetMessageIdsForOpportunityCustomAction action returns (see {@link msdyn_GetMessageIdsForOpportunityCustomActionResult}).
  */
 export class msdyn_GetMessageIdsForOpportunityCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetMessageIdsForOpportunityCustomActionResponseData) {
+  constructor(public result: msdyn_GetMessageIdsForOpportunityCustomActionResult) {
     super("msdyn_GetMessageIdsForOpportunityCustomAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetMessageIdsForOpportunityCustomActionResponse {
     return new msdyn_GetMessageIdsForOpportunityCustomActionResponse(
-      responseObject<msdyn_GetMessageIdsForOpportunityCustomActionResponseData>(data)
+      data as msdyn_GetMessageIdsForOpportunityCustomActionResult
     );
   }
 }

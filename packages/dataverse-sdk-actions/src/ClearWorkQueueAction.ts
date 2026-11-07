@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from ClearWorkQueue action
+ * Response from the ClearWorkQueue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ClearWorkQueueResponse {
+  "@odata.context"?: string;
   isDeletionGoingAsync: boolean;
 }
 
@@ -32,8 +35,7 @@ export class ClearWorkQueueAction implements Executable<ClearWorkQueueResponse> 
   }
 
   async parseResponse(response: Response): Promise<ClearWorkQueueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ClearWorkQueueResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ClearWorkQueueResponse;
   }
 }

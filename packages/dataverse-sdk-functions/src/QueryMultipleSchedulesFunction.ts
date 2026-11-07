@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { TimeCode, TimeInfoCollection, resource } from "./types/index.js";
 
 /**
- * Response from QueryMultipleSchedules function
+ * Response from the QueryMultipleSchedules function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface QueryMultipleSchedulesResponse {
+  "@odata.context"?: string;
   TimeInfos: TimeInfoCollection[];
 }
 
@@ -64,8 +67,7 @@ export class QueryMultipleSchedulesFunction implements Executable<QueryMultipleS
   }
 
   async parseResponse(response: Response): Promise<QueryMultipleSchedulesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as QueryMultipleSchedulesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as QueryMultipleSchedulesResponse;
   }
 }

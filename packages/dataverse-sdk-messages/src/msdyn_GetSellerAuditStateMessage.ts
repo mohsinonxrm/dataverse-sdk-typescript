@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetSellerAuditStateResponse as msdyn_GetSellerAuditStateResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSellerAuditState request message
@@ -29,23 +27,33 @@ export class msdyn_GetSellerAuditStateRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSellerAuditStateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSellerAuditStateResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSellerAuditStateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSellerAuditState action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSellerAuditStateResult {
+  "@odata.context"?: string;
+  msdyn_output: string;
+}
+
+/**
  * msdyn_GetSellerAuditState response message
+ *
+ * `result` is the value the msdyn_GetSellerAuditState action returns (see {@link msdyn_GetSellerAuditStateResult}).
  */
 export class msdyn_GetSellerAuditStateResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSellerAuditStateResponseData) {
+  constructor(public result: msdyn_GetSellerAuditStateResult) {
     super("msdyn_GetSellerAuditState");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSellerAuditStateResponse {
-    return new msdyn_GetSellerAuditStateResponse(
-      responseObject<msdyn_GetSellerAuditStateResponseData>(data)
-    );
+    return new msdyn_GetSellerAuditStateResponse(data as msdyn_GetSellerAuditStateResult);
   }
 }

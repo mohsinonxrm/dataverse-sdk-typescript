@@ -62,6 +62,11 @@ const createdRecords = {
   incidents: [] as string[],
 };
 
+/** The message of a caught error (anything can be thrown). */
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 /**
  * Demo 1: WhoAmI (Function)
  *
@@ -99,7 +104,7 @@ async function assignDemo(orgService: OrganizationService, client: DataverseClie
   });
 
   createdRecords.accounts.push(accountId);
-  console.log(`  Created: ${chalk.dim(accountId.substring(0, 8) + "...")}`); // eslint-disable-line @typescript-eslint/restrict-plus-operands
+  console.log(`  Created: ${chalk.dim(accountId.substring(0, 8) + "...")}`);
 
   // Get another user to assign to
   const targetUserId = process.env.TEST_USER_ID;
@@ -128,13 +133,10 @@ async function assignDemo(orgService: OrganizationService, client: DataverseClie
 
   // Verify assignment
   const account = await client
-    .api(`/accounts(${accountId})`) // eslint-disable-line @typescript-eslint/restrict-template-expressions
+    .api(`/accounts(${accountId})`)
     .select("name", "_ownerid_value")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .get<any>();
-  console.log(
-    `\nVerified owner: ${chalk.yellow(account._ownerid_value)}` // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions
-  );
+    .get<{ name: string; _ownerid_value: string }>();
+  console.log(`\nVerified owner: ${chalk.yellow(account._ownerid_value)}`);
   console.log(chalk.dim("\nℹ️  Assignment is done via ownerid navigation property"));
 }
 
@@ -159,7 +161,7 @@ async function setStateDemo(
 
   createdRecords.accounts.push(accountId);
   console.log(
-    `  Created: ${chalk.dim(accountId.substring(0, 8) + "...")} - Status: ${chalk.green("Active")}` // eslint-disable-line @typescript-eslint/restrict-plus-operands
+    `  Created: ${chalk.dim(accountId.substring(0, 8) + "...")} - Status: ${chalk.green("Active")}`
   );
 
   // Deactivate account
@@ -174,17 +176,14 @@ async function setStateDemo(
 
   // Verify state change
   const account = await client
-    .api(`/accounts(${accountId})`) // eslint-disable-line @typescript-eslint/restrict-template-expressions
+    .api(`/accounts(${accountId})`)
     .select("name", "statecode", "statuscode")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .get<any>();
+    .get<{ name: string; statecode: number; statuscode: number }>();
   console.log(`\nVerified state:`);
   console.log(
-    `  State Code: ${chalk.yellow(String(account.statecode))} (${String(account.statecode) === "1" ? "Inactive" : "Active"})` // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions, @typescript-eslint/restrict-plus-operands
+    `  State Code: ${chalk.yellow(String(account.statecode))} (${account.statecode === 1 ? "Inactive" : "Active"})`
   );
-  console.log(
-    `  Status Code: ${chalk.yellow(String(account.statuscode))}` // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions
-  );
+  console.log(`  Status Code: ${chalk.yellow(String(account.statuscode))}`);
 
   console.log(chalk.dim("\nℹ️  SetState is done via statecode/statuscode properties"));
 }
@@ -211,7 +210,7 @@ async function executeWorkflowDemo(orgService: OrganizationService): Promise<voi
       chalk.dim(`
   const request = new ExecuteWorkflowRequest(workflowId, { EntityId: targetRecordId });
   const response = await orgService.execute(request);
-  console.log(\`Async Operation ID: \${response.result.asyncoperationid}\`);
+  console.log(\`Async Operation ID: \${response.result?.asyncoperationid}\`);
     `)
     );
     return;
@@ -231,7 +230,8 @@ async function executeWorkflowDemo(orgService: OrganizationService): Promise<voi
   const response = await orgService.execute<ExecuteWorkflowResponse>(request);
 
   console.log(chalk.green("✓ Workflow execution initiated"));
-  console.log(`  Async Operation ID: ${chalk.yellow(response.result.asyncoperationid)}`);
+  // The asyncoperation record, or null if the Web API answered 204 No Content
+  console.log(`  Async Operation ID: ${chalk.yellow(response.result?.asyncoperationid ?? "")}`);
   console.log(chalk.dim("\nℹ️  Monitor execution in Settings > System Jobs"));
 }
 
@@ -256,7 +256,6 @@ async function winOpportunityDemo(
   });
 
   createdRecords.opportunities.push(opportunityId);
-  // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
   console.log(`  Created: ${chalk.dim(opportunityId.substring(0, 8) + "...")}`);
   console.log(`  Status: ${chalk.yellow("Open")}`);
 
@@ -278,20 +277,15 @@ async function winOpportunityDemo(
 
   // Verify state change
   const opportunity = await client
-    .api(`/opportunities(${opportunityId})`) // eslint-disable-line @typescript-eslint/restrict-template-expressions
+    .api(`/opportunities(${opportunityId})`)
     .select("name", "statecode", "statuscode", "actualrevenue")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .get<any>();
+    .get<{ name: string; statecode: number; statuscode: number; actualrevenue: number | null }>();
 
   console.log("\nVerified opportunity:");
+  console.log(`  State: ${chalk.yellow(opportunity.statecode === 1 ? "Won" : "Unknown")}`);
+  console.log(`  Status Code: ${chalk.yellow(String(opportunity.statuscode))}`);
   console.log(
-    `  State: ${chalk.yellow(opportunity.statecode === 1 ? "Won" : "Unknown")}` // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions
-  );
-  console.log(
-    `  Status Code: ${chalk.yellow(String(opportunity.statuscode))}` // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions
-  );
-  console.log(
-    `  Actual Revenue: ${chalk.green("$" + String(opportunity.actualrevenue?.toLocaleString()))}` // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions, @typescript-eslint/restrict-plus-operands
+    `  Actual Revenue: ${chalk.green("$" + String(opportunity.actualrevenue?.toLocaleString()))}`
   );
 
   console.log(chalk.dim("\nℹ️  Similar messages: LoseOpportunity, CloseOpportunity"));
@@ -326,10 +320,10 @@ async function mergeDemo(orgService: OrganizationService, client: DataverseClien
   createdRecords.leads.push(targetId); // Only track target (subordinate will be deleted)
 
   console.log(
-    `  Target: ${chalk.green("Target Lead")} (${chalk.dim(targetId.substring(0, 8) + "...")})` // eslint-disable-line @typescript-eslint/restrict-plus-operands
+    `  Target: ${chalk.green("Target Lead")} (${chalk.dim(targetId.substring(0, 8) + "...")})`
   );
   console.log(
-    `  Subordinate: ${chalk.yellow("Subordinate Lead")} (${chalk.dim(subordinateId.substring(0, 8) + "...")})` // eslint-disable-line @typescript-eslint/restrict-plus-operands
+    `  Subordinate: ${chalk.yellow("Subordinate Lead")} (${chalk.dim(subordinateId.substring(0, 8) + "...")})`
   );
 
   // Merge subordinate into target
@@ -351,29 +345,23 @@ async function mergeDemo(orgService: OrganizationService, client: DataverseClien
 
   // Verify target updated
   const merged = await client
-    .api(`/leads(${targetId})`) // eslint-disable-line @typescript-eslint/restrict-template-expressions
+    .api(`/leads(${targetId})`)
     .select("firstname", "lastname", "subject", "companyname")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .get<any>();
+    .get<{
+      firstname: string | null;
+      lastname: string;
+      subject: string | null;
+      companyname: string | null;
+    }>();
 
   console.log("\nMerged lead:");
-  console.log(
-    `  Name: ${chalk.green(merged.firstname + " " + merged.lastname)}` // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions, @typescript-eslint/restrict-plus-operands
-  );
-  console.log(
-    `  Subject: ${chalk.dim(merged.subject)}` // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions
-  );
-  console.log(
-    `  Company: ${chalk.dim(merged.companyname)}` // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions
-  );
+  console.log(`  Name: ${chalk.green(`${merged.firstname ?? ""} ${merged.lastname}`)}`);
+  console.log(`  Subject: ${chalk.dim(merged.subject ?? "")}`);
+  console.log(`  Company: ${chalk.dim(merged.companyname ?? "")}`);
 
   // Verify subordinate deleted
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await client
-      .api(`/leads(${subordinateId})`) // eslint-disable-line @typescript-eslint/restrict-template-expressions
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .get<any>();
+    await client.api(`/leads(${subordinateId})`).select("leadid").get<{ leadid: string }>();
     console.log(chalk.red("✗ Subordinate lead still exists (unexpected)"));
   } catch (error: unknown) {
     if (error instanceof DataverseError && error.status === 404) {
@@ -410,7 +398,7 @@ async function exportSolutionDemo(orgService: OrganizationService): Promise<void
     console.log(chalk.green(`✓ Solution exported in ${(duration / 1000).toFixed(2)}s`));
 
     // Get file size: the exported solution zip, base64 encoded
-    const solutionZip = Buffer.from(response.result.ExportSolutionFile ?? "", "base64");
+    const solutionZip = Buffer.from(response.result.ExportSolutionFile, "base64");
     const sizeKB = (solutionZip.length / 1024).toFixed(2);
 
     console.log(`  File size: ${chalk.yellow(sizeKB + " KB")}`);
@@ -423,8 +411,7 @@ async function exportSolutionDemo(orgService: OrganizationService): Promise<void
       )
     );
   } catch (error: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((error as any).message?.includes("does not exist")) {
+    if (errorMessage(error).includes("does not exist")) {
       console.log(chalk.yellow(`⚠ Solution '${solutionName}' not found`));
       console.log(chalk.dim("  Set SOLUTION_NAME in .env to an existing solution"));
       console.log(chalk.dim("  Or export the Default solution (already attempted)"));
@@ -470,8 +457,7 @@ async function publishXmlDemo(orgService: OrganizationService): Promise<void> {
     console.log(chalk.green(`✓ Customizations published in ${(duration / 1000).toFixed(2)}s`));
     console.log(chalk.dim("\nℹ️  Use PublishAllXml to publish all customizations"));
   } catch (error: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    console.log(chalk.red("✗ Publish failed:"), String((error as any).message));
+    console.log(chalk.red("✗ Publish failed:"), errorMessage(error));
   }
 }
 
@@ -545,11 +531,10 @@ async function optionSetDemo(_orgService: OrganizationService): Promise<void> {
   console.log(chalk.dim("Format 2: In messages, use numbers directly"));
   console.log(
     chalk.dim(`
-  const request = new WinOpportunityRequest(
-    opportunityClose,
-    '', // caller
-    3,  // ← Status as plain number
-  );
+  const request = new WinOpportunityRequest({
+    OpportunityClose: opportunityClose,
+    Status: 3, // ← Status as plain number
+  });
   `)
   );
 
@@ -575,9 +560,7 @@ async function cleanup(orgService: OrganizationService): Promise<void> {
         `${chalk.green("✓")} Deleted opportunity ${chalk.dim(id.substring(0, 8) + "...")}`
       );
     } catch (error: unknown) {
-      console.log(
-        `${chalk.red("✗")} Failed to delete opportunity: ${(error as any).message}` // eslint-disable-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions
-      );
+      console.log(`${chalk.red("✗")} Failed to delete opportunity: ${errorMessage(error)}`);
     }
   }
 
@@ -588,8 +571,7 @@ async function cleanup(orgService: OrganizationService): Promise<void> {
       deletedCount++;
       console.log(`${chalk.green("✓")} Deleted lead ${chalk.dim(id.substring(0, 8) + "...")}`);
     } catch (error: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions
-      console.log(`${chalk.red("✗")} Failed to delete lead: ${(error as any).message}`);
+      console.log(`${chalk.red("✗")} Failed to delete lead: ${errorMessage(error)}`);
     }
   }
 
@@ -600,8 +582,7 @@ async function cleanup(orgService: OrganizationService): Promise<void> {
       deletedCount++;
       console.log(`${chalk.green("✓")} Deleted account ${chalk.dim(id.substring(0, 8) + "...")}`);
     } catch (error: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      console.log(`${chalk.red("✗")} Failed to delete account: ${String((error as any).message)}`);
+      console.log(`${chalk.red("✗")} Failed to delete account: ${errorMessage(error)}`);
     }
   }
 
@@ -612,8 +593,7 @@ async function cleanup(orgService: OrganizationService): Promise<void> {
       deletedCount++;
       console.log(`${chalk.green("✓")} Deleted contact ${chalk.dim(id.substring(0, 8) + "...")}`);
     } catch (error: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      console.log(`${chalk.red("✗")} Failed to delete contact: ${String((error as any).message)}`);
+      console.log(`${chalk.red("✗")} Failed to delete contact: ${errorMessage(error)}`);
     }
   }
 
@@ -624,8 +604,7 @@ async function cleanup(orgService: OrganizationService): Promise<void> {
       deletedCount++;
       console.log(`${chalk.green("✓")} Deleted incident ${chalk.dim(id.substring(0, 8) + "...")}`);
     } catch (error: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      console.log(`${chalk.red("✗")} Failed to delete incident: ${String((error as any).message)}`);
+      console.log(`${chalk.red("✗")} Failed to delete incident: ${errorMessage(error)}`);
     }
   }
 
@@ -683,12 +662,10 @@ async function main(): Promise<void> {
 
     console.log(chalk.green.bold("\n✓ All demos completed successfully!\n"));
   } catch (error: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    console.error(chalk.red("\n✗ Error:"), String((error as any).message));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((error as any).response) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      console.error(chalk.dim(JSON.stringify((error as any).response, null, 2)));
+    console.error(chalk.red("\n✗ Error:"), errorMessage(error));
+    // The Web API's error body, when Dataverse answered
+    if (error instanceof DataverseError && error.raw !== undefined) {
+      console.error(chalk.dim(JSON.stringify(error.raw, null, 2)));
     }
 
     // Attempt cleanup even on error

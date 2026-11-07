@@ -1,13 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { appointment } from "./types/index.js";
 
 /**
- * Response from CreateException action
+ * Response from the CreateException action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateExceptionResponse {
+  "@odata.context"?: string;
   id: string;
 }
 
@@ -51,8 +54,7 @@ export class CreateExceptionAction implements Executable<CreateExceptionResponse
   }
 
   async parseResponse(response: Response): Promise<CreateExceptionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateExceptionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CreateExceptionResponse;
   }
 }

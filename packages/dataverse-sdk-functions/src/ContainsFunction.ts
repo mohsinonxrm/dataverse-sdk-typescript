@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from Contains function
+ * Response from the Contains function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface ContainsResponse {
-  value: boolean;
-}
+export type ContainsResponse = boolean;
 
 /**
  * Parameters of the Contains function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class ContainsFunction implements Executable<ContainsResponse> {
   }
 
   async parseResponse(response: Response): Promise<ContainsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ContainsResponse;
-    return (await response.json()) as ContainsResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: ContainsResponse }).value;
   }
 }

@@ -6,9 +6,9 @@ import type { PrivilegeType } from "./PrivilegeType.js";
 export interface SecurityPrivilegeMetadata {
   CanBeBasic?: boolean;
   CanBeDeep?: boolean;
+  CanBeEntityReference?: boolean;
   CanBeGlobal?: boolean;
   CanBeLocal?: boolean;
-  CanBeEntityReference?: boolean;
   CanBeParentEntityReference?: boolean;
   CanBeRecordFilter?: boolean;
   Name?: string;

@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse as msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponseData } from "./types/index.js";
 
 /**
  * msdyn_SalesAgents_CreateDefaultTemplateInSharepoint request message
@@ -31,9 +29,7 @@ export class msdyn_SalesAgents_CreateDefaultTemplateInSharepointRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,29 @@ export class msdyn_SalesAgents_CreateDefaultTemplateInSharepointRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_CreateDefaultTemplateInSharepoint action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_CreateDefaultTemplateInSharepointResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_SalesAgents_CreateDefaultTemplateInSharepoint response message
+ *
+ * `result` is the value the msdyn_SalesAgents_CreateDefaultTemplateInSharepoint action returns (see {@link msdyn_SalesAgents_CreateDefaultTemplateInSharepointResult}).
  */
 export class msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponseData) {
+  constructor(public result: msdyn_SalesAgents_CreateDefaultTemplateInSharepointResult) {
     super("msdyn_SalesAgents_CreateDefaultTemplateInSharepoint");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse {
     return new msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponse(
-      responseObject<msdyn_SalesAgents_CreateDefaultTemplateInSharepointResponseData>(data)
+      data as msdyn_SalesAgents_CreateDefaultTemplateInSharepointResult
     );
   }
 }

@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -46,9 +46,9 @@ export class AppendRelatedPartyRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AppendRelatedPartyResponse> {
+  parseResponse(_response: Response): Promise<AppendRelatedPartyResponse> {
     // No return value (204 No Content)
-    return new AppendRelatedPartyResponse();
+    return Promise.resolve(new AppendRelatedPartyResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class AppendRelatedPartyResponse extends OrganizationResponse {
     super("AppendRelatedParty");
   }
 
-  static fromResponse(_data: unknown): AppendRelatedPartyResponse {
+  static fromResponse(_data?: unknown): AppendRelatedPartyResponse {
     return new AppendRelatedPartyResponse();
   }
 }

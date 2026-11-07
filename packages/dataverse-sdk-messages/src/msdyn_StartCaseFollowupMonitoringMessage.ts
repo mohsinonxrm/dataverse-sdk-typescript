@@ -29,9 +29,9 @@ export class msdyn_StartCaseFollowupMonitoringRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_StartCaseFollowupMonitoringResponse> {
+  parseResponse(_response: Response): Promise<msdyn_StartCaseFollowupMonitoringResponse> {
     // No return value (204 No Content)
-    return new msdyn_StartCaseFollowupMonitoringResponse();
+    return Promise.resolve(new msdyn_StartCaseFollowupMonitoringResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class msdyn_StartCaseFollowupMonitoringResponse extends OrganizationRespo
     super("msdyn_StartCaseFollowupMonitoring");
   }
 
-  static fromResponse(_data: unknown): msdyn_StartCaseFollowupMonitoringResponse {
+  static fromResponse(_data?: unknown): msdyn_StartCaseFollowupMonitoringResponse {
     return new msdyn_StartCaseFollowupMonitoringResponse();
   }
 }

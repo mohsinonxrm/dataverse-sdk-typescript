@@ -44,9 +44,9 @@ export class NotifyEnvironmentVariableSecretChangeRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<NotifyEnvironmentVariableSecretChangeResponse> {
+  parseResponse(_response: Response): Promise<NotifyEnvironmentVariableSecretChangeResponse> {
     // No return value (204 No Content)
-    return new NotifyEnvironmentVariableSecretChangeResponse();
+    return Promise.resolve(new NotifyEnvironmentVariableSecretChangeResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class NotifyEnvironmentVariableSecretChangeResponse extends OrganizationR
     super("NotifyEnvironmentVariableSecretChange");
   }
 
-  static fromResponse(_data: unknown): NotifyEnvironmentVariableSecretChangeResponse {
+  static fromResponse(_data?: unknown): NotifyEnvironmentVariableSecretChangeResponse {
     return new NotifyEnvironmentVariableSecretChangeResponse();
   }
 }

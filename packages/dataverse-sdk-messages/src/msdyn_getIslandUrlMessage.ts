@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_getIslandUrlResponse as msdyn_getIslandUrlResponseData } from "./types/index.js";
 
 /**
  * msdyn_getIslandUrl request message
@@ -29,21 +27,33 @@ export class msdyn_getIslandUrlRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_getIslandUrlResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_getIslandUrlResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_getIslandUrlResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_getIslandUrl action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_getIslandUrlResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_getIslandUrl response message
+ *
+ * `result` is the value the msdyn_getIslandUrl action returns (see {@link msdyn_getIslandUrlResult}).
  */
 export class msdyn_getIslandUrlResponse extends OrganizationResponse {
-  constructor(public result: msdyn_getIslandUrlResponseData) {
+  constructor(public result: msdyn_getIslandUrlResult) {
     super("msdyn_getIslandUrl");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_getIslandUrlResponse {
-    return new msdyn_getIslandUrlResponse(responseObject<msdyn_getIslandUrlResponseData>(data));
+    return new msdyn_getIslandUrlResponse(data as msdyn_getIslandUrlResult);
   }
 }

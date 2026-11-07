@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { contract } from "./types/index.js";
 
@@ -53,21 +52,34 @@ export class RenewContractRequest
   }
 
   async parseResponse(response: Response): Promise<RenewContractResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RenewContractResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return RenewContractResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return RenewContractResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RenewContract action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type RenewContractResult =
+  (contract & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
+
+/**
  * RenewContract response message
+ *
+ * `result` is the value the RenewContract action returns (see {@link RenewContractResult}).
  */
 export class RenewContractResponse extends OrganizationResponse {
-  constructor(public result: contract) {
+  constructor(public result: RenewContractResult) {
     super("RenewContract");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RenewContractResponse {
-    return new RenewContractResponse(responseObject<contract>(data));
+    return new RenewContractResponse((data ?? null) as RenewContractResult);
   }
 }

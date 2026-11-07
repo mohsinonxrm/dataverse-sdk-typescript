@@ -3,9 +3,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { PullChangesFromGitParameters } from "./types/index.js";
 
 /**
- * Response from PullChangesFromGitAsync action
+ * Response from the PullChangesFromGitAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PullChangesFromGitAsyncResponse {
+  "@odata.context"?: string;
   AsyncOperationId: string;
 }
 
@@ -45,8 +48,7 @@ export class PullChangesFromGitAsyncAction implements Executable<PullChangesFrom
   }
 
   async parseResponse(response: Response): Promise<PullChangesFromGitAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PullChangesFromGitAsyncResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as PullChangesFromGitAsyncResponse;
   }
 }

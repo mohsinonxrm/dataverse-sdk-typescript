@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAgents_UpsertAgentProcessingState action
+ * Response from the msdyn_SalesAgents_UpsertAgentProcessingState action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SalesAgents_UpsertAgentProcessingStateResponse {
-  // No content returned
-}
+export type msdyn_SalesAgents_UpsertAgentProcessingStateResponse = void;
 
 /**
  * Parameters of the msdyn_SalesAgents_UpsertAgentProcessingState action, by their CSDL names. A parameter the CSDL declares
@@ -55,11 +55,10 @@ export class msdyn_SalesAgents_UpsertAgentProcessingStateAction implements Execu
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAgents_UpsertAgentProcessingStateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SalesAgents_UpsertAgentProcessingStateResponse;
-    return (await response.json()) as msdyn_SalesAgents_UpsertAgentProcessingStateResponse;
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

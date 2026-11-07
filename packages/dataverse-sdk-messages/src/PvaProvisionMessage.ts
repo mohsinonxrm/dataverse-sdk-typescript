@@ -29,9 +29,9 @@ export class PvaProvisionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaProvisionResponse> {
+  parseResponse(_response: Response): Promise<PvaProvisionResponse> {
     // No return value (204 No Content)
-    return new PvaProvisionResponse();
+    return Promise.resolve(new PvaProvisionResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class PvaProvisionResponse extends OrganizationResponse {
     super("PvaProvision");
   }
 
-  static fromResponse(_data: unknown): PvaProvisionResponse {
+  static fromResponse(_data?: unknown): PvaProvisionResponse {
     return new PvaProvisionResponse();
   }
 }

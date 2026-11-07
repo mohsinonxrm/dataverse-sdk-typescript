@@ -29,9 +29,9 @@ export class RestartHostedMachineRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RestartHostedMachineResponse> {
+  parseResponse(_response: Response): Promise<RestartHostedMachineResponse> {
     // No return value (204 No Content)
-    return new RestartHostedMachineResponse();
+    return Promise.resolve(new RestartHostedMachineResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class RestartHostedMachineResponse extends OrganizationResponse {
     super("RestartHostedMachine");
   }
 
-  static fromResponse(_data: unknown): RestartHostedMachineResponse {
+  static fromResponse(_data?: unknown): RestartHostedMachineResponse {
     return new RestartHostedMachineResponse();
   }
 }

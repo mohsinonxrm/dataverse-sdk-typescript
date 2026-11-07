@@ -44,9 +44,9 @@ export class ImportTranslationRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ImportTranslationResponse> {
+  parseResponse(_response: Response): Promise<ImportTranslationResponse> {
     // No return value (204 No Content)
-    return new ImportTranslationResponse();
+    return Promise.resolve(new ImportTranslationResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class ImportTranslationResponse extends OrganizationResponse {
     super("ImportTranslation");
   }
 
-  static fromResponse(_data: unknown): ImportTranslationResponse {
+  static fromResponse(_data?: unknown): ImportTranslationResponse {
     return new ImportTranslationResponse();
   }
 }

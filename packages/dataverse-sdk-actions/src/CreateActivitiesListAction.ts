@@ -1,14 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PropagationOwnershipOptions } from "./types/index.js";
 
 /**
- * Response from CreateActivitiesList action
+ * Response from the CreateActivitiesList action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateActivitiesListResponse {
+  "@odata.context"?: string;
   BulkOperationId: string;
 }
 
@@ -66,8 +69,7 @@ export class CreateActivitiesListAction implements Executable<CreateActivitiesLi
   }
 
   async parseResponse(response: Response): Promise<CreateActivitiesListResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreateActivitiesListResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CreateActivitiesListResponse;
   }
 }

@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { email } from "./types/index.js";
@@ -51,9 +51,9 @@ export class msdyn_OnClosureAgentDisengagedRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OnClosureAgentDisengagedResponse> {
+  parseResponse(_response: Response): Promise<msdyn_OnClosureAgentDisengagedResponse> {
     // No return value (204 No Content)
-    return new msdyn_OnClosureAgentDisengagedResponse();
+    return Promise.resolve(new msdyn_OnClosureAgentDisengagedResponse());
   }
 }
 
@@ -65,7 +65,7 @@ export class msdyn_OnClosureAgentDisengagedResponse extends OrganizationResponse
     super("msdyn_OnClosureAgentDisengaged");
   }
 
-  static fromResponse(_data: unknown): msdyn_OnClosureAgentDisengagedResponse {
+  static fromResponse(_data?: unknown): msdyn_OnClosureAgentDisengagedResponse {
     return new msdyn_OnClosureAgentDisengagedResponse();
   }
 }

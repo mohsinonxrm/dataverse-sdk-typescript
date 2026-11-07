@@ -1,15 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { queueitem } from "./types/index.js";
 
 /**
- * Response from RouteTo action
+ * Response from the RouteTo action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RouteToResponse {
-  // No content returned
-}
+export type RouteToResponse = void;
 
 /**
  * Parameters of the RouteTo action, by their CSDL names. A parameter the CSDL declares
@@ -46,9 +46,8 @@ export class RouteToAction implements Executable<RouteToResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<RouteToResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RouteToResponse;
-    return (await response.json()) as RouteToResponse;
+  parseResponse(_response: Response): Promise<RouteToResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

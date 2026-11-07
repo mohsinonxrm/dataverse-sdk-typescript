@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -56,9 +56,9 @@ export class AddToFeedbackLoopRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AddToFeedbackLoopResponse> {
+  parseResponse(_response: Response): Promise<AddToFeedbackLoopResponse> {
     // No return value (204 No Content)
-    return new AddToFeedbackLoopResponse();
+    return Promise.resolve(new AddToFeedbackLoopResponse());
   }
 }
 
@@ -70,7 +70,7 @@ export class AddToFeedbackLoopResponse extends OrganizationResponse {
     super("AddToFeedbackLoop");
   }
 
-  static fromResponse(_data: unknown): AddToFeedbackLoopResponse {
+  static fromResponse(_data?: unknown): AddToFeedbackLoopResponse {
     return new AddToFeedbackLoopResponse();
   }
 }

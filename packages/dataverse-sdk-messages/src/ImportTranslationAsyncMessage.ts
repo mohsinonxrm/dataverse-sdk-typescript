@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { ImportTranslationAsyncResponse as ImportTranslationAsyncResponseData } from "./types/index.js";
 
 /**
  * Parameters of the ImportTranslationAsync message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class ImportTranslationAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<ImportTranslationAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ImportTranslationAsyncResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ImportTranslationAsyncResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ImportTranslationAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ImportTranslationAsyncResult {
+  "@odata.context"?: string;
+  AsyncOperationId: string;
+}
+
+/**
  * ImportTranslationAsync response message
+ *
+ * `result` is the value the ImportTranslationAsync action returns (see {@link ImportTranslationAsyncResult}).
  */
 export class ImportTranslationAsyncResponse extends OrganizationResponse {
-  constructor(public result: ImportTranslationAsyncResponseData) {
+  constructor(public result: ImportTranslationAsyncResult) {
     super("ImportTranslationAsync");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ImportTranslationAsyncResponse {
-    return new ImportTranslationAsyncResponse(
-      responseObject<ImportTranslationAsyncResponseData>(data)
-    );
+    return new ImportTranslationAsyncResponse(data as ImportTranslationAsyncResult);
   }
 }

@@ -2,10 +2,10 @@
  * msdyn_CheckIfActivityMonitorEnabledResponse
  */
 export interface msdyn_CheckIfActivityMonitorEnabledResponse {
+  HelpLink?: string;
   Message?: string;
   ResultEntities?: string;
-  ReturnStatus?: number;
-  ReturnSeverity?: number;
   ReturnLevel?: number;
-  HelpLink?: string;
+  ReturnSeverity?: number;
+  ReturnStatus?: number;
 }

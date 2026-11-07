@@ -1,15 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { listmember } from "./types/index.js";
 
 /**
- * Response from RemoveMemberList action
+ * Response from the RemoveMemberList action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RemoveMemberListResponse {
-  // No content returned
-}
+export type RemoveMemberListResponse = void;
 
 /**
  * Parameters of the RemoveMemberList action, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +51,8 @@ export class RemoveMemberListAction implements Executable<RemoveMemberListRespon
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveMemberListResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RemoveMemberListResponse;
-    return (await response.json()) as RemoveMemberListResponse;
+  parseResponse(_response: Response): Promise<RemoveMemberListResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

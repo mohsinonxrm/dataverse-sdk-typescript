@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_DCA_SendOutreachEmailResponse as msdyn_DCA_SendOutreachEmailResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_DCA_SendOutreachEmail message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_DCA_SendOutreachEmailRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DCA_SendOutreachEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_DCA_SendOutreachEmailResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_DCA_SendOutreachEmailResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_DCA_SendOutreachEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_DCA_SendOutreachEmailResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_DCA_SendOutreachEmail response message
+ *
+ * `result` is the value the msdyn_DCA_SendOutreachEmail action returns (see {@link msdyn_DCA_SendOutreachEmailResult}).
  */
 export class msdyn_DCA_SendOutreachEmailResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DCA_SendOutreachEmailResponseData) {
+  constructor(public result: msdyn_DCA_SendOutreachEmailResult) {
     super("msdyn_DCA_SendOutreachEmail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_DCA_SendOutreachEmailResponse {
-    return new msdyn_DCA_SendOutreachEmailResponse(
-      responseObject<msdyn_DCA_SendOutreachEmailResponseData>(data)
-    );
+    return new msdyn_DCA_SendOutreachEmailResponse(data as msdyn_DCA_SendOutreachEmailResult);
   }
 }

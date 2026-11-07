@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckForCustomizedWebResourcesResponse as msdyn_CheckForCustomizedWebResourcesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckForCustomizedWebResources message, by their CSDL names. A parameter the CSDL declares
@@ -49,24 +47,40 @@ export class msdyn_CheckForCustomizedWebResourcesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForCustomizedWebResourcesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckForCustomizedWebResourcesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckForCustomizedWebResourcesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckForCustomizedWebResources action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckForCustomizedWebResourcesResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnLevel: number;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckForCustomizedWebResources response message
+ *
+ * `result` is the value the msdyn_CheckForCustomizedWebResources action returns (see {@link msdyn_CheckForCustomizedWebResourcesResult}).
  */
 export class msdyn_CheckForCustomizedWebResourcesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForCustomizedWebResourcesResponseData) {
+  constructor(public result: msdyn_CheckForCustomizedWebResourcesResult) {
     super("msdyn_CheckForCustomizedWebResources");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckForCustomizedWebResourcesResponse {
     return new msdyn_CheckForCustomizedWebResourcesResponse(
-      responseObject<msdyn_CheckForCustomizedWebResourcesResponseData>(data)
+      data as msdyn_CheckForCustomizedWebResourcesResult
     );
   }
 }

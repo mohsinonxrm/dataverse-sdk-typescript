@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_McMcbyValuesResponse as msdyn_McMcbyValuesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_McMcbyValues message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class msdyn_McMcbyValuesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_McMcbyValuesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_McMcbyValuesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_McMcbyValuesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_McMcbyValues action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_McMcbyValuesResult {
+  "@odata.context"?: string;
+  LastModifiedOn: string;
+}
+
+/**
  * msdyn_McMcbyValues response message
+ *
+ * `result` is the value the msdyn_McMcbyValues action returns (see {@link msdyn_McMcbyValuesResult}).
  */
 export class msdyn_McMcbyValuesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_McMcbyValuesResponseData) {
+  constructor(public result: msdyn_McMcbyValuesResult) {
     super("msdyn_McMcbyValues");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_McMcbyValuesResponse {
-    return new msdyn_McMcbyValuesResponse(responseObject<msdyn_McMcbyValuesResponseData>(data));
+    return new msdyn_McMcbyValuesResponse(data as msdyn_McMcbyValuesResult);
   }
 }

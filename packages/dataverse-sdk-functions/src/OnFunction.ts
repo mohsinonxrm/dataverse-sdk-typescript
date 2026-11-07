@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from On function
+ * Response from the On function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface OnResponse {
-  value: boolean;
-}
+export type OnResponse = boolean;
 
 /**
  * Parameters of the On function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class OnFunction implements Executable<OnResponse> {
   }
 
   async parseResponse(response: Response): Promise<OnResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as OnResponse;
-    return (await response.json()) as OnResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: OnResponse }).value;
   }
 }

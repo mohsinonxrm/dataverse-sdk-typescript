@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from ReleaseToQueue action
+ * Response from the ReleaseToQueue action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ReleaseToQueueResponse {
-  // No content returned
-}
+export type ReleaseToQueueResponse = void;
 
 /**
  * ReleaseToQueue action
@@ -31,9 +31,8 @@ export class ReleaseToQueueAction implements Executable<ReleaseToQueueResponse> 
     };
   }
 
-  async parseResponse(response: Response): Promise<ReleaseToQueueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ReleaseToQueueResponse;
-    return (await response.json()) as ReleaseToQueueResponse;
+  parseResponse(_response: Response): Promise<ReleaseToQueueResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

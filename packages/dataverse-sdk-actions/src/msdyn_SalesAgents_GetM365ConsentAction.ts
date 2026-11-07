@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_SalesAgents_GetM365Consent action
+ * Response from the msdyn_SalesAgents_GetM365Consent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesAgents_GetM365ConsentResponse {
+  "@odata.context"?: string;
   msdyn_IsTeamsConsentGranted: boolean;
   msdyn_IsTenantConsentGranted: boolean;
   msdyn_SellerConsentStatus: string;
@@ -28,8 +31,7 @@ export class msdyn_SalesAgents_GetM365ConsentAction implements Executable<msdyn_
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_GetM365ConsentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SalesAgents_GetM365ConsentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SalesAgents_GetM365ConsentResponse;
   }
 }

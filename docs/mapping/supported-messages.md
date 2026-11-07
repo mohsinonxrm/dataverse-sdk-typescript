@@ -2,7 +2,7 @@
 
 > **Package**: `@mohsinonxrm/dataverse-sdk-messages`
 >
-> **Coverage**: <!-- count:messages -->1,556<!-- /count --> typed messages, one per Web API action in the `$metadata` the package was generated from. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
+> **Coverage**: <!-- count:messages -->1,072<!-- /count --> typed messages, one per Web API action of the platform, Sales and Customer Service. The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
 
 ---
 
@@ -48,7 +48,7 @@ await orgService.execute<WinOpportunityResponse>(
 ```
 
 A response that returns an entity or a complex type has it in `result`
-(`ExecuteWorkflowResponse.result.asyncoperationid`).
+(`ExecuteWorkflowResponse.result?.asyncoperationid`).
 
 ### Generic `OrganizationRequest`
 
@@ -178,8 +178,11 @@ RouteTo: Route a queue item with routing rules.
 
 <!-- /operations -->
 
-Solution-specific messages (`msdyn_*`, `msdynmkt_*`, `CCaaS_*`, …) are included for the solutions
-installed in the org the package was generated from, and only work in an org that has them.
+The package holds the messages of the platform and of the Sales and Customer Service solutions,
+chosen by solution (the [solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt) lists them). The `msdyn_*` messages among them work only in
+an org that has their solution. Contact Center (`CCaaS_*`), Field Service, Customer Insights -
+Journeys (`msdynmkt_*`) and the other apps' messages, and your own custom APIs, aren't in it:
+generate them with [dataverse-gen](../getting-started.md#generate-the-rest-with-dataverse-gen), or send one with the generic `OrganizationRequest`.
 
 ---
 
@@ -207,6 +210,8 @@ runs, and 30 (succeeded), 31 (failed) or 32 (canceled) once it ends, so poll unt
 const { result } = await orgService.execute<ExecuteWorkflowResponse>(
   new ExecuteWorkflowRequest(workflowId, { EntityId: recordId })
 );
+// The asyncoperation record, or null if the Web API answered 204 No Content
+if (!result) throw new Error("ExecuteWorkflow returned no system job");
 let job: { statuscode: number };
 do {
   await new Promise((r) => setTimeout(r, 2000));

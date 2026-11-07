@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { searchautocompleteResponse as searchautocompleteResponseData } from "./types/index.js";
 
 /**
  * Parameters of the searchautocomplete message, by their CSDL names. A parameter the CSDL declares
@@ -55,21 +53,33 @@ export class searchautocompleteRequest
   }
 
   async parseResponse(response: Response): Promise<searchautocompleteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return searchautocompleteResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return searchautocompleteResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the searchautocomplete action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface searchautocompleteResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * searchautocomplete response message
+ *
+ * `result` is the value the searchautocomplete action returns (see {@link searchautocompleteResult}).
  */
 export class searchautocompleteResponse extends OrganizationResponse {
-  constructor(public result: searchautocompleteResponseData) {
+  constructor(public result: searchautocompleteResult) {
     super("searchautocomplete");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): searchautocompleteResponse {
-    return new searchautocompleteResponse(responseObject<searchautocompleteResponseData>(data));
+    return new searchautocompleteResponse(data as searchautocompleteResult);
   }
 }

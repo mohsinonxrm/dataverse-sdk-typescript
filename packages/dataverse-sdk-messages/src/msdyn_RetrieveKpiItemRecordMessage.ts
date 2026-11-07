@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_RetrieveKpiItemRecordResponse as msdyn_RetrieveKpiItemRecordResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveKpiItemRecord message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_RetrieveKpiItemRecordRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveKpiItemRecordResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RetrieveKpiItemRecordResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveKpiItemRecordResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveKpiItemRecord action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveKpiItemRecordResult {
+  "@odata.context"?: string;
+  LastModifiedOn: string;
+}
+
+/**
  * msdyn_RetrieveKpiItemRecord response message
+ *
+ * `result` is the value the msdyn_RetrieveKpiItemRecord action returns (see {@link msdyn_RetrieveKpiItemRecordResult}).
  */
 export class msdyn_RetrieveKpiItemRecordResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveKpiItemRecordResponseData) {
+  constructor(public result: msdyn_RetrieveKpiItemRecordResult) {
     super("msdyn_RetrieveKpiItemRecord");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveKpiItemRecordResponse {
-    return new msdyn_RetrieveKpiItemRecordResponse(
-      responseObject<msdyn_RetrieveKpiItemRecordResponseData>(data)
-    );
+    return new msdyn_RetrieveKpiItemRecordResponse(data as msdyn_RetrieveKpiItemRecordResult);
   }
 }

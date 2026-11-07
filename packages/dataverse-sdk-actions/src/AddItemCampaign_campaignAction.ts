@@ -1,18 +1,18 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { campaign, campaignitem } from "./types/index.js";
 
 /**
- * Response from AddItemCampaign action
+ * Response from the AddItemCampaign action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface AddItemCampaign_campaignResponse extends campaignitem {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type AddItemCampaign_campaignResponse =
+  | (campaignitem & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
 
 /**
  * Parameters of the AddItemCampaign action, by their CSDL names. A parameter the CSDL declares
@@ -55,8 +55,9 @@ export class AddItemCampaign_campaignAction implements Executable<AddItemCampaig
   }
 
   async parseResponse(response: Response): Promise<AddItemCampaign_campaignResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddItemCampaign_campaignResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as AddItemCampaign_campaignResponse;
   }
 }

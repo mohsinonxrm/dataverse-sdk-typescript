@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_LoadCalendarsResponse as msdyn_LoadCalendarsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_LoadCalendars message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,33 @@ export class msdyn_LoadCalendarsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_LoadCalendarsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_LoadCalendarsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_LoadCalendarsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_LoadCalendars action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_LoadCalendarsResult {
+  "@odata.context"?: string;
+  CalendarEvents: string;
+}
+
+/**
  * msdyn_LoadCalendars response message
+ *
+ * `result` is the value the msdyn_LoadCalendars action returns (see {@link msdyn_LoadCalendarsResult}).
  */
 export class msdyn_LoadCalendarsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LoadCalendarsResponseData) {
+  constructor(public result: msdyn_LoadCalendarsResult) {
     super("msdyn_LoadCalendars");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_LoadCalendarsResponse {
-    return new msdyn_LoadCalendarsResponse(responseObject<msdyn_LoadCalendarsResponseData>(data));
+    return new msdyn_LoadCalendarsResponse(data as msdyn_LoadCalendarsResult);
   }
 }

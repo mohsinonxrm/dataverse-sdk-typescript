@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ScheduleRealTimeScoring action
+ * Response from the msdyn_ScheduleRealTimeScoring action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ScheduleRealTimeScoringResponse {
-  // No content returned
-}
+export type msdyn_ScheduleRealTimeScoringResponse = void;
 
 /**
  * Parameters of the msdyn_ScheduleRealTimeScoring action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class msdyn_ScheduleRealTimeScoringAction implements Executable<msdyn_Sch
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ScheduleRealTimeScoringResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ScheduleRealTimeScoringResponse;
-    return (await response.json()) as msdyn_ScheduleRealTimeScoringResponse;
+  parseResponse(_response: Response): Promise<msdyn_ScheduleRealTimeScoringResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

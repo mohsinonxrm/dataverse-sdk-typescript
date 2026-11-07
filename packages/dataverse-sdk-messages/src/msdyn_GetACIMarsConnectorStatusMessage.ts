@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetACIMarsConnectorStatusResponse as msdyn_GetACIMarsConnectorStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetACIMarsConnectorStatus request message
@@ -29,23 +27,35 @@ export class msdyn_GetACIMarsConnectorStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetACIMarsConnectorStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetACIMarsConnectorStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetACIMarsConnectorStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetACIMarsConnectorStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetACIMarsConnectorStatusResult {
+  "@odata.context"?: string;
+  MarsStatus: string;
+}
+
+/**
  * msdyn_GetACIMarsConnectorStatus response message
+ *
+ * `result` is the value the msdyn_GetACIMarsConnectorStatus action returns (see {@link msdyn_GetACIMarsConnectorStatusResult}).
  */
 export class msdyn_GetACIMarsConnectorStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetACIMarsConnectorStatusResponseData) {
+  constructor(public result: msdyn_GetACIMarsConnectorStatusResult) {
     super("msdyn_GetACIMarsConnectorStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetACIMarsConnectorStatusResponse {
     return new msdyn_GetACIMarsConnectorStatusResponse(
-      responseObject<msdyn_GetACIMarsConnectorStatusResponseData>(data)
+      data as msdyn_GetACIMarsConnectorStatusResult
     );
   }
 }

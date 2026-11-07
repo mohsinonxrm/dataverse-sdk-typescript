@@ -122,7 +122,11 @@ The sample will:
 Every action and function is an object that describes a request. You pass it to the client:
 
 ```typescript
-const result = await client.execute(new SomeAction({/* parameters, by their Web API names */}));
+import { ExecuteWorkflowAction } from "@mohsinonxrm/dataverse-sdk-actions";
+
+// The workflow id first (a bound action), then the parameters by their Web API names
+const result = await client.execute(new ExecuteWorkflowAction(workflowId, { EntityId: accountId }));
+console.log(result.asyncoperationid);
 ```
 
 The objects have no `execute()` method of their own. A constructor takes one object with the

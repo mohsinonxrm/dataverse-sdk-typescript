@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_CheckIfSLAStaticFlowIsDisabled action
+ * Response from the msdyn_CheckIfSLAStaticFlowIsDisabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckIfSLAStaticFlowIsDisabledResponse {
+  "@odata.context"?: string;
   HelpLink: string;
   Message: string;
   ResultEntities: string;
@@ -29,8 +32,7 @@ export class msdyn_CheckIfSLAStaticFlowIsDisabledAction implements Executable<ms
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfSLAStaticFlowIsDisabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CheckIfSLAStaticFlowIsDisabledResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CheckIfSLAStaticFlowIsDisabledResponse;
   }
 }

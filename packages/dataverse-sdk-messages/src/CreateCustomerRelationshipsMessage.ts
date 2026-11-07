@@ -1,12 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type {
   ComplexLookupAttributeMetadata,
   ComplexOneToManyRelationshipMetadata,
-  CreateCustomerRelationshipsResponse as CreateCustomerRelationshipsResponseData,
 } from "./types/index.js";
 
 /**
@@ -57,23 +55,34 @@ export class CreateCustomerRelationshipsRequest
   }
 
   async parseResponse(response: Response): Promise<CreateCustomerRelationshipsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CreateCustomerRelationshipsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CreateCustomerRelationshipsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateCustomerRelationships action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateCustomerRelationshipsResult {
+  "@odata.context"?: string;
+  AttributeId: string;
+  RelationshipIds: string[];
+}
+
+/**
  * CreateCustomerRelationships response message
+ *
+ * `result` is the value the CreateCustomerRelationships action returns (see {@link CreateCustomerRelationshipsResult}).
  */
 export class CreateCustomerRelationshipsResponse extends OrganizationResponse {
-  constructor(public result: CreateCustomerRelationshipsResponseData) {
+  constructor(public result: CreateCustomerRelationshipsResult) {
     super("CreateCustomerRelationships");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateCustomerRelationshipsResponse {
-    return new CreateCustomerRelationshipsResponse(
-      responseObject<CreateCustomerRelationshipsResponseData>(data)
-    );
+    return new CreateCustomerRelationshipsResponse(data as CreateCustomerRelationshipsResult);
   }
 }

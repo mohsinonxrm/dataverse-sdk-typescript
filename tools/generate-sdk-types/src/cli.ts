@@ -2,7 +2,7 @@
 
 import { Command } from "commander";
 import { config as loadDotenv } from "dotenv";
-import { generateTargets, type GenerationTarget } from "./index.js";
+import { ALL_TARGETS, generateTargets, type GenerationTarget } from "./index.js";
 import { loadConfig, type SdkGeneratorConfig } from "./config.js";
 import _path from "path";
 
@@ -15,7 +15,7 @@ program
   .name("generate-sdk-types")
   .description("Generate TypeScript types for Dataverse SDK from $metadata")
   .version("1.0.0")
-  .argument("[targets...]", "Specific targets to generate (metadata, messages, actions, functions)")
+  .argument("[targets...]", `Specific targets to generate (${ALL_TARGETS.join(", ")})`)
   .option("-c, --config <path>", "Path to config file", "sdk-gen.config.json")
   .option("--url <url>", "Dataverse URL (overrides config/env)")
   .option("--dry-run", "Preview what would be generated without writing files", false)
@@ -26,6 +26,10 @@ program
   .option(
     "--from-csdl <path>",
     "Generate from a saved CSDL/EDMX file instead of the live $metadata (no network, no credentials)"
+  )
+  .option(
+    "--save-solutions <path>",
+    "Also save which solutions each operation comes from (read-only queries; not with --from-csdl)"
   )
   .option("--csdl-only", "Only fetch and save the CSDL (with --save-csdl); generate nothing", false)
   .option("--purge", "Delete existing output files before generating", false)
@@ -64,6 +68,12 @@ program
               outputPath:
                 process.env.METADATA_OUTPUT_PATH ??
                 "../../packages/dataverse-sdk-metadata/src/types",
+            },
+            references: {
+              enabled: true,
+              outputPath:
+                process.env.REFERENCES_OUTPUT_PATH ??
+                "../../packages/dataverse-sdk-entities-runtime/src/generated",
             },
             messages: {
               enabled: true,
@@ -130,13 +140,17 @@ program
       // Determine what to generate
       if (options.csdlOnly) {
         if (!saveCsdl) throw new Error("--csdl-only needs --save-csdl <path>");
-        await generateTargets(config, [], { saveCsdl, fromCsdl: options.fromCsdl });
+        await generateTargets(config, [], {
+          saveCsdl,
+          saveSolutions: options.saveSolutions,
+          fromCsdl: options.fromCsdl,
+        });
       } else if (targets.length > 0) {
         const validTargets: GenerationTarget[] = [];
         for (const target of targets) {
-          if (!["metadata", "messages", "actions", "functions"].includes(target)) {
+          if (!(ALL_TARGETS as readonly string[]).includes(target)) {
             console.error(`❌ Invalid target: ${target}`);
-            console.error("   Valid targets: metadata, messages, actions, functions");
+            console.error(`   Valid targets: ${ALL_TARGETS.join(", ")}`);
             process.exit(1);
           }
           validTargets.push(target as GenerationTarget);
@@ -146,14 +160,16 @@ program
         await generateTargets(config, validTargets, {
           dryRun: options.dryRun,
           saveCsdl,
+          saveSolutions: options.saveSolutions,
           purge: options.purge,
           fromCsdl: options.fromCsdl,
         });
       } else {
         console.log("🎯 Generating: all targets\n");
-        await generateTargets(config, ["metadata", "messages", "actions", "functions"], {
+        await generateTargets(config, [...ALL_TARGETS], {
           dryRun: options.dryRun,
           saveCsdl,
+          saveSolutions: options.saveSolutions,
           purge: options.purge,
           fromCsdl: options.fromCsdl,
         });

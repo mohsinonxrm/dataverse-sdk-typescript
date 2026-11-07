@@ -4,11 +4,11 @@ import { enumBody } from "./internal/enumBody.js";
 import type { ChannelAccessProfilePrivilege } from "./types/index.js";
 
 /**
- * Response from AddChannelAccessProfilePrivileges action
+ * Response from the AddChannelAccessProfilePrivileges action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AddChannelAccessProfilePrivilegesResponse {
-  // No content returned
-}
+export type AddChannelAccessProfilePrivilegesResponse = void;
 
 /**
  * Parameters of the AddChannelAccessProfilePrivileges action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class AddChannelAccessProfilePrivilegesAction implements Executable<AddCh
     };
   }
 
-  async parseResponse(response: Response): Promise<AddChannelAccessProfilePrivilegesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddChannelAccessProfilePrivilegesResponse;
-    return (await response.json()) as AddChannelAccessProfilePrivilegesResponse;
+  parseResponse(_response: Response): Promise<AddChannelAccessProfilePrivilegesResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

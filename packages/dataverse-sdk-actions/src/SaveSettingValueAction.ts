@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from SaveSettingValue action
+ * Response from the SaveSettingValue action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SaveSettingValueResponse {
-  // No content returned
-}
+export type SaveSettingValueResponse = void;
 
 /**
  * Parameters of the SaveSettingValue action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class SaveSettingValueAction implements Executable<SaveSettingValueRespon
     };
   }
 
-  async parseResponse(response: Response): Promise<SaveSettingValueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SaveSettingValueResponse;
-    return (await response.json()) as SaveSettingValueResponse;
+  parseResponse(_response: Response): Promise<SaveSettingValueResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

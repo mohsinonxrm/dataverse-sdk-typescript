@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from TriggerServiceEndpointCheck action
+ * Response from the TriggerServiceEndpointCheck action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface TriggerServiceEndpointCheckResponse {
-  // No content returned
-}
+export type TriggerServiceEndpointCheckResponse = void;
 
 /**
  * TriggerServiceEndpointCheck action
@@ -31,9 +31,8 @@ export class TriggerServiceEndpointCheckAction implements Executable<TriggerServ
     };
   }
 
-  async parseResponse(response: Response): Promise<TriggerServiceEndpointCheckResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as TriggerServiceEndpointCheckResponse;
-    return (await response.json()) as TriggerServiceEndpointCheckResponse;
+  parseResponse(_response: Response): Promise<TriggerServiceEndpointCheckResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

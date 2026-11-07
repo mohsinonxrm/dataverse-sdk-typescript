@@ -5,7 +5,7 @@ import type { BusinessNotificationSeverity } from "./BusinessNotificationSeverit
  * BusinessNotification
  */
 export interface BusinessNotification {
-  Severity?: BusinessNotificationSeverity;
   Message?: string;
   Parameters?: BusinessNotificationParameter[];
+  Severity?: BusinessNotificationSeverity;
 }

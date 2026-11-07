@@ -29,9 +29,9 @@ export class ProcessInboundEmailRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ProcessInboundEmailResponse> {
+  parseResponse(_response: Response): Promise<ProcessInboundEmailResponse> {
     // No return value (204 No Content)
-    return new ProcessInboundEmailResponse();
+    return Promise.resolve(new ProcessInboundEmailResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class ProcessInboundEmailResponse extends OrganizationResponse {
     super("ProcessInboundEmail");
   }
 
-  static fromResponse(_data: unknown): ProcessInboundEmailResponse {
+  static fromResponse(_data?: unknown): ProcessInboundEmailResponse {
     return new ProcessInboundEmailResponse();
   }
 }

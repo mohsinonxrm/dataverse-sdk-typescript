@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -52,9 +52,9 @@ export class _MoveRoutingRuleItemAtRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<_MoveRoutingRuleItemAtResponse> {
+  parseResponse(_response: Response): Promise<_MoveRoutingRuleItemAtResponse> {
     // No return value (204 No Content)
-    return new _MoveRoutingRuleItemAtResponse();
+    return Promise.resolve(new _MoveRoutingRuleItemAtResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class _MoveRoutingRuleItemAtResponse extends OrganizationResponse {
     super("_MoveRoutingRuleItemAt");
   }
 
-  static fromResponse(_data: unknown): _MoveRoutingRuleItemAtResponse {
+  static fromResponse(_data?: unknown): _MoveRoutingRuleItemAtResponse {
     return new _MoveRoutingRuleItemAtResponse();
   }
 }

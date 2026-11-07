@@ -2,7 +2,6 @@
 export { OrganizationService } from "./OrganizationService.js";
 export type {
   EntityRecord,
-  EntityReference,
   ExpandOption,
   OrganizationServiceOptions,
   OperationOptions,
@@ -15,3 +14,12 @@ export type {
   AssociateOptions,
   DisassociateOptions,
 } from "./types.js";
+
+// The SDK's one EntityReference (#295), the same one actions, functions and messages export
+export {
+  type EntityReference,
+  type EntityReferenceOptions,
+  type WebApiEntityReference,
+  createEntityReference,
+  getEntitySetNameFromReference,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";

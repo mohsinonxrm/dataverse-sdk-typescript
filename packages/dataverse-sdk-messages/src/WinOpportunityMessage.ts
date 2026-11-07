@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunityclose } from "./types/index.js";
@@ -49,9 +49,9 @@ export class WinOpportunityRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<WinOpportunityResponse> {
+  parseResponse(_response: Response): Promise<WinOpportunityResponse> {
     // No return value (204 No Content)
-    return new WinOpportunityResponse();
+    return Promise.resolve(new WinOpportunityResponse());
   }
 }
 
@@ -63,7 +63,7 @@ export class WinOpportunityResponse extends OrganizationResponse {
     super("WinOpportunity");
   }
 
-  static fromResponse(_data: unknown): WinOpportunityResponse {
+  static fromResponse(_data?: unknown): WinOpportunityResponse {
     return new WinOpportunityResponse();
   }
 }

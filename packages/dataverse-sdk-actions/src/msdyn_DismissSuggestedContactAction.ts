@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_DismissSuggestedContact action
+ * Response from the msdyn_DismissSuggestedContact action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_DismissSuggestedContactResponse {
-  // No content returned
-}
+export type msdyn_DismissSuggestedContactResponse = void;
 
 /**
  * Parameters of the msdyn_DismissSuggestedContact action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_DismissSuggestedContactAction implements Executable<msdyn_Dis
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_DismissSuggestedContactResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_DismissSuggestedContactResponse;
-    return (await response.json()) as msdyn_DismissSuggestedContactResponse;
+  parseResponse(_response: Response): Promise<msdyn_DismissSuggestedContactResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

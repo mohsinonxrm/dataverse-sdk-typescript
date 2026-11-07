@@ -4,11 +4,11 @@ import { enumBody } from "./internal/enumBody.js";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
- * Response from ReplacePrivilegesRole action
+ * Response from the ReplacePrivilegesRole action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ReplacePrivilegesRoleResponse {
-  // No content returned
-}
+export type ReplacePrivilegesRoleResponse = void;
 
 /**
  * Parameters of the ReplacePrivilegesRole action, by their CSDL names. A parameter the CSDL declares
@@ -50,9 +50,8 @@ export class ReplacePrivilegesRoleAction implements Executable<ReplacePrivileges
     };
   }
 
-  async parseResponse(response: Response): Promise<ReplacePrivilegesRoleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ReplacePrivilegesRoleResponse;
-    return (await response.json()) as ReplacePrivilegesRoleResponse;
+  parseResponse(_response: Response): Promise<ReplacePrivilegesRoleResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { GetPBIReportRefreshStatusResponse as GetPBIReportRefreshStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the GetPBIReportRefreshStatus message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class GetPBIReportRefreshStatusRequest
   }
 
   async parseResponse(response: Response): Promise<GetPBIReportRefreshStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GetPBIReportRefreshStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return GetPBIReportRefreshStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GetPBIReportRefreshStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface GetPBIReportRefreshStatusResult {
+  "@odata.context"?: string;
+  ReportRefreshStatusEndTime: string;
+  ReportRefreshStatusStartTime: string;
+  ReportRefreshStatusState: string;
+}
+
+/**
  * GetPBIReportRefreshStatus response message
+ *
+ * `result` is the value the GetPBIReportRefreshStatus action returns (see {@link GetPBIReportRefreshStatusResult}).
  */
 export class GetPBIReportRefreshStatusResponse extends OrganizationResponse {
-  constructor(public result: GetPBIReportRefreshStatusResponseData) {
+  constructor(public result: GetPBIReportRefreshStatusResult) {
     super("GetPBIReportRefreshStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GetPBIReportRefreshStatusResponse {
-    return new GetPBIReportRefreshStatusResponse(
-      responseObject<GetPBIReportRefreshStatusResponseData>(data)
-    );
+    return new GetPBIReportRefreshStatusResponse(data as GetPBIReportRefreshStatusResult);
   }
 }

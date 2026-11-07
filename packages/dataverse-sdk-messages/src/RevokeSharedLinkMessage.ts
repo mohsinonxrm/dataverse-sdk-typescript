@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
@@ -48,9 +48,9 @@ export class RevokeSharedLinkRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RevokeSharedLinkResponse> {
+  parseResponse(_response: Response): Promise<RevokeSharedLinkResponse> {
     // No return value (204 No Content)
-    return new RevokeSharedLinkResponse();
+    return Promise.resolve(new RevokeSharedLinkResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class RevokeSharedLinkResponse extends OrganizationResponse {
     super("RevokeSharedLink");
   }
 
-  static fromResponse(_data: unknown): RevokeSharedLinkResponse {
+  static fromResponse(_data?: unknown): RevokeSharedLinkResponse {
     return new RevokeSharedLinkResponse();
   }
 }

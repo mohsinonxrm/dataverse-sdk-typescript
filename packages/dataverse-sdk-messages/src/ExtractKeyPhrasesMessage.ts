@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { ExtractKeyPhrasesResponse as ExtractKeyPhrasesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the ExtractKeyPhrases message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +47,33 @@ export class ExtractKeyPhrasesRequest
   }
 
   async parseResponse(response: Response): Promise<ExtractKeyPhrasesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ExtractKeyPhrasesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ExtractKeyPhrasesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ExtractKeyPhrases action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ExtractKeyPhrasesResult {
+  "@odata.context"?: string;
+  countOfPhrases: number;
+}
+
+/**
  * ExtractKeyPhrases response message
+ *
+ * `result` is the value the ExtractKeyPhrases action returns (see {@link ExtractKeyPhrasesResult}).
  */
 export class ExtractKeyPhrasesResponse extends OrganizationResponse {
-  constructor(public result: ExtractKeyPhrasesResponseData) {
+  constructor(public result: ExtractKeyPhrasesResult) {
     super("ExtractKeyPhrases");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ExtractKeyPhrasesResponse {
-    return new ExtractKeyPhrasesResponse(responseObject<ExtractKeyPhrasesResponseData>(data));
+    return new ExtractKeyPhrasesResponse(data as ExtractKeyPhrasesResult);
   }
 }

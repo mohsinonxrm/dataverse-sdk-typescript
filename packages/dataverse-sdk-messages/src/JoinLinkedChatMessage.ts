@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -48,9 +48,9 @@ export class JoinLinkedChatRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<JoinLinkedChatResponse> {
+  parseResponse(_response: Response): Promise<JoinLinkedChatResponse> {
     // No return value (204 No Content)
-    return new JoinLinkedChatResponse();
+    return Promise.resolve(new JoinLinkedChatResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class JoinLinkedChatResponse extends OrganizationResponse {
     super("JoinLinkedChat");
   }
 
-  static fromResponse(_data: unknown): JoinLinkedChatResponse {
+  static fromResponse(_data?: unknown): JoinLinkedChatResponse {
     return new JoinLinkedChatResponse();
   }
 }

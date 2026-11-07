@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetContactsFromAssociatedConversationsResponse as msdyn_GetContactsFromAssociatedConversationsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetContactsFromAssociatedConversations message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,35 @@ export class msdyn_GetContactsFromAssociatedConversationsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetContactsFromAssociatedConversationsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetContactsFromAssociatedConversationsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetContactsFromAssociatedConversationsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetContactsFromAssociatedConversations action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetContactsFromAssociatedConversationsResult {
+  "@odata.context"?: string;
+  CustomActionSuggestedUsers: string;
+}
+
+/**
  * msdyn_GetContactsFromAssociatedConversations response message
+ *
+ * `result` is the value the msdyn_GetContactsFromAssociatedConversations action returns (see {@link msdyn_GetContactsFromAssociatedConversationsResult}).
  */
 export class msdyn_GetContactsFromAssociatedConversationsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetContactsFromAssociatedConversationsResponseData) {
+  constructor(public result: msdyn_GetContactsFromAssociatedConversationsResult) {
     super("msdyn_GetContactsFromAssociatedConversations");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetContactsFromAssociatedConversationsResponse {
     return new msdyn_GetContactsFromAssociatedConversationsResponse(
-      responseObject<msdyn_GetContactsFromAssociatedConversationsResponseData>(data)
+      data as msdyn_GetContactsFromAssociatedConversationsResult
     );
   }
 }

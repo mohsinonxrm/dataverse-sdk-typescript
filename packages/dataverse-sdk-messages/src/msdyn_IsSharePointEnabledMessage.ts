@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_IsSharePointEnabledResponse as msdyn_IsSharePointEnabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_IsSharePointEnabled request message
@@ -29,23 +27,33 @@ export class msdyn_IsSharePointEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsSharePointEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_IsSharePointEnabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IsSharePointEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IsSharePointEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IsSharePointEnabledResult {
+  "@odata.context"?: string;
+  IsSharePointEnabled: boolean;
+}
+
+/**
  * msdyn_IsSharePointEnabled response message
+ *
+ * `result` is the value the msdyn_IsSharePointEnabled action returns (see {@link msdyn_IsSharePointEnabledResult}).
  */
 export class msdyn_IsSharePointEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IsSharePointEnabledResponseData) {
+  constructor(public result: msdyn_IsSharePointEnabledResult) {
     super("msdyn_IsSharePointEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IsSharePointEnabledResponse {
-    return new msdyn_IsSharePointEnabledResponse(
-      responseObject<msdyn_IsSharePointEnabledResponseData>(data)
-    );
+    return new msdyn_IsSharePointEnabledResponse(data as msdyn_IsSharePointEnabledResult);
   }
 }

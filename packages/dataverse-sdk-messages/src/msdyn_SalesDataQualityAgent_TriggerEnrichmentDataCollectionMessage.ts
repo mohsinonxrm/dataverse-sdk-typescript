@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResponse as msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollection message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResponse.fromResponse(
       await response.json()
     );
@@ -59,20 +55,31 @@ export class msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionRequest
 }
 
 /**
+ * Response from the msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollection action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollection response message
+ *
+ * `result` is the value the msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollection action returns (see {@link msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResult}).
  */
 export class msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResponse extends OrganizationResponse {
-  constructor(
-    public result: msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResponseData
-  ) {
+  constructor(public result: msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResult) {
     super("msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollection");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResponse {
     return new msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResponse(
-      responseObject<msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResponseData>(data)
+      data as msdyn_SalesDataQualityAgent_TriggerEnrichmentDataCollectionResult
     );
   }
 }

@@ -1,12 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_AIAgentAction action
+ * Response from the msdyn_AIAgentAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_AIAgentActionResponse {
+  "@odata.context"?: string;
   Outcome: string;
   Reason: string;
 }
@@ -49,8 +52,7 @@ export class msdyn_AIAgentActionAction implements Executable<msdyn_AIAgentAction
   }
 
   async parseResponse(response: Response): Promise<msdyn_AIAgentActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_AIAgentActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_AIAgentActionResponse;
   }
 }

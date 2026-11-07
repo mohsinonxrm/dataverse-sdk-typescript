@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ConvertSequenceJsonToCJOJson action
+ * Response from the msdyn_ConvertSequenceJsonToCJOJson action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ConvertSequenceJsonToCJOJsonResponse {
+  "@odata.context"?: string;
   Result: boolean;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_ConvertSequenceJsonToCJOJsonAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_ConvertSequenceJsonToCJOJsonResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ConvertSequenceJsonToCJOJsonResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ConvertSequenceJsonToCJOJsonResponse;
   }
 }

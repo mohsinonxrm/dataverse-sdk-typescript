@@ -41,13 +41,13 @@ The SDK is organized as a monorepo with focused, composable packages:
 
 ### Operations
 
-| Package                                                                        | Description                                                                                      | Status      |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ | ----------- |
-| **[@mohsinonxrm/dataverse-sdk-actions](./packages/dataverse-sdk-actions)**     | Typed Web API actions (POST operations with side effects)                                        | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-functions](./packages/dataverse-sdk-functions)** | Typed Web API functions (GET operations without side effects)                                    | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-messages](./packages/dataverse-sdk-messages)**   | <!-- count:messages -->1,556<!-- /count --> typed Organization Service messages (direct exports) | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-metadata](./packages/dataverse-sdk-metadata)**   | Strict metadata typing (EntityMetadata, AttributeMetadata, etc.)                                 | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-files](./packages/dataverse-sdk-files)**         | File/image column operations with chunked upload/download                                        | ✅ Complete |
+| Package                                                                        | Description                                                                                                                 | Status      |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| **[@mohsinonxrm/dataverse-sdk-actions](./packages/dataverse-sdk-actions)**     | Typed Web API actions (POST) of the platform, Sales and Customer Service                                                    | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-functions](./packages/dataverse-sdk-functions)** | Typed Web API functions (GET) of the platform, Sales and Customer Service                                                   | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-messages](./packages/dataverse-sdk-messages)**   | <!-- count:messages -->1,072<!-- /count --> typed Organization Service messages of the platform, Sales and Customer Service | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-metadata](./packages/dataverse-sdk-metadata)**   | Strict metadata typing (EntityMetadata, AttributeMetadata, etc.)                                                            | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-files](./packages/dataverse-sdk-files)**         | File/image column operations with chunked upload/download                                                                   | ✅ Complete |
 
 ### Tools & Utilities
 
@@ -206,7 +206,7 @@ for await (const account of client.api("/accounts").select("name").iterate()) {
 Familiar API for Dataverse/C# developers:
 
 ```typescript
-import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
+import { OrganizationService, createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
 
 const org = new OrganizationService(client);
 
@@ -232,10 +232,10 @@ await org.update(
   { etag: account["@odata.etag"] }
 );
 
-// Associate (EntityReference uses the logical name)
+// Associate: references from createEntityReference (any SDK package's: they are one type)
 await org.associate("accounts", accountId, "contact_customer_accounts", [
-  { logicalName: "contact", id: contactId1 },
-  { logicalName: "contact", id: contactId2 },
+  createEntityReference("contact", contactId1),
+  createEntityReference("contact", contactId2),
 ]);
 
 // Delete
@@ -281,6 +281,14 @@ import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 const whoAmI = await client.execute(new WhoAmIFunction());
 console.log(whoAmI.UserId);
 ```
+
+The actions, functions and messages packages hold the operations of the platform, Sales and
+Customer Service, chosen by the solution each comes from (the
+[solution table](./tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt)
+lists them). For Contact Center (`CCaaS_*`), Field Service, Project Operations, Customer
+Insights - Journeys (`msdynmkt_*`) and the other apps, and for your own custom APIs, generate
+typed classes from your org with `dataverse-gen`: see
+[Generate the rest with dataverse-gen](./docs/getting-started.md#generate-the-rest-with-dataverse-gen).
 
 ### $batch Operations
 
@@ -529,7 +537,10 @@ Configuration example (`.dataverse-gen.json`):
 }
 ```
 
-`actions` and `functions` list the operations to generate by name; an empty list generates all of them. With the client-credentials flow,
+`actions` and `functions` list the operations to generate by name; an empty list generates all of them.
+This is how you get the operations the prebuilt packages leave out (other apps' and your custom
+APIs); see
+[Generate the rest with dataverse-gen](./docs/getting-started.md#generate-the-rest-with-dataverse-gen). With the client-credentials flow,
 the tenant id, client id and secret come from `DATAVERSE_TENANT_ID`, `DATAVERSE_CLIENT_ID` and
 `DATAVERSE_CLIENT_SECRET`. See the [generator README](./packages/dataverse-sdk-generator) for every option.
 
@@ -650,7 +661,7 @@ pnpm --filter @mohsinonxrm/dataverse-sdk-core test:watch
 - ✅ $batch operations with change sets
 - ✅ OrganizationService facade
 - ✅ Typed actions/functions (minimal set)
-- ✅ Messages (<!-- count:messages -->1,556<!-- /count --> typed Organization Service messages)
+- ✅ Messages (<!-- count:messages -->1,072<!-- /count --> typed Organization Service messages)
 - ✅ Metadata operations with strict typing
 - ✅ File/image column operations (chunked)
 - ✅ Bulk operations (CreateMultiple, UpdateMultiple, etc.)

@@ -1,12 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from QuickTest action
+ * Response from the QuickTest action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface QuickTestResponse {
+  "@odata.context"?: string;
   overrideHttpStatusCode: string;
   overrideLocation: string;
   overrideRetryAfter: string;
@@ -60,8 +63,7 @@ export class QuickTestAction implements Executable<QuickTestResponse> {
   }
 
   async parseResponse(response: Response): Promise<QuickTestResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as QuickTestResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as QuickTestResponse;
   }
 }

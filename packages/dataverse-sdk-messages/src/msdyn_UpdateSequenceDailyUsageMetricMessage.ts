@@ -42,9 +42,9 @@ export class msdyn_UpdateSequenceDailyUsageMetricRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateSequenceDailyUsageMetricResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateSequenceDailyUsageMetricResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateSequenceDailyUsageMetricResponse();
+    return Promise.resolve(new msdyn_UpdateSequenceDailyUsageMetricResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_UpdateSequenceDailyUsageMetricResponse extends OrganizationRe
     super("msdyn_UpdateSequenceDailyUsageMetric");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateSequenceDailyUsageMetricResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateSequenceDailyUsageMetricResponse {
     return new msdyn_UpdateSequenceDailyUsageMetricResponse();
   }
 }

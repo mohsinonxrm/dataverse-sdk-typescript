@@ -1,16 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { AccessRights } from "./types/index.js";
 
 /**
- * Response from RevokeSharedLink action
+ * Response from the RevokeSharedLink action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RevokeSharedLinkResponse {
-  // No content returned
-}
+export type RevokeSharedLinkResponse = void;
 
 /**
  * Parameters of the RevokeSharedLink action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class RevokeSharedLinkAction implements Executable<RevokeSharedLinkRespon
     };
   }
 
-  async parseResponse(response: Response): Promise<RevokeSharedLinkResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RevokeSharedLinkResponse;
-    return (await response.json()) as RevokeSharedLinkResponse;
+  parseResponse(_response: Response): Promise<RevokeSharedLinkResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

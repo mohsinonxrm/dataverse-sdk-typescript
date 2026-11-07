@@ -1,12 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from InitializeAttachmentBlocksUpload action
+ * Response from the InitializeAttachmentBlocksUpload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface InitializeAttachmentBlocksUploadResponse {
+  "@odata.context"?: string;
   FileContinuationToken: string;
 }
 
@@ -44,8 +47,7 @@ export class InitializeAttachmentBlocksUploadAction implements Executable<Initia
   }
 
   async parseResponse(response: Response): Promise<InitializeAttachmentBlocksUploadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as InitializeAttachmentBlocksUploadResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as InitializeAttachmentBlocksUploadResponse;
   }
 }

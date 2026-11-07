@@ -13,6 +13,8 @@ import { generateActions } from "../src/generators/actions-generator.js";
 import { generateFunctions } from "../src/generators/functions-generator.js";
 import { generateMessages } from "../src/generators/messages-generator.js";
 import { generateComplexTypes } from "../src/generators/complex-types-generator.js";
+import { generateEntityTables } from "../src/generators/references-generator.js";
+import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { typecheck } from "./typecheck.js";
 
 /**
@@ -607,13 +609,9 @@ describe("#72: entity references", () => {
 
   const BASE = "https://contoso.crm.dynamics.com/api/data/v9.2";
   let out: string;
-  interface RefModule {
-    createEntityReference(
-      logicalName: string,
-      id: string,
-      options?: { primaryIdAttribute?: string; entitySetName?: string }
-    ): Record<string, unknown>;
-    getEntitySetNameFromReference(ref: Record<string, unknown>): string;
+  interface TablesModule {
+    ENTITY_SETS: string;
+    PRIMARY_KEYS: Record<string, string>;
   }
   type Op = new (...args: unknown[]) => {
     toRequestInformation(baseUrl: string): { url: string; body?: unknown };
@@ -629,6 +627,7 @@ describe("#72: entity references", () => {
     const csdl = parseEdmx(REFS_EDMX);
     await generateActions(csdl, join(out, "actions"), false);
     await generateFunctions(csdl, join(out, "functions"), false);
+    await generateEntityTables(csdl, join(out, "references"), false);
   });
 
   afterAll(async () => {
@@ -642,36 +641,38 @@ describe("#72: entity references", () => {
     expect(csdl.entityTypes.find((t) => t.name === "email")?.key).toEqual([]);
   });
 
-  it("createEntityReference returns the Web API shape, keyed by the CSDL primary key", async () => {
-    for (const pkg of ["actions", "functions"]) {
-      const refs = await load<RefModule>(`${pkg}/types/EntityReference.ts`);
-      expect(JSON.stringify(refs.createEntityReference("account", "a1"))).toBe(
-        '{"@odata.type":"Microsoft.Dynamics.CRM.account","accountid":"a1"}'
+  it("the entity tables hold the CSDL's entity sets and the keys that aren't <name>id", async () => {
+    const tables = await load<TablesModule>("references/entity-tables.ts");
+    expect(tables.ENTITY_SETS.split(",")).toEqual([
+      "account",
+      "activitypointer",
+      "email",
+      "opportunity:opportunities",
+    ]);
+    // An activity inherits activitypointer's key
+    expect(tables.PRIMARY_KEYS).toEqual({ activitypointer: "activityid", email: "activityid" });
+  });
+
+  it("the packages import the one EntityReference from entities-runtime and write no copy (#295)", async () => {
+    for (const [pkg, op] of [
+      ["actions", "MergeAction"],
+      ["functions", "InitializeFromFunction"],
+    ] as const) {
+      await expect(readFile(join(out, pkg, "types", "EntityReference.ts"))).rejects.toThrow();
+      expect(await readFile(join(out, pkg, `${op}.ts`), "utf8")).toContain(
+        "import type { EntityReference } from '@mohsinonxrm/dataverse-sdk-entities-runtime';"
       );
-      // An activity inherits activitypointer's key
-      expect(JSON.stringify(refs.createEntityReference("email", "e1"))).toBe(
-        '{"@odata.type":"Microsoft.Dynamics.CRM.email","activityid":"e1"}'
+      expect(await readFile(join(out, pkg, "index.ts"), "utf8")).toContain(
+        "export { type EntityReference, type EntityReferenceOptions, type WebApiEntityReference, createEntityReference, getEntitySetNameFromReference } from '@mohsinonxrm/dataverse-sdk-entities-runtime';"
       );
-      const opp = refs.createEntityReference("opportunity", "o1");
-      expect(opp).toMatchObject({ logicalName: "opportunity", id: "o1" });
-      expect(refs.getEntitySetNameFromReference(opp)).toBe("opportunities");
-      // A table the CSDL doesn't know: <name>id key, and the set must be given
-      const custom = refs.createEntityReference("new_thing", "n1");
-      expect(JSON.stringify(custom)).toBe(
-        '{"@odata.type":"Microsoft.Dynamics.CRM.new_thing","new_thingid":"n1"}'
-      );
-      expect(() => refs.getEntitySetNameFromReference(custom)).toThrow(/entity set of 'new_thing'/);
-      const given = refs.createEntityReference("new_thing", "n1", { entitySetName: "new_things" });
-      expect(refs.getEntitySetNameFromReference(given)).toBe("new_things");
     }
   });
 
   it("an action body carries the reference in the Web API shape", async () => {
-    const refs = await load<RefModule>("actions/types/EntityReference.ts");
     const { MergeAction } = await load<{ MergeAction: Op }>("actions/MergeAction.ts");
     const info = new MergeAction({
-      Target: refs.createEntityReference("account", "a1"),
-      Subordinate: refs.createEntityReference("account", "a2"),
+      Target: createEntityReference("account", "a1"),
+      Subordinate: createEntityReference("account", "a2"),
     }).toRequestInformation(BASE);
     expect(JSON.parse(JSON.stringify(info.body))).toEqual({
       Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "a1" },
@@ -679,18 +680,17 @@ describe("#72: entity references", () => {
     });
   });
 
-  it("a function parameter is @odata.id from the CSDL entity set; an unknown set throws", async () => {
-    const refs = await load<RefModule>("functions/types/EntityReference.ts");
+  it("a function parameter is @odata.id from the reference's entity set; an unknown set throws", async () => {
     const { InitializeFromFunction } = await load<{ InitializeFromFunction: Op }>(
       "functions/InitializeFromFunction.ts"
     );
     const url = new InitializeFromFunction({
-      EntityMoniker: refs.createEntityReference("opportunity", "o1"),
+      EntityMoniker: createEntityReference("opportunity", "o1"),
       TargetEntityName: "account",
     }).toRequestInformation(BASE).url;
     expect(decodeURIComponent(url)).toContain('@p1={"@odata.id":"opportunities(o1)"}');
     const unknown = new InitializeFromFunction({
-      EntityMoniker: refs.createEntityReference("new_thing", "n1"),
+      EntityMoniker: createEntityReference("new_thing", "n1"),
       TargetEntityName: "x",
     });
     expect(() => unknown.toRequestInformation(BASE)).toThrow(/needs an entitySetName/);
@@ -744,16 +744,18 @@ describe("#71: entity return types", () => {
     await rm(out, { recursive: true, force: true });
   });
 
-  it("a single entity return extends the entity; collections keep value", async () => {
+  it("a single entity return is the entity; a collection is the array of records (#300)", async () => {
     const action = await read("actions/ExecuteWorkflowAction.ts");
-    expect(action).toContain("export interface ExecuteWorkflowResponse extends asyncoperation {");
+    expect(action).toMatch(/export type ExecuteWorkflowResponse =\s*\|?\s*\(asyncoperation & \{/);
     expect(action).not.toContain("value: asyncoperation");
-    expect(await read("actions/ListOperationsAction.ts")).toContain("value: asyncoperation[];");
+    expect(await read("actions/ListOperationsAction.ts")).toMatch(
+      /export type ListOperationsResponse = Array<\s*asyncoperation & \{/
+    );
   });
 
   it("a crmbaseentity return is a record with the annotations", async () => {
     const fn = await read("functions/GetPreferredSolutionFunction.ts");
-    expect(fn).toContain("[column: string]: unknown;");
+    expect(fn).toContain("[column: string]: unknown");
     expect(fn).not.toContain("EntityReference");
   });
 
@@ -763,7 +765,7 @@ describe("#71: entity return types", () => {
       "usage-71-ok.ts",
       `import type { ExecuteWorkflowResponse } from "./ExecuteWorkflowAction.js";
 declare const res: ExecuteWorkflowResponse;
-export const id: string | undefined = res.asyncoperationid;
+export const id: string | undefined = res?.asyncoperationid;
 `
     );
     expect(ok).toEqual([]);
@@ -858,53 +860,54 @@ describe("#70: message response parsing", () => {
     await rm(out, { recursive: true, force: true });
   });
 
-  it("a complex-type return is the body itself, imported under an alias", async () => {
+  it("a complex-type return is the body itself, as the action returns it (#300)", async () => {
     const code = await read("messages/QueryExpressionToFetchXmlMessage.ts");
-    expect(code).toContain(
-      "QueryExpressionToFetchXmlResponse as QueryExpressionToFetchXmlResponseData"
-    );
-    expect(code).toContain("public result: QueryExpressionToFetchXmlResponseData");
+    expect(code).toContain("export interface QueryExpressionToFetchXmlResult {");
+    expect(code).toContain("public result: QueryExpressionToFetchXmlResult");
     const Response_ = await response(
       "QueryExpressionToFetchXmlMessage.ts",
       "QueryExpressionToFetchXmlResponse"
     );
-    const res = Response_.fromResponse({
+    const data = {
       "@odata.context":
         "https://contoso.crm.dynamics.com/api/data/v9.2/$metadata#Microsoft.Dynamics.CRM.QueryExpressionToFetchXmlResponse",
       FetchXml: "<fetch/>",
-    });
-    expect(res.result).toEqual({ FetchXml: "<fetch/>" });
+    };
+    expect(Response_.fromResponse(data).result).toEqual(data);
   });
 
-  it("an entity return is the entity without its @odata annotations", async () => {
+  it("an entity return is the record with its annotations (#300)", async () => {
     expect(await read("messages/ExecuteWorkflowMessage.ts")).toContain(
-      "public result: asyncoperation"
+      "public result: ExecuteWorkflowResult"
     );
     const Response_ = await response("ExecuteWorkflowMessage.ts", "ExecuteWorkflowResponse");
-    const res = Response_.fromResponse({
+    const data = {
       "@odata.context": "$metadata#asyncoperations/$entity",
       "@odata.etag": 'W/"1"',
       asyncoperationid: "aaa",
-    });
-    expect(res.result).toEqual({ asyncoperationid: "aaa" });
+    };
+    expect(Response_.fromResponse(data).result).toEqual(data);
+    expect(Response_.fromResponse(undefined).result).toBeNull();
   });
 
   it("a crmbaseentity return is a record, not an EntityReference", async () => {
     const code = await read("messages/DequeueMessage.ts");
-    expect(code).toContain("public result: Record<string, unknown>");
+    expect(code).toContain("[column: string]: unknown");
     expect(code).not.toContain("EntityReference");
     const Response_ = await response("DequeueMessage.ts", "DequeueResponse");
     expect(Response_.fromResponse({ "@odata.context": "x", emailid: "e1" }).result).toEqual({
+      "@odata.context": "x",
       emailid: "e1",
     });
   });
 
   it("collection and primitive returns are read from value", async () => {
     expect(await read("messages/InstantiateTemplateMessage.ts")).toContain(
-      "public result: Record<string, unknown>[]"
+      "public result: InstantiateTemplateResult"
     );
     const many = await response("InstantiateTemplateMessage.ts", "InstantiateTemplateResponse");
     expect(many.fromResponse({ value: [{ subject: "s" }] }).result).toEqual([{ subject: "s" }]);
+    expect(many.fromResponse(undefined).result).toEqual([]);
     const count = await response("CountThingsMessage.ts", "CountThingsResponse");
     expect(count.fromResponse({ "@odata.context": "x", value: 3 }).result).toBe(3);
   });

@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { _RoutingRuleSetValidationResponse as _RoutingRuleSetValidationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the _RoutingRuleSetValidation message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,34 @@ export class _RoutingRuleSetValidationRequest
   }
 
   async parseResponse(response: Response): Promise<_RoutingRuleSetValidationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return _RoutingRuleSetValidationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return _RoutingRuleSetValidationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the _RoutingRuleSetValidation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface _RoutingRuleSetValidationResult {
+  "@odata.context"?: string;
+  ValidationMessageToDisplay: string;
+  ValidationMessageToDownload: string;
+}
+
+/**
  * _RoutingRuleSetValidation response message
+ *
+ * `result` is the value the _RoutingRuleSetValidation action returns (see {@link _RoutingRuleSetValidationResult}).
  */
 export class _RoutingRuleSetValidationResponse extends OrganizationResponse {
-  constructor(public result: _RoutingRuleSetValidationResponseData) {
+  constructor(public result: _RoutingRuleSetValidationResult) {
     super("_RoutingRuleSetValidation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): _RoutingRuleSetValidationResponse {
-    return new _RoutingRuleSetValidationResponse(
-      responseObject<_RoutingRuleSetValidationResponseData>(data)
-    );
+    return new _RoutingRuleSetValidationResponse(data as _RoutingRuleSetValidationResult);
   }
 }

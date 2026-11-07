@@ -1,7 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
@@ -70,21 +69,37 @@ export class DistributeCampaignActivityRequest
   }
 
   async parseResponse(response: Response): Promise<DistributeCampaignActivityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return DistributeCampaignActivityResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return DistributeCampaignActivityResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return DistributeCampaignActivityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the DistributeCampaignActivity action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type DistributeCampaignActivityResult =
+  | (bulkoperation & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
+
+/**
  * DistributeCampaignActivity response message
+ *
+ * `result` is the value the DistributeCampaignActivity action returns (see {@link DistributeCampaignActivityResult}).
  */
 export class DistributeCampaignActivityResponse extends OrganizationResponse {
-  constructor(public result: bulkoperation) {
+  constructor(public result: DistributeCampaignActivityResult) {
     super("DistributeCampaignActivity");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): DistributeCampaignActivityResponse {
-    return new DistributeCampaignActivityResponse(responseObject<bulkoperation>(data));
+    return new DistributeCampaignActivityResponse(
+      (data ?? null) as DistributeCampaignActivityResult
+    );
   }
 }

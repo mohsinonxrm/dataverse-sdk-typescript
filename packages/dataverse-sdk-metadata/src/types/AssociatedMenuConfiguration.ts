@@ -6,14 +6,14 @@ import type { Label } from "./Label.js";
  * AssociatedMenuConfiguration
  */
 export interface AssociatedMenuConfiguration {
+  AvailableOffline?: boolean;
   Behavior?: AssociatedMenuBehavior;
   Group?: AssociatedMenuGroup;
-  Label?: Label;
-  Order?: number;
-  IsCustomizable?: boolean;
   Icon?: string;
-  ViewId?: string;
-  AvailableOffline?: boolean;
+  IsCustomizable?: boolean;
+  Label?: Label;
   MenuId?: string;
+  Order?: number;
   QueryApi?: string;
+  ViewId?: string;
 }

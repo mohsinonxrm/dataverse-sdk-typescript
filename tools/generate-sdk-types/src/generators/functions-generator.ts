@@ -6,7 +6,6 @@ import type {
 import { resolve, join } from "path";
 import {
   csdlTypeToTs,
-  csdlTypeToTsWithExpansion,
   toPascalCase as _toPascalCase,
   getEntitySetName,
   isCollectionType,
@@ -18,8 +17,8 @@ import {
   purgeDirectory,
 } from "../utils/file-writer.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
-import { entityReturn, entityResponseInterface } from "../utils/entity-return.js";
-import { entityReferenceSource } from "../utils/entity-reference.js";
+import { operationReturn, parseResponseMethod } from "../utils/operation-return.js";
+import { ENTITY_REFERENCE_EXPORT, ENTITY_REFERENCE_IMPORT } from "../utils/entity-reference.js";
 import { ENTITY_PAYLOAD_MODULE, ENTITY_PAYLOAD_SOURCE } from "../utils/entity-payload.js";
 import { operationNames } from "../utils/overloads.js";
 import { exportedEnumNames } from "./complex-types-generator.js";
@@ -29,7 +28,6 @@ import {
   parametersArgument,
   parametersInterface,
   parametersInterfaceName,
-  parseResponseBody,
 } from "../utils/operation-parameters.js";
 
 /**
@@ -215,8 +213,12 @@ export async function generateFunctions(
     console.log(`  ✅ Directory purged`);
   }
 
-  // Ensure EntityReference.ts exists in types folder
-  await ensureEntityReferenceType(absolutePath, csdl);
+  // The entity payload types: navigation properties of complex types use them (#231).
+  // EntityReference comes from entities-runtime (#295).
+  await writeTypeScriptFile(
+    join(absolutePath, "types", `${ENTITY_PAYLOAD_MODULE}.ts`),
+    ENTITY_PAYLOAD_SOURCE
+  );
 
   // Runtime helper the generated functions use to format parameter-alias literals
   await writeTypeScriptFile(join(absolutePath, `${ODATA_LITERAL_MODULE}.ts`), ODATA_LITERAL_SOURCE);
@@ -255,38 +257,14 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
   // Collect all complex type and entity type references used in this file
   const complexTypesUsed = new Set<string>();
 
-  // Check return type
-  if (func.returnType) {
-    const normalizedReturnType = func.returnType.replace("mscrm.", "Microsoft.Dynamics.CRM.");
-    const complexType = csdl.complexTypes.find(
-      (ct) => `${ct.namespace}.${ct.name}` === normalizedReturnType
-    );
-
-    if (complexType) {
-      // Collect types from complex type properties
-      for (const prop of complexType.properties) {
-        const typeName = csdlTypeToTsWithExpansion(prop.type, csdl);
-        // Extract base type name (remove[] suffix if array)
-        const baseType = typeName.replace("[]", "");
-        // If it's not a primitive type, add it
-        if (!["string", "number", "boolean", "any", "unknown"].includes(baseType)) {
-          complexTypesUsed.add(baseType);
-        }
-      }
-    } else {
-      // Return type might be an entity type or other type not expanded
-      const tsType = csdlTypeToTs(func.returnType);
-      const baseType = tsType.replace("[]", "");
-      if (
-        !["string", "number", "boolean", "any", "unknown"].includes(baseType) &&
-        !systemEntities.includes(baseType.toLowerCase())
-      ) {
-        // Map Complex* types to non-Complex EntityType versions
-        const mappedType = mapComplexTypeToEntityType(baseType);
-        complexTypesUsed.add(mappedType);
-      }
-    }
-  }
+  // Return type: the value execute() resolves (#300)
+  const ret = operationReturn(
+    csdl,
+    func.returnType,
+    responseInterfaceName,
+    `${func.name} function`
+  );
+  for (const t of ret.imports) complexTypesUsed.add(t);
 
   // Check parameters
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -315,17 +293,8 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
   // Set when a parameter alias is written with formatParameterAlias (the import is added at the end)
   let usesAliasLiteral = false;
 
-  // Check if EntityReference is needed (from return type or parameters)
-  let needsEntityReference = false;
-
-  // Check return type for EntityReference (a single system-entity return is a record, #71)
-  if (func.returnType && entityReturn(csdl, func.returnType)?.kind !== "record") {
-    const tsType = csdlTypeToTs(func.returnType, false);
-    const baseType = tsType.replace("[]", "");
-    if (baseType === "EntityReference") {
-      needsEntityReference = true;
-    }
-  }
+  // EntityReference is needed by the return type's declaration or by a parameter
+  let needsEntityReference = ret.needsEntityReference;
 
   // Check parameters for EntityReference (single entity references, not Collections)
   if (!needsEntityReference) {
@@ -335,7 +304,7 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
   }
 
   if (needsEntityReference) {
-    code += `import type { EntityReference } from './types/EntityReference.js';\n`;
+    code += ENTITY_REFERENCE_IMPORT;
   }
 
   // Import complex types from types folder (excluding EntityReference)
@@ -349,7 +318,7 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
   code += `\n`;
 
   // Generate response interface
-  code += generateResponseInterface(csdl, func, responseInterfaceName);
+  code += ret.declaration;
   code += `\n`;
 
   // Collection-bound: called on an entity set (#69)
@@ -574,9 +543,7 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
   code += `  }\n\n`;
 
   // Generate parseResponse method
-  code += `  async parseResponse(response: Response): Promise<${responseInterfaceName}> {\n`;
-  code += parseResponseBody(responseInterfaceName);
-  code += `  }\n`;
+  code += parseResponseMethod(ret, responseInterfaceName);
 
   code += `}\n`;
 
@@ -586,58 +553,6 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
       `import { formatParameterAlias } from './${ODATA_LITERAL_MODULE}.js';\n` +
       code.slice(coreImport.length);
   }
-
-  return code;
-}
-
-/**
- * Generate response interface.
- */
-function generateResponseInterface(
-  csdl: CsdlSchema,
-  func: CsdlFunction,
-  interfaceName: string
-): string {
-  // An entity return is the entity itself (#71)
-  const entityShape = func.returnType ? entityReturn(csdl, func.returnType) : undefined;
-  if (entityShape) {
-    return entityResponseInterface(
-      interfaceName,
-      entityShape,
-      `Response from ${func.name} function`
-    );
-  }
-
-  let code = `/**\n`;
-  code += ` * Response from ${func.name} function\n`;
-  code += ` */\n`;
-  code += `export interface ${interfaceName} {\n`;
-
-  if (func.returnType) {
-    // Check if return type is a complex type
-    // Handle both namespace formats: mscrm.TypeName and Microsoft.Dynamics.CRM.TypeName
-    const normalizedReturnType = func.returnType.replace("mscrm.", "Microsoft.Dynamics.CRM.");
-    const complexType = csdl.complexTypes.find(
-      (ct) => `${ct.namespace}.${ct.name}` === normalizedReturnType
-    );
-
-    if (complexType) {
-      // Expand complex type properties
-      for (const prop of complexType.properties) {
-        const tsType = csdlTypeToTsWithExpansion(prop.type, csdl);
-        const optional = prop.nullable ? "?" : "";
-        code += `  ${prop.name}${optional}: ${tsType};\n`;
-      }
-    } else {
-      // Primitive or collection type
-      const tsType = csdlTypeToTs(func.returnType);
-      code += `  value: ${tsType};\n`;
-    }
-  } else {
-    code += `  // No value property (returns primitive or collection)\n`;
-  }
-
-  code += `}\n`;
 
   return code;
 }
@@ -670,8 +585,8 @@ function generateFunctionsIndex(
     code += `export { ${stem}Function${parameters}, type ${stem}Response } from './${stem}Function.js';\n`;
   }
 
-  // Export EntityReference type
-  code += `\nexport { type EntityReference, type EntityReferenceOptions, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
+  // The SDK's one EntityReference (#295), re-exported from entities-runtime
+  code += `\n${ENTITY_REFERENCE_EXPORT}`;
   code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
 
   // Enum parameters take these values (EntityFilters.Entity | EntityFilters.Attributes) (#67)
@@ -680,20 +595,4 @@ function generateFunctionsIndex(
   }
 
   return code;
-}
-
-/**
- * Write types/EntityReference.ts: the Web API reference shape, with the primary keys and entity
- * sets from the CSDL (#72).
- */
-async function ensureEntityReferenceType(outputPath: string, csdl: CsdlSchema): Promise<void> {
-  await writeTypeScriptFile(
-    join(outputPath, "types", "EntityReference.ts"),
-    entityReferenceSource(csdl, "functions")
-  );
-  // The entity payload types: navigation properties of complex types use them (#231)
-  await writeTypeScriptFile(
-    join(outputPath, "types", `${ENTITY_PAYLOAD_MODULE}.ts`),
-    ENTITY_PAYLOAD_SOURCE
-  );
 }

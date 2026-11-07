@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_UpdateSequenceDailyUsageMetric action
+ * Response from the msdyn_UpdateSequenceDailyUsageMetric action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_UpdateSequenceDailyUsageMetricResponse {
-  // No content returned
-}
+export type msdyn_UpdateSequenceDailyUsageMetricResponse = void;
 
 /**
  * Parameters of the msdyn_UpdateSequenceDailyUsageMetric action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_UpdateSequenceDailyUsageMetricAction implements Executable<ms
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateSequenceDailyUsageMetricResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_UpdateSequenceDailyUsageMetricResponse;
-    return (await response.json()) as msdyn_UpdateSequenceDailyUsageMetricResponse;
+  parseResponse(_response: Response): Promise<msdyn_UpdateSequenceDailyUsageMetricResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

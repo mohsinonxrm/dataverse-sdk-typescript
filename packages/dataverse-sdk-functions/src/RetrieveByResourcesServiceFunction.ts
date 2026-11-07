@@ -2,11 +2,14 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { resource, service } from "./types/index.js";
 
 /**
- * Response from RetrieveByResourcesService function
+ * Response from the RetrieveByResourcesService function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveByResourcesServiceResponse {
-  value: service[];
-}
+export type RetrieveByResourcesServiceResponse = Array<
+  service & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * Parameters of the RetrieveByResourcesService function, by their CSDL names. A parameter the CSDL declares
@@ -48,8 +51,9 @@ export class RetrieveByResourcesServiceFunction implements Executable<RetrieveBy
   }
 
   async parseResponse(response: Response): Promise<RetrieveByResourcesServiceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveByResourcesServiceResponse;
-    return (await response.json()) as RetrieveByResourcesServiceResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveByResourcesServiceResponse }).value;
   }
 }

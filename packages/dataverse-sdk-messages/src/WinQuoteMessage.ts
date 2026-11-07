@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { quoteclose } from "./types/index.js";
@@ -44,9 +44,9 @@ export class WinQuoteRequest extends OrganizationRequest implements Executable<W
     };
   }
 
-  async parseResponse(response: Response): Promise<WinQuoteResponse> {
+  parseResponse(_response: Response): Promise<WinQuoteResponse> {
     // No return value (204 No Content)
-    return new WinQuoteResponse();
+    return Promise.resolve(new WinQuoteResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class WinQuoteResponse extends OrganizationResponse {
     super("WinQuote");
   }
 
-  static fromResponse(_data: unknown): WinQuoteResponse {
+  static fromResponse(_data?: unknown): WinQuoteResponse {
     return new WinQuoteResponse();
   }
 }

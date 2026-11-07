@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckForCustomizedOptionSetResponse as msdyn_CheckForCustomizedOptionSetResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckForCustomizedOptionSet message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,40 @@ export class msdyn_CheckForCustomizedOptionSetRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForCustomizedOptionSetResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CheckForCustomizedOptionSetResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckForCustomizedOptionSetResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckForCustomizedOptionSet action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckForCustomizedOptionSetResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnLevel: number;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckForCustomizedOptionSet response message
+ *
+ * `result` is the value the msdyn_CheckForCustomizedOptionSet action returns (see {@link msdyn_CheckForCustomizedOptionSetResult}).
  */
 export class msdyn_CheckForCustomizedOptionSetResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForCustomizedOptionSetResponseData) {
+  constructor(public result: msdyn_CheckForCustomizedOptionSetResult) {
     super("msdyn_CheckForCustomizedOptionSet");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckForCustomizedOptionSetResponse {
     return new msdyn_CheckForCustomizedOptionSetResponse(
-      responseObject<msdyn_CheckForCustomizedOptionSetResponseData>(data)
+      data as msdyn_CheckForCustomizedOptionSetResult
     );
   }
 }

@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from LeaveGroup action
+ * Response from the LeaveGroup action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface LeaveGroupResponse {
-  // No content returned
-}
+export type LeaveGroupResponse = void;
 
 /**
  * LeaveGroup action
@@ -31,9 +31,8 @@ export class LeaveGroupAction implements Executable<LeaveGroupResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<LeaveGroupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as LeaveGroupResponse;
-    return (await response.json()) as LeaveGroupResponse;
+  parseResponse(_response: Response): Promise<LeaveGroupResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

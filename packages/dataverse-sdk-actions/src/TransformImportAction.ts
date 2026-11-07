@@ -3,14 +3,14 @@ import { requestBody } from "./internal/requestBody.js";
 import type { asyncoperation } from "./types/index.js";
 
 /**
- * Response from TransformImport action
+ * Response from the TransformImport action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface TransformImportResponse extends asyncoperation {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type TransformImportResponse =
+  | (asyncoperation & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
 
 /**
  * Parameters of the TransformImport action, by their CSDL names. A parameter the CSDL declares
@@ -46,8 +46,9 @@ export class TransformImportAction implements Executable<TransformImportResponse
   }
 
   async parseResponse(response: Response): Promise<TransformImportResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as TransformImportResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as TransformImportResponse;
   }
 }

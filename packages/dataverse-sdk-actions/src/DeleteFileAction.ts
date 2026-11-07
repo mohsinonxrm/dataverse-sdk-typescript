@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DeleteFile action
+ * Response from the DeleteFile action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeleteFileResponse {
-  // No content returned
-}
+export type DeleteFileResponse = void;
 
 /**
  * Parameters of the DeleteFile action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class DeleteFileAction implements Executable<DeleteFileResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteFileResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DeleteFileResponse;
-    return (await response.json()) as DeleteFileResponse;
+  parseResponse(_response: Response): Promise<DeleteFileResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -46,9 +46,9 @@ export class msdyn_SaveSalesCopilotEmailInsightsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SaveSalesCopilotEmailInsightsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SaveSalesCopilotEmailInsightsResponse> {
     // No return value (204 No Content)
-    return new msdyn_SaveSalesCopilotEmailInsightsResponse();
+    return Promise.resolve(new msdyn_SaveSalesCopilotEmailInsightsResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_SaveSalesCopilotEmailInsightsResponse extends OrganizationRes
     super("msdyn_SaveSalesCopilotEmailInsights");
   }
 
-  static fromResponse(_data: unknown): msdyn_SaveSalesCopilotEmailInsightsResponse {
+  static fromResponse(_data?: unknown): msdyn_SaveSalesCopilotEmailInsightsResponse {
     return new msdyn_SaveSalesCopilotEmailInsightsResponse();
   }
 }

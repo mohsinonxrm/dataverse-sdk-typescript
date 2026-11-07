@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesInsightsGetEuclidConsentStatus action
+ * Response from the msdyn_SalesInsightsGetEuclidConsentStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesInsightsGetEuclidConsentStatusResponse {
+  "@odata.context"?: string;
   IsConsentProvided: boolean;
 }
 
@@ -46,8 +49,7 @@ export class msdyn_SalesInsightsGetEuclidConsentStatusAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesInsightsGetEuclidConsentStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SalesInsightsGetEuclidConsentStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SalesInsightsGetEuclidConsentStatusResponse;
   }
 }

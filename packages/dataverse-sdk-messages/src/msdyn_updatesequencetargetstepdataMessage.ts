@@ -44,9 +44,9 @@ export class msdyn_updatesequencetargetstepdataRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_updatesequencetargetstepdataResponse> {
+  parseResponse(_response: Response): Promise<msdyn_updatesequencetargetstepdataResponse> {
     // No return value (204 No Content)
-    return new msdyn_updatesequencetargetstepdataResponse();
+    return Promise.resolve(new msdyn_updatesequencetargetstepdataResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_updatesequencetargetstepdataResponse extends OrganizationResp
     super("msdyn_updatesequencetargetstepdata");
   }
 
-  static fromResponse(_data: unknown): msdyn_updatesequencetargetstepdataResponse {
+  static fromResponse(_data?: unknown): msdyn_updatesequencetargetstepdataResponse {
     return new msdyn_updatesequencetargetstepdataResponse();
   }
 }

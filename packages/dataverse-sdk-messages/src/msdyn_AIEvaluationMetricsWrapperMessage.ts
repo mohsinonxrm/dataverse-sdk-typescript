@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_AIEvaluationMetricsWrapperResponse as msdyn_AIEvaluationMetricsWrapperResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_AIEvaluationMetricsWrapper message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,35 @@ export class msdyn_AIEvaluationMetricsWrapperRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AIEvaluationMetricsWrapperResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_AIEvaluationMetricsWrapperResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AIEvaluationMetricsWrapperResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_AIEvaluationMetricsWrapper action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AIEvaluationMetricsWrapperResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * msdyn_AIEvaluationMetricsWrapper response message
+ *
+ * `result` is the value the msdyn_AIEvaluationMetricsWrapper action returns (see {@link msdyn_AIEvaluationMetricsWrapperResult}).
  */
 export class msdyn_AIEvaluationMetricsWrapperResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AIEvaluationMetricsWrapperResponseData) {
+  constructor(public result: msdyn_AIEvaluationMetricsWrapperResult) {
     super("msdyn_AIEvaluationMetricsWrapper");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_AIEvaluationMetricsWrapperResponse {
     return new msdyn_AIEvaluationMetricsWrapperResponse(
-      responseObject<msdyn_AIEvaluationMetricsWrapperResponseData>(data)
+      data as msdyn_AIEvaluationMetricsWrapperResult
     );
   }
 }

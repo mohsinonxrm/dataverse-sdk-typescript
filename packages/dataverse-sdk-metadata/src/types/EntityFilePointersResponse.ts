@@ -2,6 +2,6 @@
  * EntityFilePointersResponse
  */
 export interface EntityFilePointersResponse {
-  UnReferencedFiles?: string[];
   IsCmkEnabled?: boolean;
+  UnReferencedFiles?: string[];
 }

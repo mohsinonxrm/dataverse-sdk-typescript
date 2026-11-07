@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_OSDeletePrediction action
+ * Response from the msdyn_OSDeletePrediction action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_OSDeletePredictionResponse {
-  // No content returned
-}
+export type msdyn_OSDeletePredictionResponse = void;
 
 /**
  * Parameters of the msdyn_OSDeletePrediction action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class msdyn_OSDeletePredictionAction implements Executable<msdyn_OSDelete
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OSDeletePredictionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_OSDeletePredictionResponse;
-    return (await response.json()) as msdyn_OSDeletePredictionResponse;
+  parseResponse(_response: Response): Promise<msdyn_OSDeletePredictionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

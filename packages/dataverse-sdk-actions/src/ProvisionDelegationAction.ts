@@ -1,18 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { delegatedauthorization, team } from "./types/index.js";
 
 /**
- * Response from ProvisionDelegation action
+ * Response from the ProvisionDelegation action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface ProvisionDelegationResponse extends team {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type ProvisionDelegationResponse =
+  (team & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string }) | null;
 
 /**
  * Parameters of the ProvisionDelegation action, by their CSDL names. A parameter the CSDL declares
@@ -48,8 +47,9 @@ export class ProvisionDelegationAction implements Executable<ProvisionDelegation
   }
 
   async parseResponse(response: Response): Promise<ProvisionDelegationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ProvisionDelegationResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as ProvisionDelegationResponse;
   }
 }

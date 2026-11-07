@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from _MoveRoutingRuleItemAt action
+ * Response from the _MoveRoutingRuleItemAt action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface _MoveRoutingRuleItemAtResponse {
-  // No content returned
-}
+export type _MoveRoutingRuleItemAtResponse = void;
 
 /**
  * Parameters of the _MoveRoutingRuleItemAt action, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +51,8 @@ export class _MoveRoutingRuleItemAtAction implements Executable<_MoveRoutingRule
     };
   }
 
-  async parseResponse(response: Response): Promise<_MoveRoutingRuleItemAtResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as _MoveRoutingRuleItemAtResponse;
-    return (await response.json()) as _MoveRoutingRuleItemAtResponse;
+  parseResponse(_response: Response): Promise<_MoveRoutingRuleItemAtResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

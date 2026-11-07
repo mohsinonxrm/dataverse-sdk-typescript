@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesDataQualityAgent_GetFieldPredictionContextResponse as msdyn_SalesDataQualityAgent_GetFieldPredictionContextResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesDataQualityAgent_GetFieldPredictionContext message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_SalesDataQualityAgent_GetFieldPredictionContextRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesDataQualityAgent_GetFieldPredictionContextResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesDataQualityAgent_GetFieldPredictionContextResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesDataQualityAgent_GetFieldPredictionContextResponse.fromResponse(
       await response.json()
     );
@@ -57,18 +53,31 @@ export class msdyn_SalesDataQualityAgent_GetFieldPredictionContextRequest
 }
 
 /**
+ * Response from the msdyn_SalesDataQualityAgent_GetFieldPredictionContext action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesDataQualityAgent_GetFieldPredictionContextResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_SalesDataQualityAgent_GetFieldPredictionContext response message
+ *
+ * `result` is the value the msdyn_SalesDataQualityAgent_GetFieldPredictionContext action returns (see {@link msdyn_SalesDataQualityAgent_GetFieldPredictionContextResult}).
  */
 export class msdyn_SalesDataQualityAgent_GetFieldPredictionContextResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesDataQualityAgent_GetFieldPredictionContextResponseData) {
+  constructor(public result: msdyn_SalesDataQualityAgent_GetFieldPredictionContextResult) {
     super("msdyn_SalesDataQualityAgent_GetFieldPredictionContext");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_SalesDataQualityAgent_GetFieldPredictionContextResponse {
     return new msdyn_SalesDataQualityAgent_GetFieldPredictionContextResponse(
-      responseObject<msdyn_SalesDataQualityAgent_GetFieldPredictionContextResponseData>(data)
+      data as msdyn_SalesDataQualityAgent_GetFieldPredictionContextResult
     );
   }
 }

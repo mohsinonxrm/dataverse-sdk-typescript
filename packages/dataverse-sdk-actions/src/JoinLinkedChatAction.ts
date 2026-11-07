@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from JoinLinkedChat action
+ * Response from the JoinLinkedChat action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface JoinLinkedChatResponse {
-  // No content returned
-}
+export type JoinLinkedChatResponse = void;
 
 /**
  * Parameters of the JoinLinkedChat action, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +47,8 @@ export class JoinLinkedChatAction implements Executable<JoinLinkedChatResponse> 
     };
   }
 
-  async parseResponse(response: Response): Promise<JoinLinkedChatResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as JoinLinkedChatResponse;
-    return (await response.json()) as JoinLinkedChatResponse;
+  parseResponse(_response: Response): Promise<JoinLinkedChatResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

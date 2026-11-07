@@ -6,6 +6,6 @@ import type { AuditDetail } from "./AuditDetail.js";
  * Extends: AuditDetail
  */
 export interface ShareAuditDetail extends AuditDetail {
-  OldPrivileges?: AccessRights;
   NewPrivileges?: AccessRights;
+  OldPrivileges?: AccessRights;
 }

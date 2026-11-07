@@ -1,7 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -46,21 +45,39 @@ export class msdyn_GetSwarmSkillsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSwarmSkillsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSwarmSkillsResponse.fromResponse({});
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return msdyn_GetSwarmSkillsResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return msdyn_GetSwarmSkillsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSwarmSkills action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type msdyn_GetSwarmSkillsResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * msdyn_GetSwarmSkills response message
+ *
+ * `result` is the value the msdyn_GetSwarmSkills action returns (see {@link msdyn_GetSwarmSkillsResult}).
  */
 export class msdyn_GetSwarmSkillsResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: msdyn_GetSwarmSkillsResult) {
     super("msdyn_GetSwarmSkills");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSwarmSkillsResponse {
-    return new msdyn_GetSwarmSkillsResponse(responseValue<Record<string, unknown>[]>(data));
+    return new msdyn_GetSwarmSkillsResponse(
+      data === undefined ? [] : (data as { value: msdyn_GetSwarmSkillsResult }).value
+    );
   }
 }

@@ -42,9 +42,9 @@ export class msdyn_UpdateTotalActiveRiskCountRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateTotalActiveRiskCountResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UpdateTotalActiveRiskCountResponse> {
     // No return value (204 No Content)
-    return new msdyn_UpdateTotalActiveRiskCountResponse();
+    return Promise.resolve(new msdyn_UpdateTotalActiveRiskCountResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_UpdateTotalActiveRiskCountResponse extends OrganizationRespon
     super("msdyn_UpdateTotalActiveRiskCount");
   }
 
-  static fromResponse(_data: unknown): msdyn_UpdateTotalActiveRiskCountResponse {
+  static fromResponse(_data?: unknown): msdyn_UpdateTotalActiveRiskCountResponse {
     return new msdyn_UpdateTotalActiveRiskCountResponse();
   }
 }

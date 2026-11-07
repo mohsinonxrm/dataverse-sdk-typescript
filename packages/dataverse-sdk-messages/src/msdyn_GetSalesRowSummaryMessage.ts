@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetSalesRowSummaryResponse as msdyn_GetSalesRowSummaryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetSalesRowSummary message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_GetSalesRowSummaryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSalesRowSummaryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSalesRowSummaryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSalesRowSummaryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSalesRowSummary action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSalesRowSummaryResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_GetSalesRowSummary response message
+ *
+ * `result` is the value the msdyn_GetSalesRowSummary action returns (see {@link msdyn_GetSalesRowSummaryResult}).
  */
 export class msdyn_GetSalesRowSummaryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSalesRowSummaryResponseData) {
+  constructor(public result: msdyn_GetSalesRowSummaryResult) {
     super("msdyn_GetSalesRowSummary");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSalesRowSummaryResponse {
-    return new msdyn_GetSalesRowSummaryResponse(
-      responseObject<msdyn_GetSalesRowSummaryResponseData>(data)
-    );
+    return new msdyn_GetSalesRowSummaryResponse(data as msdyn_GetSalesRowSummaryResult);
   }
 }

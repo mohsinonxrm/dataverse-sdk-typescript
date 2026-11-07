@@ -5,9 +5,9 @@ import type { XrmDateTimeGrouping } from "./XrmDateTimeGrouping.js";
  * XrmAttributeExpression
  */
 export interface XrmAttributeExpression {
-  AttributeName?: string;
   AggregateType?: XrmAggregateType;
   Alias?: string;
-  HasGroupBy?: boolean;
+  AttributeName?: string;
   DateTimeGrouping?: XrmDateTimeGrouping;
+  HasGroupBy?: boolean;
 }

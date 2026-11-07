@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetSankeyViewKPIs action
+ * Response from the msdyn_GetSankeyViewKPIs action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetSankeyViewKPIsResponse {
+  "@odata.context"?: string;
   SankeyViewKPIs: string;
 }
 
@@ -46,8 +49,7 @@ export class msdyn_GetSankeyViewKPIsAction implements Executable<msdyn_GetSankey
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSankeyViewKPIsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetSankeyViewKPIsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetSankeyViewKPIsResponse;
   }
 }

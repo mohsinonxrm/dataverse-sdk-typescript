@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_CSCopilotResolveCaseResponse as msdyn_CSCopilotResolveCaseResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CSCopilotResolveCase message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,35 @@ export class msdyn_CSCopilotResolveCaseRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CSCopilotResolveCaseResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CSCopilotResolveCaseResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CSCopilotResolveCaseResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CSCopilotResolveCase action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CSCopilotResolveCaseResult {
+  "@odata.context"?: string;
+  CaseStatusReason: number;
+  Message: string;
+  StatusCode: number;
+}
+
+/**
  * msdyn_CSCopilotResolveCase response message
+ *
+ * `result` is the value the msdyn_CSCopilotResolveCase action returns (see {@link msdyn_CSCopilotResolveCaseResult}).
  */
 export class msdyn_CSCopilotResolveCaseResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CSCopilotResolveCaseResponseData) {
+  constructor(public result: msdyn_CSCopilotResolveCaseResult) {
     super("msdyn_CSCopilotResolveCase");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CSCopilotResolveCaseResponse {
-    return new msdyn_CSCopilotResolveCaseResponse(
-      responseObject<msdyn_CSCopilotResolveCaseResponseData>(data)
-    );
+    return new msdyn_CSCopilotResolveCaseResponse(data as msdyn_CSCopilotResolveCaseResult);
   }
 }

@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunity } from "./types/index.js";
@@ -51,9 +51,9 @@ export class GetSalesOrderProductsFromOpportunityRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<GetSalesOrderProductsFromOpportunityResponse> {
+  parseResponse(_response: Response): Promise<GetSalesOrderProductsFromOpportunityResponse> {
     // No return value (204 No Content)
-    return new GetSalesOrderProductsFromOpportunityResponse();
+    return Promise.resolve(new GetSalesOrderProductsFromOpportunityResponse());
   }
 }
 
@@ -65,7 +65,7 @@ export class GetSalesOrderProductsFromOpportunityResponse extends OrganizationRe
     super("GetSalesOrderProductsFromOpportunity");
   }
 
-  static fromResponse(_data: unknown): GetSalesOrderProductsFromOpportunityResponse {
+  static fromResponse(_data?: unknown): GetSalesOrderProductsFromOpportunityResponse {
     return new GetSalesOrderProductsFromOpportunityResponse();
   }
 }

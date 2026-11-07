@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse as msdyn_PostRetrieveRealTimeSuggestedActivitiesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_PostRetrieveRealTimeSuggestedActivities message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_PostRetrieveRealTimeSuggestedActivitiesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse.fromResponse(
       await response.json()
     );
@@ -59,16 +55,29 @@ export class msdyn_PostRetrieveRealTimeSuggestedActivitiesRequest
 }
 
 /**
+ * Response from the msdyn_PostRetrieveRealTimeSuggestedActivities action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_PostRetrieveRealTimeSuggestedActivitiesResult {
+  "@odata.context"?: string;
+  RetrievedRealTimeSuggestedActivitiesCount: number;
+}
+
+/**
  * msdyn_PostRetrieveRealTimeSuggestedActivities response message
+ *
+ * `result` is the value the msdyn_PostRetrieveRealTimeSuggestedActivities action returns (see {@link msdyn_PostRetrieveRealTimeSuggestedActivitiesResult}).
  */
 export class msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_PostRetrieveRealTimeSuggestedActivitiesResponseData) {
+  constructor(public result: msdyn_PostRetrieveRealTimeSuggestedActivitiesResult) {
     super("msdyn_PostRetrieveRealTimeSuggestedActivities");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse {
     return new msdyn_PostRetrieveRealTimeSuggestedActivitiesResponse(
-      responseObject<msdyn_PostRetrieveRealTimeSuggestedActivitiesResponseData>(data)
+      data as msdyn_PostRetrieveRealTimeSuggestedActivitiesResult
     );
   }
 }

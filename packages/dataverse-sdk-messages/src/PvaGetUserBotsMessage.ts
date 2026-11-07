@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { PvaGetUserBotsResponse as PvaGetUserBotsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the PvaGetUserBots message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,33 @@ export class PvaGetUserBotsRequest
   }
 
   async parseResponse(response: Response): Promise<PvaGetUserBotsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PvaGetUserBotsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return PvaGetUserBotsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PvaGetUserBots action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PvaGetUserBotsResult {
+  "@odata.context"?: string;
+  Bots: string;
+}
+
+/**
  * PvaGetUserBots response message
+ *
+ * `result` is the value the PvaGetUserBots action returns (see {@link PvaGetUserBotsResult}).
  */
 export class PvaGetUserBotsResponse extends OrganizationResponse {
-  constructor(public result: PvaGetUserBotsResponseData) {
+  constructor(public result: PvaGetUserBotsResult) {
     super("PvaGetUserBots");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PvaGetUserBotsResponse {
-    return new PvaGetUserBotsResponse(responseObject<PvaGetUserBotsResponseData>(data));
+    return new PvaGetUserBotsResponse(data as PvaGetUserBotsResult);
   }
 }

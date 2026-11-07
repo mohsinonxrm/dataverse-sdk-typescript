@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CheckPredictionModels action
+ * Response from the msdyn_CheckPredictionModels action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckPredictionModelsResponse {
+  "@odata.context"?: string;
   Exists: string;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_CheckPredictionModelsAction implements Executable<msdyn_Check
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckPredictionModelsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CheckPredictionModelsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CheckPredictionModelsResponse;
   }
 }

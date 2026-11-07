@@ -29,9 +29,9 @@ export class RecalculateRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RecalculateResponse> {
+  parseResponse(_response: Response): Promise<RecalculateResponse> {
     // No return value (204 No Content)
-    return new RecalculateResponse();
+    return Promise.resolve(new RecalculateResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class RecalculateResponse extends OrganizationResponse {
     super("Recalculate");
   }
 
-  static fromResponse(_data: unknown): RecalculateResponse {
+  static fromResponse(_data?: unknown): RecalculateResponse {
     return new RecalculateResponse();
   }
 }

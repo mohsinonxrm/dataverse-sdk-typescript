@@ -2,10 +2,10 @@
  * msdyn_CheckIfProcessesOwnedByDisabledUsersResponse
  */
 export interface msdyn_CheckIfProcessesOwnedByDisabledUsersResponse {
+  HelpLink?: string;
   Message?: string;
   ResultEntities?: string;
-  ReturnStatus?: number;
-  ReturnSeverity?: number;
   ReturnLevel?: number;
-  HelpLink?: string;
+  ReturnSeverity?: number;
+  ReturnStatus?: number;
 }

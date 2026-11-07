@@ -3,11 +3,11 @@ import { requestBody } from "./internal/requestBody.js";
 import type { PullChangesFromGitParameters } from "./types/index.js";
 
 /**
- * Response from PullChangesFromGit action
+ * Response from the PullChangesFromGit action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PullChangesFromGitResponse {
-  // No content returned
-}
+export type PullChangesFromGitResponse = void;
 
 /**
  * Parameters of the PullChangesFromGit action, by their CSDL names. A parameter the CSDL declares
@@ -44,9 +44,8 @@ export class PullChangesFromGitAction implements Executable<PullChangesFromGitRe
     };
   }
 
-  async parseResponse(response: Response): Promise<PullChangesFromGitResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PullChangesFromGitResponse;
-    return (await response.json()) as PullChangesFromGitResponse;
+  parseResponse(_response: Response): Promise<PullChangesFromGitResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

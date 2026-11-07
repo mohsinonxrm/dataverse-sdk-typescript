@@ -5,6 +5,6 @@ import type { ValidationResult } from "./ValidationResult.js";
  * RescheduleResponse
  */
 export interface RescheduleResponse {
-  ValidationResult?: ValidationResult;
   Notifications?: BusinessNotification[];
+  ValidationResult?: ValidationResult;
 }

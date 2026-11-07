@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { OnBackgroundOperationCompleteResponse as OnBackgroundOperationCompleteResponseData } from "./types/index.js";
 
 /**
  * Parameters of the OnBackgroundOperationComplete message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,35 @@ export class OnBackgroundOperationCompleteRequest
   }
 
   async parseResponse(response: Response): Promise<OnBackgroundOperationCompleteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return OnBackgroundOperationCompleteResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return OnBackgroundOperationCompleteResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the OnBackgroundOperationComplete action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface OnBackgroundOperationCompleteResult {
+  "@odata.context"?: string;
+  BackgroundOperationStateCode: number;
+  BackgroundOperationStatusCode: number;
+  OperationName: string;
+}
+
+/**
  * OnBackgroundOperationComplete response message
+ *
+ * `result` is the value the OnBackgroundOperationComplete action returns (see {@link OnBackgroundOperationCompleteResult}).
  */
 export class OnBackgroundOperationCompleteResponse extends OrganizationResponse {
-  constructor(public result: OnBackgroundOperationCompleteResponseData) {
+  constructor(public result: OnBackgroundOperationCompleteResult) {
     super("OnBackgroundOperationComplete");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): OnBackgroundOperationCompleteResponse {
-    return new OnBackgroundOperationCompleteResponse(
-      responseObject<OnBackgroundOperationCompleteResponseData>(data)
-    );
+    return new OnBackgroundOperationCompleteResponse(data as OnBackgroundOperationCompleteResult);
   }
 }

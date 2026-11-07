@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetRelatedOpportunitiesForOpptyResearchResponse as msdyn_GetRelatedOpportunitiesForOpptyResearchResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetRelatedOpportunitiesForOpptyResearch message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_GetRelatedOpportunitiesForOpptyResearchRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetRelatedOpportunitiesForOpptyResearchResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetRelatedOpportunitiesForOpptyResearchResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetRelatedOpportunitiesForOpptyResearchResponse.fromResponse(
       await response.json()
     );
@@ -59,16 +55,28 @@ export class msdyn_GetRelatedOpportunitiesForOpptyResearchRequest
 }
 
 /**
+ * Response from the msdyn_GetRelatedOpportunitiesForOpptyResearch action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetRelatedOpportunitiesForOpptyResearchResult {
+  "@odata.context"?: string;
+}
+
+/**
  * msdyn_GetRelatedOpportunitiesForOpptyResearch response message
+ *
+ * `result` is the value the msdyn_GetRelatedOpportunitiesForOpptyResearch action returns (see {@link msdyn_GetRelatedOpportunitiesForOpptyResearchResult}).
  */
 export class msdyn_GetRelatedOpportunitiesForOpptyResearchResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetRelatedOpportunitiesForOpptyResearchResponseData) {
+  constructor(public result: msdyn_GetRelatedOpportunitiesForOpptyResearchResult) {
     super("msdyn_GetRelatedOpportunitiesForOpptyResearch");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetRelatedOpportunitiesForOpptyResearchResponse {
     return new msdyn_GetRelatedOpportunitiesForOpptyResearchResponse(
-      responseObject<msdyn_GetRelatedOpportunitiesForOpptyResearchResponseData>(data)
+      data as msdyn_GetRelatedOpportunitiesForOpptyResearchResult
     );
   }
 }

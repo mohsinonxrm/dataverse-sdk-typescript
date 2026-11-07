@@ -46,11 +46,9 @@ export class msdyn_SalesAgents_CompleteOrchestrationRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_SalesAgents_CompleteOrchestrationResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SalesAgents_CompleteOrchestrationResponse> {
     // No return value (204 No Content)
-    return new msdyn_SalesAgents_CompleteOrchestrationResponse();
+    return Promise.resolve(new msdyn_SalesAgents_CompleteOrchestrationResponse());
   }
 }
 
@@ -62,7 +60,7 @@ export class msdyn_SalesAgents_CompleteOrchestrationResponse extends Organizatio
     super("msdyn_SalesAgents_CompleteOrchestration");
   }
 
-  static fromResponse(_data: unknown): msdyn_SalesAgents_CompleteOrchestrationResponse {
+  static fromResponse(_data?: unknown): msdyn_SalesAgents_CompleteOrchestrationResponse {
     return new msdyn_SalesAgents_CompleteOrchestrationResponse();
   }
 }

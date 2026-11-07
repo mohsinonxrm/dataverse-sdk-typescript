@@ -86,8 +86,9 @@ function generateAccountData(count: number): Array<Record<string, unknown>> {
       address1_city: i % 2 === 0 ? "Seattle" : "Redmond",
       address1_stateorprovince: "WA",
       address1_country: "USA",
-      numberofemployees: Math.floor(Math.random() * 1000) + 10,
-      revenue: Math.floor(Math.random() * 10000000) + 100000,
+      // Varied but deterministic sample values
+      numberofemployees: ((i * 37) % 1000) + 10,
+      revenue: ((i * 7919) % 10000) * 1000 + 100000,
     });
   }
 
@@ -110,10 +111,8 @@ async function bulkCreateAccounts(client: DataverseClient, count: number): Promi
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
     const idsPerSecond = (count / parseFloat(duration)).toFixed(1);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     console.log(chalk.green(`✓ Created ${String(response.Ids.length)} accounts in ${duration}s`));
     console.log(chalk.gray(`  Rate: ${idsPerSecond} records/sec`));
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     console.log(chalk.gray(`  IDs: ${response.Ids.slice(0, 3).join(", ")}...`));
 
     return response.Ids;
@@ -170,19 +169,13 @@ async function queryAccounts(client: DataverseClient, filter: string): Promise<v
       .filter(filter)
       .orderBy("createdon desc")
       .top(10)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .get<any>();
+      .get<{ value: Array<{ name: string; createdon: string; websiteurl: string | null }> }>();
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     console.log(
       chalk.green(`✓ Found ${String(response.value.length)} accounts (showing first 10):`)
     );
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     for (const account of response.value) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      console.log(
-        chalk.gray(`  • ${String(account.name)} (${String(account.websiteurl ?? "no website")})`)
-      );
+      console.log(chalk.gray(`  • ${account.name} (${account.websiteurl ?? "no website"})`));
     }
   } catch (error) {
     console.error(chalk.red("❌ Query failed:"), error);

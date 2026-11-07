@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_UpdateKBArticle action
+ * Response from the msdyn_UpdateKBArticle action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_UpdateKBArticleResponse {
+  "@odata.context"?: string;
   Response3: string;
   usage: string;
 }
@@ -45,8 +48,7 @@ export class msdyn_UpdateKBArticleAction implements Executable<msdyn_UpdateKBArt
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateKBArticleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_UpdateKBArticleResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_UpdateKBArticleResponse;
   }
 }

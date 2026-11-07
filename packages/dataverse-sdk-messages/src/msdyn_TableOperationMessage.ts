@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_TableOperationResponse as msdyn_TableOperationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TableOperation message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class msdyn_TableOperationRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TableOperationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_TableOperationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TableOperationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TableOperation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TableOperationResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_TableOperation response message
+ *
+ * `result` is the value the msdyn_TableOperation action returns (see {@link msdyn_TableOperationResult}).
  */
 export class msdyn_TableOperationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TableOperationResponseData) {
+  constructor(public result: msdyn_TableOperationResult) {
     super("msdyn_TableOperation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TableOperationResponse {
-    return new msdyn_TableOperationResponse(responseObject<msdyn_TableOperationResponseData>(data));
+    return new msdyn_TableOperationResponse(data as msdyn_TableOperationResult);
   }
 }

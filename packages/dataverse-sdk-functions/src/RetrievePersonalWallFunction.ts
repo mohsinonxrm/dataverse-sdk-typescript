@@ -3,11 +3,14 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { post } from "./types/index.js";
 
 /**
- * Response from RetrievePersonalWall function
+ * Response from the RetrievePersonalWall function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrievePersonalWallResponse {
-  value: post[];
-}
+export type RetrievePersonalWallResponse = Array<
+  post & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * Parameters of the RetrievePersonalWall function, by their CSDL names. A parameter the CSDL declares
@@ -91,8 +94,9 @@ export class RetrievePersonalWallFunction implements Executable<RetrievePersonal
   }
 
   async parseResponse(response: Response): Promise<RetrievePersonalWallResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrievePersonalWallResponse;
-    return (await response.json()) as RetrievePersonalWallResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrievePersonalWallResponse }).value;
   }
 }

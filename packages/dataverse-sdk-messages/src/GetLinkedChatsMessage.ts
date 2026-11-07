@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { GetLinkedChatsResponse as GetLinkedChatsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the GetLinkedChats message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class GetLinkedChatsRequest
   }
 
   async parseResponse(response: Response): Promise<GetLinkedChatsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return GetLinkedChatsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return GetLinkedChatsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the GetLinkedChats action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface GetLinkedChatsResult {
+  "@odata.context"?: string;
+  LinkedChatDetails: string;
+}
+
+/**
  * GetLinkedChats response message
+ *
+ * `result` is the value the GetLinkedChats action returns (see {@link GetLinkedChatsResult}).
  */
 export class GetLinkedChatsResponse extends OrganizationResponse {
-  constructor(public result: GetLinkedChatsResponseData) {
+  constructor(public result: GetLinkedChatsResult) {
     super("GetLinkedChats");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): GetLinkedChatsResponse {
-    return new GetLinkedChatsResponse(responseObject<GetLinkedChatsResponseData>(data));
+    return new GetLinkedChatsResponse(data as GetLinkedChatsResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetCJOTreeNodesResponse as msdyn_GetCJOTreeNodesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetCJOTreeNodes message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_GetCJOTreeNodesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCJOTreeNodesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetCJOTreeNodesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetCJOTreeNodesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetCJOTreeNodes action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetCJOTreeNodesResult {
+  "@odata.context"?: string;
+  msdyn_nodes: string;
+}
+
+/**
  * msdyn_GetCJOTreeNodes response message
+ *
+ * `result` is the value the msdyn_GetCJOTreeNodes action returns (see {@link msdyn_GetCJOTreeNodesResult}).
  */
 export class msdyn_GetCJOTreeNodesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetCJOTreeNodesResponseData) {
+  constructor(public result: msdyn_GetCJOTreeNodesResult) {
     super("msdyn_GetCJOTreeNodes");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetCJOTreeNodesResponse {
-    return new msdyn_GetCJOTreeNodesResponse(
-      responseObject<msdyn_GetCJOTreeNodesResponseData>(data)
-    );
+    return new msdyn_GetCJOTreeNodesResponse(data as msdyn_GetCJOTreeNodesResult);
   }
 }

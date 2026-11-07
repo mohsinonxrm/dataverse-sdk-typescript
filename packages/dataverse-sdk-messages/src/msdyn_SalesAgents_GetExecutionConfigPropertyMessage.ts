@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_SalesAgents_GetExecutionConfigPropertyResponse as msdyn_SalesAgents_GetExecutionConfigPropertyResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_GetExecutionConfigProperty message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,35 @@ export class msdyn_SalesAgents_GetExecutionConfigPropertyRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetExecutionConfigPropertyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_GetExecutionConfigPropertyResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_GetExecutionConfigPropertyResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_GetExecutionConfigProperty action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_GetExecutionConfigPropertyResult {
+  "@odata.context"?: string;
+  msdyn_config_value: string;
+}
+
+/**
  * msdyn_SalesAgents_GetExecutionConfigProperty response message
+ *
+ * `result` is the value the msdyn_SalesAgents_GetExecutionConfigProperty action returns (see {@link msdyn_SalesAgents_GetExecutionConfigPropertyResult}).
  */
 export class msdyn_SalesAgents_GetExecutionConfigPropertyResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetExecutionConfigPropertyResponseData) {
+  constructor(public result: msdyn_SalesAgents_GetExecutionConfigPropertyResult) {
     super("msdyn_SalesAgents_GetExecutionConfigProperty");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_GetExecutionConfigPropertyResponse {
     return new msdyn_SalesAgents_GetExecutionConfigPropertyResponse(
-      responseObject<msdyn_SalesAgents_GetExecutionConfigPropertyResponseData>(data)
+      data as msdyn_SalesAgents_GetExecutionConfigPropertyResult
     );
   }
 }

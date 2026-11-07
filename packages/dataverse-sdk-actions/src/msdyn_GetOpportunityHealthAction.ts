@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetOpportunityHealth action
+ * Response from the msdyn_GetOpportunityHealth action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetOpportunityHealthResponse {
+  "@odata.context"?: string;
   ErrorMessage: string;
   IsSuccess: boolean;
   Result: string;
@@ -44,8 +47,7 @@ export class msdyn_GetOpportunityHealthAction implements Executable<msdyn_GetOpp
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOpportunityHealthResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetOpportunityHealthResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetOpportunityHealthResponse;
   }
 }

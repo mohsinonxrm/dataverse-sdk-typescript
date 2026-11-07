@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { ExportRetainedDataResponse as ExportRetainedDataResponseData } from "./types/index.js";
 
 /**
  * Parameters of the ExportRetainedData message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,33 @@ export class ExportRetainedDataRequest
   }
 
   async parseResponse(response: Response): Promise<ExportRetainedDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ExportRetainedDataResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return ExportRetainedDataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ExportRetainedData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ExportRetainedDataResult {
+  "@odata.context"?: string;
+  ExportedExcelId: string;
+}
+
+/**
  * ExportRetainedData response message
+ *
+ * `result` is the value the ExportRetainedData action returns (see {@link ExportRetainedDataResult}).
  */
 export class ExportRetainedDataResponse extends OrganizationResponse {
-  constructor(public result: ExportRetainedDataResponseData) {
+  constructor(public result: ExportRetainedDataResult) {
     super("ExportRetainedData");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ExportRetainedDataResponse {
-    return new ExportRetainedDataResponse(responseObject<ExportRetainedDataResponseData>(data));
+    return new ExportRetainedDataResponse(data as ExportRetainedDataResult);
   }
 }

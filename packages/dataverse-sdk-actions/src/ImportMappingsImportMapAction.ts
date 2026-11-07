@@ -3,14 +3,14 @@ import { requestBody } from "./internal/requestBody.js";
 import type { importmap } from "./types/index.js";
 
 /**
- * Response from ImportMappingsImportMap action
+ * Response from the ImportMappingsImportMap action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface ImportMappingsImportMapResponse extends importmap {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type ImportMappingsImportMapResponse =
+  | (importmap & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
 
 /**
  * Parameters of the ImportMappingsImportMap action, by their CSDL names. A parameter the CSDL declares
@@ -48,8 +48,9 @@ export class ImportMappingsImportMapAction implements Executable<ImportMappingsI
   }
 
   async parseResponse(response: Response): Promise<ImportMappingsImportMapResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ImportMappingsImportMapResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as ImportMappingsImportMapResponse;
   }
 }

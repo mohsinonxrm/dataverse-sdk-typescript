@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_getAndSyncInsightsStatusFromCefJobResult action
+ * Response from the msdyn_getAndSyncInsightsStatusFromCefJobResult action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_getAndSyncInsightsStatusFromCefJobResultResponse {
+  "@odata.context"?: string;
   msdyn_responsePayload: string;
   msdyn_responseStatus: string;
 }
@@ -53,9 +56,7 @@ export class msdyn_getAndSyncInsightsStatusFromCefJobResultAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<msdyn_getAndSyncInsightsStatusFromCefJobResultResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_getAndSyncInsightsStatusFromCefJobResultResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_getAndSyncInsightsStatusFromCefJobResultResponse;
   }
 }

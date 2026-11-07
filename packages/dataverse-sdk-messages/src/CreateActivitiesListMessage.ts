@@ -1,14 +1,10 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type {
-  CreateActivitiesListResponse as CreateActivitiesListResponseData,
-  PropagationOwnershipOptions,
-} from "./types/index.js";
+import type { PropagationOwnershipOptions } from "./types/index.js";
 
 /**
  * Parameters of the CreateActivitiesList message, by their CSDL names. A parameter the CSDL declares
@@ -71,21 +67,33 @@ export class CreateActivitiesListRequest
   }
 
   async parseResponse(response: Response): Promise<CreateActivitiesListResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return CreateActivitiesListResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return CreateActivitiesListResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateActivitiesList action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateActivitiesListResult {
+  "@odata.context"?: string;
+  BulkOperationId: string;
+}
+
+/**
  * CreateActivitiesList response message
+ *
+ * `result` is the value the CreateActivitiesList action returns (see {@link CreateActivitiesListResult}).
  */
 export class CreateActivitiesListResponse extends OrganizationResponse {
-  constructor(public result: CreateActivitiesListResponseData) {
+  constructor(public result: CreateActivitiesListResult) {
     super("CreateActivitiesList");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateActivitiesListResponse {
-    return new CreateActivitiesListResponse(responseObject<CreateActivitiesListResponseData>(data));
+    return new CreateActivitiesListResponse(data as CreateActivitiesListResult);
   }
 }

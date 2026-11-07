@@ -232,6 +232,8 @@ Edit `.changeset/config.json`:
 
 ### Fixed Packages (Share Version Number)
 
+This repository uses one `fixed` group with every published package listed by name (see `.changeset/config.json`, #313). Add new published packages to it. The generic form looks like this:
+
 ```json
 {
   "fixed": [["@mohsinonxrm/dataverse-sdk-*"]]

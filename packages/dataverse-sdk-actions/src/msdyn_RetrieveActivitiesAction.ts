@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_RetrieveActivities action
+ * Response from the msdyn_RetrieveActivities action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_RetrieveActivitiesResponse {
+  "@odata.context"?: string;
   ActivityList: string;
 }
 
@@ -44,8 +47,7 @@ export class msdyn_RetrieveActivitiesAction implements Executable<msdyn_Retrieve
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveActivitiesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_RetrieveActivitiesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_RetrieveActivitiesResponse;
   }
 }

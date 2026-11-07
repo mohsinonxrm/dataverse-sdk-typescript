@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_DeleteFlow action
+ * Response from the msdyn_DeleteFlow action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_DeleteFlowResponse {
-  // No content returned
-}
+export type msdyn_DeleteFlowResponse = void;
 
 /**
  * msdyn_DeleteFlow action
@@ -25,9 +25,8 @@ export class msdyn_DeleteFlowAction implements Executable<msdyn_DeleteFlowRespon
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_DeleteFlowResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_DeleteFlowResponse;
-    return (await response.json()) as msdyn_DeleteFlowResponse;
+  parseResponse(_response: Response): Promise<msdyn_DeleteFlowResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

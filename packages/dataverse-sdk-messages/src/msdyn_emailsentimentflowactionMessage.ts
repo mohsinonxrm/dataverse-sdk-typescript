@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_emailsentimentflowactionResponse as msdyn_emailsentimentflowactionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_emailsentimentflowaction message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_emailsentimentflowactionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_emailsentimentflowactionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_emailsentimentflowactionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_emailsentimentflowactionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_emailsentimentflowaction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_emailsentimentflowactionResult {
+  "@odata.context"?: string;
+  emailSentimentResponse: string;
+}
+
+/**
  * msdyn_emailsentimentflowaction response message
+ *
+ * `result` is the value the msdyn_emailsentimentflowaction action returns (see {@link msdyn_emailsentimentflowactionResult}).
  */
 export class msdyn_emailsentimentflowactionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_emailsentimentflowactionResponseData) {
+  constructor(public result: msdyn_emailsentimentflowactionResult) {
     super("msdyn_emailsentimentflowaction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_emailsentimentflowactionResponse {
-    return new msdyn_emailsentimentflowactionResponse(
-      responseObject<msdyn_emailsentimentflowactionResponseData>(data)
-    );
+    return new msdyn_emailsentimentflowactionResponse(data as msdyn_emailsentimentflowactionResult);
   }
 }

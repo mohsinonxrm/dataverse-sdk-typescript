@@ -12,7 +12,9 @@ This guide will walk you through setting up and using the Dataverse SDK for Type
 6. [Batch Operations](#batch-operations)
 7. [File Operations](#file-operations)
 8. [OrganizationService Pattern](#organizationservice-pattern)
-9. [Next Steps](#next-steps)
+9. [Typed Actions, Functions and Messages](#typed-actions-functions-and-messages)
+10. [Generate the rest with dataverse-gen](#generate-the-rest-with-dataverse-gen)
+11. [Next Steps](#next-steps)
 
 ## Prerequisites
 
@@ -474,7 +476,7 @@ A column with no file is a 404 `DataverseODataError`. `fileClient.delete("accoun
 For developers familiar with the C# SDK, use the OrganizationService pattern:
 
 ```typescript
-import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
+import { OrganizationService, createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
 import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const service = new OrganizationService(client);
@@ -504,9 +506,9 @@ const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
 });
 const workflowResponse = await service.execute(workflowRequest);
 
-// Associate: related records are EntityReferences with a logical name
+// Associate: related records are references from createEntityReference(logicalName, id)
 await service.associate("accounts", accountId, "contact_customer_accounts", [
-  { logicalName: "contact", id: contactId },
+  createEntityReference("contact", contactId),
 ]);
 
 // Disassociate: the related record's id
@@ -515,6 +517,117 @@ await service.disassociate("accounts", accountId, "contact_customer_accounts", c
 // Delete
 await service.delete("accounts", accountId);
 ```
+
+## Typed Actions, Functions and Messages
+
+`@mohsinonxrm/dataverse-sdk-actions`, `-functions` and `-messages` are prebuilt: a typed class for
+each Web API operation of
+
+- the **platform**: Dataverse and the Power Platform solutions every environment has
+  (`WhoAmI`, `CreateMultiple`, `ExportSolution`, `RetrieveMetadataChanges`, the query functions
+  such as `LastXDays`, …);
+- **Sales**: opportunities, quotes, orders, invoices, leads, campaigns and marketing lists, with
+  Sales Insights, Copilot in Sales and the sales agents (`WinOpportunity`, `QualifyLead`,
+  `ConvertQuoteToSalesOrder`, …);
+- **Customer Service**: cases, knowledge, SLAs and entitlements, with Copilot in Customer
+  Service (`CloseIncident`, `RenewEntitlement`, …).
+
+They are chosen by the solution each operation comes from; the
+[solution table](../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt)
+lists every solution and whether its operations are in. The packages don't have the operations of
+Contact Center (Omnichannel, unified routing, voice: `CCaaS_*`), Field Service, Project
+Operations, Universal Resource Scheduling, Customer Insights - Journeys (`msdynmkt_*`), Customer
+Voice, Connected Customer Service (IoT), Power Pages or Process Mining, nor your own custom APIs.
+Generate those from your org, as below.
+
+## Generate the rest with dataverse-gen
+
+`dataverse-gen` (`@mohsinonxrm/dataverse-sdk-generator`) reads your org's `$metadata` and writes
+typed classes for the operations you name: another app's, or your own custom APIs and custom
+process actions. They implement the same `Executable` interface as the prebuilt classes, so
+`client.execute()` runs them the same way and resolves the same return values.
+
+```bash
+pnpm add -D @mohsinonxrm/dataverse-sdk-generator
+pnpm add @mohsinonxrm/dataverse-sdk-entities-runtime @mohsinonxrm/dataverse-sdk-core
+```
+
+The generated files are ES modules: your project's `package.json` needs `"type": "module"` (or a
+bundler).
+
+### An excluded app's operations
+
+For example the Universal Resource Scheduling action `msdyn_BookRequirementGroup` and the Contact
+Center function `CCaaS_GetAgents`. Name them in `.dataverse-gen.json`, with the table of a bound
+operation in `entities` (an empty `entities` list generates every table):
+
+```json
+{
+  "environmentUrl": "https://yourorg.crm.dynamics.com",
+  "entities": ["msdyn_requirementgroup"],
+  "actions": ["msdyn_BookRequirementGroup"],
+  "functions": ["CCaaS_GetAgents"],
+  "output": { "outputRoot": "./src/generated" },
+  "auth": { "flow": "clientCredentials" }
+}
+```
+
+```bash
+# The app registration is an application user in the org; the secret stays out of the file
+DATAVERSE_TENANT_ID=... DATAVERSE_CLIENT_ID=... DATAVERSE_CLIENT_SECRET=... npx dataverse-gen generate
+```
+
+That writes `src/generated/actions/msdyn_BookRequirementGroupAction.ts`,
+`src/generated/functions/CCaaS_GetAgentsFunction.ts`, the table's interface, and the complex types
+and enums of the org's `$metadata`:
+
+```typescript
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { msdyn_BookRequirementGroupAction } from "./generated/actions/msdyn_BookRequirementGroupAction.js";
+import { CCaaS_GetAgentsFunction } from "./generated/functions/CCaaS_GetAgentsFunction.js";
+
+// Bound: the requirement group's id first, then the parameters by their $metadata names
+const booking = await client.execute(
+  new msdyn_BookRequirementGroupAction(requirementGroupId, {
+    Start: new Date("2026-11-09T09:00:00Z"),
+    Duration: 60,
+    BookingResources: JSON.stringify([resourceId]),
+  })
+);
+
+const agents = await client.execute(new CCaaS_GetAgentsFunction({ ApiVersion: "1.0" }));
+```
+
+### Your custom API
+
+A custom API is generated the same way, by its unique name: in `actions`, or in `functions` when
+it's a function (`isfunction`). For an unbound custom API `contoso_CalculateDiscount` with the
+request parameters `OrderId` (Guid) and `Percentage` (Decimal) and the response property
+`Discount` (Money):
+
+```json
+{
+  "environmentUrl": "https://yourorg.crm.dynamics.com",
+  "entities": ["salesorder"],
+  "actions": ["contoso_CalculateDiscount"],
+  "functions": [],
+  "output": { "outputRoot": "./src/generated" },
+  "auth": { "flow": "clientCredentials" }
+}
+```
+
+```typescript
+import { contoso_CalculateDiscountAction } from "./generated/actions/contoso_CalculateDiscountAction.js";
+
+const { Discount } = await client.execute(
+  new contoso_CalculateDiscountAction({ OrderId: orderId, Percentage: 12.5 })
+);
+```
+
+Generate again after you change the custom API, so the classes match its parameters. Keep
+`actions` and `functions` listing the operations you call: an empty list generates every action
+(or function) in the org. The [generator README](../packages/dataverse-sdk-generator/README.md)
+has every option.
 
 ## Next Steps
 

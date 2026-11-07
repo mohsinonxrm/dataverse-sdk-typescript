@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_DataValidationApiResponse as msdyn_DataValidationApiResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_DataValidationApi message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_DataValidationApiRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_DataValidationApiResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_DataValidationApiResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_DataValidationApiResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_DataValidationApi action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_DataValidationApiResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_DataValidationApi response message
+ *
+ * `result` is the value the msdyn_DataValidationApi action returns (see {@link msdyn_DataValidationApiResult}).
  */
 export class msdyn_DataValidationApiResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DataValidationApiResponseData) {
+  constructor(public result: msdyn_DataValidationApiResult) {
     super("msdyn_DataValidationApi");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_DataValidationApiResponse {
-    return new msdyn_DataValidationApiResponse(
-      responseObject<msdyn_DataValidationApiResponseData>(data)
-    );
+    return new msdyn_DataValidationApiResponse(data as msdyn_DataValidationApiResult);
   }
 }

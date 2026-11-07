@@ -5,8 +5,8 @@ import type { EnumAttributeMetadata } from "./EnumAttributeMetadata.js";
  * Extends: EnumAttributeMetadata
  */
 export interface PicklistAttributeMetadata extends EnumAttributeMetadata {
-  FormulaDefinition?: string;
-  SourceTypeMask?: number;
-  ParentPicklistLogicalName?: string;
   ChildPicklistLogicalNames?: string[];
+  FormulaDefinition?: string;
+  ParentPicklistLogicalName?: string;
+  SourceTypeMask?: number;
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_IntentQuickSetupProxy action
+ * Response from the msdyn_IntentQuickSetupProxy action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_IntentQuickSetupProxyResponse {
+  "@odata.context"?: string;
   IntentQuickSetupResponse: string;
 }
 
@@ -44,8 +47,7 @@ export class msdyn_IntentQuickSetupProxyAction implements Executable<msdyn_Inten
   }
 
   async parseResponse(response: Response): Promise<msdyn_IntentQuickSetupProxyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_IntentQuickSetupProxyResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_IntentQuickSetupProxyResponse;
   }
 }

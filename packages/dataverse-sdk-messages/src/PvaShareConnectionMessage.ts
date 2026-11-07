@@ -29,9 +29,9 @@ export class PvaShareConnectionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaShareConnectionResponse> {
+  parseResponse(_response: Response): Promise<PvaShareConnectionResponse> {
     // No return value (204 No Content)
-    return new PvaShareConnectionResponse();
+    return Promise.resolve(new PvaShareConnectionResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class PvaShareConnectionResponse extends OrganizationResponse {
     super("PvaShareConnection");
   }
 
-  static fromResponse(_data: unknown): PvaShareConnectionResponse {
+  static fromResponse(_data?: unknown): PvaShareConnectionResponse {
     return new PvaShareConnectionResponse();
   }
 }

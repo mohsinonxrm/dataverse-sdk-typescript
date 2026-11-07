@@ -48,9 +48,9 @@ export class msdyn_HandleTrainingStatusRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_HandleTrainingStatusResponse> {
+  parseResponse(_response: Response): Promise<msdyn_HandleTrainingStatusResponse> {
     // No return value (204 No Content)
-    return new msdyn_HandleTrainingStatusResponse();
+    return Promise.resolve(new msdyn_HandleTrainingStatusResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_HandleTrainingStatusResponse extends OrganizationResponse {
     super("msdyn_HandleTrainingStatus");
   }
 
-  static fromResponse(_data: unknown): msdyn_HandleTrainingStatusResponse {
+  static fromResponse(_data?: unknown): msdyn_HandleTrainingStatusResponse {
     return new msdyn_HandleTrainingStatusResponse();
   }
 }

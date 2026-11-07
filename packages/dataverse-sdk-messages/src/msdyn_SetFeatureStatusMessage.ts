@@ -48,9 +48,9 @@ export class msdyn_SetFeatureStatusRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SetFeatureStatusResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SetFeatureStatusResponse> {
     // No return value (204 No Content)
-    return new msdyn_SetFeatureStatusResponse();
+    return Promise.resolve(new msdyn_SetFeatureStatusResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_SetFeatureStatusResponse extends OrganizationResponse {
     super("msdyn_SetFeatureStatus");
   }
 
-  static fromResponse(_data: unknown): msdyn_SetFeatureStatusResponse {
+  static fromResponse(_data?: unknown): msdyn_SetFeatureStatusResponse {
     return new msdyn_SetFeatureStatusResponse();
   }
 }

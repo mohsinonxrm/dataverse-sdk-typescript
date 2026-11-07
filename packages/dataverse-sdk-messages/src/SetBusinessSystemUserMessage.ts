@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { businessunit } from "./types/index.js";
@@ -55,9 +55,9 @@ export class SetBusinessSystemUserRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SetBusinessSystemUserResponse> {
+  parseResponse(_response: Response): Promise<SetBusinessSystemUserResponse> {
     // No return value (204 No Content)
-    return new SetBusinessSystemUserResponse();
+    return Promise.resolve(new SetBusinessSystemUserResponse());
   }
 }
 
@@ -69,7 +69,7 @@ export class SetBusinessSystemUserResponse extends OrganizationResponse {
     super("SetBusinessSystemUser");
   }
 
-  static fromResponse(_data: unknown): SetBusinessSystemUserResponse {
+  static fromResponse(_data?: unknown): SetBusinessSystemUserResponse {
     return new SetBusinessSystemUserResponse();
   }
 }

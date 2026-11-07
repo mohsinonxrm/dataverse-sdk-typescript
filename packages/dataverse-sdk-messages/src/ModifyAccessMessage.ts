@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
@@ -48,9 +48,9 @@ export class ModifyAccessRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ModifyAccessResponse> {
+  parseResponse(_response: Response): Promise<ModifyAccessResponse> {
     // No return value (204 No Content)
-    return new ModifyAccessResponse();
+    return Promise.resolve(new ModifyAccessResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class ModifyAccessResponse extends OrganizationResponse {
     super("ModifyAccess");
   }
 
-  static fromResponse(_data: unknown): ModifyAccessResponse {
+  static fromResponse(_data?: unknown): ModifyAccessResponse {
     return new ModifyAccessResponse();
   }
 }

@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import type { importmap } from "./types/index.js";
 
@@ -47,21 +46,35 @@ export class ImportMappingsImportMapRequest
   }
 
   async parseResponse(response: Response): Promise<ImportMappingsImportMapResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return ImportMappingsImportMapResponse.fromResponse({});
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return ImportMappingsImportMapResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return ImportMappingsImportMapResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ImportMappingsImportMap action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type ImportMappingsImportMapResult =
+  | (importmap & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
+
+/**
  * ImportMappingsImportMap response message
+ *
+ * `result` is the value the ImportMappingsImportMap action returns (see {@link ImportMappingsImportMapResult}).
  */
 export class ImportMappingsImportMapResponse extends OrganizationResponse {
-  constructor(public result: importmap) {
+  constructor(public result: ImportMappingsImportMapResult) {
     super("ImportMappingsImportMap");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ImportMappingsImportMapResponse {
-    return new ImportMappingsImportMapResponse(responseObject<importmap>(data));
+    return new ImportMappingsImportMapResponse((data ?? null) as ImportMappingsImportMapResult);
   }
 }

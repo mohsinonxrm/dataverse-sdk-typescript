@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetTrainingResultsResponse as msdyn_GetTrainingResultsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetTrainingResults message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_GetTrainingResultsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetTrainingResultsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetTrainingResultsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetTrainingResultsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetTrainingResults action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetTrainingResultsResult {
+  "@odata.context"?: string;
+  TrainingResults: string;
+}
+
+/**
  * msdyn_GetTrainingResults response message
+ *
+ * `result` is the value the msdyn_GetTrainingResults action returns (see {@link msdyn_GetTrainingResultsResult}).
  */
 export class msdyn_GetTrainingResultsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetTrainingResultsResponseData) {
+  constructor(public result: msdyn_GetTrainingResultsResult) {
     super("msdyn_GetTrainingResults");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetTrainingResultsResponse {
-    return new msdyn_GetTrainingResultsResponse(
-      responseObject<msdyn_GetTrainingResultsResponseData>(data)
-    );
+    return new msdyn_GetTrainingResultsResponse(data as msdyn_GetTrainingResultsResult);
   }
 }

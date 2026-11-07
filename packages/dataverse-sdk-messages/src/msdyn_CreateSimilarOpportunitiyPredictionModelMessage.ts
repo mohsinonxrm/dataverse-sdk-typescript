@@ -42,11 +42,11 @@ export class msdyn_CreateSimilarOpportunitiyPredictionModelRequest
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_CreateSimilarOpportunitiyPredictionModelResponse> {
     // No return value (204 No Content)
-    return new msdyn_CreateSimilarOpportunitiyPredictionModelResponse();
+    return Promise.resolve(new msdyn_CreateSimilarOpportunitiyPredictionModelResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_CreateSimilarOpportunitiyPredictionModelResponse extends Orga
     super("msdyn_CreateSimilarOpportunitiyPredictionModel");
   }
 
-  static fromResponse(_data: unknown): msdyn_CreateSimilarOpportunitiyPredictionModelResponse {
+  static fromResponse(_data?: unknown): msdyn_CreateSimilarOpportunitiyPredictionModelResponse {
     return new msdyn_CreateSimilarOpportunitiyPredictionModelResponse();
   }
 }

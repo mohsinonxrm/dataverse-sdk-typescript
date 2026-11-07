@@ -29,9 +29,9 @@ export class LockInvoicePricingRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<LockInvoicePricingResponse> {
+  parseResponse(_response: Response): Promise<LockInvoicePricingResponse> {
     // No return value (204 No Content)
-    return new LockInvoicePricingResponse();
+    return Promise.resolve(new LockInvoicePricingResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class LockInvoicePricingResponse extends OrganizationResponse {
     super("LockInvoicePricing");
   }
 
-  static fromResponse(_data: unknown): LockInvoicePricingResponse {
+  static fromResponse(_data?: unknown): LockInvoicePricingResponse {
     return new LockInvoicePricingResponse();
   }
 }

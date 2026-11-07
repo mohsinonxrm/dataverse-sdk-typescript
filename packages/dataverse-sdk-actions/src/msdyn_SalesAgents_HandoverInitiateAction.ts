@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAgents_HandoverInitiate action
+ * Response from the msdyn_SalesAgents_HandoverInitiate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesAgents_HandoverInitiateResponse {
+  "@odata.context"?: string;
   HandoverInitiateResponse: string;
 }
 
@@ -52,8 +55,7 @@ export class msdyn_SalesAgents_HandoverInitiateAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_HandoverInitiateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SalesAgents_HandoverInitiateResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_SalesAgents_HandoverInitiateResponse;
   }
 }

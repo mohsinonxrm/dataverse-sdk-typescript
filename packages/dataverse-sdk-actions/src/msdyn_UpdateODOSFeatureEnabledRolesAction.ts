@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_UpdateODOSFeatureEnabledRoles action
+ * Response from the msdyn_UpdateODOSFeatureEnabledRoles action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_UpdateODOSFeatureEnabledRolesResponse {
-  // No content returned
-}
+export type msdyn_UpdateODOSFeatureEnabledRolesResponse = void;
 
 /**
  * Parameters of the msdyn_UpdateODOSFeatureEnabledRoles action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_UpdateODOSFeatureEnabledRolesAction implements Executable<msd
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateODOSFeatureEnabledRolesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_UpdateODOSFeatureEnabledRolesResponse;
-    return (await response.json()) as msdyn_UpdateODOSFeatureEnabledRolesResponse;
+  parseResponse(_response: Response): Promise<msdyn_UpdateODOSFeatureEnabledRolesResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

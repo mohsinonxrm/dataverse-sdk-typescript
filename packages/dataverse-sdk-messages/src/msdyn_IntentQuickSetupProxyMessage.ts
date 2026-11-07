@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_IntentQuickSetupProxyResponse as msdyn_IntentQuickSetupProxyResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_IntentQuickSetupProxy message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_IntentQuickSetupProxyRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IntentQuickSetupProxyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_IntentQuickSetupProxyResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IntentQuickSetupProxyResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IntentQuickSetupProxy action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IntentQuickSetupProxyResult {
+  "@odata.context"?: string;
+  IntentQuickSetupResponse: string;
+}
+
+/**
  * msdyn_IntentQuickSetupProxy response message
+ *
+ * `result` is the value the msdyn_IntentQuickSetupProxy action returns (see {@link msdyn_IntentQuickSetupProxyResult}).
  */
 export class msdyn_IntentQuickSetupProxyResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IntentQuickSetupProxyResponseData) {
+  constructor(public result: msdyn_IntentQuickSetupProxyResult) {
     super("msdyn_IntentQuickSetupProxy");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IntentQuickSetupProxyResponse {
-    return new msdyn_IntentQuickSetupProxyResponse(
-      responseObject<msdyn_IntentQuickSetupProxyResponseData>(data)
-    );
+    return new msdyn_IntentQuickSetupProxyResponse(data as msdyn_IntentQuickSetupProxyResult);
   }
 }

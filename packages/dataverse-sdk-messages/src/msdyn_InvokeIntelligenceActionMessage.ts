@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_InvokeIntelligenceActionResponse as msdyn_InvokeIntelligenceActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_InvokeIntelligenceAction message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,34 @@ export class msdyn_InvokeIntelligenceActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeIntelligenceActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_InvokeIntelligenceActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_InvokeIntelligenceActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_InvokeIntelligenceAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_InvokeIntelligenceActionResult {
+  "@odata.context"?: string;
+  Metadata: string;
+  Result: string;
+}
+
+/**
  * msdyn_InvokeIntelligenceAction response message
+ *
+ * `result` is the value the msdyn_InvokeIntelligenceAction action returns (see {@link msdyn_InvokeIntelligenceActionResult}).
  */
 export class msdyn_InvokeIntelligenceActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InvokeIntelligenceActionResponseData) {
+  constructor(public result: msdyn_InvokeIntelligenceActionResult) {
     super("msdyn_InvokeIntelligenceAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_InvokeIntelligenceActionResponse {
-    return new msdyn_InvokeIntelligenceActionResponse(
-      responseObject<msdyn_InvokeIntelligenceActionResponseData>(data)
-    );
+    return new msdyn_InvokeIntelligenceActionResponse(data as msdyn_InvokeIntelligenceActionResult);
   }
 }

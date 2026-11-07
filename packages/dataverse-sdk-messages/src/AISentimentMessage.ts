@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { AISentimentResponse as AISentimentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the AISentiment message, by their CSDL names. A parameter the CSDL declares
@@ -45,21 +43,33 @@ export class AISentimentRequest
   }
 
   async parseResponse(response: Response): Promise<AISentimentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AISentimentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AISentimentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AISentiment action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AISentimentResult {
+  "@odata.context"?: string;
+  AnalyzedSentiment: string;
+}
+
+/**
  * AISentiment response message
+ *
+ * `result` is the value the AISentiment action returns (see {@link AISentimentResult}).
  */
 export class AISentimentResponse extends OrganizationResponse {
-  constructor(public result: AISentimentResponseData) {
+  constructor(public result: AISentimentResult) {
     super("AISentiment");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AISentimentResponse {
-    return new AISentimentResponse(responseObject<AISentimentResponseData>(data));
+    return new AISentimentResponse(data as AISentimentResult);
   }
 }

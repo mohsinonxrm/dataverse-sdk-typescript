@@ -50,9 +50,9 @@ export class DeleteOptionValueRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteOptionValueResponse> {
+  parseResponse(_response: Response): Promise<DeleteOptionValueResponse> {
     // No return value (204 No Content)
-    return new DeleteOptionValueResponse();
+    return Promise.resolve(new DeleteOptionValueResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class DeleteOptionValueResponse extends OrganizationResponse {
     super("DeleteOptionValue");
   }
 
-  static fromResponse(_data: unknown): DeleteOptionValueResponse {
+  static fromResponse(_data?: unknown): DeleteOptionValueResponse {
     return new DeleteOptionValueResponse();
   }
 }

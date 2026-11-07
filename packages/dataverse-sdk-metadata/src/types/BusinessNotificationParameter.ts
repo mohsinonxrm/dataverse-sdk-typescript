@@ -4,6 +4,6 @@ import type { BusinessNotificationParameterType } from "./BusinessNotificationPa
  * BusinessNotificationParameter
  */
 export interface BusinessNotificationParameter {
-  ParameterType?: BusinessNotificationParameterType;
   Data?: string;
+  ParameterType?: BusinessNotificationParameterType;
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CSCaseClosureProcessAgentResponseResponse as msdyn_CSCaseClosureProcessAgentResponseResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CSCaseClosureProcessAgentResponse message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,35 @@ export class msdyn_CSCaseClosureProcessAgentResponseRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CSCaseClosureProcessAgentResponseResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CSCaseClosureProcessAgentResponseResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CSCaseClosureProcessAgentResponseResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CSCaseClosureProcessAgentResponse action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CSCaseClosureProcessAgentResponseResult {
+  "@odata.context"?: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_CSCaseClosureProcessAgentResponse response message
+ *
+ * `result` is the value the msdyn_CSCaseClosureProcessAgentResponse action returns (see {@link msdyn_CSCaseClosureProcessAgentResponseResult}).
  */
 export class msdyn_CSCaseClosureProcessAgentResponseResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CSCaseClosureProcessAgentResponseResponseData) {
+  constructor(public result: msdyn_CSCaseClosureProcessAgentResponseResult) {
     super("msdyn_CSCaseClosureProcessAgentResponse");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CSCaseClosureProcessAgentResponseResponse {
     return new msdyn_CSCaseClosureProcessAgentResponseResponse(
-      responseObject<msdyn_CSCaseClosureProcessAgentResponseResponseData>(data)
+      data as msdyn_CSCaseClosureProcessAgentResponseResult
     );
   }
 }

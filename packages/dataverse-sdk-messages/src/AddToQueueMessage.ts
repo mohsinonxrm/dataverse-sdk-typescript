@@ -1,14 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
-import type {
-  AddToQueueResponse as AddToQueueResponseData,
-  queue,
-  queueitem,
-} from "./types/index.js";
+import type { queue, queueitem } from "./types/index.js";
 
 /**
  * Parameters of the AddToQueue message, by their CSDL names. A parameter the CSDL declares
@@ -61,21 +56,33 @@ export class AddToQueueRequest
   }
 
   async parseResponse(response: Response): Promise<AddToQueueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return AddToQueueResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return AddToQueueResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the AddToQueue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface AddToQueueResult {
+  "@odata.context"?: string;
+  QueueItemId: string;
+}
+
+/**
  * AddToQueue response message
+ *
+ * `result` is the value the AddToQueue action returns (see {@link AddToQueueResult}).
  */
 export class AddToQueueResponse extends OrganizationResponse {
-  constructor(public result: AddToQueueResponseData) {
+  constructor(public result: AddToQueueResult) {
     super("AddToQueue");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): AddToQueueResponse {
-    return new AddToQueueResponse(responseObject<AddToQueueResponseData>(data));
+    return new AddToQueueResponse(data as AddToQueueResult);
   }
 }

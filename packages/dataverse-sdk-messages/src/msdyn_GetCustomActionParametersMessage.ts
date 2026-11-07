@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetCustomActionParametersResponse as msdyn_GetCustomActionParametersResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetCustomActionParameters message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,35 @@ export class msdyn_GetCustomActionParametersRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCustomActionParametersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetCustomActionParametersResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetCustomActionParametersResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetCustomActionParameters action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetCustomActionParametersResult {
+  "@odata.context"?: string;
+  dynamicSchema: string;
+}
+
+/**
  * msdyn_GetCustomActionParameters response message
+ *
+ * `result` is the value the msdyn_GetCustomActionParameters action returns (see {@link msdyn_GetCustomActionParametersResult}).
  */
 export class msdyn_GetCustomActionParametersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetCustomActionParametersResponseData) {
+  constructor(public result: msdyn_GetCustomActionParametersResult) {
     super("msdyn_GetCustomActionParameters");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetCustomActionParametersResponse {
     return new msdyn_GetCustomActionParametersResponse(
-      responseObject<msdyn_GetCustomActionParametersResponseData>(data)
+      data as msdyn_GetCustomActionParametersResult
     );
   }
 }

@@ -50,11 +50,13 @@ export class msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigRequ
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigResponse> {
     // No return value (204 No Content)
-    return new msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigResponse();
+    return Promise.resolve(
+      new msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigResponse()
+    );
   }
 }
 
@@ -67,7 +69,7 @@ export class msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigResp
   }
 
   static fromResponse(
-    _data: unknown
+    _data?: unknown
   ): msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigResponse {
     return new msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentExecutionConfigResponse();
   }

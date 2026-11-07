@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ParseKBResult action
+ * Response from the msdyn_ParseKBResult action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ParseKBResultResponse {
+  "@odata.context"?: string;
   ParseKBExternalSourceResultResponse: string;
 }
 
@@ -44,8 +47,7 @@ export class msdyn_ParseKBResultAction implements Executable<msdyn_ParseKBResult
   }
 
   async parseResponse(response: Response): Promise<msdyn_ParseKBResultResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ParseKBResultResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ParseKBResultResponse;
   }
 }

@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -46,9 +46,9 @@ export class msdyn_OnNewActivityForARCRecordRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OnNewActivityForARCRecordResponse> {
+  parseResponse(_response: Response): Promise<msdyn_OnNewActivityForARCRecordResponse> {
     // No return value (204 No Content)
-    return new msdyn_OnNewActivityForARCRecordResponse();
+    return Promise.resolve(new msdyn_OnNewActivityForARCRecordResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_OnNewActivityForARCRecordResponse extends OrganizationRespons
     super("msdyn_OnNewActivityForARCRecord");
   }
 
-  static fromResponse(_data: unknown): msdyn_OnNewActivityForARCRecordResponse {
+  static fromResponse(_data?: unknown): msdyn_OnNewActivityForARCRecordResponse {
     return new msdyn_OnNewActivityForARCRecordResponse();
   }
 }

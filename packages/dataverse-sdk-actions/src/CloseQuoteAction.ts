@@ -1,15 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { quoteclose } from "./types/index.js";
 
 /**
- * Response from CloseQuote action
+ * Response from the CloseQuote action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CloseQuoteResponse {
-  // No content returned
-}
+export type CloseQuoteResponse = void;
 
 /**
  * Parameters of the CloseQuote action, by their CSDL names. A parameter the CSDL declares
@@ -46,9 +46,8 @@ export class CloseQuoteAction implements Executable<CloseQuoteResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<CloseQuoteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CloseQuoteResponse;
-    return (await response.json()) as CloseQuoteResponse;
+  parseResponse(_response: Response): Promise<CloseQuoteResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

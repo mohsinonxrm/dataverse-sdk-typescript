@@ -3,9 +3,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { UpsertResponse } from "./types/index.js";
 
 /**
- * Response from UpsertMultiple action
+ * Response from the UpsertMultiple action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface UpsertMultipleResponse {
+  "@odata.context"?: string;
   Results: UpsertResponse[];
 }
 
@@ -50,8 +53,7 @@ export class UpsertMultipleAction implements Executable<UpsertMultipleResponse> 
   }
 
   async parseResponse(response: Response): Promise<UpsertMultipleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UpsertMultipleResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as UpsertMultipleResponse;
   }
 }

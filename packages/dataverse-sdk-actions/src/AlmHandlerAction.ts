@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AlmHandler action
+ * Response from the AlmHandler action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface AlmHandlerResponse {
+  "@odata.context"?: string;
   result: string;
 }
 
@@ -44,8 +47,7 @@ export class AlmHandlerAction implements Executable<AlmHandlerResponse> {
   }
 
   async parseResponse(response: Response): Promise<AlmHandlerResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AlmHandlerResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as AlmHandlerResponse;
   }
 }

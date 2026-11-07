@@ -15,7 +15,7 @@ import {
   odataError,
 } from "@mohsinonxrm/dataverse-sdk-testing";
 import type { RecordedRequest } from "@mohsinonxrm/dataverse-sdk-testing";
-import { OrganizationService } from "../src/index.js";
+import { OrganizationService, createEntityReference } from "../src/index.js";
 
 const ID = "12345678-1234-1234-1234-123456789012";
 const ID2 = "22222222-2222-2222-2222-222222222222";
@@ -357,8 +357,8 @@ describe("OrganizationService", () => {
         ID,
         "contact_customer_accounts",
         [
-          { logicalName: "contact", id: ID2 },
-          { logicalName: "contact", id: `{${USER.toUpperCase()}}` },
+          createEntityReference("contact", ID2),
+          createEntityReference("contact", `{${USER.toUpperCase()}}`),
         ],
         { impersonateUserId: USER }
       );

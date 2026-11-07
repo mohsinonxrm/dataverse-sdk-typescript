@@ -9,6 +9,6 @@ export interface BooleanAttributeMetadata extends AttributeMetadata {
   DefaultValue?: boolean;
   FormulaDefinition?: string;
   SourceTypeMask?: number;
-  OptionSet?: BooleanOptionSetMetadata;
   GlobalOptionSet?: BooleanOptionSetMetadata;
+  OptionSet?: BooleanOptionSetMetadata;
 }

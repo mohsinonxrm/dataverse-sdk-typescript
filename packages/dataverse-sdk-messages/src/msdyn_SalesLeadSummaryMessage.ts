@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesLeadSummaryResponse as msdyn_SalesLeadSummaryResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesLeadSummary message, by their CSDL names. A parameter the CSDL declares
@@ -65,23 +63,38 @@ export class msdyn_SalesLeadSummaryRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesLeadSummaryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SalesLeadSummaryResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesLeadSummaryResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesLeadSummary action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesLeadSummaryResult {
+  "@odata.context"?: string;
+  msdyn_additionalDetails: string;
+  msdyn_canUseCache: boolean;
+  msdyn_sales_copilot_output: string;
+  msdyn_summary: string;
+  msdyn_summary_raw: string;
+  msdyn_version: string;
+}
+
+/**
  * msdyn_SalesLeadSummary response message
+ *
+ * `result` is the value the msdyn_SalesLeadSummary action returns (see {@link msdyn_SalesLeadSummaryResult}).
  */
 export class msdyn_SalesLeadSummaryResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesLeadSummaryResponseData) {
+  constructor(public result: msdyn_SalesLeadSummaryResult) {
     super("msdyn_SalesLeadSummary");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesLeadSummaryResponse {
-    return new msdyn_SalesLeadSummaryResponse(
-      responseObject<msdyn_SalesLeadSummaryResponseData>(data)
-    );
+    return new msdyn_SalesLeadSummaryResponse(data as msdyn_SalesLeadSummaryResult);
   }
 }

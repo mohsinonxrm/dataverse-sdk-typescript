@@ -1,12 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { Label } from "./types/index.js";
 
 /**
- * Response from RetrieveLocLabels function
+ * Response from the RetrieveLocLabels function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveLocLabelsResponse {
+  "@odata.context"?: string;
   Label: Label;
 }
 
@@ -63,8 +66,7 @@ export class RetrieveLocLabelsFunction implements Executable<RetrieveLocLabelsRe
   }
 
   async parseResponse(response: Response): Promise<RetrieveLocLabelsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveLocLabelsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveLocLabelsResponse;
   }
 }

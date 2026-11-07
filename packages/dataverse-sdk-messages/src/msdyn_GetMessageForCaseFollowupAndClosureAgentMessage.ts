@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetMessageForCaseFollowupAndClosureAgentResponse as msdyn_GetMessageForCaseFollowupAndClosureAgentResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetMessageForCaseFollowupAndClosureAgent message, by their CSDL names. A parameter the CSDL declares
@@ -47,9 +45,7 @@ export class msdyn_GetMessageForCaseFollowupAndClosureAgentRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetMessageForCaseFollowupAndClosureAgentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetMessageForCaseFollowupAndClosureAgentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetMessageForCaseFollowupAndClosureAgentResponse.fromResponse(
       await response.json()
     );
@@ -57,16 +53,29 @@ export class msdyn_GetMessageForCaseFollowupAndClosureAgentRequest
 }
 
 /**
+ * Response from the msdyn_GetMessageForCaseFollowupAndClosureAgent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetMessageForCaseFollowupAndClosureAgentResult {
+  "@odata.context"?: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_GetMessageForCaseFollowupAndClosureAgent response message
+ *
+ * `result` is the value the msdyn_GetMessageForCaseFollowupAndClosureAgent action returns (see {@link msdyn_GetMessageForCaseFollowupAndClosureAgentResult}).
  */
 export class msdyn_GetMessageForCaseFollowupAndClosureAgentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetMessageForCaseFollowupAndClosureAgentResponseData) {
+  constructor(public result: msdyn_GetMessageForCaseFollowupAndClosureAgentResult) {
     super("msdyn_GetMessageForCaseFollowupAndClosureAgent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetMessageForCaseFollowupAndClosureAgentResponse {
     return new msdyn_GetMessageForCaseFollowupAndClosureAgentResponse(
-      responseObject<msdyn_GetMessageForCaseFollowupAndClosureAgentResponseData>(data)
+      data as msdyn_GetMessageForCaseFollowupAndClosureAgentResult
     );
   }
 }

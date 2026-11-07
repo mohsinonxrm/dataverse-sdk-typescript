@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_TriggerSummarySynthesizerResponse as msdyn_TriggerSummarySynthesizerResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_TriggerSummarySynthesizer message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,36 @@ export class msdyn_TriggerSummarySynthesizerRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_TriggerSummarySynthesizerResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_TriggerSummarySynthesizerResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_TriggerSummarySynthesizerResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TriggerSummarySynthesizer action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TriggerSummarySynthesizerResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+}
+
+/**
  * msdyn_TriggerSummarySynthesizer response message
+ *
+ * `result` is the value the msdyn_TriggerSummarySynthesizer action returns (see {@link msdyn_TriggerSummarySynthesizerResult}).
  */
 export class msdyn_TriggerSummarySynthesizerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TriggerSummarySynthesizerResponseData) {
+  constructor(public result: msdyn_TriggerSummarySynthesizerResult) {
     super("msdyn_TriggerSummarySynthesizer");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TriggerSummarySynthesizerResponse {
     return new msdyn_TriggerSummarySynthesizerResponse(
-      responseObject<msdyn_TriggerSummarySynthesizerResponseData>(data)
+      data as msdyn_TriggerSummarySynthesizerResult
     );
   }
 }

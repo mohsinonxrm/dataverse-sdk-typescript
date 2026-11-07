@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from AboveOrEqual function
+ * Response from the AboveOrEqual function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface AboveOrEqualResponse {
-  value: boolean;
-}
+export type AboveOrEqualResponse = boolean;
 
 /**
  * Parameters of the AboveOrEqual function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class AboveOrEqualFunction implements Executable<AboveOrEqualResponse> {
   }
 
   async parseResponse(response: Response): Promise<AboveOrEqualResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AboveOrEqualResponse;
-    return (await response.json()) as AboveOrEqualResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: AboveOrEqualResponse }).value;
   }
 }

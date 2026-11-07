@@ -1,15 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunity } from "./types/index.js";
 
 /**
- * Response from GetInvoiceProductsFromOpportunity action
+ * Response from the GetInvoiceProductsFromOpportunity action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface GetInvoiceProductsFromOpportunityResponse {
-  // No content returned
-}
+export type GetInvoiceProductsFromOpportunityResponse = void;
 
 /**
  * Parameters of the GetInvoiceProductsFromOpportunity action, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +51,8 @@ export class GetInvoiceProductsFromOpportunityAction implements Executable<GetIn
     };
   }
 
-  async parseResponse(response: Response): Promise<GetInvoiceProductsFromOpportunityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetInvoiceProductsFromOpportunityResponse;
-    return (await response.json()) as GetInvoiceProductsFromOpportunityResponse;
+  parseResponse(_response: Response): Promise<GetInvoiceProductsFromOpportunityResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

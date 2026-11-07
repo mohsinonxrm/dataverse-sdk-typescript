@@ -44,9 +44,9 @@ export class _ResourcesRemoveUpdateActionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<_ResourcesRemoveUpdateActionResponse> {
+  parseResponse(_response: Response): Promise<_ResourcesRemoveUpdateActionResponse> {
     // No return value (204 No Content)
-    return new _ResourcesRemoveUpdateActionResponse();
+    return Promise.resolve(new _ResourcesRemoveUpdateActionResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class _ResourcesRemoveUpdateActionResponse extends OrganizationResponse {
     super("_ResourcesRemoveUpdateAction");
   }
 
-  static fromResponse(_data: unknown): _ResourcesRemoveUpdateActionResponse {
+  static fromResponse(_data?: unknown): _ResourcesRemoveUpdateActionResponse {
     return new _ResourcesRemoveUpdateActionResponse();
   }
 }

@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from SyncGroupMembersToTeam action
+ * Response from the SyncGroupMembersToTeam action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SyncGroupMembersToTeamResponse {
-  // No content returned
-}
+export type SyncGroupMembersToTeamResponse = void;
 
 /**
  * SyncGroupMembersToTeam action
@@ -31,9 +31,8 @@ export class SyncGroupMembersToTeamAction implements Executable<SyncGroupMembers
     };
   }
 
-  async parseResponse(response: Response): Promise<SyncGroupMembersToTeamResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SyncGroupMembersToTeamResponse;
-    return (await response.json()) as SyncGroupMembersToTeamResponse;
+  parseResponse(_response: Response): Promise<SyncGroupMembersToTeamResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

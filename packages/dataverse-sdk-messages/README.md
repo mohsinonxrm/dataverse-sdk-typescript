@@ -4,7 +4,7 @@ Organization Service messages for Dataverse, providing typed request/response pa
 
 ## Features
 
-- ✅ **<!-- count:messages -->1,556<!-- /count --> typed messages** - Complete coverage of all Dataverse Organization Service messages
+- ✅ **<!-- count:messages -->1,072<!-- /count --> typed messages** - The Organization Service messages of the platform, Sales and Customer Service
 - ✅ **Direct exports** - All message classes exported directly (e.g., `ExecuteWorkflowRequest`, `WinOpportunityRequest`)
 - ✅ **Request/response pairs** - Full type safety for all message parameters and returns
 - ✅ **Web API mapping** - Messages map to corresponding Web API actions, functions, or HTTP operations
@@ -19,7 +19,7 @@ pnpm add @mohsinonxrm/dataverse-sdk-messages @mohsinonxrm/dataverse-sdk-xrm
 
 ## Overview
 
-This package provides <!-- count:messages -->1,556<!-- /count --> typed message classes that wrap Web API actions and functions. Each message:
+This package provides <!-- count:messages -->1,072<!-- /count --> typed message classes that wrap Web API actions and functions. Each message:
 
 - Extends `OrganizationRequest` base class
 - Implements `Executable<TResponse>` interface
@@ -28,11 +28,29 @@ This package provides <!-- count:messages -->1,556<!-- /count --> typed message 
 
 Messages execute via `OrganizationService.execute()` from `@mohsinonxrm/dataverse-sdk-xrm` or directly via `DataverseClient.execute()`.
 
+## What this package covers
+
+A message for each Web API action of the **platform** (Dataverse and the Power Platform
+solutions every environment has) and of the two core Dynamics 365 apps of a plain trial,
+**Sales** and **Customer Service**: the same operations as `@mohsinonxrm/dataverse-sdk-actions`.
+They are chosen by the solution each operation comes from, not by what the org the SDK was
+generated from has installed: the
+[solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt)
+lists every solution and whether its operations are in.
+
+Not in the package: the messages of Contact Center (Omnichannel, unified routing, voice,
+`CCaaS_*`), Field Service, Project Operations, Universal Resource Scheduling, Customer Insights -
+Journeys (`msdynmkt_*`), Customer Voice, Connected Customer Service (IoT), Power Pages and Process
+Mining, and your own custom APIs. Generate typed classes for those from your org with
+`dataverse-gen` (see
+[Generate the rest with dataverse-gen](../../docs/getting-started.md#generate-the-rest-with-dataverse-gen)),
+or send one with the generic [`OrganizationRequest`](#generic-organizationrequest).
+
 ## Message Categories
 
-The package has <!-- count:messages -->1,556<!-- /count --> typed messages: a `<Name>Request` /
-`<Name>Response` pair for each Web API **action** in the `$metadata` it was generated from,
-including solution-specific ones (`msdyn_*`, `msdynmkt_*`, `CCaaS_*`, …). This list is generated
+The package has <!-- count:messages -->1,072<!-- /count --> typed messages: a `<Name>Request` /
+`<Name>Response` pair for each Web API **action** of the platform, Sales and Customer Service
+(see [What this package covers](#what-this-package-covers)). This list is generated
 from the package source (`pnpm --filter generate-sdk-types docs`);
 [supported-messages.md](../../docs/mapping/supported-messages.md) has more.
 
@@ -89,8 +107,29 @@ const service = new OrganizationService(client);
 const request = new ExecuteWorkflowRequest(workflowId, { EntityId: recordId });
 
 const response = await service.execute(request);
-console.log("Async Operation ID:", response.result.asyncoperationid);
+console.log("Async Operation ID:", response.result?.asyncoperationid);
 ```
+
+## Results
+
+A message's `result` is the value the action of the same name returns, with the same type,
+exported as `<Name>Result` (#300). A message without a return type has no `result`.
+
+| Return type in `$metadata`                       | Web API response                                          | Value                                                       |
+| ------------------------------------------------ | --------------------------------------------------------- | ----------------------------------------------------------- |
+| none                                             | `204 No Content`                                          | `undefined` (`<Name>Response` is `void`)                    |
+| primitive or enum (`Edm.Boolean`, …)             | `{ "@odata.context", "value": … }`                        | the value (an enum is its member name)                      |
+| collection (`Collection(mscrm.role)`, …)         | `{ "@odata.context", "value": [ … ] }`, or 204 when unset | the array, each record with `@odata.etag`; `[]` for a 204   |
+| complex type (`mscrm.WhoAmIResponse`)            | the properties, with `@odata.context`                     | the body, with `@odata.context`                             |
+| entity (`mscrm.asyncoperation`, `crmbaseentity`) | the record, with its annotations, or 204 when unset       | the record (`@odata.etag`, `@odata.type`); `null` for a 204 |
+
+Dataverse answers `204 No Content` for an entity or entity-collection output that wasn't set,
+although `$metadata` declares the return `Nullable="false"`, so an entity return is
+`<Entity> | null`. `@odata.type` says which table a `crmbaseentity` record is.
+
+`<Name>Response.fromResponse(data)` reads `result` from a parsed response body (`undefined` for a
+204), for example the body of a `$batch` step. Unlike the `Results` of the generic
+`OrganizationRequest`, `result` keeps the annotations, as the action's value does.
 
 ## Common Messages
 
@@ -122,7 +161,7 @@ import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 const request = new ExecuteWorkflowRequest(workflowId, { EntityId: recordId, InputArguments: {} });
 
 const response = await service.execute(request);
-console.log("Async Operation ID:", response.result.asyncoperationid);
+console.log("Async Operation ID:", response.result?.asyncoperationid);
 // Poll asyncoperation entity to check workflow status
 ```
 
@@ -134,7 +173,7 @@ console.log("Async Operation ID:", response.result.asyncoperationid);
 
 **Response:**
 
-- `result: asyncoperation` - The async operation record (system job)
+- `result: ExecuteWorkflowResult` - The async operation record (system job), with its annotations, or `null` if the Web API answered 204
 
 ---
 
@@ -394,6 +433,10 @@ the table's primary key (`{ "@odata.type": "Microsoft.Dynamics.CRM.account", acc
 activities use `activityid`). `logicalName`, `id`, `name` and `entitySetName` are kept on it but
 not sent.
 
+It is the SDK's one `EntityReference`, defined in `@mohsinonxrm/dataverse-sdk-entities-runtime`
+and re-exported here, as the actions, functions and xrm packages do. A reference from any of their
+`createEntityReference`s is accepted by every one of them.
+
 Only `createEntityReference` makes an `EntityReference`. A hand-written
 `{ "@odata.type", logicalName, id }` doesn't type-check, because it would send `logicalName` and
 `id`, which the Web API rejects. To write the reference by hand, use `WebApiEntityReference`, the
@@ -423,7 +466,7 @@ of a `QueryExpression`. The enums are exported from the package root.
 
 An entity member of a complex type, such as `PrincipalAccess.Principal`, takes a reference or a
 payload, like an entity-typed parameter:
-`new GrantAccessRequest(createEntityReference("account", id), { Principal: createEntityReference("team", teamId), AccessMask: AccessRights.ReadAccess })`.
+`new GrantAccessRequest({ Target: createEntityReference("account", id), PrincipalAccess: { Principal: createEntityReference("team", teamId), AccessMask: AccessRights.ReadAccess } })`.
 
 ---
 
@@ -431,16 +474,19 @@ payload, like an entity-typed parameter:
 
 ### createEntityReference
 
-Helper to create entity references.
+Helper to create entity references (the same function every package exports).
 
 ```typescript
 import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const accountRef = createEntityReference("account", accountId);
 // JSON: {"@odata.type":"Microsoft.Dynamics.CRM.account","accountid":"<id>"}
-const named = createEntityReference("contact", contactId, "John Doe"); // name is kept, not sent
-// A table the generated CSDL doesn't know:
-createEntityReference("new_project", id, { primaryIdAttribute: "new_projectid" });
+const named = createEntityReference("contact", contactId, { name: "John Doe" }); // kept, not sent
+// A table the SDK's $metadata snapshot doesn't know:
+createEntityReference("new_project", id, {
+  primaryIdAttribute: "new_projectid",
+  entitySetName: "new_projects",
+});
 ```
 
 ---

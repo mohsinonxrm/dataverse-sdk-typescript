@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from Under function
+ * Response from the Under function.
+ *
+ * The value, read from the `value` of the response body.
  */
-export interface UnderResponse {
-  value: boolean;
-}
+export type UnderResponse = boolean;
 
 /**
  * Parameters of the Under function, by their CSDL names. A parameter the CSDL declares
@@ -53,8 +53,7 @@ export class UnderFunction implements Executable<UnderResponse> {
   }
 
   async parseResponse(response: Response): Promise<UnderResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UnderResponse;
-    return (await response.json()) as UnderResponse;
+    // A primitive comes wrapped: { "@odata.context": "…", "value": … }
+    return ((await response.json()) as { value: UnderResponse }).value;
   }
 }

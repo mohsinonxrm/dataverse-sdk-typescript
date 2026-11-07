@@ -46,11 +46,9 @@ export class msdyn_PostOrganizationProvisioningStatusRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_PostOrganizationProvisioningStatusResponse> {
+  parseResponse(_response: Response): Promise<msdyn_PostOrganizationProvisioningStatusResponse> {
     // No return value (204 No Content)
-    return new msdyn_PostOrganizationProvisioningStatusResponse();
+    return Promise.resolve(new msdyn_PostOrganizationProvisioningStatusResponse());
   }
 }
 
@@ -62,7 +60,7 @@ export class msdyn_PostOrganizationProvisioningStatusResponse extends Organizati
     super("msdyn_PostOrganizationProvisioningStatus");
   }
 
-  static fromResponse(_data: unknown): msdyn_PostOrganizationProvisioningStatusResponse {
+  static fromResponse(_data?: unknown): msdyn_PostOrganizationProvisioningStatusResponse {
     return new msdyn_PostOrganizationProvisioningStatusResponse();
   }
 }

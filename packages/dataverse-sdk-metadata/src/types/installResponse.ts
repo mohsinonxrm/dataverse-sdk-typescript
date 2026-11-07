@@ -2,7 +2,7 @@
  * installResponse
  */
 export interface installResponse {
-  flowTriggerUri?: string;
   connectionId?: string;
+  flowTriggerUri?: string;
   stringifiedConnectionObject?: string;
 }

@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RetrieveFinanceAndOperationsIntegrationDetails function
+ * Response from the RetrieveFinanceAndOperationsIntegrationDetails function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveFinanceAndOperationsIntegrationDetailsResponse {
+  "@odata.context"?: string;
   Id: string;
   IsUnifiedDatabase: boolean;
   OrgLifecycleStatus: string;
@@ -32,9 +35,7 @@ export class RetrieveFinanceAndOperationsIntegrationDetailsFunction implements E
   async parseResponse(
     response: Response
   ): Promise<RetrieveFinanceAndOperationsIntegrationDetailsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as RetrieveFinanceAndOperationsIntegrationDetailsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveFinanceAndOperationsIntegrationDetailsResponse;
   }
 }

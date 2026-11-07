@@ -44,9 +44,9 @@ export class RemoveAppComponentsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveAppComponentsResponse> {
+  parseResponse(_response: Response): Promise<RemoveAppComponentsResponse> {
     // No return value (204 No Content)
-    return new RemoveAppComponentsResponse();
+    return Promise.resolve(new RemoveAppComponentsResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class RemoveAppComponentsResponse extends OrganizationResponse {
     super("RemoveAppComponents");
   }
 
-  static fromResponse(_data: unknown): RemoveAppComponentsResponse {
+  static fromResponse(_data?: unknown): RemoveAppComponentsResponse {
     return new RemoveAppComponentsResponse();
   }
 }

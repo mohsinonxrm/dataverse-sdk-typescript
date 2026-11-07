@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_OSUpdateModelGradesResponse as msdyn_OSUpdateModelGradesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_OSUpdateModelGrades message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_OSUpdateModelGradesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_OSUpdateModelGradesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_OSUpdateModelGradesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_OSUpdateModelGradesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_OSUpdateModelGrades action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_OSUpdateModelGradesResult {
+  "@odata.context"?: string;
+  GradeDefinition: string;
+}
+
+/**
  * msdyn_OSUpdateModelGrades response message
+ *
+ * `result` is the value the msdyn_OSUpdateModelGrades action returns (see {@link msdyn_OSUpdateModelGradesResult}).
  */
 export class msdyn_OSUpdateModelGradesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OSUpdateModelGradesResponseData) {
+  constructor(public result: msdyn_OSUpdateModelGradesResult) {
     super("msdyn_OSUpdateModelGrades");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_OSUpdateModelGradesResponse {
-    return new msdyn_OSUpdateModelGradesResponse(
-      responseObject<msdyn_OSUpdateModelGradesResponseData>(data)
-    );
+    return new msdyn_OSUpdateModelGradesResponse(data as msdyn_OSUpdateModelGradesResult);
   }
 }

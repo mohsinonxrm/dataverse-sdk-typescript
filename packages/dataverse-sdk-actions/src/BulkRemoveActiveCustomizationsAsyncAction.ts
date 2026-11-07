@@ -3,9 +3,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { BulkRemoveActiveCustomizationsParameters } from "./types/index.js";
 
 /**
- * Response from BulkRemoveActiveCustomizationsAsync action
+ * Response from the BulkRemoveActiveCustomizationsAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface BulkRemoveActiveCustomizationsAsyncResponse {
+  "@odata.context"?: string;
   AsyncOperationId: string;
 }
 
@@ -46,8 +49,7 @@ export class BulkRemoveActiveCustomizationsAsyncAction implements Executable<Bul
   }
 
   async parseResponse(response: Response): Promise<BulkRemoveActiveCustomizationsAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as BulkRemoveActiveCustomizationsAsyncResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as BulkRemoveActiveCustomizationsAsyncResponse;
   }
 }

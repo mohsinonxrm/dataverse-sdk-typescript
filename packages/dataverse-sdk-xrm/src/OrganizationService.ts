@@ -14,9 +14,9 @@ import type {
   Executable,
   RequestOptions,
 } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type {
   EntityRecord,
-  EntityReference,
   ExpandOption,
   OrganizationServiceOptions,
   OperationOptions,
@@ -521,15 +521,19 @@ export class OrganizationService {
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param id - The GUID of the primary record
    * @param relationship - The collection-valued navigation property name
-   * @param relatedEntities - Array of entity references to associate
+   * @param relatedEntities - The records to associate, made with `createEntityReference` (any
+   *   package's: they are one type, #295). A reference's `entitySetName` is used when it has one;
+   *   otherwise the set is looked up from its `logicalName` (`getEntitySetName()`).
    * @param options - Optional association settings
    *
    * @example
    * ```typescript
+   * import { createEntityReference } from '@mohsinonxrm/dataverse-sdk-xrm';
+   *
    * // Associate contacts to an account
    * await service.associate('accounts', accountId, 'contact_customer_accounts', [
-   *   { logicalName: 'contact', id: contactId1 },
-   *   { logicalName: 'contact', id: contactId2 }
+   *   createEntityReference('contact', contactId1),
+   *   createEntityReference('contact', contactId2),
    * ]);
    * ```
    */
@@ -722,11 +726,14 @@ export class OrganizationService {
    *
    * @example
    * ```typescript
-   * // A message (C# SDK pattern): ExecuteWorkflowRequest(workflowId, entityId, inputArguments)
+   * // A message (C# SDK pattern): the workflow it's bound to, then its parameters
    * import { ExecuteWorkflowRequest } from '@mohsinonxrm/dataverse-sdk-messages';
    *
-   * const response = await service.execute(new ExecuteWorkflowRequest(workflowId, accountId));
-   * console.log(response.result.asyncoperationid); // response: ExecuteWorkflowResponse
+   * const response = await service.execute(
+   *   new ExecuteWorkflowRequest(workflowId, { EntityId: accountId })
+   * );
+   * // response: ExecuteWorkflowResponse; result is the asyncoperation, or null for a 204
+   * console.log(response.result?.asyncoperationid);
    *
    * // Also works with Actions/Functions directly
    * import { WhoAmIFunction } from '@mohsinonxrm/dataverse-sdk-functions';

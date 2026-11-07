@@ -1,13 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { solutioncomponent } from "./types/index.js";
 
 /**
- * Response from RemoveSolutionComponent action
+ * Response from the RemoveSolutionComponent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RemoveSolutionComponentResponse {
+  "@odata.context"?: string;
   id: string;
 }
 
@@ -49,8 +52,7 @@ export class RemoveSolutionComponentAction implements Executable<RemoveSolutionC
   }
 
   async parseResponse(response: Response): Promise<RemoveSolutionComponentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RemoveSolutionComponentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RemoveSolutionComponentResponse;
   }
 }

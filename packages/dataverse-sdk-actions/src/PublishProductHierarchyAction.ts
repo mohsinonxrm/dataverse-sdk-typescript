@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from PublishProductHierarchy action
+ * Response from the PublishProductHierarchy action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PublishProductHierarchyResponse {
-  // No content returned
-}
+export type PublishProductHierarchyResponse = void;
 
 /**
  * PublishProductHierarchy action
@@ -31,9 +31,8 @@ export class PublishProductHierarchyAction implements Executable<PublishProductH
     };
   }
 
-  async parseResponse(response: Response): Promise<PublishProductHierarchyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PublishProductHierarchyResponse;
-    return (await response.json()) as PublishProductHierarchyResponse;
+  parseResponse(_response: Response): Promise<PublishProductHierarchyResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

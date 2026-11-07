@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_UpdateEntityAttributePredictionRulesResponse as msdyn_UpdateEntityAttributePredictionRulesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_UpdateEntityAttributePredictionRules message, by their CSDL names. A parameter the CSDL declares
@@ -53,24 +51,35 @@ export class msdyn_UpdateEntityAttributePredictionRulesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_UpdateEntityAttributePredictionRulesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_UpdateEntityAttributePredictionRulesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UpdateEntityAttributePredictionRulesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_UpdateEntityAttributePredictionRules action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UpdateEntityAttributePredictionRulesResult {
+  "@odata.context"?: string;
+  SettingsLink: string;
+}
+
+/**
  * msdyn_UpdateEntityAttributePredictionRules response message
+ *
+ * `result` is the value the msdyn_UpdateEntityAttributePredictionRules action returns (see {@link msdyn_UpdateEntityAttributePredictionRulesResult}).
  */
 export class msdyn_UpdateEntityAttributePredictionRulesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdateEntityAttributePredictionRulesResponseData) {
+  constructor(public result: msdyn_UpdateEntityAttributePredictionRulesResult) {
     super("msdyn_UpdateEntityAttributePredictionRules");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UpdateEntityAttributePredictionRulesResponse {
     return new msdyn_UpdateEntityAttributePredictionRulesResponse(
-      responseObject<msdyn_UpdateEntityAttributePredictionRulesResponseData>(data)
+      data as msdyn_UpdateEntityAttributePredictionRulesResult
     );
   }
 }

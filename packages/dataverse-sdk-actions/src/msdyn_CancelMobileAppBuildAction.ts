@@ -1,13 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_mobileapp } from "./types/index.js";
 
 /**
- * Response from msdyn_CancelMobileAppBuild action
+ * Response from the msdyn_CancelMobileAppBuild action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CancelMobileAppBuildResponse {
+  "@odata.context"?: string;
   Result: string;
 }
 
@@ -47,8 +50,7 @@ export class msdyn_CancelMobileAppBuildAction implements Executable<msdyn_Cancel
   }
 
   async parseResponse(response: Response): Promise<msdyn_CancelMobileAppBuildResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CancelMobileAppBuildResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CancelMobileAppBuildResponse;
   }
 }

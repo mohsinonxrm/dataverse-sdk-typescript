@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetSalesAccelerationConfigurationStatusResponse as msdyn_GetSalesAccelerationConfigurationStatusResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetSalesAccelerationConfigurationStatus request message
@@ -31,9 +29,7 @@ export class msdyn_GetSalesAccelerationConfigurationStatusRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetSalesAccelerationConfigurationStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetSalesAccelerationConfigurationStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSalesAccelerationConfigurationStatusResponse.fromResponse(
       await response.json()
     );
@@ -41,16 +37,31 @@ export class msdyn_GetSalesAccelerationConfigurationStatusRequest
 }
 
 /**
+ * Response from the msdyn_GetSalesAccelerationConfigurationStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSalesAccelerationConfigurationStatusResult {
+  "@odata.context"?: string;
+  IsEnabledForOrganization: boolean;
+  IsEnabledForUser: boolean;
+  SettingsInstance: string;
+}
+
+/**
  * msdyn_GetSalesAccelerationConfigurationStatus response message
+ *
+ * `result` is the value the msdyn_GetSalesAccelerationConfigurationStatus action returns (see {@link msdyn_GetSalesAccelerationConfigurationStatusResult}).
  */
 export class msdyn_GetSalesAccelerationConfigurationStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSalesAccelerationConfigurationStatusResponseData) {
+  constructor(public result: msdyn_GetSalesAccelerationConfigurationStatusResult) {
     super("msdyn_GetSalesAccelerationConfigurationStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSalesAccelerationConfigurationStatusResponse {
     return new msdyn_GetSalesAccelerationConfigurationStatusResponse(
-      responseObject<msdyn_GetSalesAccelerationConfigurationStatusResponseData>(data)
+      data as msdyn_GetSalesAccelerationConfigurationStatusResult
     );
   }
 }

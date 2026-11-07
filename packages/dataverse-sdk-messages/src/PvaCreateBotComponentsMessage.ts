@@ -48,9 +48,9 @@ export class PvaCreateBotComponentsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaCreateBotComponentsResponse> {
+  parseResponse(_response: Response): Promise<PvaCreateBotComponentsResponse> {
     // No return value (204 No Content)
-    return new PvaCreateBotComponentsResponse();
+    return Promise.resolve(new PvaCreateBotComponentsResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class PvaCreateBotComponentsResponse extends OrganizationResponse {
     super("PvaCreateBotComponents");
   }
 
-  static fromResponse(_data: unknown): PvaCreateBotComponentsResponse {
+  static fromResponse(_data?: unknown): PvaCreateBotComponentsResponse {
     return new PvaCreateBotComponentsResponse();
   }
 }

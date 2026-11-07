@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { UnpublishAIConfigurationResponse as UnpublishAIConfigurationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the UnpublishAIConfiguration message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,33 @@ export class UnpublishAIConfigurationRequest
   }
 
   async parseResponse(response: Response): Promise<UnpublishAIConfigurationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return UnpublishAIConfigurationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return UnpublishAIConfigurationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the UnpublishAIConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface UnpublishAIConfigurationResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * UnpublishAIConfiguration response message
+ *
+ * `result` is the value the UnpublishAIConfiguration action returns (see {@link UnpublishAIConfigurationResult}).
  */
 export class UnpublishAIConfigurationResponse extends OrganizationResponse {
-  constructor(public result: UnpublishAIConfigurationResponseData) {
+  constructor(public result: UnpublishAIConfigurationResult) {
     super("UnpublishAIConfiguration");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): UnpublishAIConfigurationResponse {
-    return new UnpublishAIConfigurationResponse(
-      responseObject<UnpublishAIConfigurationResponseData>(data)
-    );
+    return new UnpublishAIConfigurationResponse(data as UnpublishAIConfigurationResult);
   }
 }

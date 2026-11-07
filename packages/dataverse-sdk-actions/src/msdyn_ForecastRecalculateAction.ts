@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_ForecastRecalculate action
+ * Response from the msdyn_ForecastRecalculate action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ForecastRecalculateResponse {
-  // No content returned
-}
+export type msdyn_ForecastRecalculateResponse = void;
 
 /**
  * Parameters of the msdyn_ForecastRecalculate action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class msdyn_ForecastRecalculateAction implements Executable<msdyn_Forecas
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ForecastRecalculateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ForecastRecalculateResponse;
-    return (await response.json()) as msdyn_ForecastRecalculateResponse;
+  parseResponse(_response: Response): Promise<msdyn_ForecastRecalculateResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

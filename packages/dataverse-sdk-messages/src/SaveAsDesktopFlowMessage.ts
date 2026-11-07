@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { SaveAsDesktopFlowResponse as SaveAsDesktopFlowResponseData } from "./types/index.js";
 
 /**
  * Parameters of the SaveAsDesktopFlow message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,33 @@ export class SaveAsDesktopFlowRequest
   }
 
   async parseResponse(response: Response): Promise<SaveAsDesktopFlowResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return SaveAsDesktopFlowResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return SaveAsDesktopFlowResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the SaveAsDesktopFlow action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface SaveAsDesktopFlowResult {
+  "@odata.context"?: string;
+  workflowId: string;
+}
+
+/**
  * SaveAsDesktopFlow response message
+ *
+ * `result` is the value the SaveAsDesktopFlow action returns (see {@link SaveAsDesktopFlowResult}).
  */
 export class SaveAsDesktopFlowResponse extends OrganizationResponse {
-  constructor(public result: SaveAsDesktopFlowResponseData) {
+  constructor(public result: SaveAsDesktopFlowResult) {
     super("SaveAsDesktopFlow");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): SaveAsDesktopFlowResponse {
-    return new SaveAsDesktopFlowResponse(responseObject<SaveAsDesktopFlowResponseData>(data));
+    return new SaveAsDesktopFlowResponse(data as SaveAsDesktopFlowResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { SummarizeRecordResponse as SummarizeRecordResponseData } from "./types/index.js";
 
 /**
  * Parameters of the SummarizeRecord message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,33 @@ export class SummarizeRecordRequest
   }
 
   async parseResponse(response: Response): Promise<SummarizeRecordResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return SummarizeRecordResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return SummarizeRecordResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the SummarizeRecord action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface SummarizeRecordResult {
+  "@odata.context"?: string;
+  SummarizedText: string;
+}
+
+/**
  * SummarizeRecord response message
+ *
+ * `result` is the value the SummarizeRecord action returns (see {@link SummarizeRecordResult}).
  */
 export class SummarizeRecordResponse extends OrganizationResponse {
-  constructor(public result: SummarizeRecordResponseData) {
+  constructor(public result: SummarizeRecordResult) {
     super("SummarizeRecord");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): SummarizeRecordResponse {
-    return new SummarizeRecordResponse(responseObject<SummarizeRecordResponseData>(data));
+    return new SummarizeRecordResponse(data as SummarizeRecordResult);
   }
 }

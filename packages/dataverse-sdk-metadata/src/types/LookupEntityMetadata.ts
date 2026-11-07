@@ -2,12 +2,12 @@
  * LookupEntityMetadata
  */
 export interface LookupEntityMetadata {
-  IsReadOnlyInMobileClient?: boolean;
-  IsEnabledInUnifiedInterface?: boolean;
-  DisplayName?: string;
-  PrimaryNameAttribute?: string;
-  PrimaryIdAttribute?: string;
-  LogicalName?: string;
   DisplayCollectionName?: string;
+  DisplayName?: string;
   IconVectorName?: string;
+  IsEnabledInUnifiedInterface?: boolean;
+  IsReadOnlyInMobileClient?: boolean;
+  LogicalName?: string;
+  PrimaryIdAttribute?: string;
+  PrimaryNameAttribute?: string;
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_AIBRealTimePredictResponse as msdyn_AIBRealTimePredictResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_AIBRealTimePredict message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,33 @@ export class msdyn_AIBRealTimePredictRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_AIBRealTimePredictResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_AIBRealTimePredictResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AIBRealTimePredictResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_AIBRealTimePredict action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AIBRealTimePredictResult {
+  "@odata.context"?: string;
+  Suggestions: string;
+}
+
+/**
  * msdyn_AIBRealTimePredict response message
+ *
+ * `result` is the value the msdyn_AIBRealTimePredict action returns (see {@link msdyn_AIBRealTimePredictResult}).
  */
 export class msdyn_AIBRealTimePredictResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AIBRealTimePredictResponseData) {
+  constructor(public result: msdyn_AIBRealTimePredictResult) {
     super("msdyn_AIBRealTimePredict");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_AIBRealTimePredictResponse {
-    return new msdyn_AIBRealTimePredictResponse(
-      responseObject<msdyn_AIBRealTimePredictResponseData>(data)
-    );
+    return new msdyn_AIBRealTimePredictResponse(data as msdyn_AIBRealTimePredictResult);
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_ExecuteCopilotServiceJobResponse as msdyn_ExecuteCopilotServiceJobResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_ExecuteCopilotServiceJob message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_ExecuteCopilotServiceJobRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteCopilotServiceJobResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_ExecuteCopilotServiceJobResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_ExecuteCopilotServiceJobResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ExecuteCopilotServiceJob action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExecuteCopilotServiceJobResult {
+  "@odata.context"?: string;
+  msdyn_Response: string;
+}
+
+/**
  * msdyn_ExecuteCopilotServiceJob response message
+ *
+ * `result` is the value the msdyn_ExecuteCopilotServiceJob action returns (see {@link msdyn_ExecuteCopilotServiceJobResult}).
  */
 export class msdyn_ExecuteCopilotServiceJobResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteCopilotServiceJobResponseData) {
+  constructor(public result: msdyn_ExecuteCopilotServiceJobResult) {
     super("msdyn_ExecuteCopilotServiceJob");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExecuteCopilotServiceJobResponse {
-    return new msdyn_ExecuteCopilotServiceJobResponse(
-      responseObject<msdyn_ExecuteCopilotServiceJobResponseData>(data)
-    );
+    return new msdyn_ExecuteCopilotServiceJobResponse(data as msdyn_ExecuteCopilotServiceJobResult);
   }
 }

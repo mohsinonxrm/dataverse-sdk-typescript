@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from UpdateProcessWithWfomJson action
+ * Response from the UpdateProcessWithWfomJson action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpdateProcessWithWfomJsonResponse {
-  // No content returned
-}
+export type UpdateProcessWithWfomJsonResponse = void;
 
 /**
  * Parameters of the UpdateProcessWithWfomJson action, by their CSDL names. A parameter the CSDL declares
@@ -52,9 +52,8 @@ export class UpdateProcessWithWfomJsonAction implements Executable<UpdateProcess
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateProcessWithWfomJsonResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UpdateProcessWithWfomJsonResponse;
-    return (await response.json()) as UpdateProcessWithWfomJsonResponse;
+  parseResponse(_response: Response): Promise<UpdateProcessWithWfomJsonResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

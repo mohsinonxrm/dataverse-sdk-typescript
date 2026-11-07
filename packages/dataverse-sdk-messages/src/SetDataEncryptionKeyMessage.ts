@@ -44,9 +44,9 @@ export class SetDataEncryptionKeyRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SetDataEncryptionKeyResponse> {
+  parseResponse(_response: Response): Promise<SetDataEncryptionKeyResponse> {
     // No return value (204 No Content)
-    return new SetDataEncryptionKeyResponse();
+    return Promise.resolve(new SetDataEncryptionKeyResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class SetDataEncryptionKeyResponse extends OrganizationResponse {
     super("SetDataEncryptionKey");
   }
 
-  static fromResponse(_data: unknown): SetDataEncryptionKeyResponse {
+  static fromResponse(_data?: unknown): SetDataEncryptionKeyResponse {
     return new SetDataEncryptionKeyResponse();
   }
 }

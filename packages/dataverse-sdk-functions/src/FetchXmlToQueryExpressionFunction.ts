@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { QueryExpression } from "./types/index.js";
 
 /**
- * Response from FetchXmlToQueryExpression function
+ * Response from the FetchXmlToQueryExpression function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface FetchXmlToQueryExpressionResponse {
+  "@odata.context"?: string;
   Query: QueryExpression;
 }
 
@@ -49,8 +52,7 @@ export class FetchXmlToQueryExpressionFunction implements Executable<FetchXmlToQ
   }
 
   async parseResponse(response: Response): Promise<FetchXmlToQueryExpressionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as FetchXmlToQueryExpressionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as FetchXmlToQueryExpressionResponse;
   }
 }

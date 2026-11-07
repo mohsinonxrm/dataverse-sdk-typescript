@@ -1,11 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 /**
- * Response from RetrieveTimelineWallRecords function
+ * Response from the RetrieveTimelineWallRecords function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveTimelineWallRecordsResponse {
+  "@odata.context"?: string;
   TimelineWallRecords: string;
 }
 
@@ -64,8 +67,7 @@ export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveT
   }
 
   async parseResponse(response: Response): Promise<RetrieveTimelineWallRecordsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveTimelineWallRecordsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveTimelineWallRecordsResponse;
   }
 }

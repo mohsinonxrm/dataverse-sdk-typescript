@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_DCA_SendOutreachEmail action
+ * Response from the msdyn_DCA_SendOutreachEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_DCA_SendOutreachEmailResponse {
+  "@odata.context"?: string;
   ResponseJson: string;
 }
 
@@ -44,8 +47,7 @@ export class msdyn_DCA_SendOutreachEmailAction implements Executable<msdyn_DCA_S
   }
 
   async parseResponse(response: Response): Promise<msdyn_DCA_SendOutreachEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_DCA_SendOutreachEmailResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_DCA_SendOutreachEmailResponse;
   }
 }

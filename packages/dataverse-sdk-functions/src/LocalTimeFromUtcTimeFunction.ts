@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from LocalTimeFromUtcTime function
+ * Response from the LocalTimeFromUtcTime function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface LocalTimeFromUtcTimeResponse {
+  "@odata.context"?: string;
   LocalTime: string;
 }
 
@@ -53,8 +56,7 @@ export class LocalTimeFromUtcTimeFunction implements Executable<LocalTimeFromUtc
   }
 
   async parseResponse(response: Response): Promise<LocalTimeFromUtcTimeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as LocalTimeFromUtcTimeResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as LocalTimeFromUtcTimeResponse;
   }
 }

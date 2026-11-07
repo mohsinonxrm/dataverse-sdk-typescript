@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GDPROptoutContact action
+ * Response from the msdyn_GDPROptoutContact action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_GDPROptoutContactResponse {
-  // No content returned
-}
+export type msdyn_GDPROptoutContactResponse = void;
 
 /**
  * Parameters of the msdyn_GDPROptoutContact action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class msdyn_GDPROptoutContactAction implements Executable<msdyn_GDPROptou
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_GDPROptoutContactResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GDPROptoutContactResponse;
-    return (await response.json()) as msdyn_GDPROptoutContactResponse;
+  parseResponse(_response: Response): Promise<msdyn_GDPROptoutContactResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

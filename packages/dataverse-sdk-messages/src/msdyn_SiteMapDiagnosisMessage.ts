@@ -1,13 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
-import type {
-  msdyn_SiteMapDiagnosisResponse as msdyn_SiteMapDiagnosisResponseData,
-  sitemap,
-} from "./types/index.js";
+import type { sitemap } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SiteMapDiagnosis message, by their CSDL names. A parameter the CSDL declares
@@ -52,23 +48,37 @@ export class msdyn_SiteMapDiagnosisRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SiteMapDiagnosisResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SiteMapDiagnosisResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SiteMapDiagnosisResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SiteMapDiagnosis action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SiteMapDiagnosisResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  RepairIssueType: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_SiteMapDiagnosis response message
+ *
+ * `result` is the value the msdyn_SiteMapDiagnosis action returns (see {@link msdyn_SiteMapDiagnosisResult}).
  */
 export class msdyn_SiteMapDiagnosisResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SiteMapDiagnosisResponseData) {
+  constructor(public result: msdyn_SiteMapDiagnosisResult) {
     super("msdyn_SiteMapDiagnosis");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SiteMapDiagnosisResponse {
-    return new msdyn_SiteMapDiagnosisResponse(
-      responseObject<msdyn_SiteMapDiagnosisResponseData>(data)
-    );
+    return new msdyn_SiteMapDiagnosisResponse(data as msdyn_SiteMapDiagnosisResult);
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UploadBlock action
+ * Response from the UploadBlock action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UploadBlockResponse {
-  // No content returned
-}
+export type UploadBlockResponse = void;
 
 /**
  * Parameters of the UploadBlock action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class UploadBlockAction implements Executable<UploadBlockResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<UploadBlockResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as UploadBlockResponse;
-    return (await response.json()) as UploadBlockResponse;
+  parseResponse(_response: Response): Promise<UploadBlockResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CreateSimilarOpportunitiyPredictionModel action
+ * Response from the msdyn_CreateSimilarOpportunitiyPredictionModel action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CreateSimilarOpportunitiyPredictionModelResponse {
-  // No content returned
-}
+export type msdyn_CreateSimilarOpportunitiyPredictionModelResponse = void;
 
 /**
  * Parameters of the msdyn_CreateSimilarOpportunitiyPredictionModel action, by their CSDL names. A parameter the CSDL declares
@@ -43,12 +43,10 @@ export class msdyn_CreateSimilarOpportunitiyPredictionModelAction implements Exe
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_CreateSimilarOpportunitiyPredictionModelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_CreateSimilarOpportunitiyPredictionModelResponse;
-    return (await response.json()) as msdyn_CreateSimilarOpportunitiyPredictionModelResponse;
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

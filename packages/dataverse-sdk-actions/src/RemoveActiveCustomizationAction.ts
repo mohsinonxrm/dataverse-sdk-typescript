@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from RemoveActiveCustomization action
+ * Response from the RemoveActiveCustomization action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RemoveActiveCustomizationResponse {
+  "@odata.context"?: string;
   Success: boolean;
 }
 
@@ -44,8 +47,7 @@ export class RemoveActiveCustomizationAction implements Executable<RemoveActiveC
   }
 
   async parseResponse(response: Response): Promise<RemoveActiveCustomizationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RemoveActiveCustomizationResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RemoveActiveCustomizationResponse;
   }
 }

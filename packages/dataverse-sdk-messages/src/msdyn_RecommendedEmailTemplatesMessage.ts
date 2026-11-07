@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RecommendedEmailTemplatesResponse as msdyn_RecommendedEmailTemplatesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RecommendedEmailTemplates message, by their CSDL names. A parameter the CSDL declares
@@ -63,23 +61,37 @@ export class msdyn_RecommendedEmailTemplatesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RecommendedEmailTemplatesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RecommendedEmailTemplatesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RecommendedEmailTemplatesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RecommendedEmailTemplates action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RecommendedEmailTemplatesResult {
+  "@odata.context"?: string;
+  emailTemplates: string;
+  generatedEmailString: string;
+  recommendedTemplate: string;
+}
+
+/**
  * msdyn_RecommendedEmailTemplates response message
+ *
+ * `result` is the value the msdyn_RecommendedEmailTemplates action returns (see {@link msdyn_RecommendedEmailTemplatesResult}).
  */
 export class msdyn_RecommendedEmailTemplatesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RecommendedEmailTemplatesResponseData) {
+  constructor(public result: msdyn_RecommendedEmailTemplatesResult) {
     super("msdyn_RecommendedEmailTemplates");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RecommendedEmailTemplatesResponse {
     return new msdyn_RecommendedEmailTemplatesResponse(
-      responseObject<msdyn_RecommendedEmailTemplatesResponseData>(data)
+      data as msdyn_RecommendedEmailTemplatesResult
     );
   }
 }

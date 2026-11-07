@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { UnscheduleTrainingResponse as UnscheduleTrainingResponseData } from "./types/index.js";
 
 /**
  * Parameters of the UnscheduleTraining message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,33 @@ export class UnscheduleTrainingRequest
   }
 
   async parseResponse(response: Response): Promise<UnscheduleTrainingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return UnscheduleTrainingResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return UnscheduleTrainingResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the UnscheduleTraining action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface UnscheduleTrainingResult {
+  "@odata.context"?: string;
+  response: string;
+}
+
+/**
  * UnscheduleTraining response message
+ *
+ * `result` is the value the UnscheduleTraining action returns (see {@link UnscheduleTrainingResult}).
  */
 export class UnscheduleTrainingResponse extends OrganizationResponse {
-  constructor(public result: UnscheduleTrainingResponseData) {
+  constructor(public result: UnscheduleTrainingResult) {
     super("UnscheduleTraining");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): UnscheduleTrainingResponse {
-    return new UnscheduleTrainingResponse(responseObject<UnscheduleTrainingResponseData>(data));
+    return new UnscheduleTrainingResponse(data as UnscheduleTrainingResult);
   }
 }

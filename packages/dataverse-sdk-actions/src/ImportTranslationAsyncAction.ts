@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ImportTranslationAsync action
+ * Response from the ImportTranslationAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ImportTranslationAsyncResponse {
+  "@odata.context"?: string;
   AsyncOperationId: string;
 }
 
@@ -44,8 +47,7 @@ export class ImportTranslationAsyncAction implements Executable<ImportTranslatio
   }
 
   async parseResponse(response: Response): Promise<ImportTranslationAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ImportTranslationAsyncResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ImportTranslationAsyncResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { _SaveServiceTreeDataResponse as _SaveServiceTreeDataResponseData } from "./types/index.js";
 
 /**
  * Parameters of the _SaveServiceTreeData message, by their CSDL names. A parameter the CSDL declares
@@ -47,21 +45,34 @@ export class _SaveServiceTreeDataRequest
   }
 
   async parseResponse(response: Response): Promise<_SaveServiceTreeDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return _SaveServiceTreeDataResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return _SaveServiceTreeDataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the _SaveServiceTreeData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface _SaveServiceTreeDataResult {
+  "@odata.context"?: string;
+  Error: string;
+  UpdatedRootNode: string;
+}
+
+/**
  * _SaveServiceTreeData response message
+ *
+ * `result` is the value the _SaveServiceTreeData action returns (see {@link _SaveServiceTreeDataResult}).
  */
 export class _SaveServiceTreeDataResponse extends OrganizationResponse {
-  constructor(public result: _SaveServiceTreeDataResponseData) {
+  constructor(public result: _SaveServiceTreeDataResult) {
     super("_SaveServiceTreeData");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): _SaveServiceTreeDataResponse {
-    return new _SaveServiceTreeDataResponse(responseObject<_SaveServiceTreeDataResponseData>(data));
+    return new _SaveServiceTreeDataResponse(data as _SaveServiceTreeDataResult);
   }
 }

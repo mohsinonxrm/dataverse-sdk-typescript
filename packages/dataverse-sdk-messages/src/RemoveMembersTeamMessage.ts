@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
@@ -51,9 +51,9 @@ export class RemoveMembersTeamRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveMembersTeamResponse> {
+  parseResponse(_response: Response): Promise<RemoveMembersTeamResponse> {
     // No return value (204 No Content)
-    return new RemoveMembersTeamResponse();
+    return Promise.resolve(new RemoveMembersTeamResponse());
   }
 }
 
@@ -65,7 +65,7 @@ export class RemoveMembersTeamResponse extends OrganizationResponse {
     super("RemoveMembersTeam");
   }
 
-  static fromResponse(_data: unknown): RemoveMembersTeamResponse {
+  static fromResponse(_data?: unknown): RemoveMembersTeamResponse {
     return new RemoveMembersTeamResponse();
   }
 }

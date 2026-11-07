@@ -2,14 +2,18 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { aipluginconversationstartermapping } from "./types/index.js";
 
 /**
- * Response from RetrieveUnpublished function
+ * Response from the RetrieveUnpublished function.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface RetrieveUnpublished_aipluginconversationstartermappingResponse extends aipluginconversationstartermapping {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type RetrieveUnpublished_aipluginconversationstartermappingResponse =
+  | (aipluginconversationstartermapping & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
 
 /**
  * RetrieveUnpublished function
@@ -38,9 +42,9 @@ export class RetrieveUnpublished_aipluginconversationstartermappingFunction impl
   async parseResponse(
     response: Response
   ): Promise<RetrieveUnpublished_aipluginconversationstartermappingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as RetrieveUnpublished_aipluginconversationstartermappingResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as RetrieveUnpublished_aipluginconversationstartermappingResponse;
   }
 }

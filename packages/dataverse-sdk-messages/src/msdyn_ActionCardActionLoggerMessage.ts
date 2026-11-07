@@ -58,9 +58,9 @@ export class msdyn_ActionCardActionLoggerRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ActionCardActionLoggerResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ActionCardActionLoggerResponse> {
     // No return value (204 No Content)
-    return new msdyn_ActionCardActionLoggerResponse();
+    return Promise.resolve(new msdyn_ActionCardActionLoggerResponse());
   }
 }
 
@@ -72,7 +72,7 @@ export class msdyn_ActionCardActionLoggerResponse extends OrganizationResponse {
     super("msdyn_ActionCardActionLogger");
   }
 
-  static fromResponse(_data: unknown): msdyn_ActionCardActionLoggerResponse {
+  static fromResponse(_data?: unknown): msdyn_ActionCardActionLoggerResponse {
     return new msdyn_ActionCardActionLoggerResponse();
   }
 }

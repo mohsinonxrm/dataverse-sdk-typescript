@@ -6,10 +6,10 @@ import type { LogicalOperator } from "./LogicalOperator.js";
  * FilterExpression
  */
 export interface FilterExpression {
-  FilterOperator?: LogicalOperator;
-  FilterHint?: string;
   AnyAllFilterLinkEntity?: LinkEntity;
   Conditions?: ConditionExpression[];
+  FilterHint?: string;
+  FilterOperator?: LogicalOperator;
   Filters?: FilterExpression[];
   IsQuickFindFilter?: boolean;
 }

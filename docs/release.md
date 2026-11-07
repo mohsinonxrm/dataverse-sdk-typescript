@@ -28,6 +28,24 @@ To let consumer apps try unreleased fixes from `dev`:
 
 Both workflows publish with provenance (`id-token: write`) and authenticate with the `NPM_TOKEN` secret.
 
+### Releasing 2.0.0
+
+All 16 packages are already on npm as **1.0.0** (published 2026-02-11, with provenance), so each has a package page, and trusted publishing can be set up **before** the next publish:
+
+1. On npmjs.com, add the trusted publishers for every package (next section). The 2.0.0 publishes can then go through OIDC with no long-lived token. Until that's done, both workflows fall back to the `NPM_TOKEN` secret.
+2. Run **Release (next)** from `dev`. It publishes `2.0.0-next-…` under the `next` dist-tag; `latest` stays 1.0.0.
+3. Try the prerelease in an app: `npm i @mohsinonxrm/dataverse-sdk-core@next …`. 2.0.0 is a major release with breaking changes; see `docs/migration-2.0.md`.
+4. Merge `dev` into `main`, then merge the "Version Packages" PR. That publishes 2.0.0 as `latest`.
+
+Checked locally before the release:
+
+- `changeset publish` uses `pnpm publish`, so the `workspace:*` dependencies become real versions in the published `package.json`.
+- All 16 tarballs contain only `dist/` (plus the generator's `templates/` and notices), `README.md` and `LICENSE`.
+- `provenance: true` is set in every package's `publishConfig`.
+- A fresh project that installs the tarballs type-checks with `tsc --strict` and runs against a live org.
+
+### Moving to trusted publishing
+
 **Moving to npm trusted publishing (OIDC)** removes the long-lived token. It's a maintainer step on npmjs.com, done once per package:
 
 1. For each of the 16 `@mohsinonxrm/dataverse-sdk-*` packages, open its Settings on npmjs.com → Trusted Publisher → GitHub Actions. Enter the repository `mohsinonxrm/dataverse-sdk-typescript`, the workflow file `changeset-version.yml`, and add a second entry for `release-next.yml`.
@@ -37,7 +55,8 @@ Both workflows publish with provenance (`id-token: write`) and authenticate with
 ## Versioning
 
 - **SemVer** via changesets
-- Each package versioned independently, but we may use coordinated releases for major milestones
+- **All published packages share one version.** They are one `fixed` group in `.changeset/config.json` (#313), so every release bumps all of them together, and `@mohsinonxrm/dataverse-sdk-*` packages with the same version always work together. A package with no changes of its own still gets the new version.
+- A new published package must be added to that `fixed` group.
 - Version bumps: `patch` (bug fix) | `minor` (feature) | `major` (breaking)
 
 ## Development Workflow

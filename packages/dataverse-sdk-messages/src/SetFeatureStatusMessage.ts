@@ -48,9 +48,9 @@ export class SetFeatureStatusRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<SetFeatureStatusResponse> {
+  parseResponse(_response: Response): Promise<SetFeatureStatusResponse> {
     // No return value (204 No Content)
-    return new SetFeatureStatusResponse();
+    return Promise.resolve(new SetFeatureStatusResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class SetFeatureStatusResponse extends OrganizationResponse {
     super("SetFeatureStatus");
   }
 
-  static fromResponse(_data: unknown): SetFeatureStatusResponse {
+  static fromResponse(_data?: unknown): SetFeatureStatusResponse {
     return new SetFeatureStatusResponse();
   }
 }

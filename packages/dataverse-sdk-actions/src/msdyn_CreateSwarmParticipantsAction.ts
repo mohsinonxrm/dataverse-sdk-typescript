@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_CreateSwarmParticipants action
+ * Response from the msdyn_CreateSwarmParticipants action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CreateSwarmParticipantsResponse {
-  // No content returned
-}
+export type msdyn_CreateSwarmParticipantsResponse = void;
 
 /**
  * Parameters of the msdyn_CreateSwarmParticipants action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_CreateSwarmParticipantsAction implements Executable<msdyn_Cre
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CreateSwarmParticipantsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CreateSwarmParticipantsResponse;
-    return (await response.json()) as msdyn_CreateSwarmParticipantsResponse;
+  parseResponse(_response: Response): Promise<msdyn_CreateSwarmParticipantsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

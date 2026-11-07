@@ -3,11 +3,14 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { systemform, systemuser } from "./types/index.js";
 
 /**
- * Response from RetrieveFilteredForms function
+ * Response from the RetrieveFilteredForms function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveFilteredFormsResponse {
-  value: systemform[];
-}
+export type RetrieveFilteredFormsResponse = Array<
+  systemform & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * Parameters of the RetrieveFilteredForms function, by their CSDL names. A parameter the CSDL declares
@@ -61,8 +64,9 @@ export class RetrieveFilteredFormsFunction implements Executable<RetrieveFiltere
   }
 
   async parseResponse(response: Response): Promise<RetrieveFilteredFormsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveFilteredFormsResponse;
-    return (await response.json()) as RetrieveFilteredFormsResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveFilteredFormsResponse }).value;
   }
 }

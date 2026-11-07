@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_UpdateModelGradesResponse as msdyn_UpdateModelGradesResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_UpdateModelGrades message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_UpdateModelGradesRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateModelGradesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_UpdateModelGradesResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UpdateModelGradesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_UpdateModelGrades action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UpdateModelGradesResult {
+  "@odata.context"?: string;
+  GradeDefinition: string;
+}
+
+/**
  * msdyn_UpdateModelGrades response message
+ *
+ * `result` is the value the msdyn_UpdateModelGrades action returns (see {@link msdyn_UpdateModelGradesResult}).
  */
 export class msdyn_UpdateModelGradesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdateModelGradesResponseData) {
+  constructor(public result: msdyn_UpdateModelGradesResult) {
     super("msdyn_UpdateModelGrades");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UpdateModelGradesResponse {
-    return new msdyn_UpdateModelGradesResponse(
-      responseObject<msdyn_UpdateModelGradesResponseData>(data)
-    );
+    return new msdyn_UpdateModelGradesResponse(data as msdyn_UpdateModelGradesResult);
   }
 }

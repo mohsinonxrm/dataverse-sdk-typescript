@@ -3,11 +3,14 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { dependency } from "./types/index.js";
 
 /**
- * Response from RetrieveDependenciesForDelete function
+ * Response from the RetrieveDependenciesForDelete function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveDependenciesForDeleteResponse {
-  value: dependency[];
-}
+export type RetrieveDependenciesForDeleteResponse = Array<
+  dependency & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * Parameters of the RetrieveDependenciesForDelete function, by their CSDL names. A parameter the CSDL declares
@@ -54,8 +57,9 @@ export class RetrieveDependenciesForDeleteFunction implements Executable<Retriev
   }
 
   async parseResponse(response: Response): Promise<RetrieveDependenciesForDeleteResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveDependenciesForDeleteResponse;
-    return (await response.json()) as RetrieveDependenciesForDeleteResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveDependenciesForDeleteResponse }).value;
   }
 }

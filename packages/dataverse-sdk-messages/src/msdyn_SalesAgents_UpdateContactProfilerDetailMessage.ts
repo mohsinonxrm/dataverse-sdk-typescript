@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_UpdateContactProfilerDetailResponse as msdyn_SalesAgents_UpdateContactProfilerDetailResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_UpdateContactProfilerDetail message, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +51,7 @@ export class msdyn_SalesAgents_UpdateContactProfilerDetailRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_UpdateContactProfilerDetailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_SalesAgents_UpdateContactProfilerDetailResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_UpdateContactProfilerDetailResponse.fromResponse(
       await response.json()
     );
@@ -63,16 +59,29 @@ export class msdyn_SalesAgents_UpdateContactProfilerDetailRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_UpdateContactProfilerDetail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_UpdateContactProfilerDetailResult {
+  "@odata.context"?: string;
+  msdyn_IsSuccess: boolean;
+}
+
+/**
  * msdyn_SalesAgents_UpdateContactProfilerDetail response message
+ *
+ * `result` is the value the msdyn_SalesAgents_UpdateContactProfilerDetail action returns (see {@link msdyn_SalesAgents_UpdateContactProfilerDetailResult}).
  */
 export class msdyn_SalesAgents_UpdateContactProfilerDetailResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_UpdateContactProfilerDetailResponseData) {
+  constructor(public result: msdyn_SalesAgents_UpdateContactProfilerDetailResult) {
     super("msdyn_SalesAgents_UpdateContactProfilerDetail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_UpdateContactProfilerDetailResponse {
     return new msdyn_SalesAgents_UpdateContactProfilerDetailResponse(
-      responseObject<msdyn_SalesAgents_UpdateContactProfilerDetailResponseData>(data)
+      data as msdyn_SalesAgents_UpdateContactProfilerDetailResult
     );
   }
 }

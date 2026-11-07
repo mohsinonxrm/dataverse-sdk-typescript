@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrieveCascadeAssignAsyncJobId function
+ * Response from the RetrieveCascadeAssignAsyncJobId function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveCascadeAssignAsyncJobIdResponse {
+  "@odata.context"?: string;
   AsyncJobId: string;
   AsyncJobName: string;
 }
@@ -49,8 +52,7 @@ export class RetrieveCascadeAssignAsyncJobIdFunction implements Executable<Retri
   }
 
   async parseResponse(response: Response): Promise<RetrieveCascadeAssignAsyncJobIdResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveCascadeAssignAsyncJobIdResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveCascadeAssignAsyncJobIdResponse;
   }
 }

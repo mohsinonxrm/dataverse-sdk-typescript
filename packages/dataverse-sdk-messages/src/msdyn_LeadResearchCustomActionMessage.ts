@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_LeadResearchCustomActionResponse as msdyn_LeadResearchCustomActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_LeadResearchCustomAction message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,36 @@ export class msdyn_LeadResearchCustomActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_LeadResearchCustomActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_LeadResearchCustomActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_LeadResearchCustomActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_LeadResearchCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_LeadResearchCustomActionResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+  ResearchResponse: string;
+  StatusCode: number;
+}
+
+/**
  * msdyn_LeadResearchCustomAction response message
+ *
+ * `result` is the value the msdyn_LeadResearchCustomAction action returns (see {@link msdyn_LeadResearchCustomActionResult}).
  */
 export class msdyn_LeadResearchCustomActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_LeadResearchCustomActionResponseData) {
+  constructor(public result: msdyn_LeadResearchCustomActionResult) {
     super("msdyn_LeadResearchCustomAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_LeadResearchCustomActionResponse {
-    return new msdyn_LeadResearchCustomActionResponse(
-      responseObject<msdyn_LeadResearchCustomActionResponseData>(data)
-    );
+    return new msdyn_LeadResearchCustomActionResponse(data as msdyn_LeadResearchCustomActionResult);
   }
 }

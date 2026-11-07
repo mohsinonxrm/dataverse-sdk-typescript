@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_OSUpdateModelGrades action
+ * Response from the msdyn_OSUpdateModelGrades action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_OSUpdateModelGradesResponse {
+  "@odata.context"?: string;
   GradeDefinition: string;
 }
 
@@ -42,8 +45,7 @@ export class msdyn_OSUpdateModelGradesAction implements Executable<msdyn_OSUpdat
   }
 
   async parseResponse(response: Response): Promise<msdyn_OSUpdateModelGradesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_OSUpdateModelGradesResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_OSUpdateModelGradesResponse;
   }
 }

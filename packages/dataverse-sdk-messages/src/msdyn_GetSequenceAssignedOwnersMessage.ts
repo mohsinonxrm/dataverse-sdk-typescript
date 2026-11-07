@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetSequenceAssignedOwnersResponse as msdyn_GetSequenceAssignedOwnersResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetSequenceAssignedOwners message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,35 @@ export class msdyn_GetSequenceAssignedOwnersRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSequenceAssignedOwnersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSequenceAssignedOwnersResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSequenceAssignedOwnersResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSequenceAssignedOwners action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSequenceAssignedOwnersResult {
+  "@odata.context"?: string;
+  SequenceAssignedOwners: string;
+}
+
+/**
  * msdyn_GetSequenceAssignedOwners response message
+ *
+ * `result` is the value the msdyn_GetSequenceAssignedOwners action returns (see {@link msdyn_GetSequenceAssignedOwnersResult}).
  */
 export class msdyn_GetSequenceAssignedOwnersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSequenceAssignedOwnersResponseData) {
+  constructor(public result: msdyn_GetSequenceAssignedOwnersResult) {
     super("msdyn_GetSequenceAssignedOwners");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSequenceAssignedOwnersResponse {
     return new msdyn_GetSequenceAssignedOwnersResponse(
-      responseObject<msdyn_GetSequenceAssignedOwnersResponseData>(data)
+      data as msdyn_GetSequenceAssignedOwnersResult
     );
   }
 }

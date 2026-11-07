@@ -1,15 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { privilege } from "./types/index.js";
 
 /**
- * Response from RemovePrivilegeRole action
+ * Response from the RemovePrivilegeRole action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RemovePrivilegeRoleResponse {
-  // No content returned
-}
+export type RemovePrivilegeRoleResponse = void;
 
 /**
  * Parameters of the RemovePrivilegeRole action, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +51,8 @@ export class RemovePrivilegeRoleAction implements Executable<RemovePrivilegeRole
     };
   }
 
-  async parseResponse(response: Response): Promise<RemovePrivilegeRoleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RemovePrivilegeRoleResponse;
-    return (await response.json()) as RemovePrivilegeRoleResponse;
+  parseResponse(_response: Response): Promise<RemovePrivilegeRoleResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetPromoContentFromIrisResponse as msdyn_GetPromoContentFromIrisResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetPromoContentFromIris message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,33 @@ export class msdyn_GetPromoContentFromIrisRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPromoContentFromIrisResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetPromoContentFromIrisResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetPromoContentFromIrisResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetPromoContentFromIris action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetPromoContentFromIrisResult {
+  "@odata.context"?: string;
+  msdyn_promoContent: string;
+}
+
+/**
  * msdyn_GetPromoContentFromIris response message
+ *
+ * `result` is the value the msdyn_GetPromoContentFromIris action returns (see {@link msdyn_GetPromoContentFromIrisResult}).
  */
 export class msdyn_GetPromoContentFromIrisResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetPromoContentFromIrisResponseData) {
+  constructor(public result: msdyn_GetPromoContentFromIrisResult) {
     super("msdyn_GetPromoContentFromIris");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetPromoContentFromIrisResponse {
-    return new msdyn_GetPromoContentFromIrisResponse(
-      responseObject<msdyn_GetPromoContentFromIrisResponseData>(data)
-    );
+    return new msdyn_GetPromoContentFromIrisResponse(data as msdyn_GetPromoContentFromIrisResult);
   }
 }

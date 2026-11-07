@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
@@ -48,9 +48,9 @@ export class GrantAccessRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<GrantAccessResponse> {
+  parseResponse(_response: Response): Promise<GrantAccessResponse> {
     // No return value (204 No Content)
-    return new GrantAccessResponse();
+    return Promise.resolve(new GrantAccessResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class GrantAccessResponse extends OrganizationResponse {
     super("GrantAccess");
   }
 
-  static fromResponse(_data: unknown): GrantAccessResponse {
+  static fromResponse(_data?: unknown): GrantAccessResponse {
     return new GrantAccessResponse();
   }
 }

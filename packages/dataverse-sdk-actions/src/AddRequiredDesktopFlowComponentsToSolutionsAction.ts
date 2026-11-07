@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from AddRequiredDesktopFlowComponentsToSolutions action
+ * Response from the AddRequiredDesktopFlowComponentsToSolutions action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AddRequiredDesktopFlowComponentsToSolutionsResponse {
-  // No content returned
-}
+export type AddRequiredDesktopFlowComponentsToSolutionsResponse = void;
 
 /**
  * AddRequiredDesktopFlowComponentsToSolutions action
@@ -31,11 +31,8 @@ export class AddRequiredDesktopFlowComponentsToSolutionsAction implements Execut
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<AddRequiredDesktopFlowComponentsToSolutionsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddRequiredDesktopFlowComponentsToSolutionsResponse;
-    return (await response.json()) as AddRequiredDesktopFlowComponentsToSolutionsResponse;
+  parseResponse(_response: Response): Promise<AddRequiredDesktopFlowComponentsToSolutionsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

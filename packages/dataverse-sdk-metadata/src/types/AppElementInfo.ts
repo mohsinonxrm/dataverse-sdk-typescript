@@ -2,8 +2,8 @@
  * AppElementInfo
  */
 export interface AppElementInfo {
-  ObjectId?: string;
   AppElementType?: string;
   CanvasAppType?: number;
+  ObjectId?: string;
   ObjectName?: string;
 }

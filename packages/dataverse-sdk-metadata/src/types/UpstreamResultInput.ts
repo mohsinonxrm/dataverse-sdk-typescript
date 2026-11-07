@@ -6,7 +6,7 @@ import type { UpstreamIncrementalEntityInfo } from "./UpstreamIncrementalEntityI
  * UpstreamResultInput
  */
 export interface UpstreamResultInput {
-  VersionedEntityReferences?: UpstreamEntityInputVersionInfo[];
-  ResultCode?: ResultCode;
   IncrementalEntityInfos?: UpstreamIncrementalEntityInfo[];
+  ResultCode?: ResultCode;
+  VersionedEntityReferences?: UpstreamEntityInputVersionInfo[];
 }

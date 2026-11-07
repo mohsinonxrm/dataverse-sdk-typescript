@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -48,9 +48,9 @@ export class msdyn_ExecutePrimaryCreatePostActionsRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ExecutePrimaryCreatePostActionsResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ExecutePrimaryCreatePostActionsResponse> {
     // No return value (204 No Content)
-    return new msdyn_ExecutePrimaryCreatePostActionsResponse();
+    return Promise.resolve(new msdyn_ExecutePrimaryCreatePostActionsResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_ExecutePrimaryCreatePostActionsResponse extends OrganizationR
     super("msdyn_ExecutePrimaryCreatePostActions");
   }
 
-  static fromResponse(_data: unknown): msdyn_ExecutePrimaryCreatePostActionsResponse {
+  static fromResponse(_data?: unknown): msdyn_ExecutePrimaryCreatePostActionsResponse {
     return new msdyn_ExecutePrimaryCreatePostActionsResponse();
   }
 }

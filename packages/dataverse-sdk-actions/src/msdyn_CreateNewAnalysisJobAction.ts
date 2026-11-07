@@ -3,14 +3,18 @@ import { requestBody } from "./internal/requestBody.js";
 import type { msdyn_analysisjob } from "./types/index.js";
 
 /**
- * Response from msdyn_CreateNewAnalysisJob action
+ * Response from the msdyn_CreateNewAnalysisJob action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface msdyn_CreateNewAnalysisJobResponse extends msdyn_analysisjob {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type msdyn_CreateNewAnalysisJobResponse =
+  | (msdyn_analysisjob & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
 
 /**
  * Parameters of the msdyn_CreateNewAnalysisJob action, by their CSDL names. A parameter the CSDL declares
@@ -46,8 +50,9 @@ export class msdyn_CreateNewAnalysisJobAction implements Executable<msdyn_Create
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateNewAnalysisJobResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CreateNewAnalysisJobResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as msdyn_CreateNewAnalysisJobResponse;
   }
 }

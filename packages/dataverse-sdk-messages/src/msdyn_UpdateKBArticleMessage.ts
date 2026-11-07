@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_UpdateKBArticleResponse as msdyn_UpdateKBArticleResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_UpdateKBArticle message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,34 @@ export class msdyn_UpdateKBArticleRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_UpdateKBArticleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_UpdateKBArticleResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_UpdateKBArticleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_UpdateKBArticle action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UpdateKBArticleResult {
+  "@odata.context"?: string;
+  Response3: string;
+  usage: string;
+}
+
+/**
  * msdyn_UpdateKBArticle response message
+ *
+ * `result` is the value the msdyn_UpdateKBArticle action returns (see {@link msdyn_UpdateKBArticleResult}).
  */
 export class msdyn_UpdateKBArticleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_UpdateKBArticleResponseData) {
+  constructor(public result: msdyn_UpdateKBArticleResult) {
     super("msdyn_UpdateKBArticle");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_UpdateKBArticleResponse {
-    return new msdyn_UpdateKBArticleResponse(
-      responseObject<msdyn_UpdateKBArticleResponseData>(data)
-    );
+    return new msdyn_UpdateKBArticleResponse(data as msdyn_UpdateKBArticleResult);
   }
 }

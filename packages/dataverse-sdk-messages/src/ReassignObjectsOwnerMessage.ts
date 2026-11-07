@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -48,9 +48,9 @@ export class ReassignObjectsOwnerRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ReassignObjectsOwnerResponse> {
+  parseResponse(_response: Response): Promise<ReassignObjectsOwnerResponse> {
     // No return value (204 No Content)
-    return new ReassignObjectsOwnerResponse();
+    return Promise.resolve(new ReassignObjectsOwnerResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class ReassignObjectsOwnerResponse extends OrganizationResponse {
     super("ReassignObjectsOwner");
   }
 
-  static fromResponse(_data: unknown): ReassignObjectsOwnerResponse {
+  static fromResponse(_data?: unknown): ReassignObjectsOwnerResponse {
     return new ReassignObjectsOwnerResponse();
   }
 }

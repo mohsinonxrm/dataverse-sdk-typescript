@@ -1,13 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { EntityRecordCountCollection } from "./types/index.js";
 
 /**
- * Response from RollbackRetain action
+ * Response from the RollbackRetain action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RollbackRetainResponse {
+  "@odata.context"?: string;
   EntityCountCollection: EntityRecordCountCollection;
 }
 
@@ -47,8 +50,7 @@ export class RollbackRetainAction implements Executable<RollbackRetainResponse> 
   }
 
   async parseResponse(response: Response): Promise<RollbackRetainResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RollbackRetainResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RollbackRetainResponse;
   }
 }

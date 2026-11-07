@@ -48,9 +48,9 @@ export class RemoveFlowFromFlowGroupRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveFlowFromFlowGroupResponse> {
+  parseResponse(_response: Response): Promise<RemoveFlowFromFlowGroupResponse> {
     // No return value (204 No Content)
-    return new RemoveFlowFromFlowGroupResponse();
+    return Promise.resolve(new RemoveFlowFromFlowGroupResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class RemoveFlowFromFlowGroupResponse extends OrganizationResponse {
     super("RemoveFlowFromFlowGroup");
   }
 
-  static fromResponse(_data: unknown): RemoveFlowFromFlowGroupResponse {
+  static fromResponse(_data?: unknown): RemoveFlowFromFlowGroupResponse {
     return new RemoveFlowFromFlowGroupResponse();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_getSalesSequenceExperimentSettingsResponse as msdyn_getSalesSequenceExperimentSettingsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_getSalesSequenceExperimentSettings message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,35 @@ export class msdyn_getSalesSequenceExperimentSettingsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_getSalesSequenceExperimentSettingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_getSalesSequenceExperimentSettingsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_getSalesSequenceExperimentSettingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_getSalesSequenceExperimentSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_getSalesSequenceExperimentSettingsResult {
+  "@odata.context"?: string;
+  msdyn_experimentSettingsResponse: string;
+}
+
+/**
  * msdyn_getSalesSequenceExperimentSettings response message
+ *
+ * `result` is the value the msdyn_getSalesSequenceExperimentSettings action returns (see {@link msdyn_getSalesSequenceExperimentSettingsResult}).
  */
 export class msdyn_getSalesSequenceExperimentSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_getSalesSequenceExperimentSettingsResponseData) {
+  constructor(public result: msdyn_getSalesSequenceExperimentSettingsResult) {
     super("msdyn_getSalesSequenceExperimentSettings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_getSalesSequenceExperimentSettingsResponse {
     return new msdyn_getSalesSequenceExperimentSettingsResponse(
-      responseObject<msdyn_getSalesSequenceExperimentSettingsResponseData>(data)
+      data as msdyn_getSalesSequenceExperimentSettingsResult
     );
   }
 }

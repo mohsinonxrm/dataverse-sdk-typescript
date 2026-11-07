@@ -1,15 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
 
 /**
- * Response from SetParentSystemUser action
+ * Response from the SetParentSystemUser action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SetParentSystemUserResponse {
-  // No content returned
-}
+export type SetParentSystemUserResponse = void;
 
 /**
  * Parameters of the SetParentSystemUser action, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +53,8 @@ export class SetParentSystemUserAction implements Executable<SetParentSystemUser
     };
   }
 
-  async parseResponse(response: Response): Promise<SetParentSystemUserResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SetParentSystemUserResponse;
-    return (await response.json()) as SetParentSystemUserResponse;
+  parseResponse(_response: Response): Promise<SetParentSystemUserResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -54,7 +54,11 @@ if (typeof record.name === "string") console.log(record.name.toUpperCase());
 
 ### `EntityReference`
 
-Represents a reference to another entity record (for lookups).
+A reference to one record: the SDK's one `EntityReference`. This package defines it, with
+`createEntityReference`, `getEntitySetNameFromReference` and `WebApiEntityReference`; the actions,
+functions, messages and xrm packages re-export the same ones. So a reference from any package's
+`createEntityReference` works everywhere: as an action or message parameter, a function
+parameter, a lookup in `formatEntityForWrite()`, and in `OrganizationService.associate()`.
 
 ```typescript
 import {
@@ -65,12 +69,28 @@ import {
 const contactRef: EntityReference = createEntityReference(
   "contact",
   "456e7890-e89b-12d3-a456-426614174000",
-  "Jane Doe"
+  { name: "Jane Doe" } // kept on the reference, never sent
 );
+JSON.stringify(contactRef); // {"@odata.type":"Microsoft.Dynamics.CRM.contact","contactid":"456e…"}
+contactRef.entitySetName; // "contacts"
 
-// Optionally name the entity set, so formatEntityForWrite() needs no metadata to bind it
-const withSet: EntityReference = { ...contactRef, entitySetName: "contacts" };
+// A table the SDK's $metadata snapshot doesn't know, such as a custom table
+const widgetRef = createEntityReference("new_widget", widgetId, {
+  entitySetName: "new_widgets",
+  primaryIdAttribute: "new_widgetid", // the default is <logicalName>id
+});
 ```
+
+Its enumerable properties are the Web API shape, `@odata.type` and the primary key (activities
+use `activityid`). `logicalName`, `id`, `entitySetName` and `name` are there too, not
+enumerable, so they aren't sent. The primary keys and entity sets of the tables come from the
+`$metadata` snapshot the SDK is generated from (`src/generated/entity-tables.ts`, written by
+`pnpm --filter generate-sdk-types regen`).
+
+Only `createEntityReference` makes an `EntityReference`: the type carries a brand, so a
+hand-written `{ logicalName, id }` doesn't type-check as one. To write the JSON by hand, type it
+as `WebApiEntityReference`
+(`{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "<id>" }`).
 
 ### `EntityMetadata`
 
@@ -140,6 +160,9 @@ if (isEntityReference(value)) {
 }
 ```
 
+`isEntityReference` is true for what `createEntityReference` makes: an object with a string
+`@odata.type`, `logicalName` and `id`.
+
 ### URL Construction
 
 ```typescript
@@ -171,9 +194,10 @@ const entity: Partial<IEntity> = {
   primarycontactid: createEntityReference("contact", contactId),
 };
 
-const payload = formatEntityForWrite(entity, accountMetadata, {
-  entitySetNames: { contact: "contacts" }, // or metadataCache: EntityMetadataCache
-});
+// contact is in the SDK's $metadata snapshot, so the reference knows its entity set. A lookup to
+// a custom table needs a third argument: { entitySetNames: { new_widget: "new_widgets" } } (or
+// { metadataCache: EntityMetadataCache }).
+const payload = formatEntityForWrite(entity, accountMetadata);
 // {
 //   '@odata.type': 'Microsoft.Dynamics.CRM.account',
 //   'name': 'Contoso',
@@ -194,7 +218,8 @@ What it does:
   polymorphic lookup (`customerid`, `parentcustomerid`), it binds through the navigation property
   for the reference's table (`parentcustomerid_account`).
 
-The referenced table's entity set comes from `reference.entitySetName`, then
+The referenced table's entity set comes from `reference.entitySetName` (which
+`createEntityReference` fills in for the tables in the SDK's `$metadata` snapshot), then
 `options.entitySetNames`, then `options.metadataCache` (the generated `EntityMetadataCache`).
 When none of them knows it, `formatEntityForWrite()` throws a `DataverseInvalidRequestError`.
 

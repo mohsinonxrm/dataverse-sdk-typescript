@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_EnableDVCopilot action
+ * Response from the msdyn_EnableDVCopilot action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_EnableDVCopilotResponse {
-  // No content returned
-}
+export type msdyn_EnableDVCopilotResponse = void;
 
 /**
  * msdyn_EnableDVCopilot action
@@ -25,9 +25,8 @@ export class msdyn_EnableDVCopilotAction implements Executable<msdyn_EnableDVCop
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_EnableDVCopilotResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_EnableDVCopilotResponse;
-    return (await response.json()) as msdyn_EnableDVCopilotResponse;
+  parseResponse(_response: Response): Promise<msdyn_EnableDVCopilotResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

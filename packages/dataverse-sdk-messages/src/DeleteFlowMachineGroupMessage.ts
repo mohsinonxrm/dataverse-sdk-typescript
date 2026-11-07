@@ -29,9 +29,9 @@ export class DeleteFlowMachineGroupRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteFlowMachineGroupResponse> {
+  parseResponse(_response: Response): Promise<DeleteFlowMachineGroupResponse> {
     // No return value (204 No Content)
-    return new DeleteFlowMachineGroupResponse();
+    return Promise.resolve(new DeleteFlowMachineGroupResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class DeleteFlowMachineGroupResponse extends OrganizationResponse {
     super("DeleteFlowMachineGroup");
   }
 
-  static fromResponse(_data: unknown): DeleteFlowMachineGroupResponse {
+  static fromResponse(_data?: unknown): DeleteFlowMachineGroupResponse {
     return new DeleteFlowMachineGroupResponse();
   }
 }

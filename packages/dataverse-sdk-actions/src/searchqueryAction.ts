@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from searchquery action
+ * Response from the searchquery action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface searchqueryResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -62,8 +65,7 @@ export class searchqueryAction implements Executable<searchqueryResponse> {
   }
 
   async parseResponse(response: Response): Promise<searchqueryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as searchqueryResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as searchqueryResponse;
   }
 }

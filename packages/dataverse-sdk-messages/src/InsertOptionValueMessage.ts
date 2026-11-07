@@ -1,11 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type {
-  InsertOptionValueResponse as InsertOptionValueResponseData,
-  Label,
-} from "./types/index.js";
+import type { Label } from "./types/index.js";
 
 /**
  * Parameters of the InsertOptionValue message, by their CSDL names. A parameter the CSDL declares
@@ -68,21 +64,33 @@ export class InsertOptionValueRequest
   }
 
   async parseResponse(response: Response): Promise<InsertOptionValueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return InsertOptionValueResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return InsertOptionValueResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the InsertOptionValue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface InsertOptionValueResult {
+  "@odata.context"?: string;
+  NewOptionValue: number;
+}
+
+/**
  * InsertOptionValue response message
+ *
+ * `result` is the value the InsertOptionValue action returns (see {@link InsertOptionValueResult}).
  */
 export class InsertOptionValueResponse extends OrganizationResponse {
-  constructor(public result: InsertOptionValueResponseData) {
+  constructor(public result: InsertOptionValueResult) {
     super("InsertOptionValue");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): InsertOptionValueResponse {
-    return new InsertOptionValueResponse(responseObject<InsertOptionValueResponseData>(data));
+    return new InsertOptionValueResponse(data as InsertOptionValueResult);
   }
 }

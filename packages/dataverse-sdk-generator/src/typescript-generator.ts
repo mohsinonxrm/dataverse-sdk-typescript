@@ -78,6 +78,11 @@ const RESERVED_WORDS = new Set([
 
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
 
+/** Annotations at the top of an entity response (#300). */
+const ENTITY_ANNOTATIONS = `"@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string`;
+/** Annotations on each record of an entity collection (#300). */
+const RECORD_ANNOTATIONS = `"@odata.etag"?: string; "@odata.type"?: string`;
+
 /** A name usable as a type, class or variable name (`import` becomes `_import`). */
 export function toSafeIdentifier(name: string): string {
   let safe = name.replace(/[^\w$]/g, "_");
@@ -150,6 +155,9 @@ class ImportCollector {
 export class TypescriptGenerator {
   private outputRoot: string;
   private fileSuffix: string;
+  /** `strictNulls` (#305): type operation responses exactly as the CSDL declares them. */
+  private strictNulls: boolean;
+  private outputNamesCache?: Map<string, string>;
 
   constructor(
     private model: SchemaModel,
@@ -157,6 +165,7 @@ export class TypescriptGenerator {
   ) {
     this.outputRoot = config.output?.outputRoot ?? "./generated";
     this.fileSuffix = config.output?.fileSuffix ?? "";
+    this.strictNulls = config.strictNulls === true;
   }
 
   /**
@@ -298,12 +307,24 @@ export class TypescriptGenerator {
         ? this.resolveReference(complexType.BaseType, "complextypes", imports, typeName)
         : undefined;
 
+      const outputName = this.outputNames.get(complexType.Name);
       const body = ejs.render(template, {
         ...this.helpers("complextypes", imports, typeName),
         complexType,
         typeName,
         // Only a complex base type can be extended; anything else is dropped.
         baseType: baseType && baseType !== "unknown" ? baseType : undefined,
+        // strictNulls: the exact shape an operation returns, next to the interface parameters take
+        output: outputName
+          ? {
+              name: outputName,
+              baseType: complexType.BaseType
+                ? this.outputReference(complexType.BaseType, "complextypes", imports, typeName)
+                : undefined,
+              formatType: (type: TypeScriptType) =>
+                this.outputType(type, "complextypes", imports, typeName),
+            }
+          : undefined,
       });
 
       await this.writeFile(dir, typeName, imports, body);
@@ -402,21 +423,151 @@ export * from './metadata${suffix}.js';
       identifier: toSafeIdentifier,
       literal: (value: unknown) => JSON.stringify(value),
       doc: (text: string | undefined) => toDocText(text ?? ""),
-      returnsBody: (type: TypeScriptType) => this.returnsBody(type),
     };
   }
 
   /**
-   * Whether an operation's response body is the return value itself (a complex type or an
-   * entity). Primitive, enum and collection results come wrapped as `{ "value": ... }`.
+   * How an operation's response is typed and read (#300). The same contract as the in-repo
+   * generator (tools/generate-sdk-types, utils/operation-return.ts): `execute()` resolves the
+   * value the operation returns, not the OData envelope around it.
+   *
+   * - no return type: `void` (the Web API answers 204 No Content);
+   * - a primitive or an enum: the `value` of the body (an enum value is its member name);
+   * - a collection: the `value` of the body, `[]` for a 204 (an output that wasn't set); each
+   *   record keeps its `@odata.etag` and `@odata.type`;
+   * - a complex type: the body itself, with its `@odata.context`;
+   * - an entity: the body itself, with its annotations, or `null` for a 204 (an entity output
+   *   that wasn't set: Dataverse answers 204 although the CSDL says `Nullable="false"`).
+   *
+   * The value's type is declared as `<Class>Response`.
+   *
+   * With `strictNulls` (#305), a complex value is typed with its `<Name>Output` interface (every
+   * property present, `null` unless `Nullable="false"`), and a return the CSDL leaves nullable
+   * adds `| null`: to the value for a primitive or a complex type (with `null` for a 204), to the
+   * items for a collection of primitives, enums or complex types. Entities are `| null` anyway.
    */
-  private returnsBody(type: TypeScriptType): boolean {
-    if (type.isArray || !type.reference) return false;
-    const name = type.reference;
-    return (
-      this.model.AllEntityTypeNames.has(name) ||
-      this.model.ComplexTypes.some((c) => c.Name === name)
-    );
+  private operationReturn(
+    returnType: TypeScriptType | undefined,
+    nullable: boolean | undefined,
+    folder: Folder,
+    imports: ImportCollector,
+    className: string,
+    label: string
+  ): { responseType: string; responseDeclaration: string; parseResponse: string } {
+    if (!returnType) {
+      return {
+        responseType: "void",
+        responseDeclaration: "",
+        parseResponse:
+          "  parseResponse(_response: Response): Promise<void> {\n" +
+          "    // No return value: the Web API answers 204 No Content\n" +
+          "    return Promise.resolve();\n" +
+          "  }\n",
+      };
+    }
+
+    const name = `${className}Response`;
+    const ref = returnType.reference;
+    let element: "primitive" | "enum" | "entity" | "complex" = "primitive";
+    if (ref !== undefined) {
+      if (this.model.EnumTypes.some((e) => e.Name === ref)) element = "enum";
+      else if (this.model.AllEntityTypeNames.has(ref)) element = "entity";
+      else if (this.model.ComplexTypes.some((c) => c.Name === ref)) element = "complex";
+    }
+    // The TypeScript name of the element type, imported (an entity that isn't generated is
+    // IEntity; with strictNulls, a complex type is its Output interface)
+    const resolved = (): string => {
+      if (ref === undefined) return returnType.name;
+      return (
+        this.outputReference(ref, folder, imports) ?? this.resolveReference(ref, folder, imports)
+      );
+    };
+    // strictNulls: the CSDL leaves the value (or a collection's items) nullable
+    const orNull = this.strictNulls && nullable === true && element !== "entity";
+    const NULLABLE_DOC =
+      ' * `null` for a null value or a 204 No Content: the CSDL doesn\'t declare the return `Nullable="false"`.\n';
+
+    let doc = `/**\n * Response from the ${toDocText(label)}.\n *\n`;
+    let declaration: string;
+    let kind: "primitive" | "collection" | "complex" | "entity";
+    if (returnType.isArray) {
+      kind = "collection";
+      let item: string;
+      if (element === "enum") item = "string";
+      else if (element === "entity") item = `${resolved()} & { ${RECORD_ANNOTATIONS} }`;
+      else item = resolved();
+      doc += " * The collection, read from the `value` of the response body.\n";
+      if (element === "entity") {
+        doc += " * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.\n";
+      }
+      if (orNull) {
+        item = `${item} | null`;
+        doc +=
+          ' * An item can be `null`: the CSDL doesn\'t declare the return `Nullable="false"`.\n';
+      }
+      const array = /^[\w$]+$/.test(item) ? `${item}[]` : `Array<${item}>`;
+      declaration = `export type ${name} = ${array};\n`;
+    } else if (element === "entity") {
+      kind = "entity";
+      doc +=
+        " * The record: the response body itself, with its annotations (not wrapped in `value`).\n";
+      doc +=
+        " * `null` when the Web API answers 204 No Content (an entity output that wasn't set).\n";
+      declaration = `export type ${name} = (${resolved()} & { ${ENTITY_ANNOTATIONS} }) | null;\n`;
+    } else if (element === "complex") {
+      kind = "complex";
+      doc += " * The response body itself, with its `@odata.context` (not wrapped in `value`).\n";
+      if (orNull) {
+        doc += NULLABLE_DOC;
+        declaration = `export type ${name} = (${resolved()} & { "@odata.context"?: string }) | null;\n`;
+      } else {
+        declaration = `export interface ${name} extends ${resolved()} {\n  "@odata.context"?: string;\n}\n`;
+      }
+    } else {
+      kind = "primitive";
+      doc += " * The value, read from the `value` of the response body.\n";
+      if (element === "enum") {
+        doc += ' * An enum value is its member name (names separated by ", " for flags).\n';
+      }
+      if (orNull) doc += NULLABLE_DOC;
+      const value = element === "enum" ? "string" : resolved();
+      declaration = `export type ${name} = ${orNull ? `${value} | null` : value};\n`;
+    }
+
+    const wrapped = `((await response.json()) as { value: ${name} }).value`;
+    const body = `(await response.json()) as ${name}`;
+    let parse = `  async parseResponse(response: Response): Promise<${name}> {\n`;
+    switch (kind) {
+      case "primitive":
+        if (orNull) parse += "    if (response.status === 204) return null;\n";
+        parse += '    // A primitive comes wrapped: { "@odata.context": "…", "value": … }\n';
+        parse += `    return ${wrapped};\n`;
+        break;
+      case "collection":
+        parse += "    // An output that wasn't set answers 204 No Content: an empty collection\n";
+        parse += "    if (response.status === 204) return [];\n";
+        parse += '    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }\n';
+        parse += `    return ${wrapped};\n`;
+        break;
+      case "complex":
+        if (orNull) parse += "    if (response.status === 204) return null;\n";
+        parse += "    // The body is the complex value, with its @odata.context\n";
+        parse += `    return ${body};\n`;
+        break;
+      case "entity":
+        parse += "    // An entity output that wasn't set answers 204 No Content\n";
+        parse += "    if (response.status === 204) return null;\n";
+        parse += "    // The body is the record, with its annotations\n";
+        parse += `    return ${body};\n`;
+        break;
+    }
+    parse += "  }\n";
+
+    return {
+      responseType: name,
+      responseDeclaration: `${doc} */\n${declaration}`,
+      parseResponse: parse,
+    };
   }
 
   /**
@@ -514,6 +665,14 @@ export * from './metadata${suffix}.js';
     ];
 
     return {
+      ...this.operationReturn(
+        op.ReturnType,
+        op.ReturnTypeNullable,
+        folder,
+        imports,
+        className,
+        `${op.Name} ${isFunction ? "function" : "action"}`
+      ),
       bindingDoc,
       constructorArguments,
       operationPath,
@@ -524,6 +683,83 @@ export * from './metadata${suffix}.js';
       access: (name: string) => (IDENTIFIER.test(name) ? `.${name}` : `[${JSON.stringify(name)}]`),
       getStructuralType: (type: string) => this.model.getStructuralType(type),
     };
+  }
+
+  /**
+   * strictNulls (#305): the `<Name>Output` interface of each complex type an operation returns,
+   * directly or nested (through properties and base types), by complex type name. Empty without
+   * the option. Each name is unique among the names the generated index files export.
+   */
+  private get outputNames(): Map<string, string> {
+    if (this.outputNamesCache) return this.outputNamesCache;
+    const names = new Map<string, string>();
+    this.outputNamesCache = names;
+    if (!this.strictNulls) return names;
+
+    const complexTypes = new Map(this.model.ComplexTypes.map((c) => [c.Name, c]));
+    const returned = new Set<string>();
+    const visit = (name: string | undefined): void => {
+      const type = name === undefined ? undefined : complexTypes.get(name);
+      if (!type || returned.has(type.Name)) return;
+      returned.add(type.Name);
+      visit(type.BaseType);
+      for (const prop of type.Properties) visit(prop.TypeScriptType.reference);
+    };
+    for (const op of [...this.model.Actions, ...this.model.Functions]) {
+      visit(op.ReturnType?.reference);
+    }
+
+    const taken = new Set<string>([
+      ...this.model.EntityTypes.flatMap((e) => {
+        const typeName = this.entityTypeName(e);
+        return [typeName, `${typeName}Metadata`];
+      }),
+      ...this.model.EnumTypes.map((e) => toSafeIdentifier(e.Name)),
+      ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
+    ]);
+    for (const type of this.model.ComplexTypes) {
+      if (!returned.has(type.Name)) continue;
+      const stem = `${toSafeIdentifier(type.Name)}Output`;
+      let name = stem;
+      for (let i = 2; taken.has(name); i++) name = `${stem}_${String(i)}`;
+      taken.add(name);
+      names.set(type.Name, name);
+    }
+    return names;
+  }
+
+  /**
+   * strictNulls: the `<Name>Output` interface of a complex type, imported into a file in
+   * `folder`, or `undefined` when it has none.
+   */
+  private outputReference(
+    name: string,
+    folder: Folder,
+    imports: ImportCollector,
+    selfName?: string
+  ): string | undefined {
+    const output = this.outputNames.get(name);
+    if (output === undefined) return undefined;
+    const typeName = toSafeIdentifier(name);
+    if (!(folder === "complextypes" && typeName === selfName)) {
+      imports.type(output, this.modulePath(folder, "complextypes", typeName));
+    }
+    return output;
+  }
+
+  /** strictNulls: a property type of an Output interface; a complex type is its Output too. */
+  private outputType(
+    type: TypeScriptType,
+    folder: Folder,
+    imports: ImportCollector,
+    selfName?: string
+  ): string {
+    const output =
+      type.reference === undefined
+        ? undefined
+        : this.outputReference(type.reference, folder, imports, selfName);
+    if (output === undefined) return this.formatType(type, folder, imports, selfName);
+    return type.isArray ? `${output}[]` : output;
   }
 
   /** TypeScript for a resolved type, adding the imports it needs. */

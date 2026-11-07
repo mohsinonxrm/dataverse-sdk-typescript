@@ -42,11 +42,9 @@ export class msdyn_updateGuardrailExecutionSendEmailFlagRequest
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_updateGuardrailExecutionSendEmailFlagResponse> {
+  parseResponse(_response: Response): Promise<msdyn_updateGuardrailExecutionSendEmailFlagResponse> {
     // No return value (204 No Content)
-    return new msdyn_updateGuardrailExecutionSendEmailFlagResponse();
+    return Promise.resolve(new msdyn_updateGuardrailExecutionSendEmailFlagResponse());
   }
 }
 
@@ -58,7 +56,7 @@ export class msdyn_updateGuardrailExecutionSendEmailFlagResponse extends Organiz
     super("msdyn_updateGuardrailExecutionSendEmailFlag");
   }
 
-  static fromResponse(_data: unknown): msdyn_updateGuardrailExecutionSendEmailFlagResponse {
+  static fromResponse(_data?: unknown): msdyn_updateGuardrailExecutionSendEmailFlagResponse {
     return new msdyn_updateGuardrailExecutionSendEmailFlagResponse();
   }
 }

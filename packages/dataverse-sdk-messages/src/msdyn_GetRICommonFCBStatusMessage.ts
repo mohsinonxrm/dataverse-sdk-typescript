@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetRICommonFCBStatusResponse as msdyn_GetRICommonFCBStatusResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetRICommonFCBStatus message, by their CSDL names. A parameter the CSDL declares
@@ -45,23 +43,33 @@ export class msdyn_GetRICommonFCBStatusRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRICommonFCBStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetRICommonFCBStatusResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetRICommonFCBStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetRICommonFCBStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetRICommonFCBStatusResult {
+  "@odata.context"?: string;
+  Status: boolean;
+}
+
+/**
  * msdyn_GetRICommonFCBStatus response message
+ *
+ * `result` is the value the msdyn_GetRICommonFCBStatus action returns (see {@link msdyn_GetRICommonFCBStatusResult}).
  */
 export class msdyn_GetRICommonFCBStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetRICommonFCBStatusResponseData) {
+  constructor(public result: msdyn_GetRICommonFCBStatusResult) {
     super("msdyn_GetRICommonFCBStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetRICommonFCBStatusResponse {
-    return new msdyn_GetRICommonFCBStatusResponse(
-      responseObject<msdyn_GetRICommonFCBStatusResponseData>(data)
-    );
+    return new msdyn_GetRICommonFCBStatusResponse(data as msdyn_GetRICommonFCBStatusResult);
   }
 }

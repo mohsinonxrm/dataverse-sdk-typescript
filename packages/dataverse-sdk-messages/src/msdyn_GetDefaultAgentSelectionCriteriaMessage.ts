@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_GetDefaultAgentSelectionCriteriaResponse as msdyn_GetDefaultAgentSelectionCriteriaResponseData } from "./types/index.js";
 
 /**
  * msdyn_GetDefaultAgentSelectionCriteria request message
@@ -29,24 +27,36 @@ export class msdyn_GetDefaultAgentSelectionCriteriaRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetDefaultAgentSelectionCriteriaResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetDefaultAgentSelectionCriteriaResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetDefaultAgentSelectionCriteriaResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetDefaultAgentSelectionCriteria action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetDefaultAgentSelectionCriteriaResult {
+  "@odata.context"?: string;
+  SelectionCriteria: string;
+  Success: boolean;
+}
+
+/**
  * msdyn_GetDefaultAgentSelectionCriteria response message
+ *
+ * `result` is the value the msdyn_GetDefaultAgentSelectionCriteria action returns (see {@link msdyn_GetDefaultAgentSelectionCriteriaResult}).
  */
 export class msdyn_GetDefaultAgentSelectionCriteriaResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetDefaultAgentSelectionCriteriaResponseData) {
+  constructor(public result: msdyn_GetDefaultAgentSelectionCriteriaResult) {
     super("msdyn_GetDefaultAgentSelectionCriteria");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetDefaultAgentSelectionCriteriaResponse {
     return new msdyn_GetDefaultAgentSelectionCriteriaResponse(
-      responseObject<msdyn_GetDefaultAgentSelectionCriteriaResponseData>(data)
+      data as msdyn_GetDefaultAgentSelectionCriteriaResult
     );
   }
 }

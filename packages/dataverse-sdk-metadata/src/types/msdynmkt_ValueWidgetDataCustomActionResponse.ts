@@ -2,9 +2,9 @@
  * msdynmkt_ValueWidgetDataCustomActionResponse
  */
 export interface msdynmkt_ValueWidgetDataCustomActionResponse {
-  WidgetDefinition?: string;
-  WidgetData?: string;
+  ErrorMessage?: string;
   IsSuccess?: boolean;
   StatusCode?: number;
-  ErrorMessage?: string;
+  WidgetData?: string;
+  WidgetDefinition?: string;
 }

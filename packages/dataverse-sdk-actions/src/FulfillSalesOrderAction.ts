@@ -1,15 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { orderclose } from "./types/index.js";
 
 /**
- * Response from FulfillSalesOrder action
+ * Response from the FulfillSalesOrder action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface FulfillSalesOrderResponse {
-  // No content returned
-}
+export type FulfillSalesOrderResponse = void;
 
 /**
  * Parameters of the FulfillSalesOrder action, by their CSDL names. A parameter the CSDL declares
@@ -48,9 +48,8 @@ export class FulfillSalesOrderAction implements Executable<FulfillSalesOrderResp
     };
   }
 
-  async parseResponse(response: Response): Promise<FulfillSalesOrderResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as FulfillSalesOrderResponse;
-    return (await response.json()) as FulfillSalesOrderResponse;
+  parseResponse(_response: Response): Promise<FulfillSalesOrderResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

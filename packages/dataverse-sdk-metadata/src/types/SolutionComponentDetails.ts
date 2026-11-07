@@ -5,8 +5,8 @@ import type { PresentInOrg } from "./PresentInOrg.js";
  * SolutionComponentDetails
  */
 export interface SolutionComponentDetails {
-  ComponentName?: string;
   Attributes?: Collection_String_String;
+  ComponentName?: string;
   ComponentTypeName?: string;
   IsPresentInOrg?: PresentInOrg;
 }

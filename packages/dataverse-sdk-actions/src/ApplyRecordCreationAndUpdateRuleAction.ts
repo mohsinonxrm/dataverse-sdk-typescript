@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from ApplyRecordCreationAndUpdateRule action
+ * Response from the ApplyRecordCreationAndUpdateRule action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ApplyRecordCreationAndUpdateRuleResponse {
-  // No content returned
-}
+export type ApplyRecordCreationAndUpdateRuleResponse = void;
 
 /**
  * Parameters of the ApplyRecordCreationAndUpdateRule action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class ApplyRecordCreationAndUpdateRuleAction implements Executable<ApplyR
     };
   }
 
-  async parseResponse(response: Response): Promise<ApplyRecordCreationAndUpdateRuleResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ApplyRecordCreationAndUpdateRuleResponse;
-    return (await response.json()) as ApplyRecordCreationAndUpdateRuleResponse;
+  parseResponse(_response: Response): Promise<ApplyRecordCreationAndUpdateRuleResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from OnExternalDeleted action
+ * Response from the OnExternalDeleted action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface OnExternalDeletedResponse {
-  // No content returned
-}
+export type OnExternalDeletedResponse = void;
 
 /**
  * Parameters of the OnExternalDeleted action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class OnExternalDeletedAction implements Executable<OnExternalDeletedResp
     };
   }
 
-  async parseResponse(response: Response): Promise<OnExternalDeletedResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as OnExternalDeletedResponse;
-    return (await response.json()) as OnExternalDeletedResponse;
+  parseResponse(_response: Response): Promise<OnExternalDeletedResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

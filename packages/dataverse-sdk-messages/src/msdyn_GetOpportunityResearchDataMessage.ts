@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetOpportunityResearchDataResponse as msdyn_GetOpportunityResearchDataResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetOpportunityResearchData message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,40 @@ export class msdyn_GetOpportunityResearchDataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOpportunityResearchDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetOpportunityResearchDataResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetOpportunityResearchDataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetOpportunityResearchData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetOpportunityResearchDataResult {
+  "@odata.context"?: string;
+  Citations: string;
+  ErrorMessage: string;
+  IsSuccess: boolean;
+  ResponseJson: string;
+  Status: string;
+  StatusDetails: string;
+}
+
+/**
  * msdyn_GetOpportunityResearchData response message
+ *
+ * `result` is the value the msdyn_GetOpportunityResearchData action returns (see {@link msdyn_GetOpportunityResearchDataResult}).
  */
 export class msdyn_GetOpportunityResearchDataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetOpportunityResearchDataResponseData) {
+  constructor(public result: msdyn_GetOpportunityResearchDataResult) {
     super("msdyn_GetOpportunityResearchData");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetOpportunityResearchDataResponse {
     return new msdyn_GetOpportunityResearchDataResponse(
-      responseObject<msdyn_GetOpportunityResearchDataResponseData>(data)
+      data as msdyn_GetOpportunityResearchDataResult
     );
   }
 }

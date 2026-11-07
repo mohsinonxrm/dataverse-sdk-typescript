@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { RemoveActiveCustomizationResponse as RemoveActiveCustomizationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the RemoveActiveCustomization message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class RemoveActiveCustomizationRequest
   }
 
   async parseResponse(response: Response): Promise<RemoveActiveCustomizationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RemoveActiveCustomizationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RemoveActiveCustomizationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RemoveActiveCustomization action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RemoveActiveCustomizationResult {
+  "@odata.context"?: string;
+  Success: boolean;
+}
+
+/**
  * RemoveActiveCustomization response message
+ *
+ * `result` is the value the RemoveActiveCustomization action returns (see {@link RemoveActiveCustomizationResult}).
  */
 export class RemoveActiveCustomizationResponse extends OrganizationResponse {
-  constructor(public result: RemoveActiveCustomizationResponseData) {
+  constructor(public result: RemoveActiveCustomizationResult) {
     super("RemoveActiveCustomization");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RemoveActiveCustomizationResponse {
-    return new RemoveActiveCustomizationResponse(
-      responseObject<RemoveActiveCustomizationResponseData>(data)
-    );
+    return new RemoveActiveCustomizationResponse(data as RemoveActiveCustomizationResult);
   }
 }

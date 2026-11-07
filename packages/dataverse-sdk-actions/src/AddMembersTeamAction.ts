@@ -1,15 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
 
 /**
- * Response from AddMembersTeam action
+ * Response from the AddMembersTeam action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AddMembersTeamResponse {
-  // No content returned
-}
+export type AddMembersTeamResponse = void;
 
 /**
  * Parameters of the AddMembersTeam action, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +51,8 @@ export class AddMembersTeamAction implements Executable<AddMembersTeamResponse> 
     };
   }
 
-  async parseResponse(response: Response): Promise<AddMembersTeamResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddMembersTeamResponse;
-    return (await response.json()) as AddMembersTeamResponse;
+  parseResponse(_response: Response): Promise<AddMembersTeamResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from CheckPromoteEmail function
+ * Response from the CheckPromoteEmail function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CheckPromoteEmailResponse {
+  "@odata.context"?: string;
   ReasonCode: number;
   ShouldPromote: boolean;
 }
@@ -59,8 +62,7 @@ export class CheckPromoteEmailFunction implements Executable<CheckPromoteEmailRe
   }
 
   async parseResponse(response: Response): Promise<CheckPromoteEmailResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CheckPromoteEmailResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CheckPromoteEmailResponse;
   }
 }

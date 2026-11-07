@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { InitializeTemporaryFileBlocksUploadResponse as InitializeTemporaryFileBlocksUploadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the InitializeTemporaryFileBlocksUpload message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,36 @@ export class InitializeTemporaryFileBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<InitializeTemporaryFileBlocksUploadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return InitializeTemporaryFileBlocksUploadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return InitializeTemporaryFileBlocksUploadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the InitializeTemporaryFileBlocksUpload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface InitializeTemporaryFileBlocksUploadResult {
+  "@odata.context"?: string;
+  FileContinuationToken: string;
+  RecordId: string;
+}
+
+/**
  * InitializeTemporaryFileBlocksUpload response message
+ *
+ * `result` is the value the InitializeTemporaryFileBlocksUpload action returns (see {@link InitializeTemporaryFileBlocksUploadResult}).
  */
 export class InitializeTemporaryFileBlocksUploadResponse extends OrganizationResponse {
-  constructor(public result: InitializeTemporaryFileBlocksUploadResponseData) {
+  constructor(public result: InitializeTemporaryFileBlocksUploadResult) {
     super("InitializeTemporaryFileBlocksUpload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): InitializeTemporaryFileBlocksUploadResponse {
     return new InitializeTemporaryFileBlocksUploadResponse(
-      responseObject<InitializeTemporaryFileBlocksUploadResponseData>(data)
+      data as InitializeTemporaryFileBlocksUploadResult
     );
   }
 }

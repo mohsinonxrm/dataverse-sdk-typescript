@@ -48,9 +48,9 @@ export class DeleteMultipleRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteMultipleResponse> {
+  parseResponse(_response: Response): Promise<DeleteMultipleResponse> {
     // No return value (204 No Content)
-    return new DeleteMultipleResponse();
+    return Promise.resolve(new DeleteMultipleResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class DeleteMultipleResponse extends OrganizationResponse {
     super("DeleteMultiple");
   }
 
-  static fromResponse(_data: unknown): DeleteMultipleResponse {
+  static fromResponse(_data?: unknown): DeleteMultipleResponse {
     return new DeleteMultipleResponse();
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse as msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CSAdminCenterAppSolutionHealthRulesRegistration message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse.fromResponse(
       await response.json()
     );
@@ -59,18 +55,33 @@ export class msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationRequest
 }
 
 /**
+ * Response from the msdyn_CSAdminCenterAppSolutionHealthRulesRegistration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResult {
+  "@odata.context"?: string;
+  Message: string;
+  ReturnStatus: number;
+  RuleId: string;
+}
+
+/**
  * msdyn_CSAdminCenterAppSolutionHealthRulesRegistration response message
+ *
+ * `result` is the value the msdyn_CSAdminCenterAppSolutionHealthRulesRegistration action returns (see {@link msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResult}).
  */
 export class msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponseData) {
+  constructor(public result: msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResult) {
     super("msdyn_CSAdminCenterAppSolutionHealthRulesRegistration");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse {
     return new msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse(
-      responseObject<msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponseData>(data)
+      data as msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResult
     );
   }
 }

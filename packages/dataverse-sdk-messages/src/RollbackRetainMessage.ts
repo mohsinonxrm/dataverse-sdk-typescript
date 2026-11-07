@@ -1,10 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { RollbackRetainResponse as RollbackRetainResponseData } from "./types/index.js";
+import type { EntityRecordCountCollection } from "./types/index.js";
 
 /**
  * Parameters of the RollbackRetain message, by their CSDL names. A parameter the CSDL declares
@@ -49,21 +48,33 @@ export class RollbackRetainRequest
   }
 
   async parseResponse(response: Response): Promise<RollbackRetainResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RollbackRetainResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RollbackRetainResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RollbackRetain action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RollbackRetainResult {
+  "@odata.context"?: string;
+  EntityCountCollection: EntityRecordCountCollection;
+}
+
+/**
  * RollbackRetain response message
+ *
+ * `result` is the value the RollbackRetain action returns (see {@link RollbackRetainResult}).
  */
 export class RollbackRetainResponse extends OrganizationResponse {
-  constructor(public result: RollbackRetainResponseData) {
+  constructor(public result: RollbackRetainResult) {
     super("RollbackRetain");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RollbackRetainResponse {
-    return new RollbackRetainResponse(responseObject<RollbackRetainResponseData>(data));
+    return new RollbackRetainResponse(data as RollbackRetainResult);
   }
 }

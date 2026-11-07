@@ -44,9 +44,9 @@ export class msdyn_DismissSuggestedActivityRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_DismissSuggestedActivityResponse> {
+  parseResponse(_response: Response): Promise<msdyn_DismissSuggestedActivityResponse> {
     // No return value (204 No Content)
-    return new msdyn_DismissSuggestedActivityResponse();
+    return Promise.resolve(new msdyn_DismissSuggestedActivityResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_DismissSuggestedActivityResponse extends OrganizationResponse
     super("msdyn_DismissSuggestedActivity");
   }
 
-  static fromResponse(_data: unknown): msdyn_DismissSuggestedActivityResponse {
+  static fromResponse(_data?: unknown): msdyn_DismissSuggestedActivityResponse {
     return new msdyn_DismissSuggestedActivityResponse();
   }
 }

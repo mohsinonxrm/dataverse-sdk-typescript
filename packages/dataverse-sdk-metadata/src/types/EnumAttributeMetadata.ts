@@ -7,6 +7,6 @@ import type { OptionSetMetadata } from "./OptionSetMetadata.js";
  */
 export interface EnumAttributeMetadata extends AttributeMetadata {
   DefaultFormValue?: number;
-  OptionSet?: OptionSetMetadata;
   GlobalOptionSet?: OptionSetMetadata;
+  OptionSet?: OptionSetMetadata;
 }

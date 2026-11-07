@@ -125,7 +125,7 @@ beforeAll(async () => {
   out = await mkdtemp(join(OUT_ROOT, ".gen-96-"));
   const csdl = parseEdmx(EDMX);
   for (const target of ["actions", "functions", "messages"] as const) {
-    await generateComplexTypes(csdl, join(out, target, "types"), false, target);
+    await generateComplexTypes(csdl, join(out, target, "types"));
   }
   await generateActions(csdl, join(out, "actions"), false);
   await generateFunctions(csdl, join(out, "functions"), false);
@@ -282,12 +282,11 @@ describe("#96: options-object constructors", () => {
     expect(recalculate).not.toContain("requestBody");
   });
 
-  it("parseResponse returns the JSON body for 200 and an empty result for 204", async () => {
+  it("parseResponse returns the value: the complex body, nothing, or the unwrapped primitive (#300)", async () => {
     const Stage = await load("actions/StageSolutionAction.ts", "StageSolutionAction");
     const stage = new Stage({ CustomizationFile: "UEsDBA==" });
     const results = { StageSolutionResults: { StageSolutionUploadId: GUID } };
     expect(await stage.parseResponse(json(results))).toEqual(results);
-    expect(await stage.parseResponse(noContent())).toEqual({});
     const Import = await load("actions/ImportSolutionAction.ts", "ImportSolutionAction");
     const imp = new Import({
       CustomizationFile: "x",
@@ -295,14 +294,14 @@ describe("#96: options-object constructors", () => {
       OverwriteUnmanagedCustomizations: true,
       PublishWorkflows: true,
     });
-    expect(await imp.parseResponse(noContent())).toEqual({});
-    expect(await imp.parseResponse(json({ ok: true }))).toEqual({ ok: true });
+    // No return type: nothing, whatever the body
+    expect(await imp.parseResponse(noContent())).toBeUndefined();
+    expect(await imp.parseResponse(json({ ok: true }))).toBeUndefined();
     const Fn = await load("functions/WhoAmIFunction.ts", "WhoAmIFunction");
-    expect(await new Fn().parseResponse(json({ value: "me" }))).toEqual({ value: "me" });
+    expect(await new Fn().parseResponse(json({ value: "me" }))).toBe("me");
     const Request = await load("messages/StageSolutionMessage.ts", "StageSolutionRequest");
     const request = new Request({ CustomizationFile: "UEsDBA==" });
     expect(await request.parseResponse(json(results))).toMatchObject({ result: results });
-    expect(await request.parseResponse(noContent())).toMatchObject({ result: {} });
   });
 
   it("each index exports the parameters interfaces", async () => {

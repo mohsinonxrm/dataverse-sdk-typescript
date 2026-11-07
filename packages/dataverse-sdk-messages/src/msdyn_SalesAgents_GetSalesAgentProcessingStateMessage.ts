@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -50,9 +49,10 @@ export class msdyn_SalesAgents_GetSalesAgentProcessingStateRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetSalesAgentProcessingStateResponse> {
-    // 204 No Content is an empty result
+    // An entity output that wasn't set answers 204 No Content
     if (response.status === 204)
-      return msdyn_SalesAgents_GetSalesAgentProcessingStateResponse.fromResponse({});
+      return msdyn_SalesAgents_GetSalesAgentProcessingStateResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
     return msdyn_SalesAgents_GetSalesAgentProcessingStateResponse.fromResponse(
       await response.json()
     );
@@ -60,16 +60,32 @@ export class msdyn_SalesAgents_GetSalesAgentProcessingStateRequest
 }
 
 /**
+ * Response from the msdyn_SalesAgents_GetSalesAgentProcessingState action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type msdyn_SalesAgents_GetSalesAgentProcessingStateResult = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
  * msdyn_SalesAgents_GetSalesAgentProcessingState response message
+ *
+ * `result` is the value the msdyn_SalesAgents_GetSalesAgentProcessingState action returns (see {@link msdyn_SalesAgents_GetSalesAgentProcessingStateResult}).
  */
 export class msdyn_SalesAgents_GetSalesAgentProcessingStateResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>) {
+  constructor(public result: msdyn_SalesAgents_GetSalesAgentProcessingStateResult) {
     super("msdyn_SalesAgents_GetSalesAgentProcessingState");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_GetSalesAgentProcessingStateResponse {
     return new msdyn_SalesAgents_GetSalesAgentProcessingStateResponse(
-      responseObject<Record<string, unknown>>(data)
+      (data ?? null) as msdyn_SalesAgents_GetSalesAgentProcessingStateResult
     );
   }
 }

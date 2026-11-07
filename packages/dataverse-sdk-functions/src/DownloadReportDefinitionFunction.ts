@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from DownloadReportDefinition function
+ * Response from the DownloadReportDefinition function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface DownloadReportDefinitionResponse {
+  "@odata.context"?: string;
   BodyText: string;
 }
 
@@ -32,8 +35,7 @@ export class DownloadReportDefinitionFunction implements Executable<DownloadRepo
   }
 
   async parseResponse(response: Response): Promise<DownloadReportDefinitionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as DownloadReportDefinitionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as DownloadReportDefinitionResponse;
   }
 }

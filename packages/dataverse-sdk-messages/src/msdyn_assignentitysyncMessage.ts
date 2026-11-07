@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_assignentitysyncResponse as msdyn_assignentitysyncResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_assignentitysync message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,33 @@ export class msdyn_assignentitysyncRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_assignentitysyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_assignentitysyncResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_assignentitysyncResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_assignentitysync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_assignentitysyncResult {
+  "@odata.context"?: string;
+  AssignmentPassed: boolean;
+}
+
+/**
  * msdyn_assignentitysync response message
+ *
+ * `result` is the value the msdyn_assignentitysync action returns (see {@link msdyn_assignentitysyncResult}).
  */
 export class msdyn_assignentitysyncResponse extends OrganizationResponse {
-  constructor(public result: msdyn_assignentitysyncResponseData) {
+  constructor(public result: msdyn_assignentitysyncResult) {
     super("msdyn_assignentitysync");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_assignentitysyncResponse {
-    return new msdyn_assignentitysyncResponse(
-      responseObject<msdyn_assignentitysyncResponseData>(data)
-    );
+    return new msdyn_assignentitysyncResponse(data as msdyn_assignentitysyncResult);
   }
 }

@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_MarketingMetadataUpdatePostImportResponse as msdyn_MarketingMetadataUpdatePostImportResponseData } from "./types/index.js";
 
 /**
  * msdyn_MarketingMetadataUpdatePostImport request message
@@ -31,24 +29,35 @@ export class msdyn_MarketingMetadataUpdatePostImportRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_MarketingMetadataUpdatePostImportResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_MarketingMetadataUpdatePostImportResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_MarketingMetadataUpdatePostImportResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_MarketingMetadataUpdatePostImport action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_MarketingMetadataUpdatePostImportResult {
+  "@odata.context"?: string;
+  resultCode: number;
+}
+
+/**
  * msdyn_MarketingMetadataUpdatePostImport response message
+ *
+ * `result` is the value the msdyn_MarketingMetadataUpdatePostImport action returns (see {@link msdyn_MarketingMetadataUpdatePostImportResult}).
  */
 export class msdyn_MarketingMetadataUpdatePostImportResponse extends OrganizationResponse {
-  constructor(public result: msdyn_MarketingMetadataUpdatePostImportResponseData) {
+  constructor(public result: msdyn_MarketingMetadataUpdatePostImportResult) {
     super("msdyn_MarketingMetadataUpdatePostImport");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_MarketingMetadataUpdatePostImportResponse {
     return new msdyn_MarketingMetadataUpdatePostImportResponse(
-      responseObject<msdyn_MarketingMetadataUpdatePostImportResponseData>(data)
+      data as msdyn_MarketingMetadataUpdatePostImportResult
     );
   }
 }

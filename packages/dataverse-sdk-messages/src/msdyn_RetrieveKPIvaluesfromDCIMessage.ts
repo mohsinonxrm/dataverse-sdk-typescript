@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_RetrieveKPIvaluesfromDCIResponse as msdyn_RetrieveKPIvaluesfromDCIResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveKPIvaluesfromDCI message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,34 @@ export class msdyn_RetrieveKPIvaluesfromDCIRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveKPIvaluesfromDCIResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_RetrieveKPIvaluesfromDCIResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveKPIvaluesfromDCIResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveKPIvaluesfromDCI action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveKPIvaluesfromDCIResult {
+  "@odata.context"?: string;
+  Errors: string;
+  KPIValues: string;
+}
+
+/**
  * msdyn_RetrieveKPIvaluesfromDCI response message
+ *
+ * `result` is the value the msdyn_RetrieveKPIvaluesfromDCI action returns (see {@link msdyn_RetrieveKPIvaluesfromDCIResult}).
  */
 export class msdyn_RetrieveKPIvaluesfromDCIResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveKPIvaluesfromDCIResponseData) {
+  constructor(public result: msdyn_RetrieveKPIvaluesfromDCIResult) {
     super("msdyn_RetrieveKPIvaluesfromDCI");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveKPIvaluesfromDCIResponse {
-    return new msdyn_RetrieveKPIvaluesfromDCIResponse(
-      responseObject<msdyn_RetrieveKPIvaluesfromDCIResponseData>(data)
-    );
+    return new msdyn_RetrieveKPIvaluesfromDCIResponse(data as msdyn_RetrieveKPIvaluesfromDCIResult);
   }
 }

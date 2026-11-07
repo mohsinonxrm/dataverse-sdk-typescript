@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { BeginMachineImageProvisioningResponse as BeginMachineImageProvisioningResponseData } from "./types/index.js";
 
 /**
  * Parameters of the BeginMachineImageProvisioning message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,34 @@ export class BeginMachineImageProvisioningRequest
   }
 
   async parseResponse(response: Response): Promise<BeginMachineImageProvisioningResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return BeginMachineImageProvisioningResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return BeginMachineImageProvisioningResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the BeginMachineImageProvisioning action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface BeginMachineImageProvisioningResult {
+  "@odata.context"?: string;
+  flowMachineImageId: string;
+  flowMachineImageVersionId: string;
+}
+
+/**
  * BeginMachineImageProvisioning response message
+ *
+ * `result` is the value the BeginMachineImageProvisioning action returns (see {@link BeginMachineImageProvisioningResult}).
  */
 export class BeginMachineImageProvisioningResponse extends OrganizationResponse {
-  constructor(public result: BeginMachineImageProvisioningResponseData) {
+  constructor(public result: BeginMachineImageProvisioningResult) {
     super("BeginMachineImageProvisioning");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): BeginMachineImageProvisioningResponse {
-    return new BeginMachineImageProvisioningResponse(
-      responseObject<BeginMachineImageProvisioningResponseData>(data)
-    );
+    return new BeginMachineImageProvisioningResponse(data as BeginMachineImageProvisioningResult);
   }
 }

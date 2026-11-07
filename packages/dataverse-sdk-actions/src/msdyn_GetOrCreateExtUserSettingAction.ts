@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetOrCreateExtUserSetting action
+ * Response from the msdyn_GetOrCreateExtUserSetting action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetOrCreateExtUserSettingResponse {
+  "@odata.context"?: string;
   ExtUserSettingRecordId: string;
 }
 
@@ -26,8 +29,7 @@ export class msdyn_GetOrCreateExtUserSettingAction implements Executable<msdyn_G
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOrCreateExtUserSettingResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetOrCreateExtUserSettingResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetOrCreateExtUserSettingResponse;
   }
 }

@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AutoMapEntity action
+ * Response from the AutoMapEntity action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AutoMapEntityResponse {
-  // No content returned
-}
+export type AutoMapEntityResponse = void;
 
 /**
  * Parameters of the AutoMapEntity action, by their CSDL names. A parameter the CSDL declares
@@ -41,9 +41,8 @@ export class AutoMapEntityAction implements Executable<AutoMapEntityResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<AutoMapEntityResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AutoMapEntityResponse;
-    return (await response.json()) as AutoMapEntityResponse;
+  parseResponse(_response: Response): Promise<AutoMapEntityResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

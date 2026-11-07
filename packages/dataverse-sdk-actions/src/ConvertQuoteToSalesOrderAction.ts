@@ -1,19 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { ColumnSet, salesorder } from "./types/index.js";
 
 /**
- * Response from ConvertQuoteToSalesOrder action
+ * Response from the ConvertQuoteToSalesOrder action.
  *
- * The response is the entity itself, not wrapped in `value`.
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface ConvertQuoteToSalesOrderResponse extends salesorder {
-  "@odata.context"?: string;
-  "@odata.etag"?: string;
-}
+export type ConvertQuoteToSalesOrderResponse =
+  | (salesorder & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
 
 /**
  * Parameters of the ConvertQuoteToSalesOrder action, by their CSDL names. A parameter the CSDL declares
@@ -61,8 +61,9 @@ export class ConvertQuoteToSalesOrderAction implements Executable<ConvertQuoteTo
   }
 
   async parseResponse(response: Response): Promise<ConvertQuoteToSalesOrderResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ConvertQuoteToSalesOrderResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
     return (await response.json()) as ConvertQuoteToSalesOrderResponse;
   }
 }

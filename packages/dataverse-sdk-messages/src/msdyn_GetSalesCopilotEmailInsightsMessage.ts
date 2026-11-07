@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetSalesCopilotEmailInsightsResponse as msdyn_GetSalesCopilotEmailInsightsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetSalesCopilotEmailInsights message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,34 @@ export class msdyn_GetSalesCopilotEmailInsightsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSalesCopilotEmailInsightsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetSalesCopilotEmailInsightsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetSalesCopilotEmailInsightsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSalesCopilotEmailInsights action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSalesCopilotEmailInsightsResult {
+  "@odata.context"?: string;
+}
+
+/**
  * msdyn_GetSalesCopilotEmailInsights response message
+ *
+ * `result` is the value the msdyn_GetSalesCopilotEmailInsights action returns (see {@link msdyn_GetSalesCopilotEmailInsightsResult}).
  */
 export class msdyn_GetSalesCopilotEmailInsightsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSalesCopilotEmailInsightsResponseData) {
+  constructor(public result: msdyn_GetSalesCopilotEmailInsightsResult) {
     super("msdyn_GetSalesCopilotEmailInsights");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSalesCopilotEmailInsightsResponse {
     return new msdyn_GetSalesCopilotEmailInsightsResponse(
-      responseObject<msdyn_GetSalesCopilotEmailInsightsResponseData>(data)
+      data as msdyn_GetSalesCopilotEmailInsightsResult
     );
   }
 }

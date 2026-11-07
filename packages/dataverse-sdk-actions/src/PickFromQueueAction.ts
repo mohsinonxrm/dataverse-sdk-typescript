@@ -1,15 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
 
 /**
- * Response from PickFromQueue action
+ * Response from the PickFromQueue action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PickFromQueueResponse {
-  // No content returned
-}
+export type PickFromQueueResponse = void;
 
 /**
  * Parameters of the PickFromQueue action, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +53,8 @@ export class PickFromQueueAction implements Executable<PickFromQueueResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<PickFromQueueResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PickFromQueueResponse;
-    return (await response.json()) as PickFromQueueResponse;
+  parseResponse(_response: Response): Promise<PickFromQueueResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

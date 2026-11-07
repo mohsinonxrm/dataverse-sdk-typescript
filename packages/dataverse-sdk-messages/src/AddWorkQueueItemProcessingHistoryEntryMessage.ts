@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -50,9 +50,9 @@ export class AddWorkQueueItemProcessingHistoryEntryRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AddWorkQueueItemProcessingHistoryEntryResponse> {
+  parseResponse(_response: Response): Promise<AddWorkQueueItemProcessingHistoryEntryResponse> {
     // No return value (204 No Content)
-    return new AddWorkQueueItemProcessingHistoryEntryResponse();
+    return Promise.resolve(new AddWorkQueueItemProcessingHistoryEntryResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class AddWorkQueueItemProcessingHistoryEntryResponse extends Organization
     super("AddWorkQueueItemProcessingHistoryEntry");
   }
 
-  static fromResponse(_data: unknown): AddWorkQueueItemProcessingHistoryEntryResponse {
+  static fromResponse(_data?: unknown): AddWorkQueueItemProcessingHistoryEntryResponse {
     return new AddWorkQueueItemProcessingHistoryEntryResponse();
   }
 }

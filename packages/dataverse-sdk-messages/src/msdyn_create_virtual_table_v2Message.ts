@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_create_virtual_table_v2Response as msdyn_create_virtual_table_v2ResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_create_virtual_table_v2 message, by their CSDL names. A parameter the CSDL declares
@@ -79,23 +77,33 @@ export class msdyn_create_virtual_table_v2Request
   }
 
   async parseResponse(response: Response): Promise<msdyn_create_virtual_table_v2Response> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_create_virtual_table_v2Response.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_create_virtual_table_v2Response.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_create_virtual_table_v2 action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_create_virtual_table_v2Result {
+  "@odata.context"?: string;
+  virtual_table_id: string;
+}
+
+/**
  * msdyn_create_virtual_table_v2 response message
+ *
+ * `result` is the value the msdyn_create_virtual_table_v2 action returns (see {@link msdyn_create_virtual_table_v2Result}).
  */
 export class msdyn_create_virtual_table_v2Response extends OrganizationResponse {
-  constructor(public result: msdyn_create_virtual_table_v2ResponseData) {
+  constructor(public result: msdyn_create_virtual_table_v2Result) {
     super("msdyn_create_virtual_table_v2");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_create_virtual_table_v2Response {
-    return new msdyn_create_virtual_table_v2Response(
-      responseObject<msdyn_create_virtual_table_v2ResponseData>(data)
-    );
+    return new msdyn_create_virtual_table_v2Response(data as msdyn_create_virtual_table_v2Result);
   }
 }

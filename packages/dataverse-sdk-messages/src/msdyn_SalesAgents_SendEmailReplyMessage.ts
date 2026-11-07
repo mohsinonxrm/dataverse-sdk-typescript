@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAgents_SendEmailReplyResponse as msdyn_SalesAgents_SendEmailReplyResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAgents_SendEmailReply message, by their CSDL names. A parameter the CSDL declares
@@ -55,23 +53,35 @@ export class msdyn_SalesAgents_SendEmailReplyRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_SendEmailReplyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SalesAgents_SendEmailReplyResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAgents_SendEmailReplyResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_SendEmailReply action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_SendEmailReplyResult {
+  "@odata.context"?: string;
+  msdyn_IsCustomerUnsubscribed: boolean;
+}
+
+/**
  * msdyn_SalesAgents_SendEmailReply response message
+ *
+ * `result` is the value the msdyn_SalesAgents_SendEmailReply action returns (see {@link msdyn_SalesAgents_SendEmailReplyResult}).
  */
 export class msdyn_SalesAgents_SendEmailReplyResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_SendEmailReplyResponseData) {
+  constructor(public result: msdyn_SalesAgents_SendEmailReplyResult) {
     super("msdyn_SalesAgents_SendEmailReply");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_SendEmailReplyResponse {
     return new msdyn_SalesAgents_SendEmailReplyResponse(
-      responseObject<msdyn_SalesAgents_SendEmailReplyResponseData>(data)
+      data as msdyn_SalesAgents_SendEmailReplyResult
     );
   }
 }

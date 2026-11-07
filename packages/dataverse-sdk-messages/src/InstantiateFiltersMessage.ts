@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { savedquery } from "./types/index.js";
@@ -51,9 +51,9 @@ export class InstantiateFiltersRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<InstantiateFiltersResponse> {
+  parseResponse(_response: Response): Promise<InstantiateFiltersResponse> {
     // No return value (204 No Content)
-    return new InstantiateFiltersResponse();
+    return Promise.resolve(new InstantiateFiltersResponse());
   }
 }
 
@@ -65,7 +65,7 @@ export class InstantiateFiltersResponse extends OrganizationResponse {
     super("InstantiateFilters");
   }
 
-  static fromResponse(_data: unknown): InstantiateFiltersResponse {
+  static fromResponse(_data?: unknown): InstantiateFiltersResponse {
     return new InstantiateFiltersResponse();
   }
 }

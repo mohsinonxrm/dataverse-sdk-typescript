@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { msdyn_IsMSTeamsUserSyncFeatureEnabledResponse as msdyn_IsMSTeamsUserSyncFeatureEnabledResponseData } from "./types/index.js";
 
 /**
  * msdyn_IsMSTeamsUserSyncFeatureEnabled request message
@@ -29,24 +27,36 @@ export class msdyn_IsMSTeamsUserSyncFeatureEnabledRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsMSTeamsUserSyncFeatureEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_IsMSTeamsUserSyncFeatureEnabledResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_IsMSTeamsUserSyncFeatureEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IsMSTeamsUserSyncFeatureEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IsMSTeamsUserSyncFeatureEnabledResult {
+  "@odata.context"?: string;
+  DisabledReason: string;
+  IsEnabled: boolean;
+}
+
+/**
  * msdyn_IsMSTeamsUserSyncFeatureEnabled response message
+ *
+ * `result` is the value the msdyn_IsMSTeamsUserSyncFeatureEnabled action returns (see {@link msdyn_IsMSTeamsUserSyncFeatureEnabledResult}).
  */
 export class msdyn_IsMSTeamsUserSyncFeatureEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IsMSTeamsUserSyncFeatureEnabledResponseData) {
+  constructor(public result: msdyn_IsMSTeamsUserSyncFeatureEnabledResult) {
     super("msdyn_IsMSTeamsUserSyncFeatureEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IsMSTeamsUserSyncFeatureEnabledResponse {
     return new msdyn_IsMSTeamsUserSyncFeatureEnabledResponse(
-      responseObject<msdyn_IsMSTeamsUserSyncFeatureEnabledResponseData>(data)
+      data as msdyn_IsMSTeamsUserSyncFeatureEnabledResult
     );
   }
 }

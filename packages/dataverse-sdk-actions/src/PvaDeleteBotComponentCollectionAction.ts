@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from PvaDeleteBotComponentCollection action
+ * Response from the PvaDeleteBotComponentCollection action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PvaDeleteBotComponentCollectionResponse {
-  // No content returned
-}
+export type PvaDeleteBotComponentCollectionResponse = void;
 
 /**
  * PvaDeleteBotComponentCollection action
@@ -31,9 +31,8 @@ export class PvaDeleteBotComponentCollectionAction implements Executable<PvaDele
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaDeleteBotComponentCollectionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PvaDeleteBotComponentCollectionResponse;
-    return (await response.json()) as PvaDeleteBotComponentCollectionResponse;
+  parseResponse(_response: Response): Promise<PvaDeleteBotComponentCollectionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

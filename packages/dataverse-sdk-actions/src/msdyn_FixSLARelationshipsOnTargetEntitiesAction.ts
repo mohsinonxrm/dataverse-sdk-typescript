@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_FixSLARelationshipsOnTargetEntities action
+ * Response from the msdyn_FixSLARelationshipsOnTargetEntities action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_FixSLARelationshipsOnTargetEntitiesResponse {
-  // No content returned
-}
+export type msdyn_FixSLARelationshipsOnTargetEntitiesResponse = void;
 
 /**
  * Parameters of the msdyn_FixSLARelationshipsOnTargetEntities action, by their CSDL names. A parameter the CSDL declares
@@ -43,11 +43,8 @@ export class msdyn_FixSLARelationshipsOnTargetEntitiesAction implements Executab
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_FixSLARelationshipsOnTargetEntitiesResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_FixSLARelationshipsOnTargetEntitiesResponse;
-    return (await response.json()) as msdyn_FixSLARelationshipsOnTargetEntitiesResponse;
+  parseResponse(_response: Response): Promise<msdyn_FixSLARelationshipsOnTargetEntitiesResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

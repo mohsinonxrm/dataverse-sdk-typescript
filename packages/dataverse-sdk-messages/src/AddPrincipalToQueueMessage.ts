@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -50,9 +50,9 @@ export class AddPrincipalToQueueRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AddPrincipalToQueueResponse> {
+  parseResponse(_response: Response): Promise<AddPrincipalToQueueResponse> {
     // No return value (204 No Content)
-    return new AddPrincipalToQueueResponse();
+    return Promise.resolve(new AddPrincipalToQueueResponse());
   }
 }
 
@@ -64,7 +64,7 @@ export class AddPrincipalToQueueResponse extends OrganizationResponse {
     super("AddPrincipalToQueue");
   }
 
-  static fromResponse(_data: unknown): AddPrincipalToQueueResponse {
+  static fromResponse(_data?: unknown): AddPrincipalToQueueResponse {
     return new AddPrincipalToQueueResponse();
   }
 }

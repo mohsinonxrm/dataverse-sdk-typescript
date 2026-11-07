@@ -1,14 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { post } from "./types/index.js";
 
 /**
- * Response from RetrieveRecordWall function
+ * Response from the RetrieveRecordWall function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveRecordWallResponse {
-  value: post[];
-}
+export type RetrieveRecordWallResponse = Array<
+  post & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * Parameters of the RetrieveRecordWall function, by their CSDL names. A parameter the CSDL declares
@@ -100,8 +103,9 @@ export class RetrieveRecordWallFunction implements Executable<RetrieveRecordWall
   }
 
   async parseResponse(response: Response): Promise<RetrieveRecordWallResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveRecordWallResponse;
-    return (await response.json()) as RetrieveRecordWallResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveRecordWallResponse }).value;
   }
 }

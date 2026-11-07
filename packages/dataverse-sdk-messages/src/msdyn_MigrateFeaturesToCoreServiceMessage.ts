@@ -42,9 +42,9 @@ export class msdyn_MigrateFeaturesToCoreServiceRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_MigrateFeaturesToCoreServiceResponse> {
+  parseResponse(_response: Response): Promise<msdyn_MigrateFeaturesToCoreServiceResponse> {
     // No return value (204 No Content)
-    return new msdyn_MigrateFeaturesToCoreServiceResponse();
+    return Promise.resolve(new msdyn_MigrateFeaturesToCoreServiceResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_MigrateFeaturesToCoreServiceResponse extends OrganizationResp
     super("msdyn_MigrateFeaturesToCoreService");
   }
 
-  static fromResponse(_data: unknown): msdyn_MigrateFeaturesToCoreServiceResponse {
+  static fromResponse(_data?: unknown): msdyn_MigrateFeaturesToCoreServiceResponse {
     return new msdyn_MigrateFeaturesToCoreServiceResponse();
   }
 }

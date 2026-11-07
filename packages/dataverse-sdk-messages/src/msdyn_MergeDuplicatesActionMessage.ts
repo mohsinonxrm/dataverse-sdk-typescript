@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -48,9 +48,9 @@ export class msdyn_MergeDuplicatesActionRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_MergeDuplicatesActionResponse> {
+  parseResponse(_response: Response): Promise<msdyn_MergeDuplicatesActionResponse> {
     // No return value (204 No Content)
-    return new msdyn_MergeDuplicatesActionResponse();
+    return Promise.resolve(new msdyn_MergeDuplicatesActionResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_MergeDuplicatesActionResponse extends OrganizationResponse {
     super("msdyn_MergeDuplicatesAction");
   }
 
-  static fromResponse(_data: unknown): msdyn_MergeDuplicatesActionResponse {
+  static fromResponse(_data?: unknown): msdyn_MergeDuplicatesActionResponse {
     return new msdyn_MergeDuplicatesActionResponse();
   }
 }

@@ -42,9 +42,9 @@ export class msdyn_PostCreateAutonomousEmailRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_PostCreateAutonomousEmailResponse> {
+  parseResponse(_response: Response): Promise<msdyn_PostCreateAutonomousEmailResponse> {
     // No return value (204 No Content)
-    return new msdyn_PostCreateAutonomousEmailResponse();
+    return Promise.resolve(new msdyn_PostCreateAutonomousEmailResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_PostCreateAutonomousEmailResponse extends OrganizationRespons
     super("msdyn_PostCreateAutonomousEmail");
   }
 
-  static fromResponse(_data: unknown): msdyn_PostCreateAutonomousEmailResponse {
+  static fromResponse(_data?: unknown): msdyn_PostCreateAutonomousEmailResponse {
     return new msdyn_PostCreateAutonomousEmailResponse();
   }
 }

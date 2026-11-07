@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
@@ -51,9 +51,9 @@ export class AddMembersTeamRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AddMembersTeamResponse> {
+  parseResponse(_response: Response): Promise<AddMembersTeamResponse> {
     // No return value (204 No Content)
-    return new AddMembersTeamResponse();
+    return Promise.resolve(new AddMembersTeamResponse());
   }
 }
 
@@ -65,7 +65,7 @@ export class AddMembersTeamResponse extends OrganizationResponse {
     super("AddMembersTeam");
   }
 
-  static fromResponse(_data: unknown): AddMembersTeamResponse {
+  static fromResponse(_data?: unknown): AddMembersTeamResponse {
     return new AddMembersTeamResponse();
   }
 }

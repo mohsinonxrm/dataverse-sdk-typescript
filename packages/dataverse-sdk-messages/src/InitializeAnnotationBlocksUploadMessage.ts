@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { InitializeAnnotationBlocksUploadResponse as InitializeAnnotationBlocksUploadResponseData } from "./types/index.js";
 
 /**
  * Parameters of the InitializeAnnotationBlocksUpload message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,35 @@ export class InitializeAnnotationBlocksUploadRequest
   }
 
   async parseResponse(response: Response): Promise<InitializeAnnotationBlocksUploadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return InitializeAnnotationBlocksUploadResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return InitializeAnnotationBlocksUploadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the InitializeAnnotationBlocksUpload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface InitializeAnnotationBlocksUploadResult {
+  "@odata.context"?: string;
+  FileContinuationToken: string;
+}
+
+/**
  * InitializeAnnotationBlocksUpload response message
+ *
+ * `result` is the value the InitializeAnnotationBlocksUpload action returns (see {@link InitializeAnnotationBlocksUploadResult}).
  */
 export class InitializeAnnotationBlocksUploadResponse extends OrganizationResponse {
-  constructor(public result: InitializeAnnotationBlocksUploadResponseData) {
+  constructor(public result: InitializeAnnotationBlocksUploadResult) {
     super("InitializeAnnotationBlocksUpload");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): InitializeAnnotationBlocksUploadResponse {
     return new InitializeAnnotationBlocksUploadResponse(
-      responseObject<InitializeAnnotationBlocksUploadResponseData>(data)
+      data as InitializeAnnotationBlocksUploadResult
     );
   }
 }

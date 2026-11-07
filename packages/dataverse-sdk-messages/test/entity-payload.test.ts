@@ -17,7 +17,7 @@ import {
 
 describe("#74: message entity payloads", () => {
   it("createEntityReference sends @odata.type and the primary key only", () => {
-    const lead = createEntityReference("lead", "l1", "Contoso lead");
+    const lead = createEntityReference("lead", "l1", { name: "Contoso lead" });
     expect(JSON.parse(JSON.stringify(lead))).toEqual({
       "@odata.type": "Microsoft.Dynamics.CRM.lead",
       leadid: "l1",

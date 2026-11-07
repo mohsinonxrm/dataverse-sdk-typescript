@@ -44,9 +44,9 @@ export class msdyn_RunSolutionCheckerRulesRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_RunSolutionCheckerRulesResponse> {
+  parseResponse(_response: Response): Promise<msdyn_RunSolutionCheckerRulesResponse> {
     // No return value (204 No Content)
-    return new msdyn_RunSolutionCheckerRulesResponse();
+    return Promise.resolve(new msdyn_RunSolutionCheckerRulesResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_RunSolutionCheckerRulesResponse extends OrganizationResponse 
     super("msdyn_RunSolutionCheckerRules");
   }
 
-  static fromResponse(_data: unknown): msdyn_RunSolutionCheckerRulesResponse {
+  static fromResponse(_data?: unknown): msdyn_RunSolutionCheckerRulesResponse {
     return new msdyn_RunSolutionCheckerRulesResponse();
   }
 }

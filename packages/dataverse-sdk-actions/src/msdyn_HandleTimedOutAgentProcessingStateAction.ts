@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_HandleTimedOutAgentProcessingState action
+ * Response from the msdyn_HandleTimedOutAgentProcessingState action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_HandleTimedOutAgentProcessingStateResponse {
-  // No content returned
-}
+export type msdyn_HandleTimedOutAgentProcessingStateResponse = void;
 
 /**
  * Parameters of the msdyn_HandleTimedOutAgentProcessingState action, by their CSDL names. A parameter the CSDL declares
@@ -43,11 +43,8 @@ export class msdyn_HandleTimedOutAgentProcessingStateAction implements Executabl
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_HandleTimedOutAgentProcessingStateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_HandleTimedOutAgentProcessingStateResponse;
-    return (await response.json()) as msdyn_HandleTimedOutAgentProcessingStateResponse;
+  parseResponse(_response: Response): Promise<msdyn_HandleTimedOutAgentProcessingStateResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

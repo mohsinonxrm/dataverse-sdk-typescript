@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { PowerAutomateProxyResponse as PowerAutomateProxyResponseData } from "./types/index.js";
 
 /**
  * Parameters of the PowerAutomateProxy message, by their CSDL names. A parameter the CSDL declares
@@ -51,21 +49,35 @@ export class PowerAutomateProxyRequest
   }
 
   async parseResponse(response: Response): Promise<PowerAutomateProxyResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PowerAutomateProxyResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return PowerAutomateProxyResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PowerAutomateProxy action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PowerAutomateProxyResult {
+  "@odata.context"?: string;
+  HttpStatusCode: number;
+  ResponseBody: string;
+  ResponseHeaders: string;
+}
+
+/**
  * PowerAutomateProxy response message
+ *
+ * `result` is the value the PowerAutomateProxy action returns (see {@link PowerAutomateProxyResult}).
  */
 export class PowerAutomateProxyResponse extends OrganizationResponse {
-  constructor(public result: PowerAutomateProxyResponseData) {
+  constructor(public result: PowerAutomateProxyResult) {
     super("PowerAutomateProxy");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PowerAutomateProxyResponse {
-    return new PowerAutomateProxyResponse(responseObject<PowerAutomateProxyResponseData>(data));
+    return new PowerAutomateProxyResponse(data as PowerAutomateProxyResult);
   }
 }

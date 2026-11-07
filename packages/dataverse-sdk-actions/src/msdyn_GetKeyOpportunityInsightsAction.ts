@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetKeyOpportunityInsights action
+ * Response from the msdyn_GetKeyOpportunityInsights action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetKeyOpportunityInsightsResponse {
+  "@odata.context"?: string;
   ErrorMessage: string;
   IsSuccess: boolean;
   Result: string;
@@ -44,8 +47,7 @@ export class msdyn_GetKeyOpportunityInsightsAction implements Executable<msdyn_G
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetKeyOpportunityInsightsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetKeyOpportunityInsightsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetKeyOpportunityInsightsResponse;
   }
 }

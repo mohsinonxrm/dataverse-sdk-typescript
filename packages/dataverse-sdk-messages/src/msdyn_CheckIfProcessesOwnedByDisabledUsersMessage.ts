@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckIfProcessesOwnedByDisabledUsersResponse as msdyn_CheckIfProcessesOwnedByDisabledUsersResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckIfProcessesOwnedByDisabledUsers message, by their CSDL names. A parameter the CSDL declares
@@ -47,24 +45,40 @@ export class msdyn_CheckIfProcessesOwnedByDisabledUsersRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfProcessesOwnedByDisabledUsersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckIfProcessesOwnedByDisabledUsersResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckIfProcessesOwnedByDisabledUsersResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfProcessesOwnedByDisabledUsers action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfProcessesOwnedByDisabledUsersResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnLevel: number;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfProcessesOwnedByDisabledUsers response message
+ *
+ * `result` is the value the msdyn_CheckIfProcessesOwnedByDisabledUsers action returns (see {@link msdyn_CheckIfProcessesOwnedByDisabledUsersResult}).
  */
 export class msdyn_CheckIfProcessesOwnedByDisabledUsersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfProcessesOwnedByDisabledUsersResponseData) {
+  constructor(public result: msdyn_CheckIfProcessesOwnedByDisabledUsersResult) {
     super("msdyn_CheckIfProcessesOwnedByDisabledUsers");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfProcessesOwnedByDisabledUsersResponse {
     return new msdyn_CheckIfProcessesOwnedByDisabledUsersResponse(
-      responseObject<msdyn_CheckIfProcessesOwnedByDisabledUsersResponseData>(data)
+      data as msdyn_CheckIfProcessesOwnedByDisabledUsersResult
     );
   }
 }

@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { githubappconfig } from "./types/index.js";
@@ -71,9 +71,9 @@ export class ConnectToGitRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ConnectToGitResponse> {
+  parseResponse(_response: Response): Promise<ConnectToGitResponse> {
     // No return value (204 No Content)
-    return new ConnectToGitResponse();
+    return Promise.resolve(new ConnectToGitResponse());
   }
 }
 
@@ -85,7 +85,7 @@ export class ConnectToGitResponse extends OrganizationResponse {
     super("ConnectToGit");
   }
 
-  static fromResponse(_data: unknown): ConnectToGitResponse {
+  static fromResponse(_data?: unknown): ConnectToGitResponse {
     return new ConnectToGitResponse();
   }
 }

@@ -1,6 +1,6 @@
 import type { AuditDetail } from "./AuditDetail.js";
 import type { Collection_Int32_String } from "./Collection_Int32_String.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { AnyEntityPayload } from "./EntityPayload.js";
 
 /**

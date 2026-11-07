@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from OnExternalCreated action
+ * Response from the OnExternalCreated action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface OnExternalCreatedResponse {
-  // No content returned
-}
+export type OnExternalCreatedResponse = void;
 
 /**
  * Parameters of the OnExternalCreated action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class OnExternalCreatedAction implements Executable<OnExternalCreatedResp
     };
   }
 
-  async parseResponse(response: Response): Promise<OnExternalCreatedResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as OnExternalCreatedResponse;
-    return (await response.json()) as OnExternalCreatedResponse;
+  parseResponse(_response: Response): Promise<OnExternalCreatedResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

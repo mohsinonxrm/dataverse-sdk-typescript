@@ -1,6 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseValue } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -46,23 +45,40 @@ export class msdyn_SalesAgents_CreateSARRecordsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_CreateSARRecordsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SalesAgents_CreateSARRecordsResponse.fromResponse({});
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204)
+      return msdyn_SalesAgents_CreateSARRecordsResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
     return msdyn_SalesAgents_CreateSARRecordsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_CreateSARRecords action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type msdyn_SalesAgents_CreateSARRecordsResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * msdyn_SalesAgents_CreateSARRecords response message
+ *
+ * `result` is the value the msdyn_SalesAgents_CreateSARRecords action returns (see {@link msdyn_SalesAgents_CreateSARRecordsResult}).
  */
 export class msdyn_SalesAgents_CreateSARRecordsResponse extends OrganizationResponse {
-  constructor(public result: Record<string, unknown>[]) {
+  constructor(public result: msdyn_SalesAgents_CreateSARRecordsResult) {
     super("msdyn_SalesAgents_CreateSARRecords");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_CreateSARRecordsResponse {
     return new msdyn_SalesAgents_CreateSARRecordsResponse(
-      responseValue<Record<string, unknown>[]>(data)
+      data === undefined ? [] : (data as { value: msdyn_SalesAgents_CreateSARRecordsResult }).value
     );
   }
 }

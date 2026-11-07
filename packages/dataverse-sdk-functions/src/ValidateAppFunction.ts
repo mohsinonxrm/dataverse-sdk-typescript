@@ -3,9 +3,12 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { AppValidationResponse } from "./types/index.js";
 
 /**
- * Response from ValidateApp function
+ * Response from the ValidateApp function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ValidateAppResponse {
+  "@odata.context"?: string;
   AppValidationResponse: AppValidationResponse;
 }
 
@@ -49,8 +52,7 @@ export class ValidateAppFunction implements Executable<ValidateAppResponse> {
   }
 
   async parseResponse(response: Response): Promise<ValidateAppResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as ValidateAppResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as ValidateAppResponse;
   }
 }

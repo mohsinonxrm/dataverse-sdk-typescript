@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetDynamicFieldsForActionTypeResponse as msdyn_GetDynamicFieldsForActionTypeResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetDynamicFieldsForActionType message, by their CSDL names. A parameter the CSDL declares
@@ -51,24 +49,35 @@ export class msdyn_GetDynamicFieldsForActionTypeRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetDynamicFieldsForActionTypeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_GetDynamicFieldsForActionTypeResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetDynamicFieldsForActionTypeResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetDynamicFieldsForActionType action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetDynamicFieldsForActionTypeResult {
+  "@odata.context"?: string;
+  dynamicSchema: string;
+}
+
+/**
  * msdyn_GetDynamicFieldsForActionType response message
+ *
+ * `result` is the value the msdyn_GetDynamicFieldsForActionType action returns (see {@link msdyn_GetDynamicFieldsForActionTypeResult}).
  */
 export class msdyn_GetDynamicFieldsForActionTypeResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetDynamicFieldsForActionTypeResponseData) {
+  constructor(public result: msdyn_GetDynamicFieldsForActionTypeResult) {
     super("msdyn_GetDynamicFieldsForActionType");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetDynamicFieldsForActionTypeResponse {
     return new msdyn_GetDynamicFieldsForActionTypeResponse(
-      responseObject<msdyn_GetDynamicFieldsForActionTypeResponseData>(data)
+      data as msdyn_GetDynamicFieldsForActionTypeResult
     );
   }
 }

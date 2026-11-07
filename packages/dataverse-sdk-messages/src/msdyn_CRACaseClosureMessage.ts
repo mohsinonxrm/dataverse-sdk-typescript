@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_CRACaseClosureResponse as msdyn_CRACaseClosureResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CRACaseClosure message, by their CSDL names. A parameter the CSDL declares
@@ -65,21 +63,34 @@ export class msdyn_CRACaseClosureRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CRACaseClosureResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CRACaseClosureResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CRACaseClosureResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CRACaseClosure action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CRACaseClosureResult {
+  "@odata.context"?: string;
+  msdyn_IsCaseResolved: boolean;
+  msdyn_Status: string;
+}
+
+/**
  * msdyn_CRACaseClosure response message
+ *
+ * `result` is the value the msdyn_CRACaseClosure action returns (see {@link msdyn_CRACaseClosureResult}).
  */
 export class msdyn_CRACaseClosureResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CRACaseClosureResponseData) {
+  constructor(public result: msdyn_CRACaseClosureResult) {
     super("msdyn_CRACaseClosure");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CRACaseClosureResponse {
-    return new msdyn_CRACaseClosureResponse(responseObject<msdyn_CRACaseClosureResponseData>(data));
+    return new msdyn_CRACaseClosureResponse(data as msdyn_CRACaseClosureResult);
   }
 }

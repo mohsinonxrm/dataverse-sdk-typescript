@@ -7,9 +7,12 @@ import type {
 } from "./types/index.js";
 
 /**
- * Response from CreatePolymorphicLookupAttribute action
+ * Response from the CreatePolymorphicLookupAttribute action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreatePolymorphicLookupAttributeResponse {
+  "@odata.context"?: string;
   AttributeId: string;
   RelationshipIds: string[];
 }
@@ -55,8 +58,7 @@ export class CreatePolymorphicLookupAttributeAction implements Executable<Create
   }
 
   async parseResponse(response: Response): Promise<CreatePolymorphicLookupAttributeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CreatePolymorphicLookupAttributeResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CreatePolymorphicLookupAttributeResponse;
   }
 }

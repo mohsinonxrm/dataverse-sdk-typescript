@@ -1,12 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult action
+ * Response from the msdyn_AutonomousSQA_GetEngageAndReadinessAgentResult action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse {
+  "@odata.context"?: string;
   msdyn_Response: string;
 }
 
@@ -50,9 +53,7 @@ export class msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultAction implemen
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return {} as msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_AutonomousSQA_GetEngageAndReadinessAgentResultResponse;
   }
 }

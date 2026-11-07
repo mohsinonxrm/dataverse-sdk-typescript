@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_getAppConfigByContextResponse as msdyn_getAppConfigByContextResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_getAppConfigByContext message, by their CSDL names. A parameter the CSDL declares
@@ -51,23 +49,34 @@ export class msdyn_getAppConfigByContextRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_getAppConfigByContextResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_getAppConfigByContextResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_getAppConfigByContextResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_getAppConfigByContext action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_getAppConfigByContextResult {
+  "@odata.context"?: string;
+  AppConfigurationAssignment: string;
+  AppConfigurations: string;
+}
+
+/**
  * msdyn_getAppConfigByContext response message
+ *
+ * `result` is the value the msdyn_getAppConfigByContext action returns (see {@link msdyn_getAppConfigByContextResult}).
  */
 export class msdyn_getAppConfigByContextResponse extends OrganizationResponse {
-  constructor(public result: msdyn_getAppConfigByContextResponseData) {
+  constructor(public result: msdyn_getAppConfigByContextResult) {
     super("msdyn_getAppConfigByContext");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_getAppConfigByContextResponse {
-    return new msdyn_getAppConfigByContextResponse(
-      responseObject<msdyn_getAppConfigByContextResponseData>(data)
-    );
+    return new msdyn_getAppConfigByContextResponse(data as msdyn_getAppConfigByContextResult);
   }
 }

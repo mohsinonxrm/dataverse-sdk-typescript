@@ -14,6 +14,7 @@ import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { parseEdmx } from "../src/parsers/edmx-parser.js";
+import { canonicalizeCsdl } from "../src/parsers/canonical.js";
 import {
   generateEnumTypeDeclaration,
   generateMetadataTypes,
@@ -69,7 +70,8 @@ let dir: string;
 const read = (name: string): Promise<string> => readFile(join(dir, `${name}.ts`), "utf8");
 /**
  * Prettier only re-wraps lines and quotes import paths in these files, so comparing with those
- * normalised is exact enough. (The byte-for-byte check runs on a live $metadata; see the PR.)
+ * normalised is exact enough. (The byte-for-byte check is CI's: `regen` rewrites the package from
+ * the committed `$metadata` snapshot and fails on any diff, #295.)
  */
 const squash = (code: string): string =>
   code
@@ -80,7 +82,8 @@ const squash = (code: string): string =>
 beforeAll(async () => {
   vi.spyOn(console, "log").mockImplementation(() => undefined);
   dir = await mkdtemp(join(OUT_ROOT, ".gen-metadata-test-"));
-  await generateMetadataTypes(parseEdmx(EDMX), dir, false);
+  // Canonical order, as `regen` generates the committed package from the snapshot (#295)
+  await generateMetadataTypes(canonicalizeCsdl(parseEdmx(EDMX)), dir, false);
 });
 
 afterAll(async () => {

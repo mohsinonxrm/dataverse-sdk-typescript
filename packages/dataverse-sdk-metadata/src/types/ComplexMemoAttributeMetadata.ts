@@ -11,6 +11,6 @@ export interface ComplexMemoAttributeMetadata extends ComplexAttributeMetadata {
   Format?: StringFormat;
   FormatName?: MemoFormatName;
   ImeMode?: ImeMode;
-  MaxLength?: number;
   IsLocalizable?: boolean;
+  MaxLength?: number;
 }

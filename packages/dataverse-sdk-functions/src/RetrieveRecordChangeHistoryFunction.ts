@@ -1,12 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { AuditDetailCollection, PagingInfo } from "./types/index.js";
 
 /**
- * Response from RetrieveRecordChangeHistory function
+ * Response from the RetrieveRecordChangeHistory function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveRecordChangeHistoryResponse {
+  "@odata.context"?: string;
   AuditDetailCollection: AuditDetailCollection;
 }
 
@@ -58,8 +61,7 @@ export class RetrieveRecordChangeHistoryFunction implements Executable<RetrieveR
   }
 
   async parseResponse(response: Response): Promise<RetrieveRecordChangeHistoryResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveRecordChangeHistoryResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as RetrieveRecordChangeHistoryResponse;
   }
 }

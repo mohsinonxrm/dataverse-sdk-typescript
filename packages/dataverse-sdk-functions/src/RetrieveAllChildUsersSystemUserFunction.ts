@@ -2,11 +2,14 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { systemuser } from "./types/index.js";
 
 /**
- * Response from RetrieveAllChildUsersSystemUser function
+ * Response from the RetrieveAllChildUsersSystemUser function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveAllChildUsersSystemUserResponse {
-  value: systemuser[];
-}
+export type RetrieveAllChildUsersSystemUserResponse = Array<
+  systemuser & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * RetrieveAllChildUsersSystemUser function
@@ -33,8 +36,9 @@ export class RetrieveAllChildUsersSystemUserFunction implements Executable<Retri
   }
 
   async parseResponse(response: Response): Promise<RetrieveAllChildUsersSystemUserResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrieveAllChildUsersSystemUserResponse;
-    return (await response.json()) as RetrieveAllChildUsersSystemUserResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveAllChildUsersSystemUserResponse }).value;
   }
 }

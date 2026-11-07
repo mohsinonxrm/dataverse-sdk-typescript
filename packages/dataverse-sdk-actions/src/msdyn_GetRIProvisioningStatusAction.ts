@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetRIProvisioningStatus action
+ * Response from the msdyn_GetRIProvisioningStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetRIProvisioningStatusResponse {
+  "@odata.context"?: string;
   DCIHubPlanType: string;
   EEProvisioningStatus: number;
   RIErrorStatusCode: string;
@@ -30,8 +33,7 @@ export class msdyn_GetRIProvisioningStatusAction implements Executable<msdyn_Get
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRIProvisioningStatusResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetRIProvisioningStatusResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_GetRIProvisioningStatusResponse;
   }
 }

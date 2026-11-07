@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { QuestionAnalyticsResponse as QuestionAnalyticsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the QuestionAnalytics message, by their CSDL names. A parameter the CSDL declares
@@ -55,21 +53,36 @@ export class QuestionAnalyticsRequest
   }
 
   async parseResponse(response: Response): Promise<QuestionAnalyticsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return QuestionAnalyticsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return QuestionAnalyticsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the QuestionAnalytics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface QuestionAnalyticsResult {
+  "@odata.context"?: string;
+  moreRecords: boolean;
+  page: number;
+  pagingCookie: string;
+  value: string;
+}
+
+/**
  * QuestionAnalytics response message
+ *
+ * `result` is the value the QuestionAnalytics action returns (see {@link QuestionAnalyticsResult}).
  */
 export class QuestionAnalyticsResponse extends OrganizationResponse {
-  constructor(public result: QuestionAnalyticsResponseData) {
+  constructor(public result: QuestionAnalyticsResult) {
     super("QuestionAnalytics");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): QuestionAnalyticsResponse {
-    return new QuestionAnalyticsResponse(responseObject<QuestionAnalyticsResponseData>(data));
+    return new QuestionAnalyticsResponse(data as QuestionAnalyticsResult);
   }
 }

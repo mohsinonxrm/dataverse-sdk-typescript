@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_getAppConfigByContext action
+ * Response from the msdyn_getAppConfigByContext action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_getAppConfigByContextResponse {
+  "@odata.context"?: string;
   AppConfigurationAssignment: string;
   AppConfigurations: string;
 }
@@ -49,8 +52,7 @@ export class msdyn_getAppConfigByContextAction implements Executable<msdyn_getAp
   }
 
   async parseResponse(response: Response): Promise<msdyn_getAppConfigByContextResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_getAppConfigByContextResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_getAppConfigByContextResponse;
   }
 }

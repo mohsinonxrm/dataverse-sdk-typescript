@@ -7,12 +7,12 @@ import type { RelationshipMetadataBase } from "./RelationshipMetadataBase.js";
  */
 export interface ManyToManyRelationshipMetadata extends RelationshipMetadataBase {
   Entity1AssociatedMenuConfiguration?: AssociatedMenuConfiguration;
-  Entity2AssociatedMenuConfiguration?: AssociatedMenuConfiguration;
-  Entity1LogicalName?: string;
-  Entity2LogicalName?: string;
-  IntersectEntityName?: string;
   Entity1IntersectAttribute?: string;
-  Entity2IntersectAttribute?: string;
+  Entity1LogicalName?: string;
   Entity1NavigationPropertyName?: string;
+  Entity2AssociatedMenuConfiguration?: AssociatedMenuConfiguration;
+  Entity2IntersectAttribute?: string;
+  Entity2LogicalName?: string;
   Entity2NavigationPropertyName?: string;
+  IntersectEntityName?: string;
 }

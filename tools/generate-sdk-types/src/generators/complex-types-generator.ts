@@ -9,9 +9,7 @@ import { csdlTypeToTs, toPascalCase as _toPascalCase } from "../utils/typescript
 import { writeTypeScriptFile, purgeDirectory } from "../utils/file-writer.js";
 import { concreteTypesOf, generatedBaseType, typedUnionName } from "../utils/polymorphism.js";
 import { ENTITY_PAYLOAD_MODULE, entityParameterType } from "../utils/entity-payload.js";
-
-/** The package a `types/` folder belongs to: where its `EntityReference` module is. */
-export type TypesTarget = "actions" | "functions" | "messages";
+import { ENTITY_REFERENCE_IMPORT } from "../utils/entity-reference.js";
 
 /**
  * Generate TypeScript interfaces for all complex types, entity types, AND enums from CSDL.
@@ -20,13 +18,11 @@ export type TypesTarget = "actions" | "functions" | "messages";
  * @param csdl - Parsed CSDL schema
  * @param outputPath - Output directory path
  * @param purge - If true, delete existing output before generating
- * @param target - The package: the messages package keeps `EntityReference.ts` out of `types/`
  */
 export async function generateComplexTypes(
   csdl: CsdlSchema,
   outputPath: string,
-  purge = false,
-  target: TypesTarget = "actions"
+  purge = false
 ): Promise<void> {
   const absolutePath = resolve(outputPath);
 
@@ -74,7 +70,7 @@ export async function generateComplexTypes(
 
   // Generate one file per complex type
   for (const complexType of complexTypes) {
-    const content = generateComplexTypeInterface(csdl, complexType, target, entityFile);
+    const content = generateComplexTypeInterface(csdl, complexType, entityFile);
     const filename = `${complexType.name}.ts`;
     await writeTypeScriptFile(join(absolutePath, filename), content);
   }
@@ -141,7 +137,6 @@ export function exportedEnumNames(csdl: CsdlSchema): string[] {
 function generateComplexTypeInterface(
   csdl: CsdlSchema,
   complexType: CsdlComplexType,
-  target: TypesTarget,
   entityFile: (name: string) => string
 ): string {
   const safeName = makeCodeSafe(complexType.name);
@@ -186,8 +181,7 @@ function generateComplexTypeInterface(
       code += `import type { ${safeTypeName} } from './${file}.js';\n`;
     }
     if (needsReference) {
-      const module = target === "messages" ? "../EntityReference.js" : "./EntityReference.js";
-      code += `import type { EntityReference } from '${module}';\n`;
+      code += ENTITY_REFERENCE_IMPORT;
     }
     if (payloads.length > 0) {
       code += `import type { ${payloads.join(", ")} } from './${ENTITY_PAYLOAD_MODULE}.js';\n`;

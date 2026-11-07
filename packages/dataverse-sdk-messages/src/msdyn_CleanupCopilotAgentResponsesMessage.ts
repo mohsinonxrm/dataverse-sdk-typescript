@@ -44,9 +44,9 @@ export class msdyn_CleanupCopilotAgentResponsesRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CleanupCopilotAgentResponsesResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CleanupCopilotAgentResponsesResponse> {
     // No return value (204 No Content)
-    return new msdyn_CleanupCopilotAgentResponsesResponse();
+    return Promise.resolve(new msdyn_CleanupCopilotAgentResponsesResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class msdyn_CleanupCopilotAgentResponsesResponse extends OrganizationResp
     super("msdyn_CleanupCopilotAgentResponses");
   }
 
-  static fromResponse(_data: unknown): msdyn_CleanupCopilotAgentResponsesResponse {
+  static fromResponse(_data?: unknown): msdyn_CleanupCopilotAgentResponsesResponse {
     return new msdyn_CleanupCopilotAgentResponsesResponse();
   }
 }

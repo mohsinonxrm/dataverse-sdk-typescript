@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse as msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSAR message, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +51,7 @@ export class msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse.fromResponse(
       await response.json()
     );
@@ -63,20 +59,31 @@ export class msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARRequest
 }
 
 /**
+ * Response from the msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSAR action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResult {
+  "@odata.context"?: string;
+  msdyn_UpdatedSalesAgentRun: string;
+}
+
+/**
  * msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSAR response message
+ *
+ * `result` is the value the msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSAR action returns (see {@link msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResult}).
  */
 export class msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse extends OrganizationResponse {
-  constructor(
-    public result: msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponseData
-  ) {
+  constructor(public result: msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResult) {
     super("msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSAR");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(
     data: unknown
   ): msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse {
     return new msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponse(
-      responseObject<msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResponseData>(data)
+      data as msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARResult
     );
   }
 }

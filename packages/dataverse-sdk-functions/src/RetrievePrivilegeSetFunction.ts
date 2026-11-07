@@ -2,11 +2,14 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { privilege } from "./types/index.js";
 
 /**
- * Response from RetrievePrivilegeSet function
+ * Response from the RetrievePrivilegeSet function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrievePrivilegeSetResponse {
-  value: privilege[];
-}
+export type RetrievePrivilegeSetResponse = Array<
+  privilege & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * RetrievePrivilegeSet function
@@ -29,8 +32,9 @@ export class RetrievePrivilegeSetFunction implements Executable<RetrievePrivileg
   }
 
   async parseResponse(response: Response): Promise<RetrievePrivilegeSetResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as RetrievePrivilegeSetResponse;
-    return (await response.json()) as RetrievePrivilegeSetResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrievePrivilegeSetResponse }).value;
   }
 }

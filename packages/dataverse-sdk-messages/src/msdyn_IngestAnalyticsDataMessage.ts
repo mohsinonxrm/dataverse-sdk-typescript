@@ -42,9 +42,9 @@ export class msdyn_IngestAnalyticsDataRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_IngestAnalyticsDataResponse> {
+  parseResponse(_response: Response): Promise<msdyn_IngestAnalyticsDataResponse> {
     // No return value (204 No Content)
-    return new msdyn_IngestAnalyticsDataResponse();
+    return Promise.resolve(new msdyn_IngestAnalyticsDataResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_IngestAnalyticsDataResponse extends OrganizationResponse {
     super("msdyn_IngestAnalyticsData");
   }
 
-  static fromResponse(_data: unknown): msdyn_IngestAnalyticsDataResponse {
+  static fromResponse(_data?: unknown): msdyn_IngestAnalyticsDataResponse {
     return new msdyn_IngestAnalyticsDataResponse();
   }
 }

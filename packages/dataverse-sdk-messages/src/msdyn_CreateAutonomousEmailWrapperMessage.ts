@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { msdyn_CreateAutonomousEmailWrapperResponse as msdyn_CreateAutonomousEmailWrapperResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CreateAutonomousEmailWrapper message, by their CSDL names. A parameter the CSDL declares
@@ -53,23 +51,35 @@ export class msdyn_CreateAutonomousEmailWrapperRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateAutonomousEmailWrapperResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_CreateAutonomousEmailWrapperResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CreateAutonomousEmailWrapperResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateAutonomousEmailWrapper action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateAutonomousEmailWrapperResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_CreateAutonomousEmailWrapper response message
+ *
+ * `result` is the value the msdyn_CreateAutonomousEmailWrapper action returns (see {@link msdyn_CreateAutonomousEmailWrapperResult}).
  */
 export class msdyn_CreateAutonomousEmailWrapperResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateAutonomousEmailWrapperResponseData) {
+  constructor(public result: msdyn_CreateAutonomousEmailWrapperResult) {
     super("msdyn_CreateAutonomousEmailWrapper");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateAutonomousEmailWrapperResponse {
     return new msdyn_CreateAutonomousEmailWrapperResponse(
-      responseObject<msdyn_CreateAutonomousEmailWrapperResponseData>(data)
+      data as msdyn_CreateAutonomousEmailWrapperResult
     );
   }
 }

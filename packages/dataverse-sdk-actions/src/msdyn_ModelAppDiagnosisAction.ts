@@ -1,13 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
 import type { appmodule } from "./types/index.js";
 
 /**
- * Response from msdyn_ModelAppDiagnosis action
+ * Response from the msdyn_ModelAppDiagnosis action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ModelAppDiagnosisResponse {
+  "@odata.context"?: string;
   HelpLink: string;
   Message: string;
   RepairIssueType: string;
@@ -51,8 +54,7 @@ export class msdyn_ModelAppDiagnosisAction implements Executable<msdyn_ModelAppD
   }
 
   async parseResponse(response: Response): Promise<msdyn_ModelAppDiagnosisResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_ModelAppDiagnosisResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_ModelAppDiagnosisResponse;
   }
 }

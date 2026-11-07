@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CreateDraftResponseForAction action
+ * Response from the msdyn_CreateDraftResponseForAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CreateDraftResponseForActionResponse {
+  "@odata.context"?: string;
   msdyn_actionType: number;
   msdyn_cc: string[];
   msdyn_description: string;
@@ -50,8 +53,7 @@ export class msdyn_CreateDraftResponseForActionAction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateDraftResponseForActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CreateDraftResponseForActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CreateDraftResponseForActionResponse;
   }
 }

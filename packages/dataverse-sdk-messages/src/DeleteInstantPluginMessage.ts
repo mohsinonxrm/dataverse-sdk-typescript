@@ -42,9 +42,9 @@ export class DeleteInstantPluginRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteInstantPluginResponse> {
+  parseResponse(_response: Response): Promise<DeleteInstantPluginResponse> {
     // No return value (204 No Content)
-    return new DeleteInstantPluginResponse();
+    return Promise.resolve(new DeleteInstantPluginResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class DeleteInstantPluginResponse extends OrganizationResponse {
     super("DeleteInstantPlugin");
   }
 
-  static fromResponse(_data: unknown): DeleteInstantPluginResponse {
+  static fromResponse(_data?: unknown): DeleteInstantPluginResponse {
     return new DeleteInstantPluginResponse();
   }
 }

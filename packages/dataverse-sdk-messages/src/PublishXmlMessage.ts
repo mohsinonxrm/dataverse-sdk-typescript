@@ -42,9 +42,9 @@ export class PublishXmlRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<PublishXmlResponse> {
+  parseResponse(_response: Response): Promise<PublishXmlResponse> {
     // No return value (204 No Content)
-    return new PublishXmlResponse();
+    return Promise.resolve(new PublishXmlResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class PublishXmlResponse extends OrganizationResponse {
     super("PublishXml");
   }
 
-  static fromResponse(_data: unknown): PublishXmlResponse {
+  static fromResponse(_data?: unknown): PublishXmlResponse {
     return new PublishXmlResponse();
   }
 }

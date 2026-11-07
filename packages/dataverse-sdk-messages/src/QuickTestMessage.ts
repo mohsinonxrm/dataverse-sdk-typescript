@@ -1,10 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
-import type { QuickTestResponse as QuickTestResponseData } from "./types/index.js";
 
 /**
  * Parameters of the QuickTest message, by their CSDL names. A parameter the CSDL declares
@@ -56,21 +54,36 @@ export class QuickTestRequest extends OrganizationRequest implements Executable<
   }
 
   async parseResponse(response: Response): Promise<QuickTestResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return QuickTestResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return QuickTestResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the QuickTest action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface QuickTestResult {
+  "@odata.context"?: string;
+  overrideHttpStatusCode: string;
+  overrideLocation: string;
+  overrideRetryAfter: string;
+  response: string;
+}
+
+/**
  * QuickTest response message
+ *
+ * `result` is the value the QuickTest action returns (see {@link QuickTestResult}).
  */
 export class QuickTestResponse extends OrganizationResponse {
-  constructor(public result: QuickTestResponseData) {
+  constructor(public result: QuickTestResult) {
     super("QuickTest");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): QuickTestResponse {
-    return new QuickTestResponse(responseObject<QuickTestResponseData>(data));
+    return new QuickTestResponse(data as QuickTestResult);
   }
 }

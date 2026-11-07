@@ -1,8 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { RetrieveFeatureControlSettingsResponse as RetrieveFeatureControlSettingsResponseData } from "./types/index.js";
+import type { FeatureControlSettingData } from "./types/index.js";
 
 /**
  * Parameters of the RetrieveFeatureControlSettings message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +46,33 @@ export class RetrieveFeatureControlSettingsRequest
   }
 
   async parseResponse(response: Response): Promise<RetrieveFeatureControlSettingsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return RetrieveFeatureControlSettingsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return RetrieveFeatureControlSettingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RetrieveFeatureControlSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RetrieveFeatureControlSettingsResult {
+  "@odata.context"?: string;
+  FeatureControlSettingCollection: FeatureControlSettingData[];
+}
+
+/**
  * RetrieveFeatureControlSettings response message
+ *
+ * `result` is the value the RetrieveFeatureControlSettings action returns (see {@link RetrieveFeatureControlSettingsResult}).
  */
 export class RetrieveFeatureControlSettingsResponse extends OrganizationResponse {
-  constructor(public result: RetrieveFeatureControlSettingsResponseData) {
+  constructor(public result: RetrieveFeatureControlSettingsResult) {
     super("RetrieveFeatureControlSettings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RetrieveFeatureControlSettingsResponse {
-    return new RetrieveFeatureControlSettingsResponse(
-      responseObject<RetrieveFeatureControlSettingsResponseData>(data)
-    );
+    return new RetrieveFeatureControlSettingsResponse(data as RetrieveFeatureControlSettingsResult);
   }
 }

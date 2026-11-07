@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_getAndSyncInsightsStatusFromCefJobResultResponse as msdyn_getAndSyncInsightsStatusFromCefJobResultResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_getAndSyncInsightsStatusFromCefJobResult message, by their CSDL names. A parameter the CSDL declares
@@ -53,9 +51,7 @@ export class msdyn_getAndSyncInsightsStatusFromCefJobResultRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_getAndSyncInsightsStatusFromCefJobResultResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_getAndSyncInsightsStatusFromCefJobResultResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_getAndSyncInsightsStatusFromCefJobResultResponse.fromResponse(
       await response.json()
     );
@@ -63,16 +59,30 @@ export class msdyn_getAndSyncInsightsStatusFromCefJobResultRequest
 }
 
 /**
+ * Response from the msdyn_getAndSyncInsightsStatusFromCefJobResult action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_getAndSyncInsightsStatusFromCefJobResultResult {
+  "@odata.context"?: string;
+  msdyn_responsePayload: string;
+  msdyn_responseStatus: string;
+}
+
+/**
  * msdyn_getAndSyncInsightsStatusFromCefJobResult response message
+ *
+ * `result` is the value the msdyn_getAndSyncInsightsStatusFromCefJobResult action returns (see {@link msdyn_getAndSyncInsightsStatusFromCefJobResultResult}).
  */
 export class msdyn_getAndSyncInsightsStatusFromCefJobResultResponse extends OrganizationResponse {
-  constructor(public result: msdyn_getAndSyncInsightsStatusFromCefJobResultResponseData) {
+  constructor(public result: msdyn_getAndSyncInsightsStatusFromCefJobResultResult) {
     super("msdyn_getAndSyncInsightsStatusFromCefJobResult");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_getAndSyncInsightsStatusFromCefJobResultResponse {
     return new msdyn_getAndSyncInsightsStatusFromCefJobResultResponse(
-      responseObject<msdyn_getAndSyncInsightsStatusFromCefJobResultResponseData>(data)
+      data as msdyn_getAndSyncInsightsStatusFromCefJobResultResult
     );
   }
 }

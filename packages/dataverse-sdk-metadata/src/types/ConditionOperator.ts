@@ -186,6 +186,8 @@ export const ConditionOperator = {
   DoesNotContainValues: "DoesNotContainValues",
   /** 89 */
   EqualRoleBusinessId: "EqualRoleBusinessId",
+  /** 90 */
+  EqualUserAuthContext: "EqualUserAuthContext",
 } as const;
 
 export type ConditionOperator = (typeof ConditionOperator)[keyof typeof ConditionOperator];

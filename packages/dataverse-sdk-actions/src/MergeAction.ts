@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from Merge action
+ * Response from the Merge action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface MergeResponse {
-  // No content returned
-}
+export type MergeResponse = void;
 
 /**
  * Parameters of the Merge action, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +49,8 @@ export class MergeAction implements Executable<MergeResponse> {
     };
   }
 
-  async parseResponse(response: Response): Promise<MergeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as MergeResponse;
-    return (await response.json()) as MergeResponse;
+  parseResponse(_response: Response): Promise<MergeResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,12 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from InitializeFileBlocksDownload action
+ * Response from the InitializeFileBlocksDownload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface InitializeFileBlocksDownloadResponse {
+  "@odata.context"?: string;
   FileContinuationToken: string;
   FileName: string;
   FileSizeInBytes: number;
@@ -51,8 +54,7 @@ export class InitializeFileBlocksDownloadAction implements Executable<Initialize
   }
 
   async parseResponse(response: Response): Promise<InitializeFileBlocksDownloadResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as InitializeFileBlocksDownloadResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as InitializeFileBlocksDownloadResponse;
   }
 }

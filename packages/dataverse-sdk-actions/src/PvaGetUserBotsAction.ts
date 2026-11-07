@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from PvaGetUserBots action
+ * Response from the PvaGetUserBots action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PvaGetUserBotsResponse {
+  "@odata.context"?: string;
   Bots: string;
 }
 
@@ -42,8 +45,7 @@ export class PvaGetUserBotsAction implements Executable<PvaGetUserBotsResponse> 
   }
 
   async parseResponse(response: Response): Promise<PvaGetUserBotsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PvaGetUserBotsResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as PvaGetUserBotsResponse;
   }
 }

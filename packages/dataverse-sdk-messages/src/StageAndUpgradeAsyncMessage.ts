@@ -1,13 +1,8 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
-import type {
-  LayerDesiredOrder,
-  SolutionParameters,
-  StageAndUpgradeAsyncResponse as StageAndUpgradeAsyncResponseData,
-} from "./types/index.js";
+import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
 
 /**
  * Parameters of the StageAndUpgradeAsync message, by their CSDL names. A parameter the CSDL declares
@@ -72,21 +67,34 @@ export class StageAndUpgradeAsyncRequest
   }
 
   async parseResponse(response: Response): Promise<StageAndUpgradeAsyncResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return StageAndUpgradeAsyncResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return StageAndUpgradeAsyncResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the StageAndUpgradeAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface StageAndUpgradeAsyncResult {
+  "@odata.context"?: string;
+  AsyncOperationId: string;
+  ImportJobKey: string;
+}
+
+/**
  * StageAndUpgradeAsync response message
+ *
+ * `result` is the value the StageAndUpgradeAsync action returns (see {@link StageAndUpgradeAsyncResult}).
  */
 export class StageAndUpgradeAsyncResponse extends OrganizationResponse {
-  constructor(public result: StageAndUpgradeAsyncResponseData) {
+  constructor(public result: StageAndUpgradeAsyncResult) {
     super("StageAndUpgradeAsync");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): StageAndUpgradeAsyncResponse {
-    return new StageAndUpgradeAsyncResponse(responseObject<StageAndUpgradeAsyncResponseData>(data));
+    return new StageAndUpgradeAsyncResponse(data as StageAndUpgradeAsyncResult);
   }
 }

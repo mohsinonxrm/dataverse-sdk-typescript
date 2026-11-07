@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -46,9 +46,9 @@ export class msdyn_ForecastRecalculateAsyncRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ForecastRecalculateAsyncResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ForecastRecalculateAsyncResponse> {
     // No return value (204 No Content)
-    return new msdyn_ForecastRecalculateAsyncResponse();
+    return Promise.resolve(new msdyn_ForecastRecalculateAsyncResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_ForecastRecalculateAsyncResponse extends OrganizationResponse
     super("msdyn_ForecastRecalculateAsync");
   }
 
-  static fromResponse(_data: unknown): msdyn_ForecastRecalculateAsyncResponse {
+  static fromResponse(_data?: unknown): msdyn_ForecastRecalculateAsyncResponse {
     return new msdyn_ForecastRecalculateAsyncResponse();
   }
 }

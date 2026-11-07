@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_OnNewActivityForARCRecord action
+ * Response from the msdyn_OnNewActivityForARCRecord action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_OnNewActivityForARCRecordResponse {
-  // No content returned
-}
+export type msdyn_OnNewActivityForARCRecordResponse = void;
 
 /**
  * Parameters of the msdyn_OnNewActivityForARCRecord action, by their CSDL names. A parameter the CSDL declares
@@ -45,9 +45,8 @@ export class msdyn_OnNewActivityForARCRecordAction implements Executable<msdyn_O
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OnNewActivityForARCRecordResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_OnNewActivityForARCRecordResponse;
-    return (await response.json()) as msdyn_OnNewActivityForARCRecordResponse;
+  parseResponse(_response: Response): Promise<msdyn_OnNewActivityForARCRecordResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -42,9 +42,9 @@ export class AutoMapEntityRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<AutoMapEntityResponse> {
+  parseResponse(_response: Response): Promise<AutoMapEntityResponse> {
     // No return value (204 No Content)
-    return new AutoMapEntityResponse();
+    return Promise.resolve(new AutoMapEntityResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class AutoMapEntityResponse extends OrganizationResponse {
     super("AutoMapEntity");
   }
 
-  static fromResponse(_data: unknown): AutoMapEntityResponse {
+  static fromResponse(_data?: unknown): AutoMapEntityResponse {
     return new AutoMapEntityResponse();
   }
 }

@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -52,9 +52,9 @@ export class CreateProcessWithWfomJsonRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CreateProcessWithWfomJsonResponse> {
+  parseResponse(_response: Response): Promise<CreateProcessWithWfomJsonResponse> {
     // No return value (204 No Content)
-    return new CreateProcessWithWfomJsonResponse();
+    return Promise.resolve(new CreateProcessWithWfomJsonResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class CreateProcessWithWfomJsonResponse extends OrganizationResponse {
     super("CreateProcessWithWfomJson");
   }
 
-  static fromResponse(_data: unknown): CreateProcessWithWfomJsonResponse {
+  static fromResponse(_data?: unknown): CreateProcessWithWfomJsonResponse {
     return new CreateProcessWithWfomJsonResponse();
   }
 }

@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -44,9 +44,9 @@ export class OnExternalDeletedRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<OnExternalDeletedResponse> {
+  parseResponse(_response: Response): Promise<OnExternalDeletedResponse> {
     // No return value (204 No Content)
-    return new OnExternalDeletedResponse();
+    return Promise.resolve(new OnExternalDeletedResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class OnExternalDeletedResponse extends OrganizationResponse {
     super("OnExternalDeleted");
   }
 
-  static fromResponse(_data: unknown): OnExternalDeletedResponse {
+  static fromResponse(_data?: unknown): OnExternalDeletedResponse {
     return new OnExternalDeletedResponse();
   }
 }

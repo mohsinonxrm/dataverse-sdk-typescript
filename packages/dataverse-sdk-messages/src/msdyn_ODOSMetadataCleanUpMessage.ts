@@ -42,9 +42,9 @@ export class msdyn_ODOSMetadataCleanUpRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ODOSMetadataCleanUpResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ODOSMetadataCleanUpResponse> {
     // No return value (204 No Content)
-    return new msdyn_ODOSMetadataCleanUpResponse();
+    return Promise.resolve(new msdyn_ODOSMetadataCleanUpResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_ODOSMetadataCleanUpResponse extends OrganizationResponse {
     super("msdyn_ODOSMetadataCleanUp");
   }
 
-  static fromResponse(_data: unknown): msdyn_ODOSMetadataCleanUpResponse {
+  static fromResponse(_data?: unknown): msdyn_ODOSMetadataCleanUpResponse {
     return new msdyn_ODOSMetadataCleanUpResponse();
   }
 }

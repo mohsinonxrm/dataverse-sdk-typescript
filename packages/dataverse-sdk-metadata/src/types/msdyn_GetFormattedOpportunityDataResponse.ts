@@ -2,7 +2,9 @@
  * msdyn_GetFormattedOpportunityDataResponse
  */
 export interface msdyn_GetFormattedOpportunityDataResponse {
-  FormattedMonetaryValue?: string;
+  AdditionalFieldDataJson?: string;
   CreatedOn?: string;
+  CustomAttributesJson?: string;
   FormattedCloseDate?: string;
+  FormattedMonetaryValue?: string;
 }

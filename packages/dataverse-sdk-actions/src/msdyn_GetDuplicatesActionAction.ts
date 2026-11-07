@@ -1,14 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_GetDuplicatesAction action
+ * Response from the msdyn_GetDuplicatesAction action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface msdyn_GetDuplicatesActionResponse {
-  value: EntityReference[];
-}
+export type msdyn_GetDuplicatesActionResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
 
 /**
  * Parameters of the msdyn_GetDuplicatesAction action, by their CSDL names. A parameter the CSDL declares
@@ -44,8 +49,9 @@ export class msdyn_GetDuplicatesActionAction implements Executable<msdyn_GetDupl
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetDuplicatesActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_GetDuplicatesActionResponse;
-    return (await response.json()) as msdyn_GetDuplicatesActionResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: msdyn_GetDuplicatesActionResponse }).value;
   }
 }

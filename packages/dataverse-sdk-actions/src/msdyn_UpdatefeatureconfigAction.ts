@@ -2,11 +2,11 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_Updatefeatureconfig action
+ * Response from the msdyn_Updatefeatureconfig action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_UpdatefeatureconfigResponse {
-  // No content returned
-}
+export type msdyn_UpdatefeatureconfigResponse = void;
 
 /**
  * Parameters of the msdyn_Updatefeatureconfig action, by their CSDL names. A parameter the CSDL declares
@@ -43,9 +43,8 @@ export class msdyn_UpdatefeatureconfigAction implements Executable<msdyn_Updatef
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdatefeatureconfigResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_UpdatefeatureconfigResponse;
-    return (await response.json()) as msdyn_UpdatefeatureconfigResponse;
+  parseResponse(_response: Response): Promise<msdyn_UpdatefeatureconfigResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

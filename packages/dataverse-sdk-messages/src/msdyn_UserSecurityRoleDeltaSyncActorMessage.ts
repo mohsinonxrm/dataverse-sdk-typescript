@@ -42,9 +42,9 @@ export class msdyn_UserSecurityRoleDeltaSyncActorRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UserSecurityRoleDeltaSyncActorResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UserSecurityRoleDeltaSyncActorResponse> {
     // No return value (204 No Content)
-    return new msdyn_UserSecurityRoleDeltaSyncActorResponse();
+    return Promise.resolve(new msdyn_UserSecurityRoleDeltaSyncActorResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class msdyn_UserSecurityRoleDeltaSyncActorResponse extends OrganizationRe
     super("msdyn_UserSecurityRoleDeltaSyncActor");
   }
 
-  static fromResponse(_data: unknown): msdyn_UserSecurityRoleDeltaSyncActorResponse {
+  static fromResponse(_data?: unknown): msdyn_UserSecurityRoleDeltaSyncActorResponse {
     return new msdyn_UserSecurityRoleDeltaSyncActorResponse();
   }
 }

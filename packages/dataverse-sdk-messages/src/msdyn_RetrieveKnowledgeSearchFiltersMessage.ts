@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_RetrieveKnowledgeSearchFiltersResponse as msdyn_RetrieveKnowledgeSearchFiltersResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_RetrieveKnowledgeSearchFilters message, by their CSDL names. A parameter the CSDL declares
@@ -45,24 +43,35 @@ export class msdyn_RetrieveKnowledgeSearchFiltersRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveKnowledgeSearchFiltersResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_RetrieveKnowledgeSearchFiltersResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_RetrieveKnowledgeSearchFiltersResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrieveKnowledgeSearchFilters action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrieveKnowledgeSearchFiltersResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_RetrieveKnowledgeSearchFilters response message
+ *
+ * `result` is the value the msdyn_RetrieveKnowledgeSearchFilters action returns (see {@link msdyn_RetrieveKnowledgeSearchFiltersResult}).
  */
 export class msdyn_RetrieveKnowledgeSearchFiltersResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrieveKnowledgeSearchFiltersResponseData) {
+  constructor(public result: msdyn_RetrieveKnowledgeSearchFiltersResult) {
     super("msdyn_RetrieveKnowledgeSearchFilters");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrieveKnowledgeSearchFiltersResponse {
     return new msdyn_RetrieveKnowledgeSearchFiltersResponse(
-      responseObject<msdyn_RetrieveKnowledgeSearchFiltersResponseData>(data)
+      data as msdyn_RetrieveKnowledgeSearchFiltersResult
     );
   }
 }

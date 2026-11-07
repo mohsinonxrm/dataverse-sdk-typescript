@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesExternalServiceInvokeResponse as msdyn_SalesExternalServiceInvokeResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesExternalServiceInvoke message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,37 @@ export class msdyn_SalesExternalServiceInvokeRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesExternalServiceInvokeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SalesExternalServiceInvokeResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesExternalServiceInvokeResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesExternalServiceInvoke action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesExternalServiceInvokeResult {
+  "@odata.context"?: string;
+  msdyn_additionalDetails: string;
+  msdyn_summary: string;
+  msdyn_summary_raw: string;
+}
+
+/**
  * msdyn_SalesExternalServiceInvoke response message
+ *
+ * `result` is the value the msdyn_SalesExternalServiceInvoke action returns (see {@link msdyn_SalesExternalServiceInvokeResult}).
  */
 export class msdyn_SalesExternalServiceInvokeResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesExternalServiceInvokeResponseData) {
+  constructor(public result: msdyn_SalesExternalServiceInvokeResult) {
     super("msdyn_SalesExternalServiceInvoke");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesExternalServiceInvokeResponse {
     return new msdyn_SalesExternalServiceInvokeResponse(
-      responseObject<msdyn_SalesExternalServiceInvokeResponseData>(data)
+      data as msdyn_SalesExternalServiceInvokeResult
     );
   }
 }

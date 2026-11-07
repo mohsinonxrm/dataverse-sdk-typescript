@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -46,9 +46,9 @@ export class msdyn_FastPassBotEventUpdateRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_FastPassBotEventUpdateResponse> {
+  parseResponse(_response: Response): Promise<msdyn_FastPassBotEventUpdateResponse> {
     // No return value (204 No Content)
-    return new msdyn_FastPassBotEventUpdateResponse();
+    return Promise.resolve(new msdyn_FastPassBotEventUpdateResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_FastPassBotEventUpdateResponse extends OrganizationResponse {
     super("msdyn_FastPassBotEventUpdate");
   }
 
-  static fromResponse(_data: unknown): msdyn_FastPassBotEventUpdateResponse {
+  static fromResponse(_data?: unknown): msdyn_FastPassBotEventUpdateResponse {
     return new msdyn_FastPassBotEventUpdateResponse();
   }
 }

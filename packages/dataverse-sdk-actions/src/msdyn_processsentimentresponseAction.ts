@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_processsentimentresponse action
+ * Response from the msdyn_processsentimentresponse action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_processsentimentresponseResponse {
+  "@odata.context"?: string;
   sentimentResponse: string;
 }
 
@@ -46,8 +49,7 @@ export class msdyn_processsentimentresponseAction implements Executable<msdyn_pr
   }
 
   async parseResponse(response: Response): Promise<msdyn_processsentimentresponseResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_processsentimentresponseResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_processsentimentresponseResponse;
   }
 }

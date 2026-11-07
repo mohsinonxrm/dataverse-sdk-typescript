@@ -46,9 +46,9 @@ export class msdyn_updateGuardrailExecutionRecordRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_updateGuardrailExecutionRecordResponse> {
+  parseResponse(_response: Response): Promise<msdyn_updateGuardrailExecutionRecordResponse> {
     // No return value (204 No Content)
-    return new msdyn_updateGuardrailExecutionRecordResponse();
+    return Promise.resolve(new msdyn_updateGuardrailExecutionRecordResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class msdyn_updateGuardrailExecutionRecordResponse extends OrganizationRe
     super("msdyn_updateGuardrailExecutionRecord");
   }
 
-  static fromResponse(_data: unknown): msdyn_updateGuardrailExecutionRecordResponse {
+  static fromResponse(_data?: unknown): msdyn_updateGuardrailExecutionRecordResponse {
     return new msdyn_updateGuardrailExecutionRecordResponse();
   }
 }

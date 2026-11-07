@@ -2,11 +2,11 @@
  * msdyn_RetrieveActivityAnalyticsConfigurationResponse
  */
 export interface msdyn_RetrieveActivityAnalyticsConfigurationResponse {
-  RaProvisioningStatus?: number;
-  EmailEngagementEnabled?: boolean;
-  MarsStatus?: number;
   DCIHubUrl?: string;
-  OrgTypeSuffix?: string;
-  LinkedInStatus?: number;
+  EmailEngagementEnabled?: boolean;
   HealthFeatureStatus?: number;
+  LinkedInStatus?: number;
+  MarsStatus?: number;
+  OrgTypeSuffix?: string;
+  RaProvisioningStatus?: number;
 }

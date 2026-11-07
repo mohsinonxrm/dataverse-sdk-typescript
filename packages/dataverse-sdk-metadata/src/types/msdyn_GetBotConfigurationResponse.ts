@@ -2,10 +2,10 @@
  * msdyn_GetBotConfigurationResponse
  */
 export interface msdyn_GetBotConfigurationResponse {
-  IsConfigured?: boolean;
-  RecordId?: string;
   ConfigRelativeUrl?: string;
+  ConfigurationState?: number;
   ErrorCode?: number;
   ErrorDescription?: string;
-  ConfigurationState?: number;
+  IsConfigured?: boolean;
+  RecordId?: string;
 }

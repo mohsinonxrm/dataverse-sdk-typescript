@@ -1,6 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
@@ -46,9 +46,9 @@ export class CancelSalesOrderRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<CancelSalesOrderResponse> {
+  parseResponse(_response: Response): Promise<CancelSalesOrderResponse> {
     // No return value (204 No Content)
-    return new CancelSalesOrderResponse();
+    return Promise.resolve(new CancelSalesOrderResponse());
   }
 }
 
@@ -60,7 +60,7 @@ export class CancelSalesOrderResponse extends OrganizationResponse {
     super("CancelSalesOrder");
   }
 
-  static fromResponse(_data: unknown): CancelSalesOrderResponse {
+  static fromResponse(_data?: unknown): CancelSalesOrderResponse {
     return new CancelSalesOrderResponse();
   }
 }

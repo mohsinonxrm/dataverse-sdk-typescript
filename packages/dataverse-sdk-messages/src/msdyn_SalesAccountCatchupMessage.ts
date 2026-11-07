@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_SalesAccountCatchupResponse as msdyn_SalesAccountCatchupResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_SalesAccountCatchup message, by their CSDL names. A parameter the CSDL declares
@@ -57,23 +55,36 @@ export class msdyn_SalesAccountCatchupRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAccountCatchupResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_SalesAccountCatchupResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_SalesAccountCatchupResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAccountCatchup action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAccountCatchupResult {
+  "@odata.context"?: string;
+  msdyn_sales_copilot_output: string;
+  msdyn_summary: string;
+  msdyn_summary_raw: string;
+  msdyn_version: string;
+}
+
+/**
  * msdyn_SalesAccountCatchup response message
+ *
+ * `result` is the value the msdyn_SalesAccountCatchup action returns (see {@link msdyn_SalesAccountCatchupResult}).
  */
 export class msdyn_SalesAccountCatchupResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAccountCatchupResponseData) {
+  constructor(public result: msdyn_SalesAccountCatchupResult) {
     super("msdyn_SalesAccountCatchup");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAccountCatchupResponse {
-    return new msdyn_SalesAccountCatchupResponse(
-      responseObject<msdyn_SalesAccountCatchupResponseData>(data)
-    );
+    return new msdyn_SalesAccountCatchupResponse(data as msdyn_SalesAccountCatchupResult);
   }
 }

@@ -28,15 +28,18 @@ describe("IEntity", () => {
 });
 
 describe("EntityReference", () => {
-  it("should create entity reference with createEntityReference", () => {
-    const ref = createEntityReference("account", "123", "Contoso");
+  it("keeps a display name, not sent", () => {
+    const ref = createEntityReference("account", "123", { name: "Contoso" });
 
     expect(ref.logicalName).toBe("account");
     expect(ref.id).toBe("123");
     expect(ref.name).toBe("Contoso");
+    expect(JSON.stringify(ref)).toBe(
+      '{"@odata.type":"Microsoft.Dynamics.CRM.account","accountid":"123"}'
+    );
   });
 
-  it("should create entity reference without name", () => {
+  it("has no name unless one is given", () => {
     const ref = createEntityReference("contact", "456");
 
     expect(ref.logicalName).toBe("contact");
@@ -46,14 +49,17 @@ describe("EntityReference", () => {
 });
 
 describe("Type Guards", () => {
-  it("isEntityReference should identify EntityReference", () => {
-    const ref: EntityReference = { logicalName: "account", id: "123" };
+  it("isEntityReference identifies what createEntityReference makes", () => {
+    const ref: EntityReference = createEntityReference("account", "123");
 
     expect(isEntityReference(ref)).toBe(true);
     expect(isEntityReference({})).toBe(false);
     expect(isEntityReference(null)).toBe(false);
+    expect(isEntityReference("account")).toBe(false);
     expect(isEntityReference({ logicalName: "account" })).toBe(false);
     expect(isEntityReference({ id: "123" })).toBe(false);
+    // Without @odata.type it isn't the reference shape (#295)
+    expect(isEntityReference({ logicalName: "account", id: "123" })).toBe(false);
   });
 
   it("isEntity should identify IEntity", () => {

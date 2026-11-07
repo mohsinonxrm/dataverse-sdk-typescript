@@ -1,13 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { SubstitutionResult } from "./types/index.js";
 
 /**
- * Response from SubstituteForComponent action
+ * Response from the SubstituteForComponent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface SubstituteForComponentResponse {
+  "@odata.context"?: string;
   Result: SubstitutionResult;
 }
 
@@ -47,8 +50,7 @@ export class SubstituteForComponentAction implements Executable<SubstituteForCom
   }
 
   async parseResponse(response: Response): Promise<SubstituteForComponentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SubstituteForComponentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as SubstituteForComponentResponse;
   }
 }

@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_InvokeAgentAssistToolsResponse as msdyn_InvokeAgentAssistToolsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_InvokeAgentAssistTools message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_InvokeAgentAssistToolsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeAgentAssistToolsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_InvokeAgentAssistToolsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_InvokeAgentAssistToolsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_InvokeAgentAssistTools action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_InvokeAgentAssistToolsResult {
+  "@odata.context"?: string;
+  ToolResult: string;
+}
+
+/**
  * msdyn_InvokeAgentAssistTools response message
+ *
+ * `result` is the value the msdyn_InvokeAgentAssistTools action returns (see {@link msdyn_InvokeAgentAssistToolsResult}).
  */
 export class msdyn_InvokeAgentAssistToolsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InvokeAgentAssistToolsResponseData) {
+  constructor(public result: msdyn_InvokeAgentAssistToolsResult) {
     super("msdyn_InvokeAgentAssistTools");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_InvokeAgentAssistToolsResponse {
-    return new msdyn_InvokeAgentAssistToolsResponse(
-      responseObject<msdyn_InvokeAgentAssistToolsResponseData>(data)
-    );
+    return new msdyn_InvokeAgentAssistToolsResponse(data as msdyn_InvokeAgentAssistToolsResult);
   }
 }

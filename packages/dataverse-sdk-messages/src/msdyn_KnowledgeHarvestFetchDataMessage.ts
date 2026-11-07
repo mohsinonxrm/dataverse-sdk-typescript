@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_KnowledgeHarvestFetchDataResponse as msdyn_KnowledgeHarvestFetchDataResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_KnowledgeHarvestFetchData message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,35 @@ export class msdyn_KnowledgeHarvestFetchDataRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_KnowledgeHarvestFetchDataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_KnowledgeHarvestFetchDataResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_KnowledgeHarvestFetchDataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_KnowledgeHarvestFetchData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_KnowledgeHarvestFetchDataResult {
+  "@odata.context"?: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_KnowledgeHarvestFetchData response message
+ *
+ * `result` is the value the msdyn_KnowledgeHarvestFetchData action returns (see {@link msdyn_KnowledgeHarvestFetchDataResult}).
  */
 export class msdyn_KnowledgeHarvestFetchDataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_KnowledgeHarvestFetchDataResponseData) {
+  constructor(public result: msdyn_KnowledgeHarvestFetchDataResult) {
     super("msdyn_KnowledgeHarvestFetchData");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_KnowledgeHarvestFetchDataResponse {
     return new msdyn_KnowledgeHarvestFetchDataResponse(
-      responseObject<msdyn_KnowledgeHarvestFetchDataResponseData>(data)
+      data as msdyn_KnowledgeHarvestFetchDataResult
     );
   }
 }

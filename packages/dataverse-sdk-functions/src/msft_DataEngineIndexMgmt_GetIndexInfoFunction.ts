@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from msft_DataEngineIndexMgmt_GetIndexInfo function
+ * Response from the msft_DataEngineIndexMgmt_GetIndexInfo function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msft_DataEngineIndexMgmt_GetIndexInfoResponse {
+  "@odata.context"?: string;
   ExistsInMetaData: boolean;
   ExistsInSqlDB: boolean;
   IsQueuedForAdhocIndexing: boolean;
@@ -63,8 +66,7 @@ export class msft_DataEngineIndexMgmt_GetIndexInfoFunction implements Executable
   }
 
   async parseResponse(response: Response): Promise<msft_DataEngineIndexMgmt_GetIndexInfoResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msft_DataEngineIndexMgmt_GetIndexInfoResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msft_DataEngineIndexMgmt_GetIndexInfoResponse;
   }
 }

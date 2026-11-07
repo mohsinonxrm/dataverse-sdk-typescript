@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_InvokeOptimizeActionResponse as msdyn_InvokeOptimizeActionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_InvokeOptimizeAction message, by their CSDL names. A parameter the CSDL declares
@@ -49,23 +47,34 @@ export class msdyn_InvokeOptimizeActionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeOptimizeActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_InvokeOptimizeActionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_InvokeOptimizeActionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_InvokeOptimizeAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_InvokeOptimizeActionResult {
+  "@odata.context"?: string;
+  Metadata: string;
+  Result: string;
+}
+
+/**
  * msdyn_InvokeOptimizeAction response message
+ *
+ * `result` is the value the msdyn_InvokeOptimizeAction action returns (see {@link msdyn_InvokeOptimizeActionResult}).
  */
 export class msdyn_InvokeOptimizeActionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_InvokeOptimizeActionResponseData) {
+  constructor(public result: msdyn_InvokeOptimizeActionResult) {
     super("msdyn_InvokeOptimizeAction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_InvokeOptimizeActionResponse {
-    return new msdyn_InvokeOptimizeActionResponse(
-      responseObject<msdyn_InvokeOptimizeActionResponseData>(data)
-    );
+    return new msdyn_InvokeOptimizeActionResponse(data as msdyn_InvokeOptimizeActionResult);
   }
 }

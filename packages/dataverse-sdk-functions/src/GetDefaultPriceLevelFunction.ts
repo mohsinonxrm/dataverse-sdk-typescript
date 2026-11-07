@@ -3,11 +3,14 @@ import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { pricelevel } from "./types/index.js";
 
 /**
- * Response from GetDefaultPriceLevel function
+ * Response from the GetDefaultPriceLevel function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface GetDefaultPriceLevelResponse {
-  value: pricelevel[];
-}
+export type GetDefaultPriceLevelResponse = Array<
+  pricelevel & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
 
 /**
  * Parameters of the GetDefaultPriceLevel function, by their CSDL names. A parameter the CSDL declares
@@ -51,8 +54,9 @@ export class GetDefaultPriceLevelFunction implements Executable<GetDefaultPriceL
   }
 
   async parseResponse(response: Response): Promise<GetDefaultPriceLevelResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as GetDefaultPriceLevelResponse;
-    return (await response.json()) as GetDefaultPriceLevelResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: GetDefaultPriceLevelResponse }).value;
   }
 }

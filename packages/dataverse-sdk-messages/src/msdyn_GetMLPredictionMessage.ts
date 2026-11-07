@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetMLPredictionResponse as msdyn_GetMLPredictionResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetMLPrediction message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,34 @@ export class msdyn_GetMLPredictionRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetMLPredictionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetMLPredictionResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetMLPredictionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetMLPrediction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetMLPredictionResult {
+  "@odata.context"?: string;
+  msdyn_prediction: string;
+  msdyn_status: number;
+}
+
+/**
  * msdyn_GetMLPrediction response message
+ *
+ * `result` is the value the msdyn_GetMLPrediction action returns (see {@link msdyn_GetMLPredictionResult}).
  */
 export class msdyn_GetMLPredictionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetMLPredictionResponseData) {
+  constructor(public result: msdyn_GetMLPredictionResult) {
     super("msdyn_GetMLPrediction");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetMLPredictionResponse {
-    return new msdyn_GetMLPredictionResponse(
-      responseObject<msdyn_GetMLPredictionResponseData>(data)
-    );
+    return new msdyn_GetMLPredictionResponse(data as msdyn_GetMLPredictionResult);
   }
 }

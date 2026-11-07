@@ -3,9 +3,12 @@ import { requestBody } from "./internal/requestBody.js";
 import type { SubstitutionResult } from "./types/index.js";
 
 /**
- * Response from SubstituteForAttribute action
+ * Response from the SubstituteForAttribute action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface SubstituteForAttributeResponse {
+  "@odata.context"?: string;
   Result: SubstitutionResult;
 }
 
@@ -47,8 +50,7 @@ export class SubstituteForAttributeAction implements Executable<SubstituteForAtt
   }
 
   async parseResponse(response: Response): Promise<SubstituteForAttributeResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as SubstituteForAttributeResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as SubstituteForAttributeResponse;
   }
 }

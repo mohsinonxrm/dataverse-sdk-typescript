@@ -42,9 +42,9 @@ export class ResetUserFiltersRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<ResetUserFiltersResponse> {
+  parseResponse(_response: Response): Promise<ResetUserFiltersResponse> {
     // No return value (204 No Content)
-    return new ResetUserFiltersResponse();
+    return Promise.resolve(new ResetUserFiltersResponse());
   }
 }
 
@@ -56,7 +56,7 @@ export class ResetUserFiltersResponse extends OrganizationResponse {
     super("ResetUserFilters");
   }
 
-  static fromResponse(_data: unknown): ResetUserFiltersResponse {
+  static fromResponse(_data?: unknown): ResetUserFiltersResponse {
     return new ResetUserFiltersResponse();
   }
 }

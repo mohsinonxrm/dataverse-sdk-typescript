@@ -29,9 +29,9 @@ export class PvaDeleteBotRequest
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaDeleteBotResponse> {
+  parseResponse(_response: Response): Promise<PvaDeleteBotResponse> {
     // No return value (204 No Content)
-    return new PvaDeleteBotResponse();
+    return Promise.resolve(new PvaDeleteBotResponse());
   }
 }
 
@@ -43,7 +43,7 @@ export class PvaDeleteBotResponse extends OrganizationResponse {
     super("PvaDeleteBot");
   }
 
-  static fromResponse(_data: unknown): PvaDeleteBotResponse {
+  static fromResponse(_data?: unknown): PvaDeleteBotResponse {
     return new PvaDeleteBotResponse();
   }
 }

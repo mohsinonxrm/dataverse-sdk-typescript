@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from PvaShareConnection action
+ * Response from the PvaShareConnection action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PvaShareConnectionResponse {
-  // No content returned
-}
+export type PvaShareConnectionResponse = void;
 
 /**
  * PvaShareConnection action
@@ -31,9 +31,8 @@ export class PvaShareConnectionAction implements Executable<PvaShareConnectionRe
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaShareConnectionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PvaShareConnectionResponse;
-    return (await response.json()) as PvaShareConnectionResponse;
+  parseResponse(_response: Response): Promise<PvaShareConnectionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

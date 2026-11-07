@@ -6,7 +6,7 @@
  */
 import { copyFile, mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { parseEdmx } from "../src/parsers/edmx-parser.js";
 import { generateActions } from "../src/generators/actions-generator.js";
@@ -140,17 +140,5 @@ export const badBind = new WinOpportunityAction({ OpportunityClose: { "opportuni
 `
     );
     expect(errors).toEqual([]);
-  });
-
-  it("messages references send the CSDL primary key, not id", async () => {
-    const mod = (await import(pathToFileURL(join(dir, "messages", "EntityReference.ts")).href)) as {
-      createEntityReference: (name: string, id: string, nameOrOptions?: unknown) => unknown;
-    };
-    expect(JSON.stringify(mod.createEntityReference("email", "e1", "Hello"))).toBe(
-      '{"@odata.type":"Microsoft.Dynamics.CRM.email","activityid":"e1"}'
-    );
-    expect(JSON.stringify(mod.createEntityReference("account", "a1"))).toBe(
-      '{"@odata.type":"Microsoft.Dynamics.CRM.account","accountid":"a1"}'
-    );
   });
 });

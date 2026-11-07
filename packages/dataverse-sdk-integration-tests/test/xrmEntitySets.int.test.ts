@@ -3,7 +3,7 @@
  * Creates one account and one contact named with this run's `runId`, and deletes them afterwards.
  */
 import { afterAll, describe, expect, it } from "vitest";
-import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
+import { OrganizationService, createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
 import { live, liveClient, runId } from "./env.js";
 
 const created: Array<{ set: string; id: string }> = [];
@@ -43,9 +43,9 @@ describe.skipIf(!live)("live: OrganizationService entity set names (#76)", () =>
     });
     created.push({ set: "contacts", id: contactId });
 
-    // associate: the EntityReference's logical name is resolved to "contacts"
+    // associate: a reference from createEntityReference carries the "contacts" set
     await service.associate("accounts", accountId, "contact_customer_accounts", [
-      { logicalName: "contact", id: contactId },
+      createEntityReference("contact", contactId),
     ]);
     const linked = await service.retrieveMultiple<{ contactid: string }>(
       `accounts(${accountId})/contact_customer_accounts`,

@@ -1,7 +1,5 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
-import type { PvaGetDirectLineEndpointResponse as PvaGetDirectLineEndpointResponseData } from "./types/index.js";
 
 /**
  * PvaGetDirectLineEndpoint request message
@@ -32,23 +30,33 @@ export class PvaGetDirectLineEndpointRequest
   }
 
   async parseResponse(response: Response): Promise<PvaGetDirectLineEndpointResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PvaGetDirectLineEndpointResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return PvaGetDirectLineEndpointResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PvaGetDirectLineEndpoint action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PvaGetDirectLineEndpointResult {
+  "@odata.context"?: string;
+  Endpoint: string;
+}
+
+/**
  * PvaGetDirectLineEndpoint response message
+ *
+ * `result` is the value the PvaGetDirectLineEndpoint action returns (see {@link PvaGetDirectLineEndpointResult}).
  */
 export class PvaGetDirectLineEndpointResponse extends OrganizationResponse {
-  constructor(public result: PvaGetDirectLineEndpointResponseData) {
+  constructor(public result: PvaGetDirectLineEndpointResult) {
     super("PvaGetDirectLineEndpoint");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PvaGetDirectLineEndpointResponse {
-    return new PvaGetDirectLineEndpointResponse(
-      responseObject<PvaGetDirectLineEndpointResponseData>(data)
-    );
+    return new PvaGetDirectLineEndpointResponse(data as PvaGetDirectLineEndpointResult);
   }
 }

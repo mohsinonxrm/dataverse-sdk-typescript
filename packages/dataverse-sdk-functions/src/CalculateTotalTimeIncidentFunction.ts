@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from CalculateTotalTimeIncident function
+ * Response from the CalculateTotalTimeIncident function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CalculateTotalTimeIncidentResponse {
+  "@odata.context"?: string;
   TotalTime: number;
 }
 
@@ -32,8 +35,7 @@ export class CalculateTotalTimeIncidentFunction implements Executable<CalculateT
   }
 
   async parseResponse(response: Response): Promise<CalculateTotalTimeIncidentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as CalculateTotalTimeIncidentResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as CalculateTotalTimeIncidentResponse;
   }
 }

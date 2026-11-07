@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_GetAISuggestedContactsResponse as msdyn_GetAISuggestedContactsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_GetAISuggestedContacts message, by their CSDL names. A parameter the CSDL declares
@@ -47,23 +45,33 @@ export class msdyn_GetAISuggestedContactsRequest
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAISuggestedContactsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return msdyn_GetAISuggestedContactsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_GetAISuggestedContactsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAISuggestedContacts action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAISuggestedContactsResult {
+  "@odata.context"?: string;
+  AISuggestionPayloads: string;
+}
+
+/**
  * msdyn_GetAISuggestedContacts response message
+ *
+ * `result` is the value the msdyn_GetAISuggestedContacts action returns (see {@link msdyn_GetAISuggestedContactsResult}).
  */
 export class msdyn_GetAISuggestedContactsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAISuggestedContactsResponseData) {
+  constructor(public result: msdyn_GetAISuggestedContactsResult) {
     super("msdyn_GetAISuggestedContacts");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAISuggestedContactsResponse {
-    return new msdyn_GetAISuggestedContactsResponse(
-      responseObject<msdyn_GetAISuggestedContactsResponseData>(data)
-    );
+    return new msdyn_GetAISuggestedContactsResponse(data as msdyn_GetAISuggestedContactsResult);
   }
 }

@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from AddToFeedbackLoop action
+ * Response from the AddToFeedbackLoop action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AddToFeedbackLoopResponse {
-  // No content returned
-}
+export type AddToFeedbackLoopResponse = void;
 
 /**
  * Parameters of the AddToFeedbackLoop action, by their CSDL names. A parameter the CSDL declares
@@ -56,9 +56,8 @@ export class AddToFeedbackLoopAction implements Executable<AddToFeedbackLoopResp
     };
   }
 
-  async parseResponse(response: Response): Promise<AddToFeedbackLoopResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as AddToFeedbackLoopResponse;
-    return (await response.json()) as AddToFeedbackLoopResponse;
+  parseResponse(_response: Response): Promise<AddToFeedbackLoopResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

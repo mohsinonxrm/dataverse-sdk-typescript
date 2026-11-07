@@ -1,12 +1,15 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_CreateSuggestedNextAction action
+ * Response from the msdyn_CreateSuggestedNextAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CreateSuggestedNextActionResponse {
+  "@odata.context"?: string;
   Result: string;
 }
 
@@ -52,8 +55,7 @@ export class msdyn_CreateSuggestedNextActionAction implements Executable<msdyn_C
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateSuggestedNextActionResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_CreateSuggestedNextActionResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_CreateSuggestedNextActionResponse;
   }
 }

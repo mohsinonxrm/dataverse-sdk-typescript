@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from QueueUpdateRibbonClientMetadata action
+ * Response from the QueueUpdateRibbonClientMetadata action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface QueueUpdateRibbonClientMetadataResponse {
-  // No content returned
-}
+export type QueueUpdateRibbonClientMetadataResponse = void;
 
 /**
  * QueueUpdateRibbonClientMetadata action
@@ -25,9 +25,8 @@ export class QueueUpdateRibbonClientMetadataAction implements Executable<QueueUp
     };
   }
 
-  async parseResponse(response: Response): Promise<QueueUpdateRibbonClientMetadataResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as QueueUpdateRibbonClientMetadataResponse;
-    return (await response.json()) as QueueUpdateRibbonClientMetadataResponse;
+  parseResponse(_response: Response): Promise<QueueUpdateRibbonClientMetadataResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

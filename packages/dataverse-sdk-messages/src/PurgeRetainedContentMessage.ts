@@ -1,8 +1,7 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { PurgeRetainedContentResponse as PurgeRetainedContentResponseData } from "./types/index.js";
+import type { EntityRecordCountCollection } from "./types/index.js";
 
 /**
  * Parameters of the PurgeRetainedContent message, by their CSDL names. A parameter the CSDL declares
@@ -53,21 +52,34 @@ export class PurgeRetainedContentRequest
   }
 
   async parseResponse(response: Response): Promise<PurgeRetainedContentResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return PurgeRetainedContentResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return PurgeRetainedContentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PurgeRetainedContent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PurgeRetainedContentResult {
+  "@odata.context"?: string;
+  EntityCountCollection: EntityRecordCountCollection;
+  HasMoreRecords: boolean;
+}
+
+/**
  * PurgeRetainedContent response message
+ *
+ * `result` is the value the PurgeRetainedContent action returns (see {@link PurgeRetainedContentResult}).
  */
 export class PurgeRetainedContentResponse extends OrganizationResponse {
-  constructor(public result: PurgeRetainedContentResponseData) {
+  constructor(public result: PurgeRetainedContentResult) {
     super("PurgeRetainedContent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PurgeRetainedContentResponse {
-    return new PurgeRetainedContentResponse(responseObject<PurgeRetainedContentResponseData>(data));
+    return new PurgeRetainedContentResponse(data as PurgeRetainedContentResult);
   }
 }

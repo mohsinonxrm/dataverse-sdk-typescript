@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from PredictByReference action
+ * Response from the PredictByReference action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PredictByReferenceResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -51,8 +54,7 @@ export class PredictByReferenceAction implements Executable<PredictByReferenceRe
   }
 
   async parseResponse(response: Response): Promise<PredictByReferenceResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as PredictByReferenceResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as PredictByReferenceResponse;
   }
 }

@@ -1,14 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_SendRecordEventUpdate action
+ * Response from the msdyn_SendRecordEventUpdate action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SendRecordEventUpdateResponse {
-  // No content returned
-}
+export type msdyn_SendRecordEventUpdateResponse = void;
 
 /**
  * Parameters of the msdyn_SendRecordEventUpdate action, by their CSDL names. A parameter the CSDL declares
@@ -51,9 +51,8 @@ export class msdyn_SendRecordEventUpdateAction implements Executable<msdyn_SendR
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SendRecordEventUpdateResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_SendRecordEventUpdateResponse;
-    return (await response.json()) as msdyn_SendRecordEventUpdateResponse;
+  parseResponse(_response: Response): Promise<msdyn_SendRecordEventUpdateResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

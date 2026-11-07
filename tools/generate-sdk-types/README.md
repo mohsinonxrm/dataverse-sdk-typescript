@@ -18,24 +18,34 @@ This tool generates the **SDK's internal types**:
    - One `<Name>Message.ts` per Web API action, exporting `<Name>Request` and `<Name>Response`
      (direct exports, no `CrmSdkMessages`/`XrmSdkMessages` namespaces; see ADR-0004)
 3. **Typed Actions** → `packages/dataverse-sdk-actions/src/`
-   - All Web API actions (bound and unbound)
+   - The Web API actions (bound and unbound) of the platform, Sales and Customer Service
 4. **Typed Functions** → `packages/dataverse-sdk-functions/src/`
-   - All Web API functions (bound and unbound)
+   - The Web API functions (bound and unbound) of the platform, Sales and Customer Service
+5. **Entity tables** → `packages/dataverse-sdk-entities-runtime/src/generated/entity-tables.ts`
+   - The entity set and primary key of every table, which `createEntityReference` reads. The
+     SDK has one `EntityReference`, hand-written in entities-runtime; the generated actions,
+     functions and messages import it from there and re-export it (#295).
+
+The actions, functions and messages are chosen by the solution each operation comes from (#304):
+`metadata/operation-solutions.json` records them, and `metadata/prebuilt-solutions.json` says
+which solutions are prebuilt. The [solution table](metadata/README.md#which-operations-are-prebuilt)
+lists them. The other apps' operations are left to `dataverse-gen`.
 
 ## Regenerating the packages (no org needed)
 
-The actions, functions and messages packages are generated from the committed snapshot
-[`metadata/dataverse-metadata.xml`](metadata/README.md) (#293):
+Everything above is generated from the committed snapshot
+[`metadata/dataverse-metadata.xml`](metadata/README.md) (#293, #295):
 
 ```bash
 pnpm --filter generate-sdk-types regen
 ```
 
-It purges and rewrites the three packages' `src/`, formats them, and updates the generated docs
-(operation lists and `<!-- count:… -->` blocks). CI runs it and fails on any diff, so change the
+It purges and rewrites the actions, functions and messages packages' `src/`, the metadata
+package's `src/types/` and entities-runtime's `src/generated/`, formats them, and updates the
+generated docs (operation lists and `<!-- count:… -->` blocks). CI runs it and fails on any diff, so change the
 generator and commit the regenerated packages together. [`metadata/README.md`](metadata/README.md)
 says which org the snapshot came from and how to refresh it (`pnpm --filter generate-sdk-types
-snapshot`, the only step that needs an org).
+snapshot`, the only step that needs an org; it also records the operations' solutions).
 
 ## Prerequisites (live `$metadata` only)
 
@@ -118,6 +128,7 @@ Options:
 
 Targets:
   metadata              Generate metadata API types
+  references            Generate the entity sets and primary keys of createEntityReference
   messages              Generate SDK messages (<Name>Request / <Name>Response)
   actions               Generate typed Web API actions
   functions             Generate typed Web API functions
@@ -131,9 +142,9 @@ Examples:
 ```
 
 Without a config file the tool reads `DATAVERSE_URL`, `AZURE_TENANT_ID`, `AZURE_CLIENT_ID` and
-`AZURE_CLIENT_SECRET`, and the output paths `METADATA_OUTPUT_PATH`, `MESSAGES_OUTPUT_PATH`,
-`ACTIONS_OUTPUT_PATH` and `FUNCTIONS_OUTPUT_PATH` (defaults: the packages below, relative to this
-directory).
+`AZURE_CLIENT_SECRET`, and the output paths `METADATA_OUTPUT_PATH`, `REFERENCES_OUTPUT_PATH`,
+`MESSAGES_OUTPUT_PATH`, `ACTIONS_OUTPUT_PATH` and `FUNCTIONS_OUTPUT_PATH` (defaults: the packages
+below, relative to this directory).
 
 ## Output Structure
 
@@ -150,16 +161,18 @@ packages/
     WinOpportunityMessage.ts
     ...
     types/                              # complex types, entity types and enums from the CSDL
-    index.ts
+    index.ts                            # re-exports EntityReference from entities-runtime
     OrganizationRequest.ts, types.ts    # hand-written, not generated
-    EntityReference.ts                  # references with the CSDL primary keys (generated)
 
   dataverse-sdk-actions/src/            # flat: one file per action
     CreateMultipleAction.ts
     ExecuteWorkflowAction.ts
     ...
-    types/                              # complex types, entity types, enums, EntityReference.ts, EntityPayload.ts
-    index.ts
+    types/                              # complex types, entity types, enums, EntityPayload.ts
+    index.ts                            # re-exports EntityReference from entities-runtime
+
+  dataverse-sdk-entities-runtime/src/   # hand-written, except:
+    generated/entity-tables.ts          # entity sets and primary keys for createEntityReference
 
   dataverse-sdk-functions/src/          # flat: one file per function
     WhoAmIFunction.ts
@@ -232,8 +245,9 @@ node dist/cli.js --help
   operation lists (`<!-- operations:… -->` blocks) and counts (`<!-- count:actions -->…<!-- /count -->`)
   in the packages' READMEs and `docs/mapping/*` from the package source;
   `test/operation-docs.test.ts` fails while one is stale or a doc names a class no package exports.
-- **CI**: `.github/workflows/generate-metadata-types.yml` (manual) regenerates the metadata types
-  and opens a PR for review.
+- **CI**: the `regen` drift check covers every generated file, the metadata types and the entity
+  tables included (#295). To pick up changes from a live org, refresh the snapshot
+  (`metadata/README.md`) and run `regen`; nothing regenerates from a live `$metadata` directly.
 
 ## Troubleshooting
 

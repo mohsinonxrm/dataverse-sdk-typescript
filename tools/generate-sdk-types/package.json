@@ -14,7 +14,7 @@
     "generate": "node dist/cli.js",
     "docs": "node dist/docs-cli.js",
     "regen": "tsup && node dist/regen-cli.js",
-    "snapshot": "tsup && node dist/cli.js --save-csdl metadata/dataverse-metadata.xml --csdl-only",
+    "snapshot": "tsup && node dist/cli.js --save-csdl metadata/dataverse-metadata.xml --save-solutions metadata/operation-solutions.json --csdl-only",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.typecheck.json",
     "test": "vitest run"
@@ -30,6 +30,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@mohsinonxrm/dataverse-sdk-entities-runtime": "workspace:*",
     "@types/ejs": "^3.1.5",
     "@types/node": "^22.20.5",
     "prettier": "^3.9.10",

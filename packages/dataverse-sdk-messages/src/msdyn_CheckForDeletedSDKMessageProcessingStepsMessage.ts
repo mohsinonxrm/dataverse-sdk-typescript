@@ -1,8 +1,6 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import { responseObject } from "./internal/responseData.js";
 import { requestBody } from "./internal/requestBody.js";
-import type { msdyn_CheckForDeletedSDKMessageProcessingStepsResponse as msdyn_CheckForDeletedSDKMessageProcessingStepsResponseData } from "./types/index.js";
 
 /**
  * Parameters of the msdyn_CheckForDeletedSDKMessageProcessingSteps message, by their CSDL names. A parameter the CSDL declares
@@ -49,9 +47,7 @@ export class msdyn_CheckForDeletedSDKMessageProcessingStepsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckForDeletedSDKMessageProcessingStepsResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204)
-      return msdyn_CheckForDeletedSDKMessageProcessingStepsResponse.fromResponse({});
+    // The body is the complex value, with its @odata.context
     return msdyn_CheckForDeletedSDKMessageProcessingStepsResponse.fromResponse(
       await response.json()
     );
@@ -59,16 +55,32 @@ export class msdyn_CheckForDeletedSDKMessageProcessingStepsRequest
 }
 
 /**
+ * Response from the msdyn_CheckForDeletedSDKMessageProcessingSteps action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckForDeletedSDKMessageProcessingStepsResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckForDeletedSDKMessageProcessingSteps response message
+ *
+ * `result` is the value the msdyn_CheckForDeletedSDKMessageProcessingSteps action returns (see {@link msdyn_CheckForDeletedSDKMessageProcessingStepsResult}).
  */
 export class msdyn_CheckForDeletedSDKMessageProcessingStepsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckForDeletedSDKMessageProcessingStepsResponseData) {
+  constructor(public result: msdyn_CheckForDeletedSDKMessageProcessingStepsResult) {
     super("msdyn_CheckForDeletedSDKMessageProcessingSteps");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckForDeletedSDKMessageProcessingStepsResponse {
     return new msdyn_CheckForDeletedSDKMessageProcessingStepsResponse(
-      responseObject<msdyn_CheckForDeletedSDKMessageProcessingStepsResponseData>(data)
+      data as msdyn_CheckForDeletedSDKMessageProcessingStepsResult
     );
   }
 }

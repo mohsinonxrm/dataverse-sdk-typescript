@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_IsSharePointEnabled action
+ * Response from the msdyn_IsSharePointEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_IsSharePointEnabledResponse {
+  "@odata.context"?: string;
   IsSharePointEnabled: boolean;
 }
 
@@ -26,8 +29,7 @@ export class msdyn_IsSharePointEnabledAction implements Executable<msdyn_IsShare
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsSharePointEnabledResponse> {
-    // 204 No Content is an empty result
-    if (response.status === 204) return {} as msdyn_IsSharePointEnabledResponse;
+    // The body is the complex value, with its @odata.context
     return (await response.json()) as msdyn_IsSharePointEnabledResponse;
   }
 }

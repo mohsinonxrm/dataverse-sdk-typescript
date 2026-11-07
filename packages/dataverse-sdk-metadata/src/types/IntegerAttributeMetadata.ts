@@ -7,8 +7,8 @@ import type { IntegerFormat } from "./IntegerFormat.js";
  */
 export interface IntegerAttributeMetadata extends AttributeMetadata {
   Format?: IntegerFormat;
+  FormulaDefinition?: string;
   MaxValue?: number;
   MinValue?: number;
-  FormulaDefinition?: string;
   SourceTypeMask?: number;
 }

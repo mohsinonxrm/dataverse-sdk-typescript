@@ -9,16 +9,16 @@ import type { MetadataBase } from "./MetadataBase.js";
  * Extends: MetadataBase
  */
 export interface ManagedPropertyMetadata extends MetadataBase {
-  LogicalName?: string;
+  Description?: Label;
   DisplayName?: Label;
+  EnablesAttributeName?: string;
+  EnablesEntityName?: string;
+  ErrorCode?: number;
+  EvaluationPriority?: ManagedPropertyEvaluationPriority;
+  IntroducedVersion?: string;
+  IsGlobalForOperation?: boolean;
+  IsPrivate?: boolean;
+  LogicalName?: string;
   ManagedPropertyType?: ManagedPropertyType;
   Operation?: ManagedPropertyOperation;
-  IsGlobalForOperation?: boolean;
-  EvaluationPriority?: ManagedPropertyEvaluationPriority;
-  IsPrivate?: boolean;
-  ErrorCode?: number;
-  EnablesEntityName?: string;
-  EnablesAttributeName?: string;
-  Description?: Label;
-  IntroducedVersion?: string;
 }

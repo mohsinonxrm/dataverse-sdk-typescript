@@ -11,7 +11,7 @@ describe.skipIf(!live)("live: entity returns (#71)", () => {
     const { client } = liveClient();
     const solution = await client.execute(new GetPreferredSolutionFunction());
     expect(solution).not.toHaveProperty("value");
-    expect(solution.solutionid).toEqual(expect.any(String));
-    expect(solution["@odata.context"]).toContain("solutions/$entity");
+    expect(solution?.solutionid).toEqual(expect.any(String));
+    expect(solution?.["@odata.context"]).toContain("solutions/$entity");
   });
 });

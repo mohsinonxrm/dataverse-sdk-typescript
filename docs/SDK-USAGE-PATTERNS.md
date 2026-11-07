@@ -164,7 +164,7 @@ const allAccounts = await client
 ### 2. Late-Bound with `OrganizationService`
 
 ```typescript
-import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
+import { OrganizationService, createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
 
 const service = new OrganizationService(client);
 
@@ -254,10 +254,10 @@ const result = await service.retrieveMultiple("accounts", {
 console.log(`Found ${result.value.length} of ${result["@odata.count"]} total`);
 
 // ========== ASSOCIATE ==========
-// EntityReference takes the logical name ("contact"), not the entity set name.
+// References come from createEntityReference(logicalName, id), with the logical name ("contact").
 await service.associate("accounts", accountId, "contact_customer_accounts", [
-  { logicalName: "contact", id: contactId1 },
-  { logicalName: "contact", id: contactId2 },
+  createEntityReference("contact", contactId1),
+  createEntityReference("contact", contactId2),
 ]);
 
 // ========== DISASSOCIATE ==========
@@ -411,7 +411,7 @@ const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
   InputArguments: {},
 });
 const workflowResponse = await service.execute(workflowRequest);
-console.log(`Async operation: ${workflowResponse.result.asyncoperationid}`);
+console.log(`Async operation: ${workflowResponse.result?.asyncoperationid}`);
 
 // NOTE: service.execute() works with ANY Executable<T> class:
 // ✅ Actions from @mohsinonxrm/dataverse-sdk-actions
@@ -465,9 +465,9 @@ Messages provide **OrganizationService-style** request/response patterns that ma
 
 ### Messages Package Overview
 
-The `@mohsinonxrm/dataverse-sdk-messages` package contains <!-- count:messages -->1,556<!-- /count --> generated request/response classes:
+The `@mohsinonxrm/dataverse-sdk-messages` package contains <!-- count:messages -->1,072<!-- /count --> generated request/response classes:
 
-- ✅ **All messages implement Executable<T>** - All <!-- count:messages -->1,556<!-- /count --> message classes can be executed directly
+- ✅ **All messages implement Executable<T>** - All <!-- count:messages -->1,072<!-- /count --> message classes can be executed directly
 - ✅ **OrganizationService.execute() works** - Executes any message that implements Executable<T> interface
 - ✅ **DataverseClient.execute() works** - Also executes any Executable<T> message
 - ✅ **Direct exports only** - Import message classes directly (e.g., `import { ExecuteWorkflowRequest } from '@mohsinonxrm/dataverse-sdk-messages'`)
@@ -487,7 +487,7 @@ const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
   InputArguments: {},
 });
 const workflowResponse = await service.execute(workflowRequest);
-console.log(`Async operation: ${workflowResponse.result.asyncoperationid}`);
+console.log(`Async operation: ${workflowResponse.result?.asyncoperationid}`);
 
 // Assign and SetState aren't Web API messages: they are record updates, so use the helpers
 await service.assign("account", accountId, userId); // PATCH ownerid@odata.bind
