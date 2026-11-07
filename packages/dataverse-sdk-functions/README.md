@@ -219,8 +219,12 @@ Retrieves metadata changes since a specific version.
 ```typescript
 import { RetrieveMetadataChangesFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 
+// The first call returns the metadata the query matches, and a version stamp
+const first = await client.execute(new RetrieveMetadataChangesFunction({ Query: {} }));
+
+// Later calls with that stamp return only what changed since
 const { EntityMetadata, ServerVersionStamp } = await client.execute(
-  new RetrieveMetadataChangesFunction({ Query: {}, ClientVersionStamp: previousVersionStamp })
+  new RetrieveMetadataChangesFunction({ Query: {}, ClientVersionStamp: first.ServerVersionStamp })
 );
 ```
 

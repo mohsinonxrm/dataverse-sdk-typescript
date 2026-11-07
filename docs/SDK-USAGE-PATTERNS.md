@@ -281,9 +281,10 @@ const accountTyped = await service.retrieve<Account>("accounts", accountId, {
   select: ["name", "revenue", "telephone1"],
 });
 
-// TypeScript knows about the properties!
+// The columns the generated interface declares have their types. Any other property is
+// `unknown` (IEntity has `[key: string]: unknown`), so it must be checked before use.
 console.log(accountTyped.name); // ✅ Type-safe
-// accountTyped.invalidProp; // ❌ Compile error: the generated Account has no such column
+const other = accountTyped.new_undeclared; // unknown
 
 // With returnRepresentation: true, create() resolves the record as T. The entity argument is
 // not checked against T.

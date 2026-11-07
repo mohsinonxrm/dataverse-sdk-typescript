@@ -490,12 +490,15 @@ CommitFileBlocksUpload: Commit the blocks, in order, as the file.
 <!-- /operations -->
 
 ```typescript
+import { readFile } from "node:fs/promises";
 import {
   CommitFileBlocksUploadAction,
   InitializeFileBlocksUploadAction,
   UploadBlockAction,
   createEntityReference,
 } from "@mohsinonxrm/dataverse-sdk-actions";
+
+const bytes = await readFile("logo.png"); // one block holds up to 4 MB
 
 const { FileContinuationToken } = await client.execute(
   new InitializeFileBlocksUploadAction({
@@ -509,7 +512,7 @@ const blockId = btoa("000000");
 await client.execute(
   new UploadBlockAction({
     BlockId: blockId,
-    BlockData: Buffer.from(bytes).toString("base64"),
+    BlockData: bytes.toString("base64"),
     FileContinuationToken: FileContinuationToken,
   })
 );
@@ -553,6 +556,10 @@ supplemental definition. All five parameters are required. `ExcelFile` is the .x
 
 ```typescript
 import { ExportToExcelAction, createEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
+
+// The view's query and layout (a savedquery's fetchxml and layoutxml columns)
+const fetchXml = `<fetch><entity name="account"><attribute name="name" /></entity></fetch>`;
+const layoutXml = `<grid name="resultset" object="1" jump="name" select="1" icon="1" preview="1"><row name="result" id="accountid"><cell name="name" width="300" /></row></grid>`;
 
 const { ExcelFile } = await client.execute(
   new ExportToExcelAction({

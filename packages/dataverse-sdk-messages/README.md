@@ -250,6 +250,7 @@ Exports a solution from the environment.
 **Maps to:** ExportSolution action (POST, unbound)
 
 ```typescript
+import { writeFileSync } from "node:fs";
 import { ExportSolutionRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 // SolutionName and Managed are required; TargetVersion and the Export* settings are optional
@@ -259,7 +260,7 @@ const response = await service.execute(request);
 
 // Decode base64 to file
 const solutionFile = Buffer.from(response.result.ExportSolutionFile ?? "", "base64");
-fs.writeFileSync("solution.zip", solutionFile);
+writeFileSync("solution.zip", solutionFile);
 ```
 
 **Response:**
@@ -275,9 +276,10 @@ Imports a solution into the environment.
 **Maps to:** ImportSolution action (POST, unbound)
 
 ```typescript
+import { readFileSync } from "node:fs";
 import { ImportSolutionRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const solutionBytes = fs.readFileSync("solution.zip");
+const solutionBytes = readFileSync("solution.zip");
 
 const importJobId = crypto.randomUUID();
 const request = new ImportSolutionRequest({
