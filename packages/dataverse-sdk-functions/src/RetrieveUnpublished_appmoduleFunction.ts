@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { appmodule } from "./types/index.js";
 
 /**
@@ -24,7 +28,7 @@ export class RetrieveUnpublished_appmoduleFunction implements Executable<Retriev
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/appmodules(${this.appmoduleId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
+    let url = `${baseUrl}/appmodules(${odataLiteral.guid(this.appmoduleId)})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
 
     return {
       method: "GET",

@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { AccessRights } from "./types/index.js";
@@ -37,7 +41,7 @@ export class RetrievePrincipalAccess_organizationFunction implements Executable<
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/organizations(${this.organizationId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess`;
+    let url = `${baseUrl}/organizations(${odataLiteral.guid(this.organizationId)})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();

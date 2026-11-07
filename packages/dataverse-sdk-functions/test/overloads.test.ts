@@ -9,6 +9,9 @@ import { createTestClient, jsonResponse } from "@mohsinonxrm/dataverse-sdk-testi
 import * as functions from "../src/index.js";
 
 const target = functions.createEntityReference("account", "a1");
+const U1 = "00000000-0000-0000-0000-0000000000a1";
+const T1 = "00000000-0000-0000-0000-0000000000b1";
+const O1 = "00000000-0000-0000-0000-0000000000c1";
 
 describe("#75: function overloads", () => {
   it("RetrievePrincipalAccess runs on the user, the team or the organization", async () => {
@@ -17,22 +20,23 @@ describe("#75: function overloads", () => {
     const path = () => decodeURIComponent(fake.last().path).split("?")[0];
 
     await client.execute(
-      new functions.RetrievePrincipalAccess_systemuserFunction("u1", { Target: target })
+      new functions.RetrievePrincipalAccess_systemuserFunction(U1, { Target: target })
     );
     expect(path()).toBe(
-      "/systemusers(u1)/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)"
+      `/systemusers(${U1})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)`
     );
 
     await client.execute(
-      new functions.RetrievePrincipalAccess_teamFunction("t1", { Target: target })
+      // #386: a {GUID} (as Xrm returns ids) loses its braces
+      new functions.RetrievePrincipalAccess_teamFunction(`{${T1}}`, { Target: target })
     );
-    expect(path()).toBe("/teams(t1)/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)");
+    expect(path()).toBe(`/teams(${T1})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)`);
 
     const response = await client.execute(
-      new functions.RetrievePrincipalAccess_organizationFunction("o1", { Target: target })
+      new functions.RetrievePrincipalAccess_organizationFunction(O1, { Target: target })
     );
     expect(path()).toBe(
-      "/organizations(o1)/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)"
+      `/organizations(${O1})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)`
     );
     expect(response.AccessRights).toBe("ReadAccess");
   });

@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { savedquery } from "./types/index.js";
 
 /**
@@ -24,7 +28,7 @@ export class RetrieveUnpublished_savedqueryFunction implements Executable<Retrie
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/savedqueries(${this.savedqueryId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
+    let url = `${baseUrl}/savedqueries(${odataLiteral.guid(this.savedqueryId)})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
 
     return {
       method: "GET",

@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
@@ -35,7 +39,7 @@ export class GetQuoteProductsFromOpportunityRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/quotes(${this.quoteId})/Microsoft.Dynamics.CRM.GetQuoteProductsFromOpportunity`;
+    const url = `${baseUrl}/quotes(${odataLiteral.guid(this.quoteId)})/Microsoft.Dynamics.CRM.GetQuoteProductsFromOpportunity`;
 
     const body = requestBody({
       Opportunity: this.Parameters.Opportunity,

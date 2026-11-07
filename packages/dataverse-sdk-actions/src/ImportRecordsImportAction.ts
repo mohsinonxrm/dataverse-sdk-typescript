@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { asyncoperation } from "./types/index.js";
 
 /**
@@ -24,7 +28,7 @@ export class ImportRecordsImportAction implements Executable<ImportRecordsImport
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/imports(${this.importId})/Microsoft.Dynamics.CRM.ImportRecordsImport`;
+    const url = `${baseUrl}/imports(${odataLiteral.guid(this.importId)})/Microsoft.Dynamics.CRM.ImportRecordsImport`;
 
     return {
       method: "POST",

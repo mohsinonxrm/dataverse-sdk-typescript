@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { mobileofflineprofile } from "./types/index.js";
 
 /**
@@ -28,7 +32,7 @@ export class CloneMobileOfflineProfileAction implements Executable<CloneMobileOf
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/mobileofflineprofiles(${this.mobileofflineprofileId})/Microsoft.Dynamics.CRM.CloneMobileOfflineProfile`;
+    const url = `${baseUrl}/mobileofflineprofiles(${odataLiteral.guid(this.mobileofflineprofileId)})/Microsoft.Dynamics.CRM.CloneMobileOfflineProfile`;
 
     return {
       method: "POST",

@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { businessunit } from "./types/index.js";
 
 /**
@@ -24,7 +28,7 @@ export class RetrieveBusinessHierarchyBusinessUnitFunction implements Executable
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/businessunits(${this.businessunitId})/Microsoft.Dynamics.CRM.RetrieveBusinessHierarchyBusinessUnit`;
+    let url = `${baseUrl}/businessunits(${odataLiteral.guid(this.businessunitId)})/Microsoft.Dynamics.CRM.RetrieveBusinessHierarchyBusinessUnit`;
 
     return {
       method: "GET",

@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
@@ -34,7 +38,7 @@ export class AddWorkQueueItemProcessingHistoryEntryAction implements Executable<
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/workqueueitems(${this.workqueueitemId})/Microsoft.Dynamics.CRM.AddWorkQueueItemProcessingHistoryEntry`;
+    const url = `${baseUrl}/workqueueitems(${odataLiteral.guid(this.workqueueitemId)})/Microsoft.Dynamics.CRM.AddWorkQueueItemProcessingHistoryEntry`;
 
     const body = requestBody({
       item: this.parameters.item,

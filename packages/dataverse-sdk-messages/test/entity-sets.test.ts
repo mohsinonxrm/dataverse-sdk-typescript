@@ -16,6 +16,10 @@ type RequestClass = new (...args: string[]) => {
   toRequestInformation(baseUrl: string): { url: string };
 };
 
+const O1 = "00000000-0000-0000-0000-0000000000a1";
+const B1 = "00000000-0000-0000-0000-0000000000b1";
+const C1 = "00000000-0000-0000-0000-0000000000c1";
+
 describe("#76: message entity sets", () => {
   it("no generated message URL is a naive plural (…ys( or …sss()", () => {
     const naive: string[] = [];
@@ -29,7 +33,9 @@ describe("#76: message entity sets", () => {
       }
       let url: string;
       try {
-        url = new (value as RequestClass)("id-1").toRequestInformation(TEST_API_URL).url;
+        url = new (value as RequestClass)(
+          "00000000-0000-0000-0000-000000000001"
+        ).toRequestInformation(TEST_API_URL).url;
       } catch {
         continue;
       }
@@ -41,17 +47,17 @@ describe("#76: message entity sets", () => {
   it("the four messages that were wrong use the CSDL entity sets", () => {
     const path = (r: { toRequestInformation(b: string): { url: string } }) =>
       r.toRequestInformation(TEST_API_URL).url.slice(TEST_API_URL.length);
-    expect(path(new CalculateActualValueOpportunityRequest("o1"))).toBe(
-      "/opportunities(o1)/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity"
+    expect(path(new CalculateActualValueOpportunityRequest(O1))).toBe(
+      `/opportunities(${O1})/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity`
     );
-    expect(path(new GetRunMapRequest("b1", { runId: "r1" }))).toBe(
-      "/businessprocesses(b1)/Microsoft.Dynamics.CRM.GetRunMap"
+    expect(path(new GetRunMapRequest(B1, { runId: "r1" }))).toBe(
+      `/businessprocesses(${B1})/Microsoft.Dynamics.CRM.GetRunMap`
     );
-    expect(path(new (DistributeCampaignActivityRequest as unknown as RequestClass)("c1"))).toMatch(
-      /^\/campaignactivities\(c1\)\/Microsoft\.Dynamics\.CRM\.DistributeCampaignActivity$/
+    expect(path(new (DistributeCampaignActivityRequest as unknown as RequestClass)(C1))).toMatch(
+      /^\/campaignactivities\(0{8}-0{4}-0{4}-0{4}-0{10}c1\)\/Microsoft\.Dynamics\.CRM\.DistributeCampaignActivity$/
     );
-    expect(path(new (RemoveItemCampaignActivityRequest as unknown as RequestClass)("c1"))).toMatch(
-      /^\/campaignactivities\(c1\)\/Microsoft\.Dynamics\.CRM\.RemoveItemCampaignActivity$/
+    expect(path(new (RemoveItemCampaignActivityRequest as unknown as RequestClass)(C1))).toMatch(
+      /^\/campaignactivities\(0{8}-0{4}-0{4}-0{4}-0{10}c1\)\/Microsoft\.Dynamics\.CRM\.RemoveItemCampaignActivity$/
     );
   });
 
@@ -59,10 +65,10 @@ describe("#76: message entity sets", () => {
     const { client, fake } = createTestClient();
     fake.on(
       "POST",
-      "/opportunities(o1)/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity",
+      `/opportunities(${O1})/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity`,
       () => jsonResponse({ Value: 1250 })
     );
-    const response = await client.execute(new CalculateActualValueOpportunityRequest("o1"));
+    const response = await client.execute(new CalculateActualValueOpportunityRequest(`{${O1}}`));
     expect(fake.last().method).toBe("POST");
     expect(response.result.Value).toBe(1250);
   });

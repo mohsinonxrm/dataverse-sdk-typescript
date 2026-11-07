@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * PvaShareConnection request message
@@ -18,7 +22,7 @@ export class PvaShareConnectionRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/connectionreferences(${this.connectionreferenceId})/Microsoft.Dynamics.CRM.PvaShareConnection`;
+    const url = `${baseUrl}/connectionreferences(${odataLiteral.guid(this.connectionreferenceId)})/Microsoft.Dynamics.CRM.PvaShareConnection`;
 
     return {
       method: "POST",

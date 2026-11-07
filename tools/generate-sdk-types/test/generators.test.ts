@@ -846,7 +846,8 @@ describe("#70: message response parsing", () => {
 
   beforeAll(async () => {
     vi.spyOn(console, "log").mockImplementation(() => undefined);
-    out = await mkdtemp(join(tmpdir(), "gen-70-"));
+    // In this package: a bound message imports core at runtime for its record id (#386)
+    out = await mkdtemp(join(OUT_ROOT, ".gen-70-"));
     const csdl = parseEdmx(RESPONSES_EDMX);
     await generateComplexTypes(csdl, join(out, "messages", "types"));
     await generateMessages(csdl, join(out, "messages"), false);
@@ -977,16 +978,16 @@ describe("#76: message entity sets", () => {
 
   it("uses the entity set from the CSDL", async () => {
     expect(await read("CalculateActualValueOpportunityMessage.ts")).toContain(
-      "`${baseUrl}/opportunities(${this.opportunityId})/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity`"
+      "`${baseUrl}/opportunities(${odataLiteral.guid(this.opportunityId)})/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity`"
     );
     expect(await read("GetRunMapMessage.ts")).toContain(
-      "`${baseUrl}/businessprocesses(${this.businessprocessId})/Microsoft.Dynamics.CRM.GetRunMap`"
+      "`${baseUrl}/businessprocesses(${odataLiteral.guid(this.businessprocessId)})/Microsoft.Dynamics.CRM.GetRunMap`"
     );
   });
 
   it("falls back to <type>s with a warning, like actions, only without an entity set", async () => {
     const code = await read("OrphanMessage.ts");
     expect(code).toContain("// WARNING: Entity set not found in metadata");
-    expect(code).toContain("`${baseUrl}/nosetentitys(${this.nosetentityId})/");
+    expect(code).toContain("`${baseUrl}/nosetentitys(${odataLiteral.guid(this.nosetentityId)})/");
   });
 });

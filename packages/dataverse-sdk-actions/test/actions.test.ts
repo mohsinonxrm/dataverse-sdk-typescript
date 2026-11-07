@@ -15,7 +15,7 @@ import {
 describe("Business Actions", () => {
   describe("ExecuteWorkflowAction", () => {
     it("should create correct request for bound workflow execution", () => {
-      const action = new ExecuteWorkflowAction("workflow-guid", {
+      const action = new ExecuteWorkflowAction("{00000000-0000-0000-0000-0000000000f1}", {
         EntityId: "entity-guid",
         InputArguments: {},
       });
@@ -25,7 +25,7 @@ describe("Business Actions", () => {
 
       expect(requestInfo.method).toBe("POST");
       expect(requestInfo.url).toBe(
-        "https://org.crm.dynamics.com/api/data/v9.2/workflows(workflow-guid)/Microsoft.Dynamics.CRM.ExecuteWorkflow"
+        "https://org.crm.dynamics.com/api/data/v9.2/workflows(00000000-0000-0000-0000-0000000000f1)/Microsoft.Dynamics.CRM.ExecuteWorkflow"
       );
       expect(requestInfo.body).toEqual({
         EntityId: "entity-guid",
@@ -34,7 +34,7 @@ describe("Business Actions", () => {
     });
 
     it("should parse the asyncoperation the response body is (#71)", async () => {
-      const action = new ExecuteWorkflowAction("workflow-guid", {
+      const action = new ExecuteWorkflowAction("{00000000-0000-0000-0000-0000000000f1}", {
         EntityId: "entity-guid",
         InputArguments: {},
       });

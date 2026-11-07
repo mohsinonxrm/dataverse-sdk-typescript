@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * msdyn_GetSuggestedActionsForLead request message
@@ -18,7 +22,7 @@ export class msdyn_GetSuggestedActionsForLeadRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/leads(${this.leadId})/Microsoft.Dynamics.CRM.msdyn_GetSuggestedActionsForLead`;
+    const url = `${baseUrl}/leads(${odataLiteral.guid(this.leadId)})/Microsoft.Dynamics.CRM.msdyn_GetSuggestedActionsForLead`;
 
     return {
       method: "POST",

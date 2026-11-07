@@ -66,6 +66,10 @@ describe("operation docs (#88)", () => {
     );
     expect(whoAmI?.parameters).toBeUndefined();
     expect(readOperation(srcDir, "actions", "Assign")).toBeUndefined();
+    // #386: a bound record's id goes through odataLiteral.guid(); the route still names it
+    expect(readOperation(srcDir, "actions", "ExecuteWorkflow")?.route).toBe(
+      "/workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow"
+    );
   });
 
   it("refuses to list an operation the package doesn't have", () => {

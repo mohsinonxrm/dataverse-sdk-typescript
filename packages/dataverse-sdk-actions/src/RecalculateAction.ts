@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the Recalculate action.
@@ -20,7 +24,7 @@ export class RecalculateAction implements Executable<RecalculateResponse> {
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/goals(${this.goalId})/Microsoft.Dynamics.CRM.Recalculate`;
+    const url = `${baseUrl}/goals(${odataLiteral.guid(this.goalId)})/Microsoft.Dynamics.CRM.Recalculate`;
 
     return {
       method: "POST",

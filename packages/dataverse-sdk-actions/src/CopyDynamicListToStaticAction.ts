@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { list } from "./types/index.js";
 
 /**
@@ -23,7 +27,7 @@ export class CopyDynamicListToStaticAction implements Executable<CopyDynamicList
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/lists(${this.listId})/Microsoft.Dynamics.CRM.CopyDynamicListToStatic`;
+    const url = `${baseUrl}/lists(${odataLiteral.guid(this.listId)})/Microsoft.Dynamics.CRM.CopyDynamicListToStatic`;
 
     return {
       method: "POST",
