@@ -13,7 +13,7 @@ Generator:
 - Entity interfaces and files are named after the table's schema name (`Account` in `entities/Account.ts`, with `AccountMetadata`), as the README and the CLI's own output already said. Reserved words (`import`, `package`) are made safe.
 - Option labels become valid, unique enum member names (`Financial Services` becomes `FinancialServices`).
 - Entity metadata now matches `EntityMetadata`: `attributeTypes` maps each column to its OData type, and the details go in `attributes`.
-- Actions and functions return their result type directly: the complex type or entity for structured results, the response's `value` for primitives and collections. The `<Name>Response` wrapper interfaces (`{ result }`) are gone; they also clashed with the complex types of the same name in the root `index.ts`.
+- Actions and functions return their result type directly: the complex type or entity for structured results, the response's `value` for primitives and collections. The `<Name>Response` wrapper interfaces (`{ result }`) are gone; they also clashed with the complex types of the same name in the root `index.ts`. (Since #300, `<Class>Response` is exported again as the type of the value itself, not a wrapper.)
 - `metadata.ts` and the root `index.ts` honour `output.fileSuffix`; an empty folder gets an `export {}` index.
 - With no `entities` list, only tables are generated (abstract types and types without an entity set are skipped).
 - Comments and string literals are escaped, so labels with `*/` or quotes can't break the output.

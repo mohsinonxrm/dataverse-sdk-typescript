@@ -219,8 +219,12 @@ Retrieves metadata changes since a specific version.
 ```typescript
 import { RetrieveMetadataChangesFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 
+// The first call returns the metadata the query matches, and a version stamp
+const first = await client.execute(new RetrieveMetadataChangesFunction({ Query: {} }));
+
+// Later calls with that stamp return only what changed since
 const { EntityMetadata, ServerVersionStamp } = await client.execute(
-  new RetrieveMetadataChangesFunction({ Query: {}, ClientVersionStamp: previousVersionStamp })
+  new RetrieveMetadataChangesFunction({ Query: {}, ClientVersionStamp: first.ServerVersionStamp })
 );
 ```
 
@@ -316,7 +320,7 @@ const whoAmI = new WhoAmIFunction();
 
 // 2. Function converts to RequestInformation
 const requestInfo = whoAmI.toRequestInformation(baseUrl);
-// => { method: 'GET', url: 'https://.../WhoAmI', headers: {} }
+// => { method: "GET", url: "https://.../WhoAmI", headers: { Accept: "application/json" } }
 
 // 3. Client executes the request
 const response = await client.execute(whoAmI);

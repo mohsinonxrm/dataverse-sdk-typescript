@@ -759,39 +759,48 @@ export class MetadataClient {
    * ```
    */
   async insertOptionValue(params: InsertOptionValueParams): Promise<InsertOptionValueResponse> {
+    checkOptionSetTarget(params);
     return await this.client.api("/InsertOptionValue").post<InsertOptionValueResponse>(params);
   }
 
   /**
    * Update an option value in a local or global option set
-   * @param params Update option value parameters
+   * @param params Update option value parameters: the choice (`OptionSetName`, or
+   *   `EntityLogicalName` and `AttributeLogicalName`), the option's `Value` and `MergeLabels`
    */
   async updateOptionValue(params: UpdateOptionValueParams): Promise<void> {
+    checkOptionSetTarget(params);
     await this.client.api("/UpdateOptionValue").post<undefined>(params);
   }
 
   /**
    * Delete an option value from a local or global option set
-   * @param params Delete option value parameters
+   * @param params Delete option value parameters: the choice (`OptionSetName`, or
+   *   `EntityLogicalName` and `AttributeLogicalName`) and the option's `Value`
    */
   async deleteOptionValue(params: DeleteOptionValueParams): Promise<void> {
+    checkOptionSetTarget(params);
     await this.client.api("/DeleteOptionValue").post<undefined>(params);
   }
 
   /**
    * Reorder options in a local or global option set
-   * @param params Order option parameters
+   * @param params Order option parameters: the choice (`OptionSetName`, or `EntityLogicalName`
+   *   and `AttributeLogicalName`) and every option value in the new order
    */
   async orderOptions(params: OrderOptionParams): Promise<void> {
+    checkOptionSetTarget(params);
     await this.client.api("/OrderOption").post<undefined>(params);
   }
 
   /**
-   * Insert a status value (statuscode option)
+   * Insert a status value (statuscode option). Status reasons belong to a table's `statuscode`
+   * column, so the target is always `EntityLogicalName` and `AttributeLogicalName`.
    * @param params Insert status value parameters
    * @returns New option value
    */
   async insertStatusValue(params: InsertStatusValueParams): Promise<InsertStatusValueResponse> {
+    checkOptionSetTarget(params, { localOnly: true });
     return await this.client.api("/InsertStatusValue").post<InsertStatusValueResponse>(params);
   }
 
@@ -1066,6 +1075,42 @@ export class MetadataClient {
         throw err;
       });
     return this.entitySetNamesLoad;
+  }
+}
+
+/**
+ * Check that an option-value action names exactly one choice before it is sent: a global choice
+ * (`OptionSetName`) or a local one (`EntityLogicalName` and `AttributeLogicalName`). The
+ * parameter types already require that; this catches untyped callers and casts. Given both,
+ * Dataverse silently changes the global choice and ignores the column.
+ */
+function checkOptionSetTarget(
+  params: { OptionSetName?: unknown; EntityLogicalName?: unknown; AttributeLogicalName?: unknown },
+  { localOnly = false }: { localOnly?: boolean } = {}
+): void {
+  const global = params.OptionSetName != null;
+  const local = params.EntityLogicalName != null || params.AttributeLogicalName != null;
+  if (global && (local || localOnly)) {
+    throw DataverseInvalidRequestError.invalidParameter(
+      "OptionSetName",
+      localOnly
+        ? "status values belong to a table's statuscode column; pass EntityLogicalName and AttributeLogicalName"
+        : "pass either OptionSetName (a global choice) or EntityLogicalName and AttributeLogicalName (a local choice), not both"
+    );
+  }
+  if (global) return;
+  if (!local) {
+    throw DataverseInvalidRequestError.missingParameter(
+      localOnly
+        ? "EntityLogicalName and AttributeLogicalName"
+        : "OptionSetName, or EntityLogicalName and AttributeLogicalName"
+    );
+  }
+  if (params.EntityLogicalName == null) {
+    throw DataverseInvalidRequestError.missingParameter("EntityLogicalName");
+  }
+  if (params.AttributeLogicalName == null) {
+    throw DataverseInvalidRequestError.missingParameter("AttributeLogicalName");
   }
 }
 

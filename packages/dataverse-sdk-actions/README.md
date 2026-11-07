@@ -323,7 +323,7 @@ await client.execute(
 );
 ```
 
-A a member name passed as a string is sent as it is. The enums are
+A member name passed as a string is sent as it is. The enums are
 exported from the package root, as in the functions package.
 
 ## Bulk Operations
@@ -353,7 +353,7 @@ See `@mohsinonxrm/dataverse-sdk-batch` for $batch support.
 
 Creates multiple records in a single request.
 
-**Maps to:** `POST /CreateMultiple` (unbound action)
+**Maps to:** `POST /{entitySet}/Microsoft.Dynamics.CRM.CreateMultiple` (collection-bound action; the entity set is the first argument)
 
 **Example:**
 
@@ -378,7 +378,7 @@ use `UpdateMultipleAction` with each target's `@odata.etag`, or single-record up
 
 Updates multiple records in a single request.
 
-**Maps to:** `POST /UpdateMultiple` (unbound action)
+**Maps to:** `POST /{entitySet}/Microsoft.Dynamics.CRM.UpdateMultiple` (collection-bound action)
 
 **Example:**
 
@@ -398,7 +398,7 @@ await client.execute(action); // 204 No Content
 
 Creates or updates multiple records in a single request.
 
-**Maps to:** `POST /UpsertMultiple` (unbound action)
+**Maps to:** `POST /{entitySet}/Microsoft.Dynamics.CRM.UpsertMultiple` (collection-bound action)
 
 **Example:**
 
@@ -420,19 +420,20 @@ Deletes multiple records in a single request.
 
 **⚠️ IMPORTANT:** Only supported for **elastic tables**, not standard tables.
 
-**Maps to:** `POST /DeleteMultiple` (unbound action)
+**Maps to:** `POST /{entitySet}/Microsoft.Dynamics.CRM.DeleteMultiple` (collection-bound action)
 
 **Example:**
 
 ```typescript
 import { DeleteMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
+// contoso_sensordata is an elastic table; each target is a reference to a record
 const targets = [
-  { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id1" },
-  { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id2" },
+  { "@odata.type": "Microsoft.Dynamics.CRM.contoso_sensordata", contoso_sensordataid: "id1" },
+  { "@odata.type": "Microsoft.Dynamics.CRM.contoso_sensordata", contoso_sensordataid: "id2" },
 ];
 
-const action = new DeleteMultipleAction("accounts", { Targets: targets });
+const action = new DeleteMultipleAction("contoso_sensordatas", { Targets: targets });
 await client.execute(action); // Only works for elastic tables
 ```
 
@@ -490,12 +491,15 @@ CommitFileBlocksUpload: Commit the blocks, in order, as the file.
 <!-- /operations -->
 
 ```typescript
+import { readFile } from "node:fs/promises";
 import {
   CommitFileBlocksUploadAction,
   InitializeFileBlocksUploadAction,
   UploadBlockAction,
   createEntityReference,
 } from "@mohsinonxrm/dataverse-sdk-actions";
+
+const bytes = await readFile("logo.png"); // one block holds up to 4 MB
 
 const { FileContinuationToken } = await client.execute(
   new InitializeFileBlocksUploadAction({
@@ -509,7 +513,7 @@ const blockId = btoa("000000");
 await client.execute(
   new UploadBlockAction({
     BlockId: blockId,
-    BlockData: Buffer.from(bytes).toString("base64"),
+    BlockData: bytes.toString("base64"),
     FileContinuationToken: FileContinuationToken,
   })
 );
@@ -554,6 +558,10 @@ supplemental definition. All five parameters are required. `ExcelFile` is the .x
 ```typescript
 import { ExportToExcelAction, createEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
 
+// The view's query and layout (a savedquery's fetchxml and layoutxml columns)
+const fetchXml = `<fetch><entity name="account"><attribute name="name" /></entity></fetch>`;
+const layoutXml = `<grid name="resultset" object="1" jump="name" select="1" icon="1" preview="1"><row name="result" id="accountid"><cell name="name" width="300" /></row></grid>`;
+
 const { ExcelFile } = await client.execute(
   new ExportToExcelAction({
     View: createEntityReference("savedquery", viewId),
@@ -589,7 +597,7 @@ const action = new CreateMultipleAction("accounts", { Targets: accounts });
 
 // 2. Action converts to RequestInformation
 const requestInfo = action.toRequestInformation(baseUrl);
-// => { method: 'POST', url: '.../ CreateMultiple', body: {...} }
+// => { method: "POST", url: ".../accounts/Microsoft.Dynamics.CRM.CreateMultiple", body: {...} }
 
 // 3. Client executes the request
 const response = await client.execute(action);

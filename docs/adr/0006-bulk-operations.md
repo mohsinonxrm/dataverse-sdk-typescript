@@ -34,7 +34,7 @@ Microsoft introduced bulk operations as a simpler alternative to $batch for comm
 2. **Bulk operation actions to implement:**
    - `CreateMultipleAction` — Bulk create, returns `{ Ids: string[] }`
    - `UpdateMultipleAction` — Bulk update, returns 204 No Content
-   - `UpsertMultipleAction` — Bulk upsert, returns 204 No Content
+   - `UpsertMultipleAction` — Bulk upsert, returns `{ Results: UpsertResponse[] }`
    - `DeleteMultipleAction` — Bulk delete (elastic tables only), returns 204 No Content
 
 3. **API surface:**
@@ -82,6 +82,14 @@ Microsoft introduced bulk operations as a simpler alternative to $batch for comm
    - Provide decision matrix (bulk operations vs $batch)
    - Show elastic vs standard table differences
    - Include performance guidance (batch size recommendations)
+
+### Status update (2026-11-07, 2.0.0)
+
+- **Implemented:** the four bulk actions (and their messages), which take the entity set first: `new CreateMultipleAction("accounts", { Targets })` posts to `/accounts/Microsoft.Dynamics.CRM.CreateMultiple` (#69). `$batch` with change sets, `continueOnError` and auto-splitting is in `@mohsinonxrm/dataverse-sdk-batch`.
+- **Planned, not implemented** (#100):
+  - client-side validation that every target has `@odata.type` (decision 5); Dataverse rejects a target without it;
+  - parsing elastic-table partial success from `Microsoft.PowerApps.CDS.ErrorDetails.*` (decision 5);
+  - detecting which tables support bulk operations through `sdkmessagefilters` (decision 6).
 
 ### Consequences
 

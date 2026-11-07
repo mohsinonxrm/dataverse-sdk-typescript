@@ -204,7 +204,9 @@ enums are member names; see `@mohsinonxrm/dataverse-sdk-metadata`.
 
 `ExecuteWorkflow`, `BulkDelete` and asynchronous imports return or create an `asyncoperation`. Its
 `statuscode` is 0 (waiting for resources), 10 (waiting), 20 (in progress) or 21 (pausing) while it
-runs, and 30 (succeeded), 31 (failed) or 32 (canceled) once it ends, so poll until it is 30 or more:
+runs, and 30 (succeeded), 31 (failed) or 32 (canceled) once it ends, so poll until it is 30 or more
+(a `waitForAsyncOperation()` helper is planned in
+[#318](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/318)):
 
 ```typescript
 const { result } = await orgService.execute<ExecuteWorkflowResponse>(

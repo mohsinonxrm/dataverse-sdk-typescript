@@ -205,8 +205,11 @@ export interface PropertyType {
   /** Is this read-only? */
   IsReadOnly?: boolean;
 
-  /** Is this required? (ApplicationRequired) */
+  /** Business-required: a caller must supply a value (`RequiredLevel` is ApplicationRequired). */
   IsRequired?: boolean;
+
+  /** The column's `RequiredLevel` when it isn't None: SystemRequired, ApplicationRequired or Recommended. */
+  RequiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
 
   /** Is this the primary key? */
   IsPrimaryKey?: boolean;

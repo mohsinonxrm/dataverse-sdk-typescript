@@ -10,7 +10,7 @@ The SDK provides comprehensive coverage of Dataverse Web API operations through 
 | ---------------------------------------- | ------------------------------------------- | -------------------------------------- | ----------- |
 | **@mohsinonxrm/dataverse-sdk-functions** | <!-- count:functions -->280<!-- /count -->  | Read-only operations (query, retrieve) | GET         |
 | **@mohsinonxrm/dataverse-sdk-actions**   | <!-- count:actions -->1,072<!-- /count -->  | Operations with side effects           | POST        |
-| **@mohsinonxrm/dataverse-sdk-messages**  | <!-- count:messages -->1,072<!-- /count --> | Organization Service message pattern   | Varies      |
+| **@mohsinonxrm/dataverse-sdk-messages**  | <!-- count:messages -->1,072<!-- /count --> | Organization Service message pattern   | POST        |
 
 **Total Coverage:** <!-- count:operations -->2,424<!-- /count --> typed operations
 
@@ -66,7 +66,7 @@ await service.execute(new PublishAllXmlRequest());
 **Functions (Read-Only):**
 
 - Identity & context (WhoAmI, RetrieveCurrentOrganization)
-- Security & access (RetrievePrincipalAccess, RetrieveUserPrivileges)
+- Security & access (RetrievePrincipalAccess\_<table>, RetrieveUserPrivileges)
 - Metadata operations (RetrieveMetadataChanges, RetrieveEntity)
 - Query helpers (fiscal periods, date ranges, conditional operators)
 
@@ -249,8 +249,8 @@ const accounts = await service.retrieveMultiple("accounts", {
 
 - Migrating from .NET SDK
 - Team familiar with Organization Service patterns
-- Need namespace organization (CrmSdk vs XrmSdk)
-- Prefer message-based architecture
+- Prefer message-based architecture (`<Name>Request` / `<Name>Response`, parameters in
+  `request.Parameters`)
 
 ### Use Raw API When:
 
@@ -264,7 +264,7 @@ const accounts = await service.retrieveMultiple("accounts", {
 - **Bulk operations** are faster than individual creates/updates for 100+ records
 - **$batch** is better for mixed operations (creates + updates + deletes)
 - **Functions** are cacheable (GET) while actions are not (POST)
-- **Messages** have slight overhead due to abstraction layer
+- **Messages** send the same request as the matching action
 
 ## Related Documentation
 

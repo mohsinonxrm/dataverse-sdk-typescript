@@ -33,7 +33,12 @@ Dataverse supports `$batch` operations with **up to 1000** individual requests p
 6.  **Batching:** Provide `$batch` + changeset support in `@mohsinonxrm/dataverse-sdk-batch` with:
     - auto-splitting into several `$batch` requests of at most `batchSize` (default 1000) without splitting a change set,
     - hard cap at 1000 per Dataverse limit, and change set support.
-    - (Updated in v1.2.0: the default was planned as 10 but never used; the default is now the Dataverse limit.)
+    - (Updated for 2.0.0: the default was planned as 10 but never used; the default is now the Dataverse limit.)
+
+### Status update (2026-11-07, 2.0.0)
+
+- **Circuit breaker and bulkhead are planned, not implemented** (#100). The `circuitBreaker` and `bulkhead` options were never read and were removed before 2.0.0 (#285). Until the middleware exists, add your own through the client's `middleware` option.
+- **Retries (decision 5).** A `429` is retried for every method. A `502`, `503` or `504` is retried only for idempotent requests (GET, HEAD, OPTIONS, PUT, DELETE, and PATCH with `If-Match`), because the request may already have been applied (#12). `retry.retryNonIdempotent` restores the old behaviour. A `Retry-After` longer than `retry.maxRetryAfterMs` (30 s by default) is returned to the caller instead of waited out (#17).
 
 ### Consequences
 

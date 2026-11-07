@@ -66,6 +66,9 @@ For the credentials that do cache, the provider's cache only saves the call into
 so the credential may return the same token until MSAL refreshes it.
 
 ```typescript
+import { AzureCliCredential } from "@azure/identity";
+import { AzureIdentityTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-azure-identity";
+
 const tokenProvider = new AzureIdentityTokenProvider(new AzureCliCredential(), {
   scopes: ["https://your-org.crm.dynamics.com/.default"],
   refreshMarginMs: 10 * 60 * 1000, // refresh 10 minutes before expiry (default 5)

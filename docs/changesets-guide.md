@@ -222,7 +222,7 @@ pnpm changeset publish --tag next --no-git-tag
 
 ### Linked Packages (Always Version Together)
 
-Edit `.changeset/config.json`:
+Not used in this repository: every published package is in the `fixed` group below, so a `linked` group would have no effect. For reference, a linked group in `.changeset/config.json` looks like this:
 
 ```json
 {
@@ -232,7 +232,7 @@ Edit `.changeset/config.json`:
 
 ### Fixed Packages (Share Version Number)
 
-This repository uses one `fixed` group with every published package listed by name (see `.changeset/config.json`, #313). Add new published packages to it. The generic form looks like this:
+This repository uses one `fixed` group with every published package listed by name (see `.changeset/config.json`, #313). Add new published packages to it. Because of it, a release bumps every published package to the same version, the highest bump any pending changeset asks for: one `major` changeset for one package makes every package's next version a major. Name only the packages your change affects; their CHANGELOGs get your entry. The generic form looks like this:
 
 ```json
 {

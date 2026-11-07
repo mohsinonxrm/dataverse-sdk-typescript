@@ -153,16 +153,16 @@ Developers can implement custom telemetry:
 ```typescript
 import type { TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
 
+// Send each call to your own backend; this one writes to the console
 class CustomTelemetryClient implements TelemetryClient {
   trackEvent(name: string, props?: Record<string, string>) {
-    myBackend.logEvent(name, props);
+    console.info("event", name, props);
   }
   trackDependency(name: string, data: Parameters<TelemetryClient["trackDependency"]>[1]) {
-    // Send to custom backend
-    myBackend.logDependency(name, data);
+    console.info("dependency", name, data.resultCode, data.durationMs, data.url);
   }
   trackException(error: unknown, props?: Record<string, string>) {
-    myBackend.logError(error, props);
+    console.error("exception", error, props);
   }
 }
 

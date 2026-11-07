@@ -146,7 +146,11 @@ export class SchemaModel {
         // Enrich with metadata
         existingProp.SchemaName = attribute.SchemaName ?? logicalName;
         existingProp.AttributeType = attribute.AttributeType;
-        existingProp.IsRequired = attribute.RequiredLevel?.Value === 2; // ApplicationRequired
+        // RequiredLevel.Value is the member name ("ApplicationRequired"), not a number (#325).
+        const requiredLevel = attribute.RequiredLevel?.Value;
+        existingProp.IsRequired = requiredLevel === "ApplicationRequired";
+        existingProp.RequiredLevel =
+          requiredLevel && requiredLevel !== "None" ? requiredLevel : undefined;
         existingProp.AttributeOf = attribute.AttributeOf;
         existingProp.SourceType = attribute.SourceType ?? 0;
         existingProp.DisplayName = this.extractLabel(attribute.DisplayName);

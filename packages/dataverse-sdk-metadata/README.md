@@ -450,30 +450,60 @@ const optionSetId = await metadataClient.createGlobalOptionSet({
 
 ### Use Global Choice in Column
 
+A choice or choices (multi-select) column uses an existing global choice through
+`"GlobalOptionSet@odata.bind"` instead of an `OptionSet` of its own; the create types accept
+exactly one of the two. Dataverse binds by `MetadataId` only (`(Name='…')` is rejected), so keep
+the id `createGlobalOptionSet` returns, or read it with `getGlobalOptionSet(name)`.
+
 ```typescript
-// Reference global choice when creating attribute
+// Bind the column to the global choice created above, by its MetadataId
 await metadataClient.createAttributeDefinition("new_project", {
   "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
   SchemaName: "new_Type",
   DisplayName: { LocalizedLabels: [{ Label: "Type", LanguageCode: 1033 }] },
   RequiredLevel: { Value: "None" },
-  GlobalOptionSet: {
-    "@odata.bind": `/GlobalOptionSetDefinitions(Name='new_projecttype')`,
-  },
+  "GlobalOptionSet@odata.bind": `/GlobalOptionSetDefinitions(${optionSetId})`,
+});
+
+// A choices (multi-select) column on a global choice found by name
+const { MetadataId: projectTypeId } = await metadataClient.getGlobalOptionSet("new_projecttype", {
+  select: ["MetadataId"],
+});
+await metadataClient.createAttributeDefinition("new_project", {
+  "@odata.type": "Microsoft.Dynamics.CRM.MultiSelectPicklistAttributeMetadata",
+  SchemaName: "new_Types",
+  DisplayName: { LocalizedLabels: [{ Label: "Types", LanguageCode: 1033 }] },
+  RequiredLevel: { Value: "None" },
+  "GlobalOptionSet@odata.bind": `/GlobalOptionSetDefinitions(${projectTypeId})`,
 });
 ```
 
 ### Insert Option Value
 
+The option-value methods (`insertOptionValue`, `updateOptionValue`, `deleteOptionValue`,
+`orderOptions`) take either `OptionSetName`, for a global choice, or `EntityLogicalName` and
+`AttributeLogicalName`, for a column's own choice; passing both, or neither, is a type error and
+throws `DataverseInvalidRequestError` before anything is sent. A column bound to a global choice
+has no options of its own, so change the global choice. `insertStatusValue` always takes the
+table and its `statuscode` column. `updateOptionValue` requires `MergeLabels`.
+
 ```typescript
-// Add new option to existing global choice
+// Add a new option to a column's own (local) choice
 const result = await metadataClient.insertOptionValue({
+  EntityLogicalName: "new_project",
+  AttributeLogicalName: "new_status",
+  Label: { LocalizedLabels: [{ Label: "On Hold", LanguageCode: 1033 }] },
+  Value: 4, // Optional, auto-assigned if omitted
+});
+console.log("New option value:", result.NewOptionValue);
+
+// Add a new option to a global choice
+const added = await metadataClient.insertOptionValue({
   OptionSetName: "new_projecttype",
   Label: { LocalizedLabels: [{ Label: "Maintenance", LanguageCode: 1033 }] },
-  Value: 100003, // Optional, auto-assigned if omitted
+  Value: 100003,
 });
-
-console.log("New option value:", result.NewOptionValue);
+console.log("New option value:", added.NewOptionValue);
 ```
 
 ---
@@ -646,7 +676,7 @@ The metadata package uses strict type separation:
 - **Create types** - exclude read-only and internal properties, and require what a create needs (e.g., `EntityMetadataCreate`, `StringAttributeMetadataCreate`)
 - **Update types** - every property optional (e.g., `EntityMetadataUpdate`); a retrieved definition can be passed back
 
-This ensures you cannot accidentally send read-only fields like `MetadataId`, `ObjectTypeCode`, or internal-use fields in create/update operations.
+This ensures you cannot accidentally send read-only fields like `MetadataId`, `ObjectTypeCode`, or internal-use fields in create/update operations. The create types leave out every property Dataverse sets itself, such as a date column's `MinSupportedValue` and `MaxSupportedValue`, a text column's `DatabaseLength`, `AttributeType` (the type comes from `@odata.type`) and `IsValidForRead`.
 
 Column creates take `AttributeMetadataCreateTypes`, a union discriminated on `@odata.type`
 (`"Microsoft.Dynamics.CRM.StringAttributeMetadata"`, …), so the type-specific properties

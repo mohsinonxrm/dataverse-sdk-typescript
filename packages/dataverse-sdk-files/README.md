@@ -32,11 +32,11 @@ npm install @mohsinonxrm/dataverse-sdk-files @mohsinonxrm/dataverse-sdk-core @mo
 ### Basic Upload
 
 ```typescript
-import { DataverseClient } from '@mohsinonxrm/dataverse-sdk-core';
-import { FileColumnClient } from '@mohsinonxrm/dataverse-sdk-files';
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
 
 const client = new DataverseClient({
-  baseUrl: 'https://your-org.crm.dynamics.com',
+  baseUrl: "https://your-org.crm.dynamics.com",
   tokenProvider,
 });
 
@@ -44,15 +44,16 @@ const client = new DataverseClient({
 const fileClient = new FileColumnClient(client);
 
 // Upload file to account logo (image column)
-const accountId = 'aaaa-bbbb-cccc-dddd';
-const logoFile = /* File or Blob from input */;
+const accountId = "00000000-0000-0000-0000-000000000001";
+// A File from an <input type="file">, or any Blob
+const logoFile = document.querySelector<HTMLInputElement>("input[type=file]")!.files![0];
 
 await fileClient.upload(
-  'accounts',      // Entity set name
-  accountId,       // Record ID
-  'new_logo',      // Column logical name
-  logoFile,        // File data (Blob, File, ArrayBuffer or Uint8Array/Buffer)
-  'company-logo.png'  // File name
+  "accounts", // Entity set name
+  accountId, // Record ID
+  "new_logo", // Column logical name
+  logoFile, // File data (Blob, File, ArrayBuffer or Uint8Array/Buffer)
+  "company-logo.png" // File name
 );
 ```
 
@@ -72,25 +73,19 @@ await fileClient.upload("accounts", accountId, "new_document", documentFile, "co
 ### Upload Large File
 
 ```typescript
+import { openAsBlob } from "node:fs";
+
 // Every upload is sent in blocks of at most 4MB (the largest block Dataverse accepts),
 // so a large file needs no special options. The column's maximum size still applies.
-const largeFile = /* 500MB file */;
+const largeFile = await openAsBlob("large-document.pdf"); // Node.js: a Blob read slice by slice
 const controller = new AbortController(); // controller.abort() cancels the upload
 
-await fileClient.upload(
-  'emails',
-  emailId,
-  'new_attachment',
-  largeFile,
-  'large-document.pdf',
-  {
-    onProgress: (progress) => {
-      // Update UI progress bar
-      updateProgressBar(progress.percentage);
-    },
-    signal: controller.signal,
-  }
-);
+await fileClient.upload("emails", emailId, "new_attachment", largeFile, "large-document.pdf", {
+  onProgress: (progress) => {
+    console.log(`${progress.percentage}%`); // update a progress bar here
+  },
+  signal: controller.signal,
+});
 ```
 
 ### Download File
@@ -161,8 +156,9 @@ const blob = await fileClient.download("accounts", accountId, "new_document", {
 
 // A ReadableStream: each chunk is requested as the stream is read.
 const stream = await fileClient.downloadStream("accounts", accountId, "new_document");
-for await (const chunk of stream) {
-  /* write the chunk somewhere */
+const reader = stream.getReader();
+for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
+  console.log(`${chunk.value.byteLength} bytes`); // write chunk.value somewhere
 }
 ```
 
@@ -225,37 +221,37 @@ try {
 
 ## React Example with Progress
 
-```typescript
-import { useState } from 'react';
-import { FileColumnClient } from '@mohsinonxrm/dataverse-sdk-files';
+```tsx
+import { useState, type ChangeEvent } from "react";
+import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
 
-function ProfilePictureUpload({ client, accountId }) {
+function ProfilePictureUpload({
+  client,
+  accountId,
+}: {
+  client: DataverseClient;
+  accountId: string;
+}) {
   const [progress, setProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
 
   const fileClient = new FileColumnClient(client);
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
     setProgress(0);
 
     try {
-      await fileClient.upload(
-        'accounts',
-        accountId,
-        'new_profilepicture',
-        file,
-        file.name,
-        {
-          onProgress: (p) => setProgress(p.percentage)
-        }
-      );
-      alert('Upload complete!');
+      await fileClient.upload("accounts", accountId, "new_profilepicture", file, file.name, {
+        onProgress: (p) => setProgress(p.percentage),
+      });
+      alert("Upload complete!");
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error("Upload failed:", error);
     } finally {
       setUploading(false);
     }
@@ -263,12 +259,7 @@ function ProfilePictureUpload({ client, accountId }) {
 
   return (
     <div>
-      <input
-        type="file"
-        onChange={handleFileChange}
-        disabled={uploading}
-        accept="image/*"
-      />
+      <input type="file" onChange={handleFileChange} disabled={uploading} accept="image/*" />
       {uploading && (
         <div>
           <progress value={progress} max="100" />
@@ -285,6 +276,8 @@ function ProfilePictureUpload({ client, accountId }) {
 ### FileColumnClient
 
 #### Constructor
+
+<!-- no-check -->
 
 ```typescript
 new FileColumnClient(client: DataverseClient)
@@ -426,7 +419,7 @@ interface UploadProgress {
 
 ### Parallel Uploads
 
-**Not supported** - Chunks must be uploaded sequentially to maintain order. Use `$batch` for parallel uploads of multiple files to different records.
+**Not supported** for one file: its chunks are uploaded one after the other. To upload several files at once, run several `upload()` calls concurrently (one per record or column); through a `DataverseClient` they share its concurrency limit.
 
 ### Retry Logic
 

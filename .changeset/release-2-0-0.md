@@ -25,14 +25,16 @@
 - **core, timeouts:** `timeoutMs` covers the whole request.
 - **core, pipeline:** the default middleware order is ODataHeaders, Retry, Concurrency, Auth, Telemetry, Logging.
 - **core, queries:** query options are encoded with `%20`, and `expand()` calls add up.
+- **core, removed options:** `RetryOptions.delay` and `useExponentialBackoff`, `circuitBreaker`, `bulkhead` and `DataverseError.statusCode` are gone (#285).
 - **errors:** every SDK error extends `DataverseError`. Network failures and aborts are `DataverseNetworkError` and `DataverseAbortError`. A 412 is a `DataverseDuplicateError` only for `0x80040333`.
 - **metadata:** enums are string member names, and creates return the id from `OData-EntityId`.
-- **xrm:** record ids must be GUIDs, and entity sets come from metadata.
+- **xrm:** record ids must be GUIDs, and entity sets come from metadata. `execute()` infers its result from the request, and records are `EntityRecord` instead of `any`.
 - **discovery:** `OrganizationDetail` matches the v2.0 response.
 - **actions, functions, messages:**
-  - bulk operations take the entity set first;
-  - `createEntityReference` returns the Web API shape and takes an options object;
-  - single-entity returns are the entity;
+  - constructors take one object with the parameters by name; a bound operation's record id or entity set comes first, and bulk operations take the entity set first (#96);
+  - each binding of an overloaded operation has its own class, and the plain-name classes of bound-only operations are removed (#286);
+  - one `EntityReference` for the whole SDK: `createEntityReference` returns the Web API shape and takes an options object (#295);
+  - `client.execute()` resolves the operation's value, not the OData envelope: the entity (`null` for a 204), the array, the primitive, or nothing (#300);
   - `toRequestBody()` is removed.
 
 See each package's CHANGELOG for the full list.

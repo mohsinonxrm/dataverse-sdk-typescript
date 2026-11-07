@@ -13,7 +13,8 @@ Content-Security-Policy: default-src 'self'; script-src 'self'; connect-src 'sel
 - every package loads with no page errors, console errors or CSP violations;
 - the production bundle has no `eval(` or `new Function(` (#20);
 - a GET runs through the real `DataverseClient` pipeline in the browser;
-- the default logger is silent in the browser (**#33, pinned with `it.fails`**: 2 console calls per request today);
+- the default logger is silent in the browser (#33);
+- `bindMany()` runs in the bundle under `script-src 'self'` (#20);
 - `FileColumnClient.upload()` works with a `Blob` (#58).
 
 The scenarios use an in-page fake `fetch`, so nothing reaches a real org.
