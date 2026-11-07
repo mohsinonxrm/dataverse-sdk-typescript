@@ -211,6 +211,37 @@ describe("formatEntityForWrite: lookups become @odata.bind (#79)", () => {
     expect(body.primarycontactid).toEqual({ lastname: "Smith" });
   });
 
+  it("clears a lookup set to null through its navigation property (#363)", () => {
+    expect(formatEntityForWrite({ primarycontactid: null }, accountMetadata)).toEqual({
+      "@odata.type": "Microsoft.Dynamics.CRM.account",
+      "primarycontactid@odata.bind": null,
+    });
+    // The navigation property's own casing (custom lookups are often new_ParentId).
+    expect(formatEntityForWrite({ new_widgetid: null }, accountMetadata)).toEqual({
+      "@odata.type": "Microsoft.Dynamics.CRM.account",
+      "new_WidgetId@odata.bind": null,
+    });
+  });
+
+  it("clears a polymorphic lookup through the navigation property of every target (#363)", () => {
+    expect(formatEntityForWrite({ parentcustomerid: null }, contactMetadata)).toEqual({
+      "@odata.type": "Microsoft.Dynamics.CRM.contact",
+      "parentcustomerid_account@odata.bind": null,
+      "parentcustomerid_contact@odata.bind": null,
+    });
+    // Not consolidated: the per-target entries in the metadata.
+    expect(formatEntityForWrite({ customerid: null }, incidentMetadata)).toEqual({
+      "@odata.type": "Microsoft.Dynamics.CRM.incident",
+      "customerid_account@odata.bind": null,
+      "customerid_contact@odata.bind": null,
+    });
+  });
+
+  it("leaves null on a collection-valued navigation property as it is", () => {
+    const body = formatEntityForWrite({ contact_customer_accounts: null }, accountMetadata);
+    expect(body).toHaveProperty("contact_customer_accounts", null);
+  });
+
   it("throws a DataverseInvalidRequestError when the entity set is unknown", () => {
     expect(() =>
       formatEntityForWrite(
