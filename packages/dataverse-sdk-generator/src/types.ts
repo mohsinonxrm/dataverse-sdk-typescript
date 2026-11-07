@@ -243,6 +243,12 @@ export interface PropertyType {
 
   /** Date/time format */
   Format?: string;
+
+  /**
+   * A complex type's navigation property (`PrincipalAccess.Principal`, #361): an entity, or a
+   * collection of them, set with a reference or a record.
+   */
+  IsNavigation?: boolean;
 }
 
 /**
@@ -292,6 +298,9 @@ export interface EnumType {
 
   /** Is this a global option set? */
   IsGlobal: boolean;
+
+  /** A CSDL enum with `IsFlags="true"`: a value can combine members (`ReadAccess, WriteAccess`). */
+  IsFlags?: boolean;
 }
 
 /**

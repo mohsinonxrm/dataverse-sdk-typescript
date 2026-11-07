@@ -47,13 +47,14 @@ export class <%- className %> extends FunctionBase<<%- responseType %>> {
   };
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    // Parameters travel as aliases: Name(Param=@p1)?@p1=<OData literal>; an undefined one isn't sent
+    // Parameters travel as aliases: Name(Param=@p1)?@p1=<OData literal>; an undefined one isn't sent.
+    // Enum values inside a complex or collection parameter are sent as member names (parameterValue).
     const aliases: string[] = [];
     const values = new URLSearchParams();
 <%_ func.Parameters.forEach(function(param, index){ _%>
     if (this.parameters<%- access(param.Name) %> !== undefined) {
       aliases.push(<%- literal(param.Name + '=@p' + (index + 1)) %>);
-      values.append(<%- literal('@p' + (index + 1)) %>, formatParameterAlias(this.parameters<%- access(param.Name) %>, <%- literal(param.Type) %>, <%- literal(parameterKind(param)) %>));
+      values.append(<%- literal('@p' + (index + 1)) %>, formatParameterAlias(<%- bodyExpression(param) %>, <%- literal(param.Type) %>, <%- literal(parameterKind(param)) %>));
     }
 <%_ }) _%>
     const query = values.toString();

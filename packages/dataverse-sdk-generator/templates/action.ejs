@@ -48,10 +48,11 @@ export class <%- className %> extends ActionBase<<%- responseType %>> {
 
   toRequestInformation(baseUrl: string): RequestInformation {
 <%_ if (action.Parameters.length > 0) { _%>
-    // The parameters by their CSDL names; an undefined one isn't sent
+    // The parameters by their CSDL names; an undefined one isn't sent. Enum values are sent as
+    // member names, and entities with their lookups as @odata.bind (bodyValue).
     const body: Record<string, unknown> = {};
 <%_ action.Parameters.forEach(function(param){ _%>
-    if (this.parameters<%- access(param.Name) %> !== undefined) body[<%- literal(param.Name) %>] = this.parameters<%- access(param.Name) %>;
+    if (this.parameters<%- access(param.Name) %> !== undefined) body[<%- literal(param.Name) %>] = <%- bodyExpression(param) %>;
 <%_ }) _%>
 
 <%_ } _%>
