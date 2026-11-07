@@ -56,7 +56,7 @@ Edit `.dataverse-gen.json`:
 - **environmentUrl**: Your Dataverse environment URL
 - **entities**: Array of entity logical names to generate (empty = all)
 - **actions**: Array of action names to generate (empty = all)
-- **functions**: Array of function names to generate (empty = all)
+- **functions**: Array of function names to generate (empty = all, without the query functions; see [Query functions](#query-functions))
 - **auth**: how the generator signs in to read metadata (see [Authentication](#-authentication))
 
 ### 3. Generate Code
@@ -259,6 +259,26 @@ Generate all entities (leave empty or omit):
   "functions": ["WhoAmI", "RetrieveVersion"]
 }
 ```
+
+### Query functions
+
+The Web API's query functions (`LastXDays`, `Between`, `In`, `Under`, `EqualUserId`, …) are
+declared as functions in `$metadata`, but Dataverse runs them only inside `$filter`, so dataverse-gen
+doesn't generate them, even when `functions` lists them (the CLI prints a warning for each listed
+one). Use `queryFunctions` from `@mohsinonxrm/dataverse-sdk-functions` instead:
+
+```typescript
+import { queryFunctions } from "@mohsinonxrm/dataverse-sdk-functions";
+
+await client
+  .api("accounts")
+  .filter(queryFunctions.lastXDays({ PropertyName: "createdon", PropertyValue: 7 }))
+  .get();
+```
+
+A function is treated as a query function when it is unbound, returns `Edm.Boolean`, takes
+`PropertyName` (`Edm.String`) first, and has no `_` in its name. Custom APIs always have a publisher
+prefix (`contoso_IsVip`), so they are generated.
 
 ### Strict nulls
 

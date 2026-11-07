@@ -154,6 +154,19 @@ export const TYPECHECK_EDMX = `<?xml version="1.0" encoding="utf-8"?>
         <Parameter Name="Paging" Type="mscrm.QueryBase" />
         <ReturnType Type="Edm.Boolean" Nullable="false" />
       </Function>
+      <Function Name="LastXDays">
+        <Parameter Name="PropertyName" Type="Edm.String" Nullable="false" Unicode="false" />
+        <Parameter Name="PropertyValue" Type="Edm.Int32" Nullable="false" />
+        <ReturnType Type="Edm.Boolean" Nullable="false" />
+      </Function>
+      <Function Name="EqualUserId">
+        <Parameter Name="PropertyName" Type="Edm.String" Nullable="false" Unicode="false" />
+        <ReturnType Type="Edm.Boolean" Nullable="false" />
+      </Function>
+      <Function Name="contoso_IsVip">
+        <Parameter Name="PropertyName" Type="Edm.String" Nullable="false" Unicode="false" />
+        <ReturnType Type="Edm.Boolean" Nullable="false" />
+      </Function>
       <Function Name="RetrieveCurrentOrganization">
         <Parameter Name="AccessType" Type="mscrm.AccessRights" Nullable="false" />
         <Parameter Name="Names" Type="Collection(Edm.String)" />
