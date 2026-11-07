@@ -27,6 +27,7 @@ import {
   rootTypeExports,
 } from "./complex-types-generator.js";
 import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
+import { bodyEnumType, ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
 import {
   bindingDoc,
   parametersArgument,
@@ -176,12 +177,42 @@ function functionParameterTsType(csdl: CsdlSchema, paramType: string): string {
 }
 
 /**
- * The `formatParameterAlias(...)` call for a scalar parameter: the OData type picks the literal
- * form (quoted string, bare GUID or date, enum literal).
+ * The `formatParameterAlias(...)` call for a parameter value (`this.parameters.X`):
+ *
+ * - a record reference: `{"@odata.id": "<entity set>(<id>)"}`; throws without an entity set (#72);
+ * - a complex type or a collection: JSON, with its enum members as names (`enumBody`, as action
+ *   bodies have them, #232): Dataverse reads an enum in a JSON parameter only by name (#358);
+ * - a primitive or an enum: the OData literal of its type (quoted string, bare GUID or date, enum
+ *   literal; #22, #67, #68).
  */
-function scalarAliasCall(csdl: CsdlSchema, paramName: string, paramType: string): string {
-  const kind = enumTypeName(csdl, paramType) ? `, 'EnumerationType'` : "";
-  return `formatParameterAlias(this.${paramName}, '${paramType}'${kind})`;
+function aliasValue(
+  csdl: CsdlSchema,
+  value: string,
+  paramType: string
+): { code: string; usesEnumBody: boolean } {
+  const kind = aliasKind(csdl, paramType);
+  if (kind === "entityReference") {
+    return {
+      code: `formatParameterAlias(${value}, '${paramType}', 'EntityType')`,
+      usesEnumBody: false,
+    };
+  }
+  if (kind === "complex") {
+    const enumType = bodyEnumType(csdl, paramType, "functions");
+    const json = enumType ? `enumBody(${value}, ${JSON.stringify(enumType)})` : value;
+    const isEntity = csdl.entityTypes.some((et) => `mscrm.${et.name}` === paramType);
+    const odataKind = isCollectionType(paramType)
+      ? "Collection"
+      : isEntity
+        ? "EntityType"
+        : "ComplexType";
+    return {
+      code: `formatParameterAlias(${json}, '${paramType}', '${odataKind}')`,
+      usesEnumBody: enumType !== undefined,
+    };
+  }
+  const enumKind = enumTypeName(csdl, paramType) ? `, 'EnumerationType'` : "";
+  return { code: `formatParameterAlias(${value}, '${paramType}'${enumKind})`, usesEnumBody: false };
 }
 
 /**
@@ -237,6 +268,11 @@ export async function generateFunctions(
 
   // Runtime helper the generated functions use to format parameter-alias literals
   await writeTypeScriptFile(join(absolutePath, `${ODATA_LITERAL_MODULE}.ts`), ODATA_LITERAL_SOURCE);
+  // Enum values in JSON parameters are sent as member names (#358)
+  await writeTypeScriptFile(
+    join(absolutePath, "internal", `${ENUM_BODY_MODULE}.ts`),
+    enumBodySource(csdl, "functions")
+  );
 
   const generatedFiles: string[] = [];
 
@@ -321,8 +357,21 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
 
   const coreImport = `import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';\n`;
   let code = coreImport;
-  // Set when a parameter alias is written with formatParameterAlias (the import is added at the end)
-  let usesAliasLiteral = false;
+  // Set when a parameter alias is written with formatParameterAlias, or its value goes through
+  // enumBody (the imports are added at the end)
+  const uses = { aliasLiteral: false, enumBody: false };
+
+  /** The statements that add one parameter alias, when the parameter is set. */
+  const aliasStatement = (name: string, alias: string, paramType: string): string => {
+    const value = aliasValue(csdl, `this.parameters.${name}`, paramType);
+    uses.aliasLiteral = true;
+    if (value.usesEnumBody) uses.enumBody = true;
+    let statement = `    if (this.parameters.${name} !== undefined) {\n`;
+    statement += `      aliases.push(\`${name}=${alias}\`);\n`;
+    statement += `      params.append('${alias}', ${value.code});\n`;
+    statement += `    }\n`;
+    return statement;
+  };
 
   // EntityReference is needed by the return type's declaration or by a parameter
   let needsEntityReference = ret.needsEntityReference;
@@ -487,26 +536,7 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const paramType = paramDef?.type ?? "";
 
-        // Determine parameter type category
-        const kind = aliasKind(csdl, paramType);
-
-        code += `    if (this.parameters.${param.tsName} !== undefined) {\n`;
-        if (kind === "entityReference") {
-          // A record reference: {"@odata.id": "<entity set>(<id>)"}; throws without an entity set (#72)
-          usesAliasLiteral = true;
-          code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', formatParameterAlias(this.parameters.${param.tsName}, '${paramType}', 'EntityType'));\n`;
-        } else if (kind === "complex") {
-          // Complex types need JSON serialization
-          code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', JSON.stringify(this.parameters.${param.tsName}));\n`;
-        } else {
-          // Primitives and enums: an OData literal for the parameter's type (#22, #67, #68)
-          usesAliasLiteral = true;
-          code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', ${scalarAliasCall(csdl, `parameters.${param.tsName}`, paramType)});\n`;
-        }
-        code += `    }\n`;
+        code += aliasStatement(param.tsName, alias, paramType);
       }
       code += `    if (aliases.length > 0) {\n`;
       code += `      url += \`(\${aliases.join(',')})?\${params.toString()}\`;\n`;
@@ -537,26 +567,7 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         const paramType = paramDef?.type ?? "";
 
-        // Determine parameter type category
-        const kind = aliasKind(csdl, paramType);
-
-        code += `    if (this.parameters.${param.tsName} !== undefined) {\n`;
-        if (kind === "entityReference") {
-          // A record reference: {"@odata.id": "<entity set>(<id>)"}; throws without an entity set (#72)
-          usesAliasLiteral = true;
-          code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', formatParameterAlias(this.parameters.${param.tsName}, '${paramType}', 'EntityType'));\n`;
-        } else if (kind === "complex") {
-          // Complex types need JSON serialization
-          code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', JSON.stringify(this.parameters.${param.tsName}));\n`;
-        } else {
-          // Primitives and enums: an OData literal for the parameter's type (#22, #67, #68)
-          usesAliasLiteral = true;
-          code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', ${scalarAliasCall(csdl, `parameters.${param.tsName}`, paramType)});\n`;
-        }
-        code += `    }\n`;
+        code += aliasStatement(param.tsName, alias, paramType);
       }
       code += `    if (aliases.length > 0) {\n`;
       code += `      url += \`(\${aliases.join(',')})?\${params.toString()}\`;\n`;
@@ -578,9 +589,10 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
 
   code += `}\n`;
 
-  if (usesAliasLiteral) {
+  if (uses.aliasLiteral) {
     code =
       coreImport +
+      (uses.enumBody ? `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n` : "") +
       `import { formatParameterAlias } from './${ODATA_LITERAL_MODULE}.js';\n` +
       code.slice(coreImport.length);
   }

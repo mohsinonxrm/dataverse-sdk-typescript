@@ -41,7 +41,10 @@ export class RetrieveParsedDataImportFileFunction implements Executable<Retrieve
     }
     if (this.parameters.PagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p2`);
-      params.append("@p2", JSON.stringify(this.parameters.PagingInfo));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.PagingInfo, "mscrm.PagingInfo", "ComplexType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

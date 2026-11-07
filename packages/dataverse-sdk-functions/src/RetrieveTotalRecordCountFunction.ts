@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EntityRecordCountCollection } from "./types/index.js";
 
 /**
@@ -35,7 +36,10 @@ export class RetrieveTotalRecordCountFunction implements Executable<RetrieveTota
     const aliases: string[] = [];
     if (this.parameters.EntityNames !== undefined) {
       aliases.push(`EntityNames=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.EntityNames));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.EntityNames, "Collection(Edm.String)", "Collection")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

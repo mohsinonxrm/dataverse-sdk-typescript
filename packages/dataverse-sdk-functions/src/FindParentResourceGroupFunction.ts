@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { resourcegroup } from "./types/index.js";
 
 /**
@@ -42,7 +43,14 @@ export class FindParentResourceGroupFunction implements Executable<FindParentRes
     const aliases: string[] = [];
     if (this.parameters.Children !== undefined) {
       aliases.push(`Children=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.Children));
+      params.append(
+        "@p1",
+        formatParameterAlias(
+          this.parameters.Children,
+          "Collection(mscrm.resourcegroup)",
+          "Collection"
+        )
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

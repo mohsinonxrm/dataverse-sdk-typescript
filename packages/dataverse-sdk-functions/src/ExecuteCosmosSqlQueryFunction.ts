@@ -52,7 +52,14 @@ export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSq
     }
     if (this.parameters.QueryParameters !== undefined) {
       aliases.push(`QueryParameters=@p3`);
-      params.append("@p3", JSON.stringify(this.parameters.QueryParameters));
+      params.append(
+        "@p3",
+        formatParameterAlias(
+          this.parameters.QueryParameters,
+          "mscrm.ParameterCollection",
+          "ComplexType"
+        )
+      );
     }
     if (this.parameters.PageSize !== undefined) {
       aliases.push(`PageSize=@p4`);

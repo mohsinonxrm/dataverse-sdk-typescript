@@ -1,4 +1,5 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { recurrencerule } from "./types/index.js";
 
 /**
@@ -35,7 +36,10 @@ export class ValidateRecurrenceRuleFunction implements Executable<ValidateRecurr
     const aliases: string[] = [];
     if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append("@p1", JSON.stringify(this.parameters.Target));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Target, "mscrm.recurrencerule", "EntityType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;

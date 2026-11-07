@@ -53,7 +53,10 @@ export class RetrieveAttributeChangeHistoryFunction implements Executable<Retrie
     }
     if (this.parameters.PagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p3`);
-      params.append("@p3", JSON.stringify(this.parameters.PagingInfo));
+      params.append(
+        "@p3",
+        formatParameterAlias(this.parameters.PagingInfo, "mscrm.PagingInfo", "ComplexType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
