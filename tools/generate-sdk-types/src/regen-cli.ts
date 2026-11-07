@@ -9,7 +9,12 @@
  *   (`packages/dataverse-sdk-entities-runtime/src/generated`, #295);
  * - the generated docs.
  *
- * It reads only `metadata/dataverse-metadata.xml`: no org, no credentials, no `.env`, no
+ * The actions, functions and messages packages get only the platform, Sales and Customer Service
+ * operations (#304): the ones whose solutions (`metadata/operation-solutions.json`) are prebuilt
+ * in `metadata/prebuilt-solutions.json`. The solution table in `metadata/README.md` is rewritten
+ * from the same two files.
+ *
+ * It reads only the files in `metadata/`: no org, no credentials, no `.env`, no
  * `sdk-gen.config.json`. CI runs it and fails on any diff, so the committed files are always
  * what the generator makes from the committed snapshot. To take a new snapshot, see
  * `metadata/README.md`.
@@ -20,9 +25,18 @@ import { fileURLToPath } from "node:url";
 import * as prettier from "prettier";
 import { ALL_TARGETS, generateTargets } from "./index.js";
 import { OPERATION_DOCS, renderOperationBlocks } from "./docs/operation-docs.js";
+import { type PrebuiltSolutions, renderSolutionBlocks } from "./prebuilt.js";
+import type { OperationSolutions } from "./solutions.js";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
-const snapshot = join(root, "tools", "generate-sdk-types", "metadata", "dataverse-metadata.xml");
+const metadataDir = join(root, "tools", "generate-sdk-types", "metadata");
+const snapshot = join(metadataDir, "dataverse-metadata.xml");
+const readJson = (name: string): unknown =>
+  JSON.parse(readFileSync(join(metadataDir, name), "utf8"));
+const prebuilt = {
+  operationSolutions: readJson("operation-solutions.json") as OperationSolutions,
+  prebuilt: readJson("prebuilt-solutions.json") as PrebuiltSolutions,
+};
 const packageDir = (name: string, ...path: string[]): string =>
   join(root, "packages", `dataverse-sdk-${name}`, ...path);
 
@@ -46,7 +60,7 @@ await generateTargets(
     },
   },
   [...ALL_TARGETS],
-  { fromCsdl: snapshot, purge: true }
+  { fromCsdl: snapshot, purge: true, prebuilt }
 );
 
 /** Every file under `dir`, in a stable order. */
@@ -86,3 +100,10 @@ for (const doc of OPERATION_DOCS) {
   }
 }
 console.log(`✅ ${String(docs)} of ${String(OPERATION_DOCS.length)} docs updated`);
+
+// The solution table (#304)
+const readme = join(metadataDir, "README.md");
+const before = readFileSync(readme, "utf8");
+writeFileSync(readme, renderSolutionBlocks(before, prebuilt));
+await format(readme);
+if (readFileSync(readme, "utf8") !== before) console.log("📝 Updated the solution table");

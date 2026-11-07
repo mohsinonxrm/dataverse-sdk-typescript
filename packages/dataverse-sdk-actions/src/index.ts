@@ -87,11 +87,6 @@ export {
   type _ValidateAndAllocateBusinessCardReaderCurrencyResponse,
 } from "./_ValidateAndAllocateBusinessCardReaderCurrencyAction.js";
 export {
-  AcknowledgeNudgeAction,
-  type AcknowledgeNudgeActionParameters,
-  type AcknowledgeNudgeResponse,
-} from "./AcknowledgeNudgeAction.js";
-export {
   AddAppComponentsAction,
   type AddAppComponentsActionParameters,
   type AddAppComponentsResponse,
@@ -210,35 +205,6 @@ export {
   type AddWorkQueueItemProcessingHistoryEntryResponse,
 } from "./AddWorkQueueItemProcessingHistoryEntryAction.js";
 export {
-  adx_AzureBlobStorageEnabledAction,
-  type adx_AzureBlobStorageEnabledResponse,
-} from "./adx_AzureBlobStorageEnabledAction.js";
-export {
-  adx_AzureBlobStorageUrlAction,
-  type adx_AzureBlobStorageUrlActionParameters,
-  type adx_AzureBlobStorageUrlResponse,
-} from "./adx_AzureBlobStorageUrlAction.js";
-export {
-  adx_GenerateSharedAccessSignatureAction,
-  type adx_GenerateSharedAccessSignatureActionParameters,
-  type adx_GenerateSharedAccessSignatureResponse,
-} from "./adx_GenerateSharedAccessSignatureAction.js";
-export {
-  adx_SendEmailConfirmationToContactAction,
-  type adx_SendEmailConfirmationToContactActionParameters,
-  type adx_SendEmailConfirmationToContactResponse,
-} from "./adx_SendEmailConfirmationToContactAction.js";
-export {
-  adx_SendEmailTwoFactorCodeToContactAction,
-  type adx_SendEmailTwoFactorCodeToContactActionParameters,
-  type adx_SendEmailTwoFactorCodeToContactResponse,
-} from "./adx_SendEmailTwoFactorCodeToContactAction.js";
-export {
-  adx_SendPasswordResetToContactAction,
-  type adx_SendPasswordResetToContactActionParameters,
-  type adx_SendPasswordResetToContactResponse,
-} from "./adx_SendPasswordResetToContactAction.js";
-export {
   AIClassifyAction,
   type AIClassifyActionParameters,
   type AIClassifyResponse,
@@ -283,11 +249,6 @@ export {
   type AlmHandlerActionParameters,
   type AlmHandlerResponse,
 } from "./AlmHandlerAction.js";
-export {
-  AnalyzeAction,
-  type AnalyzeActionParameters,
-  type AnalyzeResponse,
-} from "./AnalyzeAction.js";
 export {
   AnalyzeSentimentAction,
   type AnalyzeSentimentActionParameters,
@@ -364,11 +325,6 @@ export {
   type CalculatePriceResponse,
 } from "./CalculatePriceAction.js";
 export {
-  CallHangUpAction,
-  type CallHangUpActionParameters,
-  type CallHangUpResponse,
-} from "./CallHangUpAction.js";
-export {
   CanBeReferencedAction,
   type CanBeReferencedActionParameters,
   type CanBeReferencedResponse,
@@ -426,515 +382,6 @@ export {
   type CategorizeTextActionParameters,
   type CategorizeTextResponse,
 } from "./CategorizeTextAction.js";
-export {
-  CCaaS_AAAEvalsAPIAction,
-  type CCaaS_AAAEvalsAPIResponse,
-} from "./CCaaS_AAAEvalsAPIAction.js";
-export {
-  CCaaS_AcceptCallAction,
-  type CCaaS_AcceptCallActionParameters,
-  type CCaaS_AcceptCallResponse,
-} from "./CCaaS_AcceptCallAction.js";
-export {
-  CCaaS_AcceptConversationAction,
-  type CCaaS_AcceptConversationActionParameters,
-  type CCaaS_AcceptConversationResponse,
-} from "./CCaaS_AcceptConversationAction.js";
-export {
-  CCaaS_AcceptPhoneCallAction,
-  type CCaaS_AcceptPhoneCallActionParameters,
-  type CCaaS_AcceptPhoneCallResponse,
-} from "./CCaaS_AcceptPhoneCallAction.js";
-export {
-  CCaaS_AddChannelToConversationAction,
-  type CCaaS_AddChannelToConversationActionParameters,
-  type CCaaS_AddChannelToConversationResponse,
-} from "./CCaaS_AddChannelToConversationAction.js";
-export {
-  CCaaS_AgentEndConversationAction,
-  type CCaaS_AgentEndConversationActionParameters,
-  type CCaaS_AgentEndConversationResponse,
-} from "./CCaaS_AgentEndConversationAction.js";
-export {
-  CCaaS_AssignConversationAction,
-  type CCaaS_AssignConversationActionParameters,
-  type CCaaS_AssignConversationResponse,
-} from "./CCaaS_AssignConversationAction.js";
-export {
-  CCaaS_BargeInToCallAction,
-  type CCaaS_BargeInToCallActionParameters,
-  type CCaaS_BargeInToCallResponse,
-} from "./CCaaS_BargeInToCallAction.js";
-export {
-  CCaaS_BroadcastMessageAction,
-  type CCaaS_BroadcastMessageActionParameters,
-  type CCaaS_BroadcastMessageResponse,
-} from "./CCaaS_BroadcastMessageAction.js";
-export {
-  CCaaS_BulkForceCloseAction,
-  type CCaaS_BulkForceCloseActionParameters,
-  type CCaaS_BulkForceCloseResponse,
-} from "./CCaaS_BulkForceCloseAction.js";
-export {
-  CCaaS_BulkQueueAssignmentAction,
-  type CCaaS_BulkQueueAssignmentActionParameters,
-  type CCaaS_BulkQueueAssignmentResponse,
-} from "./CCaaS_BulkQueueAssignmentAction.js";
-export {
-  CCaaS_CancelConsultAction,
-  type CCaaS_CancelConsultActionParameters,
-  type CCaaS_CancelConsultResponse,
-} from "./CCaaS_CancelConsultAction.js";
-export {
-  CCaaS_CancelDeliveryTaskAction,
-  type CCaaS_CancelDeliveryTaskActionParameters,
-  type CCaaS_CancelDeliveryTaskResponse,
-} from "./CCaaS_CancelDeliveryTaskAction.js";
-export {
-  CCaaS_CancelProactiveEngagementAction,
-  type CCaaS_CancelProactiveEngagementActionParameters,
-  type CCaaS_CancelProactiveEngagementResponse,
-} from "./CCaaS_CancelProactiveEngagementAction.js";
-export {
-  CCaaS_CloseConsultAction,
-  type CCaaS_CloseConsultActionParameters,
-  type CCaaS_CloseConsultResponse,
-} from "./CCaaS_CloseConsultAction.js";
-export {
-  CCaaS_CloseConversationAction,
-  type CCaaS_CloseConversationActionParameters,
-  type CCaaS_CloseConversationResponse,
-} from "./CCaaS_CloseConversationAction.js";
-export {
-  CCaaS_CloseExternalSessionAction,
-  type CCaaS_CloseExternalSessionActionParameters,
-  type CCaaS_CloseExternalSessionResponse,
-} from "./CCaaS_CloseExternalSessionAction.js";
-export {
-  CCaaS_ConversationTimeoutAction,
-  type CCaaS_ConversationTimeoutActionParameters,
-  type CCaaS_ConversationTimeoutResponse,
-} from "./CCaaS_ConversationTimeoutAction.js";
-export {
-  CCaaS_CreateConnectionAction,
-  type CCaaS_CreateConnectionActionParameters,
-  type CCaaS_CreateConnectionResponse,
-} from "./CCaaS_CreateConnectionAction.js";
-export {
-  CCaaS_CreateOperationAction,
-  type CCaaS_CreateOperationActionParameters,
-  type CCaaS_CreateOperationResponse,
-} from "./CCaaS_CreateOperationAction.js";
-export {
-  CCaaS_CreateProactiveDeliveryAction,
-  type CCaaS_CreateProactiveDeliveryActionParameters,
-  type CCaaS_CreateProactiveDeliveryResponse,
-} from "./CCaaS_CreateProactiveDeliveryAction.js";
-export {
-  CCaaS_CreateProactiveDeliveryBulkV2Action,
-  type CCaaS_CreateProactiveDeliveryBulkV2ActionParameters,
-  type CCaaS_CreateProactiveDeliveryBulkV2Response,
-} from "./CCaaS_CreateProactiveDeliveryBulkV2Action.js";
-export {
-  CCaaS_CreateProactiveSimpleJourneyAction,
-  type CCaaS_CreateProactiveSimpleJourneyActionParameters,
-  type CCaaS_CreateProactiveSimpleJourneyResponse,
-} from "./CCaaS_CreateProactiveSimpleJourneyAction.js";
-export {
-  CCaaS_CreateProactiveSMSDeliveryAction,
-  type CCaaS_CreateProactiveSMSDeliveryActionParameters,
-  type CCaaS_CreateProactiveSMSDeliveryResponse,
-} from "./CCaaS_CreateProactiveSMSDeliveryAction.js";
-export {
-  CCaaS_CreateProactiveVoiceDeliveryAction,
-  type CCaaS_CreateProactiveVoiceDeliveryActionParameters,
-  type CCaaS_CreateProactiveVoiceDeliveryResponse,
-} from "./CCaaS_CreateProactiveVoiceDeliveryAction.js";
-export {
-  CCaaS_CreateSimpleProactiveDeliveryAction,
-  type CCaaS_CreateSimpleProactiveDeliveryActionParameters,
-  type CCaaS_CreateSimpleProactiveDeliveryResponse,
-} from "./CCaaS_CreateSimpleProactiveDeliveryAction.js";
-export {
-  CCaaS_EndCallAction,
-  type CCaaS_EndCallActionParameters,
-  type CCaaS_EndCallResponse,
-} from "./CCaaS_EndCallAction.js";
-export {
-  CCaaS_EndPhoneCallAction,
-  type CCaaS_EndPhoneCallActionParameters,
-  type CCaaS_EndPhoneCallResponse,
-} from "./CCaaS_EndPhoneCallAction.js";
-export {
-  CCaaS_EndSecondaryChannelAction,
-  type CCaaS_EndSecondaryChannelActionParameters,
-  type CCaaS_EndSecondaryChannelResponse,
-} from "./CCaaS_EndSecondaryChannelAction.js";
-export {
-  CCaaS_EndSessionAction,
-  type CCaaS_EndSessionActionParameters,
-  type CCaaS_EndSessionResponse,
-} from "./CCaaS_EndSessionAction.js";
-export {
-  CCaaS_ExternalCallRejectAction,
-  type CCaaS_ExternalCallRejectActionParameters,
-  type CCaaS_ExternalCallRejectResponse,
-} from "./CCaaS_ExternalCallRejectAction.js";
-export {
-  CCaaS_ExternalCallTransferAction,
-  type CCaaS_ExternalCallTransferActionParameters,
-  type CCaaS_ExternalCallTransferResponse,
-} from "./CCaaS_ExternalCallTransferAction.js";
-export {
-  CCaaS_ForceCloseConversationAction,
-  type CCaaS_ForceCloseConversationActionParameters,
-  type CCaaS_ForceCloseConversationResponse,
-} from "./CCaaS_ForceCloseConversationAction.js";
-export {
-  CCaaS_GetAvailabilityForConversationAction,
-  type CCaaS_GetAvailabilityForConversationActionParameters,
-  type CCaaS_GetAvailabilityForConversationResponse,
-} from "./CCaaS_GetAvailabilityForConversationAction.js";
-export {
-  CCaaS_GetAvailabilityForSimulatedConversationAction,
-  type CCaaS_GetAvailabilityForSimulatedConversationActionParameters,
-  type CCaaS_GetAvailabilityForSimulatedConversationResponse,
-} from "./CCaaS_GetAvailabilityForSimulatedConversationAction.js";
-export {
-  CCaaS_GetCallbackTimeSlotsAction,
-  type CCaaS_GetCallbackTimeSlotsActionParameters,
-  type CCaaS_GetCallbackTimeSlotsResponse,
-} from "./CCaaS_GetCallbackTimeSlotsAction.js";
-export {
-  CCaaS_GetCallStateAction,
-  type CCaaS_GetCallStateActionParameters,
-  type CCaaS_GetCallStateResponse,
-} from "./CCaaS_GetCallStateAction.js";
-export {
-  CCaaS_GetQueuesAWTAction,
-  type CCaaS_GetQueuesAWTActionParameters,
-  type CCaaS_GetQueuesAWTResponse,
-} from "./CCaaS_GetQueuesAWTAction.js";
-export {
-  CCaaS_GetRepresentativeAvailabilityBeforeConversationAction,
-  type CCaaS_GetRepresentativeAvailabilityBeforeConversationActionParameters,
-  type CCaaS_GetRepresentativeAvailabilityBeforeConversationResponse,
-} from "./CCaaS_GetRepresentativeAvailabilityBeforeConversationAction.js";
-export {
-  CCaaS_GetRepresentativeAvailabilityForConversationAction,
-  type CCaaS_GetRepresentativeAvailabilityForConversationActionParameters,
-  type CCaaS_GetRepresentativeAvailabilityForConversationResponse,
-} from "./CCaaS_GetRepresentativeAvailabilityForConversationAction.js";
-export {
-  CCaaS_GetTranscriptPrivilegeAuditAction,
-  type CCaaS_GetTranscriptPrivilegeAuditActionParameters,
-  type CCaaS_GetTranscriptPrivilegeAuditResponse,
-} from "./CCaaS_GetTranscriptPrivilegeAuditAction.js";
-export {
-  CCaaS_GetVoiceBiometricsOperationStatusAction,
-  type CCaaS_GetVoiceBiometricsOperationStatusActionParameters,
-  type CCaaS_GetVoiceBiometricsOperationStatusResponse,
-} from "./CCaaS_GetVoiceBiometricsOperationStatusAction.js";
-export {
-  CCaaS_HoldCallAction,
-  type CCaaS_HoldCallActionParameters,
-  type CCaaS_HoldCallResponse,
-} from "./CCaaS_HoldCallAction.js";
-export {
-  CCaaS_InitiateAgentConsultAction,
-  type CCaaS_InitiateAgentConsultActionParameters,
-  type CCaaS_InitiateAgentConsultResponse,
-} from "./CCaaS_InitiateAgentConsultAction.js";
-export {
-  CCaaS_InitiateAgentConsultExternalAction,
-  type CCaaS_InitiateAgentConsultExternalActionParameters,
-  type CCaaS_InitiateAgentConsultExternalResponse,
-} from "./CCaaS_InitiateAgentConsultExternalAction.js";
-export {
-  CCaaS_InitiateAgentGroupAssignmentAction,
-  type CCaaS_InitiateAgentGroupAssignmentActionParameters,
-  type CCaaS_InitiateAgentGroupAssignmentResponse,
-} from "./CCaaS_InitiateAgentGroupAssignmentAction.js";
-export {
-  CCaaS_InitiateAgentGroupConsultAction,
-  type CCaaS_InitiateAgentGroupConsultActionParameters,
-  type CCaaS_InitiateAgentGroupConsultResponse,
-} from "./CCaaS_InitiateAgentGroupConsultAction.js";
-export {
-  CCaaS_InitiateAgentGroupTransferAction,
-  type CCaaS_InitiateAgentGroupTransferActionParameters,
-  type CCaaS_InitiateAgentGroupTransferResponse,
-} from "./CCaaS_InitiateAgentGroupTransferAction.js";
-export {
-  CCaaS_InitiateAgentTransferAction,
-  type CCaaS_InitiateAgentTransferActionParameters,
-  type CCaaS_InitiateAgentTransferResponse,
-} from "./CCaaS_InitiateAgentTransferAction.js";
-export {
-  CCaaS_InitiateAgentTransferBySupervisorAction,
-  type CCaaS_InitiateAgentTransferBySupervisorActionParameters,
-  type CCaaS_InitiateAgentTransferBySupervisorResponse,
-} from "./CCaaS_InitiateAgentTransferBySupervisorAction.js";
-export {
-  CCaaS_InitiateAgentTransferExternalAction,
-  type CCaaS_InitiateAgentTransferExternalActionParameters,
-  type CCaaS_InitiateAgentTransferExternalResponse,
-} from "./CCaaS_InitiateAgentTransferExternalAction.js";
-export {
-  CCaaS_InitiateExternalTransferAction,
-  type CCaaS_InitiateExternalTransferActionParameters,
-  type CCaaS_InitiateExternalTransferResponse,
-} from "./CCaaS_InitiateExternalTransferAction.js";
-export {
-  CCaaS_InitiateOutboundCallAction,
-  type CCaaS_InitiateOutboundCallActionParameters,
-  type CCaaS_InitiateOutboundCallResponse,
-} from "./CCaaS_InitiateOutboundCallAction.js";
-export {
-  CCaaS_InitiateQueueAssignmentAction,
-  type CCaaS_InitiateQueueAssignmentActionParameters,
-  type CCaaS_InitiateQueueAssignmentResponse,
-} from "./CCaaS_InitiateQueueAssignmentAction.js";
-export {
-  CCaaS_InitiateQueueConsultAction,
-  type CCaaS_InitiateQueueConsultActionParameters,
-  type CCaaS_InitiateQueueConsultResponse,
-} from "./CCaaS_InitiateQueueConsultAction.js";
-export {
-  CCaaS_InitiateQueueTransferAction,
-  type CCaaS_InitiateQueueTransferActionParameters,
-  type CCaaS_InitiateQueueTransferResponse,
-} from "./CCaaS_InitiateQueueTransferAction.js";
-export {
-  CCaaS_InitiateRerouteAction,
-  type CCaaS_InitiateRerouteActionParameters,
-  type CCaaS_InitiateRerouteResponse,
-} from "./CCaaS_InitiateRerouteAction.js";
-export {
-  CCaaS_JoinConversationAction,
-  type CCaaS_JoinConversationActionParameters,
-  type CCaaS_JoinConversationResponse,
-} from "./CCaaS_JoinConversationAction.js";
-export {
-  CCaaS_LeavePublicConsultAction,
-  type CCaaS_LeavePublicConsultActionParameters,
-  type CCaaS_LeavePublicConsultResponse,
-} from "./CCaaS_LeavePublicConsultAction.js";
-export {
-  CCaaS_MaskMessageAction,
-  type CCaaS_MaskMessageActionParameters,
-  type CCaaS_MaskMessageResponse,
-} from "./CCaaS_MaskMessageAction.js";
-export {
-  CCaaS_ModifyAgentPresenceAction,
-  type CCaaS_ModifyAgentPresenceActionParameters,
-  type CCaaS_ModifyAgentPresenceResponse,
-} from "./CCaaS_ModifyAgentPresenceAction.js";
-export {
-  CCaaS_MonitorConversationAction,
-  type CCaaS_MonitorConversationActionParameters,
-  type CCaaS_MonitorConversationResponse,
-} from "./CCaaS_MonitorConversationAction.js";
-export {
-  CCaaS_NotifyAgentAction,
-  type CCaaS_NotifyAgentActionParameters,
-  type CCaaS_NotifyAgentResponse,
-} from "./CCaaS_NotifyAgentAction.js";
-export {
-  CCaaS_OneTimePasswordSendAction,
-  type CCaaS_OneTimePasswordSendActionParameters,
-  type CCaaS_OneTimePasswordSendResponse,
-} from "./CCaaS_OneTimePasswordSendAction.js";
-export {
-  CCaaS_OneTimePasswordVerifyAction,
-  type CCaaS_OneTimePasswordVerifyActionParameters,
-  type CCaaS_OneTimePasswordVerifyResponse,
-} from "./CCaaS_OneTimePasswordVerifyAction.js";
-export {
-  CCaaS_PauseRecordingAndTranscriptionAction,
-  type CCaaS_PauseRecordingAndTranscriptionActionParameters,
-  type CCaaS_PauseRecordingAndTranscriptionResponse,
-} from "./CCaaS_PauseRecordingAndTranscriptionAction.js";
-export {
-  CCaaS_PickConversationAction,
-  type CCaaS_PickConversationActionParameters,
-  type CCaaS_PickConversationResponse,
-} from "./CCaaS_PickConversationAction.js";
-export {
-  CCaaS_ProvisionCallbackAgentAction,
-  type CCaaS_ProvisionCallbackAgentActionParameters,
-  type CCaaS_ProvisionCallbackAgentResponse,
-} from "./CCaaS_ProvisionCallbackAgentAction.js";
-export {
-  CCaaS_RaiseSecondaryChannelEventAction,
-  type CCaaS_RaiseSecondaryChannelEventActionParameters,
-  type CCaaS_RaiseSecondaryChannelEventResponse,
-} from "./CCaaS_RaiseSecondaryChannelEventAction.js";
-export {
-  CCaaS_RejectConversationAction,
-  type CCaaS_RejectConversationActionParameters,
-  type CCaaS_RejectConversationResponse,
-} from "./CCaaS_RejectConversationAction.js";
-export {
-  CCaaS_RejectExternalTransferAction,
-  type CCaaS_RejectExternalTransferActionParameters,
-  type CCaaS_RejectExternalTransferResponse,
-} from "./CCaaS_RejectExternalTransferAction.js";
-export {
-  CCaaS_RejoinConversationAction,
-  type CCaaS_RejoinConversationActionParameters,
-  type CCaaS_RejoinConversationResponse,
-} from "./CCaaS_RejoinConversationAction.js";
-export {
-  CCaaS_ResetAgentNextPresenceAction,
-  type CCaaS_ResetAgentNextPresenceActionParameters,
-  type CCaaS_ResetAgentNextPresenceResponse,
-} from "./CCaaS_ResetAgentNextPresenceAction.js";
-export {
-  CCaaS_ResetAgentPresenceAction,
-  type CCaaS_ResetAgentPresenceActionParameters,
-  type CCaaS_ResetAgentPresenceResponse,
-} from "./CCaaS_ResetAgentPresenceAction.js";
-export {
-  CCaaS_ResumeRecordingAndTranscriptionAction,
-  type CCaaS_ResumeRecordingAndTranscriptionActionParameters,
-  type CCaaS_ResumeRecordingAndTranscriptionResponse,
-} from "./CCaaS_ResumeRecordingAndTranscriptionAction.js";
-export {
-  CCaaS_SendAgentTypingIndicatorAction,
-  type CCaaS_SendAgentTypingIndicatorActionParameters,
-  type CCaaS_SendAgentTypingIndicatorResponse,
-} from "./CCaaS_SendAgentTypingIndicatorAction.js";
-export {
-  CCaaS_SendAHTEventsAction,
-  type CCaaS_SendAHTEventsActionParameters,
-  type CCaaS_SendAHTEventsResponse,
-} from "./CCaaS_SendAHTEventsAction.js";
-export {
-  CCaaS_SendHeartbeatAction,
-  type CCaaS_SendHeartbeatActionParameters,
-  type CCaaS_SendHeartbeatResponse,
-} from "./CCaaS_SendHeartbeatAction.js";
-export {
-  CCaaS_SetPresenceAction,
-  type CCaaS_SetPresenceActionParameters,
-  type CCaaS_SetPresenceResponse,
-} from "./CCaaS_SetPresenceAction.js";
-export {
-  CCaaS_StartCallAction,
-  type CCaaS_StartCallActionParameters,
-  type CCaaS_StartCallResponse,
-} from "./CCaaS_StartCallAction.js";
-export {
-  CCaaS_StartRecordingAndTranscriptionAction,
-  type CCaaS_StartRecordingAndTranscriptionActionParameters,
-  type CCaaS_StartRecordingAndTranscriptionResponse,
-} from "./CCaaS_StartRecordingAndTranscriptionAction.js";
-export {
-  CCaaS_StartSecondaryChannelAction,
-  type CCaaS_StartSecondaryChannelActionParameters,
-  type CCaaS_StartSecondaryChannelResponse,
-} from "./CCaaS_StartSecondaryChannelAction.js";
-export {
-  CCaaS_StartTranscriptionAction,
-  type CCaaS_StartTranscriptionActionParameters,
-  type CCaaS_StartTranscriptionResponse,
-} from "./CCaaS_StartTranscriptionAction.js";
-export {
-  CCaaS_StopTranscriptionAction,
-  type CCaaS_StopTranscriptionActionParameters,
-  type CCaaS_StopTranscriptionResponse,
-} from "./CCaaS_StopTranscriptionAction.js";
-export {
-  CCaaS_SystemOptimizationMetricsAction,
-  type CCaaS_SystemOptimizationMetricsActionParameters,
-  type CCaaS_SystemOptimizationMetricsResponse,
-} from "./CCaaS_SystemOptimizationMetricsAction.js";
-export {
-  CCaaS_TriggerPluginFixAnalysisAction,
-  type CCaaS_TriggerPluginFixAnalysisActionParameters,
-  type CCaaS_TriggerPluginFixAnalysisResponse,
-} from "./CCaaS_TriggerPluginFixAnalysisAction.js";
-export {
-  CCaaS_UnholdCallAction,
-  type CCaaS_UnholdCallActionParameters,
-  type CCaaS_UnholdCallResponse,
-} from "./CCaaS_UnholdCallAction.js";
-export {
-  CCaaS_UserLogoutAction,
-  type CCaaS_UserLogoutActionParameters,
-  type CCaaS_UserLogoutResponse,
-} from "./CCaaS_UserLogoutAction.js";
-export {
-  CCaaS_VoiceBiometricsAuthenticateAction,
-  type CCaaS_VoiceBiometricsAuthenticateActionParameters,
-  type CCaaS_VoiceBiometricsAuthenticateResponse,
-} from "./CCaaS_VoiceBiometricsAuthenticateAction.js";
-export {
-  CCaaS_VoiceBiometricsCreateWatchlistAction,
-  type CCaaS_VoiceBiometricsCreateWatchlistActionParameters,
-  type CCaaS_VoiceBiometricsCreateWatchlistResponse,
-} from "./CCaaS_VoiceBiometricsCreateWatchlistAction.js";
-export {
-  CCaaS_VoiceBiometricsDeleteFraudsterAction,
-  type CCaaS_VoiceBiometricsDeleteFraudsterActionParameters,
-  type CCaaS_VoiceBiometricsDeleteFraudsterResponse,
-} from "./CCaaS_VoiceBiometricsDeleteFraudsterAction.js";
-export {
-  CCaaS_VoiceBiometricsDeleteWatchlistAction,
-  type CCaaS_VoiceBiometricsDeleteWatchlistActionParameters,
-  type CCaaS_VoiceBiometricsDeleteWatchlistResponse,
-} from "./CCaaS_VoiceBiometricsDeleteWatchlistAction.js";
-export {
-  CCaaS_VoiceBiometricsEnrollFraudsterAction,
-  type CCaaS_VoiceBiometricsEnrollFraudsterActionParameters,
-  type CCaaS_VoiceBiometricsEnrollFraudsterResponse,
-} from "./CCaaS_VoiceBiometricsEnrollFraudsterAction.js";
-export {
-  CCaaS_VoiceBiometricsMoveFraudsterAction,
-  type CCaaS_VoiceBiometricsMoveFraudsterActionParameters,
-  type CCaaS_VoiceBiometricsMoveFraudsterResponse,
-} from "./CCaaS_VoiceBiometricsMoveFraudsterAction.js";
-export {
-  CCaaS_VoiceBiometricsOptInAction,
-  type CCaaS_VoiceBiometricsOptInActionParameters,
-  type CCaaS_VoiceBiometricsOptInResponse,
-} from "./CCaaS_VoiceBiometricsOptInAction.js";
-export {
-  CCaaS_VoiceBiometricsOptOutAction,
-  type CCaaS_VoiceBiometricsOptOutActionParameters,
-  type CCaaS_VoiceBiometricsOptOutResponse,
-} from "./CCaaS_VoiceBiometricsOptOutAction.js";
-export {
-  CCaaS_VoiceBiometricsUpdateWatchlistAction,
-  type CCaaS_VoiceBiometricsUpdateWatchlistActionParameters,
-  type CCaaS_VoiceBiometricsUpdateWatchlistResponse,
-} from "./CCaaS_VoiceBiometricsUpdateWatchlistAction.js";
-export {
-  CCaaS_VoiceprintCustomerConsentUpdateAction,
-  type CCaaS_VoiceprintCustomerConsentUpdateActionParameters,
-  type CCaaS_VoiceprintCustomerConsentUpdateResponse,
-} from "./CCaaS_VoiceprintCustomerConsentUpdateAction.js";
-export {
-  CCaaS_VoiceprintCustomerDataDeleteAction,
-  type CCaaS_VoiceprintCustomerDataDeleteActionParameters,
-  type CCaaS_VoiceprintCustomerDataDeleteResponse,
-} from "./CCaaS_VoiceprintCustomerDataDeleteAction.js";
-export {
-  CCaaS_VoiceprintCustomerProfileDeleteAction,
-  type CCaaS_VoiceprintCustomerProfileDeleteActionParameters,
-  type CCaaS_VoiceprintCustomerProfileDeleteResponse,
-} from "./CCaaS_VoiceprintCustomerProfileDeleteAction.js";
-export {
-  CCaaS_VoiceprintDeleteAction,
-  type CCaaS_VoiceprintDeleteActionParameters,
-  type CCaaS_VoiceprintDeleteResponse,
-} from "./CCaaS_VoiceprintDeleteAction.js";
-export {
-  CCaaS_VoiceprintEnrollmentAudioDeleteAction,
-  type CCaaS_VoiceprintEnrollmentAudioDeleteActionParameters,
-  type CCaaS_VoiceprintEnrollmentAudioDeleteResponse,
-} from "./CCaaS_VoiceprintEnrollmentAudioDeleteAction.js";
 export { ClearWorkQueueAction, type ClearWorkQueueResponse } from "./ClearWorkQueueAction.js";
 export {
   CloneAsPatchAction,
@@ -1148,11 +595,6 @@ export {
   type CreateWorkflowFromTemplateResponse,
 } from "./CreateWorkflowFromTemplateAction.js";
 export {
-  cv_UpdateInviteAction,
-  type cv_UpdateInviteActionParameters,
-  type cv_UpdateInviteResponse,
-} from "./cv_UpdateInviteAction.js";
-export {
   DeactivateEntityKeyAction,
   type DeactivateEntityKeyActionParameters,
   type DeactivateEntityKeyResponse,
@@ -1261,11 +703,6 @@ export {
   type DiscoverFabricWorkspacesActionParameters,
   type DiscoverFabricWorkspacesResponse,
 } from "./DiscoverFabricWorkspacesAction.js";
-export {
-  DismissNudgeAction,
-  type DismissNudgeActionParameters,
-  type DismissNudgeResponse,
-} from "./DismissNudgeAction.js";
 export {
   DistributeCampaignActivityAction,
   type DistributeCampaignActivityActionParameters,
@@ -1417,11 +854,6 @@ export {
   type GetAutoNumberSeedResponse,
 } from "./GetAutoNumberSeedAction.js";
 export {
-  GetCallStatusAction,
-  type GetCallStatusActionParameters,
-  type GetCallStatusResponse,
-} from "./GetCallStatusAction.js";
-export {
   GetCertificateCredentialAction,
   type GetCertificateCredentialActionParameters,
   type GetCertificateCredentialResponse,
@@ -1460,11 +892,6 @@ export {
   type GetLinkedChatsActionParameters,
   type GetLinkedChatsResponse,
 } from "./GetLinkedChatsAction.js";
-export {
-  GetMessageAction,
-  type GetMessageActionParameters,
-  type GetMessageResponse,
-} from "./GetMessageAction.js";
 export {
   GetNextAutoNumberValueAction,
   type GetNextAutoNumberValueActionParameters,
@@ -1575,7 +1002,6 @@ export {
   type InferEntityDefinitionActionParameters,
   type InferEntityDefinitionResponse,
 } from "./InferEntityDefinitionAction.js";
-export { IngestAction, type IngestActionParameters, type IngestResponse } from "./IngestAction.js";
 export {
   InitializeAnnotationBlocksDownloadAction,
   type InitializeAnnotationBlocksDownloadActionParameters,
@@ -1655,7 +1081,6 @@ export {
   type InstantiateTemplateGenericResponse,
 } from "./InstantiateTemplateGenericAction.js";
 export { IsPaiEnabledAction, type IsPaiEnabledResponse } from "./IsPaiEnabledAction.js";
-export { IsPmEnabledAction, type IsPmEnabledResponse } from "./IsPmEnabledAction.js";
 export {
   JoinLinkedChatAction,
   type JoinLinkedChatActionParameters,
@@ -1678,11 +1103,6 @@ export {
   LockSalesOrderPricingAction,
   type LockSalesOrderPricingResponse,
 } from "./LockSalesOrderPricingAction.js";
-export {
-  LogAgentEventAction,
-  type LogAgentEventActionParameters,
-  type LogAgentEventResponse,
-} from "./LogAgentEventAction.js";
 export {
   LoseOpportunityAction,
   type LoseOpportunityActionParameters,
@@ -1720,16 +1140,6 @@ export {
   type ModifyAccessResponse,
 } from "./ModifyAccessAction.js";
 export {
-  msdn_evaluationplanorchestratorAction,
-  type msdn_evaluationplanorchestratorActionParameters,
-  type msdn_evaluationplanorchestratorResponse,
-} from "./msdn_evaluationplanorchestratorAction.js";
-export {
-  msdyn_AcsForceSyncActionAction,
-  type msdyn_AcsForceSyncActionActionParameters,
-  type msdyn_AcsForceSyncActionResponse,
-} from "./msdyn_AcsForceSyncActionAction.js";
-export {
   msdyn_ActionCardActionLoggerAction,
   type msdyn_ActionCardActionLoggerActionParameters,
   type msdyn_ActionCardActionLoggerResponse,
@@ -1745,30 +1155,10 @@ export {
   type msdyn_ActivateProcessesResponse,
 } from "./msdyn_ActivateProcessesAction.js";
 export {
-  msdyn_ActivateRoutingRuleAction,
-  type msdyn_ActivateRoutingRuleActionParameters,
-  type msdyn_ActivateRoutingRuleResponse,
-} from "./msdyn_ActivateRoutingRuleAction.js";
-export {
   msdyn_ActivateSdkMessageProcessingStepsAction,
   type msdyn_ActivateSdkMessageProcessingStepsActionParameters,
   type msdyn_ActivateSdkMessageProcessingStepsResponse,
 } from "./msdyn_ActivateSdkMessageProcessingStepsAction.js";
-export {
-  msdyn_ActivateWorkflowAction,
-  type msdyn_ActivateWorkflowActionParameters,
-  type msdyn_ActivateWorkflowResponse,
-} from "./msdyn_ActivateWorkflowAction.js";
-export {
-  msdyn_AddBotUserAction,
-  type msdyn_AddBotUserActionParameters,
-  type msdyn_AddBotUserResponse,
-} from "./msdyn_AddBotUserAction.js";
-export {
-  msdyn_AddOrUpdatePlaybookInstructionsAction,
-  type msdyn_AddOrUpdatePlaybookInstructionsActionParameters,
-  type msdyn_AddOrUpdatePlaybookInstructionsResponse,
-} from "./msdyn_AddOrUpdatePlaybookInstructionsAction.js";
 export {
   msdyn_AddSuggestedCardsAction,
   type msdyn_AddSuggestedCardsActionParameters,
@@ -1779,10 +1169,6 @@ export {
   type msdyn_AddTeamsAppToLinkedChatActionParameters,
   type msdyn_AddTeamsAppToLinkedChatResponse,
 } from "./msdyn_AddTeamsAppToLinkedChatAction.js";
-export {
-  msdyn_AgentscriptDataMigrationCustomActionAction,
-  type msdyn_AgentscriptDataMigrationCustomActionResponse,
-} from "./msdyn_AgentscriptDataMigrationCustomActionAction.js";
 export {
   msdyn_AIAgentActionAction,
   type msdyn_AIAgentActionActionParameters,
@@ -1814,28 +1200,10 @@ export {
   type msdyn_AnalyticsSaveDataInConfigStoreResponse,
 } from "./msdyn_AnalyticsSaveDataInConfigStoreAction.js";
 export {
-  msdyn_AnalyzeServiceHealthAction,
-  type msdyn_AnalyzeServiceHealthResponse,
-} from "./msdyn_AnalyzeServiceHealthAction.js";
-export {
-  msdyn_AnalyzeServiceHealthAsyncAction,
-  type msdyn_AnalyzeServiceHealthAsyncResponse,
-} from "./msdyn_AnalyzeServiceHealthAsyncAction.js";
-export {
   msdyn_ApplyPredictionAction,
   type msdyn_ApplyPredictionActionParameters,
   type msdyn_ApplyPredictionResponse,
 } from "./msdyn_ApplyPredictionAction.js";
-export {
-  msdyn_ApplyRoutingRuleEntityRecordAction,
-  type msdyn_ApplyRoutingRuleEntityRecordActionParameters,
-  type msdyn_ApplyRoutingRuleEntityRecordResponse,
-} from "./msdyn_ApplyRoutingRuleEntityRecordAction.js";
-export {
-  msdyn_applyworktemplateforresourcesAction,
-  type msdyn_applyworktemplateforresourcesActionParameters,
-  type msdyn_applyworktemplateforresourcesResponse,
-} from "./msdyn_applyworktemplateforresourcesAction.js";
 export {
   msdyn_assignentityAction,
   type msdyn_assignentityActionParameters,
@@ -1852,11 +1220,6 @@ export {
   type msdyn_AssignOwnerToUnassignedRecordsResponse,
 } from "./msdyn_AssignOwnerToUnassignedRecordsAction.js";
 export {
-  msdyn_AssignVoiceCapacityProfilesActionAction,
-  type msdyn_AssignVoiceCapacityProfilesActionActionParameters,
-  type msdyn_AssignVoiceCapacityProfilesActionResponse,
-} from "./msdyn_AssignVoiceCapacityProfilesActionAction.js";
-export {
   msdyn_AssociateConversationAction,
   type msdyn_AssociateConversationActionParameters,
   type msdyn_AssociateConversationResponse,
@@ -1872,19 +1235,10 @@ export {
   type msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse,
 } from "./msdyn_AutoCaseClosureAgentGenerateFollowupEmailAction.js";
 export {
-  msdyn_AutoCloseExpiredConversationsAction,
-  type msdyn_AutoCloseExpiredConversationsResponse,
-} from "./msdyn_AutoCloseExpiredConversationsAction.js";
-export {
   msdyn_AutoLinkingLeadCustomActionAction,
   type msdyn_AutoLinkingLeadCustomActionActionParameters,
   type msdyn_AutoLinkingLeadCustomActionResponse,
 } from "./msdyn_AutoLinkingLeadCustomActionAction.js";
-export {
-  msdyn_autonomousCaseCreateUpdateAction,
-  type msdyn_autonomousCaseCreateUpdateActionParameters,
-  type msdyn_autonomousCaseCreateUpdateResponse,
-} from "./msdyn_autonomousCaseCreateUpdateAction.js";
 export {
   msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARAction,
   type msdyn_AutonomousSQA_AssociateOutputForEngageAndReadinessSARActionParameters,
@@ -1926,21 +1280,6 @@ export {
   type msdyn_AutonomousSQA_UpdateSalesAgentRunResponse,
 } from "./msdyn_AutonomousSQA_UpdateSalesAgentRunAction.js";
 export {
-  msdyn_BookingResourceAction,
-  type msdyn_BookingResourceActionParameters,
-  type msdyn_BookingResourceResponse,
-} from "./msdyn_BookingResourceAction.js";
-export {
-  msdyn_BookingResourceRequirementAction,
-  type msdyn_BookingResourceRequirementActionParameters,
-  type msdyn_BookingResourceRequirementResponse,
-} from "./msdyn_BookingResourceRequirementAction.js";
-export {
-  msdyn_BookRequirementGroupAction,
-  type msdyn_BookRequirementGroupActionParameters,
-  type msdyn_BookRequirementGroupResponse,
-} from "./msdyn_BookRequirementGroupAction.js";
-export {
   msdyn_BulkAITestCaseUploadAction,
   type msdyn_BulkAITestCaseUploadActionParameters,
   type msdyn_BulkAITestCaseUploadResponse,
@@ -1951,55 +1290,15 @@ export {
   type msdyn_BulkAITestRunResponse,
 } from "./msdyn_BulkAITestRunAction.js";
 export {
-  msdyn_BusinessClosureDeleteAction,
-  type msdyn_BusinessClosureDeleteActionParameters,
-  type msdyn_BusinessClosureDeleteResponse,
-} from "./msdyn_BusinessClosureDeleteAction.js";
-export {
-  msdyn_BusinessClosureRetrieveAction,
-  type msdyn_BusinessClosureRetrieveActionParameters,
-  type msdyn_BusinessClosureRetrieveResponse,
-} from "./msdyn_BusinessClosureRetrieveAction.js";
-export {
-  msdyn_BusinessClosureSaveAction,
-  type msdyn_BusinessClosureSaveActionParameters,
-  type msdyn_BusinessClosureSaveResponse,
-} from "./msdyn_BusinessClosureSaveAction.js";
-export {
-  msdyn_CalculateAndUpdateBookingTravelAction,
-  type msdyn_CalculateAndUpdateBookingTravelActionParameters,
-  type msdyn_CalculateAndUpdateBookingTravelResponse,
-} from "./msdyn_CalculateAndUpdateBookingTravelAction.js";
-export {
   msdyn_calculatecasesentimentAction,
   type msdyn_calculatecasesentimentActionParameters,
   type msdyn_calculatecasesentimentResponse,
 } from "./msdyn_calculatecasesentimentAction.js";
 export {
-  msdyn_CalendarBulkDeleteAction,
-  type msdyn_CalendarBulkDeleteActionParameters,
-  type msdyn_CalendarBulkDeleteResponse,
-} from "./msdyn_CalendarBulkDeleteAction.js";
-export {
-  msdyn_CallMCSAgentAction,
-  type msdyn_CallMCSAgentActionParameters,
-  type msdyn_CallMCSAgentResponse,
-} from "./msdyn_CallMCSAgentAction.js";
-export {
-  msdyn_CancelBookingsAction,
-  type msdyn_CancelBookingsActionParameters,
-  type msdyn_CancelBookingsResponse,
-} from "./msdyn_CancelBookingsAction.js";
-export {
   msdyn_CancelDataProcessingModuleExecutionAction,
   type msdyn_CancelDataProcessingModuleExecutionActionParameters,
   type msdyn_CancelDataProcessingModuleExecutionResponse,
 } from "./msdyn_CancelDataProcessingModuleExecutionAction.js";
-export {
-  msdyn_CancelEvaluationAction,
-  type msdyn_CancelEvaluationActionParameters,
-  type msdyn_CancelEvaluationResponse,
-} from "./msdyn_CancelEvaluationAction.js";
 export {
   msdyn_CancelMobileAppBuildAction,
   type msdyn_CancelMobileAppBuildActionParameters,
@@ -2011,39 +1310,10 @@ export {
   type msdyn_CancelOptimizeResponse,
 } from "./msdyn_CancelOptimizeAction.js";
 export {
-  msdyn_CapacityProfilesToUsersAction,
-  type msdyn_CapacityProfilesToUsersActionParameters,
-  type msdyn_CapacityProfilesToUsersResponse,
-} from "./msdyn_CapacityProfilesToUsersAction.js";
-export {
-  msdyn_CascadeBookingChangesAction,
-  type msdyn_CascadeBookingChangesActionParameters,
-  type msdyn_CascadeBookingChangesResponse,
-} from "./msdyn_CascadeBookingChangesAction.js";
-export {
-  msdyn_CascadeCrewBookingsAction,
-  type msdyn_CascadeCrewBookingsActionParameters,
-  type msdyn_CascadeCrewBookingsResponse,
-} from "./msdyn_CascadeCrewBookingsAction.js";
-export {
-  msdyn_CascadeCrewMembershipsAction,
-  type msdyn_CascadeCrewMembershipsActionParameters,
-  type msdyn_CascadeCrewMembershipsResponse,
-} from "./msdyn_CascadeCrewMembershipsAction.js";
-export {
   msdyn_CaseClassificationAction,
   type msdyn_CaseClassificationActionParameters,
   type msdyn_CaseClassificationResponse,
 } from "./msdyn_CaseClassificationAction.js";
-export {
-  msdyn_CaseSimulationAction,
-  type msdyn_CaseSimulationActionParameters,
-  type msdyn_CaseSimulationResponse,
-} from "./msdyn_CaseSimulationAction.js";
-export {
-  msdyn_CECLiveDataMigrationCustomActionAction,
-  type msdyn_CECLiveDataMigrationCustomActionResponse,
-} from "./msdyn_CECLiveDataMigrationCustomActionAction.js";
 export {
   msdyn_cesinvokeAction,
   type msdyn_cesinvokeActionParameters,
@@ -2127,11 +1397,6 @@ export {
   type msdyn_CheckForWorkflowTypeOfRuleItemsActionParameters,
   type msdyn_CheckForWorkflowTypeOfRuleItemsResponse,
 } from "./msdyn_CheckForWorkflowTypeOfRuleItemsAction.js";
-export {
-  msdyn_CheckGeolocationEnabledAction,
-  type msdyn_CheckGeolocationEnabledActionParameters,
-  type msdyn_CheckGeolocationEnabledResponse,
-} from "./msdyn_CheckGeolocationEnabledAction.js";
 export {
   msdyn_checkGovernanceAgentPoliciesAction,
   type msdyn_checkGovernanceAgentPoliciesActionParameters,
@@ -2276,11 +1541,6 @@ export {
   type msdyn_CleanupCopilotAgentResponsesResponse,
 } from "./msdyn_CleanupCopilotAgentResponsesAction.js";
 export {
-  msdyn_CleanupDiagnosticsWrappersAction,
-  type msdyn_CleanupDiagnosticsWrappersActionParameters,
-  type msdyn_CleanupDiagnosticsWrappersResponse,
-} from "./msdyn_CleanupDiagnosticsWrappersAction.js";
-export {
   msdyn_CleanUpEmailNBACardsPluginAction,
   type msdyn_CleanUpEmailNBACardsPluginActionParameters,
   type msdyn_CleanUpEmailNBACardsPluginResponse,
@@ -2290,16 +1550,6 @@ export {
   type msdyn_CloneAttachmentsPluginActionActionParameters,
   type msdyn_CloneAttachmentsPluginActionResponse,
 } from "./msdyn_CloneAttachmentsPluginActionAction.js";
-export {
-  msdyn_cloneentityAction,
-  type msdyn_cloneentityActionParameters,
-  type msdyn_cloneentityResponse,
-} from "./msdyn_cloneentityAction.js";
-export {
-  msdyn_CloneMultipleAction,
-  type msdyn_CloneMultipleActionParameters,
-  type msdyn_CloneMultipleResponse,
-} from "./msdyn_CloneMultipleAction.js";
 export {
   msdyn_CompleteOptimizeWorkItemAction,
   type msdyn_CompleteOptimizeWorkItemActionParameters,
@@ -2316,25 +1566,10 @@ export {
   type msdyn_ConnectSequenceResponse,
 } from "./msdyn_ConnectSequenceAction.js";
 export {
-  msdyn_ContinueTransformationAgentAction,
-  type msdyn_ContinueTransformationAgentActionParameters,
-  type msdyn_ContinueTransformationAgentResponse,
-} from "./msdyn_ContinueTransformationAgentAction.js";
-export {
-  msdyn_ConversationConductorEnablerAction,
-  type msdyn_ConversationConductorEnablerActionParameters,
-  type msdyn_ConversationConductorEnablerResponse,
-} from "./msdyn_ConversationConductorEnablerAction.js";
-export {
   msdyn_ConvertCJOJsonToSequenceJsonAction,
   type msdyn_ConvertCJOJsonToSequenceJsonActionParameters,
   type msdyn_ConvertCJOJsonToSequenceJsonResponse,
 } from "./msdyn_ConvertCJOJsonToSequenceJsonAction.js";
-export {
-  msdyn_ConvertDateTimeOnCalendarTimeZoneAction,
-  type msdyn_ConvertDateTimeOnCalendarTimeZoneActionParameters,
-  type msdyn_ConvertDateTimeOnCalendarTimeZoneResponse,
-} from "./msdyn_ConvertDateTimeOnCalendarTimeZoneAction.js";
 export {
   msdyn_ConvertSequenceJsonToCJOJsonAction,
   type msdyn_ConvertSequenceJsonToCJOJsonActionParameters,
@@ -2355,50 +1590,6 @@ export {
   type msdyn_CopyEntityActionParameters,
   type msdyn_CopyEntityResponse,
 } from "./msdyn_CopyEntityAction.js";
-export {
-  msdyn_CopyEventAppleChannelsCleanupAction,
-  type msdyn_CopyEventAppleChannelsCleanupResponse,
-} from "./msdyn_CopyEventAppleChannelsCleanupAction.js";
-export {
-  msdyn_CopyEventBotRegistrationsCleanupAction,
-  type msdyn_CopyEventBotRegistrationsCleanupResponse,
-} from "./msdyn_CopyEventBotRegistrationsCleanupAction.js";
-export {
-  msdyn_CopyEventCustomChannelsCleanupAction,
-  type msdyn_CopyEventCustomChannelsCleanupResponse,
-} from "./msdyn_CopyEventCustomChannelsCleanupAction.js";
-export {
-  msdyn_CopyEventFacebookChannelsCleanupAction,
-  type msdyn_CopyEventFacebookChannelsCleanupResponse,
-} from "./msdyn_CopyEventFacebookChannelsCleanupAction.js";
-export {
-  msdyn_CopyEventGoogleChannelsCleanupAction,
-  type msdyn_CopyEventGoogleChannelsCleanupResponse,
-} from "./msdyn_CopyEventGoogleChannelsCleanupAction.js";
-export {
-  msdyn_CopyEventLineChannelsCleanupAction,
-  type msdyn_CopyEventLineChannelsCleanupResponse,
-} from "./msdyn_CopyEventLineChannelsCleanupAction.js";
-export {
-  msdyn_CopyEventSMSChannelsCleanupAction,
-  type msdyn_CopyEventSMSChannelsCleanupResponse,
-} from "./msdyn_CopyEventSMSChannelsCleanupAction.js";
-export {
-  msdyn_CopyEventTwitterChannelsCleanupAction,
-  type msdyn_CopyEventTwitterChannelsCleanupResponse,
-} from "./msdyn_CopyEventTwitterChannelsCleanupAction.js";
-export {
-  msdyn_CopyEventVoiceChannelsCleanupAction,
-  type msdyn_CopyEventVoiceChannelsCleanupResponse,
-} from "./msdyn_CopyEventVoiceChannelsCleanupAction.js";
-export {
-  msdyn_CopyEventWechatChannelCleanupAction,
-  type msdyn_CopyEventWechatChannelCleanupResponse,
-} from "./msdyn_CopyEventWechatChannelCleanupAction.js";
-export {
-  msdyn_CopyEventWhatsAppChannelCleanupAction,
-  type msdyn_CopyEventWhatsAppChannelCleanupResponse,
-} from "./msdyn_CopyEventWhatsAppChannelCleanupAction.js";
 export {
   msdyn_CRACaseClosureAction,
   type msdyn_CRACaseClosureActionParameters,
@@ -2460,21 +1651,6 @@ export {
   type msdyn_CreateEntityResponse,
 } from "./msdyn_CreateEntityAction.js";
 export {
-  msdyn_createevaluationplanbatchAction,
-  type msdyn_createevaluationplanbatchActionParameters,
-  type msdyn_createevaluationplanbatchResponse,
-} from "./msdyn_createevaluationplanbatchAction.js";
-export {
-  msdyn_CreateEvaluationRecordsForPlanAction,
-  type msdyn_CreateEvaluationRecordsForPlanActionParameters,
-  type msdyn_CreateEvaluationRecordsForPlanResponse,
-} from "./msdyn_CreateEvaluationRecordsForPlanAction.js";
-export {
-  msdyn_CreateEvaluationsForTriggerAction,
-  type msdyn_CreateEvaluationsForTriggerActionParameters,
-  type msdyn_CreateEvaluationsForTriggerResponse,
-} from "./msdyn_CreateEvaluationsForTriggerAction.js";
-export {
   msdyn_CreateHarvestWorkItemAction,
   type msdyn_CreateHarvestWorkItemActionParameters,
   type msdyn_CreateHarvestWorkItemResponse,
@@ -2500,35 +1676,10 @@ export {
   type msdyn_CreatePredictionResponse,
 } from "./msdyn_CreatePredictionAction.js";
 export {
-  msdyn_CreatePublishAIConfigAction,
-  type msdyn_CreatePublishAIConfigActionParameters,
-  type msdyn_CreatePublishAIConfigResponse,
-} from "./msdyn_CreatePublishAIConfigAction.js";
-export {
-  msdyn_CreatePublishAIModelAction,
-  type msdyn_CreatePublishAIModelActionParameters,
-  type msdyn_CreatePublishAIModelResponse,
-} from "./msdyn_CreatePublishAIModelAction.js";
-export {
   msdyn_CreateRecordWithRuleBasedPredictionsAction,
   type msdyn_CreateRecordWithRuleBasedPredictionsActionParameters,
   type msdyn_CreateRecordWithRuleBasedPredictionsResponse,
 } from "./msdyn_CreateRecordWithRuleBasedPredictionsAction.js";
-export {
-  msdyn_CreateRequirementGroupBookingsAction,
-  type msdyn_CreateRequirementGroupBookingsActionParameters,
-  type msdyn_CreateRequirementGroupBookingsResponse,
-} from "./msdyn_CreateRequirementGroupBookingsAction.js";
-export {
-  msdyn_CreateRequirementModelAction,
-  type msdyn_CreateRequirementModelActionParameters,
-  type msdyn_CreateRequirementModelResponse,
-} from "./msdyn_CreateRequirementModelAction.js";
-export {
-  msdyn_CreateResourceOptimizationRequestAction,
-  type msdyn_CreateResourceOptimizationRequestActionParameters,
-  type msdyn_CreateResourceOptimizationRequestResponse,
-} from "./msdyn_CreateResourceOptimizationRequestAction.js";
 export {
   msdyn_CreateSimilarOpportunitiyPredictionModelAction,
   type msdyn_CreateSimilarOpportunitiyPredictionModelActionParameters,
@@ -2555,20 +1706,6 @@ export {
   type msdyn_CreateSwarmParticipantsResponse,
 } from "./msdyn_CreateSwarmParticipantsAction.js";
 export {
-  msdyn_createtemplatecvrelationshipsAction,
-  type msdyn_createtemplatecvrelationshipsActionParameters,
-  type msdyn_createtemplatecvrelationshipsResponse,
-} from "./msdyn_createtemplatecvrelationshipsAction.js";
-export {
-  msdyn_CreateTrainConfigAction,
-  type msdyn_CreateTrainConfigResponse,
-} from "./msdyn_CreateTrainConfigAction.js";
-export {
-  msdyn_CreateTrainEffortModelConfigAction,
-  type msdyn_CreateTrainEffortModelConfigActionParameters,
-  type msdyn_CreateTrainEffortModelConfigResponse,
-} from "./msdyn_CreateTrainEffortModelConfigAction.js";
-export {
   msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationAction,
   type msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationActionParameters,
   type msdyn_CSAdminCenterAppSolutionHealthRulesRegistrationResponse,
@@ -2594,28 +1731,10 @@ export {
   type msdyn_CustomApiCustomerServiceCaseSummaryResponse,
 } from "./msdyn_CustomApiCustomerServiceCaseSummaryAction.js";
 export {
-  msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleAction,
-  type msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleResponse,
-} from "./msdyn_CustomChannelConfigurationShouldHaveWorkStreamRuleAction.js";
-export {
-  msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleAction,
-  type msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleResponse,
-} from "./msdyn_CustomChannelSettingsShouldHaveAllRequiredFieldsRuleAction.js";
-export {
   msdyn_CustomerServiceSolutionHealthRulesRegistrationAction,
   type msdyn_CustomerServiceSolutionHealthRulesRegistrationActionParameters,
   type msdyn_CustomerServiceSolutionHealthRulesRegistrationResponse,
 } from "./msdyn_CustomerServiceSolutionHealthRulesRegistrationAction.js";
-export {
-  msdyn_D365ChannelsInboundAction,
-  type msdyn_D365ChannelsInboundActionParameters,
-  type msdyn_D365ChannelsInboundResponse,
-} from "./msdyn_D365ChannelsInboundAction.js";
-export {
-  msdyn_D365ChannelsNotificationAction,
-  type msdyn_D365ChannelsNotificationActionParameters,
-  type msdyn_D365ChannelsNotificationResponse,
-} from "./msdyn_D365ChannelsNotificationAction.js";
 export {
   msdyn_dataprovideroperationsAction,
   type msdyn_dataprovideroperationsActionParameters,
@@ -2652,15 +1771,6 @@ export {
   type msdyn_deprovisionCefInsightsActionParameters,
   type msdyn_deprovisionCefInsightsResponse,
 } from "./msdyn_deprovisionCefInsightsAction.js";
-export {
-  msdyn_DeprovisionUnifiedRoutingAction,
-  type msdyn_DeprovisionUnifiedRoutingResponse,
-} from "./msdyn_DeprovisionUnifiedRoutingAction.js";
-export {
-  msdyn_DisableBotUserAction,
-  type msdyn_DisableBotUserActionParameters,
-  type msdyn_DisableBotUserResponse,
-} from "./msdyn_DisableBotUserAction.js";
 export {
   msdyn_DisableUnstructuredDataAction,
   type msdyn_DisableUnstructuredDataResponse,
@@ -2746,11 +1856,6 @@ export {
   type msdyn_EditSequenceResponse,
 } from "./msdyn_EditSequenceAction.js";
 export {
-  msdyn_EffortModelPredictionAction,
-  type msdyn_EffortModelPredictionActionParameters,
-  type msdyn_EffortModelPredictionResponse,
-} from "./msdyn_EffortModelPredictionAction.js";
-export {
   msdyn_emailAssistAdjustAPIAction,
   type msdyn_emailAssistAdjustAPIActionParameters,
   type msdyn_emailAssistAdjustAPIResponse,
@@ -2761,20 +1866,10 @@ export {
   type msdyn_EmailClassificationCustomActionResponse,
 } from "./msdyn_EmailClassificationCustomActionAction.js";
 export {
-  msdyn_EmailClassificationSimulationAction,
-  type msdyn_EmailClassificationSimulationActionParameters,
-  type msdyn_EmailClassificationSimulationResponse,
-} from "./msdyn_EmailClassificationSimulationAction.js";
-export {
   msdyn_EmailManagementAgentCustomActionAction,
   type msdyn_EmailManagementAgentCustomActionActionParameters,
   type msdyn_EmailManagementAgentCustomActionResponse,
 } from "./msdyn_EmailManagementAgentCustomActionAction.js";
-export {
-  msdyn_EmailResolutionAgentSimulationAction,
-  type msdyn_EmailResolutionAgentSimulationActionParameters,
-  type msdyn_EmailResolutionAgentSimulationResponse,
-} from "./msdyn_EmailResolutionAgentSimulationAction.js";
 export {
   msdyn_emailsentimentflowactionAction,
   type msdyn_emailsentimentflowactionActionParameters,
@@ -2803,34 +1898,14 @@ export {
   type msdyn_EnableSharePointResponse,
 } from "./msdyn_EnableSharePointAction.js";
 export {
-  msdyn_EnableUnifiedRoutingAction,
-  type msdyn_EnableUnifiedRoutingActionParameters,
-  type msdyn_EnableUnifiedRoutingResponse,
-} from "./msdyn_EnableUnifiedRoutingAction.js";
-export {
   msdyn_EnableUnstructuredDataAction,
   type msdyn_EnableUnstructuredDataResponse,
 } from "./msdyn_EnableUnstructuredDataAction.js";
-export {
-  msdyn_EvaluateConversationAction,
-  type msdyn_EvaluateConversationActionParameters,
-  type msdyn_EvaluateConversationResponse,
-} from "./msdyn_EvaluateConversationAction.js";
-export {
-  msdyn_EvaluateMasterEntityRoutingConfigurationAction,
-  type msdyn_EvaluateMasterEntityRoutingConfigurationActionParameters,
-  type msdyn_EvaluateMasterEntityRoutingConfigurationResponse,
-} from "./msdyn_EvaluateMasterEntityRoutingConfigurationAction.js";
 export {
   msdyn_ExecuteAgentAssistToolsAction,
   type msdyn_ExecuteAgentAssistToolsActionParameters,
   type msdyn_ExecuteAgentAssistToolsResponse,
 } from "./msdyn_ExecuteAgentAssistToolsAction.js";
-export {
-  msdyn_ExecuteAggregateAndUpdateIntentMetricsAction,
-  type msdyn_ExecuteAggregateAndUpdateIntentMetricsActionParameters,
-  type msdyn_ExecuteAggregateAndUpdateIntentMetricsResponse,
-} from "./msdyn_ExecuteAggregateAndUpdateIntentMetricsAction.js";
 export {
   msdyn_ExecuteARCAction,
   type msdyn_ExecuteARCActionParameters,
@@ -2896,43 +1971,10 @@ export {
   type msdyn_ExecuteSISampleDataRequestResponse,
 } from "./msdyn_ExecuteSISampleDataRequestAction.js";
 export {
-  msdyn_ExecuteTransformationAPIAction,
-  type msdyn_ExecuteTransformationAPIActionParameters,
-  type msdyn_ExecuteTransformationAPIResponse,
-} from "./msdyn_ExecuteTransformationAPIAction.js";
-export {
-  msdyn_ExpandOperatingHoursForEntityCollectionAction,
-  type msdyn_ExpandOperatingHoursForEntityCollectionActionParameters,
-  type msdyn_ExpandOperatingHoursForEntityCollectionResponse,
-} from "./msdyn_ExpandOperatingHoursForEntityCollectionAction.js";
-export {
   msdyn_ExportAnalyticsReportAction,
   type msdyn_ExportAnalyticsReportActionParameters,
   type msdyn_ExportAnalyticsReportResponse,
 } from "./msdyn_ExportAnalyticsReportAction.js";
-export {
-  msdyn_ExternalContextCommitTranscriptUploadAction,
-  type msdyn_ExternalContextCommitTranscriptUploadActionParameters,
-  type msdyn_ExternalContextCommitTranscriptUploadResponse,
-} from "./msdyn_ExternalContextCommitTranscriptUploadAction.js";
-export {
-  msdyn_ExternalContextInitiateTranscriptUploadAction,
-  type msdyn_ExternalContextInitiateTranscriptUploadActionParameters,
-  type msdyn_ExternalContextInitiateTranscriptUploadResponse,
-} from "./msdyn_ExternalContextInitiateTranscriptUploadAction.js";
-export {
-  msdyn_ExternalContextUploadTranscriptBlocksAction,
-  type msdyn_ExternalContextUploadTranscriptBlocksActionParameters,
-  type msdyn_ExternalContextUploadTranscriptBlocksResponse,
-} from "./msdyn_ExternalContextUploadTranscriptBlocksAction.js";
-export {
-  msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleAction,
-  type msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleResponse,
-} from "./msdyn_FacebookPageConfigurationShouldHaveWorkStreamRuleAction.js";
-export {
-  msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleAction,
-  type msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleResponse,
-} from "./msdyn_FacebookSettingsShouldHaveAllRequiredFieldsRuleAction.js";
 export {
   msdyn_FastPassBotEventUpdateAction,
   type msdyn_FastPassBotEventUpdateActionParameters,
@@ -2949,44 +1991,10 @@ export {
   type msdyn_FetchAllPredictionModelsResponse,
 } from "./msdyn_FetchAllPredictionModelsAction.js";
 export {
-  msdyn_fetchAutonomousCaseCreateUpdateRuleAction,
-  type msdyn_fetchAutonomousCaseCreateUpdateRuleActionParameters,
-  type msdyn_fetchAutonomousCaseCreateUpdateRuleResponse,
-} from "./msdyn_fetchAutonomousCaseCreateUpdateRuleAction.js";
-export {
-  msdyn_FetchCannedPromptsAction,
-  type msdyn_FetchCannedPromptsActionParameters,
-  type msdyn_FetchCannedPromptsResponse,
-} from "./msdyn_FetchCannedPromptsAction.js";
-export {
-  msdyn_FetchDiagnosticEntitiesAndCountAction,
-  type msdyn_FetchDiagnosticEntitiesAndCountActionParameters,
-  type msdyn_FetchDiagnosticEntitiesAndCountResponse,
-} from "./msdyn_FetchDiagnosticEntitiesAndCountAction.js";
-export {
   msdyn_fetchemailsentimentsapiAction,
   type msdyn_fetchemailsentimentsapiActionParameters,
   type msdyn_fetchemailsentimentsapiResponse,
 } from "./msdyn_fetchemailsentimentsapiAction.js";
-export {
-  msdyn_fetchEntityMetadataAction,
-  type msdyn_fetchEntityMetadataActionParameters,
-  type msdyn_fetchEntityMetadataResponse,
-} from "./msdyn_fetchEntityMetadataAction.js";
-export {
-  msdyn_FetchEvaluatedEntityInputConfigAction,
-  type msdyn_FetchEvaluatedEntityInputConfigActionParameters,
-  type msdyn_FetchEvaluatedEntityInputConfigResponse,
-} from "./msdyn_FetchEvaluatedEntityInputConfigAction.js";
-export {
-  msdyn_FetchEventingScenariosAction,
-  type msdyn_FetchEventingScenariosResponse,
-} from "./msdyn_FetchEventingScenariosAction.js";
-export {
-  msdyn_FetchFCSValueAction,
-  type msdyn_FetchFCSValueActionParameters,
-  type msdyn_FetchFCSValueResponse,
-} from "./msdyn_FetchFCSValueAction.js";
 export {
   msdyn_FetchKPIValuesAction,
   type msdyn_FetchKPIValuesActionParameters,
@@ -3007,11 +2015,6 @@ export {
   type msdyn_FindEntityForPolymorphicLookupActionParameters,
   type msdyn_FindEntityForPolymorphicLookupResponse,
 } from "./msdyn_FindEntityForPolymorphicLookupAction.js";
-export {
-  msdyn_FindRulesetDependenciesAction,
-  type msdyn_FindRulesetDependenciesActionParameters,
-  type msdyn_FindRulesetDependenciesResponse,
-} from "./msdyn_FindRulesetDependenciesAction.js";
 export {
   msdyn_FireDueSchedulesAction,
   type msdyn_FireDueSchedulesActionParameters,
@@ -3052,19 +2055,6 @@ export {
   type msdyn_ForecastRecalculateAsyncResponse,
 } from "./msdyn_ForecastRecalculateAsyncAction.js";
 export {
-  msdyn_FpsActionAction,
-  type msdyn_FpsActionActionParameters,
-  type msdyn_FpsActionResponse,
-} from "./msdyn_FpsActionAction.js";
-export {
-  msdyn_GBMConfigurationShouldHaveWorkStreamRuleAction,
-  type msdyn_GBMConfigurationShouldHaveWorkStreamRuleResponse,
-} from "./msdyn_GBMConfigurationShouldHaveWorkStreamRuleAction.js";
-export {
-  msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleAction,
-  type msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleResponse,
-} from "./msdyn_GBMSettingsShouldHaveAllRequiredFieldsRuleAction.js";
-export {
   msdyn_GDPROptoutContactAction,
   type msdyn_GDPROptoutContactActionParameters,
   type msdyn_GDPROptoutContactResponse,
@@ -3079,11 +2069,6 @@ export {
   type msdyn_GDPROptoutUserActionParameters,
   type msdyn_GDPROptoutUserResponse,
 } from "./msdyn_GDPROptoutUserAction.js";
-export {
-  msdyn_generateevaluationsummaryAction,
-  type msdyn_generateevaluationsummaryActionParameters,
-  type msdyn_generateevaluationsummaryResponse,
-} from "./msdyn_generateevaluationsummaryAction.js";
 export {
   msdyn_GenerateFieldDescriptionsAction,
   type msdyn_GenerateFieldDescriptionsActionParameters,
@@ -3110,25 +2095,10 @@ export {
   type msdyn_generatePromptForGovernanceAgentGuardrailResponse,
 } from "./msdyn_generatePromptForGovernanceAgentGuardrailAction.js";
 export {
-  msdyn_GenerateRuleAction,
-  type msdyn_GenerateRuleActionParameters,
-  type msdyn_GenerateRuleResponse,
-} from "./msdyn_GenerateRuleAction.js";
-export {
   msdyn_generateStructuredContentAction,
   type msdyn_generateStructuredContentActionParameters,
   type msdyn_generateStructuredContentResponse,
 } from "./msdyn_generateStructuredContentAction.js";
-export {
-  msdyn_GenerateWorkflowJsonAction,
-  type msdyn_GenerateWorkflowJsonActionParameters,
-  type msdyn_GenerateWorkflowJsonResponse,
-} from "./msdyn_GenerateWorkflowJsonAction.js";
-export {
-  msdyn_GeocodeAddressAction,
-  type msdyn_GeocodeAddressActionParameters,
-  type msdyn_GeocodeAddressResponse,
-} from "./msdyn_GeocodeAddressAction.js";
 export {
   msdyn_get_required_fieldsAction,
   type msdyn_get_required_fieldsActionParameters,
@@ -3149,25 +2119,10 @@ export {
   type msdyn_GetActionTypesResponse,
 } from "./msdyn_GetActionTypesAction.js";
 export {
-  msdyn_GetAdditionalPropertiesMetadataAction,
-  type msdyn_GetAdditionalPropertiesMetadataActionParameters,
-  type msdyn_GetAdditionalPropertiesMetadataResponse,
-} from "./msdyn_GetAdditionalPropertiesMetadataAction.js";
-export {
   msdyn_GetAgentAssistStreamAction,
   type msdyn_GetAgentAssistStreamActionParameters,
   type msdyn_GetAgentAssistStreamResponse,
 } from "./msdyn_GetAgentAssistStreamAction.js";
-export {
-  msdyn_GetAgentCoachEnabledAction,
-  type msdyn_GetAgentCoachEnabledActionParameters,
-  type msdyn_GetAgentCoachEnabledResponse,
-} from "./msdyn_GetAgentCoachEnabledAction.js";
-export {
-  msdyn_GetAgentCoachingAction,
-  type msdyn_GetAgentCoachingActionParameters,
-  type msdyn_GetAgentCoachingResponse,
-} from "./msdyn_GetAgentCoachingAction.js";
 export {
   msdyn_GetAISuggestedContactsAction,
   type msdyn_GetAISuggestedContactsActionParameters,
@@ -3250,41 +2205,6 @@ export {
   type msdyn_GetAutonomousDraftContentResponse,
 } from "./msdyn_GetAutonomousDraftContentAction.js";
 export {
-  msdyn_GetAvailabilitySummaryFromDemandAction,
-  type msdyn_GetAvailabilitySummaryFromDemandActionParameters,
-  type msdyn_GetAvailabilitySummaryFromDemandResponse,
-} from "./msdyn_GetAvailabilitySummaryFromDemandAction.js";
-export {
-  msdyn_GetAzureTokenAction,
-  type msdyn_GetAzureTokenActionParameters,
-  type msdyn_GetAzureTokenResponse,
-} from "./msdyn_GetAzureTokenAction.js";
-export {
-  msdyn_GetBookableResourcesAction,
-  type msdyn_GetBookableResourcesActionParameters,
-  type msdyn_GetBookableResourcesResponse,
-} from "./msdyn_GetBookableResourcesAction.js";
-export {
-  msdyn_GetBookingDetailsByRequirementIdsAction,
-  type msdyn_GetBookingDetailsByRequirementIdsActionParameters,
-  type msdyn_GetBookingDetailsByRequirementIdsResponse,
-} from "./msdyn_GetBookingDetailsByRequirementIdsAction.js";
-export {
-  msdyn_GetBoolFCSValueAction,
-  type msdyn_GetBoolFCSValueActionParameters,
-  type msdyn_GetBoolFCSValueResponse,
-} from "./msdyn_GetBoolFCSValueAction.js";
-export {
-  msdyn_GetBotConfigurationAction,
-  type msdyn_GetBotConfigurationActionParameters,
-  type msdyn_GetBotConfigurationResponse,
-} from "./msdyn_GetBotConfigurationAction.js";
-export {
-  msdyn_GetCaseAggregationAction,
-  type msdyn_GetCaseAggregationActionParameters,
-  type msdyn_GetCaseAggregationResponse,
-} from "./msdyn_GetCaseAggregationAction.js";
-export {
   msdyn_GetCaseManagementAgentSettingsAction,
   type msdyn_GetCaseManagementAgentSettingsActionParameters,
   type msdyn_GetCaseManagementAgentSettingsResponse,
@@ -3300,24 +2220,10 @@ export {
   type msdyn_GetCaseSuggestionsResponse,
 } from "./msdyn_GetCaseSuggestionsAction.js";
 export {
-  msdyn_GetCecCompatibilityForOmniChannelAction,
-  type msdyn_GetCecCompatibilityForOmniChannelResponse,
-} from "./msdyn_GetCecCompatibilityForOmniChannelAction.js";
-export {
   msdyn_GetChatResponseAction,
   type msdyn_GetChatResponseActionParameters,
   type msdyn_GetChatResponseResponse,
 } from "./msdyn_GetChatResponseAction.js";
-export {
-  msdyn_GetChildrensForHierarchyAction,
-  type msdyn_GetChildrensForHierarchyActionParameters,
-  type msdyn_GetChildrensForHierarchyResponse,
-} from "./msdyn_GetChildrensForHierarchyAction.js";
-export {
-  msdyn_GetChildResourcesAction,
-  type msdyn_GetChildResourcesActionParameters,
-  type msdyn_GetChildResourcesResponse,
-} from "./msdyn_GetChildResourcesAction.js";
 export {
   msdyn_GetCJOTreeNodesAction,
   type msdyn_GetCJOTreeNodesActionParameters,
@@ -3437,16 +2343,6 @@ export {
   type msdyn_GetEntityViewsResponse,
 } from "./msdyn_GetEntityViewsAction.js";
 export {
-  msdyn_GetEvaluationProgressAction,
-  type msdyn_GetEvaluationProgressActionParameters,
-  type msdyn_GetEvaluationProgressResponse,
-} from "./msdyn_GetEvaluationProgressAction.js";
-export {
-  msdyn_GetExpandedContractAction,
-  type msdyn_GetExpandedContractActionParameters,
-  type msdyn_GetExpandedContractResponse,
-} from "./msdyn_GetExpandedContractAction.js";
-export {
   msdyn_GetExtractsFromContentAction,
   type msdyn_GetExtractsFromContentActionParameters,
   type msdyn_GetExtractsFromContentResponse,
@@ -3456,11 +2352,6 @@ export {
   type msdyn_GetFavoriteArticlesActionParameters,
   type msdyn_GetFavoriteArticlesResponse,
 } from "./msdyn_GetFavoriteArticlesAction.js";
-export {
-  msdyn_GetFCBValueAction,
-  type msdyn_GetFCBValueActionParameters,
-  type msdyn_GetFCBValueResponse,
-} from "./msdyn_GetFCBValueAction.js";
 export {
   msdyn_GetFCSValueAction,
   type msdyn_GetFCSValueActionParameters,
@@ -3506,11 +2397,6 @@ export {
   type msdyn_GetGPT3PredictionResponse,
 } from "./msdyn_GetGPT3PredictionAction.js";
 export {
-  msdyn_GetHierarchyDataAction,
-  type msdyn_GetHierarchyDataActionParameters,
-  type msdyn_GetHierarchyDataResponse,
-} from "./msdyn_GetHierarchyDataAction.js";
-export {
   msdyn_GetInsightsAction,
   type msdyn_GetInsightsActionParameters,
   type msdyn_GetInsightsResponse,
@@ -3525,21 +2411,6 @@ export {
   type msdyn_GetIntentNextActionActionParameters,
   type msdyn_GetIntentNextActionResponse,
 } from "./msdyn_GetIntentNextActionAction.js";
-export {
-  msdyn_GetIoTAlertAggregationAction,
-  type msdyn_GetIoTAlertAggregationActionParameters,
-  type msdyn_GetIoTAlertAggregationResponse,
-} from "./msdyn_GetIoTAlertAggregationAction.js";
-export {
-  msdyn_GetIoTCommandMetadataAction,
-  type msdyn_GetIoTCommandMetadataActionParameters,
-  type msdyn_GetIoTCommandMetadataResponse,
-} from "./msdyn_GetIoTCommandMetadataAction.js";
-export {
-  msdyn_GetIoTVisualizationSummaryAction,
-  type msdyn_GetIoTVisualizationSummaryActionParameters,
-  type msdyn_GetIoTVisualizationSummaryResponse,
-} from "./msdyn_GetIoTVisualizationSummaryAction.js";
 export {
   msdyn_getIslandUrlAction,
   type msdyn_getIslandUrlResponse,
@@ -3618,24 +2489,10 @@ export {
   type msdyn_GetMLPredictionResponse,
 } from "./msdyn_GetMLPredictionAction.js";
 export {
-  msdyn_GetMultipleResourceBookingDetailsAction,
-  type msdyn_GetMultipleResourceBookingDetailsActionParameters,
-  type msdyn_GetMultipleResourceBookingDetailsResponse,
-} from "./msdyn_GetMultipleResourceBookingDetailsAction.js";
-export {
-  msdyn_GetMultipleResourceBookingDetailsAndSummariesAction,
-  type msdyn_GetMultipleResourceBookingDetailsAndSummariesActionParameters,
-  type msdyn_GetMultipleResourceBookingDetailsAndSummariesResponse,
-} from "./msdyn_GetMultipleResourceBookingDetailsAndSummariesAction.js";
-export {
   msdyn_GetNotesAnalysisAction,
   type msdyn_GetNotesAnalysisActionParameters,
   type msdyn_GetNotesAnalysisResponse,
 } from "./msdyn_GetNotesAnalysisAction.js";
-export {
-  msdyn_GetOCSharedServiceURIAction,
-  type msdyn_GetOCSharedServiceURIResponse,
-} from "./msdyn_GetOCSharedServiceURIAction.js";
 export {
   msdyn_GetODOSFeatureEnabledRolesAction,
   type msdyn_GetODOSFeatureEnabledRolesActionParameters,
@@ -3671,11 +2528,6 @@ export {
   type msdyn_GetOpportunityResearchResultResponse,
 } from "./msdyn_GetOpportunityResearchResultAction.js";
 export {
-  msdyn_GetOrCreateBookableResourcesAction,
-  type msdyn_GetOrCreateBookableResourcesActionParameters,
-  type msdyn_GetOrCreateBookableResourcesResponse,
-} from "./msdyn_GetOrCreateBookableResourcesAction.js";
-export {
   msdyn_GetOrCreateExtUserSettingAction,
   type msdyn_GetOrCreateExtUserSettingResponse,
 } from "./msdyn_GetOrCreateExtUserSettingAction.js";
@@ -3684,11 +2536,6 @@ export {
   type msdyn_GetOrCreateLinkedActivityActionParameters,
   type msdyn_GetOrCreateLinkedActivityResponse,
 } from "./msdyn_GetOrCreateLinkedActivityAction.js";
-export {
-  msdyn_GetOrganizationalUnitsWithinRadiusAction,
-  type msdyn_GetOrganizationalUnitsWithinRadiusActionParameters,
-  type msdyn_GetOrganizationalUnitsWithinRadiusResponse,
-} from "./msdyn_GetOrganizationalUnitsWithinRadiusAction.js";
 export {
   msdyn_GetOrganizationProvisioningStatusAction,
   type msdyn_GetOrganizationProvisioningStatusResponse,
@@ -3709,15 +2556,6 @@ export {
   type msdyn_GetPostOperationsResponse,
 } from "./msdyn_GetPostOperationsAction.js";
 export {
-  msdyn_GetPrecannedIndustriesAction,
-  type msdyn_GetPrecannedIndustriesResponse,
-} from "./msdyn_GetPrecannedIndustriesAction.js";
-export {
-  msdyn_GetPrecannedQuestionsAction,
-  type msdyn_GetPrecannedQuestionsActionParameters,
-  type msdyn_GetPrecannedQuestionsResponse,
-} from "./msdyn_GetPrecannedQuestionsAction.js";
-export {
   msdyn_GetPredictionModelStatusAction,
   type msdyn_GetPredictionModelStatusActionParameters,
   type msdyn_GetPredictionModelStatusResponse,
@@ -3732,89 +2570,15 @@ export {
   type msdyn_GetPromoContentFromIrisResponse,
 } from "./msdyn_GetPromoContentFromIrisAction.js";
 export {
-  msdyn_getqaaperformancemetricsAction,
-  type msdyn_getqaaperformancemetricsActionParameters,
-  type msdyn_getqaaperformancemetricsResponse,
-} from "./msdyn_getqaaperformancemetricsAction.js";
-export {
-  msdyn_GetQEAFabricConfigurationAction,
-  type msdyn_GetQEAFabricConfigurationResponse,
-} from "./msdyn_GetQEAFabricConfigurationAction.js";
-export {
   msdyn_GetRecordUsersAction,
   type msdyn_GetRecordUsersActionParameters,
   type msdyn_GetRecordUsersResponse,
 } from "./msdyn_GetRecordUsersAction.js";
 export {
-  msdyn_GetRelatedIoTDevicesByEntityAction,
-  type msdyn_GetRelatedIoTDevicesByEntityActionParameters,
-  type msdyn_GetRelatedIoTDevicesByEntityResponse,
-} from "./msdyn_GetRelatedIoTDevicesByEntityAction.js";
-export {
   msdyn_GetRelatedOpportunitiesForOpptyResearchAction,
   type msdyn_GetRelatedOpportunitiesForOpptyResearchActionParameters,
   type msdyn_GetRelatedOpportunitiesForOpptyResearchResponse,
 } from "./msdyn_GetRelatedOpportunitiesForOpptyResearchAction.js";
-export {
-  msdyn_GetRequirementChartDataAction,
-  type msdyn_GetRequirementChartDataActionParameters,
-  type msdyn_GetRequirementChartDataResponse,
-} from "./msdyn_GetRequirementChartDataAction.js";
-export {
-  msdyn_GetRequirementDemandAction,
-  type msdyn_GetRequirementDemandActionParameters,
-  type msdyn_GetRequirementDemandResponse,
-} from "./msdyn_GetRequirementDemandAction.js";
-export {
-  msdyn_GetRequirementDemandDisplayAction,
-  type msdyn_GetRequirementDemandDisplayActionParameters,
-  type msdyn_GetRequirementDemandDisplayResponse,
-} from "./msdyn_GetRequirementDemandDisplayAction.js";
-export {
-  msdyn_GetRequirementDependencySetAction,
-  type msdyn_GetRequirementDependencySetActionParameters,
-  type msdyn_GetRequirementDependencySetResponse,
-} from "./msdyn_GetRequirementDependencySetAction.js";
-export {
-  msdyn_GetRequirementModelsAction,
-  type msdyn_GetRequirementModelsActionParameters,
-  type msdyn_GetRequirementModelsResponse,
-} from "./msdyn_GetRequirementModelsAction.js";
-export {
-  msdyn_GetResourceBookingDetailsAction,
-  type msdyn_GetResourceBookingDetailsActionParameters,
-  type msdyn_GetResourceBookingDetailsResponse,
-} from "./msdyn_GetResourceBookingDetailsAction.js";
-export {
-  msdyn_GetResourceBookingFormParametersAction,
-  type msdyn_GetResourceBookingFormParametersActionParameters,
-  type msdyn_GetResourceBookingFormParametersResponse,
-} from "./msdyn_GetResourceBookingFormParametersAction.js";
-export {
-  msdyn_GetResourceGroupMembershipsAction,
-  type msdyn_GetResourceGroupMembershipsActionParameters,
-  type msdyn_GetResourceGroupMembershipsResponse,
-} from "./msdyn_GetResourceGroupMembershipsAction.js";
-export {
-  msdyn_GetResourcePopupDetailsAction,
-  type msdyn_GetResourcePopupDetailsActionParameters,
-  type msdyn_GetResourcePopupDetailsResponse,
-} from "./msdyn_GetResourcePopupDetailsAction.js";
-export {
-  msdyn_GetResourcesAction,
-  type msdyn_GetResourcesActionParameters,
-  type msdyn_GetResourcesResponse,
-} from "./msdyn_GetResourcesAction.js";
-export {
-  msdyn_GetResourceUtilizationGridAction,
-  type msdyn_GetResourceUtilizationGridActionParameters,
-  type msdyn_GetResourceUtilizationGridResponse,
-} from "./msdyn_GetResourceUtilizationGridAction.js";
-export {
-  msdyn_GetResourceWorkHoursForTimeFrameAction,
-  type msdyn_GetResourceWorkHoursForTimeFrameActionParameters,
-  type msdyn_GetResourceWorkHoursForTimeFrameResponse,
-} from "./msdyn_GetResourceWorkHoursForTimeFrameAction.js";
 export {
   msdyn_GetRICommonFCBStatusAction,
   type msdyn_GetRICommonFCBStatusActionParameters,
@@ -3926,15 +2690,6 @@ export {
   type msdyn_GetSimilarOpportunitiesResponse,
 } from "./msdyn_GetSimilarOpportunitiesAction.js";
 export {
-  msdyn_GetSimulationEligibilityAction,
-  type msdyn_GetSimulationEligibilityResponse,
-} from "./msdyn_GetSimulationEligibilityAction.js";
-export {
-  msdyn_getsimulationstatusAction,
-  type msdyn_getsimulationstatusActionParameters,
-  type msdyn_getsimulationstatusResponse,
-} from "./msdyn_getsimulationstatusAction.js";
-export {
   msdyn_GetSIPackageStatusAction,
   type msdyn_GetSIPackageStatusActionParameters,
   type msdyn_GetSIPackageStatusResponse,
@@ -3953,11 +2708,6 @@ export {
   type msdyn_GetSuggestedContactsActionParameters,
   type msdyn_GetSuggestedContactsResponse,
 } from "./msdyn_GetSuggestedContactsAction.js";
-export {
-  msdyn_GetSummaryBookingsAction,
-  type msdyn_GetSummaryBookingsActionParameters,
-  type msdyn_GetSummaryBookingsResponse,
-} from "./msdyn_GetSummaryBookingsAction.js";
 export {
   msdyn_GetSwarmInvitationCardAction,
   type msdyn_GetSwarmInvitationCardActionParameters,
@@ -3989,15 +2739,6 @@ export {
   type msdyn_GetTrainingResultsResponse,
 } from "./msdyn_GetTrainingResultsAction.js";
 export {
-  msdyn_GetTransformationAgentEligibilityAction,
-  type msdyn_GetTransformationAgentEligibilityResponse,
-} from "./msdyn_GetTransformationAgentEligibilityAction.js";
-export {
-  msdyn_gettransformationconnectionsAction,
-  type msdyn_gettransformationconnectionsActionParameters,
-  type msdyn_gettransformationconnectionsResponse,
-} from "./msdyn_gettransformationconnectionsAction.js";
-export {
   msdyn_GetUserConsentStatusAction,
   type msdyn_GetUserConsentStatusResponse,
 } from "./msdyn_GetUserConsentStatusAction.js";
@@ -4016,11 +2757,6 @@ export {
   type msdyn_GlobalSettingsActionParameters,
   type msdyn_GlobalSettingsResponse,
 } from "./msdyn_GlobalSettingsAction.js";
-export {
-  msdyn_governanceAgentSimulationAction,
-  type msdyn_governanceAgentSimulationActionParameters,
-  type msdyn_governanceAgentSimulationResponse,
-} from "./msdyn_governanceAgentSimulationAction.js";
 export {
   msdyn_HandleTimedOutAgentProcessingStateAction,
   type msdyn_HandleTimedOutAgentProcessingStateActionParameters,
@@ -4047,45 +2783,6 @@ export {
   type msdyn_IngestAnalyticsDataCustomChannelsResponse,
 } from "./msdyn_IngestAnalyticsDataCustomChannelsAction.js";
 export {
-  msdyn_InitEntityRoutingAction,
-  type msdyn_InitEntityRoutingActionParameters,
-  type msdyn_InitEntityRoutingResponse,
-} from "./msdyn_InitEntityRoutingAction.js";
-export {
-  msdyn_InitEntityRoutingFlowAction,
-  type msdyn_InitEntityRoutingFlowActionParameters,
-  type msdyn_InitEntityRoutingFlowResponse,
-} from "./msdyn_InitEntityRoutingFlowAction.js";
-export {
-  msdyn_initializedefaultclonequeryAction,
-  type msdyn_initializedefaultclonequeryActionParameters,
-  type msdyn_initializedefaultclonequeryResponse,
-} from "./msdyn_initializedefaultclonequeryAction.js";
-export {
-  msdyn_InitializeSessionChannelAction,
-  type msdyn_InitializeSessionChannelResponse,
-} from "./msdyn_InitializeSessionChannelAction.js";
-export {
-  msdyn_InitiateCCaaSAPIsAsyncAction,
-  type msdyn_InitiateCCaaSAPIsAsyncActionParameters,
-  type msdyn_InitiateCCaaSAPIsAsyncResponse,
-} from "./msdyn_InitiateCCaaSAPIsAsyncAction.js";
-export {
-  msdyn_InitiateCCaaSCloseConversationAction,
-  type msdyn_InitiateCCaaSCloseConversationActionParameters,
-  type msdyn_InitiateCCaaSCloseConversationResponse,
-} from "./msdyn_InitiateCCaaSCloseConversationAction.js";
-export {
-  msdyn_InitiateCCaaSPickConversationAction,
-  type msdyn_InitiateCCaaSPickConversationActionParameters,
-  type msdyn_InitiateCCaaSPickConversationResponse,
-} from "./msdyn_InitiateCCaaSPickConversationAction.js";
-export {
-  msdyn_InsertTrainingRecordsAction,
-  type msdyn_InsertTrainingRecordsActionParameters,
-  type msdyn_InsertTrainingRecordsResponse,
-} from "./msdyn_InsertTrainingRecordsAction.js";
-export {
   msdyn_InstallSalesInsightsSolutionAction,
   type msdyn_InstallSalesInsightsSolutionActionParameters,
   type msdyn_InstallSalesInsightsSolutionResponse,
@@ -4095,11 +2792,6 @@ export {
   type msdyn_IntentQuickSetupProxyActionParameters,
   type msdyn_IntentQuickSetupProxyResponse,
 } from "./msdyn_IntentQuickSetupProxyAction.js";
-export {
-  msdyn_IntentServiceAPICallProxyAction,
-  type msdyn_IntentServiceAPICallProxyActionParameters,
-  type msdyn_IntentServiceAPICallProxyResponse,
-} from "./msdyn_IntentServiceAPICallProxyAction.js";
 export {
   msdyn_InvokeAgentAssistToolsAction,
   type msdyn_InvokeAgentAssistToolsActionParameters,
@@ -4121,11 +2813,6 @@ export {
   type msdyn_invokeCustomAgentForCaseProcessingAgentResponse,
 } from "./msdyn_invokeCustomAgentForCaseProcessingAgentAction.js";
 export {
-  msdyn_InvokeEvaluationActionAction,
-  type msdyn_InvokeEvaluationActionActionParameters,
-  type msdyn_InvokeEvaluationActionResponse,
-} from "./msdyn_InvokeEvaluationActionAction.js";
-export {
   msdyn_InvokeGetNextSuggestionAction,
   type msdyn_InvokeGetNextSuggestionActionParameters,
   type msdyn_InvokeGetNextSuggestionResponse,
@@ -4141,108 +2828,10 @@ export {
   type msdyn_InvokeOptimizeActionResponse,
 } from "./msdyn_InvokeOptimizeActionAction.js";
 export {
-  msdyn_InvokeOutboundAPIAction,
-  type msdyn_InvokeOutboundAPIActionParameters,
-  type msdyn_InvokeOutboundAPIResponse,
-} from "./msdyn_InvokeOutboundAPIAction.js";
-export {
-  msdyn_InvokeQEADVCopilotActionAction,
-  type msdyn_InvokeQEADVCopilotActionActionParameters,
-  type msdyn_InvokeQEADVCopilotActionResponse,
-} from "./msdyn_InvokeQEADVCopilotActionAction.js";
-export {
   msdyn_InvokeServiceStoredProcAction,
   type msdyn_InvokeServiceStoredProcActionParameters,
   type msdyn_InvokeServiceStoredProcResponse,
 } from "./msdyn_InvokeServiceStoredProcAction.js";
-export {
-  msdyn_InvokeTransformationAgentAction,
-  type msdyn_InvokeTransformationAgentActionParameters,
-  type msdyn_InvokeTransformationAgentResponse,
-} from "./msdyn_InvokeTransformationAgentAction.js";
-export {
-  msdyn_IoTCheckIfRecordExistsInEntityAction,
-  type msdyn_IoTCheckIfRecordExistsInEntityActionParameters,
-  type msdyn_IoTCheckIfRecordExistsInEntityResponse,
-} from "./msdyn_IoTCheckIfRecordExistsInEntityAction.js";
-export {
-  msdyn_IoTGetDeviceEventsAction,
-  type msdyn_IoTGetDeviceEventsActionParameters,
-  type msdyn_IoTGetDeviceEventsResponse,
-} from "./msdyn_IoTGetDeviceEventsAction.js";
-export {
-  msdyn_IoTGetEditablePropertiesMetadataAction,
-  type msdyn_IoTGetEditablePropertiesMetadataActionParameters,
-  type msdyn_IoTGetEditablePropertiesMetadataResponse,
-} from "./msdyn_IoTGetEditablePropertiesMetadataAction.js";
-export {
-  msdyn_IoTGetIoTAlertCustomAttributesAction,
-  type msdyn_IoTGetIoTAlertCustomAttributesResponse,
-} from "./msdyn_IoTGetIoTAlertCustomAttributesAction.js";
-export {
-  msdyn_IoTGetModelStatusInternalAction,
-  type msdyn_IoTGetModelStatusInternalActionParameters,
-  type msdyn_IoTGetModelStatusInternalResponse,
-} from "./msdyn_IoTGetModelStatusInternalAction.js";
-export {
-  msdyn_IoTGetTagsMetadataAction,
-  type msdyn_IoTGetTagsMetadataActionParameters,
-  type msdyn_IoTGetTagsMetadataResponse,
-} from "./msdyn_IoTGetTagsMetadataAction.js";
-export {
-  msdyn_IoTHubGetAggregatedDeviceReadingsAction,
-  type msdyn_IoTHubGetAggregatedDeviceReadingsActionParameters,
-  type msdyn_IoTHubGetAggregatedDeviceReadingsResponse,
-} from "./msdyn_IoTHubGetAggregatedDeviceReadingsAction.js";
-export {
-  msdyn_IoTHubPullDeviceDataAction,
-  type msdyn_IoTHubPullDeviceDataActionParameters,
-  type msdyn_IoTHubPullDeviceDataResponse,
-} from "./msdyn_IoTHubPullDeviceDataAction.js";
-export {
-  msdyn_IoTHubQueryDeviceReadingsAction,
-  type msdyn_IoTHubQueryDeviceReadingsActionParameters,
-  type msdyn_IoTHubQueryDeviceReadingsResponse,
-} from "./msdyn_IoTHubQueryDeviceReadingsAction.js";
-export {
-  msdyn_IoTHubRegisterDeviceAction,
-  type msdyn_IoTHubRegisterDeviceActionParameters,
-  type msdyn_IoTHubRegisterDeviceResponse,
-} from "./msdyn_IoTHubRegisterDeviceAction.js";
-export {
-  msdyn_IoTNewPrimaryAlertAction,
-  type msdyn_IoTNewPrimaryAlertActionParameters,
-  type msdyn_IoTNewPrimaryAlertResponse,
-} from "./msdyn_IoTNewPrimaryAlertAction.js";
-export {
-  msdyn_IoTPullDeviceDataActionHandlerAction,
-  type msdyn_IoTPullDeviceDataActionHandlerActionParameters,
-  type msdyn_IoTPullDeviceDataActionHandlerResponse,
-} from "./msdyn_IoTPullDeviceDataActionHandlerAction.js";
-export {
-  msdyn_IoTRegisterActionHandlerAction,
-  type msdyn_IoTRegisterActionHandlerActionParameters,
-  type msdyn_IoTRegisterActionHandlerResponse,
-} from "./msdyn_IoTRegisterActionHandlerAction.js";
-export {
-  msdyn_IoTSendTestAlertAction,
-  type msdyn_IoTSendTestAlertActionParameters,
-  type msdyn_IoTSendTestAlertResponse,
-} from "./msdyn_IoTSendTestAlertAction.js";
-export {
-  msdyn_IoTSetConfigurationAction,
-  type msdyn_IoTSetConfigurationActionParameters,
-  type msdyn_IoTSetConfigurationResponse,
-} from "./msdyn_IoTSetConfigurationAction.js";
-export {
-  msdyn_IsAdvancedUnifiedRoutingEnabledAction,
-  type msdyn_IsAdvancedUnifiedRoutingEnabledResponse,
-} from "./msdyn_IsAdvancedUnifiedRoutingEnabledAction.js";
-export {
-  msdyn_IsBotUserConfiguredAction,
-  type msdyn_IsBotUserConfiguredActionParameters,
-  type msdyn_IsBotUserConfiguredResponse,
-} from "./msdyn_IsBotUserConfiguredAction.js";
 export {
   msdyn_IsLinkedInDataValidationEnabledAction,
   type msdyn_IsLinkedInDataValidationEnabledResponse,
@@ -4264,21 +2853,6 @@ export {
   type msdyn_JoinLinkedChatConversationActionParameters,
   type msdyn_JoinLinkedChatConversationResponse,
 } from "./msdyn_JoinLinkedChatConversationAction.js";
-export {
-  msdyn_JsonGetBooleanAction,
-  type msdyn_JsonGetBooleanActionParameters,
-  type msdyn_JsonGetBooleanResponse,
-} from "./msdyn_JsonGetBooleanAction.js";
-export {
-  msdyn_JsonGetNumberAction,
-  type msdyn_JsonGetNumberActionParameters,
-  type msdyn_JsonGetNumberResponse,
-} from "./msdyn_JsonGetNumberAction.js";
-export {
-  msdyn_JsonGetStringAction,
-  type msdyn_JsonGetStringActionParameters,
-  type msdyn_JsonGetStringResponse,
-} from "./msdyn_JsonGetStringAction.js";
 export {
   msdyn_knowledgeHarvestAgentTriggerAction,
   type msdyn_knowledgeHarvestAgentTriggerActionParameters,
@@ -4309,18 +2883,6 @@ export {
   type msdyn_LeadSqaResultUserActionActionParameters,
   type msdyn_LeadSqaResultUserActionResponse,
 } from "./msdyn_LeadSqaResultUserActionAction.js";
-export {
-  msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleAction,
-  type msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleResponse,
-} from "./msdyn_LineChannelConfigurationShouldHaveWorkStreamRuleAction.js";
-export {
-  msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleAction,
-  type msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleResponse,
-} from "./msdyn_LineSettingsShouldHaveAllRequiredFieldsRuleAction.js";
-export {
-  msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleAction,
-  type msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleResponse,
-} from "./msdyn_LiveChatChannelConfigurationShouldHaveWorkstreamRuleAction.js";
 export {
   msdyn_LoadCalendarsAction,
   type msdyn_LoadCalendarsActionParameters,
@@ -4358,11 +2920,6 @@ export {
   msdyn_MarketingMetadataUpdatePostImportAction,
   type msdyn_MarketingMetadataUpdatePostImportResponse,
 } from "./msdyn_MarketingMetadataUpdatePostImportAction.js";
-export {
-  msdyn_MarkPhoneNumberSpamActionAction,
-  type msdyn_MarkPhoneNumberSpamActionActionParameters,
-  type msdyn_MarkPhoneNumberSpamActionResponse,
-} from "./msdyn_MarkPhoneNumberSpamActionAction.js";
 export {
   msdyn_markunmarkfavoritearticleAction,
   type msdyn_markunmarkfavoritearticleActionParameters,
@@ -4432,39 +2989,6 @@ export {
   type msdyn_ModelAppRepairResponse,
 } from "./msdyn_ModelAppRepairAction.js";
 export {
-  msdyn_msdyn_ValidateWorkStreamSMSConnectionAction,
-  type msdyn_msdyn_ValidateWorkStreamSMSConnectionActionParameters,
-  type msdyn_msdyn_ValidateWorkStreamSMSConnectionResponse,
-} from "./msdyn_msdyn_ValidateWorkStreamSMSConnectionAction.js";
-export {
-  msdyn_OcAgentsShouldHaveCapacityRuleAction,
-  type msdyn_OcAgentsShouldHaveCapacityRuleResponse,
-} from "./msdyn_OcAgentsShouldHaveCapacityRuleAction.js";
-export {
-  msdyn_OcBotsShouldHaveCapacityRuleAction,
-  type msdyn_OcBotsShouldHaveCapacityRuleResponse,
-} from "./msdyn_OcBotsShouldHaveCapacityRuleAction.js";
-export {
-  msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleAction,
-  type msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleResponse,
-} from "./msdyn_OcBotsShouldNotHavePotentiallyLowCapacityRuleAction.js";
-export {
-  msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleAction,
-  type msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleResponse,
-} from "./msdyn_OcChannelProviderShouldHaveAllRequiredFieldsRuleAction.js";
-export {
-  msdyn_OcQueuesShouldHaveAgentsRuleAction,
-  type msdyn_OcQueuesShouldHaveAgentsRuleResponse,
-} from "./msdyn_OcQueuesShouldHaveAgentsRuleAction.js";
-export {
-  msdyn_OcSdkShouldBeActiveRuleAction,
-  type msdyn_OcSdkShouldBeActiveRuleResponse,
-} from "./msdyn_OcSdkShouldBeActiveRuleAction.js";
-export {
-  msdyn_OcServiceEndpointShouldBeConfiguredRuleAction,
-  type msdyn_OcServiceEndpointShouldBeConfiguredRuleResponse,
-} from "./msdyn_OcServiceEndpointShouldBeConfiguredRuleAction.js";
-export {
   msdyn_ODOSMetadataCleanUpAction,
   type msdyn_ODOSMetadataCleanUpActionParameters,
   type msdyn_ODOSMetadataCleanUpResponse,
@@ -4480,19 +3004,10 @@ export {
   type msdyn_OnClosureAgentDisengagedResponse,
 } from "./msdyn_OnClosureAgentDisengagedAction.js";
 export {
-  msdyn_ondemandqualityevaluationAction,
-  type msdyn_ondemandqualityevaluationActionParameters,
-  type msdyn_ondemandqualityevaluationResponse,
-} from "./msdyn_ondemandqualityevaluationAction.js";
-export {
   msdyn_OnNewActivityForARCRecordAction,
   type msdyn_OnNewActivityForARCRecordActionParameters,
   type msdyn_OnNewActivityForARCRecordResponse,
 } from "./msdyn_OnNewActivityForARCRecordAction.js";
-export {
-  msdyn_OperatingHoursUpgradeFlowAction,
-  type msdyn_OperatingHoursUpgradeFlowResponse,
-} from "./msdyn_OperatingHoursUpgradeFlowAction.js";
 export {
   msdyn_OpportunityResearchResultUserActionAction,
   type msdyn_OpportunityResearchResultUserActionActionParameters,
@@ -4503,11 +3018,6 @@ export {
   type msdyn_OptimizeCoordinatorTickActionParameters,
   type msdyn_OptimizeCoordinatorTickResponse,
 } from "./msdyn_OptimizeCoordinatorTickAction.js";
-export {
-  msdyn_OrphanCalendarCleanupAction,
-  type msdyn_OrphanCalendarCleanupActionParameters,
-  type msdyn_OrphanCalendarCleanupResponse,
-} from "./msdyn_OrphanCalendarCleanupAction.js";
 export {
   msdyn_OSApplyPredictionAction,
   type msdyn_OSApplyPredictionActionParameters,
@@ -4548,24 +3058,10 @@ export {
   type msdyn_OSUpdateModelGradesResponse,
 } from "./msdyn_OSUpdateModelGradesAction.js";
 export {
-  msdyn_OverflowMigrationAPIAction,
-  type msdyn_OverflowMigrationAPIResponse,
-} from "./msdyn_OverflowMigrationAPIAction.js";
-export {
-  msdyn_ParentIoTAlertsAction,
-  type msdyn_ParentIoTAlertsActionParameters,
-  type msdyn_ParentIoTAlertsResponse,
-} from "./msdyn_ParentIoTAlertsAction.js";
-export {
   msdyn_ParseKBResultAction,
   type msdyn_ParseKBResultActionParameters,
   type msdyn_ParseKBResultResponse,
 } from "./msdyn_ParseKBResultAction.js";
-export {
-  msdyn_parsetranscriptAction,
-  type msdyn_parsetranscriptActionParameters,
-  type msdyn_parsetranscriptResponse,
-} from "./msdyn_parsetranscriptAction.js";
 export {
   msdyn_PerformChecksForEnrichRecordAction,
   type msdyn_PerformChecksForEnrichRecordActionParameters,
@@ -4581,11 +3077,6 @@ export {
   type msdyn_PollCopilotAgentResponsesActionParameters,
   type msdyn_PollCopilotAgentResponsesResponse,
 } from "./msdyn_PollCopilotAgentResponsesAction.js";
-export {
-  msdyn_PollingAction,
-  type msdyn_PollingActionParameters,
-  type msdyn_PollingResponse,
-} from "./msdyn_PollingAction.js";
 export {
   msdyn_PollODOSForConsentAction,
   type msdyn_PollODOSForConsentActionParameters,
@@ -4646,11 +3137,6 @@ export {
   type msdyn_ProcessDealInsightsBannerContentResponse,
 } from "./msdyn_ProcessDealInsightsBannerContentAction.js";
 export {
-  msdyn_ProcessDescriptionPublishChunkAction,
-  type msdyn_ProcessDescriptionPublishChunkActionParameters,
-  type msdyn_ProcessDescriptionPublishChunkResponse,
-} from "./msdyn_ProcessDescriptionPublishChunkAction.js";
-export {
   msdyn_ProcessInvokeCaseProcessingAgentRequestAction,
   type msdyn_ProcessInvokeCaseProcessingAgentRequestActionParameters,
   type msdyn_ProcessInvokeCaseProcessingAgentRequestResponse,
@@ -4695,33 +3181,15 @@ export {
   type msdyn_ProvisionSharePointDocumentLibrariesResponse,
 } from "./msdyn_ProvisionSharePointDocumentLibrariesAction.js";
 export {
-  msdyn_ProvisionUnifiedRoutingAction,
-  type msdyn_ProvisionUnifiedRoutingResponse,
-} from "./msdyn_ProvisionUnifiedRoutingAction.js";
-export {
-  msdyn_PublishAIModelAction,
-  type msdyn_PublishAIModelResponse,
-} from "./msdyn_PublishAIModelAction.js";
-export {
   msdyn_publishCefInsightAction,
   type msdyn_publishCefInsightActionParameters,
   type msdyn_publishCefInsightResponse,
 } from "./msdyn_publishCefInsightAction.js";
 export {
-  msdyn_PublishEffortAIModelAction,
-  type msdyn_PublishEffortAIModelActionParameters,
-  type msdyn_PublishEffortAIModelResponse,
-} from "./msdyn_PublishEffortAIModelAction.js";
-export {
   msdyn_publishScheduledRolloutAction,
   type msdyn_publishScheduledRolloutActionParameters,
   type msdyn_publishScheduledRolloutResponse,
 } from "./msdyn_publishScheduledRolloutAction.js";
-export {
-  msdyn_PullDataForIoTDeviceAction,
-  type msdyn_PullDataForIoTDeviceActionParameters,
-  type msdyn_PullDataForIoTDeviceResponse,
-} from "./msdyn_PullDataForIoTDeviceAction.js";
 export {
   msdyn_PushActionDataToRecommendedActionAgentAction,
   type msdyn_PushActionDataToRecommendedActionAgentActionParameters,
@@ -4732,20 +3200,6 @@ export {
   type msdyn_QueryExchangeActionParameters,
   type msdyn_QueryExchangeResponse,
 } from "./msdyn_QueryExchangeAction.js";
-export {
-  msdyn_QueryOutboundNumbersActionAction,
-  type msdyn_QueryOutboundNumbersActionResponse,
-} from "./msdyn_QueryOutboundNumbersActionAction.js";
-export {
-  msdyn_QueueItemCreateOperationAction,
-  type msdyn_QueueItemCreateOperationActionParameters,
-  type msdyn_QueueItemCreateOperationResponse,
-} from "./msdyn_QueueItemCreateOperationAction.js";
-export {
-  msdyn_QueueItemOperationsOnLwiDeleteOrClosureAction,
-  type msdyn_QueueItemOperationsOnLwiDeleteOrClosureActionParameters,
-  type msdyn_QueueItemOperationsOnLwiDeleteOrClosureResponse,
-} from "./msdyn_QueueItemOperationsOnLwiDeleteOrClosureAction.js";
 export {
   msdyn_QuickSetupCMAAction,
   type msdyn_QuickSetupCMAActionParameters,
@@ -4802,45 +3256,10 @@ export {
   type msdyn_recurringsegmentactionResponse,
 } from "./msdyn_recurringsegmentactionAction.js";
 export {
-  msdyn_RegisterCustomEntityAction,
-  type msdyn_RegisterCustomEntityActionParameters,
-  type msdyn_RegisterCustomEntityResponse,
-} from "./msdyn_RegisterCustomEntityAction.js";
-export {
-  msdyn_RegisterIoTDeviceAction,
-  type msdyn_RegisterIoTDeviceActionParameters,
-  type msdyn_RegisterIoTDeviceResponse,
-} from "./msdyn_RegisterIoTDeviceAction.js";
-export {
   msdyn_RegisterSolutionHealthRuleAction,
   type msdyn_RegisterSolutionHealthRuleActionParameters,
   type msdyn_RegisterSolutionHealthRuleResponse,
 } from "./msdyn_RegisterSolutionHealthRuleAction.js";
-export {
-  msdyn_RemoveRequirementModelAction,
-  type msdyn_RemoveRequirementModelActionParameters,
-  type msdyn_RemoveRequirementModelResponse,
-} from "./msdyn_RemoveRequirementModelAction.js";
-export {
-  msdyn_RequirementGroupOverviewAction,
-  type msdyn_RequirementGroupOverviewActionParameters,
-  type msdyn_RequirementGroupOverviewResponse,
-} from "./msdyn_RequirementGroupOverviewAction.js";
-export {
-  msdyn_ResetOmnichannelProviderAction,
-  type msdyn_ResetOmnichannelProviderActionParameters,
-  type msdyn_ResetOmnichannelProviderResponse,
-} from "./msdyn_ResetOmnichannelProviderAction.js";
-export {
-  msdyn_ResetWorkDistributionFlowAction,
-  type msdyn_ResetWorkDistributionFlowActionParameters,
-  type msdyn_ResetWorkDistributionFlowResponse,
-} from "./msdyn_ResetWorkDistributionFlowAction.js";
-export {
-  msdyn_ResetWorkstreamChannelScenarioAction,
-  type msdyn_ResetWorkstreamChannelScenarioActionParameters,
-  type msdyn_ResetWorkstreamChannelScenarioResponse,
-} from "./msdyn_ResetWorkstreamChannelScenarioAction.js";
 export {
   msdyn_ResolveEmailClassificationScopedCategoriesAction,
   type msdyn_ResolveEmailClassificationScopedCategoriesActionParameters,
@@ -4852,16 +3271,6 @@ export {
   type msdyn_ResolveSolutionHealthRuleFailureResponse,
 } from "./msdyn_ResolveSolutionHealthRuleFailureAction.js";
 export {
-  msdyn_ResolveTimezoneAction,
-  type msdyn_ResolveTimezoneActionParameters,
-  type msdyn_ResolveTimezoneResponse,
-} from "./msdyn_ResolveTimezoneAction.js";
-export {
-  msdyn_RestoreEvaluationCriteriaAction,
-  type msdyn_RestoreEvaluationCriteriaActionParameters,
-  type msdyn_RestoreEvaluationCriteriaResponse,
-} from "./msdyn_RestoreEvaluationCriteriaAction.js";
-export {
   msdyn_RetrieveActivitiesAction,
   type msdyn_RetrieveActivitiesActionParameters,
   type msdyn_RetrieveActivitiesResponse,
@@ -4871,11 +3280,6 @@ export {
   type msdyn_RetrieveActivityAnalyticsConfigurationActionParameters,
   type msdyn_RetrieveActivityAnalyticsConfigurationResponse,
 } from "./msdyn_RetrieveActivityAnalyticsConfigurationAction.js";
-export {
-  msdyn_RetrieveAppointmentsByAttendeesAction,
-  type msdyn_RetrieveAppointmentsByAttendeesActionParameters,
-  type msdyn_RetrieveAppointmentsByAttendeesResponse,
-} from "./msdyn_RetrieveAppointmentsByAttendeesAction.js";
 export {
   msdyn_RetrieveCadenceSuggestionsAction,
   type msdyn_RetrieveCadenceSuggestionsActionParameters,
@@ -4887,21 +3291,6 @@ export {
   type msdyn_retrieveConnectionsResponse,
 } from "./msdyn_retrieveConnectionsAction.js";
 export {
-  msdyn_RetrieveConversationPayloadAction,
-  type msdyn_RetrieveConversationPayloadActionParameters,
-  type msdyn_RetrieveConversationPayloadResponse,
-} from "./msdyn_RetrieveConversationPayloadAction.js";
-export {
-  msdyn_RetrieveCustomMessagingApplicationSecretAction,
-  type msdyn_RetrieveCustomMessagingApplicationSecretActionParameters,
-  type msdyn_RetrieveCustomMessagingApplicationSecretResponse,
-} from "./msdyn_RetrieveCustomMessagingApplicationSecretAction.js";
-export {
-  msdyn_RetrieveDistanceMatrixAction,
-  type msdyn_RetrieveDistanceMatrixActionParameters,
-  type msdyn_RetrieveDistanceMatrixResponse,
-} from "./msdyn_RetrieveDistanceMatrixAction.js";
-export {
   msdyn_RetrieveEmailNBAAction,
   type msdyn_RetrieveEmailNBAActionParameters,
   type msdyn_RetrieveEmailNBAResponse,
@@ -4911,11 +3300,6 @@ export {
   type msdyn_RetrieveEnvironmentVariableValueForCSActionParameters,
   type msdyn_RetrieveEnvironmentVariableValueForCSResponse,
 } from "./msdyn_RetrieveEnvironmentVariableValueForCSAction.js";
-export {
-  msdyn_RetrieveEvaluationCriteriaAction,
-  type msdyn_RetrieveEvaluationCriteriaActionParameters,
-  type msdyn_RetrieveEvaluationCriteriaResponse,
-} from "./msdyn_RetrieveEvaluationCriteriaAction.js";
 export {
   msdyn_RetrieveKnowledgeManagementSettingsAction,
   type msdyn_RetrieveKnowledgeManagementSettingsActionParameters,
@@ -4972,11 +3356,6 @@ export {
   type msdyn_RetrieveOptimizeWorkItemPayloadResponse,
 } from "./msdyn_RetrieveOptimizeWorkItemPayloadAction.js";
 export {
-  msdyn_RetrieveOutlookSchedulesAction,
-  type msdyn_RetrieveOutlookSchedulesActionParameters,
-  type msdyn_RetrieveOutlookSchedulesResponse,
-} from "./msdyn_RetrieveOutlookSchedulesAction.js";
-export {
   msdyn_RetrievePersonalizationFiltersAction,
   type msdyn_RetrievePersonalizationFiltersActionParameters,
   type msdyn_RetrievePersonalizationFiltersResponse,
@@ -4990,16 +3369,6 @@ export {
   type msdyn_RetrieveRelationshipActivityKPIValuesActionParameters,
   type msdyn_RetrieveRelationshipActivityKPIValuesResponse,
 } from "./msdyn_RetrieveRelationshipActivityKPIValuesAction.js";
-export {
-  msdyn_RetrieveRequirementGroupCandidatesAction,
-  type msdyn_RetrieveRequirementGroupCandidatesActionParameters,
-  type msdyn_RetrieveRequirementGroupCandidatesResponse,
-} from "./msdyn_RetrieveRequirementGroupCandidatesAction.js";
-export {
-  msdyn_RetrieveResourceAvailabilityAction,
-  type msdyn_RetrieveResourceAvailabilityActionParameters,
-  type msdyn_RetrieveResourceAvailabilityResponse,
-} from "./msdyn_RetrieveResourceAvailabilityAction.js";
 export {
   msdyn_RetrieveSearchProvidersAction,
   type msdyn_RetrieveSearchProvidersActionParameters,
@@ -5015,16 +3384,6 @@ export {
   type msdyn_RetrieveTypeValuesFromDCIActionParameters,
   type msdyn_RetrieveTypeValuesFromDCIResponse,
 } from "./msdyn_RetrieveTypeValuesFromDCIAction.js";
-export {
-  msdyn_retryevaluationAction,
-  type msdyn_retryevaluationActionParameters,
-  type msdyn_retryevaluationResponse,
-} from "./msdyn_retryevaluationAction.js";
-export {
-  msdyn_RouteToOperationAction,
-  type msdyn_RouteToOperationActionParameters,
-  type msdyn_RouteToOperationResponse,
-} from "./msdyn_RouteToOperationAction.js";
 export {
   msdyn_RunSAUpgradeScriptAction,
   type msdyn_RunSAUpgradeScriptResponse,
@@ -5507,16 +3866,6 @@ export {
   type msdyn_SaveCompetitorResearchCacheResponse,
 } from "./msdyn_SaveCompetitorResearchCacheAction.js";
 export {
-  msdyn_SaveMicrosoftCopilotStudioSurveyResponseAction,
-  type msdyn_SaveMicrosoftCopilotStudioSurveyResponseActionParameters,
-  type msdyn_SaveMicrosoftCopilotStudioSurveyResponseResponse,
-} from "./msdyn_SaveMicrosoftCopilotStudioSurveyResponseAction.js";
-export {
-  msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncAction,
-  type msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncActionParameters,
-  type msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncResponse,
-} from "./msdyn_SaveMicrosoftCopilotStudioSurveyResponseSyncAction.js";
-export {
   msdyn_SaveOpportunityResearchAgentContentCustomActionAction,
   type msdyn_SaveOpportunityResearchAgentContentCustomActionActionParameters,
   type msdyn_SaveOpportunityResearchAgentContentCustomActionResponse,
@@ -5537,54 +3886,19 @@ export {
   type msdyn_ScheduleRealTimeScoringResponse,
 } from "./msdyn_ScheduleRealTimeScoringAction.js";
 export {
-  msdyn_ScheduleRequirementGroupAction,
-  type msdyn_ScheduleRequirementGroupActionParameters,
-  type msdyn_ScheduleRequirementGroupResponse,
-} from "./msdyn_ScheduleRequirementGroupAction.js";
-export {
   msdyn_ScheduleRolloutsOrchestrationAction,
   type msdyn_ScheduleRolloutsOrchestrationResponse,
 } from "./msdyn_ScheduleRolloutsOrchestrationAction.js";
-export {
-  msdyn_ScreenRecordingRedactionAction,
-  type msdyn_ScreenRecordingRedactionActionParameters,
-  type msdyn_ScreenRecordingRedactionResponse,
-} from "./msdyn_ScreenRecordingRedactionAction.js";
-export {
-  msdyn_SearchResourceAvailabilityAction,
-  type msdyn_SearchResourceAvailabilityActionParameters,
-  type msdyn_SearchResourceAvailabilityResponse,
-} from "./msdyn_SearchResourceAvailabilityAction.js";
-export {
-  msdyn_SearchResourceAvailabilityForRequirementGroupAction,
-  type msdyn_SearchResourceAvailabilityForRequirementGroupActionParameters,
-  type msdyn_SearchResourceAvailabilityForRequirementGroupResponse,
-} from "./msdyn_SearchResourceAvailabilityForRequirementGroupAction.js";
 export {
   msdyn_SendEmailFromTemplateAction,
   type msdyn_SendEmailFromTemplateActionParameters,
   type msdyn_SendEmailFromTemplateResponse,
 } from "./msdyn_SendEmailFromTemplateAction.js";
 export {
-  msdyn_SendEmailsToOptedInResourcesAction,
-  type msdyn_SendEmailsToOptedInResourcesActionParameters,
-  type msdyn_SendEmailsToOptedInResourcesResponse,
-} from "./msdyn_SendEmailsToOptedInResourcesAction.js";
-export {
   msdyn_sendFeedbackAction,
   type msdyn_sendFeedbackActionParameters,
   type msdyn_sendFeedbackResponse,
 } from "./msdyn_sendFeedbackAction.js";
-export {
-  msdyn_SendMCSSurveyAction,
-  type msdyn_SendMCSSurveyActionParameters,
-  type msdyn_SendMCSSurveyResponse,
-} from "./msdyn_SendMCSSurveyAction.js";
-export {
-  msdyn_SendMessageToOCServiceAction,
-  type msdyn_SendMessageToOCServiceActionParameters,
-  type msdyn_SendMessageToOCServiceResponse,
-} from "./msdyn_SendMessageToOCServiceAction.js";
 export {
   msdyn_SendRecordEventUpdateAction,
   type msdyn_SendRecordEventUpdateActionParameters,
@@ -5595,11 +3909,6 @@ export {
   type msdyn_SetAIAgentStatusActionParameters,
   type msdyn_SetAIAgentStatusResponse,
 } from "./msdyn_SetAIAgentStatusAction.js";
-export {
-  msdyn_SetAutoBlockedFlagAction,
-  type msdyn_SetAutoBlockedFlagActionParameters,
-  type msdyn_SetAutoBlockedFlagResponse,
-} from "./msdyn_SetAutoBlockedFlagAction.js";
 export {
   msdyn_SetCaseSentimentCustomAPIAction,
   type msdyn_SetCaseSentimentCustomAPIActionParameters,
@@ -5636,30 +3945,6 @@ export {
   type msdyn_SetTeamsDocumentStatusResponse,
 } from "./msdyn_SetTeamsDocumentStatusAction.js";
 export {
-  msdyn_SetupRelationshipForEnablingEntityRoutingAction,
-  type msdyn_SetupRelationshipForEnablingEntityRoutingActionParameters,
-  type msdyn_SetupRelationshipForEnablingEntityRoutingResponse,
-} from "./msdyn_SetupRelationshipForEnablingEntityRoutingAction.js";
-export {
-  msdyn_setupsimulationAction,
-  type msdyn_setupsimulationResponse,
-} from "./msdyn_setupsimulationAction.js";
-export {
-  msdyn_ShouldEnableRoutingCommandAction,
-  type msdyn_ShouldEnableRoutingCommandActionParameters,
-  type msdyn_ShouldEnableRoutingCommandResponse,
-} from "./msdyn_ShouldEnableRoutingCommandAction.js";
-export {
-  msdyn_ShowConsumerCredentialsAction,
-  type msdyn_ShowConsumerCredentialsActionParameters,
-  type msdyn_ShowConsumerCredentialsResponse,
-} from "./msdyn_ShowConsumerCredentialsAction.js";
-export {
-  msdyn_ShowPrivacyTermsAction,
-  type msdyn_ShowPrivacyTermsActionParameters,
-  type msdyn_ShowPrivacyTermsResponse,
-} from "./msdyn_ShowPrivacyTermsAction.js";
-export {
   msdyn_SIGetFCBStatusAction,
   type msdyn_SIGetFCBStatusActionParameters,
   type msdyn_SIGetFCBStatusResponse,
@@ -5670,25 +3955,10 @@ export {
   type msdyn_SignalRInstanceActionsResponse,
 } from "./msdyn_SignalRInstanceActionsAction.js";
 export {
-  msdyn_SimulateBookingResourceAction,
-  type msdyn_SimulateBookingResourceActionParameters,
-  type msdyn_SimulateBookingResourceResponse,
-} from "./msdyn_SimulateBookingResourceAction.js";
-export {
-  msdyn_simulateconversationsAction,
-  type msdyn_simulateconversationsActionParameters,
-  type msdyn_simulateconversationsResponse,
-} from "./msdyn_simulateconversationsAction.js";
-export {
   msdyn_simulateGovernanceAgentGuardrailValidationAction,
   type msdyn_simulateGovernanceAgentGuardrailValidationActionParameters,
   type msdyn_simulateGovernanceAgentGuardrailValidationResponse,
 } from "./msdyn_simulateGovernanceAgentGuardrailValidationAction.js";
-export {
-  msdyn_simulationratelimiterAction,
-  type msdyn_simulationratelimiterActionParameters,
-  type msdyn_simulationratelimiterResponse,
-} from "./msdyn_simulationratelimiterAction.js";
 export {
   msdyn_SiteMapDiagnosisAction,
   type msdyn_SiteMapDiagnosisActionParameters,
@@ -5710,14 +3980,6 @@ export {
   type msdyn_SLATimeCalculationResponse,
 } from "./msdyn_SLATimeCalculationAction.js";
 export {
-  msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleAction,
-  type msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleResponse,
-} from "./msdyn_SmsChannelConfigurationShouldHaveWorkStreamRuleAction.js";
-export {
-  msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleAction,
-  type msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleResponse,
-} from "./msdyn_SmsSettingsShouldHaveAllRequiredFieldsRuleAction.js";
-export {
   msdyn_SnoozeEmailInfraActionCardAction,
   type msdyn_SnoozeEmailInfraActionCardActionParameters,
   type msdyn_SnoozeEmailInfraActionCardResponse,
@@ -5731,11 +3993,6 @@ export {
   type msdyn_StartCRASimulationActionParameters,
   type msdyn_StartCRASimulationResponse,
 } from "./msdyn_StartCRASimulationAction.js";
-export {
-  msdyn_StartEvaluationAction,
-  type msdyn_StartEvaluationActionParameters,
-  type msdyn_StartEvaluationResponse,
-} from "./msdyn_StartEvaluationAction.js";
 export {
   msdyn_StartFollowupSimulationAction,
   type msdyn_StartFollowupSimulationActionParameters,
@@ -5766,16 +4023,6 @@ export {
   type msdyn_startSequenceStatsCopyJobActionParameters,
   type msdyn_startSequenceStatsCopyJobResponse,
 } from "./msdyn_startSequenceStatsCopyJobAction.js";
-export {
-  msdyn_StoreQualityEvaluationResultAction,
-  type msdyn_StoreQualityEvaluationResultActionParameters,
-  type msdyn_StoreQualityEvaluationResultResponse,
-} from "./msdyn_StoreQualityEvaluationResultAction.js";
-export {
-  msdyn_StoreSimulationResultAction,
-  type msdyn_StoreSimulationResultActionParameters,
-  type msdyn_StoreSimulationResultResponse,
-} from "./msdyn_StoreSimulationResultAction.js";
 export {
   msdyn_SuggestPrimaryForMergeActionAction,
   type msdyn_SuggestPrimaryForMergeActionActionParameters,
@@ -5821,98 +4068,6 @@ export {
   type msdyn_TableOperationResponse,
 } from "./msdyn_TableOperationAction.js";
 export {
-  msdyn_TeamsChannelCleanupAction,
-  type msdyn_TeamsChannelCleanupResponse,
-} from "./msdyn_TeamsChannelCleanupAction.js";
-export {
-  msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleAction,
-  type msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleResponse,
-} from "./msdyn_TeamsChannelConfigurationShouldHaveWorkStreamRuleAction.js";
-export {
-  msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleAction,
-  type msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleResponse,
-} from "./msdyn_TeamsSettingsShouldHaveAllRequiredFieldsRuleAction.js";
-export {
-  msdyn_TelephonyACSResourceUsageDetailsActionAction,
-  type msdyn_TelephonyACSResourceUsageDetailsActionActionParameters,
-  type msdyn_TelephonyACSResourceUsageDetailsActionResponse,
-} from "./msdyn_TelephonyACSResourceUsageDetailsActionAction.js";
-export {
-  msdyn_TelephonyACSSyncPhoneNumbersActionAction,
-  type msdyn_TelephonyACSSyncPhoneNumbersActionActionParameters,
-  type msdyn_TelephonyACSSyncPhoneNumbersActionResponse,
-} from "./msdyn_TelephonyACSSyncPhoneNumbersActionAction.js";
-export {
-  msdyn_TelephonyConginitiveServiceDetailsActionAction,
-  type msdyn_TelephonyConginitiveServiceDetailsActionActionParameters,
-  type msdyn_TelephonyConginitiveServiceDetailsActionResponse,
-} from "./msdyn_TelephonyConginitiveServiceDetailsActionAction.js";
-export {
-  msdyn_TelephonyPhoneNumberAreaCodeActionAction,
-  type msdyn_TelephonyPhoneNumberAreaCodeActionActionParameters,
-  type msdyn_TelephonyPhoneNumberAreaCodeActionResponse,
-} from "./msdyn_TelephonyPhoneNumberAreaCodeActionAction.js";
-export {
-  msdyn_TelephonyPhoneNumberPlanUpgradeActionAction,
-  type msdyn_TelephonyPhoneNumberPlanUpgradeActionActionParameters,
-  type msdyn_TelephonyPhoneNumberPlanUpgradeActionResponse,
-} from "./msdyn_TelephonyPhoneNumberPlanUpgradeActionAction.js";
-export {
-  msdyn_TelephonyPhoneNumberReservationActionAction,
-  type msdyn_TelephonyPhoneNumberReservationActionActionParameters,
-  type msdyn_TelephonyPhoneNumberReservationActionResponse,
-} from "./msdyn_TelephonyPhoneNumberReservationActionAction.js";
-export {
-  msdyn_TelephonyPhoneNumberReservationStatusActionAction,
-  type msdyn_TelephonyPhoneNumberReservationStatusActionActionParameters,
-  type msdyn_TelephonyPhoneNumberReservationStatusActionResponse,
-} from "./msdyn_TelephonyPhoneNumberReservationStatusActionAction.js";
-export {
-  msdyn_TelephonyPhoneNumbersDeprovisionActionAction,
-  type msdyn_TelephonyPhoneNumbersDeprovisionActionActionParameters,
-  type msdyn_TelephonyPhoneNumbersDeprovisionActionResponse,
-} from "./msdyn_TelephonyPhoneNumbersDeprovisionActionAction.js";
-export {
-  msdyn_TelephonyPhoneNumbersProvisionActionAction,
-  type msdyn_TelephonyPhoneNumbersProvisionActionActionParameters,
-  type msdyn_TelephonyPhoneNumbersProvisionActionResponse,
-} from "./msdyn_TelephonyPhoneNumbersProvisionActionAction.js";
-export {
-  msdyn_TelephonyPlanLocationDetailsActionAction,
-  type msdyn_TelephonyPlanLocationDetailsActionActionParameters,
-  type msdyn_TelephonyPlanLocationDetailsActionResponse,
-} from "./msdyn_TelephonyPlanLocationDetailsActionAction.js";
-export {
-  msdyn_TelephonyResourceDeprovisionActionAction,
-  type msdyn_TelephonyResourceDeprovisionActionActionParameters,
-  type msdyn_TelephonyResourceDeprovisionActionResponse,
-} from "./msdyn_TelephonyResourceDeprovisionActionAction.js";
-export {
-  msdyn_TelephonyResourceProvisionActionAction,
-  type msdyn_TelephonyResourceProvisionActionActionParameters,
-  type msdyn_TelephonyResourceProvisionActionResponse,
-} from "./msdyn_TelephonyResourceProvisionActionAction.js";
-export {
-  msdyn_TelephonySupportedCountryActionAction,
-  type msdyn_TelephonySupportedCountryActionActionParameters,
-  type msdyn_TelephonySupportedCountryActionResponse,
-} from "./msdyn_TelephonySupportedCountryActionAction.js";
-export {
-  msdyn_TelephonySupportedPlansActionAction,
-  type msdyn_TelephonySupportedPlansActionActionParameters,
-  type msdyn_TelephonySupportedPlansActionResponse,
-} from "./msdyn_TelephonySupportedPlansActionAction.js";
-export {
-  msdyn_TelephonySupportedVoiceProfilesActionAction,
-  type msdyn_TelephonySupportedVoiceProfilesActionActionParameters,
-  type msdyn_TelephonySupportedVoiceProfilesActionResponse,
-} from "./msdyn_TelephonySupportedVoiceProfilesActionAction.js";
-export {
-  msdyn_TelephonyVoiceChannelProvisionActionAction,
-  type msdyn_TelephonyVoiceChannelProvisionActionActionParameters,
-  type msdyn_TelephonyVoiceChannelProvisionActionResponse,
-} from "./msdyn_TelephonyVoiceChannelProvisionActionAction.js";
-export {
   msdyn_timetrackerapiAction,
   type msdyn_timetrackerapiActionParameters,
   type msdyn_timetrackerapiResponse,
@@ -5923,30 +4078,10 @@ export {
   type msdyn_TrackExchangeActivityResponse,
 } from "./msdyn_TrackExchangeActivityAction.js";
 export {
-  msdyn_TrainAIModelAction,
-  type msdyn_TrainAIModelResponse,
-} from "./msdyn_TrainAIModelAction.js";
-export {
-  msdyn_TrainEffortModelAction,
-  type msdyn_TrainEffortModelActionParameters,
-  type msdyn_TrainEffortModelResponse,
-} from "./msdyn_TrainEffortModelAction.js";
-export { msdyn_TrainModelAction, type msdyn_TrainModelResponse } from "./msdyn_TrainModelAction.js";
-export {
-  msdyn_transformentityAction,
-  type msdyn_transformentityActionParameters,
-  type msdyn_transformentityResponse,
-} from "./msdyn_transformentityAction.js";
-export {
   msdyn_TriggerARCWithRuleAction,
   type msdyn_TriggerARCWithRuleActionParameters,
   type msdyn_TriggerARCWithRuleResponse,
 } from "./msdyn_TriggerARCWithRuleAction.js";
-export {
-  msdyn_TriggerDescriptionPublishAction,
-  type msdyn_TriggerDescriptionPublishActionParameters,
-  type msdyn_TriggerDescriptionPublishResponse,
-} from "./msdyn_TriggerDescriptionPublishAction.js";
 export {
   msdyn_TriggerEmailManagementAgentAction,
   type msdyn_TriggerEmailManagementAgentActionParameters,
@@ -5998,29 +4133,6 @@ export {
   type msdyn_TryClaimOptimizeWorkItemResponse,
 } from "./msdyn_TryClaimOptimizeWorkItemAction.js";
 export {
-  msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleAction,
-  type msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleResponse,
-} from "./msdyn_TwitterHandleConfigurationShouldHaveWorkStreamRuleAction.js";
-export {
-  msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleAction,
-  type msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleResponse,
-} from "./msdyn_TwitterSettingsShouldHaveAllRequiredFieldsRuleAction.js";
-export {
-  msdyn_TwitterSigninAction,
-  type msdyn_TwitterSigninActionParameters,
-  type msdyn_TwitterSigninResponse,
-} from "./msdyn_TwitterSigninAction.js";
-export {
-  msdyn_UnifiedRoutingQueueItemOperationsAction,
-  type msdyn_UnifiedRoutingQueueItemOperationsActionParameters,
-  type msdyn_UnifiedRoutingQueueItemOperationsResponse,
-} from "./msdyn_UnifiedRoutingQueueItemOperationsAction.js";
-export {
-  msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckAction,
-  type msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckActionParameters,
-  type msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckResponse,
-} from "./msdyn_UnifiedRoutingSetupTrackerProvisionStatusCheckAction.js";
-export {
   msdyn_UpdateAuditStateAction,
   type msdyn_UpdateAuditStateActionParameters,
   type msdyn_UpdateAuditStateResponse,
@@ -6036,16 +4148,6 @@ export {
   type msdyn_UpdateAutoScheduledTrainingStatusResponse,
 } from "./msdyn_UpdateAutoScheduledTrainingStatusAction.js";
 export {
-  msdyn_UpdateBookingsStatusAction,
-  type msdyn_UpdateBookingsStatusActionParameters,
-  type msdyn_UpdateBookingsStatusResponse,
-} from "./msdyn_UpdateBookingsStatusAction.js";
-export {
-  msdyn_UpdateBotVoiceProcessingModeAction,
-  type msdyn_UpdateBotVoiceProcessingModeActionParameters,
-  type msdyn_UpdateBotVoiceProcessingModeResponse,
-} from "./msdyn_UpdateBotVoiceProcessingModeAction.js";
-export {
   msdyn_UpdateCadenceRunStatusAction,
   type msdyn_UpdateCadenceRunStatusActionParameters,
   type msdyn_UpdateCadenceRunStatusResponse,
@@ -6056,20 +4158,10 @@ export {
   type msdyn_UpdateCopilotSettingsResponse,
 } from "./msdyn_UpdateCopilotSettingsAction.js";
 export {
-  msdyn_UpdateEffortModelStatusAction,
-  type msdyn_UpdateEffortModelStatusActionParameters,
-  type msdyn_UpdateEffortModelStatusResponse,
-} from "./msdyn_UpdateEffortModelStatusAction.js";
-export {
   msdyn_UpdateEntityAttributePredictionRulesAction,
   type msdyn_UpdateEntityAttributePredictionRulesActionParameters,
   type msdyn_UpdateEntityAttributePredictionRulesResponse,
 } from "./msdyn_UpdateEntityAttributePredictionRulesAction.js";
-export {
-  msdyn_updateevaluationdetailsAction,
-  type msdyn_updateevaluationdetailsActionParameters,
-  type msdyn_updateevaluationdetailsResponse,
-} from "./msdyn_updateevaluationdetailsAction.js";
 export {
   msdyn_UpdatefeatureconfigAction,
   type msdyn_UpdatefeatureconfigActionParameters,
@@ -6100,19 +4192,10 @@ export {
   type msdyn_UpdateKbAttachmentPrivilegeResponse,
 } from "./msdyn_UpdateKbAttachmentPrivilegeAction.js";
 export {
-  msdyn_updatelivechatconfigsAction,
-  type msdyn_updatelivechatconfigsResponse,
-} from "./msdyn_updatelivechatconfigsAction.js";
-export {
   msdyn_UpdateModelGradesAction,
   type msdyn_UpdateModelGradesActionParameters,
   type msdyn_UpdateModelGradesResponse,
 } from "./msdyn_UpdateModelGradesAction.js";
-export {
-  msdyn_UpdateModelStatusAction,
-  type msdyn_UpdateModelStatusActionParameters,
-  type msdyn_UpdateModelStatusResponse,
-} from "./msdyn_UpdateModelStatusAction.js";
 export {
   msdyn_UpdateNBACardStateAction,
   type msdyn_UpdateNBACardStateActionParameters,
@@ -6129,40 +4212,15 @@ export {
   type msdyn_UpdateODOSFeatureEnabledRolesResponse,
 } from "./msdyn_UpdateODOSFeatureEnabledRolesAction.js";
 export {
-  msdyn_UpdateOrchestrationToggleAction,
-  type msdyn_UpdateOrchestrationToggleActionParameters,
-  type msdyn_UpdateOrchestrationToggleResponse,
-} from "./msdyn_UpdateOrchestrationToggleAction.js";
-export {
   msdyn_UpdateOrganizationSettingsAction,
   type msdyn_UpdateOrganizationSettingsActionParameters,
   type msdyn_UpdateOrganizationSettingsResponse,
 } from "./msdyn_UpdateOrganizationSettingsAction.js";
 export {
-  msdyn_UpdatePBRRulesAction,
-  type msdyn_UpdatePBRRulesActionParameters,
-  type msdyn_UpdatePBRRulesResponse,
-} from "./msdyn_UpdatePBRRulesAction.js";
-export {
-  msdyn_UpdatePrivacyTermsAction,
-  type msdyn_UpdatePrivacyTermsActionParameters,
-  type msdyn_UpdatePrivacyTermsResponse,
-} from "./msdyn_UpdatePrivacyTermsAction.js";
-export {
   msdyn_UpdateRecordWithRuleBasedPredictionsAction,
   type msdyn_UpdateRecordWithRuleBasedPredictionsActionParameters,
   type msdyn_UpdateRecordWithRuleBasedPredictionsResponse,
 } from "./msdyn_UpdateRecordWithRuleBasedPredictionsAction.js";
-export {
-  msdyn_UpdateRequirementDemandAction,
-  type msdyn_UpdateRequirementDemandActionParameters,
-  type msdyn_UpdateRequirementDemandResponse,
-} from "./msdyn_UpdateRequirementDemandAction.js";
-export {
-  msdyn_UpdateRequirementModelAction,
-  type msdyn_UpdateRequirementModelActionParameters,
-  type msdyn_UpdateRequirementModelResponse,
-} from "./msdyn_UpdateRequirementModelAction.js";
 export {
   msdyn_UpdateRITenantInfoAction,
   type msdyn_UpdateRITenantInfoActionParameters,
@@ -6189,10 +4247,6 @@ export {
   type msdyn_updatesequencetargetstepdataResponse,
 } from "./msdyn_updatesequencetargetstepdataAction.js";
 export {
-  msdyn_UpdateSurveyBotTopicsAction,
-  type msdyn_UpdateSurveyBotTopicsResponse,
-} from "./msdyn_UpdateSurveyBotTopicsAction.js";
-export {
   msdyn_UpdateTotalActiveRiskCountAction,
   type msdyn_UpdateTotalActiveRiskCountActionParameters,
   type msdyn_UpdateTotalActiveRiskCountResponse,
@@ -6208,20 +4262,10 @@ export {
   type msdyn_UpgradeTelemetryResponse,
 } from "./msdyn_UpgradeTelemetryAction.js";
 export {
-  msdyn_UploadScreenRecordingChunkAction,
-  type msdyn_UploadScreenRecordingChunkActionParameters,
-  type msdyn_UploadScreenRecordingChunkResponse,
-} from "./msdyn_UploadScreenRecordingChunkAction.js";
-export {
   msdyn_UpsertAISimulationResultAction,
   type msdyn_UpsertAISimulationResultActionParameters,
   type msdyn_UpsertAISimulationResultResponse,
 } from "./msdyn_UpsertAISimulationResultAction.js";
-export {
-  msdyn_UpsertEvaluationCriteriaAction,
-  type msdyn_UpsertEvaluationCriteriaActionParameters,
-  type msdyn_UpsertEvaluationCriteriaResponse,
-} from "./msdyn_UpsertEvaluationCriteriaAction.js";
 export {
   msdyn_upsertSalesRoutingDiagnosticAction,
   type msdyn_upsertSalesRoutingDiagnosticActionParameters,
@@ -6233,11 +4277,6 @@ export {
   type msdyn_UpsertSellerAssignmentMapResponse,
 } from "./msdyn_UpsertSellerAssignmentMapAction.js";
 export {
-  msdyn_URFirstPartyIntegrationApiAction,
-  type msdyn_URFirstPartyIntegrationApiActionParameters,
-  type msdyn_URFirstPartyIntegrationApiResponse,
-} from "./msdyn_URFirstPartyIntegrationApiAction.js";
-export {
   msdyn_UserOptOutActorAction,
   type msdyn_UserOptOutActorActionParameters,
   type msdyn_UserOptOutActorResponse,
@@ -6248,49 +4287,15 @@ export {
   type msdyn_UserSecurityRoleDeltaSyncActorResponse,
 } from "./msdyn_UserSecurityRoleDeltaSyncActorAction.js";
 export {
-  msdyn_ValidateConversationPayloadAction,
-  type msdyn_ValidateConversationPayloadActionParameters,
-  type msdyn_ValidateConversationPayloadResponse,
-} from "./msdyn_ValidateConversationPayloadAction.js";
-export {
-  msdyn_ValidateCurrentAgentHasCapacityProfileAssignedAction,
-  type msdyn_ValidateCurrentAgentHasCapacityProfileAssignedResponse,
-} from "./msdyn_ValidateCurrentAgentHasCapacityProfileAssignedAction.js";
-export {
-  msdyn_ValidateCustomMessagingApplicationAction,
-  type msdyn_ValidateCustomMessagingApplicationActionParameters,
-  type msdyn_ValidateCustomMessagingApplicationResponse,
-} from "./msdyn_ValidateCustomMessagingApplicationAction.js";
-export {
   msdyn_ValidateKeyVaultAction,
   type msdyn_ValidateKeyVaultActionParameters,
   type msdyn_ValidateKeyVaultResponse,
 } from "./msdyn_ValidateKeyVaultAction.js";
 export {
-  msdyn_ValidateTSIKeyAction,
-  type msdyn_ValidateTSIKeyResponse,
-} from "./msdyn_ValidateTSIKeyAction.js";
-export {
   msdyn_WaitKBAction,
   type msdyn_WaitKBActionParameters,
   type msdyn_WaitKBResponse,
 } from "./msdyn_WaitKBAction.js";
-export {
-  msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleAction,
-  type msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleResponse,
-} from "./msdyn_WeChatChannelConfigurationShouldHaveWorkStreamRuleAction.js";
-export {
-  msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleAction,
-  type msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleResponse,
-} from "./msdyn_WeChatSettingsShouldHaveAllRequiredFieldsRuleAction.js";
-export {
-  msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleAction,
-  type msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleResponse,
-} from "./msdyn_WhatsAppChannelConfigurationShouldHaveWorkStreamRuleAction.js";
-export {
-  msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleAction,
-  type msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleResponse,
-} from "./msdyn_WhatsAppSettingsShouldHaveAllRequiredFieldsRuleAction.js";
 export {
   msdyn_WKWDeleteGDPRDataAction,
   type msdyn_WKWDeleteGDPRDataActionParameters,
@@ -6301,305 +4306,6 @@ export {
   type msdyn_WKWGDPRDeleteStatusActionParameters,
   type msdyn_WKWGDPRDeleteStatusResponse,
 } from "./msdyn_WKWGDPRDeleteStatusAction.js";
-export {
-  msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleAction,
-  type msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleResponse,
-} from "./msdyn_WorkstreamCapacityShouldBeLessThanAgentsRuleAction.js";
-export {
-  msdyn_WorkstreamShouldHaveNotificationTemplatesRuleAction,
-  type msdyn_WorkstreamShouldHaveNotificationTemplatesRuleResponse,
-} from "./msdyn_WorkstreamShouldHaveNotificationTemplatesRuleAction.js";
-export {
-  msdyn_WorkstreamShouldHaveSessionTemplatesRuleAction,
-  type msdyn_WorkstreamShouldHaveSessionTemplatesRuleResponse,
-} from "./msdyn_WorkstreamShouldHaveSessionTemplatesRuleAction.js";
-export {
-  msdyn_WorkstreamShouldNotHaveDuplicateContextRuleAction,
-  type msdyn_WorkstreamShouldNotHaveDuplicateContextRuleResponse,
-} from "./msdyn_WorkstreamShouldNotHaveDuplicateContextRuleAction.js";
-export {
-  msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleAction,
-  type msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleResponse,
-} from "./msdyn_WorkstreamShouldNotHaveEmptyRoutingRulesAboveRulesWithConditionRuleAction.js";
-export {
-  msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleAction,
-  type msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleResponse,
-} from "./msdyn_WorkstreamWithPushModeShouldNotAllowOfflineModeRuleAction.js";
-export {
-  msdyncrm_GetFileAttributesFromConfigurationAction,
-  type msdyncrm_GetFileAttributesFromConfigurationResponse,
-} from "./msdyncrm_GetFileAttributesFromConfigurationAction.js";
-export {
-  msdyncrm_MigrateFilesCustomActionAction,
-  type msdyncrm_MigrateFilesCustomActionResponse,
-} from "./msdyncrm_MigrateFilesCustomActionAction.js";
-export {
-  msdyncrm_UpsertFileAction,
-  type msdyncrm_UpsertFileActionParameters,
-  type msdyncrm_UpsertFileResponse,
-} from "./msdyncrm_UpsertFileAction.js";
-export {
-  msdynmkt_ChannelContentPersonalizeAction,
-  type msdynmkt_ChannelContentPersonalizeActionParameters,
-  type msdynmkt_ChannelContentPersonalizeResponse,
-} from "./msdynmkt_ChannelContentPersonalizeAction.js";
-export {
-  msdynmkt_ChartWidgetDataCustomActionAction,
-  type msdynmkt_ChartWidgetDataCustomActionActionParameters,
-  type msdynmkt_ChartWidgetDataCustomActionResponse,
-} from "./msdynmkt_ChartWidgetDataCustomActionAction.js";
-export {
-  msdynmkt_checkconsentAction,
-  type msdynmkt_checkconsentActionParameters,
-  type msdynmkt_checkconsentResponse,
-} from "./msdynmkt_checkconsentAction.js";
-export {
-  msdynmkt_checkconsentbatchAction,
-  type msdynmkt_checkconsentbatchActionParameters,
-  type msdynmkt_checkconsentbatchResponse,
-} from "./msdynmkt_checkconsentbatchAction.js";
-export {
-  msdynmkt_consentprovidervalidateAction,
-  type msdynmkt_consentprovidervalidateActionParameters,
-  type msdynmkt_consentprovidervalidateResponse,
-} from "./msdynmkt_consentprovidervalidateAction.js";
-export {
-  msdynmkt_consentsubmissionAction,
-  type msdynmkt_consentsubmissionActionParameters,
-  type msdynmkt_consentsubmissionResponse,
-} from "./msdynmkt_consentsubmissionAction.js";
-export {
-  msdynmkt_consentvalidateformAction,
-  type msdynmkt_consentvalidateformActionParameters,
-  type msdynmkt_consentvalidateformResponse,
-} from "./msdynmkt_consentvalidateformAction.js";
-export {
-  msdynmkt_ContactabilitySnapshotCustomActionAction,
-  type msdynmkt_ContactabilitySnapshotCustomActionActionParameters,
-  type msdynmkt_ContactabilitySnapshotCustomActionResponse,
-} from "./msdynmkt_ContactabilitySnapshotCustomActionAction.js";
-export {
-  msdynmkt_contactablefieldsactionAction,
-  type msdynmkt_contactablefieldsactionActionParameters,
-  type msdynmkt_contactablefieldsactionResponse,
-} from "./msdynmkt_contactablefieldsactionAction.js";
-export {
-  msdynmkt_DateTimeFormatOptionsAction,
-  type msdynmkt_DateTimeFormatOptionsActionParameters,
-  type msdynmkt_DateTimeFormatOptionsResponse,
-} from "./msdynmkt_DateTimeFormatOptionsAction.js";
-export {
-  msdynmkt_DiscoverPlaceholdersAction,
-  type msdynmkt_DiscoverPlaceholdersActionParameters,
-  type msdynmkt_DiscoverPlaceholdersResponse,
-} from "./msdynmkt_DiscoverPlaceholdersAction.js";
-export {
-  msdynmkt_doubleoptinstatusAction,
-  type msdynmkt_doubleoptinstatusActionParameters,
-  type msdynmkt_doubleoptinstatusResponse,
-} from "./msdynmkt_doubleoptinstatusAction.js";
-export {
-  msdynmkt_enabledoubleoptincomplianceAction,
-  type msdynmkt_enabledoubleoptincomplianceActionParameters,
-  type msdynmkt_enabledoubleoptincomplianceResponse,
-} from "./msdynmkt_enabledoubleoptincomplianceAction.js";
-export {
-  msdynmkt_EnableDoubleOptInComplianceV2Action,
-  type msdynmkt_EnableDoubleOptInComplianceV2ActionParameters,
-  type msdynmkt_EnableDoubleOptInComplianceV2Response,
-} from "./msdynmkt_EnableDoubleOptInComplianceV2Action.js";
-export {
-  msdynmkt_GetAllCjoEventsMetadataItemsAction,
-  type msdynmkt_GetAllCjoEventsMetadataItemsActionParameters,
-  type msdynmkt_GetAllCjoEventsMetadataItemsResponse,
-} from "./msdynmkt_GetAllCjoEventsMetadataItemsAction.js";
-export {
-  msdynmkt_GetAllLegalMetadataItemsAction,
-  type msdynmkt_GetAllLegalMetadataItemsActionParameters,
-  type msdynmkt_GetAllLegalMetadataItemsResponse,
-} from "./msdynmkt_GetAllLegalMetadataItemsAction.js";
-export {
-  msdynmkt_GetCjoEventsMetadataItemsByNamesAction,
-  type msdynmkt_GetCjoEventsMetadataItemsByNamesActionParameters,
-  type msdynmkt_GetCjoEventsMetadataItemsByNamesResponse,
-} from "./msdynmkt_GetCjoEventsMetadataItemsByNamesAction.js";
-export {
-  msdynmkt_GetContactableEntityContactabilityAction,
-  type msdynmkt_GetContactableEntityContactabilityActionParameters,
-  type msdynmkt_GetContactableEntityContactabilityResponse,
-} from "./msdynmkt_GetContactableEntityContactabilityAction.js";
-export {
-  msdynmkt_GetDataverseTableMetadataItemsAction,
-  type msdynmkt_GetDataverseTableMetadataItemsActionParameters,
-  type msdynmkt_GetDataverseTableMetadataItemsResponse,
-} from "./msdynmkt_GetDataverseTableMetadataItemsAction.js";
-export {
-  msdynmkt_getdigitalassetcdnurlv2Action,
-  type msdynmkt_getdigitalassetcdnurlv2ActionParameters,
-  type msdynmkt_getdigitalassetcdnurlv2Response,
-} from "./msdynmkt_getdigitalassetcdnurlv2Action.js";
-export {
-  msdynmkt_GetMetadataItemsForAction,
-  type msdynmkt_GetMetadataItemsForActionParameters,
-  type msdynmkt_GetMetadataItemsForResponse,
-} from "./msdynmkt_GetMetadataItemsForAction.js";
-export {
-  msdynmkt_getObmDeprecationConfigurationAction,
-  type msdynmkt_getObmDeprecationConfigurationResponse,
-} from "./msdynmkt_getObmDeprecationConfigurationAction.js";
-export {
-  msdynmkt_GetPublicConfigurationCustomActionAction,
-  type msdynmkt_GetPublicConfigurationCustomActionResponse,
-} from "./msdynmkt_GetPublicConfigurationCustomActionAction.js";
-export {
-  msdynmkt_getsuppressionlistentriesAction,
-  type msdynmkt_getsuppressionlistentriesActionParameters,
-  type msdynmkt_getsuppressionlistentriesResponse,
-} from "./msdynmkt_getsuppressionlistentriesAction.js";
-export {
-  msdynmkt_getsuppressionlistentryAction,
-  type msdynmkt_getsuppressionlistentryActionParameters,
-  type msdynmkt_getsuppressionlistentryResponse,
-} from "./msdynmkt_getsuppressionlistentryAction.js";
-export {
-  msdynmkt_getunsubscribelinkAction,
-  type msdynmkt_getunsubscribelinkActionParameters,
-  type msdynmkt_getunsubscribelinkResponse,
-} from "./msdynmkt_getunsubscribelinkAction.js";
-export {
-  msdynmkt_leadcapturev3submissionAction,
-  type msdynmkt_leadcapturev3submissionActionParameters,
-  type msdynmkt_leadcapturev3submissionResponse,
-} from "./msdynmkt_leadcapturev3submissionAction.js";
-export {
-  msdynmkt_leadcapturev4submissionAction,
-  type msdynmkt_leadcapturev4submissionActionParameters,
-  type msdynmkt_leadcapturev4submissionResponse,
-} from "./msdynmkt_leadcapturev4submissionAction.js";
-export {
-  msdynmkt_ListWidgetDataCustomActionAction,
-  type msdynmkt_ListWidgetDataCustomActionActionParameters,
-  type msdynmkt_ListWidgetDataCustomActionResponse,
-} from "./msdynmkt_ListWidgetDataCustomActionAction.js";
-export {
-  msdynmkt_normalizecontactpointAction,
-  type msdynmkt_normalizecontactpointActionParameters,
-  type msdynmkt_normalizecontactpointResponse,
-} from "./msdynmkt_normalizecontactpointAction.js";
-export {
-  msdynmkt_optoutofallchannelcommunicationAction,
-  type msdynmkt_optoutofallchannelcommunicationActionParameters,
-  type msdynmkt_optoutofallchannelcommunicationResponse,
-} from "./msdynmkt_optoutofallchannelcommunicationAction.js";
-export {
-  msdynmkt_optoutofallvoicecommunicationAction,
-  type msdynmkt_optoutofallvoicecommunicationActionParameters,
-  type msdynmkt_optoutofallvoicecommunicationResponse,
-} from "./msdynmkt_optoutofallvoicecommunicationAction.js";
-export {
-  msdynmkt_optoutofchannelcommunicationAction,
-  type msdynmkt_optoutofchannelcommunicationActionParameters,
-  type msdynmkt_optoutofchannelcommunicationResponse,
-} from "./msdynmkt_optoutofchannelcommunicationAction.js";
-export {
-  msdynmkt_optoutofvoicecommunicationAction,
-  type msdynmkt_optoutofvoicecommunicationActionParameters,
-  type msdynmkt_optoutofvoicecommunicationResponse,
-} from "./msdynmkt_optoutofvoicecommunicationAction.js";
-export {
-  msdynmkt_PersonalizationDynamicTextAiAction,
-  type msdynmkt_PersonalizationDynamicTextAiActionParameters,
-  type msdynmkt_PersonalizationDynamicTextAiResponse,
-} from "./msdynmkt_PersonalizationDynamicTextAiAction.js";
-export {
-  msdynmkt_PersonalizationGetEntityAttributesAction,
-  type msdynmkt_PersonalizationGetEntityAttributesActionParameters,
-  type msdynmkt_PersonalizationGetEntityAttributesResponse,
-} from "./msdynmkt_PersonalizationGetEntityAttributesAction.js";
-export {
-  msdynmkt_PersonalizationGetEntityProvidersAction,
-  type msdynmkt_PersonalizationGetEntityProvidersActionParameters,
-  type msdynmkt_PersonalizationGetEntityProvidersResponse,
-} from "./msdynmkt_PersonalizationGetEntityProvidersAction.js";
-export {
-  msdynmkt_PersonalizationGetEntityTypesAction,
-  type msdynmkt_PersonalizationGetEntityTypesActionParameters,
-  type msdynmkt_PersonalizationGetEntityTypesResponse,
-} from "./msdynmkt_PersonalizationGetEntityTypesAction.js";
-export {
-  msdynmkt_PersonalizationGetEventsByNameAction,
-  type msdynmkt_PersonalizationGetEventsByNameActionParameters,
-  type msdynmkt_PersonalizationGetEventsByNameResponse,
-} from "./msdynmkt_PersonalizationGetEventsByNameAction.js";
-export {
-  msdynmkt_PredefinedPlaceholderAddCountAction,
-  type msdynmkt_PredefinedPlaceholderAddCountActionParameters,
-  type msdynmkt_PredefinedPlaceholderAddCountResponse,
-} from "./msdynmkt_PredefinedPlaceholderAddCountAction.js";
-export {
-  msdynmkt_purposecreationandassociationAction,
-  type msdynmkt_purposecreationandassociationActionParameters,
-  type msdynmkt_purposecreationandassociationResponse,
-} from "./msdynmkt_purposecreationandassociationAction.js";
-export {
-  msdynmkt_removesuppressionlistentryAction,
-  type msdynmkt_removesuppressionlistentryActionParameters,
-  type msdynmkt_removesuppressionlistentryResponse,
-} from "./msdynmkt_removesuppressionlistentryAction.js";
-export {
-  msdynmkt_RetrieveAllFeatureConfigurationsAction,
-  type msdynmkt_RetrieveAllFeatureConfigurationsResponse,
-} from "./msdynmkt_RetrieveAllFeatureConfigurationsAction.js";
-export {
-  msdynmkt_RetrieveAnalyitcsAriaCountsAction,
-  type msdynmkt_RetrieveAnalyitcsAriaCountsActionParameters,
-  type msdynmkt_RetrieveAnalyitcsAriaCountsResponse,
-} from "./msdynmkt_RetrieveAnalyitcsAriaCountsAction.js";
-export {
-  msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryAction,
-  type msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryActionParameters,
-  type msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryResponse,
-} from "./msdynmkt_RetrieveAnalyitcsAriaCountsWithQueryAction.js";
-export {
-  msdynmkt_RetrieveServiceFeatureFlagsAction,
-  type msdynmkt_RetrieveServiceFeatureFlagsActionParameters,
-  type msdynmkt_RetrieveServiceFeatureFlagsResponse,
-} from "./msdynmkt_RetrieveServiceFeatureFlagsAction.js";
-export {
-  msdynmkt_StartLoadConsentV4CustomActionAction,
-  type msdynmkt_StartLoadConsentV4CustomActionActionParameters,
-  type msdynmkt_StartLoadConsentV4CustomActionResponse,
-} from "./msdynmkt_StartLoadConsentV4CustomActionAction.js";
-export {
-  msdynmkt_StartMigrationCustomActionAction,
-  type msdynmkt_StartMigrationCustomActionActionParameters,
-  type msdynmkt_StartMigrationCustomActionResponse,
-} from "./msdynmkt_StartMigrationCustomActionAction.js";
-export {
-  msdynmkt_UnsubscribeContactableEntityFromAllCommunicationAction,
-  type msdynmkt_UnsubscribeContactableEntityFromAllCommunicationActionParameters,
-  type msdynmkt_UnsubscribeContactableEntityFromAllCommunicationResponse,
-} from "./msdynmkt_UnsubscribeContactableEntityFromAllCommunicationAction.js";
-export {
-  msdynmkt_updatechannelcommunicationconsentAction,
-  type msdynmkt_updatechannelcommunicationconsentActionParameters,
-  type msdynmkt_updatechannelcommunicationconsentResponse,
-} from "./msdynmkt_updatechannelcommunicationconsentAction.js";
-export {
-  msdynmkt_updategdprconfigurationAction,
-  type msdynmkt_updategdprconfigurationActionParameters,
-  type msdynmkt_updategdprconfigurationResponse,
-} from "./msdynmkt_updategdprconfigurationAction.js";
-export {
-  msdynmkt_ValidatePlaceholdersAction,
-  type msdynmkt_ValidatePlaceholdersActionParameters,
-  type msdynmkt_ValidatePlaceholdersResponse,
-} from "./msdynmkt_ValidatePlaceholdersAction.js";
-export {
-  msdynmkt_ValueWidgetDataCustomActionAction,
-  type msdynmkt_ValueWidgetDataCustomActionActionParameters,
-  type msdynmkt_ValueWidgetDataCustomActionResponse,
-} from "./msdynmkt_ValueWidgetDataCustomActionAction.js";
 export {
   msft_DataEngineIndexMgmt_CreateIndexAction,
   type msft_DataEngineIndexMgmt_CreateIndexActionParameters,
@@ -6629,11 +4335,6 @@ export {
   type msft_RateStorageRecommendationActionParameters,
   type msft_RateStorageRecommendationResponse,
 } from "./msft_RateStorageRecommendationAction.js";
-export {
-  mspp_ppComponentSecurityRoleBinderAction,
-  type mspp_ppComponentSecurityRoleBinderActionParameters,
-  type mspp_ppComponentSecurityRoleBinderResponse,
-} from "./mspp_ppComponentSecurityRoleBinderAction.js";
 export {
   NotifyEnvironmentVariableSecretChangeAction,
   type NotifyEnvironmentVariableSecretChangeActionParameters,
@@ -6675,20 +4376,6 @@ export {
   type PickFromQueueActionParameters,
   type PickFromQueueResponse,
 } from "./PickFromQueueAction.js";
-export {
-  PlaceCallAction,
-  type PlaceCallActionParameters,
-  type PlaceCallResponse,
-} from "./PlaceCallAction.js";
-export {
-  pm_CreateProcessAction,
-  type pm_CreateProcessActionParameters,
-  type pm_CreateProcessResponse,
-} from "./pm_CreateProcessAction.js";
-export {
-  pm_RefreshProcessMiningLicensingCapacityAction,
-  type pm_RefreshProcessMiningLicensingCapacityResponse,
-} from "./pm_RefreshProcessMiningLicensingCapacityAction.js";
 export {
   PowerAutomateProxyAction,
   type PowerAutomateProxyActionParameters,
@@ -7183,11 +4870,6 @@ export {
   type SendFaxResponse,
 } from "./SendFaxAction.js";
 export {
-  SendMessageAction,
-  type SendMessageActionParameters,
-  type SendMessageResponse,
-} from "./SendMessageAction.js";
-export {
   SendTemplateAction,
   type SendTemplateActionParameters,
   type SendTemplateResponse,
@@ -7252,7 +4934,6 @@ export {
   type SetupAiConnectionActionParameters,
   type SetupAiConnectionResponse,
 } from "./SetupAiConnectionAction.js";
-export { ShareAction, type ShareActionParameters, type ShareResponse } from "./ShareAction.js";
 export {
   SnapshotDatasourceAction,
   type SnapshotDatasourceActionParameters,
@@ -7391,11 +5072,6 @@ export {
   type UpdateMultipleResponse,
 } from "./UpdateMultipleAction.js";
 export {
-  UpdateOptionalWrapUpAction,
-  type UpdateOptionalWrapUpActionParameters,
-  type UpdateOptionalWrapUpResponse,
-} from "./UpdateOptionalWrapUpAction.js";
-export {
   UpdateOptionValueAction,
   type UpdateOptionValueActionParameters,
   type UpdateOptionValueResponse,
@@ -7502,7 +5178,6 @@ export {
   ConditionOperator,
   DateTimeFormat,
   DeletedMetadataFilters,
-  DependencyDepth,
   EndpointAccessType,
   EndpointType,
   EntityClusterMode,
@@ -7530,17 +5205,12 @@ export {
   PrivilegeDepth,
   PrivilegeType,
   PropagationOwnershipOptions,
-  ProvisionLanguageForUserStatusType,
-  RecentlyViewedRecordType,
   RelationshipType,
-  ResultCode,
   RibbonLocationFilters,
   RollupType,
   SearchDirection,
   SecurityTypes,
   ShareAccessRights,
-  SolutionOperationStatus,
-  SolutionOperationType,
   SolutionValidationResultType,
   StageSolutionStatus,
   StringFormat,
@@ -7548,7 +5218,6 @@ export {
   SubstitutionStatus,
   TargetFieldType,
   TimeCode,
-  ValidateSolutionStatus,
   XrmAggregateType,
   XrmDateTimeGrouping,
 } from "./types/index.js";
