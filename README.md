@@ -51,11 +51,11 @@ The SDK is organized as a monorepo with focused, composable packages:
 
 ### Tools & Utilities
 
-| Package                                                                                      | Description                                      | Status      |
-| -------------------------------------------------------------------------------------------- | ------------------------------------------------ | ----------- |
-| **[@mohsinonxrm/dataverse-sdk-generator](./packages/dataverse-sdk-generator)**               | Early-bound entity type generator from $metadata | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-entities-runtime](./packages/dataverse-sdk-entities-runtime)** | Runtime base classes for generated entities      | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-discovery](./packages/dataverse-sdk-discovery)**               | Global Discovery Service (Commercial cloud)      | ✅ Complete |
+| Package                                                                                      | Description                                                                | Status      |
+| -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ----------- |
+| **[@mohsinonxrm/dataverse-sdk-generator](./packages/dataverse-sdk-generator)**               | Early-bound entity type generator from $metadata                           | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-entities-runtime](./packages/dataverse-sdk-entities-runtime)** | Runtime base classes for generated entities                                | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-discovery](./packages/dataverse-sdk-discovery)**               | Global Discovery Service (Commercial, GCC, GCC High, DoD and China clouds) | ✅ Complete |
 
 ### Telemetry (Optional)
 
@@ -118,44 +118,57 @@ console.log(accounts);
 
 ### Browser Usage (SPA with MSAL)
 
-```typescript
-import { DataverseClient } from '@mohsinonxrm/dataverse-sdk-core';
-import { MsalBrowserTokenProvider } from '@mohsinonxrm/dataverse-sdk-auth-msal-browser';
-import { PublicClientApplication } from '@azure/msal-browser';
+```tsx
+import { useEffect, useState } from "react";
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { MsalBrowserTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
+import { PublicClientApplication } from "@azure/msal-browser";
 
 // Configure MSAL
 const msalInstance = new PublicClientApplication({
   auth: {
-    clientId: 'your-app-registration-id',
-    authority: 'https://login.microsoftonline.com/your-tenant-id',
+    clientId: "your-app-registration-id",
+    authority: "https://login.microsoftonline.com/your-tenant-id",
     redirectUri: window.location.origin,
   },
 });
 
 // Create token provider
 const tokenProvider = new MsalBrowserTokenProvider(msalInstance, {
-  scopes: ['https://yourorg.crm.dynamics.com/user_impersonation'],
+  scopes: ["https://yourorg.crm.dynamics.com/user_impersonation"],
 });
 
 // Create client
 const client = new DataverseClient({
-  baseUrl: 'https://yourorg.crm.dynamics.com',
+  baseUrl: "https://yourorg.crm.dynamics.com",
   tokenProvider,
 });
 
-// Use in React component
+interface Account {
+  accountid: string;
+  name: string;
+}
+
+// Use in React component: get() resolves to the response body, { value: [...] } for a collection
 function AccountList() {
-  const [accounts, setAccounts] = useState([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
 
   useEffect(() => {
-    client.api('/accounts')
-      .select('name', 'revenue')
+    client
+      .api("/accounts")
+      .select("accountid", "name")
       .top(50)
-      .get()
-      .then(setAccounts);
+      .get<{ value: Account[] }>()
+      .then((page) => setAccounts(page.value));
   }, []);
 
-  return <div>{/* Render accounts */}</div>;
+  return (
+    <ul>
+      {accounts.map((account) => (
+        <li key={account.accountid}>{account.name}</li>
+      ))}
+    </ul>
+  );
 }
 ```
 
@@ -170,6 +183,15 @@ For app registration, CORS, Content-Security-Policy and browser limits, see [doc
 Modern, chainable API for web/Node.js developers:
 
 ```typescript
+import { Prefer } from "@mohsinonxrm/dataverse-sdk-core";
+
+interface Account {
+  accountid: string;
+  name: string;
+  revenue?: number;
+  "@odata.etag": string;
+}
+
 // OData query building
 const highValueAccounts = await client
   .api("/accounts")
@@ -180,23 +202,23 @@ const highValueAccounts = await client
   .top(25)
   .get<{ value: Account[] }>();
 
-// Create with return
+// Create, and get the new record back
 const newAccount = await client
   .api("/accounts")
-  .header("Prefer", "return=representation")
+  .prefer(Prefer.returnRepresentation())
   .post<Account>({
     name: "Contoso Ltd",
     revenue: 10000000,
     industrycode: 6,
   });
 
-// Update with optimistic concurrency
-await client.api(`/accounts(${accountId})`).ifMatch(etag).patch({
+// Update with optimistic concurrency: fails with 412 if the record changed since it was read
+await client.api(`/accounts(${newAccount.accountid})`).ifMatch(newAccount["@odata.etag"]).patch({
   revenue: 12000000,
 });
 
-// Paging support
-for await (const account of client.api("/accounts").select("name").iterate()) {
+// Paging: iterate() follows @odata.nextLink page by page
+for await (const account of client.api("/accounts").select("name").iterate<Account>()) {
   console.log(account.name);
 }
 ```
@@ -444,24 +466,28 @@ The SDK includes production-grade middleware:
 
 ### Built-in Middleware
 
-- **AuthMiddleware**: Automatic token acquisition and refresh
-- **ODataHeadersMiddleware**: Standard OData headers (Accept, OData-Version, OData-MaxVersion)
-- **RetryMiddleware**: Retries 429 (throttling) and ≥502 (transient failures) with exponential backoff + jitter
+In the order they run:
+
+- **ODataHeadersMiddleware**: Standard OData headers (Accept, OData-Version, OData-MaxVersion), plus `defaultHeaders` and `defaultPrefer`
+- **RetryMiddleware**: Retries 429 (throttling) for every request, and 502/503/504 for idempotent ones (GET, PUT, DELETE, PATCH with `If-Match`), with exponential backoff + jitter, honouring `Retry-After`
 - **ConcurrencyMiddleware**: Adaptive concurrency using `x-ms-dop-hint` from Dataverse
-- **TelemetryMiddleware**: Request/response tracking
-- **LoggingMiddleware**: Structured logging
+- **AuthMiddleware**: Adds the bearer token; after a 401 gets a new one and retries once (when a token provider is set)
+- **TelemetryMiddleware**: Diagnostic headers; tracks dependencies and exceptions
+- **LoggingMiddleware**: Request/response logging (when a `logger` is set)
 
 ### Custom Middleware
 
 ```typescript
-import { Middleware } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, type Middleware } from "@mohsinonxrm/dataverse-sdk-core";
 
-const customMiddleware: Middleware = {
-  name: "CustomMiddleware",
-  async execute(request, next) {
-    console.log(`Request: ${request.method} ${request.url}`);
-    const response = await next(request);
-    console.log(`Response: ${response.status}`);
+const timing: Middleware = {
+  name: "Timing",
+  async execute(request, ctx, next) {
+    const started = Date.now();
+    const response = await next(request, ctx);
+    console.log(
+      `${request.method} ${request.url}: ${response.status} in ${Date.now() - started} ms`
+    );
     return response;
   },
 };
@@ -469,28 +495,40 @@ const customMiddleware: Middleware = {
 const client = new DataverseClient({
   baseUrl: "https://yourorg.crm.dynamics.com",
   tokenProvider,
-  middleware: [customMiddleware],
+  // prepend runs before the built-in middleware, append right before fetch;
+  // replace receives the built-in list and returns the one to use
+  middleware: { append: [timing] },
 });
 ```
+
+See the [core README](./packages/dataverse-sdk-core/README.md#middleware-pipeline) for the
+pipeline in detail.
 
 ## 📊 Telemetry & Observability
 
 ### Application Insights
 
-```typescript
-import { ApplicationInsightsTelemetryClient } from "@mohsinonxrm/dataverse-sdk-appinsights";
-import { ApplicationInsights } from "@azure/monitor-opentelemetry";
+The adapter emits OpenTelemetry spans that the Azure Monitor OpenTelemetry distro exports:
 
-const appInsights = new ApplicationInsights({
-  connectionString: process.env.APPLICATIONINSIGHTS_CONNECTION_STRING,
+```typescript
+import { useAzureMonitor } from "@azure/monitor-opentelemetry";
+import { ApplicationInsightsTelemetryClient } from "@mohsinonxrm/dataverse-sdk-appinsights";
+
+useAzureMonitor({
+  azureMonitorExporterOptions: {
+    connectionString: process.env.APPLICATIONINSIGHTS_CONNECTION_STRING,
+  },
 });
 
 const client = new DataverseClient({
   baseUrl: "https://yourorg.crm.dynamics.com",
   tokenProvider,
-  telemetryClient: new ApplicationInsightsTelemetryClient(appInsights),
+  telemetry: new ApplicationInsightsTelemetryClient(),
 });
 ```
+
+Or pass `{ connectionString }` to `ApplicationInsightsTelemetryClient` and it calls
+`useAzureMonitor()` for you; see the [appinsights README](./packages/dataverse-sdk-appinsights).
 
 ### OpenTelemetry
 
@@ -498,12 +536,11 @@ const client = new DataverseClient({
 import { OpenTelemetryClient } from "@mohsinonxrm/dataverse-sdk-otel";
 import { trace } from "@opentelemetry/api";
 
-const tracer = trace.getTracer("dataverse-sdk");
-
 const client = new DataverseClient({
   baseUrl: "https://yourorg.crm.dynamics.com",
   tokenProvider,
-  telemetryClient: new OpenTelemetryClient(tracer),
+  // Without a tracer (or tracerProvider), the global tracer provider is used
+  telemetry: new OpenTelemetryClient({ tracer: trace.getTracer("my-app") }),
 });
 ```
 
@@ -611,11 +648,14 @@ dataverse-sdk-core (foundation)
   ├─> metadata
   ├─> files
   │   └─> actions
+  ├─> entities-runtime (used by messages, actions, functions, xrm and generated code)
   ├─> discovery
   ├─> appinsights (optional)
   └─> otel (optional)
 
-generator (standalone tool)
+generator (dataverse-gen CLI)
+  ├─> auth-msal-node
+  ├─> metadata
   └─> entities-runtime
 ```
 
@@ -632,12 +672,12 @@ generator (standalone tool)
 
 ## 🧪 Testing
 
-The SDK includes comprehensive test coverage with **435+ tests across all 16 packages (100% passing)**:
+Every package has its own Vitest suite:
 
-- **Unit Tests**: Vitest-based tests for all packages with mocked HTTP responses
-- **Contract Tests**: MSW (Mock Service Worker) for HTTP behavior validation
-- **Type Tests**: tsd for TypeScript type correctness (metadata package)
-- **Integration Tests**: Gated tests against real Dataverse environments (post-v1.0)
+- **Unit and contract tests**: a real `DataverseClient` against a recording fake `fetch` (the internal [testing package](./packages/dataverse-sdk-testing)), asserting what reaches the wire; some core and metadata tests use MSW (Mock Service Worker)
+- **Type tests**: tsd for TypeScript type correctness (actions, functions, messages and metadata)
+- **Browser smoke tests**: the browser packages bundled with Vite and run in Chromium under a strict Content-Security-Policy (`pnpm test:browser`, [browser-tests](./packages/dataverse-sdk-browser-tests))
+- **Integration tests**: live tests against a real Dataverse org, gated on `DATAVERSE_*` environment variables (`pnpm test:integration`, [integration-tests](./packages/dataverse-sdk-integration-tests))
 
 Run tests:
 
@@ -654,36 +694,37 @@ pnpm --filter @mohsinonxrm/dataverse-sdk-core test:watch
 
 ## 🛣️ Roadmap
 
-### v1.0 (Current) - Complete ✅
+### 2.0.0 (next release)
 
-- ✅ Core HTTP pipeline with middleware
-- ✅ MSAL authentication (browser + node)
+2.0.0 is the next major release after 1.0.0; the [2.0 migration guide](./docs/migration-2.0.md)
+lists the breaking changes. It ships:
+
+- ✅ Core HTTP pipeline with a customisable middleware pipeline, retry, adaptive concurrency and 401 recovery
+- ✅ Authentication: MSAL (browser + node) and Azure Identity
 - ✅ $batch operations with change sets
 - ✅ OrganizationService facade
-- ✅ Typed actions/functions (minimal set)
+- ✅ Typed actions (<!-- count:actions -->1,072<!-- /count -->) and functions (<!-- count:functions -->280<!-- /count -->) of the platform, Sales and Customer Service
 - ✅ Messages (<!-- count:messages -->1,072<!-- /count --> typed Organization Service messages)
 - ✅ Metadata operations with strict typing
-- ✅ File/image column operations (chunked)
-- ✅ Bulk operations (CreateMultiple, UpdateMultiple, etc.)
-- ✅ Global Discovery Service
-- ✅ Entity generator
+- ✅ File/image column operations (chunked and streamed upload, ranged download)
+- ✅ FetchXML queries, with paging cookies and saved/user views
+- ✅ Bulk operations (CreateMultiple, UpdateMultiple, etc.) as typed actions
+- ✅ Global Discovery Service, in every cloud
+- ✅ Entity and operation generator (`dataverse-gen`)
 - ✅ Telemetry adapters (App Insights + OpenTelemetry)
 
-### v1.1 (Planned - Q3 2026)
+### Planned
 
-- Expanded actions/functions coverage
-- Expanded messages coverage
-- Duplicate detection package
-- Stream-based file operations
-- Enhanced error handling and diagnostics
+Not in 2.0.0:
 
-### v1.2+ (Future)
-
-- Audit operations
-- Async operation polling
-- Circuit breaker & bulkhead middleware ([#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100))
-- FetchXML query builder
-- Relationship operations advanced patterns
+- `waitForAsyncOperation()` poller for async jobs ([#318](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/318))
+- Change tracking with delta links ([#319](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/319))
+- Bulk helpers with chunking and per-record results ([#310](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/310))
+- Adaptive throttling from the service-protection headers ([#309](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/309))
+- Fault-injection middleware for testing apps against 429/5xx ([#308](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/308))
+- Throttle, retry and batch telemetry events, and W3C trace context ([#97](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/97))
+- A browser Application Insights adapter ([#158](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/158))
+- Audit operations, circuit breaker & bulkhead middleware, advanced relationship patterns and the other items the ADRs promise ([#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100))
 
 ## 🤝 Contributing
 
@@ -716,15 +757,18 @@ dataverse-sdk-typescript/
 ├── packages/              # SDK packages
 │   ├── dataverse-sdk-core/
 │   ├── dataverse-sdk-auth-msal-node/
-│   └── ... (16 packages total)
+│   └── ... (16 published, plus 3 internal test packages)
 ├── samples/               # Sample applications
 │   ├── node-cli-devicecode/
 │   ├── spa-fluentui-v9/
 │   └── ... (7 samples total)
+├── tools/
+│   └── generate-sdk-types/ # Generates the actions, functions, messages and metadata types
 ├── docs/                  # Documentation
 │   ├── adr/              # Architecture Decision Records
+│   ├── api/              # API guides
 │   ├── mapping/          # API mapping docs
-│   └── architecture/     # Technical docs
+│   └── testing/          # Test strategy and matrix
 ├── .changeset/           # Changesets for versioning
 └── turbo.json            # Turborepo configuration
 ```
