@@ -66,6 +66,34 @@ describe("SchemaModel with real-shaped $metadata (#78)", () => {
   });
 });
 
+describe("query functions (#342)", () => {
+  it("does not generate the Web API's query functions, which run only inside $filter", async () => {
+    const model = await modelFor({ entities: ["account"] });
+    const names = model.Functions.map((f) => f.Name);
+    expect(names).not.toContain("LastXDays");
+    expect(names).not.toContain("EqualUserId");
+    expect(names).toContain("WhoAmI");
+    expect([...model.QueryFunctionNames].sort()).toEqual(["EqualUserId", "LastXDays"]);
+    expect(model.Warnings).toEqual([]);
+  });
+
+  it("still generates a custom API of the same shape", async () => {
+    const model = await modelFor({ entities: ["account"] });
+    expect(model.Functions.map((f) => f.Name)).toContain("contoso_IsVip");
+  });
+
+  it("warns when the configuration lists a query function", async () => {
+    const model = await modelFor({
+      entities: ["account"],
+      functions: ["WhoAmI", "LastXDays", "EqualUserId"],
+    });
+    expect(model.Functions.map((f) => f.Name)).toEqual(["WhoAmI"]);
+    expect(model.Warnings).toHaveLength(1);
+    expect(model.Warnings[0]).toContain("LastXDays, EqualUserId");
+    expect(model.Warnings[0]).toContain("queryFunctions");
+  });
+});
+
 describe("MetadataService.getEntityMetadata (#78)", () => {
   afterEach(() => {
     vi.unstubAllGlobals();

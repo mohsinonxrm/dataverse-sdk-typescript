@@ -51,12 +51,13 @@ import { acquireCliToken } from "./auth.js";
  * ```
  *
  * Without an access token, a token is acquired from `config.auth` (device code or client
- * credentials), as the CLI does.
+ * credentials), as the CLI does. The result's `warnings` say what in the configuration was not
+ * generated, such as a listed query function.
  */
 export async function generateCode(
   config: DataverseGenConfig,
   accessToken?: string
-): Promise<void> {
+): Promise<{ warnings: string[] }> {
   const { SchemaModel } = await import("./schema-model.js");
   const { TypescriptGenerator } = await import("./typescript-generator.js");
   const { MetadataService } = await import("./metadata-service.js");
@@ -69,4 +70,5 @@ export async function generateCode(
 
   const generator = new TypescriptGenerator(model, config);
   await generator.generate();
+  return { warnings: model.Warnings };
 }
