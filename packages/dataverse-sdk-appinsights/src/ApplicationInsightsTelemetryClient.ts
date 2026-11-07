@@ -53,9 +53,9 @@ export class ApplicationInsightsTelemetryClient implements TelemetryClient {
   constructor(config: ApplicationInsightsConfig = {}) {
     this.config = config;
     if (config.connectionString && !config.disableTelemetry && !azureMonitorStarted) {
-      const { useAzureMonitor } = requirePeer(azureMonitor, "connectionString");
+      const { useAzureMonitor } = requirePeer(azureMonitor(), "connectionString");
       const resource = config.cloudRoleName
-        ? requirePeer(otelResources, "cloudRoleName").resourceFromAttributes({
+        ? requirePeer(otelResources(), "cloudRoleName").resourceFromAttributes({
             "service.name": config.cloudRoleName,
           })
         : undefined;

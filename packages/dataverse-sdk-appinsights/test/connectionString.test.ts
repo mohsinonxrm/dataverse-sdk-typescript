@@ -1,9 +1,15 @@
+import { createRequire } from "node:module";
 import { describe, expect, it, vi } from "vitest";
+import { setPeerLoader } from "../src/optionalPeers.js";
 import { createTestClient, jsonResponse } from "@mohsinonxrm/dataverse-sdk-testing";
 
 // The real distro registers global providers and exports over the network; only check the call.
-const { useAzureMonitor } = vi.hoisted(() => ({ useAzureMonitor: vi.fn() }));
-vi.mock("@azure/monitor-opentelemetry", () => ({ useAzureMonitor }));
+// The peers are require()d, which vi.mock doesn't reach, so the loader is replaced instead.
+const useAzureMonitor = vi.fn();
+const realRequire = createRequire(import.meta.url);
+setPeerLoader((name) =>
+  name === "@azure/monitor-opentelemetry" ? { useAzureMonitor } : realRequire(name)
+);
 
 const { ApplicationInsightsTelemetryClient } = await import("../src/index.js");
 
