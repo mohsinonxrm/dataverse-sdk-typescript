@@ -80,6 +80,11 @@ jobs:
             exit 1
           fi
       - run: pnpm typecheck
+      # One operation must tree-shake out of the ~1,500 in actions/functions/messages, and the
+      # main entry points stay within their gzipped budgets (#307, scripts/bundle-budgets.json)
+      - name: Bundle-size budget
+        if: matrix.node == 22
+        run: pnpm check:size
       - run: pnpm lint
         if: matrix.node == 22
       - run: pnpm test
