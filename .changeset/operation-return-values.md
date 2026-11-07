@@ -17,7 +17,7 @@ One return contract for every generated operation, in both generators (#300). `c
 | entity (or `crmbaseentity`)                      | the record, with its annotations, or 204 when unset       | the record, typed with `@odata.etag` and `@odata.type`; `null` for a 204 (was `{}`) |
 
 - **actions**: a collection return resolves its records, for example `InstantiateTemplateAction` resolves the email records (they were typed `EntityReference[]`).
-- **functions**: the primitive returns include the `$filter` query functions such as `Above`, which the Web API doesn't run on their own. `RetrieveAadUserRolesFunction` resolves `role` records.
+- **functions**: `RetrieveAadUserRolesFunction` resolves `role` records. The `$filter` query functions such as `Above`, which the Web API doesn't run on their own, were the only primitive returns; they are `queryFunctions` helpers now, not classes (#342).
 - **messages**: `result` is the value the action of the same name resolves, with the same type, exported as `<Name>Result`. Entity and complex results keep their annotations (they were dropped), entity results are `null` for a 204, and collection results `[]`. `<Name>Response.fromResponse(data)` takes the parsed body, or `undefined` for a 204. The internal `responseData` module is gone.
 - **generator (dataverse-gen)**: each operation with a return type exports `<Class>Response` with the same types and values as above. A 204 is `null` for an entity (was `{}`) and `[]` for a collection (was `undefined`).
 - Dataverse answers `204 No Content` for an entity or entity-collection output that wasn't set, although `$metadata` declares every return `Nullable="false"`, so entity returns are `<Entity> | null`. A complex output that wasn't set is a 200 with the properties `null`.

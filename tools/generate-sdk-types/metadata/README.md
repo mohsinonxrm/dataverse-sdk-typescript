@@ -44,7 +44,9 @@ The snapshot org has more installed than Sales and Customer Service, so the set 
   an operation in a Contact Center and a Sales solution is in.
 - **No solution** means the operation has no SDK message at all: the 71 query functions of the
   Web API (`LastXDays`, `Between`, `EqualUserId`, …) are built into the OData endpoint. They count
-  as platform. So do the supplemental operations the generator adds (`ExportToExcel`, see
+  as platform. They run only inside `$filter`, so the functions package has `queryFunctions`
+  helpers for them instead of classes (#342); `regen` checks that the functions shaped like a query
+  function (unbound, `Edm.Boolean`, first parameter `PropertyName`) are exactly these. So do the supplemental operations the generator adds (`ExportToExcel`, see
   `src/supplemental/`). An operation that has an SDK message in no solution stops `snapshot`
   instead: nothing would say which product it belongs to, and it mustn't be counted as platform
   by accident. (The 2026-11-06 snapshot has none.)

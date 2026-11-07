@@ -703,7 +703,7 @@ lists the breaking changes. It ships:
 - ✅ Authentication: MSAL (browser + node) and Azure Identity
 - ✅ $batch operations with change sets
 - ✅ OrganizationService facade
-- ✅ Typed actions (<!-- count:actions -->1,072<!-- /count -->) and functions (<!-- count:functions -->280<!-- /count -->) of the platform, Sales and Customer Service
+- ✅ Typed actions (<!-- count:actions -->1,072<!-- /count -->) and functions (<!-- count:functions -->209<!-- /count -->) of the platform, Sales and Customer Service
 - ✅ Messages (<!-- count:messages -->1,072<!-- /count --> typed Organization Service messages)
 - ✅ Metadata operations with strict typing
 - ✅ File/image column operations (chunked and streamed upload, ranged download)

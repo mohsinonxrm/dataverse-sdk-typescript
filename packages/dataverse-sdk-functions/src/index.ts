@@ -5,21 +5,6 @@
  */
 
 export {
-  AboveFunction,
-  type AboveFunctionParameters,
-  type AboveResponse,
-} from "./AboveFunction.js";
-export {
-  AboveOrEqualFunction,
-  type AboveOrEqualFunctionParameters,
-  type AboveOrEqualResponse,
-} from "./AboveOrEqualFunction.js";
-export {
-  BetweenFunction,
-  type BetweenFunctionParameters,
-  type BetweenResponse,
-} from "./BetweenFunction.js";
-export {
   CalculateRollupFieldFunction,
   type CalculateRollupFieldFunctionParameters,
   type CalculateRollupFieldResponse,
@@ -39,73 +24,13 @@ export {
   type CheckPromoteEmailResponse,
 } from "./CheckPromoteEmailFunction.js";
 export {
-  ContainsFunction,
-  type ContainsFunctionParameters,
-  type ContainsResponse,
-} from "./ContainsFunction.js";
-export {
-  ContainValuesFunction,
-  type ContainValuesFunctionParameters,
-  type ContainValuesResponse,
-} from "./ContainValuesFunction.js";
-export {
   copilottextdatastatusFunction,
   type copilottextdatastatusResponse,
 } from "./copilottextdatastatusFunction.js";
 export {
-  DoesNotContainValuesFunction,
-  type DoesNotContainValuesFunctionParameters,
-  type DoesNotContainValuesResponse,
-} from "./DoesNotContainValuesFunction.js";
-export {
   DownloadReportDefinitionFunction,
   type DownloadReportDefinitionResponse,
 } from "./DownloadReportDefinitionFunction.js";
-export {
-  EqualBusinessIdFunction,
-  type EqualBusinessIdFunctionParameters,
-  type EqualBusinessIdResponse,
-} from "./EqualBusinessIdFunction.js";
-export {
-  EqualRoleBusinessIdFunction,
-  type EqualRoleBusinessIdFunctionParameters,
-  type EqualRoleBusinessIdResponse,
-} from "./EqualRoleBusinessIdFunction.js";
-export {
-  EqualUserAuthContextFunction,
-  type EqualUserAuthContextFunctionParameters,
-  type EqualUserAuthContextResponse,
-} from "./EqualUserAuthContextFunction.js";
-export {
-  EqualUserIdFunction,
-  type EqualUserIdFunctionParameters,
-  type EqualUserIdResponse,
-} from "./EqualUserIdFunction.js";
-export {
-  EqualUserLanguageFunction,
-  type EqualUserLanguageFunctionParameters,
-  type EqualUserLanguageResponse,
-} from "./EqualUserLanguageFunction.js";
-export {
-  EqualUserOrUserHierarchyFunction,
-  type EqualUserOrUserHierarchyFunctionParameters,
-  type EqualUserOrUserHierarchyResponse,
-} from "./EqualUserOrUserHierarchyFunction.js";
-export {
-  EqualUserOrUserHierarchyAndTeamsFunction,
-  type EqualUserOrUserHierarchyAndTeamsFunctionParameters,
-  type EqualUserOrUserHierarchyAndTeamsResponse,
-} from "./EqualUserOrUserHierarchyAndTeamsFunction.js";
-export {
-  EqualUserOrUserTeamsFunction,
-  type EqualUserOrUserTeamsFunctionParameters,
-  type EqualUserOrUserTeamsResponse,
-} from "./EqualUserOrUserTeamsFunction.js";
-export {
-  EqualUserTeamsFunction,
-  type EqualUserTeamsFunctionParameters,
-  type EqualUserTeamsResponse,
-} from "./EqualUserTeamsFunction.js";
 export {
   ExecuteCosmosSqlQueryFunction,
   type ExecuteCosmosSqlQueryFunctionParameters,
@@ -239,42 +164,16 @@ export {
   type GetValidReferencingEntitiesFunctionParameters,
   type GetValidReferencingEntitiesResponse,
 } from "./GetValidReferencingEntitiesFunction.js";
-export { InFunction, type InFunctionParameters, type InResponse } from "./InFunction.js";
 export {
   IncrementKnowledgeArticleViewCountFunction,
   type IncrementKnowledgeArticleViewCountFunctionParameters,
   type IncrementKnowledgeArticleViewCountResponse,
 } from "./IncrementKnowledgeArticleViewCountFunction.js";
 export {
-  InFiscalPeriodFunction,
-  type InFiscalPeriodFunctionParameters,
-  type InFiscalPeriodResponse,
-} from "./InFiscalPeriodFunction.js";
-export {
-  InFiscalPeriodAndYearFunction,
-  type InFiscalPeriodAndYearFunctionParameters,
-  type InFiscalPeriodAndYearResponse,
-} from "./InFiscalPeriodAndYearFunction.js";
-export {
-  InFiscalYearFunction,
-  type InFiscalYearFunctionParameters,
-  type InFiscalYearResponse,
-} from "./InFiscalYearFunction.js";
-export {
   InitializeFromFunction,
   type InitializeFromFunctionParameters,
   type InitializeFromResponse,
 } from "./InitializeFromFunction.js";
-export {
-  InOrAfterFiscalPeriodAndYearFunction,
-  type InOrAfterFiscalPeriodAndYearFunctionParameters,
-  type InOrAfterFiscalPeriodAndYearResponse,
-} from "./InOrAfterFiscalPeriodAndYearFunction.js";
-export {
-  InOrBeforeFiscalPeriodAndYearFunction,
-  type InOrBeforeFiscalPeriodAndYearFunctionParameters,
-  type InOrBeforeFiscalPeriodAndYearResponse,
-} from "./InOrBeforeFiscalPeriodAndYearFunction.js";
 export { IsCDS3ReadyFunction, type IsCDS3ReadyResponse } from "./IsCDS3ReadyFunction.js";
 export {
   IsComponentCustomizableFunction,
@@ -290,71 +189,6 @@ export {
   type IsValidStateTransitionFunctionParameters,
   type IsValidStateTransitionResponse,
 } from "./IsValidStateTransitionFunction.js";
-export {
-  Last7DaysFunction,
-  type Last7DaysFunctionParameters,
-  type Last7DaysResponse,
-} from "./Last7DaysFunction.js";
-export {
-  LastFiscalPeriodFunction,
-  type LastFiscalPeriodFunctionParameters,
-  type LastFiscalPeriodResponse,
-} from "./LastFiscalPeriodFunction.js";
-export {
-  LastFiscalYearFunction,
-  type LastFiscalYearFunctionParameters,
-  type LastFiscalYearResponse,
-} from "./LastFiscalYearFunction.js";
-export {
-  LastMonthFunction,
-  type LastMonthFunctionParameters,
-  type LastMonthResponse,
-} from "./LastMonthFunction.js";
-export {
-  LastWeekFunction,
-  type LastWeekFunctionParameters,
-  type LastWeekResponse,
-} from "./LastWeekFunction.js";
-export {
-  LastXDaysFunction,
-  type LastXDaysFunctionParameters,
-  type LastXDaysResponse,
-} from "./LastXDaysFunction.js";
-export {
-  LastXFiscalPeriodsFunction,
-  type LastXFiscalPeriodsFunctionParameters,
-  type LastXFiscalPeriodsResponse,
-} from "./LastXFiscalPeriodsFunction.js";
-export {
-  LastXFiscalYearsFunction,
-  type LastXFiscalYearsFunctionParameters,
-  type LastXFiscalYearsResponse,
-} from "./LastXFiscalYearsFunction.js";
-export {
-  LastXHoursFunction,
-  type LastXHoursFunctionParameters,
-  type LastXHoursResponse,
-} from "./LastXHoursFunction.js";
-export {
-  LastXMonthsFunction,
-  type LastXMonthsFunctionParameters,
-  type LastXMonthsResponse,
-} from "./LastXMonthsFunction.js";
-export {
-  LastXWeeksFunction,
-  type LastXWeeksFunctionParameters,
-  type LastXWeeksResponse,
-} from "./LastXWeeksFunction.js";
-export {
-  LastXYearsFunction,
-  type LastXYearsFunctionParameters,
-  type LastXYearsResponse,
-} from "./LastXYearsFunction.js";
-export {
-  LastYearFunction,
-  type LastYearFunctionParameters,
-  type LastYearResponse,
-} from "./LastYearFunction.js";
 export {
   ListCredentialDependenciesFunction,
   type ListCredentialDependenciesResponse,
@@ -388,137 +222,6 @@ export {
   type msft_DataEngineIndexMgmt_GetIndexInfoFunctionParameters,
   type msft_DataEngineIndexMgmt_GetIndexInfoResponse,
 } from "./msft_DataEngineIndexMgmt_GetIndexInfoFunction.js";
-export {
-  Next7DaysFunction,
-  type Next7DaysFunctionParameters,
-  type Next7DaysResponse,
-} from "./Next7DaysFunction.js";
-export {
-  NextFiscalPeriodFunction,
-  type NextFiscalPeriodFunctionParameters,
-  type NextFiscalPeriodResponse,
-} from "./NextFiscalPeriodFunction.js";
-export {
-  NextFiscalYearFunction,
-  type NextFiscalYearFunctionParameters,
-  type NextFiscalYearResponse,
-} from "./NextFiscalYearFunction.js";
-export {
-  NextMonthFunction,
-  type NextMonthFunctionParameters,
-  type NextMonthResponse,
-} from "./NextMonthFunction.js";
-export {
-  NextWeekFunction,
-  type NextWeekFunctionParameters,
-  type NextWeekResponse,
-} from "./NextWeekFunction.js";
-export {
-  NextXDaysFunction,
-  type NextXDaysFunctionParameters,
-  type NextXDaysResponse,
-} from "./NextXDaysFunction.js";
-export {
-  NextXFiscalPeriodsFunction,
-  type NextXFiscalPeriodsFunctionParameters,
-  type NextXFiscalPeriodsResponse,
-} from "./NextXFiscalPeriodsFunction.js";
-export {
-  NextXFiscalYearsFunction,
-  type NextXFiscalYearsFunctionParameters,
-  type NextXFiscalYearsResponse,
-} from "./NextXFiscalYearsFunction.js";
-export {
-  NextXHoursFunction,
-  type NextXHoursFunctionParameters,
-  type NextXHoursResponse,
-} from "./NextXHoursFunction.js";
-export {
-  NextXMonthsFunction,
-  type NextXMonthsFunctionParameters,
-  type NextXMonthsResponse,
-} from "./NextXMonthsFunction.js";
-export {
-  NextXWeeksFunction,
-  type NextXWeeksFunctionParameters,
-  type NextXWeeksResponse,
-} from "./NextXWeeksFunction.js";
-export {
-  NextXYearsFunction,
-  type NextXYearsFunctionParameters,
-  type NextXYearsResponse,
-} from "./NextXYearsFunction.js";
-export {
-  NextYearFunction,
-  type NextYearFunctionParameters,
-  type NextYearResponse,
-} from "./NextYearFunction.js";
-export {
-  NotBetweenFunction,
-  type NotBetweenFunctionParameters,
-  type NotBetweenResponse,
-} from "./NotBetweenFunction.js";
-export {
-  NotEqualBusinessIdFunction,
-  type NotEqualBusinessIdFunctionParameters,
-  type NotEqualBusinessIdResponse,
-} from "./NotEqualBusinessIdFunction.js";
-export {
-  NotEqualUserIdFunction,
-  type NotEqualUserIdFunctionParameters,
-  type NotEqualUserIdResponse,
-} from "./NotEqualUserIdFunction.js";
-export {
-  NotInFunction,
-  type NotInFunctionParameters,
-  type NotInResponse,
-} from "./NotInFunction.js";
-export {
-  NotUnderFunction,
-  type NotUnderFunctionParameters,
-  type NotUnderResponse,
-} from "./NotUnderFunction.js";
-export {
-  OlderThanXDaysFunction,
-  type OlderThanXDaysFunctionParameters,
-  type OlderThanXDaysResponse,
-} from "./OlderThanXDaysFunction.js";
-export {
-  OlderThanXHoursFunction,
-  type OlderThanXHoursFunctionParameters,
-  type OlderThanXHoursResponse,
-} from "./OlderThanXHoursFunction.js";
-export {
-  OlderThanXMinutesFunction,
-  type OlderThanXMinutesFunctionParameters,
-  type OlderThanXMinutesResponse,
-} from "./OlderThanXMinutesFunction.js";
-export {
-  OlderThanXMonthsFunction,
-  type OlderThanXMonthsFunctionParameters,
-  type OlderThanXMonthsResponse,
-} from "./OlderThanXMonthsFunction.js";
-export {
-  OlderThanXWeeksFunction,
-  type OlderThanXWeeksFunctionParameters,
-  type OlderThanXWeeksResponse,
-} from "./OlderThanXWeeksFunction.js";
-export {
-  OlderThanXYearsFunction,
-  type OlderThanXYearsFunctionParameters,
-  type OlderThanXYearsResponse,
-} from "./OlderThanXYearsFunction.js";
-export { OnFunction, type OnFunctionParameters, type OnResponse } from "./OnFunction.js";
-export {
-  OnOrAfterFunction,
-  type OnOrAfterFunctionParameters,
-  type OnOrAfterResponse,
-} from "./OnOrAfterFunction.js";
-export {
-  OnOrBeforeFunction,
-  type OnOrBeforeFunctionParameters,
-  type OnOrBeforeResponse,
-} from "./OnOrBeforeFunction.js";
 export {
   PreferredSolutionUsedByFunction,
   type PreferredSolutionUsedByFunctionParameters,
@@ -1219,51 +922,6 @@ export {
 } from "./searchstatisticsFunction.js";
 export { searchstatusFunction, type searchstatusResponse } from "./searchstatusFunction.js";
 export {
-  ThisFiscalPeriodFunction,
-  type ThisFiscalPeriodFunctionParameters,
-  type ThisFiscalPeriodResponse,
-} from "./ThisFiscalPeriodFunction.js";
-export {
-  ThisFiscalYearFunction,
-  type ThisFiscalYearFunctionParameters,
-  type ThisFiscalYearResponse,
-} from "./ThisFiscalYearFunction.js";
-export {
-  ThisMonthFunction,
-  type ThisMonthFunctionParameters,
-  type ThisMonthResponse,
-} from "./ThisMonthFunction.js";
-export {
-  ThisWeekFunction,
-  type ThisWeekFunctionParameters,
-  type ThisWeekResponse,
-} from "./ThisWeekFunction.js";
-export {
-  ThisYearFunction,
-  type ThisYearFunctionParameters,
-  type ThisYearResponse,
-} from "./ThisYearFunction.js";
-export {
-  TodayFunction,
-  type TodayFunctionParameters,
-  type TodayResponse,
-} from "./TodayFunction.js";
-export {
-  TomorrowFunction,
-  type TomorrowFunctionParameters,
-  type TomorrowResponse,
-} from "./TomorrowFunction.js";
-export {
-  UnderFunction,
-  type UnderFunctionParameters,
-  type UnderResponse,
-} from "./UnderFunction.js";
-export {
-  UnderOrEqualFunction,
-  type UnderOrEqualFunctionParameters,
-  type UnderOrEqualResponse,
-} from "./UnderOrEqualFunction.js";
-export {
   UtcTimeFromLocalTimeFunction,
   type UtcTimeFromLocalTimeFunctionParameters,
   type UtcTimeFromLocalTimeResponse,
@@ -1284,11 +942,8 @@ export {
   type ValidateRecurrenceRuleResponse,
 } from "./ValidateRecurrenceRuleFunction.js";
 export { WhoAmIFunction, type WhoAmIResponse } from "./WhoAmIFunction.js";
-export {
-  YesterdayFunction,
-  type YesterdayFunctionParameters,
-  type YesterdayResponse,
-} from "./YesterdayFunction.js";
+
+export { queryFunctions } from "./queryFunctions.js";
 
 export {
   type EntityReference,

@@ -6,7 +6,6 @@
 import { expectAssignable, expectError, expectNotAssignable, expectType } from "tsd";
 import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import {
-  AboveFunction,
   CalculateRollupFieldFunction,
   createEntityReference,
   GetAllTimeZonesWithDisplayNameFunction,
@@ -25,11 +24,8 @@ import {
 declare const client: DataverseClient;
 const EMPTY = "00000000-0000-0000-0000-000000000000";
 
-// A primitive (Edm.Boolean): the boolean itself. Above is the only kind of primitive return in
-// the CSDL; it's a query function, so it can't be called on its own, but its class is typed.
-expectType<Promise<boolean>>(
-  client.execute(new AboveFunction({ PropertyName: "x", PropertyValue: "y" }))
-);
+// No function returns a primitive: the only ones in the CSDL (Edm.Boolean) are the $filter query
+// functions, which are queryFunctions helpers, not classes (#342; query-functions.test-d.ts).
 
 // A collection of a typed entity (Collection(mscrm.dependency)): the records, each with its etag
 const dependencies = await client.execute(

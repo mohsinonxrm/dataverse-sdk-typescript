@@ -12,9 +12,10 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import chalk from "chalk";
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, odata } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
+import { queryFunctions } from "@mohsinonxrm/dataverse-sdk-functions";
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 
 // Load environment variables
@@ -301,10 +302,14 @@ async function main() {
     // Demo 1: Bulk create
     const accountIds = await bulkCreateAccounts(client, env.batchSize);
 
-    // Demo 2: Query created accounts
+    // Demo 2: Query the accounts created today. Today is a Dataverse query function: it only
+    // works inside $filter, with the column as PropertyName.
     await queryAccounts(
       client,
-      `contains(name, 'Bulk Account') and Microsoft.Dynamics.CRM.Today()`
+      odata.and(
+        odata.contains("name", "Bulk Account"),
+        queryFunctions.today({ PropertyName: "createdon" })
+      )
     );
 
     // Demo 3: Bulk update

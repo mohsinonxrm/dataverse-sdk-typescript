@@ -4,18 +4,18 @@ Typed Web API functions for Dataverse. Functions are read-only operations that e
 
 ## Features
 
-- ✅ **<!-- count:functions -->280<!-- /count --> typed functions** - The Web API functions of the platform, Sales and Customer Service, generated from `$metadata`
+- ✅ **<!-- count:functions -->209<!-- /count --> typed functions** - The Web API functions of the platform, Sales and Customer Service, generated from `$metadata`
 - ✅ **Parameter aliases** - Proper query string parameter handling per Microsoft guidance
 - ✅ **Type-safe responses** - Full TypeScript typing for request and response
 - ✅ **Common operations** - WhoAmI, InitializeFrom, CalculateRollupField, RetrieveMetadataChanges, and more
-- ✅ **Query helpers** - Fiscal period, date range, and conditional operator functions
+- ✅ **Query functions for `$filter`** - `queryFunctions.lastXDays(...)`, `queryFunctions.in(...)`, `queryFunctions.under(...)` and every other query function of the Web API, as typed filter expressions
 - ✅ **Security & access** - Privilege, role, and permission retrieval functions
 - ✅ **Metadata operations** - Entity, attribute, and relationship metadata functions
 
 ## What this package covers
 
 The functions of the **platform** (Dataverse and the Power Platform solutions every environment
-has, including the Web API's query functions such as `LastXDays`) and of the two core Dynamics
+has, plus the Web API's query functions such as `LastXDays` as [`$filter` helpers](#query-functions-in-filter)) and of the two core Dynamics
 365 apps of a plain trial, **Sales** and **Customer Service**. They are chosen by the solution
 each function comes from, not by what the org the SDK was generated from has installed: the
 [solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt)
@@ -80,7 +80,7 @@ console.log(solution?.uniquename, solution?.["@odata.etag"]);
 
 ## Function Categories
 
-The SDK includes **<!-- count:functions -->280<!-- /count --> typed functions** organized into the following categories:
+The SDK includes **<!-- count:functions -->209<!-- /count --> typed functions** organized into the following categories:
 
 ### Platform Functions (Core Operations)
 
@@ -114,29 +114,55 @@ The SDK includes **<!-- count:functions -->280<!-- /count --> typed functions** 
 - `GetValidReferencedEntitiesFunction` - Get valid lookup targets
 - `GetValidReferencingEntitiesFunction` - Get valid lookup sources
 
-### Query Helper Functions
+### Query functions in `$filter`
 
-**Fiscal Period:**
+`$metadata` declares the Web API's query functions (`LastXDays`, `InFiscalYear`, `Between`, `In`,
+`Under`, `EqualUserId`, …) as functions, but Dataverse runs them only inside a `$filter`: called
+on their own they answer 404. So they aren't classes: `queryFunctions` has one helper per query
+function, named in camelCase, that returns the filter expression. The parameters are the
+`$metadata` ones (`PropertyName` is the column), and every value is written as the OData literal of
+its type by core's `odataLiteral`: strings are quoted with `'` doubled, `PropertyValues` is a JSON
+array, numbers must be integers.
 
-- `InFiscalPeriodFunction`, `InFiscalYearFunction`
-- `LastFiscalPeriodFunction`, `LastFiscalYearFunction`
-- `NextFiscalPeriodFunction`, `NextFiscalYearFunction`
-- `ThisFiscalPeriodFunction`, `ThisFiscalYearFunction`
+```typescript
+import { odata } from "@mohsinonxrm/dataverse-sdk-core";
+import { queryFunctions } from "@mohsinonxrm/dataverse-sdk-functions";
 
-**Date Ranges:**
+// Microsoft.Dynamics.CRM.LastXDays(PropertyName='createdon',PropertyValue=7)
+const recent = queryFunctions.lastXDays({ PropertyName: "createdon", PropertyValue: 7 });
 
-- `Last7DaysFunction`, `Next7DaysFunction`
-- `LastMonthFunction`, `NextMonthFunction`
-- `LastWeekFunction`, `NextWeekFunction`
-- `ThisMonthFunction`, `ThisWeekFunction`, `ThisYearFunction`
-- `TodayFunction`, `TomorrowFunction`, `YesterdayFunction`
+const accounts = await client
+  .api("accounts")
+  .select("name")
+  .filter(
+    odata.and(
+      recent,
+      queryFunctions.equalUserId({ PropertyName: "ownerid" }),
+      queryFunctions.in({ PropertyName: "address1_city", PropertyValues: ["Redmond", "Seattle"] })
+    )
+  )
+  .get();
+```
 
-**Conditional Operators:**
+The helpers return strings, so they go into `.filter()` and `odata.and()` / `odata.or()` with any
+other expression. Dataverse refuses `not` around a query function: use its negative form
+(`notIn`, `notBetween`, `notUnder`, `notEqualUserId`, `notEqualBusinessId`,
+`doesNotContainValues`). The hierarchy functions (`under`, `underOrEqual`, `above`,
+`aboveOrEqual`, `notUnder`) take the record id as `PropertyValue` and need a table with a
+hierarchical relationship, such as `account` or `businessunit`.
 
-- `BetweenFunction`, `NotBetweenFunction`
-- `ContainsFunction`, `DoesNotContainValuesFunction`
-- `UnderFunction`, `UnderOrEqualFunction`, `NotUnderFunction`
-- `EqualUserIdFunction`, `EqualBusinessIdFunction`
+| Group     | Helpers                                                                                                                                                                                                                                                                                                                          |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dates     | `today`, `yesterday`, `tomorrow`, `last7Days`, `next7Days`, `lastWeek`, `thisWeek`, `nextWeek`, `lastMonth`, `thisMonth`, `nextMonth`, `lastYear`, `thisYear`, `nextYear`, `on`, `onOrAfter`, `onOrBefore`, `between`, `notBetween`                                                                                              |
+| Last/next | `lastXHours`, `lastXDays`, `lastXWeeks`, `lastXMonths`, `lastXYears`, `nextXHours`, `nextXDays`, `nextXWeeks`, `nextXMonths`, `nextXYears`, `olderThanXMinutes`, `olderThanXHours`, `olderThanXDays`, `olderThanXWeeks`, `olderThanXMonths`, `olderThanXYears`                                                                   |
+| Fiscal    | `thisFiscalYear`, `lastFiscalYear`, `nextFiscalYear`, `thisFiscalPeriod`, `lastFiscalPeriod`, `nextFiscalPeriod`, `inFiscalYear`, `inFiscalPeriod`, `inFiscalPeriodAndYear`, `inOrAfterFiscalPeriodAndYear`, `inOrBeforeFiscalPeriodAndYear`, `lastXFiscalYears`, `lastXFiscalPeriods`, `nextXFiscalYears`, `nextXFiscalPeriods` |
+| Values    | `in`, `notIn`, `contains`, `containValues`, `doesNotContainValues`                                                                                                                                                                                                                                                               |
+| Hierarchy | `above`, `aboveOrEqual`, `under`, `underOrEqual`, `notUnder`                                                                                                                                                                                                                                                                     |
+| Users     | `equalUserId`, `notEqualUserId`, `equalUserTeams`, `equalUserOrUserTeams`, `equalUserOrUserHierarchy`, `equalUserOrUserHierarchyAndTeams`, `equalUserLanguage`, `equalUserAuthContext`, `equalBusinessId`, `notEqualBusinessId`, `equalRoleBusinessId`                                                                           |
+
+See [Query functions](https://learn.microsoft.com/power-apps/developer/data-platform/webapi/reference/queryfunctions)
+for what each one does. In 1.0 each query function was a class (`<Name>Function`) that answered
+404 when executed; see the [migration guide](../../docs/migration-2.0.md#actions-functions-messages).
 
 ### Sales and Customer Service Functions
 
@@ -293,7 +319,7 @@ followed by a required parameter stays in its position and takes `undefined`.
 
 ## Complete Function Reference
 
-For a complete list of all <!-- count:functions -->280<!-- /count --> functions with descriptions and examples, see [docs/mapping/supported-functions.md](../../docs/mapping/supported-functions.md).
+For a complete list of all <!-- count:functions -->209<!-- /count --> functions with descriptions and examples, see [docs/mapping/supported-functions.md](../../docs/mapping/supported-functions.md).
 
 ## Architecture
 

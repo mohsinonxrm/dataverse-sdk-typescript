@@ -2,7 +2,7 @@
 
 > **Package**: `@mohsinonxrm/dataverse-sdk-functions`
 >
-> **Coverage**: <!-- count:functions -->280<!-- /count --> typed Web API functions of the platform, Sales and Customer Service, generated from a Dataverse `$metadata` (the [solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt) lists the solutions; generate other apps' functions and your custom APIs with [dataverse-gen](../getting-started.md#generate-the-rest-with-dataverse-gen)). The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
+> **Coverage**: <!-- count:functions -->209<!-- /count --> typed Web API functions of the platform, Sales and Customer Service, generated from a Dataverse `$metadata` (the [solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt) lists the solutions; generate other apps' functions and your custom APIs with [dataverse-gen](../getting-started.md#generate-the-rest-with-dataverse-gen)). The lists below are generated from the package source by `pnpm --filter generate-sdk-types docs`, so every class, constructor and route shown exists.
 
 Functions are **GET operations** without side effects. Each function is a class whose constructor
 takes **one object with the parameters, by their `$metadata` names**
@@ -180,19 +180,35 @@ SearchByKeywordsKbArticle: Knowledge articles matching keywords.
 
 ## Query functions in `$filter`
 
-The package also has classes for the query functions (`LastXDaysFunction`, `InFiscalYearFunction`,
-`UnderFunction`, `EqualUserIdFunction`, …), because `$metadata` declares them as functions. Dataverse
-only accepts them inside `$filter`, written with the column as `PropertyName`:
+`$metadata` also declares the Web API's query functions (`LastXDays`, `InFiscalYear`, `Between`,
+`In`, `Under`, `EqualUserId`, …) as functions, but Dataverse only accepts them inside `$filter`,
+with the column as `PropertyName`; called on their own they answer 404. So the package has no
+classes for them (it had in 1.0, see the [migration guide](../migration-2.0.md#actions-functions-messages)),
+and they aren't in the count above. Instead `queryFunctions` has a helper per query function that
+returns the expression, with each value written as the OData literal of its `$metadata` type:
 
 ```typescript
+import { odata } from "@mohsinonxrm/dataverse-sdk-core";
+import { queryFunctions } from "@mohsinonxrm/dataverse-sdk-functions";
+
+// accounts?$filter=(Microsoft.Dynamics.CRM.LastXDays(PropertyName='createdon',PropertyValue=30)
+//   and Microsoft.Dynamics.CRM.Under(PropertyName='accountid',PropertyValue='<id>'))
 const recent = await client
   .api("accounts")
-  .filter("Microsoft.Dynamics.CRM.LastXDays(PropertyName='createdon',PropertyValue=30)")
+  .filter(
+    odata.and(
+      queryFunctions.lastXDays({ PropertyName: "createdon", PropertyValue: 30 }),
+      queryFunctions.under({ PropertyName: "accountid", PropertyValue: parentAccountId })
+    )
+  )
   .get();
 ```
 
-See [Query functions](https://learn.microsoft.com/power-apps/developer/data-platform/webapi/reference/queryfunctions)
-for the list. Calling one of these classes with `client.execute` fails, as it does for any client.
+Dataverse refuses `not` around a query function, so use the negative one (`notIn`,
+`notBetween`, `notUnder`, `notEqualUserId`, …). The
+[functions README](../../packages/dataverse-sdk-functions/README.md#query-functions-in-filter)
+lists every helper; [Query functions](https://learn.microsoft.com/power-apps/developer/data-platform/webapi/reference/queryfunctions)
+says what each one does.
 
 ## Related documentation
 
