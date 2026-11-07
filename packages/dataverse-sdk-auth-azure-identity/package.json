@@ -43,13 +43,14 @@
   "engines": {
     "node": ">=22"
   },
-  "peerDependencies": {
-    "@azure/identity": "^4.0.0",
+  "dependencies": {
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@azure/identity": "^4.0.0"
   },
   "devDependencies": {
     "@azure/identity": "^4.14.1",
-    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
     "@types/node": "^22.20.5",
     "tsup": "^8.5.1",

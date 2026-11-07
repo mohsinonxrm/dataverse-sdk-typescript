@@ -7,7 +7,7 @@
  * Both packages are mocked as missing: importing them fails as it does when they aren't installed.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { SpanKind } from "@opentelemetry/api";
 import {
   BasicTracerProvider,
@@ -16,12 +16,10 @@ import {
 } from "@opentelemetry/sdk-trace-base";
 import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
 import { createTestClient, jsonResponse } from "@mohsinonxrm/dataverse-sdk-testing";
+import { setPeerLoader } from "../src/optionalPeers.js";
 
-vi.mock("@azure/monitor-opentelemetry", () => {
-  throw new Error("Cannot find package '@azure/monitor-opentelemetry'");
-});
-vi.mock("@opentelemetry/resources", () => {
-  throw new Error("Cannot find package '@opentelemetry/resources'");
+setPeerLoader((name) => {
+  throw new Error(`Cannot find package '${name}'`);
 });
 
 const { ApplicationInsightsTelemetryClient } = await import("../src/index.js");
