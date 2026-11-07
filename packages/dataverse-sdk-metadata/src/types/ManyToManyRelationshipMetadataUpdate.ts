@@ -1,11 +1,18 @@
-import type { ManyToManyRelationshipMetadataCreate } from "./ManyToManyRelationshipMetadataCreate.js";
+import type {
+  MetadataODataType,
+  ServerSetMetadataProperty,
+} from "./AttributeMetadataCreateTypes.js";
+import type { ManyToManyRelationshipMetadata } from "./ManyToManyRelationshipMetadata.js";
 
 /**
- * ManyToManyRelationshipMetadataUpdate - the payload for updating an N:N relationship. Updates are
- * `PUT`s that replace the definition, so send the complete definition.
+ * ManyToManyRelationshipMetadataUpdate - the payload for updating an N:N relationship: its
+ * complete definition, with `@odata.type`. Updates are `PUT`s that replace the definition, so a
+ * property left out is reset to its default. Send the retrieved definition back with your
+ * changes, or use `mergeAndUpdateRelationship`.
  */
-export type ManyToManyRelationshipMetadataUpdate = Partial<
-  Omit<ManyToManyRelationshipMetadataCreate, "@odata.type">
+export type ManyToManyRelationshipMetadataUpdate = Omit<
+  ManyToManyRelationshipMetadata,
+  ServerSetMetadataProperty | "@odata.type"
 > & {
-  "@odata.type"?: string;
+  "@odata.type": MetadataODataType<"ManyToManyRelationshipMetadata">;
 };
