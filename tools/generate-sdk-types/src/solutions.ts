@@ -97,7 +97,11 @@ export function operationSolutionsFrom(
   const objects = new Map<string, string[]>();
   for (const c of data.customApis) {
     if (c._sdkmessageid_value) {
-      push(objects, c._sdkmessageid_value, `${String(data.customApiComponentType)}:${c.customapiid}`);
+      push(
+        objects,
+        c._sdkmessageid_value,
+        `${String(data.customApiComponentType)}:${c.customapiid}`
+      );
     }
   }
   for (const w of data.workflows) {

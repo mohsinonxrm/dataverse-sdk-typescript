@@ -45,7 +45,9 @@ export interface PrebuiltFilter {
 
 /** An operation with these solutions is prebuilt: it has none, or one of them is prebuilt. */
 export function isPrebuilt(solutions: readonly string[], prebuilt: PrebuiltSolutions): boolean {
-  return solutions.length === 0 || solutions.some((s) => prebuilt.solutions[s]?.prebuilt === true);
+  // An unclassified solution counts as not prebuilt (checkPrebuiltFilter refuses it anyway)
+  const classOf = (s: string): SolutionClass | undefined => prebuilt.solutions[s];
+  return solutions.length === 0 || solutions.some((s) => classOf(s)?.prebuilt ?? false);
 }
 
 /**

@@ -146,13 +146,13 @@ describe("selectPrebuilt (#304)", () => {
   it("refuses an unclassified solution and a classified solution no operation names", () => {
     const names = Object.keys(OPERATION_SOLUTIONS);
     const { DynamicsMKT_Consent: _, ...rest } = PREBUILT.solutions;
-    expect(() => checkPrebuiltFilter({ ...FILTER, prebuilt: { solutions: rest } }, names)).toThrow(
-      /classify DynamicsMKT_Consent/
-    );
+    expect(() => {
+      checkPrebuiltFilter({ ...FILTER, prebuilt: { solutions: rest } }, names);
+    }).toThrow(/classify DynamicsMKT_Consent/);
     const extra = { ...PREBUILT.solutions, msdyn_Gone: { app: "Sales", prebuilt: true } };
-    expect(() => checkPrebuiltFilter({ ...FILTER, prebuilt: { solutions: extra } }, names)).toThrow(
-      /no operation is in msdyn_Gone/
-    );
+    expect(() => {
+      checkPrebuiltFilter({ ...FILTER, prebuilt: { solutions: extra } }, names);
+    }).toThrow(/no operation is in msdyn_Gone/);
   });
 });
 
@@ -329,7 +329,8 @@ describe("the committed solution data (#304)", () => {
   it("names no org: only Microsoft-managed solutions, no ids, no unmanaged solutions", () => {
     expect(text).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
     const solutions = new Set(Object.values(operationSolutions).flat());
-    for (const unmanaged of ["Default", "Active", "Basic"]) expect(solutions).not.toContain(unmanaged);
+    for (const unmanaged of ["Default", "Active", "Basic"])
+      expect(solutions).not.toContain(unmanaged);
     // Every name is classified, so each was reviewed as a Microsoft solution
     checkPrebuiltFilter({ operationSolutions, prebuilt, platform: ["ExportToExcel"] }, names);
   });

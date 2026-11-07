@@ -31,10 +31,11 @@ import type { OperationSolutions } from "./solutions.js";
 const root = fileURLToPath(new URL("../../../", import.meta.url));
 const metadataDir = join(root, "tools", "generate-sdk-types", "metadata");
 const snapshot = join(metadataDir, "dataverse-metadata.xml");
-const readJson = <T>(name: string): T => JSON.parse(readFileSync(join(metadataDir, name), "utf8")) as T;
+const readJson = (name: string): unknown =>
+  JSON.parse(readFileSync(join(metadataDir, name), "utf8"));
 const prebuilt = {
-  operationSolutions: readJson<OperationSolutions>("operation-solutions.json"),
-  prebuilt: readJson<PrebuiltSolutions>("prebuilt-solutions.json"),
+  operationSolutions: readJson("operation-solutions.json") as OperationSolutions,
+  prebuilt: readJson("prebuilt-solutions.json") as PrebuiltSolutions,
 };
 const packageDir = (name: string, ...path: string[]): string =>
   join(root, "packages", `dataverse-sdk-${name}`, ...path);
