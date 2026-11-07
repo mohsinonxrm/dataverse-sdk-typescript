@@ -67,7 +67,8 @@ export class TelemetryMiddleware implements Middleware {
         method,
         url,
         durationMs: Date.now() - start,
-        success: res.ok,
+        // A 304 (If-None-Match) or another 3xx is an answer, not a failure (#378).
+        success: res.status < 400,
         resultCode: String(res.status),
         properties: {
           "sdk.version": SDK_VERSION,

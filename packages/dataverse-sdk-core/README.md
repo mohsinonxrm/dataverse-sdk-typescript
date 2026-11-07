@@ -156,7 +156,6 @@ client
   .orderBy("name asc", "revenue desc") // $orderby (multiple fields)
   .top(50) // $top (Dataverse has no $skip: page with @odata.nextLink, see iterate() / getAll())
   .count(true) // $count=true
-  .search("Contoso") // $search
   .apply("groupby((industrycode))"); // $apply (aggregation)
 
 // HTTP Methods

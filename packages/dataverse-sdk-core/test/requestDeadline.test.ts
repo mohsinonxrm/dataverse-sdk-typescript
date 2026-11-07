@@ -186,23 +186,25 @@ describe("#46: no listeners left on a shared signal", () => {
         retry: { maxRetries: 1, baseDelayMs: 1, jitter: false },
       }
     );
-    for (let i = 0; i < 1000; i++) {
+    // 200 requests are enough to show a leak (one listener each), and fast enough under a loaded
+    // full-suite run (#378: 1,000 timed out there once). Deadlines are generous for the same reason.
+    for (let i = 0; i < 200; i++) {
       await client
         .api("WhoAmI")
-        .get({ signal: shared.signal, timeoutMs: 1000, attemptTimeoutMs: 1000 });
+        .get({ signal: shared.signal, timeoutMs: 30_000, attemptTimeoutMs: 30_000 });
     }
     // One in ten of those was retried, so its retry wait listened to the signal too.
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 50; i++) {
       await client.api("WhoAmI").get({ signal: shared.signal });
     }
     return listeners();
   }
 
-  it("with AbortSignal.any", async () => {
+  it("with AbortSignal.any", { timeout: 30_000 }, async () => {
     expect(await run()).toBe(0);
   });
 
-  it("without AbortSignal.any (older browsers)", async () => {
+  it("without AbortSignal.any (older browsers)", { timeout: 30_000 }, async () => {
     setAny(undefined);
     expect(await run()).toBe(0);
   });
