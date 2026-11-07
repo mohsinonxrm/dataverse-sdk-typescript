@@ -128,6 +128,8 @@ await fileClient.upload("accounts", accountId, "new_document", file, "contract.p
 });
 ```
 
+The PATCH routes send the file name as the percent-encoded `?x-ms-file-name=` query parameter, not the `x-ms-file-name` header (which carries only ASCII), so a name like `合同.pdf` or `résumé.pdf` is kept as written. The `"actions"` route sends it in the JSON body.
+
 `method: "auto"` (the default) is `"actions"`, the route that works everywhere. `"patch-chunked"` reads the `Location` and `x-ms-chunk-size` response headers, which a browser can read only if Dataverse's CORS policy exposes them (it rejects with a clear error when `Location` is missing); use `"actions"` in browsers. `"single"` sends the file in one request, so it is limited by the column's maximum size and holds the whole file in memory.
 
 ### Upload a Stream
@@ -163,6 +165,8 @@ for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) 
 ```
 
 `download()` with `method: "auto"` (default) is one `GET .../$value`. `downloadStream()` defaults to `"range"` (and streams the response body if Dataverse ignores `Range`). Cancelling the stream stops further requests.
+
+Some files can't be read in parts: on-premises, or in an environment with a self-managed key (BYOK), Dataverse answers a partial read with `0x80090017` and `InitializeFileBlocksDownload` returns `IsChunkingSupported: false`. The `"actions"` route then reads the whole file as one block, and `"range"` falls back to one `GET` without `Range`.
 
 ### Image Sizes
 

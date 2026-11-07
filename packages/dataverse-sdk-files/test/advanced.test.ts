@@ -73,7 +73,7 @@ function chunkedServer(fake: FakeFetch, received: Uint8Array[], chunk = "4") {
 }
 
 describe("files: upload routes (#95)", () => {
-  it("method single: one PATCH with x-ms-file-name and the bytes, no metadata lookup", async () => {
+  it("method single: one PATCH with ?x-ms-file-name= and the bytes, no metadata lookup", async () => {
     const { files, fake } = setup();
     fake.on("PATCH", COLUMN_PATH, () => noContent());
     const progress: UploadProgress[] = [];
@@ -84,7 +84,7 @@ describe("files: upload routes (#95)", () => {
     expect(fake.requests).toHaveLength(1);
     const request = fake.last();
     expect(request.method).toBe("PATCH");
-    expect(request.headers["x-ms-file-name"]).toBe("a.bin");
+    expect(request.url).toBe(`${TEST_API_URL}${COLUMN_PATH}?x-ms-file-name=a.bin`);
     expect(request.headers["content-type"]).toBe("application/octet-stream");
     expect([...(request.bodyBytes ?? [])]).toEqual([...TEN]);
     expect(progress).toEqual([
@@ -107,8 +107,8 @@ describe("files: upload routes (#95)", () => {
       "bytes 4-7/10",
       "bytes 8-9/10",
     ]);
-    expect(fake.requests[0]?.headers["x-ms-file-name"]).toBe("a.bin");
-    expect(fake.requests[1]?.url).toBe(LOCATION);
+    expect(fake.requests[0]?.url).toBe(`${TEST_API_URL}${COLUMN_PATH}?x-ms-file-name=a.bin`);
+    expect(fake.requests[1]?.url).toBe(`${LOCATION}&x-ms-file-name=a.bin`);
     expect(received.map((c) => [...c])).toEqual([
       [0, 1, 2, 3],
       [4, 5, 6, 7],
@@ -389,6 +389,187 @@ describe("files: download routes (#95)", () => {
       files.delete("accounts", ID, "new_file", { signal: controller.signal })
     ).rejects.toBeInstanceOf(DataverseAbortError);
     expect(fake.requests).toHaveLength(0);
+  });
+});
+
+/** The decoded `x-ms-file-name` query parameter of a request URL. */
+function nameParam(url: string | undefined): string | null {
+  return new URL(url ?? "about:blank").searchParams.get("x-ms-file-name");
+}
+
+describe("files: file names outside ASCII (#362)", () => {
+  it("method single: the name is the encoded x-ms-file-name query parameter, not a header", async () => {
+    const { files, fake } = setup();
+    fake.on("PATCH", COLUMN_PATH, () => noContent());
+    await files.upload("accounts", ID, "new_file", TEN, "合同.pdf", { method: "single" });
+    const request = fake.last();
+    expect(request.url).toBe(
+      `${TEST_API_URL}${COLUMN_PATH}?x-ms-file-name=%E5%90%88%E5%90%8C.pdf`
+    );
+    expect(nameParam(request.url)).toBe("合同.pdf");
+    expect(request.headers["x-ms-file-name"]).toBeUndefined();
+    expect([...(request.bodyBytes ?? [])]).toEqual([...TEN]);
+  });
+
+  it("method patch-chunked: the start request and every chunk carry the name as a query parameter", async () => {
+    const { files, fake } = setup();
+    const received: Uint8Array[] = [];
+    chunkedServer(fake, received);
+    await files.upload("accounts", ID, "new_file", TEN, "résumé.pdf", {
+      method: "patch-chunked",
+    });
+    expect(fake.requests.map((r) => nameParam(r.url))).toEqual([
+      "résumé.pdf",
+      "résumé.pdf",
+      "résumé.pdf",
+      "résumé.pdf",
+    ]);
+    expect(fake.requests[0]?.url).toBe(
+      `${TEST_API_URL}${COLUMN_PATH}?x-ms-file-name=r%C3%A9sum%C3%A9.pdf`
+    );
+    // The chunks go to the Location, keeping its session token.
+    expect(fake.requests[1]?.url).toBe(`${LOCATION}&x-ms-file-name=r%C3%A9sum%C3%A9.pdf`);
+    expect(fake.requests.every((r) => r.headers["x-ms-file-name"] === undefined)).toBe(true);
+    expect(received.map((c) => [...c])).toEqual([
+      [0, 1, 2, 3],
+      [4, 5, 6, 7],
+      [8, 9],
+    ]);
+  });
+
+  it("a zero-byte patch-chunked upload names the file in the query", async () => {
+    const { files, fake } = setup();
+    fake.on("PATCH", COLUMN_PATH, () => noContent());
+    await files.upload("accounts", ID, "new_file", new Uint8Array(0), "合同.pdf", {
+      method: "patch-chunked",
+    });
+    expect(nameParam(fake.last().url)).toBe("合同.pdf");
+  });
+
+  it("characters that mean something in a query string are encoded", async () => {
+    const { files, fake } = setup();
+    fake.on("PATCH", COLUMN_PATH, () => noContent());
+    await files.upload("accounts", ID, "new_file", TEN, "a&b=c #1+2%.txt", { method: "single" });
+    expect(nameParam(fake.last().url)).toBe("a&b=c #1+2%.txt");
+  });
+
+  it("method actions: the name goes in the JSON bodies of Initialize and Commit", async () => {
+    const { files, fake } = setup();
+    fake.on("POST", "/InitializeFileBlocksUpload", () =>
+      jsonResponse({ FileContinuationToken: "t" })
+    );
+    fake.on("POST", "/UploadBlock", () => noContent());
+    fake.on("POST", "/CommitFileBlocksUpload", () => jsonResponse({ FileId: "f" }));
+    await files.upload("accounts", ID, "new_file", TEN, "合同.pdf");
+    for (const path of ["/InitializeFileBlocksUpload", "/CommitFileBlocksUpload"]) {
+      const request = fake.requests.find((r) => r.path === path);
+      expect((JSON.parse(request?.bodyText ?? "{}") as { FileName: string }).FileName).toBe(
+        "合同.pdf"
+      );
+    }
+  });
+});
+
+/** DownloadBlock that, like Dataverse for a file stored in the database, refuses partial reads. */
+function unchunkedBlocks(fake: FakeFetch) {
+  fake.on("POST", "/InitializeFileBlocksDownload", () =>
+    jsonResponse({
+      FileSizeInBytes: 10,
+      FileName: "a.bin",
+      FileContinuationToken: "tok",
+      IsChunkingSupported: false,
+    })
+  );
+  fake.on("POST", "/DownloadBlock", (r) => {
+    const body = JSON.parse(r.bodyText ?? "{}") as { Offset: number; BlockLength: number };
+    if (body.Offset !== 0 || body.BlockLength < TEN.length) {
+      return odataError(
+        400,
+        "0x80090017",
+        "Downloading in multiple chunks isn't supported for the files stored in the database."
+      );
+    }
+    return jsonResponse({ Data: btoa(String.fromCharCode(...TEN)) });
+  });
+}
+
+/** GET .../$value that refuses Range with 0x80090017 and serves the whole file without it. */
+function unrangedServer(fake: FakeFetch) {
+  fake.on("GET", `${COLUMN_PATH}/$value`, (r) =>
+    r.headers.range
+      ? odataError(
+          400,
+          "0x80090017",
+          "Downloading in multiple chunks isn't supported for the files stored in the database."
+        )
+      : new Response(TEN, { status: 200, headers: { "content-type": "application/pdf" } })
+  );
+}
+
+describe("files: files that can't be read in parts (#362)", () => {
+  it("method actions: IsChunkingSupported false reads the whole file as one block", async () => {
+    const { files, fake } = setup();
+    unchunkedBlocks(fake);
+    const progress: DownloadProgress[] = [];
+    const blob = await files.download("accounts", ID, "new_file", {
+      method: "actions",
+      chunkSize: 4,
+      onProgress: (p) => progress.push(p),
+    });
+    expect([...new Uint8Array(await blob.arrayBuffer())]).toEqual([...TEN]);
+    const blocks = fake.requests
+      .filter((r) => r.path === "/DownloadBlock")
+      .map((r) => JSON.parse(r.bodyText ?? "{}") as { Offset: number; BlockLength: number });
+    expect(blocks).toEqual([expect.objectContaining({ Offset: 0, BlockLength: 10 })]);
+    expect(progress).toEqual([
+      { downloaded: 10, total: 10, percentage: 100, chunkIndex: 0, totalChunks: 1 },
+    ]);
+  });
+
+  it("method actions: IsChunkingSupported false streams as one chunk", async () => {
+    const { files, fake } = setup();
+    unchunkedBlocks(fake);
+    const stream = await files.downloadStream("accounts", ID, "new_file", {
+      method: "actions",
+      chunkSize: 4,
+    });
+    expect(await readAll(stream)).toEqual([[...TEN]]);
+  });
+
+  it("method range: 0x80090017 falls back to one GET without Range", async () => {
+    const { files, fake } = setup();
+    unrangedServer(fake);
+    const progress: DownloadProgress[] = [];
+    const blob = await files.download("accounts", ID, "new_file", {
+      method: "range",
+      chunkSize: 4,
+      onProgress: (p) => progress.push(p),
+    });
+    expect([...new Uint8Array(await blob.arrayBuffer())]).toEqual([...TEN]);
+    expect(blob.type).toBe("application/pdf");
+    expect(fake.requests.map((r) => r.headers.range)).toEqual(["bytes=0-3", undefined]);
+    expect(progress).toEqual([
+      { downloaded: 10, total: 10, percentage: 100, chunkIndex: 0, totalChunks: 1 },
+    ]);
+  });
+
+  it("downloadStream() (range by default) falls back the same way", async () => {
+    const { files, fake } = setup();
+    unrangedServer(fake);
+    const stream = await files.downloadStream("accounts", ID, "new_file", { chunkSize: 4 });
+    expect((await readAll(stream)).flat()).toEqual([...TEN]);
+    expect(fake.requests).toHaveLength(2);
+  });
+
+  it("method range: other errors are not retried without Range", async () => {
+    const { files, fake } = setup();
+    fake.on("GET", `${COLUMN_PATH}/$value`, () => odataError(404, "0x80040217", "No file"));
+    const err: unknown = await files
+      .download("accounts", ID, "new_file", { method: "range", chunkSize: 4 })
+      .catch((e: unknown) => e);
+    expect(err).toBeInstanceOf(DataverseODataError);
+    expect((err as DataverseODataError).code).toBe("0x80040217");
+    expect(fake.requests).toHaveLength(1);
   });
 });
 
