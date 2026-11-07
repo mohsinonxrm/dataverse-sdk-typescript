@@ -94,7 +94,7 @@ const client = new DataverseClient({
 
   // Optional: Concurrency configuration
   concurrency: {
-    maxConcurrentRequests: 8, // Default: 8 for Node.js
+    maxConcurrentRequests: 8, // Default: 8 (Node.js and browsers)
     adaptiveFromDopHint: true, // Default: true (adjusts based on x-ms-dop-hint)
     min: 2, // Default: 2 (minimum concurrent requests)
     max: 16, // Default: 16 (maximum concurrent requests)
