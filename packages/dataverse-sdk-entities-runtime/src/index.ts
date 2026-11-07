@@ -251,6 +251,8 @@ export interface FormatEntityForWriteOptions {
  *
  * - Adds the `@odata.type` annotation.
  * - Drops `id`, `logicalName` and `undefined` values (`null` is kept: it clears the column).
+ *   A `null` lookup becomes `"<navigation property>@odata.bind": null`, which is how Dataverse
+ *   clears one; for a polymorphic lookup (`customerid`, `ownerid`) that is sent for each target.
  * - Turns lookups into `@odata.bind`: an {@link EntityReference} value becomes
  *   `"<navigation property>@odata.bind": "/<entity set>(<id>)"`, and an array of references
  *   becomes an array of those paths (associating records on create). For a polymorphic lookup
@@ -293,6 +295,12 @@ export function formatEntityForWrite(
       );
     } else if (Array.isArray(value) && value.length > 0 && value.every(isEntityReference)) {
       formatted[`${key}@odata.bind`] = value.map((ref) => bindingPath(ref, options));
+    } else if (value === null && lookupNavigationProperties(key, entityMetadata).length > 0) {
+      // A lookup's logical name isn't a writable property: it is cleared through its navigation
+      // property, `<nav>@odata.bind: null` (#363). A polymorphic lookup has one per target.
+      for (const nav of lookupNavigationProperties(key, entityMetadata)) {
+        formatted[`${nav}@odata.bind`] = null;
+      }
     } else {
       formatted[key] = value;
     }
@@ -320,6 +328,30 @@ function bindingProperty(
     return perTarget;
   }
   return key;
+}
+
+/**
+ * The single-valued navigation properties that write the lookup `key`, or none when `key` isn't a
+ * lookup: the lookup's own navigation property; for a consolidated polymorphic lookup, one per
+ * target (`customerid_account`, `customerid_contact`); and for one that wasn't consolidated, the
+ * per-target entries already in the metadata.
+ */
+function lookupNavigationProperties(key: string, entityMetadata: EntityMetadata): string[] {
+  const own = (name: string) =>
+    Object.prototype.hasOwnProperty.call(entityMetadata.navigation, name)
+      ? entityMetadata.navigation[name]
+      : undefined;
+  const navigation = own(key);
+  if (navigation) {
+    if (navigation.isCollection) return [];
+    if (navigation.isPolymorphic && navigation.targets?.length) {
+      return navigation.targets.map((target) => `${navigation.fullName ?? key}_${target}`);
+    }
+    return [navigation.name];
+  }
+  return Object.entries(entityMetadata.navigation)
+    .filter(([name, nav]) => !nav.isCollection && name === `${key}_${nav.targetType}`)
+    .map(([, nav]) => nav.name);
 }
 
 /** `/<entity set>(<id>)` for a reference. */

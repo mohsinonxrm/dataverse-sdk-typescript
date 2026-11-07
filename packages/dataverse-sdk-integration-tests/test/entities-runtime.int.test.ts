@@ -112,4 +112,49 @@ describe.skipIf(!live)("live: formatEntityForWrite lookup binding", () => {
     },
     SLOW
   );
+
+  it(
+    "clears a plain and a polymorphic lookup set to null (#363)",
+    async () => {
+      const { client } = liveClient();
+      const { AccountMetadata, ContactMetadata, EntityMetadataCache: cache } = gen;
+
+      const parentId = await create({ name: `${runId}-clear-parent` }, AccountMetadata, cache);
+      const contactId = await create(
+        {
+          lastname: `${runId}-clear-contact`,
+          parentcustomerid: createEntityReference("account", parentId),
+        },
+        ContactMetadata,
+        cache
+      );
+      const accountId = await create(
+        {
+          name: `${runId}-clear-account`,
+          primarycontactid: createEntityReference("contact", contactId),
+        },
+        AccountMetadata,
+        cache
+      );
+
+      await client
+        .api(`contacts(${contactId})`)
+        .patch(formatEntityForWrite({ parentcustomerid: null }, ContactMetadata));
+      await client
+        .api(`accounts(${accountId})`)
+        .patch(formatEntityForWrite({ primarycontactid: null }, AccountMetadata));
+
+      const contact = await client
+        .api(`contacts(${contactId})`)
+        .select("_parentcustomerid_value")
+        .get<Record<string, unknown>>();
+      expect(contact._parentcustomerid_value).toBeNull();
+      const account = await client
+        .api(`accounts(${accountId})`)
+        .select("_primarycontactid_value")
+        .get<Record<string, unknown>>();
+      expect(account._primarycontactid_value).toBeNull();
+    },
+    SLOW
+  );
 });
