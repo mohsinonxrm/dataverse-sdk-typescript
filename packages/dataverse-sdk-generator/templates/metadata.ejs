@@ -2,7 +2,7 @@
 /**
  * Metadata cache for all generated entities, keyed by logical name
  */
-export const EntityMetadataCache: Record<string, EntityMetadata> = {
+export const EntityMetadataCache: Record<string, <%- metadataType %>> = {
 <%_ entities.forEach(function(e){ _%>
   <%- propertyKey(e.entity.LogicalName) %>: <%- e.metadataName %>,
 <%_ }) _%>
@@ -20,7 +20,7 @@ export const Entities = {
 /**
  * Get entity metadata by logical name
  */
-export function getEntityMetadata(logicalName: string): EntityMetadata | undefined {
+export function getEntityMetadata(logicalName: string): <%- metadataType %> | undefined {
   return EntityMetadataCache[logicalName];
 }
 

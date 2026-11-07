@@ -58,11 +58,15 @@ describe("SchemaModel with real-shaped $metadata (#78)", () => {
     expect(model.EntityTypes.map((e) => e.LogicalName).sort()).toEqual([
       "account",
       "contact",
+      "email",
+      "entity",
       "import",
+      "opportunity",
       "opportunityclose",
       "task",
     ]);
     expect(model.AllEntityTypeNames.has("crmbaseentity")).toBe(true);
+    expect(model.AllEntityTypeNames.has("activitypointer")).toBe(true);
   });
 });
 

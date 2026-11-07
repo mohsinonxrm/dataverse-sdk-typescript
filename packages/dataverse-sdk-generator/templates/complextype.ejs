@@ -4,7 +4,7 @@
  */
 export interface <%- typeName %><%- baseType ? ' extends ' + baseType : '' %> {
 <%_ complexType.Properties.forEach(function(prop){ _%>
-  <%- propertyKey(prop.Name) %>?: <%- formatType(prop.TypeScriptType) %><%- prop.Nullable ? ' | null' : '' %>;
+  <%- propertyKey(prop.Name) %>?: <%- propertyType(prop) %><%- prop.Nullable ? ' | null' : '' %>;
 <%_ }) _%>
 }
 <%_ if (output) { _%>
