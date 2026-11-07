@@ -72,14 +72,20 @@ In 1.0 the actions, functions, messages, entities-runtime and xrm packages each 
 - **Concurrency settings are honoured (#356).** `concurrency.maxConcurrentRequests` is used exactly; in 1.0 it was clamped to 2..16, so `1` sent two requests at once. When you set it, `max` defaults to it, so the `x-ms-dop-hint` header can lower your limit but no longer raise it: add `max` (for example `{ maxConcurrentRequests: 4, max: 16 }`) to let it rise. Settings that aren't whole numbers of at least 1, or don't fit `min <= maxConcurrentRequests <= max`, throw `DataverseInvalidRequestError` when the client is created. The per-request `{ type: "concurrency", maxConcurrent }` option is removed: it never had an effect.
 - **`associate()`, `disassociate()` and `bindMany()` keep the builder's impersonation and headers (#355).** In 1.0, `client.api(…).impersonate(userId).associate(…)` ran as the calling identity. If you worked around that by sending the `$ref` request yourself, you can go back to `associate()`. A custom `BindManyExecutor` now gets a sixth argument with those headers and the request options; send them with your requests.
 
-## auth-msal-browser
+## auth-msal-browser and auth-msal-node
 
-A configured `account` object no longer overrides MSAL's active account. Pass `account: () => x` to pin one account.
+- A configured `account` object no longer overrides MSAL's active account (browser). Pass `account: () => x` to pin one account.
+- **Configured `claims` don't bypass the token cache any more (#382).** In 1.0 they were sent on every silent and client-credentials call, and MSAL fetches a new token whenever a request has claims, so every Dataverse request went to Entra ID. They are now sent on sign-in or interaction, on the first token for a scope set, tenant and account, and on a forced refresh. The claims of a 401 challenge are always sent.
+- **`tenantId` is validated and keeps your cloud (#382).** A malformed `tenantId` throws `InvalidTenantId`. The authority for another tenant uses your configured authority's host (GCC High, China), not `login.microsoftonline.com`. msal-node honours `TokenOptions.tenantId` in every flow, so a guest-tenant request gets that tenant's token.
+- **msal-node errors are `MsalNodeAuthenticationError`** (still a `DataverseAuthenticationError`), with MSAL's `errorCode`, `subError`, `correlationId` and `errorNo`, as in the browser package.
+- **Browser:** a silent token request that times out in the hidden iframe (`monitor_window_timeout`, usual when third-party cookies are blocked) now falls back to the popup or redirect instead of throwing.
 
 ## batch
 
 - **`execute({ continueOnError: true })` no longer throws** when a request fails. It returns the result, with `success: false` and the failures in `errors`. Without `continueOnError`, `DataverseBatchError` now carries `result`.
 - **Large batches are split** automatically to stay within Dataverse's limit.
+- **`execute()` can be cancelled (#379).** It takes `signal`, `timeoutMs` (for the whole execution, every `$batch` of a split included), `attemptTimeoutMs` and `correlationId`. An abort after the first `$batch` ran rejects with a `DataverseBatchError` whose `cause` is the abort and whose `result` holds what ran.
+- **`addRequest()` checks its input (#379).** It throws `DataverseInvalidRequestError` for a GET inside a changeset (Dataverse refuses it), a line break in a header value or URL, an invalid header name or method, and a `$<contentId>` URL outside a changeset or naming no earlier request in it. A path that starts with `$` but isn't a reference, such as `$metadata`, must be written `/$metadata`.
 - **Bodies are `unknown`, not `any`.** `BatchResponseStep.body` and `BatchResponsePart.body` are `unknown`, so `result.responses.get("who")?.body.UserId` no longer compiles. Name the type of a response you know with the new generic, `result.responses.get("who") as BatchResponseStep<WhoAmIResponse> | undefined`, or check the value first. The request body of `addRequest()` and `BatchRequestStep` is `unknown` too; every value is still accepted.
 
 ## files
@@ -93,7 +99,9 @@ A configured `account` object no longer overrides MSAL's active account. Pass `a
 
 ## otel
 
-`serviceName` is removed from `OpenTelemetryConfig`: it was ignored. `service.name` is a resource attribute, so set it on your OpenTelemetry SDK (`new NodeSDK({ serviceName })` or `OTEL_SERVICE_NAME`).
+- `serviceName` is removed from `OpenTelemetryConfig`: it was ignored. `service.name` is a resource attribute, so set it on your OpenTelemetry SDK (`new NodeSDK({ serviceName })` or `OTEL_SERVICE_NAME`).
+- **Span attributes and URLs (#384, otel and appinsights).** `server.address` is the host name without the port (`server.port` carries it). `url.full` is the URL as core redacted it with your `redactUrl`; the adapters no longer redact it again, so a custom `redactUrl` (one that keeps `$top`, say) now shows in telemetry. A status of 400 or more is a failure; a 304 isn't. Dependency spans are recorded after the call and are never the active span, so these adapters don't propagate `traceparent`.
+- **appinsights** warns when a second client asks for a different `connectionString`: Azure Monitor is started once per process, with the first one.
 
 ## metadata
 
@@ -128,11 +136,13 @@ A configured `account` object no longer overrides MSAL's active account. Pass `a
 - `assign()`, `setState()` and the `EntityReference`s of `associate()` take logical names. The entity set is read from metadata instead of being guessed as a plural. `associate()` takes references from `createEntityReference`, which carry the entity set of the tables in the SDK's `$metadata` snapshot (see [One `EntityReference`](#one-entityreference-all-packages)).
 - Record ids must be GUIDs. A malformed id throws `DataverseInvalidRequestError` before any request is sent.
 - **`retrieveMultiple({ skip })` is replaced by `maxPageSize` (#357).** Dataverse doesn't support `$skip`. `{ maxPageSize: 50 }` sends `Prefer: odata.maxpagesize=50`; read the next page from the result's `@odata.nextLink` with `client.api(nextLink).get()`.
+- **No made-up records (#381).** `create()` and `update()` with `returnRepresentation` reject with `DataverseInvalidRequestError` when Dataverse sends no record back; in 1.0 they resolved `{}`. The entity-set lookup and `execute()` with something that isn't an `Executable` throw `DataverseInvalidRequestError` instead of a plain `Error`.
 - **Typed results.** `execute(request)` returns the request's response type (`await service.execute(new WhoAmIFunction())` is a `WhoAmIResponse`), and takes only an `Executable<T>`; drop type arguments it can now infer. `retrieve()`, `retrieveMultiple()`, and `create()`/`update()` with `returnRepresentation` return an `EntityRecord` instead of `any` when you pass no type, so a column is `unknown` until you narrow it: pass your record type (`service.retrieve<Account>(…)`) where you read columns. `update()` without `returnRepresentation` returns `Promise<void>`.
 
 ## discovery
 
-`OrganizationDetail` matches the Global Discovery Service v2.0 response: flat `Url` and `ApiUrl`, and an integer `State`. `Endpoints`, `Geo` and `OrganizationEndpoints` are removed.
+- `OrganizationDetail` matches the Global Discovery Service v2.0 response: flat `Url` and `ApiUrl`, and an integer `State`. `Endpoints`, `Geo` and `OrganizationEndpoints` are removed.
+- **`select` narrows the result (#381).** `listOrganizations({ select: ["FriendlyName", "Url"] })` returns `Pick<OrganizationDetail, "FriendlyName" | "Url">[]`, and `select` accepts only `OrganizationDetail` names. Read only the properties you selected. With a `DiscoveryOptions` variable the rows are `Partial<OrganizationDetail>`. `toEnvironment()` throws `DataverseInvalidRequestError` for a row without `Url` or `ApiUrl`.
 
 ## actions, functions, messages
 
