@@ -52,7 +52,8 @@ describe("OpenTelemetryClient.trackDependency", () => {
     const client = new OpenTelemetryClient({ tracer });
     client.trackDependency("dataverse", {
       method: "GET",
-      url: `${TEST_API_URL}/contacts?$select=fullname&$filter=emailaddress1 eq 'jane@contoso.com'`,
+      // As core passes it: already redacted with the app's redactUrl.
+      url: `${TEST_API_URL}/contacts?…`,
       durationMs: 120,
       success: true,
       resultCode: "200",
@@ -68,7 +69,7 @@ describe("OpenTelemetryClient.trackDependency", () => {
     expect(span.kind).toBe(SpanKind.CLIENT);
     expect(span.attributes).toEqual({
       "http.request.method": "GET",
-      "url.full": `${TEST_API_URL}/contacts?$select=REDACTED&$filter=REDACTED`,
+      "url.full": `${TEST_API_URL}/contacts?…`,
       "server.address": "contoso.crm.dynamics.com",
       "server.port": 443,
       "http.response.status_code": 200,
@@ -116,6 +117,57 @@ describe("OpenTelemetryClient.trackDependency", () => {
     const client = new OpenTelemetryClient({ tracer });
     client.trackDependency("dataverse", { method: "GET", resultCode: "404" });
     expect(onlySpan().status.code).toBe(SpanStatusCode.ERROR);
+  });
+
+  it("sets server.address to the host name and server.port separately (#384)", () => {
+    const client = new OpenTelemetryClient({ tracer });
+    client.trackDependency("dataverse", {
+      method: "GET",
+      // As core passes it: `target` is `URL.host`, which keeps a non-default port.
+      target: "contoso.crm.dynamics.com:8443",
+      url: "https://contoso.crm.dynamics.com:8443/api/data/v9.2/WhoAmI",
+      resultCode: "200",
+    });
+    client.trackDependency("dataverse", { method: "GET", target: "contoso.crm.dynamics.com:8443" });
+    client.trackDependency("dataverse", {
+      method: "GET",
+      target: "contoso.crm.dynamics.com",
+      url: `${TEST_API_URL}/WhoAmI`,
+    });
+
+    const [withUrl, targetOnly, defaultPort] = spans().map((s) => s.attributes);
+    expect(withUrl?.["server.address"]).toBe("contoso.crm.dynamics.com");
+    expect(withUrl?.["server.port"]).toBe(8443);
+    expect(targetOnly?.["server.address"]).toBe("contoso.crm.dynamics.com");
+    expect(targetOnly?.["server.port"]).toBe(8443);
+    expect(defaultPort?.["server.address"]).toBe("contoso.crm.dynamics.com");
+    expect(defaultPort?.["server.port"]).toBe(443);
+  });
+
+  it("records url.full as core passes it, already redacted by the app's redactUrl (#384)", () => {
+    const client = new OpenTelemetryClient({ tracer });
+    client.trackDependency("dataverse", { method: "GET", url: `${TEST_API_URL}/accounts?$top=5` });
+    client.trackDependency("dataverse", { method: "GET", url: `${TEST_API_URL}/accounts({id})?…` });
+
+    expect(spans().map((s) => s.attributes["url.full"])).toEqual([
+      `${TEST_API_URL}/accounts?$top=5`,
+      `${TEST_API_URL}/accounts({id})?…`,
+    ]);
+  });
+
+  it("derives the span status from the status code when there is one (#384)", () => {
+    const client = new OpenTelemetryClient({ tracer });
+    // A core that sets `success` from `res.ok` reports a 304 as unsuccessful; it isn't an error.
+    client.trackDependency("dataverse", { method: "GET", success: false, resultCode: "304" });
+    client.trackDependency("dataverse", { method: "GET", success: true, resultCode: "503" });
+    client.trackDependency("dataverse", { method: "GET", success: false });
+
+    const [notModified, unavailable, thrown] = spans();
+    expect(notModified?.status.code).toBe(SpanStatusCode.UNSET);
+    expect(notModified?.attributes["error.type"]).toBeUndefined();
+    expect(unavailable?.status).toEqual({ code: SpanStatusCode.ERROR, message: "HTTP 503" });
+    expect(unavailable?.attributes["error.type"]).toBe("503");
+    expect(thrown?.status.code).toBe(SpanStatusCode.ERROR);
   });
 
   it("uses the tracerProvider option", () => {
@@ -194,7 +246,9 @@ describe("OpenTelemetryClient.trackException", () => {
     client.trackException(error, {
       "correlation.id": CORRELATION_ID,
       "request.method": "GET",
-      "request.url": `${TEST_API_URL}/contacts?$filter=fullname eq 'Jane Doe'`,
+      // Core redacted it with the app's redactUrl: recorded as is.
+      "request.url": `${TEST_API_URL}/contacts?…`,
+      note: `see ${TEST_API_URL}/contacts?$filter=fullname eq 'Jane Doe'`,
     });
 
     const span = onlySpan();
@@ -204,7 +258,8 @@ describe("OpenTelemetryClient.trackException", () => {
     expect(span.attributes).toEqual({
       "dataverse.correlation_id": CORRELATION_ID,
       "dataverse.request.method": "GET",
-      "dataverse.request.url": `${TEST_API_URL}/contacts?$filter=REDACTED`,
+      "dataverse.request.url": `${TEST_API_URL}/contacts?…`,
+      "dataverse.note": `see ${TEST_API_URL}/contacts?$filter=REDACTED`,
     });
     const event = span.events[0];
     expect(event?.name).toBe("exception");
@@ -314,12 +369,21 @@ describe("DataverseClient with OpenTelemetryClient", () => {
 
     expect(fake.last().url).toContain("jane");
     const span = onlySpan();
-    // Core redacts the query itself (#35: "?…", which the adapter reports as "?REDACTED"); an
-    // older core reported it unredacted, and the adapter's own redaction kept the name only.
-    expect(span.attributes["url.full"]).toMatch(
-      /^https:\/\/contoso\.crm\.dynamics\.com\/api\/data\/v9\.2\/contacts(\?\$filter=REDACTED|\?REDACTED)?$/
-    );
+    // Core redacts the query (#35), and the adapter records that URL as is (#384).
+    expect(span.attributes["url.full"]).toBe(`${TEST_API_URL}/contacts?…`);
     expect(JSON.stringify(span.attributes)).not.toContain("jane");
+  });
+
+  it("records the URL the app's redactUrl returns (#384)", async () => {
+    const { client, fake } = createTestClient({
+      telemetry: new OpenTelemetryClient({ tracer }),
+      redactUrl: (url) => `${url.origin}${url.pathname}?$top=${url.searchParams.get("$top") ?? ""}`,
+    });
+    fake.on("GET", "/accounts", () => jsonResponse({ value: [] }));
+
+    await client.api("accounts").top(5).get();
+
+    expect(onlySpan().attributes["url.full"]).toBe(`${TEST_API_URL}/accounts?$top=5`);
   });
 
   it("keeps the Dataverse error of a failed request and marks the span as failed", async () => {

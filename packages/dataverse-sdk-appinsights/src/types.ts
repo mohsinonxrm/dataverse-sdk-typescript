@@ -13,7 +13,9 @@ export interface ApplicationInsightsConfig {
   /**
    * Application Insights connection string. When set, the adapter calls
    * `useAzureMonitor({ azureMonitorExporterOptions: { connectionString } })` once per process.
-   * Omit it when your app already calls `useAzureMonitor()`.
+   * Omit it when your app already calls `useAzureMonitor()`. A later client with a different
+   * connection string still sends to the first one, and the adapter warns (through `logger` or
+   * `loggerProvider` when set, else once with `console.warn`).
    *
    * Needs the optional peer dependency `@azure/monitor-opentelemetry` (and
    * `@opentelemetry/resources` with `cloudRoleName`); without it the constructor throws a

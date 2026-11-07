@@ -72,16 +72,32 @@ when a request fails without a response (for example a network error).
 | Attribute                   | Value                                                                                  |
 | --------------------------- | -------------------------------------------------------------------------------------- |
 | `http.request.method`       | `GET`, `POST`, `PATCH`, ...                                                            |
-| `url.full`                  | The request URL, redacted (see [Privacy](#privacy))                                    |
-| `server.address`            | Host name, e.g. `org.crm.dynamics.com`                                                 |
-| `server.port`               | Port, e.g. `443`                                                                       |
+| `url.full`                  | The request URL as the SDK redacted it (see [Privacy](#privacy))                       |
+| `server.address`            | Host name without the port, e.g. `org.crm.dynamics.com`                                |
+| `server.port`               | Port, e.g. `443`, or `8443` for `org.example.com:8443`                                 |
 | `http.response.status_code` | Response status, when there is a response                                              |
 | `error.type`                | On failure: the status code, or the error name when there is no response               |
 | `dataverse.correlation_id`  | The `x-ms-correlation-id` sent with the request                                        |
 | `dataverse.*`               | Other properties from the SDK, e.g. `dataverse.sdk.version`, `dataverse.retry.attempt` |
 
-Failed calls (`success: false`, or a 4xx/5xx status) get span status `ERROR`. Successful calls
-leave the status unset, as the OpenTelemetry HTTP conventions recommend for client spans.
+A call with a response fails when its status is 4xx or 5xx (so a `304 Not Modified` is not an
+error); a call without one (a network error) fails when `success` is `false`. Failed calls get
+span status `ERROR`. Successful calls leave the status unset, as the OpenTelemetry HTTP
+conventions recommend for client spans.
+
+### Span timing and trace context
+
+The `TelemetryClient` interface reports a call after it has finished: the SDK calls
+`trackDependency` with the duration once the response or the error is in. So the adapter
+records the dependency span afterwards, with its start time set back by the duration, and the
+span is never active while the request is in flight. As a result:
+
+- the span is a child of the span that was active when the request was made (your app's span),
+  in the same trace;
+- this adapter sends no `traceparent` header to Dataverse;
+- spans from HTTP auto-instrumentation (for example `@opentelemetry/instrumentation-undici` for
+  `fetch`) are not children of the dependency span: both are children of your span. The
+  auto-instrumentation is what injects `traceparent`, with your span as the parent.
 
 ## Example: full setup with OTLP
 
@@ -113,8 +129,15 @@ await sdk.shutdown();
 
 ## Privacy
 
-URLs are redacted before they are recorded, in `url.full`, in property values and in exception
-messages and stack traces:
+The SDK redacts the request URL before the adapter sees it: its `TelemetryMiddleware` runs the
+URL through the client's `redactUrl` option and passes the result, which the adapter records as
+is in `url.full` and in the exception's `dataverse.request.url`. The default keeps the origin and
+path, turns a GUID key into `({id})`, any other key into `(…)` and the query into `?…`, so
+`accounts(00000000-…)?$filter=name eq 'x'` is recorded as `…/accounts({id})?…`. A custom
+`redactUrl` (for example one that keeps `$top`) decides what is recorded.
+
+Exception messages and stack traces, and other property values, can contain URLs the SDK did not
+redact, so the adapter redacts every URL in them:
 
 - every query parameter value becomes `REDACTED` and only the names are kept, so
   `?$filter=emailaddress1 eq 'jane@contoso.com'&$top=5` is recorded as
@@ -124,9 +147,10 @@ messages and stack traces:
   `contacts(emailaddress1='REDACTED')`;
 - user info (`user:password@`) and the `#fragment` are dropped.
 
-Record GUIDs in the path are kept. No headers, request bodies or response bodies are recorded.
-Properties you pass to `trackEvent` or `trackException` yourself are recorded as they are (with
-URLs redacted), so don't put personal data in them.
+No headers, request bodies or response bodies are recorded. If you call `trackDependency`
+yourself, `url` is recorded as you pass it, so redact it first. Properties you pass to
+`trackEvent` or `trackException` yourself are recorded as they are (with URLs redacted), so don't
+put personal data in them.
 
 ## License
 
