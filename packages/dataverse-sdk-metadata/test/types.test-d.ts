@@ -24,6 +24,15 @@ import type {
   OptionSetMetadataCreate,
   Label,
   LocalizedLabel,
+  AttributeMetadataUpdateTypes,
+  EntityMetadataChanges,
+  ManyToManyRelationshipMetadataUpdate,
+  OneToManyRelationshipMetadata,
+  OneToManyRelationshipMetadataUpdate,
+  OptionSetMetadata,
+  OptionSetMetadataChanges,
+  OptionSetMetadataUpdate,
+  StringAttributeMetadata,
 } from "../src/types/index.js";
 
 // ==================== Entity Metadata Type Tests ====================
@@ -64,7 +73,7 @@ expectError<EntityMetadataCreate>({
   MetadataId: "00000000-0000-0000-0000-000000000001",
 });
 
-// EntityMetadataUpdate should allow partial properties
+// EntityMetadataUpdate is the complete definition, typed by its @odata.type
 const entityUpdate: EntityMetadataUpdate = {
   "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
   DisplayName: {
@@ -377,8 +386,11 @@ expectAssignable<EntityMetadataCreate>({
   Attributes: [stringAttrCreate],
 });
 
-// A retrieved definition can be sent back as an update.
-expectAssignable<EntityMetadataUpdate>(readEntity);
+// A retrieved definition can be sent back as an update, with its @odata.type (#359).
+expectAssignable<EntityMetadataUpdate>({
+  ...readEntity,
+  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+});
 
 // A 1:N create needs both tables and the lookup.
 expectError<OneToManyRelationshipMetadataCreate>({
@@ -395,6 +407,84 @@ expectType<Promise<string>>(metadata.createAttributeDefinition("account", intAtt
 expectType<Promise<string>>(metadata.createOneToManyRelationship(oneToManyCreate));
 expectType<Promise<string>>(metadata.createManyToManyRelationship(manyToManyCreate));
 expectType<Promise<string>>(metadata.createGlobalOptionSet(optionSetCreate));
+
+// ==================== Updates are full definitions (#359) ====================
+// A metadata update is a PUT that replaces the definition, so an update body is the complete
+// definition with its @odata.type, not a few changed properties.
+
+declare const displayName: Label;
+declare const readString: StringAttributeMetadata;
+declare const readOptionSet: OptionSetMetadata;
+declare const readOneToMany: OneToManyRelationshipMetadata;
+
+// A partial body without @odata.type doesn't compile.
+expectError(
+  metadata.updateAttributeDefinition("account", "new_field", { DisplayName: displayName })
+);
+expectError(metadata.updateEntityDefinition("account", { DisplayName: displayName }));
+expectError(metadata.updateGlobalOptionSet("new_colors", { DisplayName: displayName }));
+expectError(metadata.updateOneToManyRelationship("new_rel", { IsValidForAdvancedFind: true }));
+expectError(metadata.updateManyToManyRelationship("new_rel", { IsValidForAdvancedFind: true }));
+expectNotAssignable<AttributeMetadataUpdateTypes>({ DisplayName: displayName });
+expectNotAssignable<OptionSetMetadataUpdate>({ DisplayName: displayName });
+expectNotAssignable<OneToManyRelationshipMetadataUpdate>({ IsValidForAdvancedFind: true });
+expectNotAssignable<ManyToManyRelationshipMetadataUpdate>({ IsValidForAdvancedFind: true });
+// The abstract AttributeMetadata isn't a column type to update either.
+expectNotAssignable<AttributeMetadataUpdateTypes>({
+  "@odata.type": "Microsoft.Dynamics.CRM.AttributeMetadata",
+  DisplayName: displayName,
+});
+
+// The retrieve, change, PUT pattern: a retrieved definition plus its @odata.type.
+expectType<Promise<void>>(
+  metadata.updateAttributeDefinition("account", "new_field", {
+    ...readString,
+    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+    DisplayName: displayName,
+  })
+);
+expectType<Promise<void>>(
+  metadata.updateGlobalOptionSet("new_colors", {
+    ...readOptionSet,
+    "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
+  })
+);
+expectType<Promise<void>>(
+  metadata.updateOneToManyRelationship("new_rel", {
+    ...readOneToMany,
+    "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+  })
+);
+// The @odata.type narrows the column's own properties: MaxLength is a text column's.
+expectError<AttributeMetadataUpdateTypes>({
+  "@odata.type": "Microsoft.Dynamics.CRM.BooleanAttributeMetadata",
+  MaxLength: 100,
+});
+
+// The merge helpers take only the changes. Columns and relationships name their type, which the
+// GET casts to; a table and a global choice have one type.
+expectType<Promise<void>>(
+  metadata.mergeAndUpdateAttributeDefinition("account", "new_field", {
+    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+    MaxLength: 200,
+  })
+);
+expectError(metadata.mergeAndUpdateAttributeDefinition("account", "new_field", { MaxLength: 200 }));
+expectType<Promise<void>>(
+  metadata.mergeAndUpdateRelationship("new_rel", {
+    "@odata.type": "Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata",
+    IsValidForAdvancedFind: false,
+  })
+);
+expectError(metadata.mergeAndUpdateRelationship("new_rel", { IsValidForAdvancedFind: false }));
+expectType<Promise<void>>(
+  metadata.mergeAndUpdateGlobalOptionSet("new_colors", { DisplayName: displayName })
+);
+expectType<Promise<void>>(
+  metadata.mergeAndUpdateEntityDefinition("account", { DisplayName: displayName })
+);
+expectAssignable<EntityMetadataChanges>({ HasNotes: true });
+expectAssignable<OptionSetMetadataChanges>({ DisplayName: displayName });
 
 // ==================== Polymorphic lookup actions (#219) ====================
 

@@ -8,9 +8,12 @@
  * - `metadata-params`: parameter shapes for the option-value and lookup actions.
  * - The create and update payloads (#171, #209): `*AttributeMetadataCreate` and the
  *   `AttributeMetadataCreateTypes` union discriminated on `@odata.type`, the table,
- *   relationship and option set creates, and the `Partial` update types. Their rules come from
- *   live checks: Dataverse rejects creates without `@odata.type` for columns, relationships and
- *   choices, and refuses abstract types (`AttributeMetadata`, `EnumAttributeMetadata`).
+ *   relationship and option set creates. Their rules come from live checks: Dataverse rejects
+ *   creates without `@odata.type` for columns, relationships and choices, and refuses abstract
+ *   types (`AttributeMetadata`, `EnumAttributeMetadata`).
+ * - The update payloads (#359): a metadata update is a `PUT` that replaces the definition, so
+ *   `*Update` is the complete definition with `@odata.type` required, and `*Changes` is what the
+ *   `mergeAndUpdate*` helpers take (they retrieve the rest).
  *
  * Edit these here, not in `packages/dataverse-sdk-metadata`: a regeneration overwrites that.
  */
@@ -273,18 +276,30 @@ export type EntityMetadataCreate = Omit<
   },
   {
     name: "EntityMetadataUpdate",
-    content: `import type { EntityMetadataCreate } from "./EntityMetadataCreate.js";
+    content: `import type { MetadataODataType } from "./AttributeMetadataCreateTypes.js";
+import type { ServerSetEntityProperty } from "./EntityMetadataCreate.js";
+import type { EntityMetadata } from "./EntityMetadata.js";
 
 /**
- * EntityMetadataUpdate - the payload for updating a table. Updates are \`PUT\`s that replace the
- * definition, so send the complete definition (a retrieved \`EntityMetadata\` is accepted), or use
- * \`mergeAndUpdateEntityDefinition\`.
+ * EntityMetadataUpdate - the payload for updating a table: its complete definition, with
+ * \`@odata.type\`. Updates are \`PUT\`s that replace the definition, so a property left out is
+ * reset to its default. Retrieve the definition, change it and send all of it back
+ * (\`{ ...retrieved, "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata" }\`), or use
+ * \`mergeAndUpdateEntityDefinition\` with just the changes. Columns (\`Attributes\`) are updated
+ * one by one, not through the table.
  */
-export type EntityMetadataUpdate = Partial<
-  Omit<EntityMetadataCreate, "@odata.type" | "Attributes">
+export type EntityMetadataUpdate = Omit<
+  EntityMetadata,
+  ServerSetEntityProperty | "@odata.type" | "Attributes"
 > & {
-  "@odata.type"?: string;
+  "@odata.type": MetadataODataType<"EntityMetadata">;
 };
+
+/**
+ * EntityMetadataChanges - the table properties to change with \`mergeAndUpdateEntityDefinition\`,
+ * which retrieves the rest of the definition and sends it with them.
+ */
+export type EntityMetadataChanges = Partial<EntityMetadataUpdate>;
 `,
   },
   {
@@ -561,17 +576,41 @@ export type OneToManyRelationshipMetadataCreate = Omit<
   },
   {
     name: "OneToManyRelationshipMetadataUpdate",
-    content: `import type { OneToManyRelationshipMetadataCreate } from "./OneToManyRelationshipMetadataCreate.js";
+    content: `import type {
+  MetadataODataType,
+  ServerSetMetadataProperty,
+} from "./AttributeMetadataCreateTypes.js";
+import type { ManyToManyRelationshipMetadataUpdate } from "./ManyToManyRelationshipMetadataUpdate.js";
+import type { OneToManyRelationshipMetadata } from "./OneToManyRelationshipMetadata.js";
 
 /**
- * OneToManyRelationshipMetadataUpdate - the payload for updating a 1:N relationship. Updates are
- * \`PUT\`s that replace the definition, so send the complete definition.
+ * OneToManyRelationshipMetadataUpdate - the payload for updating a 1:N relationship: its complete
+ * definition, with \`@odata.type\`. Updates are \`PUT\`s that replace the definition, so a property
+ * left out is reset to its default. Send the retrieved definition back with your changes, or use
+ * \`mergeAndUpdateRelationship\`. The lookup column is updated as a column, not here.
  */
-export type OneToManyRelationshipMetadataUpdate = Partial<
-  Omit<OneToManyRelationshipMetadataCreate, "@odata.type" | "Lookup">
+export type OneToManyRelationshipMetadataUpdate = Omit<
+  OneToManyRelationshipMetadata,
+  ServerSetMetadataProperty | "@odata.type" | "Lookup"
 > & {
-  "@odata.type"?: string;
+  "@odata.type": MetadataODataType<"OneToManyRelationshipMetadata">;
 };
+
+/** A complete 1:N or N:N relationship definition, told apart by \`@odata.type\`. */
+export type RelationshipMetadataUpdateTypes =
+  OneToManyRelationshipMetadataUpdate | ManyToManyRelationshipMetadataUpdate;
+
+/**
+ * RelationshipMetadataChanges - the relationship properties to change with
+ * \`mergeAndUpdateRelationship\`, with the relationship's \`@odata.type\`
+ * (\`OneToManyRelationshipMetadata\` or \`ManyToManyRelationshipMetadata\`), which the retrieve
+ * casts to.
+ */
+export type RelationshipMetadataChanges =
+  | (Partial<OneToManyRelationshipMetadataUpdate> &
+      Pick<OneToManyRelationshipMetadataUpdate, "@odata.type">)
+  | (Partial<ManyToManyRelationshipMetadataUpdate> &
+      Pick<ManyToManyRelationshipMetadataUpdate, "@odata.type">);
 `,
   },
   {
@@ -609,16 +648,23 @@ export type ManyToManyRelationshipMetadataCreate = Omit<
   },
   {
     name: "ManyToManyRelationshipMetadataUpdate",
-    content: `import type { ManyToManyRelationshipMetadataCreate } from "./ManyToManyRelationshipMetadataCreate.js";
+    content: `import type {
+  MetadataODataType,
+  ServerSetMetadataProperty,
+} from "./AttributeMetadataCreateTypes.js";
+import type { ManyToManyRelationshipMetadata } from "./ManyToManyRelationshipMetadata.js";
 
 /**
- * ManyToManyRelationshipMetadataUpdate - the payload for updating an N:N relationship. Updates are
- * \`PUT\`s that replace the definition, so send the complete definition.
+ * ManyToManyRelationshipMetadataUpdate - the payload for updating an N:N relationship: its
+ * complete definition, with \`@odata.type\`. Updates are \`PUT\`s that replace the definition, so a
+ * property left out is reset to its default. Send the retrieved definition back with your
+ * changes, or use \`mergeAndUpdateRelationship\`.
  */
-export type ManyToManyRelationshipMetadataUpdate = Partial<
-  Omit<ManyToManyRelationshipMetadataCreate, "@odata.type">
+export type ManyToManyRelationshipMetadataUpdate = Omit<
+  ManyToManyRelationshipMetadata,
+  ServerSetMetadataProperty | "@odata.type"
 > & {
-  "@odata.type"?: string;
+  "@odata.type": MetadataODataType<"ManyToManyRelationshipMetadata">;
 };
 `,
   },
@@ -643,6 +689,166 @@ export type OptionSetMetadataCreate = Omit<
   Name: string;
   Options?: OptionMetadataCreate[];
 };
+`,
+  },
+  {
+    name: "OptionSetMetadataUpdate",
+    content: `import type {
+  MetadataODataType,
+  ServerSetMetadataProperty,
+} from "./AttributeMetadataCreateTypes.js";
+import type { OptionSetMetadata } from "./OptionSetMetadata.js";
+
+/**
+ * OptionSetMetadataUpdate - the payload for updating a global choice: its complete definition,
+ * with \`@odata.type\`. Updates are \`PUT\`s that replace the definition, so a property left out is
+ * reset to its default. Send the retrieved definition back with your changes, or use
+ * \`mergeAndUpdateGlobalOptionSet\`. A \`PUT\` doesn't change the options (\`Options\`): use
+ * \`insertOptionValue\`, \`updateOptionValue\`, \`deleteOptionValue\` and \`orderOptions\`.
+ */
+export type OptionSetMetadataUpdate = Omit<
+  OptionSetMetadata,
+  ServerSetMetadataProperty | "IsCustomOptionSet" | "@odata.type" | "Options"
+> & {
+  "@odata.type": MetadataODataType<"OptionSetMetadata">;
+};
+
+/**
+ * OptionSetMetadataChanges - the global choice properties to change with
+ * \`mergeAndUpdateGlobalOptionSet\`, which retrieves the rest of the definition and sends it with
+ * them.
+ */
+export type OptionSetMetadataChanges = Partial<OptionSetMetadataUpdate>;
+`,
+  },
+  {
+    name: "AttributeMetadataUpdateTypes",
+    content: `import type {
+  MetadataODataType,
+  ServerSetAttributeProperty,
+} from "./AttributeMetadataCreateTypes.js";
+import type { AttributeMetadata } from "./AttributeMetadata.js";
+import type { BigIntAttributeMetadata } from "./BigIntAttributeMetadata.js";
+import type { BooleanAttributeMetadata } from "./BooleanAttributeMetadata.js";
+import type { DateTimeAttributeMetadata } from "./DateTimeAttributeMetadata.js";
+import type { DecimalAttributeMetadata } from "./DecimalAttributeMetadata.js";
+import type { DoubleAttributeMetadata } from "./DoubleAttributeMetadata.js";
+import type { EntityNameAttributeMetadata } from "./EntityNameAttributeMetadata.js";
+import type { FileAttributeMetadata } from "./FileAttributeMetadata.js";
+import type { ImageAttributeMetadata } from "./ImageAttributeMetadata.js";
+import type { IntegerAttributeMetadata } from "./IntegerAttributeMetadata.js";
+import type { LookupAttributeMetadata } from "./LookupAttributeMetadata.js";
+import type { ManagedPropertyAttributeMetadata } from "./ManagedPropertyAttributeMetadata.js";
+import type { MemoAttributeMetadata } from "./MemoAttributeMetadata.js";
+import type { MoneyAttributeMetadata } from "./MoneyAttributeMetadata.js";
+import type { MultiSelectPicklistAttributeMetadata } from "./MultiSelectPicklistAttributeMetadata.js";
+import type { PicklistAttributeMetadata } from "./PicklistAttributeMetadata.js";
+import type { StateAttributeMetadata } from "./StateAttributeMetadata.js";
+import type { StatusAttributeMetadata } from "./StatusAttributeMetadata.js";
+import type { StringAttributeMetadata } from "./StringAttributeMetadata.js";
+import type { UniqueIdentifierAttributeMetadata } from "./UniqueIdentifierAttributeMetadata.js";
+
+/**
+ * An update payload for column type \`T\`: its complete definition, with \`@odata.type\` (as
+ * \`Microsoft.Dynamics.CRM.<Name>\`) required. The properties Dataverse computes
+ * (\`ServerSetAttributeProperty\` and the type's own \`ServerSet\`) are left out; a retrieved
+ * definition that has them can still be sent back.
+ */
+export type AttributeMetadataUpdate<
+  T extends AttributeMetadata,
+  Name extends string,
+  ServerSet extends string = never,
+> = Omit<T, ServerSetAttributeProperty | ServerSet | "@odata.type"> & {
+  "@odata.type": MetadataODataType<Name>;
+};
+
+/** The update payload of each column type, by the type's name. */
+export interface AttributeMetadataUpdateByType {
+  BigIntAttributeMetadata: AttributeMetadataUpdate<
+    BigIntAttributeMetadata,
+    "BigIntAttributeMetadata"
+  >;
+  BooleanAttributeMetadata: AttributeMetadataUpdate<
+    BooleanAttributeMetadata,
+    "BooleanAttributeMetadata"
+  >;
+  DateTimeAttributeMetadata: AttributeMetadataUpdate<
+    DateTimeAttributeMetadata,
+    "DateTimeAttributeMetadata",
+    "MaxSupportedValue" | "MinSupportedValue"
+  >;
+  DecimalAttributeMetadata: AttributeMetadataUpdate<
+    DecimalAttributeMetadata,
+    "DecimalAttributeMetadata"
+  >;
+  DoubleAttributeMetadata: AttributeMetadataUpdate<
+    DoubleAttributeMetadata,
+    "DoubleAttributeMetadata"
+  >;
+  EntityNameAttributeMetadata: AttributeMetadataUpdate<
+    EntityNameAttributeMetadata,
+    "EntityNameAttributeMetadata",
+    "IsEntityReferenceStored"
+  >;
+  FileAttributeMetadata: AttributeMetadataUpdate<FileAttributeMetadata, "FileAttributeMetadata">;
+  ImageAttributeMetadata: AttributeMetadataUpdate<ImageAttributeMetadata, "ImageAttributeMetadata">;
+  IntegerAttributeMetadata: AttributeMetadataUpdate<
+    IntegerAttributeMetadata,
+    "IntegerAttributeMetadata"
+  >;
+  LookupAttributeMetadata: AttributeMetadataUpdate<
+    LookupAttributeMetadata,
+    "LookupAttributeMetadata"
+  >;
+  ManagedPropertyAttributeMetadata: AttributeMetadataUpdate<
+    ManagedPropertyAttributeMetadata,
+    "ManagedPropertyAttributeMetadata",
+    "ValueAttributeTypeCode"
+  >;
+  MemoAttributeMetadata: AttributeMetadataUpdate<MemoAttributeMetadata, "MemoAttributeMetadata">;
+  MoneyAttributeMetadata: AttributeMetadataUpdate<MoneyAttributeMetadata, "MoneyAttributeMetadata">;
+  MultiSelectPicklistAttributeMetadata: AttributeMetadataUpdate<
+    MultiSelectPicklistAttributeMetadata,
+    "MultiSelectPicklistAttributeMetadata"
+  >;
+  PicklistAttributeMetadata: AttributeMetadataUpdate<
+    PicklistAttributeMetadata,
+    "PicklistAttributeMetadata"
+  >;
+  StateAttributeMetadata: AttributeMetadataUpdate<StateAttributeMetadata, "StateAttributeMetadata">;
+  StatusAttributeMetadata: AttributeMetadataUpdate<
+    StatusAttributeMetadata,
+    "StatusAttributeMetadata"
+  >;
+  StringAttributeMetadata: AttributeMetadataUpdate<
+    StringAttributeMetadata,
+    "StringAttributeMetadata"
+  >;
+  UniqueIdentifierAttributeMetadata: AttributeMetadataUpdate<
+    UniqueIdentifierAttributeMetadata,
+    "UniqueIdentifierAttributeMetadata"
+  >;
+}
+
+/**
+ * AttributeMetadataUpdateTypes - the payload for updating a column: its complete definition, as a
+ * union discriminated on \`@odata.type\`. Updates are \`PUT\`s that replace the definition, so a
+ * property left out is reset to its default. Retrieve the column cast to its type, change it and
+ * send all of it back, or use \`mergeAndUpdateAttributeDefinition\`. The abstract
+ * \`AttributeMetadata\` and \`EnumAttributeMetadata\` are not column types and are not included.
+ */
+export type AttributeMetadataUpdateTypes =
+  AttributeMetadataUpdateByType[keyof AttributeMetadataUpdateByType];
+
+/**
+ * AttributeMetadataChanges - the column properties to change with
+ * \`mergeAndUpdateAttributeDefinition\`, with the column's \`@odata.type\`, which the retrieve
+ * casts to. The rest of the definition is retrieved and sent with them.
+ */
+export type AttributeMetadataChanges = {
+  [Name in keyof AttributeMetadataUpdateByType]: Partial<AttributeMetadataUpdateByType[Name]> &
+    Pick<AttributeMetadataUpdateByType[Name], "@odata.type">;
+}[keyof AttributeMetadataUpdateByType];
 `,
   },
 ];

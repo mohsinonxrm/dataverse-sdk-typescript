@@ -35,16 +35,22 @@ import type {
   EntityMetadata,
   EntityMetadataCreate,
   EntityMetadataUpdate,
+  EntityMetadataChanges,
   AttributeMetadata,
+  AttributeMetadataChanges,
   AttributeMetadataCreateTypes,
+  AttributeMetadataUpdateTypes,
   OneToManyRelationshipMetadata,
   ManyToManyRelationshipMetadata,
   OneToManyRelationshipMetadataCreate,
   OneToManyRelationshipMetadataUpdate,
   ManyToManyRelationshipMetadataCreate,
   ManyToManyRelationshipMetadataUpdate,
+  RelationshipMetadataChanges,
   OptionSetMetadata,
+  OptionSetMetadataChanges,
   OptionSetMetadataCreate,
+  OptionSetMetadataUpdate,
   InsertOptionValueParams,
   InsertOptionValueResponse,
   UpdateOptionValueParams,
@@ -260,12 +266,21 @@ export class MetadataClient {
    * Update an existing entity definition.
    *
    * Metadata updates use `PUT`, which **replaces** the definition: a property you leave out is
-   * reset to its default. Send the complete definition (retrieve it, change it, send it back),
-   * or use {@link mergeAndUpdateEntityDefinition}, which does that for you. Labels are merged
-   * (`MSCRM.MergeLabels: true`), so labels in other languages are kept.
+   * reset to its default. Send the complete definition, with its `@odata.type` (retrieve it,
+   * change it, send it back), or use {@link mergeAndUpdateEntityDefinition}, which does that for
+   * you. Labels are merged (`MSCRM.MergeLabels: true`), so labels in other languages are kept.
    * @param logicalName Entity logical name
    * @param entity The complete entity definition
    * @param options Solution to add the change to
+   * @example
+   * ```typescript
+   * const current = await metadataClient.getEntityDefinition("new_project");
+   * await metadataClient.updateEntityDefinition("new_project", {
+   *   ...current,
+   *   "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+   *   HasNotes: true,
+   * });
+   * ```
    */
   async updateEntityDefinition(
     logicalName: string,
@@ -282,6 +297,9 @@ export class MetadataClient {
   /**
    * Retrieve an entity definition, apply `changes` to it, and `PUT` the result back, so the
    * properties you don't change keep their current values.
+   *
+   * The retrieve sends `Consistency: Strong`, so it reads the latest definition rather than a
+   * cached copy (up to ~30 seconds old) that would undo a recent change.
    * @param logicalName Entity logical name
    * @param changes The properties to change
    * @param options Solution to add the change to
@@ -296,17 +314,17 @@ export class MetadataClient {
    */
   async mergeAndUpdateEntityDefinition(
     logicalName: string,
-    changes: EntityMetadataUpdate,
+    changes: EntityMetadataChanges,
     options?: MetadataWriteOptions
   ): Promise<void> {
     const path = `/EntityDefinitions(${odataKey({ LogicalName: logicalName })})`;
-    const current = await this.client.api(path).get<Record<string, unknown>>();
-    const merged = {
-      ...withoutAnnotations(current),
-      ...changes,
-      "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-    };
-    await this.updateDefinition(path, merged, options);
+    await this.mergeAndUpdate(
+      path,
+      path,
+      "Microsoft.Dynamics.CRM.EntityMetadata",
+      changes,
+      options
+    );
   }
 
   /**
@@ -419,23 +437,69 @@ export class MetadataClient {
    * Update an existing attribute definition.
    *
    * Like every metadata update this is a `PUT`, which **replaces** the definition: send the
-   * complete attribute definition, including its `@odata.type`, not just the changed properties.
+   * complete attribute definition, including its `@odata.type`, not just the changed properties
+   * (a property you leave out is reset to its default). Retrieve the column cast to its type,
+   * change it and send it back, or use {@link mergeAndUpdateAttributeDefinition}.
    * @param entityLogicalName Entity logical name
    * @param attributeLogicalName Attribute logical name
    * @param attribute The complete attribute definition
    * @param options Solution to add the change to
+   * @example
+   * ```typescript
+   * const current = await metadataClient.getAttributeDefinition("new_project", "new_note", {
+   *   cast: "StringAttributeMetadata",
+   * });
+   * await metadataClient.updateAttributeDefinition("new_project", "new_note", {
+   *   ...current,
+   *   "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+   *   MaxLength: 500,
+   * });
+   * ```
    */
   async updateAttributeDefinition(
     entityLogicalName: string,
     attributeLogicalName: string,
-    attribute: Partial<AttributeMetadataCreateTypes>,
+    attribute: AttributeMetadataUpdateTypes,
     options?: MetadataWriteOptions
   ): Promise<void> {
     await this.updateDefinition(
-      `/EntityDefinitions(${odataKey({ LogicalName: entityLogicalName })})/Attributes(${odataKey({ LogicalName: attributeLogicalName })})`,
+      attributePath(entityLogicalName, attributeLogicalName),
       attribute,
       options
     );
+  }
+
+  /**
+   * Retrieve an attribute definition, apply `changes` to it, and `PUT` the result back, so the
+   * properties you don't change keep their current values.
+   *
+   * `changes` names the column's `@odata.type`; the retrieve is cast to that type
+   * (`…/Attributes(LogicalName='…')/Microsoft.Dynamics.CRM.<Type>`) so it returns the type's own
+   * properties, such as `MaxLength`, and Dataverse answers 404 if the column is of another type.
+   * The retrieve sends `Consistency: Strong`, so it reads the latest definition rather than a
+   * cached copy that would undo a recent change. Options of a choice column are not part of the
+   * definition: use {@link insertOptionValue} and the other option actions.
+   * @param entityLogicalName Entity logical name
+   * @param attributeLogicalName Attribute logical name
+   * @param changes The properties to change, with the column's `@odata.type`
+   * @param options Solution to add the change to
+   * @example
+   * ```typescript
+   * await metadataClient.mergeAndUpdateAttributeDefinition("new_project", "new_note", {
+   *   "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+   *   DisplayName: { LocalizedLabels: [{ Label: "Comment", LanguageCode: 1033 }] },
+   * });
+   * ```
+   */
+  async mergeAndUpdateAttributeDefinition(
+    entityLogicalName: string,
+    attributeLogicalName: string,
+    changes: AttributeMetadataChanges,
+    options?: MetadataWriteOptions
+  ): Promise<void> {
+    const path = attributePath(entityLogicalName, attributeLogicalName);
+    const type = metadataType(changes);
+    await this.mergeAndUpdate(`${path}/${type}`, path, type, changes, options);
   }
 
   /**
@@ -587,7 +651,8 @@ export class MetadataClient {
 
   /**
    * Update an existing one-to-many relationship.
-   * A `PUT` that **replaces** the definition: send the complete relationship definition.
+   * A `PUT` that **replaces** the definition: send the complete relationship definition, with its
+   * `@odata.type`, or use {@link mergeAndUpdateRelationship}.
    * @param schemaName Relationship schema name
    * @param relationship The complete relationship definition
    * @param options Solution to add the change to
@@ -606,7 +671,8 @@ export class MetadataClient {
 
   /**
    * Update an existing many-to-many relationship.
-   * A `PUT` that **replaces** the definition: send the complete relationship definition.
+   * A `PUT` that **replaces** the definition: send the complete relationship definition, with its
+   * `@odata.type`, or use {@link mergeAndUpdateRelationship}.
    * @param schemaName Relationship schema name
    * @param relationship The complete relationship definition
    * @param options Solution to add the change to
@@ -621,6 +687,35 @@ export class MetadataClient {
       relationship,
       options
     );
+  }
+
+  /**
+   * Retrieve a 1:N or N:N relationship definition, apply `changes` to it, and `PUT` the result
+   * back, so the properties you don't change keep their current values.
+   *
+   * `changes` names the relationship's `@odata.type` (`OneToManyRelationshipMetadata` or
+   * `ManyToManyRelationshipMetadata`); the retrieve is cast to that type so it returns the type's
+   * own properties, such as `CascadeConfiguration`. It sends `Consistency: Strong`, so it reads
+   * the latest definition rather than a cached copy that would undo a recent change.
+   * @param schemaName Relationship schema name
+   * @param changes The properties to change, with the relationship's `@odata.type`
+   * @param options Solution to add the change to
+   * @example
+   * ```typescript
+   * await metadataClient.mergeAndUpdateRelationship("new_account_project", {
+   *   "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+   *   IsValidForAdvancedFind: false,
+   * });
+   * ```
+   */
+  async mergeAndUpdateRelationship(
+    schemaName: string,
+    changes: RelationshipMetadataChanges,
+    options?: MetadataWriteOptions
+  ): Promise<void> {
+    const path = `/RelationshipDefinitions(${odataKey({ SchemaName: schemaName })})`;
+    const type = metadataType(changes);
+    await this.mergeAndUpdate(`${path}/${type}`, path, type, changes, options);
   }
 
   /**
@@ -657,15 +752,10 @@ export class MetadataClient {
     nameOrMetadataId: string,
     options?: Omit<MetadataQueryOptions, "filter">
   ): Promise<OptionSetMetadata> {
-    // If it looks like a GUID, use MetadataId, otherwise use Name
-    const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      nameOrMetadataId
-    );
-    const path = isGuid
-      ? `/GlobalOptionSetDefinitions(${nameOrMetadataId})`
-      : `/GlobalOptionSetDefinitions(${odataKey({ Name: nameOrMetadataId })})`;
-
-    return await this.query(path, options).get<OptionSetMetadata>();
+    return await this.query(
+      globalOptionSetPath(nameOrMetadataId),
+      options
+    ).get<OptionSetMetadata>();
   }
 
   /**
@@ -697,26 +787,48 @@ export class MetadataClient {
 
   /**
    * Update a global option set.
-   * A `PUT` that **replaces** the definition: send the complete option set definition. To add,
-   * change or remove a single option, use {@link insertOptionValue}, {@link updateOptionValue}
-   * or {@link deleteOptionValue} instead.
+   * A `PUT` that **replaces** the definition: send the complete option set definition, with its
+   * `@odata.type`, or use {@link mergeAndUpdateGlobalOptionSet}. A `PUT` doesn't change the
+   * options: to add, change, remove or reorder them, use {@link insertOptionValue},
+   * {@link updateOptionValue}, {@link deleteOptionValue} or {@link orderOptions}.
    * @param nameOrMetadataId Option set name or metadata ID
    * @param optionSet The complete option set definition
    * @param options Solution to add the change to
    */
   async updateGlobalOptionSet(
     nameOrMetadataId: string,
-    optionSet: Partial<OptionSetMetadata>,
+    optionSet: OptionSetMetadataUpdate,
     options?: MetadataWriteOptions
   ): Promise<void> {
-    const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      nameOrMetadataId
-    );
-    const path = isGuid
-      ? `/GlobalOptionSetDefinitions(${nameOrMetadataId})`
-      : `/GlobalOptionSetDefinitions(${odataKey({ Name: nameOrMetadataId })})`;
+    await this.updateDefinition(globalOptionSetPath(nameOrMetadataId), optionSet, options);
+  }
 
-    await this.updateDefinition(path, optionSet, options);
+  /**
+   * Retrieve a global option set, apply `changes` to it, and `PUT` the result back, so the
+   * properties you don't change keep their current values.
+   *
+   * The retrieve is cast to `OptionSetMetadata` and sends `Consistency: Strong`, so it reads the
+   * latest definition rather than a cached copy that would undo a recent change. The options are
+   * left out of the `PUT`, which doesn't change them: use {@link insertOptionValue} and the other
+   * option actions for that.
+   * @param nameOrMetadataId Option set name or metadata ID
+   * @param changes The properties to change
+   * @param options Solution to add the change to
+   * @example
+   * ```typescript
+   * await metadataClient.mergeAndUpdateGlobalOptionSet("new_colors", {
+   *   Description: { LocalizedLabels: [{ Label: "Paint colors", LanguageCode: 1033 }] },
+   * });
+   * ```
+   */
+  async mergeAndUpdateGlobalOptionSet(
+    nameOrMetadataId: string,
+    changes: OptionSetMetadataChanges,
+    options?: MetadataWriteOptions
+  ): Promise<void> {
+    const path = globalOptionSetPath(nameOrMetadataId);
+    const type = "Microsoft.Dynamics.CRM.OptionSetMetadata";
+    await this.mergeAndUpdate(`${path}/${type}`, path, type, changes, options, ["Options"]);
   }
 
   /**
@@ -724,14 +836,7 @@ export class MetadataClient {
    * @param nameOrMetadataId Option set name or metadata ID
    */
   async deleteGlobalOptionSet(nameOrMetadataId: string): Promise<void> {
-    const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      nameOrMetadataId
-    );
-    const path = isGuid
-      ? `/GlobalOptionSetDefinitions(${nameOrMetadataId})`
-      : `/GlobalOptionSetDefinitions(${odataKey({ Name: nameOrMetadataId })})`;
-
-    await this.client.api(path).delete<undefined>();
+    await this.client.api(globalOptionSetPath(nameOrMetadataId)).delete<undefined>();
   }
 
   // ==================== Option Value Operations ====================
@@ -1025,6 +1130,30 @@ export class MetadataClient {
     throw DataverseInvalidRequestError.missingParameter("OData-EntityId response header");
   }
 
+  /**
+   * Retrieve the definition at `getPath` (with `Consistency: Strong`, so not a cached copy that
+   * would undo a recent change), drop its OData annotations and the `omit` properties, apply
+   * `changes`, set `@odata.type`, and `PUT` the result to `putPath`.
+   */
+  private async mergeAndUpdate(
+    getPath: string,
+    putPath: string,
+    odataType: string,
+    changes: object,
+    options: MetadataWriteOptions | undefined,
+    omit: readonly string[] = []
+  ): Promise<void> {
+    const current = await this.client
+      .api(getPath)
+      .header("Consistency", "Strong")
+      .get<Record<string, unknown>>();
+    const kept = Object.fromEntries(
+      Object.entries(withoutAnnotations(current)).filter(([key]) => !omit.includes(key))
+    );
+    const merged = { ...kept, ...changes, "@odata.type": odataType };
+    await this.updateDefinition(putPath, merged, options);
+  }
+
   /** PUT a complete metadata definition, merging labels. */
   private async updateDefinition(
     path: string,
@@ -1112,6 +1241,37 @@ function checkOptionSetTarget(
   if (params.AttributeLogicalName == null) {
     throw DataverseInvalidRequestError.missingParameter("AttributeLogicalName");
   }
+}
+
+/** The path of a table's column definition. */
+function attributePath(entityLogicalName: string, attributeLogicalName: string): string {
+  return `/EntityDefinitions(${odataKey({ LogicalName: entityLogicalName })})/Attributes(${odataKey({ LogicalName: attributeLogicalName })})`;
+}
+
+const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** The path of a global option set, by MetadataId if it looks like a GUID, otherwise by Name. */
+function globalOptionSetPath(nameOrMetadataId: string): string {
+  return GUID.test(nameOrMetadataId)
+    ? `/GlobalOptionSetDefinitions(${nameOrMetadataId})`
+    : `/GlobalOptionSetDefinitions(${odataKey({ Name: nameOrMetadataId })})`;
+}
+
+/**
+ * The `@odata.type` of a merge helper's changes, as a cast path segment
+ * (`Microsoft.Dynamics.CRM.<Type>`). The types require it; this catches untyped callers.
+ */
+function metadataType(changes: { "@odata.type"?: unknown }): string {
+  const type = changes["@odata.type"];
+  if (type == null) throw DataverseInvalidRequestError.missingParameter("@odata.type");
+  const name = typeof type === "string" ? type.replace(/^#/, "") : "";
+  if (!/^Microsoft\.Dynamics\.CRM\.\w+$/.test(name)) {
+    throw DataverseInvalidRequestError.invalidParameter(
+      "@odata.type",
+      `expected "Microsoft.Dynamics.CRM.<Type>", got ${JSON.stringify(type)}`
+    );
+  }
+  return name;
 }
 
 /** The type-cast path segment for an attribute query, or `""`. */

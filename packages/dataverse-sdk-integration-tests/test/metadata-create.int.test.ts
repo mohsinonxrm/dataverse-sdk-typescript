@@ -1,6 +1,8 @@
 /**
  * Live tests for MetadataClient creates (#64): a temporary table, a column and a 1:N
- * relationship are created, their ids read from the `OData-EntityId` header, then deleted.
+ * relationship are created, their ids read from the `OData-EntityId` header, then deleted. The
+ * merge helpers (#359) update the table, the relationship and a throwaway column, and the
+ * properties they don't change keep their values.
  * See ./env.ts for configuration. Everything is named with this run's id and removed in
  * `afterAll`, even when a test fails.
  *
@@ -10,7 +12,7 @@
  */
 import { afterAll, describe, expect, it } from "vitest";
 import { MetadataClient } from "@mohsinonxrm/dataverse-sdk-metadata";
-import type { Label } from "@mohsinonxrm/dataverse-sdk-metadata";
+import type { Label, OneToManyRelationshipMetadata } from "@mohsinonxrm/dataverse-sdk-metadata";
 import { live, liveClient, runId } from "./env.js";
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -158,12 +160,90 @@ describe.skipIf(!live)("live: metadata creates (#64)", () => {
       );
 
       expect(id).toMatch(GUID);
-      const rel = await eventually(() =>
-        metadata.getRelationshipByMetadataId(id, { select: ["SchemaName"] })
-      );
-      expect(rel.SchemaName).toBe(relationship);
+      try {
+        const rel = await eventually(() =>
+          metadata.getRelationshipByMetadataId(id, { select: ["SchemaName"] })
+        );
+        expect(rel.SchemaName).toBe(relationship);
 
-      await eventually(() => metadata.deleteRelationship(id));
+        // #359: a merge-update changes one property and keeps the type's own properties.
+        const read = () =>
+          liveClient()
+            .client.api(
+              `RelationshipDefinitions(${id})/Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata`
+            )
+            .header("Consistency", "Strong")
+            .select("IsValidForAdvancedFind", "ReferencedAttribute", "CascadeConfiguration")
+            .get<OneToManyRelationshipMetadata>();
+        const before = await eventually(read);
+        await eventually(() =>
+          metadata.mergeAndUpdateRelationship(relationship, {
+            "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+            IsValidForAdvancedFind: !before.IsValidForAdvancedFind,
+          })
+        );
+        const after = await eventually(async () => {
+          const def = await read();
+          expect(def.IsValidForAdvancedFind).toBe(!before.IsValidForAdvancedFind);
+          return def;
+        });
+        expect(after.ReferencedAttribute).toBe("accountid");
+        expect(after.CascadeConfiguration).toEqual(before.CascadeConfiguration);
+      } finally {
+        await eventually(() => metadata.deleteRelationship(id));
+      }
+    },
+    SLOW
+  );
+
+  it(
+    "mergeAndUpdateAttributeDefinition changes the display name and keeps MaxLength (#359)",
+    async () => {
+      const metadata = new MetadataClient(liveClient().client);
+      const column = "new_merge";
+      const id = await eventually(() =>
+        metadata.createAttributeDefinition(table, {
+          "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+          SchemaName: "new_Merge",
+          RequiredLevel: { Value: "None" },
+          MaxLength: 150,
+          FormatName: { Value: "Text" },
+          DisplayName: label("Merge"),
+          Description: label("Created by the SDK integration tests; safe to delete."),
+        })
+      );
+      expect(id).toMatch(GUID);
+
+      try {
+        const read = () =>
+          metadata.getAttributeDefinition(table, column, {
+            cast: "StringAttributeMetadata",
+            select: ["DisplayName", "Description", "MaxLength", "RequiredLevel"],
+          });
+        await eventually(read);
+
+        const displayName = `Merged ${tag}`;
+        await eventually(() =>
+          metadata.mergeAndUpdateAttributeDefinition(table, column, {
+            "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+            DisplayName: label(displayName),
+          })
+        );
+
+        const after = await eventually(async () => {
+          const def = await read();
+          expect(def.DisplayName?.UserLocalizedLabel?.Label).toBe(displayName);
+          return def;
+        });
+        // A PUT of only the changes would have reset these to their defaults.
+        expect(after.MaxLength).toBe(150);
+        expect(after.Description?.UserLocalizedLabel?.Label).toBe(
+          "Created by the SDK integration tests; safe to delete."
+        );
+        expect(after.RequiredLevel?.Value).toBe("None");
+      } finally {
+        await eventually(() => metadata.deleteAttributeDefinition(table, column));
+      }
     },
     SLOW
   );
