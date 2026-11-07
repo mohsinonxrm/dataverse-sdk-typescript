@@ -142,11 +142,41 @@ export interface LoggingConfig {
   fullUrls?: boolean;
 }
 
+/**
+ * How many requests a client sends at once. Requests over the limit wait for a slot (each retry
+ * attempt takes its own slot). With `adaptiveFromDopHint`, the limit follows the
+ * `x-ms-dop-hint` header Dataverse returns (its recommended degree of parallelism), within
+ * `min`..`max`.
+ *
+ * @example
+ * ```typescript
+ * { maxConcurrentRequests: 1 }            // one at a time; the hint can't raise it
+ * { maxConcurrentRequests: 4, max: 12 }   // start at 4; the hint may raise it to 12
+ * { adaptiveFromDopHint: false }          // a fixed 8
+ * ```
+ */
 export interface ConcurrencyOptions {
+  /**
+   * The limit the client starts with, honoured exactly. When set, it is also the ceiling for the
+   * DOP hint unless `max` is set.
+   * @default 8 (or `max`, when that is lower)
+   */
   maxConcurrentRequests?: number;
+  /**
+   * Follow the `x-ms-dop-hint` response header. Browsers can't read the header (it isn't
+   * CORS-exposed), so there the limit stays at `maxConcurrentRequests`.
+   * @default true
+   */
   adaptiveFromDopHint?: boolean;
-  /** Bounds for adaptive tuning */
+  /**
+   * The lowest limit the DOP hint can set.
+   * @default 2 (or `maxConcurrentRequests`, when that is lower)
+   */
   min?: number;
+  /**
+   * The highest limit the DOP hint can set.
+   * @default `maxConcurrentRequests` when that is set, otherwise 16
+   */
   max?: number;
 }
 
