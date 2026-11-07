@@ -62,6 +62,12 @@ The metadata package (Phase 6) will include strict typing for FileAttributeMetad
    - Depends on `dataverse-sdk-core` (`RequestAdapter`; `DataverseClient` satisfies it through `send()`)
    - Depends on `dataverse-sdk-actions` (typed action wrappers)
 
+### Status update (2026-11-07, 2.0.0)
+
+- **Stream-based approach (decision 5) is implemented** (#95). `upload()` takes `method: "actions"` (the default), `"patch-chunked"` (PATCH with `Content-Range`) or `"single"`, and a `ReadableStream` as the file. `download()` takes `method: "single"` (the default), `"range"` or `"actions"`, and `downloadStream()` returns a `ReadableStream`.
+- **Chunking (decision 3).** Dataverse rejects blocks above 4 MB, so a larger `chunkSize` is rejected before anything is sent (#61). Resuming an interrupted upload from its blocks is not implemented.
+- **Browsers.** Uploads and downloads use `Blob`, `ArrayBuffer` and typed arrays, not Node's `Buffer`, and `download()` returns a `Blob` (#58).
+
 ### Consequences
 
 **Pros:**

@@ -739,7 +739,7 @@ try {
   const accounts = await client.api("/accounts").get();
 } catch (error) {
   if (error instanceof MsalBrowserAuthenticationError && error.errorNo === "65001") {
-    showMessage("An administrator must consent to this app for your organization.");
+    alert("An administrator must consent to this app for your organization.");
   } else if (error instanceof DataverseAuthenticationError) {
     console.error("Authentication failed:", error.message);
   } else {
@@ -829,7 +829,8 @@ try {
   await client.api("/accounts").get();
 } catch (error) {
   if (error instanceof MsalBrowserAuthenticationError && error.code === "popup_blocked") {
-    showSignInButton(); // its click handler calls tokenProvider.getToken()
+    // Show a "Sign in" button; its click handler calls tokenProvider.getToken()
+    document.querySelector<HTMLButtonElement>("#sign-in")!.hidden = false;
   }
 }
 ```

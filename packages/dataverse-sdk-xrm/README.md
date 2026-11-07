@@ -72,6 +72,8 @@ typed.revenue; // number | null
 
 Creates a new entity record.
 
+<!-- no-check -->
+
 ```typescript
 create(entitySetName: string, entity: object, options?: CreateOptions & { returnRepresentation?: false }): Promise<string>
 create<T = EntityRecord>(entitySetName: string, entity: object, options: CreateOptions & { returnRepresentation: true }): Promise<T>
@@ -204,6 +206,8 @@ await service.retrieve("accounts", "{12345678-1234-1234-1234-123456789012}".toUp
 ### update
 
 Updates an existing entity record.
+
+<!-- no-check -->
 
 ```typescript
 update(entitySetName: string, id: string, entity: object, options?: UpdateOptions & { returnRepresentation?: false }): Promise<void>
@@ -508,6 +512,8 @@ Works with:
 - Functions from `@mohsinonxrm/dataverse-sdk-functions`
 - Messages from `@mohsinonxrm/dataverse-sdk-messages`
 
+<!-- no-check -->
+
 ```typescript
 execute<T>(request: Executable<T>, options?: OperationOptions): Promise<T>
 ```
@@ -596,6 +602,8 @@ console.log("Organization:", whoAmI.OrganizationId);
 ### getEntitySetName
 
 Resolves a table's entity set name from its logical name.
+
+<!-- no-check -->
 
 ```typescript
 getEntitySetName(logicalName: string, options?: OperationOptions): Promise<string>

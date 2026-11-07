@@ -100,6 +100,7 @@ console.log(`✓ Authenticated as user: ${whoami.UserId}`);
 Client credentials flow uses application identity (client secret or certificate) for authentication without user interaction.
 
 ```typescript
+import { readFileSync } from "node:fs";
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
@@ -120,7 +121,7 @@ const ccaWithCert = new ConfidentialClientApplication({
     authority: "https://login.microsoftonline.com/your-tenant-id",
     clientCertificate: {
       thumbprint: "certificate-thumbprint",
-      privateKey: certificatePrivateKey, // PEM-formatted private key
+      privateKey: readFileSync("./cert.pem", "utf8"), // PEM-formatted private key
     },
   },
 });
@@ -606,6 +607,8 @@ await tokenProvider.clearCache();
 
 #### `DeviceCodeFlowOptions`
 
+<!-- no-check -->
+
 ```typescript
 {
   flow: 'deviceCode';
@@ -618,6 +621,8 @@ await tokenProvider.clearCache();
 
 #### `ClientCredentialsFlowOptions`
 
+<!-- no-check -->
+
 ```typescript
 {
   flow: 'clientCredentials';
@@ -629,6 +634,8 @@ await tokenProvider.clearCache();
 ```
 
 #### `AuthorizationCodeFlowOptions`
+
+<!-- no-check -->
 
 ```typescript
 {
@@ -644,6 +651,8 @@ await tokenProvider.clearCache();
 
 #### `UsernamePasswordFlowOptions`
 
+<!-- no-check -->
+
 ```typescript
 {
   flow: 'usernamePassword';
@@ -656,6 +665,8 @@ await tokenProvider.clearCache();
 ```
 
 #### `SilentFlowOptions`
+
+<!-- no-check -->
 
 ```typescript
 {
@@ -750,11 +761,15 @@ try {
 
 1. **Environment Variables:** Never hardcode secrets in source code
 
+   <!-- no-check -->
+
    ```typescript
    clientSecret: process.env.CLIENT_SECRET;
    ```
 
 2. **Client Certificates:** Prefer certificates over secrets for production daemons
+
+   <!-- no-check -->
 
    ```typescript
    clientCertificate: {
@@ -764,6 +779,8 @@ try {
    ```
 
 3. **Scope Minimization:** Request only scopes your app needs
+
+   <!-- no-check -->
 
    ```typescript
    scopes: ["https://org.crm.dynamics.com/.default"]; // Minimal scope
@@ -817,9 +834,14 @@ Ensure consistency across:
 2. Callback validation
 3. Session storage
 
+<!-- no-check -->
+
 ```typescript
+// Inside your Express handlers (req is the request, with express-session)
+import { randomBytes } from "node:crypto";
+
 // Generate and store state
-const state = crypto.randomBytes(16).toString("hex");
+const state = randomBytes(16).toString("hex");
 req.session.oauthState = state;
 
 const authUrl = await cca.getAuthCodeUrl({
