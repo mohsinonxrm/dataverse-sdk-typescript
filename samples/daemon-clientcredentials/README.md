@@ -259,11 +259,22 @@ await client.execute(action); // Returns 204 No Content
 
 ### 3. Query with Filtering
 
+`queryFunctions` writes Dataverse's query functions (`Today`, `LastXDays`, `In`, …), which work
+only inside `$filter`:
+
 ```typescript
+import { odata } from "@mohsinonxrm/dataverse-sdk-core";
+import { queryFunctions } from "@mohsinonxrm/dataverse-sdk-functions";
+
 const response = await client
   .api("/accounts")
   .select("name", "createdon", "websiteurl")
-  .filter(`contains(name, 'Bulk Account')`)
+  .filter(
+    odata.and(
+      odata.contains("name", "Bulk Account"),
+      queryFunctions.today({ PropertyName: "createdon" })
+    )
+  )
   .orderBy("createdon desc")
   .top(10)
   .get<{ value: { name: string; createdon: string; websiteurl?: string }[] }>();

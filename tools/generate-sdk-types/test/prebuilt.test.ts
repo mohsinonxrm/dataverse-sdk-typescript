@@ -195,7 +195,9 @@ describe("generateFromCsdl with the prebuilt filter (#304)", () => {
     const files = await generate(FILTER);
     const names = Object.keys(files);
     expect(names).toContain("functions/WhoAmIFunction.ts");
-    expect(names).toContain("functions/LastXDaysFunction.ts");
+    // A query function is kept as a $filter helper, not a class (#342)
+    expect(names).not.toContain("functions/LastXDaysFunction.ts");
+    expect(files["functions/queryFunctions.ts"]).toContain("lastXDays: (parameters:");
     expect(names).toContain("actions/msdyn_SharedAction.ts");
     expect(names).toContain("messages/msdyn_SharedMessage.ts");
     // Supplemental operations are platform

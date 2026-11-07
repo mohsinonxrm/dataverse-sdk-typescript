@@ -708,6 +708,9 @@ importers:
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../../packages/dataverse-sdk-core
+      '@mohsinonxrm/dataverse-sdk-functions':
+        specifier: workspace:*
+        version: link:../../packages/dataverse-sdk-functions
       '@mohsinonxrm/dataverse-sdk-xrm':
         specifier: workspace:*
         version: link:../../packages/dataverse-sdk-xrm

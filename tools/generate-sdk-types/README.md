@@ -21,6 +21,11 @@ This tool generates the **SDK's internal types**:
    - The Web API actions (bound and unbound) of the platform, Sales and Customer Service
 4. **Typed Functions** → `packages/dataverse-sdk-functions/src/`
    - The Web API functions (bound and unbound) of the platform, Sales and Customer Service
+   - The query functions (`LastXDays`, `In`, `Under`, …) as `queryFunctions.ts`: Dataverse runs
+     them only inside `$filter`, so each is a helper that returns the expression, not a class
+     (#342). `isQueryFunction` in `src/generators/query-functions-generator.ts` recognises them by
+     their shape (unbound, returns `Edm.Boolean`, first parameter `PropertyName`), and `regen`
+     checks that they are exactly the operations with no SDK message.
 5. **Entity tables** → `packages/dataverse-sdk-entities-runtime/src/generated/entity-tables.ts`
    - The entity set and primary key of every table, which `createEntityReference` reads. The
      SDK has one `EntityReference`, hand-written in entities-runtime; the generated actions,
@@ -227,6 +232,7 @@ src/
     messages-generator.ts  # Generate SDK messages
     actions-generator.ts   # Generate typed actions
     functions-generator.ts # Generate typed functions
+    query-functions-generator.ts # The query functions as $filter helpers (#342)
 
   parsers/
     edmx-parser.ts        # Parse CSDL XML from $metadata

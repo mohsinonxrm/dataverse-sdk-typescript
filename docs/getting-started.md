@@ -347,6 +347,31 @@ const recentOpportunities = await client
 const contosoAccounts = await client.api("/accounts").filter("contains(name, 'Contoso')").get();
 ```
 
+### Query functions
+
+Dataverse's query functions (`LastXDays`, `InFiscalYear`, `In`, `Under`, `EqualUserId`, …) work
+only inside `$filter`. `queryFunctions` in `@mohsinonxrm/dataverse-sdk-functions` writes them, with
+the values escaped, and `odata` from core combines them with other conditions:
+
+```typescript
+import { odata } from "@mohsinonxrm/dataverse-sdk-core";
+import { queryFunctions } from "@mohsinonxrm/dataverse-sdk-functions";
+
+const myRecentAccounts = await client
+  .api("/accounts")
+  .filter(
+    odata.and(
+      queryFunctions.lastXDays({ PropertyName: "createdon", PropertyValue: 30 }),
+      queryFunctions.equalUserId({ PropertyName: "ownerid" }),
+      odata.eq("statecode", 0)
+    )
+  )
+  .get();
+```
+
+See [Query functions in `$filter`](../packages/dataverse-sdk-functions/README.md#query-functions-in-filter)
+for the list.
+
 ## Batch Operations
 
 ### Basic $batch Request
@@ -530,8 +555,8 @@ await service.delete("accounts", accountId);
 each Web API operation of
 
 - the **platform**: Dataverse and the Power Platform solutions every environment has
-  (`WhoAmI`, `CreateMultiple`, `ExportSolution`, `RetrieveMetadataChanges`, the query functions
-  such as `LastXDays`, …);
+  (`WhoAmI`, `CreateMultiple`, `ExportSolution`, `RetrieveMetadataChanges`, …, and the query
+  functions such as `LastXDays` as [`$filter` helpers](#query-functions));
 - **Sales**: opportunities, quotes, orders, invoices, leads, campaigns and marketing lists, with
   Sales Insights, Copilot in Sales and the sales agents (`WinOpportunity`, `QualifyLead`,
   `ConvertQuoteToSalesOrder`, …);

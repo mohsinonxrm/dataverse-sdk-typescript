@@ -33,6 +33,11 @@ import {
   parametersInterface,
   parametersInterfaceName,
 } from "../utils/operation-parameters.js";
+import {
+  QUERY_FUNCTIONS_MODULE,
+  isQueryFunction,
+  queryFunctionsSource,
+} from "./query-functions-generator.js";
 
 /**
  * Map Complex* types to their non-Complex EntityType equivalents.
@@ -182,7 +187,9 @@ function scalarAliasCall(csdl: CsdlSchema, paramName: string, paramType: string)
 /**
  * Generate typed Web API functions.
  *
- * Generates TypeScript classes for all functions (bound and unbound).
+ * Generates TypeScript classes for all functions (bound and unbound), except the query functions
+ * (`LastXDays`, …): Dataverse runs those only inside `$filter`, so they become the
+ * `queryFunctions` helpers instead (#342).
  *
  * @param csdl - Parsed CSDL schema
  * @param outputPath - Output directory path
@@ -197,13 +204,17 @@ export async function generateFunctions(
 ): Promise<void> {
   const absolutePath = resolve(outputPath);
 
-  // Filter to Microsoft.Dynamics.CRM functions
-  const functions = csdl.functions.filter((f) => f.namespace === "Microsoft.Dynamics.CRM");
+  // Filter to Microsoft.Dynamics.CRM functions. The query functions answer 404 when called, so
+  // they get no class: they are $filter expressions in queryFunctions (#342).
+  const crmFunctions = csdl.functions.filter((f) => f.namespace === "Microsoft.Dynamics.CRM");
+  const functions = crmFunctions.filter((f) => !isQueryFunction(f));
+  const queryFunctions = crmFunctions.filter(isQueryFunction);
 
   if (dryRun) {
     console.log(`  [DRY RUN] Would write to: ${absolutePath}`);
     console.log(`  [DRY RUN] Files: One .ts file per function (alphabetical)`);
     console.log(`  [DRY RUN] Count: ${String(functions.length)} functions`);
+    console.log(`  [DRY RUN] Query functions: ${String(queryFunctions.length)} $filter helpers`);
     if (purge) {
       console.log(`  [DRY RUN] Would purge directory first`);
     }
@@ -240,17 +251,28 @@ export async function generateFunctions(
     console.log(`  ✅ Generated ${filename}`);
   }
 
+  // The query functions, as $filter expression helpers (#342)
+  if (queryFunctions.length > 0) {
+    await writeTypeScriptFile(
+      join(absolutePath, `${QUERY_FUNCTIONS_MODULE}.ts`),
+      queryFunctionsSource(queryFunctions)
+    );
+    console.log(`  ✅ Generated ${QUERY_FUNCTIONS_MODULE}.ts`);
+  }
+
   // Generate index.ts
   const indexContent = generateFunctionsIndex(
     functions,
     stems,
     exportedEnumNames(csdl),
-    exportedTypeNames(csdl)
+    exportedTypeNames(csdl),
+    queryFunctions.length > 0
   );
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
   console.log(`  Total: ${String(functions.length)} function files`);
+  console.log(`  Query functions: ${String(queryFunctions.length)} $filter helpers`);
 }
 
 /**
@@ -573,7 +595,8 @@ function generateFunctionsIndex(
   operations: CsdlFunction[],
   stems: Map<CsdlFunction, string>,
   enumNames: string[],
-  typeNames: string[]
+  typeNames: string[],
+  hasQueryFunctions = false
 ): string {
   let code = `/**\n`;
   code += ` * @mohsinonxrm/dataverse-sdk-functions\n`;
@@ -593,6 +616,11 @@ function generateFunctionsIndex(
     // The parameters interface of the constructor (#96)
     const parameters = hasParameters ? `, type ${parametersInterfaceName(`${stem}Function`)}` : "";
     code += `export { ${stem}Function${parameters}, type ${stem}Response } from './${stem}Function.js';\n`;
+  }
+
+  // The query functions are $filter expressions, not classes (#342)
+  if (hasQueryFunctions) {
+    code += `\nexport { queryFunctions } from './${QUERY_FUNCTIONS_MODULE}.js';\n`;
   }
 
   // The SDK's one EntityReference (#295), re-exported from entities-runtime
