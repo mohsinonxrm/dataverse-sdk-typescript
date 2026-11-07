@@ -89,6 +89,7 @@ Before submitting a PR, ensure:
   - [ ] `docs/mapping/` if actions/functions/messages added
   - [ ] `docs/api/` if new features added
 - [ ] Changeset added (if user-facing change): `pnpm changeset`
+- [ ] API report updated and committed if a public API changed: `pnpm api:update` (see [API reports](#api-reports))
 - [ ] All checks pass:
   ```bash
   pnpm format:check
@@ -96,6 +97,7 @@ Before submitting a PR, ensure:
   pnpm typecheck
   pnpm lint
   pnpm test
+  pnpm api:check      # API reports, after pnpm build
   pnpm test:browser   # browser smoke tests, after pnpm build
   ```
 - [ ] Commit messages follow convention:
@@ -176,6 +178,28 @@ Select:
 - Package(s) affected
 - Version bump type (patch/minor/major)
 - Describe the change
+
+### API reports
+
+Each published package's public API is written to a committed
+[API Extractor](https://api-extractor.com/) report, `packages/<pkg>/etc/<name>.api.md`, so
+every change to a public API shows up in the PR diff. The three generated packages (`actions`,
+`functions`, `messages`) have no report: their API is the generator's output for the committed
+`$metadata` snapshot, which CI's regen check already enforces, and their reports would be
+megabytes.
+
+When you change an exported type, function, class or option, the report changes too:
+
+1. `pnpm build && pnpm api:update` rewrites the reports from the built `dist/index.d.ts`.
+2. Read the report's diff: it is the public API change your PR makes. Commit it.
+3. Add a changeset that names each package whose report changed, with the right bump: **major**
+   if the change can break a caller (a removed or renamed export, a narrower parameter, a wider
+   return type, a new required option), **minor** if it only adds.
+
+CI runs `pnpm api:check` (fails when a report differs from the build) and, on a PR, fails when a
+report changed but no changeset added in the PR names the package
+(`scripts/check-api-changeset.mjs`). The check only looks for the changeset; review checks the
+bump. A package's first report needs no changeset.
 
 ### Release (Maintainers Only)
 
