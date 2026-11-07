@@ -20,7 +20,7 @@ pnpm add @mohsinonxrm/dataverse-sdk-auth-msal-browser @mohsinonxrm/dataverse-sdk
 
 **Peer dependency:** `@azure/msal-browser` `^3.30.0 || ^4.0.0 || ^5.0.0`. Install it yourself (as above); this package does not bring its own copy. The provider uses the `PublicClientApplication` your app creates, so the app, `@azure/msal-react` and this provider share one MSAL copy and one token cache.
 
-Errors are classified by MSAL's `name` and `errorCode`, never by `instanceof`, so "interaction required" from any of those MSAL majors starts the interactive flow. The same check is exported as `isInteractionRequiredError(error)` for app code.
+Errors are classified by MSAL's `name` and `errorCode`, never by `instanceof`, so "interaction required" from any of those MSAL majors starts the interactive flow. The same check is exported as `isInteractionRequiredError(error)` for app code. A silent call whose hidden iframe times out (`monitor_window_timeout`: the refresh token has expired and the browser blocks third-party cookies, or Entra ID is throttling) also starts the interactive flow, as Microsoft recommends. MSAL 3 and 4 report it as `errorCode` `monitor_window_timeout`, MSAL 5 as `errorCode` `timed_out` with `subError` `monitor_window_timeout`.
 
 For the SPA app registration, CORS, Content-Security-Policy and browser limits, see [docs/browser.md](../../docs/browser.md).
 
@@ -467,7 +467,7 @@ const specificTokenProvider = new MsalBrowserTokenProvider(pca, {
 
 ### Guest users and other tenants
 
-Pass `tenantId` to get a token from a specific tenant, for example a guest account whose home tenant isn't the Dataverse organization's tenant. It becomes the request's `authority`, on the host of your MSAL configuration's authority (for example `https://login.microsoftonline.com/<tenantId>`).
+Pass `tenantId` to get a token from a specific tenant, for example a guest account whose home tenant isn't the Dataverse organization's tenant. It becomes the request's `authority`, on the host of your MSAL configuration's authority (for example `https://login.microsoftonline.com/<tenantId>`). When the configuration uses `azureCloudOptions`, the request gets `azureCloudOptions` for that tenant too, because MSAL then ignores a request's `authority` without them.
 
 ```typescript
 const token = await tokenProvider.getToken(undefined, { tenantId: "<dataverse-tenant-id>" });
@@ -624,7 +624,7 @@ interface MsalBrowserTokenProviderOptions {
 | `account`            | `AccountInfo \| () => AccountInfo \| null` | ❌ No    | Active account, then first | Account to use; see account resolution     |
 | `interactionType`    | `'popup' \| 'redirect'`                    | ❌ No    | `'popup'`                  | How to handle interactive auth             |
 | `fallbackToRedirect` | `boolean`                                  | ❌ No    | `false`                    | Redirect when the browser blocks the popup |
-| `claims`             | `string`                                   | ❌ No    | -                          | JSON string for Conditional Access claims  |
+| `claims`             | `string`                                   | ❌ No    | -                          | JSON claims; see Conditional Access below  |
 | `correlationId`      | `string`                                   | ❌ No    | -                          | Correlation ID for tracing                 |
 
 ### Common Scopes
@@ -641,6 +641,8 @@ interface MsalBrowserTokenProviderOptions {
 ### Conditional Access & Claims Challenges
 
 Handle Conditional Access policies that require additional claims or step-up authentication.
+
+MSAL skips its token cache for a silent request with `claims`, so the `claims` option is sent only when the request goes to Entra ID anyway: the interactive flow, the first silent call for each account, scope set and tenant, and a forced refresh. Later silent calls get the token from MSAL's cache instead of calling Entra ID on every Dataverse request. A claims challenge passed to `getToken` (`{ claims }`) is always sent.
 
 ```typescript
 // Scenario: Dataverse protected by Conditional Access requiring device compliance

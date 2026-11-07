@@ -25,11 +25,13 @@ import {
   DataverseInvalidRequestError,
 } from "@mohsinonxrm/dataverse-sdk-core";
 import {
+  hasUsernamePasswordFlow,
   isConfidentialClientApplication,
   isInteractionRequiredError,
   isPublicClientApplication,
   tokenAcquisitionFailed,
 } from "./msalErrors.js";
+import { assertValidTenant, tenantAuthority, type TenantAuthority } from "./authority.js";
 
 const AUTH_CODE_SPENT =
   "the account needs a new sign-in and the authorization code was already redeemed. " +
@@ -38,6 +40,14 @@ const AUTH_CODE_SPENT =
 /** Identifies a scope set regardless of order, so concurrent callers can share a sign-in. */
 function scopeKey(scopes: string[]): string {
   return [...scopes].sort().join(" ");
+}
+
+/**
+ * A client credentials request with MSAL Node 7's `claimsFromClient`: client claims that MSAL
+ * caches by value (unlike `claims`, which skips the cache). Older majors ignore the field.
+ */
+interface ClientCredentialRequestWithClientClaims extends ClientCredentialRequest {
+  claimsFromClient?: string;
 }
 
 /**
@@ -57,7 +67,14 @@ export interface MsalNodeTokenProviderOptionsBase {
   scopes: string[];
 
   /**
-   * Additional claims to request
+   * Claims to request (JSON), for example a Conditional Access authentication context.
+   *
+   * MSAL skips its token cache for any request with `claims`, so they are sent only when the
+   * request goes to Entra ID anyway: the sign-in (device code, authorization code,
+   * username/password), the first token for each scope set and tenant, and a forced refresh.
+   * Later calls get the token from MSAL's cache. A claims challenge from a 401
+   * (`TokenOptions.claims`) is always sent. With MSAL Node 7, client credentials also send them as
+   * `claimsFromClient`, which MSAL caches by value.
    */
   claims?: string;
 
@@ -98,8 +115,10 @@ export interface ClientCredentialsFlowOptions extends MsalNodeTokenProviderOptio
   flow: "clientCredentials";
 
   /**
-   * Optional tenant ID to use for the request
-   * Overrides the tenant in the authority
+   * Tenant to get tokens from (a tenant id or domain), instead of the tenant in the
+   * application's authority. The authority keeps the configured authority's host (or the
+   * `azureCloudOptions` cloud), so a US Government or China app stays in its cloud.
+   * `TokenOptions.tenantId` overrides it per call.
    */
   tenantId?: string;
 }
@@ -136,6 +155,9 @@ export interface AuthorizationCodeFlowOptions extends MsalNodeTokenProviderOptio
  *
  * The first `getToken()` signs in with the password; later calls use `acquireTokenSilent` with the
  * signed-in account, and send the password again only when MSAL says a new sign-in is needed.
+ *
+ * MSAL Node has deprecated `acquireTokenByUsernamePassword` (ROPC). The constructor throws
+ * `DataverseInvalidRequestError` when the application doesn't have it.
  */
 export interface UsernamePasswordFlowOptions extends MsalNodeTokenProviderOptionsBase {
   flow: "usernamePassword";
@@ -231,6 +253,8 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
   private signIn?: { key: string; promise: Promise<AuthenticationResult | null> };
   /** True once the authorization code has been sent to MSAL (codes are single use). */
   private codeRedeemed = false;
+  /** Scope sets (with authority and account) that already got a token with the configured claims. */
+  private readonly claimsSent = new Set<string>();
 
   /**
    * Creates a new MSAL Node token provider
@@ -293,6 +317,9 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
             "Client credentials flow requires ConfidentialClientApplication"
           );
         }
+        if (options.tenantId !== undefined) {
+          assertValidTenant(options.tenantId);
+        }
         break;
 
       case "authorizationCode":
@@ -306,6 +333,14 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
           throw DataverseInvalidRequestError.invalidParameter(
             "clientApplication",
             "Username/password flow requires PublicClientApplication"
+          );
+        }
+        if (!hasUsernamePasswordFlow(clientApplication)) {
+          throw DataverseInvalidRequestError.invalidParameter(
+            "clientApplication",
+            "Username/password flow needs acquireTokenByUsernamePassword, which this " +
+              "@azure/msal-node version doesn't have (MSAL deprecated the username/password " +
+              "flow). Use the deviceCode or authorizationCode flow instead"
           );
         }
         if (!options.username || !options.password) {
@@ -329,7 +364,15 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
    * @param options - Additional token options
    * @returns Access token string
    *
-   * @throws {DataverseAuthenticationError} When token acquisition fails
+   * `options.tenantId` requests the token from that tenant, on the host of the application's
+   * configured authority (or its `azureCloudOptions` cloud), for every flow: device code and
+   * username/password sign in to it, the authorization code is redeemed where it was issued and the
+   * tenant's token then comes from the signed-in account, and silent calls use it as authority.
+   *
+   * @throws {MsalNodeAuthenticationError} When token acquisition fails. It is a
+   *   `DataverseAuthenticationError` with MSAL's `errorCode`, `subError`, `correlationId`,
+   *   `errorNo` and the MSAL error as `cause`.
+   * @throws {DataverseInvalidRequestError} `name: "InvalidTenantId"` for a malformed `tenantId`.
    */
   async getToken(scopes?: string | string[], options?: TokenOptions): Promise<string> {
     // Use provided scopes or fall back to configured scopes
@@ -344,21 +387,22 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
     }
 
     try {
+      const target = this.tenantTarget(options);
       let result: AuthenticationResult | null;
 
       switch (this.options.flow) {
         case "deviceCode":
         case "authorizationCode":
         case "usernamePassword":
-          result = await this.acquireTokenForUser(requestScopes, options);
+          result = await this.acquireTokenForUser(requestScopes, target, options);
           break;
 
         case "clientCredentials":
-          result = await this.acquireTokenByClientCredentials(requestScopes, options);
+          result = await this.acquireTokenByClientCredentials(requestScopes, target, options);
           break;
 
         case "silent":
-          result = await this.acquireTokenSilent(requestScopes, options);
+          result = await this.acquireTokenSilent(requestScopes, target, options);
           break;
 
         default: {
@@ -397,6 +441,19 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
   }
 
   /**
+   * The tenant authority for this call: `TokenOptions.tenantId`, then (client credentials) the
+   * configured `tenantId`, on the host of the application's configured authority. `undefined`
+   * keeps the application's authority. Throws `InvalidTenantId` for a malformed tenant.
+   * @private
+   */
+  private tenantTarget(options?: TokenOptions): TenantAuthority | undefined {
+    const configured =
+      this.options.flow === "clientCredentials" ? this.options.tenantId : undefined;
+    const tenantId = options?.tenantId ?? configured;
+    return tenantId ? tenantAuthority(this.clientApplication, tenantId) : undefined;
+  }
+
+  /**
    * Device code, authorization code and username/password: sign the user in once, then get every
    * later token with `acquireTokenSilent` for the signed-in account (MSAL's cache, then its refresh
    * token). The sign-in flow runs again only when the silent call says the account needs it, and
@@ -405,9 +462,10 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
    */
   private async acquireTokenForUser(
     scopes: string[],
+    target: TenantAuthority | undefined,
     options?: TokenOptions
   ): Promise<AuthenticationResult | null> {
-    const key = scopeKey(scopes);
+    const key = JSON.stringify([scopeKey(scopes), target?.authority ?? null]);
 
     for (;;) {
       const pending = this.signIn;
@@ -422,9 +480,7 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
       const account = this.cachedAccount;
       if (account) {
         try {
-          return await this.clientApplication.acquireTokenSilent(
-            this.silentRequest(account, scopes, options)
-          );
+          return await this.silent(account, scopes, target, options);
         } catch (error) {
           if (!isInteractionRequiredError(error)) {
             throw error;
@@ -441,7 +497,7 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
         throw tokenAcquisitionFailed(undefined, AUTH_CODE_SPENT);
       }
 
-      return await this.startSignIn(key, scopes, options);
+      return await this.startSignIn(key, scopes, target, options);
     }
   }
 
@@ -452,9 +508,10 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
   private startSignIn(
     key: string,
     scopes: string[],
+    target: TenantAuthority | undefined,
     options?: TokenOptions
   ): Promise<AuthenticationResult | null> {
-    const promise = this.signInOnce(scopes, options)
+    const promise = this.signInOnce(scopes, target, options)
       .then((result) => {
         if (result?.account) {
           this.cachedAccount = result.account;
@@ -472,16 +529,26 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
 
   private async signInOnce(
     scopes: string[],
+    target: TenantAuthority | undefined,
     options?: TokenOptions
   ): Promise<AuthenticationResult | null> {
-    switch (this.options.flow) {
-      case "deviceCode":
-        return await this.acquireTokenByDeviceCode(scopes, options);
-      case "authorizationCode":
-        return await this.acquireTokenByAuthorizationCode(scopes, options);
-      default:
-        return await this.acquireTokenByUsernamePassword(scopes, options);
+    if (this.options.flow === "authorizationCode") {
+      // The code is redeemed where it was issued (the application's authority). A token from
+      // another tenant then comes from the signed-in account's refresh token.
+      const redeemed = await this.acquireTokenByAuthorizationCode(scopes, options);
+      this.rememberClaimsSent(scopes, undefined, redeemed?.account);
+      return target && redeemed?.account
+        ? await this.silent(redeemed.account, scopes, target, options)
+        : redeemed;
     }
+
+    const result =
+      this.options.flow === "deviceCode"
+        ? await this.acquireTokenByDeviceCode(scopes, target, options)
+        : await this.acquireTokenByUsernamePassword(scopes, target, options);
+    // The sign-in sent the configured claims: silent calls for these scopes can use the cache.
+    this.rememberClaimsSent(scopes, target, result?.account);
+    return result;
   }
 
   /**
@@ -490,6 +557,7 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
    */
   private async acquireTokenByDeviceCode(
     scopes: string[],
+    target: TenantAuthority | undefined,
     options?: TokenOptions
   ): Promise<AuthenticationResult | null> {
     const pca = this.clientApplication as PublicClientApplication;
@@ -500,6 +568,7 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
       deviceCodeCallback: flowOptions.deviceCodeCallback,
       claims: options?.claims ?? this.options.claims,
       correlationId: options?.correlationId ?? this.options.correlationId,
+      ...target,
     };
 
     return await pca.acquireTokenByDeviceCode(deviceCodeRequest);
@@ -511,26 +580,27 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
    */
   private async acquireTokenByClientCredentials(
     scopes: string[],
+    target: TenantAuthority | undefined,
     options?: TokenOptions
   ): Promise<AuthenticationResult | null> {
     const cca = this.clientApplication as ConfidentialClientApplication;
-    const flowOptions = this.options as ClientCredentialsFlowOptions;
+    const key = this.claimsKey(scopes, target);
 
-    const clientCredentialRequest: ClientCredentialRequest = {
+    const clientCredentialRequest: ClientCredentialRequestWithClientClaims = {
       scopes,
       azureRegion: undefined, // Can be added to options if needed
-      claims: options?.claims ?? this.options.claims,
+      claims: this.cacheableClaims(key, options),
       correlationId: options?.correlationId ?? this.options.correlationId,
+      ...target,
+      // MSAL Node 7 caches client claims by value and sends them on every network call.
+      ...(this.options.claims ? { claimsFromClient: this.options.claims } : {}),
       // After a 401 the SDK asks for a new token: skip MSAL's token cache (#167).
       ...(options?.forceRefresh ? { skipCache: true } : {}),
     };
 
-    // Override authority if specific tenant requested
-    if (flowOptions.tenantId || options?.tenantId) {
-      clientCredentialRequest.authority = `https://login.microsoftonline.com/${options?.tenantId ?? flowOptions.tenantId ?? ""}`;
-    }
-
-    return await cca.acquireTokenByClientCredential(clientCredentialRequest);
+    const result = await cca.acquireTokenByClientCredential(clientCredentialRequest);
+    this.claimsSent.add(key);
+    return result;
   }
 
   /**
@@ -567,6 +637,7 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
    */
   private async acquireTokenByUsernamePassword(
     scopes: string[],
+    target: TenantAuthority | undefined,
     options?: TokenOptions
   ): Promise<AuthenticationResult | null> {
     const pca = this.clientApplication as PublicClientApplication;
@@ -578,6 +649,7 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
       password: flowOptions.password,
       claims: options?.claims ?? this.options.claims,
       correlationId: options?.correlationId ?? this.options.correlationId,
+      ...target,
     };
 
     return await pca.acquireTokenByUsernamePassword(usernamePasswordRequest);
@@ -589,6 +661,7 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
    */
   private async acquireTokenSilent(
     scopes: string[],
+    target: TenantAuthority | undefined,
     options?: TokenOptions
   ): Promise<AuthenticationResult | null> {
     const flowOptions = this.options as SilentFlowOptions;
@@ -602,28 +675,67 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
       );
     }
 
-    return await this.clientApplication.acquireTokenSilent(
-      this.silentRequest(account, scopes, options)
-    );
+    return await this.silent(account, scopes, target, options);
   }
 
   /**
-   * The `acquireTokenSilent` request for an account. `TokenOptions.forceRefresh` (set by the SDK
-   * after a 401) skips MSAL's cached access token and uses the refresh token.
+   * `acquireTokenSilent` for an account. `TokenOptions.forceRefresh` (set by the SDK after a 401)
+   * skips MSAL's cached access token and uses the refresh token.
    * @private
    */
-  private silentRequest(
+  private async silent(
     account: AccountInfo,
     scopes: string[],
+    target: TenantAuthority | undefined,
     options?: TokenOptions
-  ): SilentFlowRequest {
-    return {
+  ): Promise<AuthenticationResult | null> {
+    const key = this.claimsKey(scopes, target, account);
+    const request: SilentFlowRequest = {
       scopes,
       account,
       forceRefresh: options?.forceRefresh ?? false,
-      claims: options?.claims ?? this.options.claims,
+      claims: this.cacheableClaims(key, options),
       correlationId: options?.correlationId ?? this.options.correlationId,
+      ...target,
     };
+    const result = await this.clientApplication.acquireTokenSilent(request);
+    this.claimsSent.add(key);
+    return result;
+  }
+
+  /**
+   * The claims for a request MSAL could answer from its cache (silent, client credentials). A
+   * claims challenge (`TokenOptions.claims`, after a 401) is always sent. The configured claims are
+   * sent on the first request for the scope set, tenant and account, and on a forced refresh,
+   * which go to Entra ID anyway: MSAL skips its cache for a request with claims, so sending them
+   * every time would send every request to Entra ID.
+   * @private
+   */
+  private cacheableClaims(key: string, options?: TokenOptions): string | undefined {
+    if (options?.claims) {
+      return options.claims;
+    }
+    return options?.forceRefresh || !this.claimsSent.has(key) ? this.options.claims : undefined;
+  }
+
+  private claimsKey(
+    scopes: string[],
+    target: TenantAuthority | undefined,
+    account?: AccountInfo | null
+  ): string {
+    return JSON.stringify([
+      scopeKey(scopes),
+      target?.authority ?? null,
+      account?.homeAccountId ?? null,
+    ]);
+  }
+
+  private rememberClaimsSent(
+    scopes: string[],
+    target: TenantAuthority | undefined,
+    account: AccountInfo | null | undefined
+  ): void {
+    this.claimsSent.add(this.claimsKey(scopes, target, account));
   }
 
   /**
