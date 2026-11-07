@@ -521,6 +521,9 @@ export class SchemaModel {
         ...this.bindingInfo(bindingType),
         Parameters: isBound ? parameters.slice(1) : parameters,
         ReturnType: returnType,
+        ReturnTypeNullable: action.ReturnType
+          ? this.getAttribute(action.ReturnType, "Nullable") !== "false"
+          : undefined,
       });
     }
   }
@@ -553,6 +556,9 @@ export class SchemaModel {
         ...this.bindingInfo(bindingType),
         Parameters: isBound ? parameters.slice(1) : parameters,
         ReturnType: returnType,
+        ReturnTypeNullable: func.ReturnType
+          ? this.getAttribute(func.ReturnType, "Nullable") !== "false"
+          : undefined,
         IsComposable: isComposable,
       });
     }
