@@ -84,29 +84,40 @@ function chunkedServer(fake: FakeFetch, received: Uint8Array[], chunk = "4", ech
 }
 
 describe("files: empty files (#383)", () => {
-  it.each(["auto", "actions", "patch-chunked", "single"] as const)(
-    "method %s: a 0-byte file is one PATCH with no blocks",
-    async (method) => {
-      const { files, fake } = setup();
-      fake.on("PATCH", COLUMN_PATH, () => noContent());
-      await files.upload("accounts", ID, "new_file", new Uint8Array(0), "empty.txt", { method });
-      expect(fake.requests.map((r) => r.method)).toEqual(["PATCH"]);
-      expect(fake.last().url).toBe(`${TEST_API_URL}${COLUMN_PATH}?x-ms-file-name=empty.txt`);
-      expect(fake.last().bodyBytes?.byteLength ?? 0).toBe(0);
-    }
-  );
-
-  it("an empty stream of unknown size on the actions route commits no empty block list", async () => {
-    const { files, fake } = setup();
+  // Checked against a live org: Dataverse stores a 0-byte file only as an empty block list
+  // committed through the actions route; an empty PATCH (400) or empty chunk (416) is refused.
+  function actionsServer(fake: FakeFetch) {
     fake.on("POST", "/InitializeFileBlocksUpload", () =>
       jsonResponse({ FileContinuationToken: "tok" })
     );
-    fake.on("PATCH", COLUMN_PATH, () => noContent());
+    fake.on("POST", "/CommitFileBlocksUpload", () =>
+      jsonResponse({ FileId: "f", FileSizeInBytes: 0 })
+    );
+  }
+
+  it.each(["auto", "actions", "patch-chunked", "single"] as const)(
+    "method %s: a 0-byte file is an empty block list, committed through the actions route",
+    async (method) => {
+      const { files, fake } = setup();
+      actionsServer(fake);
+      await files.upload("accounts", ID, "new_file", new Uint8Array(0), "empty.txt", { method });
+      const calls = fake.requests.filter((r) => !r.url.includes("EntityDefinitions"));
+      expect(
+        calls.map((r) => `${r.method} ${new URL(r.url).pathname.split("/").pop() ?? ""}`)
+      ).toEqual(["POST InitializeFileBlocksUpload", "POST CommitFileBlocksUpload"]);
+      const commit = JSON.parse(fake.last().bodyText ?? "{}") as { BlockList: unknown[] };
+      expect(commit.BlockList).toEqual([]);
+    }
+  );
+
+  it("an empty stream of unknown size on the actions route commits an empty block list", async () => {
+    const { files, fake } = setup();
+    actionsServer(fake);
     await files.upload("accounts", ID, "new_file", streamOf(new Uint8Array(0), 4), "empty.txt", {
       method: "actions",
     });
-    expect(fake.requests.some((r) => r.url.includes("CommitFileBlocksUpload"))).toBe(false);
-    expect(fake.last().method).toBe("PATCH");
+    expect(fake.requests.some((r) => r.url.includes("UploadBlock"))).toBe(false);
+    expect(fake.last().url).toContain("CommitFileBlocksUpload");
   });
 });
 
@@ -487,13 +498,17 @@ describe("files: file names outside ASCII (#362)", () => {
     ]);
   });
 
-  it("a zero-byte patch-chunked upload names the file in the query", async () => {
+  it("a zero-byte patch-chunked upload names the file in the actions bodies (#383)", async () => {
     const { files, fake } = setup();
-    fake.on("PATCH", COLUMN_PATH, () => noContent());
+    fake.on("POST", "/InitializeFileBlocksUpload", () =>
+      jsonResponse({ FileContinuationToken: "tok" })
+    );
+    fake.on("POST", "/CommitFileBlocksUpload", () => jsonResponse({ FileId: "f" }));
     await files.upload("accounts", ID, "new_file", new Uint8Array(0), "合同.pdf", {
       method: "patch-chunked",
     });
-    expect(nameParam(fake.last().url)).toBe("合同.pdf");
+    const commit = JSON.parse(fake.last().bodyText ?? "{}") as { FileName: string };
+    expect(commit.FileName).toBe("合同.pdf");
   });
 
   it("characters that mean something in a query string are encoded", async () => {

@@ -91,17 +91,20 @@ describe.skipIf(!live)("live: file column upload and download (#60)", () => {
     }
   }
 
-  // #383: an empty file goes up as one PATCH on every route (no empty block list).
-  it("uploads a 0-byte file by the default route and keeps it", async () => {
-    const { client } = liveClient();
-    const files = new FileColumnClient(client);
-    await files.upload(SET, id, COLUMN, new Uint8Array(0), "empty.txt");
-    const row = await client
-      .api(`${SET}(${id})`)
-      .select(`${COLUMN}_name`)
-      .get<Record<string, unknown>>();
-    expect(row[`${COLUMN}_name`]).toBe("empty.txt");
-    const downloaded = await bytesOf(await files.download(SET, id, COLUMN));
-    expect(downloaded.byteLength).toBe(0);
-  });
+  // #383: Dataverse stores an empty file only as an empty block list committed through the
+  // actions route (an empty PATCH gets 400, an empty chunk 416), so every method sends it that way.
+  for (const method of ["auto", "single", "patch-chunked"] as const) {
+    it(`uploads a 0-byte file with method "${method}" and keeps it`, async () => {
+      const { client } = liveClient();
+      const files = new FileColumnClient(client);
+      await files.upload(SET, id, COLUMN, new Uint8Array(0), `empty-${method}.txt`, { method });
+      const row = await client
+        .api(`${SET}(${id})`)
+        .select(`${COLUMN}_name`)
+        .get<Record<string, unknown>>();
+      expect(row[`${COLUMN}_name`]).toBe(`empty-${method}.txt`);
+      const downloaded = await bytesOf(await files.download(SET, id, COLUMN));
+      expect(downloaded.byteLength).toBe(0);
+    });
+  }
 });
