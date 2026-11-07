@@ -251,6 +251,16 @@ Generate all entities (leave empty or omit):
 }
 ```
 
+"All entities" means every table: an entity type that derives from `crmbaseentity`, isn't
+abstract and has an entity set. The metadata sets (`EntityDefinitions`,
+`GlobalOptionSetDefinitions`, `ManagedPropertyDefinitions`) are left out, and a table that
+`RetrieveMetadataChanges` returns nothing for is skipped with a warning. References to an entity
+that isn't generated are typed `IEntity`.
+
+An entity type gets the columns and navigation properties of its base types: the activity tables
+(`email`, `task`, …) derive from `activitypointer`, and `$metadata` declares `subject`,
+`regardingobjectid` and the other activity columns only there.
+
 ### Filtering Actions & Functions
 
 ```json
@@ -375,6 +385,8 @@ generated/
 ├── complextypes/
 │   ├── AuditDetail.ts
 │   └── index.ts
+├── internal/
+│   └── actionBody.ts   # bodyValue(): enum names and entities in action bodies (not exported)
 ├── metadata.ts
 └── index.ts
 ```
@@ -472,6 +484,13 @@ an `EntityReference` when you write it. A target table that isn't generated (or 
 such as `ownerid`'s `principal`) is typed as `IEntity`. Interfaces have no `logicalName`: the Web
 API rejects unknown properties, and the metadata already names the table.
 
+Date-and-time columns (`Edm.DateTimeOffset`) are `string`: the Web API returns ISO 8601 strings
+(`"2024-05-01T10:00:00Z"`), and nothing converts them. Use `new Date(account.createdon)` when you
+need a `Date`. Operation parameters take a `string` or a `Date`.
+
+When the `entity` table is generated, its metadata const is `EntityMetadata`, so `Entity.ts` and
+`metadata.ts` import the runtime type as `RuntimeEntityMetadata`.
+
 ### Enum Type
 
 <!-- no-check -->
@@ -490,18 +509,21 @@ falls back to `Value<n>` or gets the value appended.
 
 ### Action Class
 
+<!-- no-check -->
+
 ```typescript
 // generated/actions/WinOpportunityAction.ts
 import {
   ActionBase,
-  type IEntity,
+  type EntityReference,
   type RequestInformation,
 } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type { OpportunityClose } from "../entities/OpportunityClose.js";
+import { bodyValue } from "../internal/actionBody.js";
 
 /** Parameters of the WinOpportunity action, by their CSDL names. */
 export interface WinOpportunityActionParameters {
-  OpportunityClose: IEntity;
-  Caller?: string | null;
+  OpportunityClose: OpportunityClose | EntityReference;
   Status: number;
 }
 
@@ -511,11 +533,11 @@ export class WinOpportunityAction extends ActionBase<void> {
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    // The parameters by their CSDL names; an undefined one isn't sent
+    // The parameters by their CSDL names; an undefined one isn't sent. Enum values are sent as
+    // member names, and entities with their lookups as @odata.bind (bodyValue).
     const body: Record<string, unknown> = {};
     if (this.parameters.OpportunityClose !== undefined)
-      body["OpportunityClose"] = this.parameters.OpportunityClose;
-    if (this.parameters.Caller !== undefined) body["Caller"] = this.parameters.Caller;
+      body["OpportunityClose"] = bodyValue(this.parameters.OpportunityClose, "opportunityclose");
     if (this.parameters.Status !== undefined) body["Status"] = this.parameters.Status;
 
     return {
@@ -532,8 +554,32 @@ export class WinOpportunityAction extends ActionBase<void> {
   }
 }
 
-await client.execute(new WinOpportunityAction({ OpportunityClose: close, Status: 3 }));
+await client.execute(
+  new WinOpportunityAction({
+    OpportunityClose: {
+      subject: "Won",
+      opportunityid: createEntityReference("opportunity", opportunityId),
+    },
+    Status: 3,
+  })
+);
+// Body: { "OpportunityClose": { "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+//   "subject": "Won", "opportunityid@odata.bind": "/opportunities(<id>)" }, "Status": 3 }
 ```
+
+The request body is what the Web API reads, as the classes in `@mohsinonxrm/dataverse-sdk-actions`
+send it. Parameters that can hold an enum or an entity go through `bodyValue()`, from the generated
+`internal/actionBody.ts`:
+
+- an enum value is sent as its member name: `AccessRights.ReadAccess | AccessRights.WriteAccess`
+  becomes `"ReadAccess, WriteAccess"` (the Web API rejects a number), also inside complex types
+  such as `GrantAccess`'s `PrincipalAccess.AccessMask`;
+- an entity parameter takes an `EntityReference` or a record. A reference is sent as `@odata.type`
+  and its primary key. A record of a generated table goes through `formatEntityForWrite()`
+  (`@odata.type`, and a lookup set with an `EntityReference` becomes
+  `<navigation property>@odata.bind`); a record of another table keeps its properties, with
+  references turned into binds the same way. A complex type's navigation property, such as
+  `PrincipalAccess.Principal`, is sent the same way.
 
 The constructor takes one object with the operation's parameters, keyed by their CSDL names and
 typed as `<Class>Parameters`, as the classes in `@mohsinonxrm/dataverse-sdk-actions` do. A
@@ -754,8 +800,9 @@ The generator follows Scott Durow's proven three-phase pipeline architecture fro
 ### Phase 2: Filter
 
 1. **Apply Configuration**: Filters entities, actions and functions based on `.dataverse-gen.json`.
-   With no `entities` list, every table is generated (abstract types such as `crmbaseentity` and
-   types without an entity set are skipped).
+   With no `entities` list, every table is generated: types that derive from `crmbaseentity`
+   (abstract types, types without an entity set and the metadata types such as `EntityMetadata`
+   are skipped).
 2. **Build Initial Model**: Creates PropertyType, NavigationPropertyType structures from CSDL.
    Entities that are referenced but not generated aren't pulled in; references to them are typed
    as `IEntity`.
@@ -820,7 +867,8 @@ This enrichment enables:
 1. **Resolve Types**: Maps Dataverse types to TypeScript types
    - `Edm.String`, `Edm.Guid`, `Edm.Binary`, `Edm.Date` → `string`
    - `Edm.Int32`, `Edm.Int64`, `Edm.Decimal`, `Edm.Double` → `number`
-   - `Edm.Boolean` → `boolean`, `Edm.DateTimeOffset` → `Date`
+   - `Edm.Boolean` → `boolean`, `Edm.DateTimeOffset` → `string` (`string | Date` for an
+     operation parameter)
    - `mscrm.*` entity, complex and enum types → the generated type (imported), or `IEntity` for an
      entity that isn't generated
    - Lookup attributes → `_<name>_value` (`string`) plus a navigation property
@@ -857,6 +905,8 @@ generated/
   complextypes/
     WhoAmIResponse.ts
     index.ts
+  internal/
+    actionBody.ts           # bodyValue() for action request bodies
   metadata.ts               # Entities constant, EntityMetadataCache
   index.ts                  # Root barrel export
 ```

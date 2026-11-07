@@ -423,7 +423,11 @@ export const TYPECHECK_ENTITY_METADATA: Record<string, RetrieveMetadataChangesRe
         PrimaryNameAttribute: "subject",
         Keys: [],
         Attributes: [
-          { LogicalName: "activityid", SchemaName: "ActivityId", AttributeType: "Uniqueidentifier" },
+          {
+            LogicalName: "activityid",
+            SchemaName: "ActivityId",
+            AttributeType: "Uniqueidentifier",
+          },
           { LogicalName: "subject", SchemaName: "Subject", AttributeType: "String" },
           { LogicalName: "description", SchemaName: "Description", AttributeType: "Memo" },
           {

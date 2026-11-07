@@ -12,6 +12,7 @@ import type {
   ActionType,
   FunctionType,
   ComplexType,
+  NavigationPropertyType,
   PropertyType,
   TypeScriptType,
   ParameterType,
@@ -439,7 +440,9 @@ export class SchemaModel {
     for (const op of [...this.Actions, ...this.Functions]) {
       for (const param of op.Parameters) {
         const type = this.getTypeScriptType(param.Type);
-        param.TypeScriptType = isDateTimeOffset(param.Type) ? { ...type, name: "string | Date" } : type;
+        param.TypeScriptType = isDateTimeOffset(param.Type)
+          ? { ...type, name: "string | Date" }
+          : type;
       }
     }
   }
@@ -480,9 +483,10 @@ export class SchemaModel {
     const schema = this.getSchema();
     if (!schema?.EntityType) return;
 
-    const entityTypes = Array.isArray(schema.EntityType) ? schema.EntityType : [schema.EntityType];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const byName = new Map<string, any>();
+    const entityTypes: CsdlEntityTypeNode[] = Array.isArray(schema.EntityType)
+      ? schema.EntityType
+      : [schema.EntityType];
+    const byName = new Map<string, CsdlEntityTypeNode>();
     for (const entityType of entityTypes) {
       byName.set(this.getAttribute(entityType, "Name"), entityType);
     }
@@ -512,7 +516,7 @@ export class SchemaModel {
       );
       const navProps = uniqueBy(
         chain.types.flatMap((t) => this.readNavigationProperties(t.NavigationProperty)),
-        (n) => String(n.Name)
+        (n) => n.Name
       );
 
       this.EntityTypes.push({
@@ -534,16 +538,12 @@ export class SchemaModel {
    * chain reached `crmbaseentity`, that is, whether the type is a Dataverse table.
    */
   private baseTypeChain(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    entityType: any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    byName: Map<string, any>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): { types: any[]; derivesFromCrmBaseEntity: boolean } {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const types: any[] = [];
+    entityType: CsdlEntityTypeNode,
+    byName: Map<string, CsdlEntityTypeNode>
+  ): { types: CsdlEntityTypeNode[]; derivesFromCrmBaseEntity: boolean } {
+    const types: CsdlEntityTypeNode[] = [];
     const seen = new Set<string>();
-    let current = entityType;
+    let current: CsdlEntityTypeNode | undefined = entityType;
     while (current) {
       const name = this.getAttribute(current, "Name");
       if (name === CRM_BASE_ENTITY) return { types, derivesFromCrmBaseEntity: true };
@@ -725,14 +725,12 @@ export class SchemaModel {
   /**
    * Read navigation properties
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readNavigationProperties(navNode: any): any[] {
+  private readNavigationProperties(navNode: unknown): NavigationPropertyType[] {
     if (!navNode) return [];
 
-    const navProps = Array.isArray(navNode) ? navNode : [navNode];
+    const navProps: unknown[] = Array.isArray(navNode) ? navNode : [navNode];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return navProps.map((n: any) => ({
+    return navProps.map((n) => ({
       Name: this.getAttribute(n, "Name"),
       TargetType: this.extractEntityName(this.getAttribute(n, "Type")),
       IsCollection: this.getAttribute(n, "Type").startsWith("Collection("),
@@ -930,6 +928,14 @@ export class SchemaModel {
 /** `Edm.DateTimeOffset` or a collection of it. */
 function isDateTimeOffset(edmType: string): boolean {
   return edmType === "Edm.DateTimeOffset" || edmType === "Collection(Edm.DateTimeOffset)";
+}
+
+/** An `EntityType` element of the CSDL, as xml-js reads it. */
+interface CsdlEntityTypeNode {
+  _attributes?: Record<string, string>;
+  Key?: { PropertyRef?: unknown };
+  Property?: unknown;
+  NavigationProperty?: unknown;
 }
 
 /** The abstract base type of every Dataverse table. */

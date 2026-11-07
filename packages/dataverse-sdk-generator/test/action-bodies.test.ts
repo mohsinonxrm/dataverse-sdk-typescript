@@ -54,7 +54,13 @@ beforeAll(async () => {
   const config: DataverseGenConfig = {
     environmentUrl: "https://contoso.crm.dynamics.com",
     entities: ["account", "contact", "opportunityclose"],
-    actions: ["GrantAccess", "WinOpportunity", "CalculatePrice", "contoso_Schedule", "contoso_NextRun"],
+    actions: [
+      "GrantAccess",
+      "WinOpportunity",
+      "CalculatePrice",
+      "contoso_Schedule",
+      "contoso_NextRun",
+    ],
     functions: ["contoso_Search"],
     output: { outputRoot: path.join(outputRoot, "ts") },
   };

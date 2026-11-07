@@ -63,7 +63,7 @@ export function actionBodyTables(model: SchemaModel): ActionBodyTables {
   // complex type, or when a derived type does (a value of the base type can be one of them).
   // Iterate to a fixed point, so recursive types resolve.
   const holds = new Set<string>();
-  for (let changed = true; changed; ) {
+  for (let changed = true; changed;) {
     changed = false;
     for (const name of complex.keys()) {
       if (holds.has(name)) continue;
