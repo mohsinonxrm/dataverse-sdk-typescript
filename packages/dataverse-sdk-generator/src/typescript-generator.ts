@@ -8,6 +8,13 @@ import * as ejs from "ejs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  ACTION_BODY_MODULE,
+  type ActionBodyTables,
+  actionBodySource,
+  actionBodyTables,
+  bodyValueType,
+} from "./action-body.js";
 import type { SchemaModel } from "./schema-model.js";
 import type {
   ActionType,
@@ -16,6 +23,7 @@ import type {
   FunctionType,
   NavigationPropertyType,
   ParameterType,
+  PropertyType,
   TypeScriptType,
 } from "./types.js";
 
@@ -78,6 +86,15 @@ const RESERVED_WORDS = new Set([
 
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
 
+/**
+ * The local name for the runtime's `EntityMetadata` type in a file that also declares or imports
+ * `names`: `EntityMetadata`, or `RuntimeEntityMetadata` when the `entity` table's
+ * `EntityMetadata` const is among them (TS2440).
+ */
+function runtimeMetadataName(names: readonly string[]): string {
+  return names.includes("EntityMetadata") ? "RuntimeEntityMetadata" : "EntityMetadata";
+}
+
 /** Annotations at the top of an entity response (#300). */
 const ENTITY_ANNOTATIONS = `"@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string`;
 /** Annotations on each record of an entity collection (#300). */
@@ -107,10 +124,14 @@ export function toDocText(text: string): string {
 class ImportCollector {
   private readonly modules = new Map<string, Map<string, boolean>>();
 
-  /** Import a name used only as a type. */
-  type(name: string, from: string): void {
+  /**
+   * Import a name used only as a type, under `alias` when given (the runtime's `EntityMetadata`
+   * beside a generated `EntityMetadata` const, for the `entity` table).
+   */
+  type(name: string, from: string, alias?: string): void {
     const names = this.namesFor(from);
-    if (!names.has(name)) names.set(name, false);
+    const specifier = alias && alias !== name ? `${name} as ${alias}` : name;
+    if (!names.has(specifier)) names.set(specifier, false);
   }
 
   /** Import a name used as a value (a base class, a const). */
@@ -158,6 +179,7 @@ export class TypescriptGenerator {
   /** `strictNulls` (#305): type operation responses exactly as the CSDL declares them. */
   private strictNulls: boolean;
   private outputNamesCache?: Map<string, string>;
+  private actionBodyTablesCache?: ActionBodyTables;
 
   constructor(
     private model: SchemaModel,
@@ -201,14 +223,17 @@ export class TypescriptGenerator {
     for (const entity of this.model.EntityTypes) {
       const imports = new ImportCollector();
       imports.type("IEntity", RUNTIME_PACKAGE);
-      imports.type("EntityMetadata", RUNTIME_PACKAGE);
       const typeName = this.entityTypeName(entity);
+      const metadataName = `${typeName}Metadata`;
+      const metadataType = runtimeMetadataName([typeName, metadataName]);
+      imports.type("EntityMetadata", RUNTIME_PACKAGE, metadataType);
 
       const body = ejs.render(template, {
         ...this.helpers("entities", imports, typeName),
         entity,
         typeName,
-        metadataName: `${typeName}Metadata`,
+        metadataName,
+        metadataType,
         navigationType: (nav: NavigationPropertyType) => this.navigationType(nav, imports, entity),
         getSourceTypeComment: (sourceType?: number) => this.getSourceTypeComment(sourceType),
       });
@@ -262,6 +287,27 @@ export class TypescriptGenerator {
 
       await this.writeFile(dir, className, imports, body);
     }
+
+    // The bodyValue() helper the actions use, when one does
+    const tables = this.actionBodyTables;
+    const used = this.model.Actions.some((a) =>
+      a.Parameters.some((p) => bodyValueType(tables, p.Type) !== undefined)
+    );
+    if (used) {
+      const internal = path.join(this.outputRoot, "internal");
+      await fs.mkdir(internal, { recursive: true });
+      await fs.writeFile(
+        path.join(internal, `${ACTION_BODY_MODULE}${this.fileSuffix}.ts`),
+        actionBodySource(tables, RUNTIME_PACKAGE, `../metadata${this.fileSuffix}.js`),
+        "utf-8"
+      );
+    }
+  }
+
+  /** What the actions' request bodies can hold that has to be converted (#361). */
+  private get actionBodyTables(): ActionBodyTables {
+    this.actionBodyTablesCache ??= actionBodyTables(this.model);
+    return this.actionBodyTablesCache;
   }
 
   /**
@@ -312,6 +358,23 @@ export class TypescriptGenerator {
         ...this.helpers("complextypes", imports, typeName),
         complexType,
         typeName,
+        // A navigation property (PrincipalAccess.Principal) is set with a reference or a record,
+        // as an entity parameter is (#361)
+        propertyType: (prop: PropertyType) => {
+          if (!prop.IsNavigation || prop.TypeScriptType.reference === undefined) {
+            return this.formatType(prop.TypeScriptType, "complextypes", imports, typeName);
+          }
+          imports.type("EntityReference", RUNTIME_PACKAGE);
+          const element = this.resolveReference(
+            prop.TypeScriptType.reference,
+            "complextypes",
+            imports,
+            typeName
+          );
+          return prop.TypeScriptType.isArray
+            ? `Array<${element} | EntityReference>`
+            : `${element} | EntityReference`;
+        },
         // Only a complex base type can be extended; anything else is dropped.
         baseType: baseType && baseType !== "unknown" ? baseType : undefined,
         // strictNulls: the exact shape an operation returns, next to the interface parameters take
@@ -336,12 +399,13 @@ export class TypescriptGenerator {
    */
   private async outputMetadata(): Promise<void> {
     const imports = new ImportCollector();
-    imports.type("EntityMetadata", RUNTIME_PACKAGE);
     const entities = this.model.EntityTypes.map((entity) => {
       const typeName = this.entityTypeName(entity);
       imports.value(`${typeName}Metadata`, `./entities/${typeName}${this.fileSuffix}.js`);
       return { entity, typeName, metadataName: `${typeName}Metadata` };
     });
+    const metadataType = runtimeMetadataName(entities.map((e) => e.metadataName));
+    imports.type("EntityMetadata", RUNTIME_PACKAGE, metadataType);
 
     const actionNames = this.operationNames(this.model.Actions);
     const functionNames = this.operationNames(this.model.Functions);
@@ -349,6 +413,7 @@ export class TypescriptGenerator {
     const body = ejs.render(template, {
       ...this.helpers("entities", imports),
       entities,
+      metadataType,
       actions: this.model.Actions.map((op) => ({ op, key: actionNames.get(op) ?? op.Name })),
       functions: this.model.Functions.map((op) => ({ op, key: functionNames.get(op) ?? op.Name })),
     });
@@ -613,7 +678,20 @@ export * from './metadata${suffix}.js';
     const params = op.Parameters;
     const isFunction = folder === "functions";
     const kindOf = (param: ParameterType) => this.model.getStructuralType(param.Type);
+    /** `.Name`, or `["na-me"]` for a name that isn't an identifier. */
+    const access = (name: string) =>
+      IDENTIFIER.test(name) ? `.${name}` : `[${JSON.stringify(name)}]`;
     const parameterType = (param: ParameterType) => {
+      if (!isFunction && param.TypeScriptType.reference !== undefined) {
+        const ref = param.TypeScriptType.reference;
+        if (this.model.AllEntityTypeNames.has(ref)) {
+          // An action's entity parameter is a reference or a record (#361), as in the in-repo
+          // actions (#74).
+          imports.type("EntityReference", RUNTIME_PACKAGE);
+          const union = `${this.resolveReference(ref, folder, imports)} | EntityReference`;
+          return param.TypeScriptType.isArray ? `Array<${union}>` : union;
+        }
+      }
       const tsType = this.formatType(param.TypeScriptType, folder, imports);
       // A function's entity-typed parameter is usually a reference ({"@odata.id": ...}).
       if (isFunction && kindOf(param) === "EntityType") {
@@ -621,6 +699,18 @@ export * from './metadata${suffix}.js';
         return `${tsType} | EntityReference`;
       }
       return tsType;
+    };
+    // An action parameter that can hold an enum or an entity goes through bodyValue() (#361).
+    const bodyValueTypeOf = (param: ParameterType): string | undefined =>
+      isFunction ? undefined : bodyValueType(this.actionBodyTables, param.Type);
+    if (params.some((p) => bodyValueTypeOf(p) !== undefined)) {
+      imports.value("bodyValue", `../internal/${ACTION_BODY_MODULE}${this.fileSuffix}.js`);
+    }
+    /** The value sent for a parameter: `this.parameters.X`, through bodyValue() when needed. */
+    const bodyExpression = (param: ParameterType): string => {
+      const value = `this.parameters${access(param.Name)}`;
+      const type = bodyValueTypeOf(param);
+      return type === undefined ? value : `bodyValue(${value}, ${JSON.stringify(type)})`;
     };
 
     // The record or collection a bound operation is called on: the first constructor argument.
@@ -678,9 +768,9 @@ export * from './metadata${suffix}.js';
       operationPath,
       parametersName,
       parameterType,
+      bodyExpression,
       parameterKind: kindOf,
-      /** `.Name`, or `["na-me"]` for a name that isn't an identifier. */
-      access: (name: string) => (IDENTIFIER.test(name) ? `.${name}` : `[${JSON.stringify(name)}]`),
+      access,
       getStructuralType: (type: string) => this.model.getStructuralType(type),
     };
   }
@@ -773,7 +863,9 @@ export * from './metadata${suffix}.js';
     const baseType = type.reference
       ? this.resolveReference(type.reference, folder, imports, selfName)
       : type.name;
-    return type.isArray ? `${baseType}[]` : baseType;
+    if (!type.isArray) return baseType;
+    // A union element (`string | Date`) needs parentheses
+    return /^[\w$]+$/.test(baseType) ? `${baseType}[]` : `(${baseType})[]`;
   }
 
   /**

@@ -20,7 +20,7 @@ export interface <%- typeName %> extends IEntity {
 /**
  * Metadata for the <%- doc(entity.LogicalName) %> entity
  */
-export const <%- metadataName %>: EntityMetadata = {
+export const <%- metadataName %>: <%- metadataType %> = {
   typeName: <%- literal(entity.TypeName) %>,
   logicalName: <%- literal(entity.LogicalName) %>,
   collectionName: <%- literal(entity.EntitySetName) %>,

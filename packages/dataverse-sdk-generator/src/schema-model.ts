@@ -126,10 +126,19 @@ export class SchemaModel {
   private async enrichWithDetailedMetadata(): Promise<void> {
     if (this.EntityTypes.length === 0) return;
 
-    for (const entityType of this.EntityTypes) {
+    const allTables = !this.config.entities || this.config.entities.length === 0;
+    const skipped: string[] = [];
+    for (const entityType of [...this.EntityTypes]) {
       const response = await this.metadataService.getEntityMetadata(entityType.LogicalName);
 
       if (!response.EntityMetadata || response.EntityMetadata.length === 0) {
+        if (allTables) {
+          // All-tables mode (#360): an entity type RetrieveMetadataChanges doesn't know isn't
+          // generated (references to it are typed IEntity), instead of failing the whole run.
+          skipped.push(entityType.LogicalName);
+          this.EntityTypes = this.EntityTypes.filter((e) => e !== entityType);
+          continue;
+        }
         throw new Error(
           `${entityType.LogicalName} is not a Dataverse entity, remove it from the .dataverse-gen.json`
         );
@@ -211,6 +220,13 @@ export class SchemaModel {
       // Apply polymorphic lookup consolidation
       this.consolidatePolymorphicLookups(entityType, entityMetadata);
       this.ensureUniqueMemberNames(entityType);
+    }
+
+    if (skipped.length > 0) {
+      this.Warnings.push(
+        `Not generated: ${skipped.join(", ")}. RetrieveMetadataChanges returns no table ` +
+          `metadata for ${skipped.length === 1 ? "it" : "them"}.`
+      );
     }
   }
 
@@ -419,18 +435,11 @@ export class SchemaModel {
       }
     }
 
-    for (const action of this.Actions) {
-      for (const param of action.Parameters) {
-        param.TypeScriptType = this.getTypeScriptType(param.Type);
-      }
-      if (action.ReturnType) {
-        // Already resolved
-      }
-    }
-
-    for (const func of this.Functions) {
-      for (const param of func.Parameters) {
-        param.TypeScriptType = this.getTypeScriptType(param.Type);
+    // A parameter takes a date-time as an ISO string or a Date (#361); values read back are strings.
+    for (const op of [...this.Actions, ...this.Functions]) {
+      for (const param of op.Parameters) {
+        const type = this.getTypeScriptType(param.Type);
+        param.TypeScriptType = isDateTimeOffset(param.Type) ? { ...type, name: "string | Date" } : type;
       }
     }
   }
@@ -454,6 +463,7 @@ export class SchemaModel {
       this.EnumTypes.push({
         Name: this.getAttribute(enumType, "Name"),
         IsGlobal: true,
+        IsFlags: this.getAttribute(enumType, "IsFlags") === "true",
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Members: members.map((m: any) => ({
           Name: this.getAttribute(m, "Name"),
@@ -471,18 +481,39 @@ export class SchemaModel {
     if (!schema?.EntityType) return;
 
     const entityTypes = Array.isArray(schema.EntityType) ? schema.EntityType : [schema.EntityType];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const byName = new Map<string, any>();
+    for (const entityType of entityTypes) {
+      byName.set(this.getAttribute(entityType, "Name"), entityType);
+    }
 
     for (const entityType of entityTypes) {
       const name = this.getAttribute(entityType, "Name");
       this.AllEntityTypeNames.add(name);
-      if (this.getAttribute(entityType, "Abstract") !== "true" && this.hasEntitySet(name)) {
+      // The type and its base types, up to (not including) crmbaseentity: a derived type, such as
+      // an activity (BaseType="mscrm.activitypointer"), leaves out the columns it inherits (#360).
+      const chain = this.baseTypeChain(entityType, byName);
+      // A table derives from crmbaseentity. EntityMetadata (EntityDefinitions) and the other
+      // metadata types derive from crmmodelbaseentity and have no RetrieveMetadataChanges entry.
+      if (
+        this.getAttribute(entityType, "Abstract") !== "true" &&
+        this.hasEntitySet(name) &&
+        chain.derivesFromCrmBaseEntity
+      ) {
         this.tableEntityTypeNames.add(name);
       }
-      const key = entityType.Key?.PropertyRef;
+      const key = chain.types.find((t) => t.Key?.PropertyRef)?.Key?.PropertyRef;
       const keyName = key ? this.getAttribute(key, "Name") : `${name.toLowerCase()}id`;
 
-      const properties = this.readProperties(entityType.Property);
-      const navProps = this.readNavigationProperties(entityType.NavigationProperty);
+      // Own properties first, then the inherited ones a derived type doesn't redeclare
+      const properties = uniqueBy(
+        chain.types.flatMap((t) => this.readProperties(t.Property)),
+        (p) => p.Name
+      );
+      const navProps = uniqueBy(
+        chain.types.flatMap((t) => this.readNavigationProperties(t.NavigationProperty)),
+        (n) => String(n.Name)
+      );
 
       this.EntityTypes.push({
         Name: name,
@@ -498,6 +529,37 @@ export class SchemaModel {
   }
 
   /**
+   * An entity type and its base types, nearest first, stopping before `crmbaseentity` (which has
+   * no properties) and at a type without a base type. `derivesFromCrmBaseEntity` says whether the
+   * chain reached `crmbaseentity`, that is, whether the type is a Dataverse table.
+   */
+  private baseTypeChain(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    entityType: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    byName: Map<string, any>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): { types: any[]; derivesFromCrmBaseEntity: boolean } {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const types: any[] = [];
+    const seen = new Set<string>();
+    let current = entityType;
+    while (current) {
+      const name = this.getAttribute(current, "Name");
+      if (name === CRM_BASE_ENTITY) return { types, derivesFromCrmBaseEntity: true };
+      if (seen.has(name)) break;
+      seen.add(name);
+      types.push(current);
+      const baseType = this.getAttribute(current, "BaseType");
+      if (!baseType) break;
+      const baseName = this.extractEntityName(baseType);
+      if (baseName === CRM_BASE_ENTITY) return { types, derivesFromCrmBaseEntity: true };
+      current = byName.get(baseName);
+    }
+    return { types, derivesFromCrmBaseEntity: false };
+  }
+
+  /**
    * Read complex types from CSDL
    */
   private readComplexTypes(): void {
@@ -510,7 +572,13 @@ export class SchemaModel {
 
     for (const complexType of complexTypes) {
       const name = this.getAttribute(complexType, "Name");
-      const properties = this.readProperties(complexType.Property);
+      // A complex type can have navigation properties too: PrincipalAccess.Principal is the user
+      // or team to grant access to (#231 for the in-repo generator, #361 here).
+      const navigation = this.readProperties(complexType.NavigationProperty).map((p) => ({
+        ...p,
+        IsNavigation: true,
+      }));
+      const properties = [...this.readProperties(complexType.Property), ...navigation];
       const baseType = this.getAttribute(complexType, "BaseType");
 
       this.ComplexTypes.push({
@@ -735,7 +803,8 @@ export class SchemaModel {
       Double: "number",
       Decimal: "number",
       Boolean: "boolean",
-      DateTimeOffset: "Date",
+      // The Web API returns date-times as ISO 8601 strings; nothing turns them into Dates (#361).
+      DateTimeOffset: "string",
       Date: "string",
       TimeOfDay: "string",
       Duration: "string",
@@ -856,6 +925,25 @@ export class SchemaModel {
     // Default to primitive
     return "PrimitiveType";
   }
+}
+
+/** `Edm.DateTimeOffset` or a collection of it. */
+function isDateTimeOffset(edmType: string): boolean {
+  return edmType === "Edm.DateTimeOffset" || edmType === "Collection(Edm.DateTimeOffset)";
+}
+
+/** The abstract base type of every Dataverse table. */
+const CRM_BASE_ENTITY = "crmbaseentity";
+
+/** The items with a distinct key, the first of each kept, in order. */
+function uniqueBy<T>(items: T[], key: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const k = key(item);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
 }
 
 /**

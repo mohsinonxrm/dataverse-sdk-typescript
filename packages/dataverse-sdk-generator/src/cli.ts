@@ -9,6 +9,7 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import ora from "ora";
+import { readFileSync } from "node:fs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { acquireCliToken } from "./auth.js";
@@ -18,10 +19,15 @@ import { DEFAULT_CONFIG } from "./types.js";
 
 const program = new Command();
 
+// The package's own version (#361): package.json is one folder up from src/ and from dist/.
+const { version } = JSON.parse(
+  readFileSync(new URL("../package.json", import.meta.url), "utf-8")
+) as { version: string };
+
 program
   .name("dataverse-gen")
   .description("Generate TypeScript code from Dataverse metadata")
-  .version("1.0.0");
+  .version(version);
 
 /**
  * Initialize configuration file
