@@ -55,18 +55,29 @@ async function readAll(stream: ReadableStream<Uint8Array>): Promise<number[][]> 
   }
 }
 
-/** The server side of the chunked PATCH route: 4-byte chunks, collects what arrives. */
-function chunkedServer(fake: FakeFetch, received: Uint8Array[], chunk = "4") {
-  fake.on("PATCH", COLUMN_PATH, (r) =>
-    r.headers["x-ms-transfer-mode"] === "chunked"
-      ? new Response(null, {
-          status: 200,
-          headers: { location: LOCATION, "x-ms-chunk-size": chunk },
-        })
-      : undefined
-  );
+/**
+ * The server side of the chunked PATCH route: 4-byte chunks, collects what arrives. With `echo`,
+ * the Location repeats the start request's query, as Dataverse's does, and a chunk that names
+ * the file twice is rejected as Dataverse rejects it.
+ */
+function chunkedServer(fake: FakeFetch, received: Uint8Array[], chunk = "4", echo = false) {
+  fake.on("PATCH", COLUMN_PATH, (r) => {
+    if (r.headers["x-ms-transfer-mode"] !== "chunked") return undefined;
+    const query = new URL(r.url).search.replace(/^\?/, "&");
+    return new Response(null, {
+      status: 200,
+      headers: { location: echo ? `${LOCATION}${query}` : LOCATION, "x-ms-chunk-size": chunk },
+    });
+  });
   fake.on("PATCH", COLUMN_PATH, (r) => {
     if (r.headers["x-ms-transfer-mode"] === "chunked") return undefined;
+    if (new URL(r.url).searchParams.getAll("x-ms-file-name").length > 1) {
+      return odataError(
+        400,
+        "0x80060888",
+        "Query option 'x-ms-file-name' was specified more than once, but it must be specified at most once."
+      );
+    }
     received.push(r.bodyBytes ?? new Uint8Array());
     return noContent();
   });
@@ -428,6 +439,20 @@ describe("files: file names outside ASCII (#362)", () => {
     // The chunks go to the Location, keeping its session token.
     expect(fake.requests[1]?.url).toBe(`${LOCATION}&x-ms-file-name=r%C3%A9sum%C3%A9.pdf`);
     expect(fake.requests.every((r) => r.headers["x-ms-file-name"] === undefined)).toBe(true);
+    expect(received.map((c) => [...c])).toEqual([
+      [0, 1, 2, 3],
+      [4, 5, 6, 7],
+      [8, 9],
+    ]);
+  });
+
+  it("method patch-chunked: a Location that already names the file is used as it is", async () => {
+    const { files, fake } = setup();
+    const received: Uint8Array[] = [];
+    chunkedServer(fake, received, "4", true);
+    await files.upload("accounts", ID, "new_file", TEN, "合同.pdf", { method: "patch-chunked" });
+    const location = `${LOCATION}&x-ms-file-name=%E5%90%88%E5%90%8C.pdf`;
+    expect(fake.requests.slice(1).map((r) => r.url)).toEqual([location, location, location]);
     expect(received.map((c) => [...c])).toEqual([
       [0, 1, 2, 3],
       [4, 5, 6, 7],

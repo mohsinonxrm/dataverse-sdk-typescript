@@ -299,8 +299,11 @@ export class FileColumnClient {
     // Dataverse rejects any chunk (but the last) that is not exactly x-ms-chunk-size long.
     const chunkSize = serverChunkSize;
 
-    // Each chunk names the file too, as Dataverse documents; the Location already has a query.
-    const chunkUrl = withFileName(location, fileName);
+    // Each chunk names the file too. Dataverse's Location repeats the start request's
+    // x-ms-file-name, and a second one is rejected (0x80060888), so add it only when missing.
+    const chunkUrl = /[?&]x-ms-file-name=/i.test(location)
+      ? location
+      : withFileName(location, fileName);
 
     let offset = 0;
     let index = 0;
