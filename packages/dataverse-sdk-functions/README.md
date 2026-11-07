@@ -320,7 +320,7 @@ const whoAmI = new WhoAmIFunction();
 
 // 2. Function converts to RequestInformation
 const requestInfo = whoAmI.toRequestInformation(baseUrl);
-// => { method: 'GET', url: 'https://.../WhoAmI', headers: {} }
+// => { method: "GET", url: "https://.../WhoAmI", headers: { Accept: "application/json" } }
 
 // 3. Client executes the request
 const response = await client.execute(whoAmI);

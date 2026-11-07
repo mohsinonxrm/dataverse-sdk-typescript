@@ -1,13 +1,13 @@
 # @mohsinonxrm/dataverse-sdk-messages
 
-Organization Service messages for Dataverse, providing typed request/response pairs that map to Web API actions and functions.
+Organization Service messages for Dataverse, providing typed request/response pairs that map to Web API actions.
 
 ## Features
 
 - ✅ **<!-- count:messages -->1,072<!-- /count --> typed messages** - The Organization Service messages of the platform, Sales and Customer Service
 - ✅ **Direct exports** - All message classes exported directly (e.g., `ExecuteWorkflowRequest`, `WinOpportunityRequest`)
 - ✅ **Request/response pairs** - Full type safety for all message parameters and returns
-- ✅ **Web API mapping** - Messages map to corresponding Web API actions, functions, or HTTP operations
+- ✅ **Web API mapping** - Each message sends the same `POST` as the Web API action of the same name (functions are in `@mohsinonxrm/dataverse-sdk-functions`)
 - ✅ **Generic OrganizationRequest** - Escape hatch for custom actions
 - ✅ **Executable interface** - All messages implement `Executable<TResponse>` for direct execution
 
@@ -19,7 +19,7 @@ pnpm add @mohsinonxrm/dataverse-sdk-messages @mohsinonxrm/dataverse-sdk-xrm
 
 ## Overview
 
-This package provides <!-- count:messages -->1,072<!-- /count --> typed message classes that wrap Web API actions and functions. Each message:
+This package provides <!-- count:messages -->1,072<!-- /count --> typed message classes that wrap Web API actions. Each message:
 
 - Extends `OrganizationRequest` base class
 - Implements `Executable<TResponse>` interface
@@ -414,8 +414,8 @@ Functions (GET) are not supported by `OrganizationRequest`: use the typed classe
 
 | Message         | Web API Endpoint                                        | HTTP Method | Type           |
 | --------------- | ------------------------------------------------------- | ----------- | -------------- |
-| Assign          | /Assign                                                 | POST        | Action         |
-| SetState        | /{entitySet}({id})                                      | PATCH       | HTTP           |
+| Assign          | /{entitySet}({id}) (`ownerid@odata.bind`)               | PATCH       | Update         |
+| SetState        | /{entitySet}({id}) (`statecode`, `statuscode`)          | PATCH       | Update         |
 | ExecuteWorkflow | /workflows({id})/Microsoft.Dynamics.CRM.ExecuteWorkflow | POST        | Action (bound) |
 | WinOpportunity  | /WinOpportunity                                         | POST        | Action         |
 | Merge           | /Merge                                                  | POST        | Action         |
