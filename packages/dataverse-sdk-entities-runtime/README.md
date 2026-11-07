@@ -395,7 +395,10 @@ export const AccountMetadata: EntityMetadata = {
    import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
    import { formatEntityForWrite } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
-   const client = new DataverseClient({/* ... */});
+   const client = new DataverseClient({
+     baseUrl: "https://contoso.crm.dynamics.com",
+     tokenProvider,
+   });
 
    // Type-safe entity operations
    const account: Account = {

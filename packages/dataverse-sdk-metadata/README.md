@@ -451,29 +451,43 @@ const optionSetId = await metadataClient.createGlobalOptionSet({
 ### Use Global Choice in Column
 
 ```typescript
-// Reference global choice when creating attribute
+import type { PicklistAttributeMetadataCreate } from "@mohsinonxrm/dataverse-sdk-metadata";
+
+// Bind the column to the global choice by its MetadataId (optionSetId, from the create above).
+// The create types don't model `@odata.bind` properties yet, hence the type assertion.
 await metadataClient.createAttributeDefinition("new_project", {
   "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
   SchemaName: "new_Type",
   DisplayName: { LocalizedLabels: [{ Label: "Type", LanguageCode: 1033 }] },
   RequiredLevel: { Value: "None" },
-  GlobalOptionSet: {
-    "@odata.bind": `/GlobalOptionSetDefinitions(Name='new_projecttype')`,
-  },
-});
+  "GlobalOptionSet@odata.bind": `/GlobalOptionSetDefinitions(${optionSetId})`,
+} as PicklistAttributeMetadataCreate);
 ```
 
 ### Insert Option Value
 
 ```typescript
-// Add new option to existing global choice
-const result = await metadataClient.insertOptionValue({
-  OptionSetName: "new_projecttype",
-  Label: { LocalizedLabels: [{ Label: "Maintenance", LanguageCode: 1033 }] },
-  Value: 100003, // Optional, auto-assigned if omitted
-});
+import { InsertOptionValueAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
+// Add a new option to a local choice column
+const result = await metadataClient.insertOptionValue({
+  EntityLogicalName: "new_project",
+  AttributeLogicalName: "new_status",
+  Label: { LocalizedLabels: [{ Label: "On Hold", LanguageCode: 1033 }] },
+  Value: 4, // Optional, auto-assigned if omitted
+});
 console.log("New option value:", result.NewOptionValue);
+
+// Add a new option to a global choice: metadataClient.insertOptionValue() doesn't take
+// OptionSetName yet, so call the InsertOptionValue action
+const added = await client.execute(
+  new InsertOptionValueAction({
+    OptionSetName: "new_projecttype",
+    Label: { LocalizedLabels: [{ Label: "Maintenance", LanguageCode: 1033 }] },
+    Value: 100003,
+  })
+);
+console.log("New option value:", added.NewOptionValue);
 ```
 
 ---

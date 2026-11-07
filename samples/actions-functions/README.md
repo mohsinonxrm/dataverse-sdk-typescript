@@ -126,7 +126,7 @@ import { ExecuteWorkflowAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
 // The workflow id first (a bound action), then the parameters by their Web API names
 const result = await client.execute(new ExecuteWorkflowAction(workflowId, { EntityId: accountId }));
-console.log(result.asyncoperationid);
+console.log(result?.asyncoperationid);
 ```
 
 The objects have no `execute()` method of their own. A constructor takes one object with the
@@ -324,7 +324,7 @@ const result = await client.execute(
   })
 );
 
-console.log(`Async Operation ID: ${result.asyncoperationid}`);
+console.log(`Async Operation ID: ${result?.asyncoperationid}`);
 ```
 
 **Response:**
@@ -726,6 +726,7 @@ For long-running workflows:
 
 ```typescript
 const result = await client.execute(executeWorkflow);
+if (!result) throw new Error("The workflow did not start"); // null if Dataverse answered 204
 
 // Poll for completion
 let status;

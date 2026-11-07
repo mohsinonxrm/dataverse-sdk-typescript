@@ -26,7 +26,7 @@ pnpm add @mohsinonxrm/dataverse-sdk-batch
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 
-const client = new DataverseClient({/* config */});
+const client = new DataverseClient({ baseUrl: "https://contoso.crm.dynamics.com", tokenProvider });
 const batch = new BatchRequestBuilder(client);
 
 // Add individual requests
@@ -48,6 +48,8 @@ for (const [id, response] of result.responses) {
 
 #### Constructor
 
+<!-- no-check -->
+
 ```typescript
 constructor(client: DataverseClient)
 ```
@@ -61,6 +63,8 @@ Creates a new batch request builder instance.
 ##### addRequest(id, method, url, headers?, body?, dependsOn?)
 
 Adds a request to the batch.
+
+<!-- no-check -->
 
 ```typescript
 addRequest(
@@ -86,6 +90,8 @@ Returns the builder for method chaining.
 
 Starts a new transactional changeset. All requests added after this call will be part of the changeset until `endChangeset()` is called.
 
+<!-- no-check -->
+
 ```typescript
 beginChangeset(): BatchRequestBuilder
 ```
@@ -96,6 +102,8 @@ Changesets provide transactional semantics - either all requests succeed or all 
 
 Ends the current changeset.
 
+<!-- no-check -->
+
 ```typescript
 endChangeset(): BatchRequestBuilder
 ```
@@ -105,6 +113,8 @@ Throws an error if no changeset is active or if the changeset is empty.
 ##### execute(options?)
 
 Executes the batch request.
+
+<!-- no-check -->
 
 ```typescript
 execute(options?: BatchExecutionOptions): Promise<BatchExecutionResult>
@@ -132,6 +142,8 @@ Returns the multipart body `execute()` would send for a batch that fits in one `
 
 Returns the total number of requests in the batch (including those in changesets).
 
+<!-- no-check -->
+
 ```typescript
 getTotalRequestCount(): number
 ```
@@ -139,6 +151,8 @@ getTotalRequestCount(): number
 ##### clear()
 
 Clears all requests and resets the builder state.
+
+<!-- no-check -->
 
 ```typescript
 clear(): BatchRequestBuilder
@@ -482,7 +496,7 @@ interface BatchResponseStep<TBody = unknown> {
 This is the same class as `DataverseBatchError` in `@mohsinonxrm/dataverse-sdk-core`, so `instanceof` works whichever package you import it from.
 
 ```typescript
-class DataverseBatchError extends DataverseError {
+declare class DataverseBatchError extends DataverseError {
   result?: BatchExecutionResult; // everything received (set by execute())
   partErrors?: { index: number; status: number; error: DataverseError }[]; // the failed parts, in order
   requestErrors: Map<string, BatchResponseStep>; // the failed responses only
