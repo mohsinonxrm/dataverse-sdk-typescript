@@ -194,7 +194,8 @@ describe("bindMany executor", () => {
       "accounts(a1)",
       "contact_customer_accounts",
       "contacts",
-      ["c1", "c2"]
+      ["c1", "c2"],
+      { headers: {} }
     );
   });
 
