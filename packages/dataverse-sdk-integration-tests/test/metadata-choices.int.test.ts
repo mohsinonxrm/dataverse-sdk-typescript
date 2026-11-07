@@ -2,7 +2,8 @@
  * Live tests for choice metadata (#324): a temporary global choice, a temporary table with a
  * choice column bound to that global choice ("GlobalOptionSet@odata.bind"), a choice column with
  * its own (local) options and a date column. An option is inserted, updated and deleted on the
- * global choice (which the bound column shows) and on the local choice.
+ * global choice (which the bound column shows) and on the local choice. The global choice's
+ * description is merge-updated (#359).
  *
  * Everything is named with this run's id and deleted in `afterAll` by the exact MetadataId each
  * create returned, never by name or query. See ./env.ts for configuration.
@@ -268,6 +269,37 @@ describe.skipIf(!live)("live: choices and option values (#324)", () => {
         const choice = await md.getGlobalOptionSet(choiceId);
         expect(choice.Options?.map((o) => o.Value)).toEqual([100000, 100001]);
         expect((await boundOptions()).map((o) => o.Value)).toEqual([100000, 100001]);
+      });
+    },
+    SLOW
+  );
+
+  it(
+    "mergeAndUpdateGlobalOptionSet changes the description and keeps the name and options (#359)",
+    async () => {
+      const md = metadata();
+      const choiceId = created.globalChoiceId;
+      expect(choiceId).toMatch(GUID);
+      if (!choiceId) return;
+      const before = await eventually(() => md.getGlobalOptionSet(choiceId));
+
+      const description = `Merge-updated by SDK integration run ${runId}; safe to delete.`;
+      await eventually(
+        () => md.mergeAndUpdateGlobalOptionSet(globalChoice, { Description: label(description) }),
+        120_000,
+        refused
+      );
+
+      await eventually(async () => {
+        const after = await md.getGlobalOptionSet(choiceId);
+        expect(after.Description?.UserLocalizedLabel?.Label).toBe(description);
+        expect(after.DisplayName?.UserLocalizedLabel?.Label).toBe(
+          before.DisplayName?.UserLocalizedLabel?.Label
+        );
+        expect(after.Name).toBe(globalChoice);
+        expect(after.Options?.map((o) => [o.Value, text(o)])).toEqual(
+          before.Options?.map((o) => [o.Value, text(o)])
+        );
       });
     },
     SLOW

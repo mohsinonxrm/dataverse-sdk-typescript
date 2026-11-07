@@ -598,8 +598,7 @@ export type OneToManyRelationshipMetadataUpdate = Omit<
 
 /** A complete 1:N or N:N relationship definition, told apart by \`@odata.type\`. */
 export type RelationshipMetadataUpdateTypes =
-  | OneToManyRelationshipMetadataUpdate
-  | ManyToManyRelationshipMetadataUpdate;
+  OneToManyRelationshipMetadataUpdate | ManyToManyRelationshipMetadataUpdate;
 
 /**
  * RelationshipMetadataChanges - the relationship properties to change with
@@ -765,15 +764,27 @@ export type AttributeMetadataUpdate<
 
 /** The update payload of each column type, by the type's name. */
 export interface AttributeMetadataUpdateByType {
-  BigIntAttributeMetadata: AttributeMetadataUpdate<BigIntAttributeMetadata, "BigIntAttributeMetadata">;
-  BooleanAttributeMetadata: AttributeMetadataUpdate<BooleanAttributeMetadata, "BooleanAttributeMetadata">;
+  BigIntAttributeMetadata: AttributeMetadataUpdate<
+    BigIntAttributeMetadata,
+    "BigIntAttributeMetadata"
+  >;
+  BooleanAttributeMetadata: AttributeMetadataUpdate<
+    BooleanAttributeMetadata,
+    "BooleanAttributeMetadata"
+  >;
   DateTimeAttributeMetadata: AttributeMetadataUpdate<
     DateTimeAttributeMetadata,
     "DateTimeAttributeMetadata",
     "MaxSupportedValue" | "MinSupportedValue"
   >;
-  DecimalAttributeMetadata: AttributeMetadataUpdate<DecimalAttributeMetadata, "DecimalAttributeMetadata">;
-  DoubleAttributeMetadata: AttributeMetadataUpdate<DoubleAttributeMetadata, "DoubleAttributeMetadata">;
+  DecimalAttributeMetadata: AttributeMetadataUpdate<
+    DecimalAttributeMetadata,
+    "DecimalAttributeMetadata"
+  >;
+  DoubleAttributeMetadata: AttributeMetadataUpdate<
+    DoubleAttributeMetadata,
+    "DoubleAttributeMetadata"
+  >;
   EntityNameAttributeMetadata: AttributeMetadataUpdate<
     EntityNameAttributeMetadata,
     "EntityNameAttributeMetadata",
@@ -781,8 +792,14 @@ export interface AttributeMetadataUpdateByType {
   >;
   FileAttributeMetadata: AttributeMetadataUpdate<FileAttributeMetadata, "FileAttributeMetadata">;
   ImageAttributeMetadata: AttributeMetadataUpdate<ImageAttributeMetadata, "ImageAttributeMetadata">;
-  IntegerAttributeMetadata: AttributeMetadataUpdate<IntegerAttributeMetadata, "IntegerAttributeMetadata">;
-  LookupAttributeMetadata: AttributeMetadataUpdate<LookupAttributeMetadata, "LookupAttributeMetadata">;
+  IntegerAttributeMetadata: AttributeMetadataUpdate<
+    IntegerAttributeMetadata,
+    "IntegerAttributeMetadata"
+  >;
+  LookupAttributeMetadata: AttributeMetadataUpdate<
+    LookupAttributeMetadata,
+    "LookupAttributeMetadata"
+  >;
   ManagedPropertyAttributeMetadata: AttributeMetadataUpdate<
     ManagedPropertyAttributeMetadata,
     "ManagedPropertyAttributeMetadata",
@@ -794,10 +811,19 @@ export interface AttributeMetadataUpdateByType {
     MultiSelectPicklistAttributeMetadata,
     "MultiSelectPicklistAttributeMetadata"
   >;
-  PicklistAttributeMetadata: AttributeMetadataUpdate<PicklistAttributeMetadata, "PicklistAttributeMetadata">;
+  PicklistAttributeMetadata: AttributeMetadataUpdate<
+    PicklistAttributeMetadata,
+    "PicklistAttributeMetadata"
+  >;
   StateAttributeMetadata: AttributeMetadataUpdate<StateAttributeMetadata, "StateAttributeMetadata">;
-  StatusAttributeMetadata: AttributeMetadataUpdate<StatusAttributeMetadata, "StatusAttributeMetadata">;
-  StringAttributeMetadata: AttributeMetadataUpdate<StringAttributeMetadata, "StringAttributeMetadata">;
+  StatusAttributeMetadata: AttributeMetadataUpdate<
+    StatusAttributeMetadata,
+    "StatusAttributeMetadata"
+  >;
+  StringAttributeMetadata: AttributeMetadataUpdate<
+    StringAttributeMetadata,
+    "StringAttributeMetadata"
+  >;
   UniqueIdentifierAttributeMetadata: AttributeMetadataUpdate<
     UniqueIdentifierAttributeMetadata,
     "UniqueIdentifierAttributeMetadata"

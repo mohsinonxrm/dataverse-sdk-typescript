@@ -190,15 +190,28 @@ const metadataId = await metadataClient.createEntityDefinition(definition, {
 ### Update Entity
 
 Metadata updates use `PUT`, which **replaces** the whole definition: a property you leave out is
-reset to its default. Either send the complete definition to `updateEntityDefinition()`, or let
-the SDK retrieve it, apply your changes and send it back:
+reset to its default. Either send the complete definition, with its `@odata.type`, to
+`updateEntityDefinition()`, or let the SDK retrieve it, apply your changes and send it back:
 
 ```typescript
 // Change only the description; every other property keeps its current value
 await metadataClient.mergeAndUpdateEntityDefinition("new_project", {
   Description: { LocalizedLabels: [{ Label: "Manage projects and tasks", LanguageCode: 1033 }] },
 });
+
+// Or retrieve, change and send the whole definition yourself
+const current = await metadataClient.getEntityDefinition("new_project");
+await metadataClient.updateEntityDefinition("new_project", {
+  ...current,
+  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+  HasNotes: true,
+});
 ```
+
+Columns, relationships and global choices have the same pair: `updateAttributeDefinition()` /
+`mergeAndUpdateAttributeDefinition()`, `updateOneToManyRelationship()` and
+`updateManyToManyRelationship()` / `mergeAndUpdateRelationship()`, and `updateGlobalOptionSet()` /
+`mergeAndUpdateGlobalOptionSet()`. See [Update Operations Use PUT](#update-operations-use-put).
 
 ### Delete Entity
 
@@ -651,9 +664,25 @@ accepts.
 ### Update Operations Use PUT
 
 Per Microsoft documentation, all metadata update operations use HTTP PUT (not PATCH). A PUT
-replaces the definition, so a property you leave out is reset to its default. Send the complete
-definition, not just the changed properties. For tables, `mergeAndUpdateEntityDefinition()`
-retrieves the current definition, applies your changes and sends the result:
+replaces the definition, so a property you leave out is reset to its default. The `update*`
+methods therefore take the complete definition, with its `@odata.type`; a body of just the
+changed properties doesn't compile. Retrieve the definition, change it and send all of it back:
+
+```typescript
+const note = await metadataClient.getAttributeDefinition("new_project", "new_note", {
+  cast: "StringAttributeMetadata", // returns the type's own properties, such as MaxLength
+});
+await metadataClient.updateAttributeDefinition("new_project", "new_note", {
+  ...note,
+  "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+  MaxLength: 500,
+});
+```
+
+Or let a `mergeAndUpdate*` method do that: it retrieves the current definition (with
+`Consistency: Strong`, so not a cached copy that would undo a change made seconds before), applies
+your changes and sends the result. Columns and relationships name their `@odata.type`, which the
+retrieve casts to:
 
 ```typescript
 // Only the changed properties: the SDK fills in the rest from the current definition
@@ -661,10 +690,25 @@ await metadataClient.mergeAndUpdateEntityDefinition("new_project", {
   DisplayName: { LocalizedLabels: [{ Label: "Updated Project", LanguageCode: 1033 }] },
   Description: { LocalizedLabels: [{ Label: "Updated description", LanguageCode: 1033 }] },
 });
+
+await metadataClient.mergeAndUpdateAttributeDefinition("new_project", "new_note", {
+  "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+  DisplayName: { LocalizedLabels: [{ Label: "Comment", LanguageCode: 1033 }] },
+});
+
+await metadataClient.mergeAndUpdateRelationship("new_account_project", {
+  "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+  IsValidForAdvancedFind: false,
+});
+
+await metadataClient.mergeAndUpdateGlobalOptionSet("new_colors", {
+  Description: { LocalizedLabels: [{ Label: "Paint colors", LanguageCode: 1033 }] },
+});
 ```
 
-For columns, relationships and global choices, retrieve the definition, change it and pass the
-whole object to the `update*` method.
+A `PUT` doesn't change a choice's options: use `insertOptionValue()`, `updateOptionValue()`,
+`deleteOptionValue()` and `orderOptions()` for those. `mergeAndUpdateGlobalOptionSet()` leaves
+the options out of the `PUT`.
 
 The SDK automatically sets the `MSCRM.MergeLabels: true` header to merge labels instead of replacing them, preserving labels for other languages.
 
@@ -674,7 +718,8 @@ The metadata package uses strict type separation:
 
 - **Read types** - include all properties returned from the server (e.g., `EntityMetadata`)
 - **Create types** - exclude read-only and internal properties, and require what a create needs (e.g., `EntityMetadataCreate`, `StringAttributeMetadataCreate`)
-- **Update types** - every property optional (e.g., `EntityMetadataUpdate`); a retrieved definition can be passed back
+- **Update types** - the complete definition with `@odata.type` required (e.g., `EntityMetadataUpdate`, `AttributeMetadataUpdateTypes`); a retrieved definition plus its `@odata.type` can be passed back
+- **Changes types** - only the properties to change, for the `mergeAndUpdate*` methods (e.g., `EntityMetadataChanges`, `AttributeMetadataChanges`)
 
 This ensures you cannot accidentally send read-only fields like `MetadataId`, `ObjectTypeCode`, or internal-use fields in create/update operations. The create types leave out every property Dataverse sets itself, such as a date column's `MinSupportedValue` and `MaxSupportedValue`, a text column's `DatabaseLength`, `AttributeType` (the type comes from `@odata.type`) and `IsValidForRead`.
 

@@ -284,7 +284,10 @@ function answerGet(context: string, body: Record<string, unknown>): void {
 
 describe("#359: merge helpers read the current definition (Consistency: Strong) and PUT it back", () => {
   it("mergeAndUpdateAttributeDefinition casts the GET to the column's type and keeps MaxLength", async () => {
-    answerGet("EntityDefinitions('new_project')/Attributes/Microsoft.Dynamics.CRM.StringAttributeMetadata", currentNote);
+    answerGet(
+      "EntityDefinitions('new_project')/Attributes/Microsoft.Dynamics.CRM.StringAttributeMetadata",
+      currentNote
+    );
 
     const displayName = { LocalizedLabels: [{ Label: "Comment", LanguageCode: 1033 }] };
     await metadata.mergeAndUpdateAttributeDefinition(
@@ -318,7 +321,10 @@ describe("#359: merge helpers read the current definition (Consistency: Strong) 
       CascadeConfiguration: { Delete: "RemoveLink", Assign: "NoCascade" },
       IsValidForAdvancedFind: true,
     };
-    answerGet("RelationshipDefinitions/Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata", current);
+    answerGet(
+      "RelationshipDefinitions/Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+      current
+    );
 
     await metadata.mergeAndUpdateRelationship("new_account_project", {
       "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
@@ -392,6 +398,20 @@ describe("#359: merge helpers read the current definition (Consistency: Strong) 
       `GET /GlobalOptionSetDefinitions(${ID})/Microsoft.Dynamics.CRM.OptionSetMetadata`,
       `PUT /GlobalOptionSetDefinitions(${ID})`,
     ]);
+  });
+
+  it("rejects changes without a usable @odata.type before sending anything", async () => {
+    const untyped = metadata as unknown as {
+      mergeAndUpdateAttributeDefinition(e: string, a: string, c: object): Promise<void>;
+      mergeAndUpdateRelationship(s: string, c: object): Promise<void>;
+    };
+    await expect(
+      untyped.mergeAndUpdateAttributeDefinition("new_project", "new_note", { MaxLength: 1 })
+    ).rejects.toBeInstanceOf(DataverseInvalidRequestError);
+    await expect(
+      untyped.mergeAndUpdateRelationship("new_rel", { "@odata.type": "x)/../../Things" })
+    ).rejects.toBeInstanceOf(DataverseInvalidRequestError);
+    expect(requests).toEqual([]);
   });
 
   it("a failed GET is thrown and nothing is PUT", async () => {

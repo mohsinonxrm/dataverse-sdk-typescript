@@ -318,7 +318,13 @@ export class MetadataClient {
     options?: MetadataWriteOptions
   ): Promise<void> {
     const path = `/EntityDefinitions(${odataKey({ LogicalName: logicalName })})`;
-    await this.mergeAndUpdate(path, path, "Microsoft.Dynamics.CRM.EntityMetadata", changes, options);
+    await this.mergeAndUpdate(
+      path,
+      path,
+      "Microsoft.Dynamics.CRM.EntityMetadata",
+      changes,
+      options
+    );
   }
 
   /**
@@ -746,7 +752,10 @@ export class MetadataClient {
     nameOrMetadataId: string,
     options?: Omit<MetadataQueryOptions, "filter">
   ): Promise<OptionSetMetadata> {
-    return await this.query(globalOptionSetPath(nameOrMetadataId), options).get<OptionSetMetadata>();
+    return await this.query(
+      globalOptionSetPath(nameOrMetadataId),
+      options
+    ).get<OptionSetMetadata>();
   }
 
   /**
@@ -1255,11 +1264,11 @@ function globalOptionSetPath(nameOrMetadataId: string): string {
 function metadataType(changes: { "@odata.type"?: unknown }): string {
   const type = changes["@odata.type"];
   if (type == null) throw DataverseInvalidRequestError.missingParameter("@odata.type");
-  const name = String(type).replace(/^#/, "");
+  const name = typeof type === "string" ? type.replace(/^#/, "") : "";
   if (!/^Microsoft\.Dynamics\.CRM\.\w+$/.test(name)) {
     throw DataverseInvalidRequestError.invalidParameter(
       "@odata.type",
-      `expected "Microsoft.Dynamics.CRM.<Type>", got "${String(type)}"`
+      `expected "Microsoft.Dynamics.CRM.<Type>", got ${JSON.stringify(type)}`
     );
   }
   return name;

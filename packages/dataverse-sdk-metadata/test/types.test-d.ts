@@ -418,7 +418,9 @@ declare const readOptionSet: OptionSetMetadata;
 declare const readOneToMany: OneToManyRelationshipMetadata;
 
 // A partial body without @odata.type doesn't compile.
-expectError(metadata.updateAttributeDefinition("account", "new_field", { DisplayName: displayName }));
+expectError(
+  metadata.updateAttributeDefinition("account", "new_field", { DisplayName: displayName })
+);
 expectError(metadata.updateEntityDefinition("account", { DisplayName: displayName }));
 expectError(metadata.updateGlobalOptionSet("new_colors", { DisplayName: displayName }));
 expectError(metadata.updateOneToManyRelationship("new_rel", { IsValidForAdvancedFind: true }));
@@ -467,9 +469,7 @@ expectType<Promise<void>>(
     MaxLength: 200,
   })
 );
-expectError(
-  metadata.mergeAndUpdateAttributeDefinition("account", "new_field", { MaxLength: 200 })
-);
+expectError(metadata.mergeAndUpdateAttributeDefinition("account", "new_field", { MaxLength: 200 }));
 expectType<Promise<void>>(
   metadata.mergeAndUpdateRelationship("new_rel", {
     "@odata.type": "Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata",
