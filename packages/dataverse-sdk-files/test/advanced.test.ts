@@ -83,6 +83,33 @@ function chunkedServer(fake: FakeFetch, received: Uint8Array[], chunk = "4", ech
   });
 }
 
+describe("files: empty files (#383)", () => {
+  it.each(["auto", "actions", "patch-chunked", "single"] as const)(
+    "method %s: a 0-byte file is one PATCH with no blocks",
+    async (method) => {
+      const { files, fake } = setup();
+      fake.on("PATCH", COLUMN_PATH, () => noContent());
+      await files.upload("accounts", ID, "new_file", new Uint8Array(0), "empty.txt", { method });
+      expect(fake.requests.map((r) => r.method)).toEqual(["PATCH"]);
+      expect(fake.last().url).toBe(`${TEST_API_URL}${COLUMN_PATH}?x-ms-file-name=empty.txt`);
+      expect(fake.last().bodyBytes?.byteLength ?? 0).toBe(0);
+    }
+  );
+
+  it("an empty stream of unknown size on the actions route commits no empty block list", async () => {
+    const { files, fake } = setup();
+    fake.on("POST", "/InitializeFileBlocksUpload", () =>
+      jsonResponse({ FileContinuationToken: "tok" })
+    );
+    fake.on("PATCH", COLUMN_PATH, () => noContent());
+    await files.upload("accounts", ID, "new_file", streamOf(new Uint8Array(0), 4), "empty.txt", {
+      method: "actions",
+    });
+    expect(fake.requests.some((r) => r.url.includes("CommitFileBlocksUpload"))).toBe(false);
+    expect(fake.last().method).toBe("PATCH");
+  });
+});
+
 describe("files: upload routes (#95)", () => {
   it("method single: one PATCH with ?x-ms-file-name= and the bytes, no metadata lookup", async () => {
     const { files, fake } = setup();

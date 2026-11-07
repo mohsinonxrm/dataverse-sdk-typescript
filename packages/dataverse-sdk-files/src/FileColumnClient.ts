@@ -180,7 +180,9 @@ export class FileColumnClient {
     const size = knownSize(file) ?? options?.size;
     const columnUrl = `${this.baseUrl}/${entitySetName}(${normalizeGuid(recordId)})/${columnName}`;
 
-    if (method === "single" || (method === "patch-chunked" && size === 0)) {
+    // An empty file has no blocks or chunks to send: one PATCH with no body stores it on every
+    // route (the actions route would commit an empty block list, #383).
+    if (method === "single" || size === 0) {
       await this.uploadSingle(columnUrl, file, fileName, options);
     } else if (method === "patch-chunked") {
       if (size === undefined) {
@@ -192,6 +194,7 @@ export class FileColumnClient {
       await this.uploadPatchChunked(columnUrl, file, fileName, size, options);
     } else {
       await this.uploadActions(
+        columnUrl,
         entitySetName,
         recordId,
         columnName,
@@ -206,6 +209,7 @@ export class FileColumnClient {
 
   /** `InitializeFileBlocksUpload` + `UploadBlock` per chunk + `CommitFileBlocksUpload`. */
   private async uploadActions(
+    columnUrl: string,
     entitySetName: string,
     recordId: string,
     columnName: string,
@@ -250,6 +254,13 @@ export class FileColumnClient {
       uploaded += bytes.byteLength;
       options?.onProgress?.(progressOf(uploaded, size, last, index, chunkSize));
       index++;
+    }
+
+    if (blockIds.length === 0) {
+      // A stream of unknown size that turned out empty: no blocks to commit (#383). The started
+      // session is left to expire; store the empty file the way a known 0-byte file is stored.
+      await this.uploadSingle(columnUrl, new Uint8Array(0), fileName, options);
+      return;
     }
 
     // Step 3: Commit upload
