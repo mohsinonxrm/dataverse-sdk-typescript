@@ -115,6 +115,8 @@ jobs:
       - run: pnpm test
       - name: Check package exports, types and require() (publint, attw)
         run: pnpm check:packages
+      - name: Bundle-size budget
+        run: pnpm check:size
       - name: Install Chromium for Playwright
         run: pnpm --filter @mohsinonxrm/dataverse-sdk-browser-tests exec playwright install --with-deps chromium
       - name: Browser smoke tests
