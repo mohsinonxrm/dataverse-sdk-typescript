@@ -32,18 +32,39 @@ const text = (option: OptionMetadata | undefined): string | undefined =>
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** Retry `fn` until it resolves, for up to `ms` (metadata cache propagation). */
-async function eventually<T>(fn: () => Promise<T>, ms = 120_000): Promise<T> {
+/**
+ * Retry `fn` until it resolves, for up to `ms` (metadata cache propagation). An error that
+ * `retryIf` rejects is thrown at once.
+ */
+async function eventually<T>(
+  fn: () => Promise<T>,
+  ms = 120_000,
+  retryIf: (err: unknown) => boolean = () => true
+): Promise<T> {
   const deadline = Date.now() + ms;
   for (;;) {
     try {
       return await fn();
     } catch (err) {
-      if (Date.now() > deadline) throw err;
+      if (Date.now() > deadline || !retryIf(err)) throw err;
       await sleep(5_000);
     }
   }
 }
+
+/**
+ * Dataverse refused the request (400 or 404), so nothing was created and it is safe to send it
+ * again. A column create right after the table or the global choice was created can reach a
+ * server whose metadata cache doesn't have them yet: "IsGlobal is not specified" for a column
+ * bound to the new global choice, or a table it can't find. Any other error (a timeout, a 5xx) is
+ * thrown, because the column may already exist.
+ */
+const refused = (err: unknown): boolean =>
+  err instanceof DataverseODataError && (err.status === 400 || err.status === 404);
+
+/** Create a column, retrying while the org's servers catch up with the new table and choice. */
+const createColumn = (create: () => Promise<string>): Promise<string> =>
+  eventually(create, 120_000, refused);
 
 /** The MetadataIds this run created, deleted in `afterAll`. */
 const created: { globalChoiceId?: string; tableId?: string; columnIds: string[] } = {
@@ -129,7 +150,7 @@ describe.skipIf(!live)("live: choices and option values (#324)", () => {
       await eventually(() => md.getEntityDefinition(table, { select: ["LogicalName"] }));
 
       // Bound to the global choice by MetadataId: no OptionSet of its own.
-      const bound = await eventually(() =>
+      const bound = await createColumn(() =>
         md.createAttributeDefinition(table, {
           "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
           SchemaName: "new_Color",
@@ -139,39 +160,45 @@ describe.skipIf(!live)("live: choices and option values (#324)", () => {
         })
       );
       created.columnIds.push(bound);
-      const boundMulti = await md.createAttributeDefinition(table, {
-        "@odata.type": "Microsoft.Dynamics.CRM.MultiSelectPicklistAttributeMetadata",
-        SchemaName: "new_Colors",
-        DisplayName: label("Colors"),
-        RequiredLevel: { Value: "None" },
-        "GlobalOptionSet@odata.bind": `/GlobalOptionSetDefinitions(${created.globalChoiceId ?? ""})`,
-      });
+      const boundMulti = await createColumn(() =>
+        md.createAttributeDefinition(table, {
+          "@odata.type": "Microsoft.Dynamics.CRM.MultiSelectPicklistAttributeMetadata",
+          SchemaName: "new_Colors",
+          DisplayName: label("Colors"),
+          RequiredLevel: { Value: "None" },
+          "GlobalOptionSet@odata.bind": `/GlobalOptionSetDefinitions(${created.globalChoiceId ?? ""})`,
+        })
+      );
       created.columnIds.push(boundMulti);
 
       // Its own options, without @odata.type or OptionSetType on the nested OptionSet.
-      const local = await md.createAttributeDefinition(table, {
-        "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
-        SchemaName: "new_Size",
-        DisplayName: label("Size"),
-        RequiredLevel: { Value: "None" },
-        OptionSet: {
-          IsGlobal: false,
-          Options: [
-            { Value: 100000000, Label: label("Small") },
-            { Value: 100000001, Label: label("Large") },
-          ],
-        },
-      });
+      const local = await createColumn(() =>
+        md.createAttributeDefinition(table, {
+          "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
+          SchemaName: "new_Size",
+          DisplayName: label("Size"),
+          RequiredLevel: { Value: "None" },
+          OptionSet: {
+            IsGlobal: false,
+            Options: [
+              { Value: 100000000, Label: label("Small") },
+              { Value: 100000001, Label: label("Large") },
+            ],
+          },
+        })
+      );
       created.columnIds.push(local);
 
       // No MinSupportedValue / MaxSupportedValue: Dataverse sets them.
-      const date = await md.createAttributeDefinition(table, {
-        "@odata.type": "Microsoft.Dynamics.CRM.DateTimeAttributeMetadata",
-        SchemaName: "new_DueDate",
-        DisplayName: label("Due date"),
-        RequiredLevel: { Value: "None" },
-        Format: "DateOnly",
-      });
+      const date = await createColumn(() =>
+        md.createAttributeDefinition(table, {
+          "@odata.type": "Microsoft.Dynamics.CRM.DateTimeAttributeMetadata",
+          SchemaName: "new_DueDate",
+          DisplayName: label("Due date"),
+          RequiredLevel: { Value: "None" },
+          Format: "DateOnly",
+        })
+      );
       created.columnIds.push(date);
 
       for (const id of created.columnIds) expect(id).toMatch(GUID);
