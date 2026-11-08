@@ -218,7 +218,8 @@ jobs:
               echo "::notice::$name@$VERSION is already on npm; skipped."
               continue
             fi
-            npm publish "$t" --provenance --access public --tag "$DIST_TAG"
+            # "./": without it npm reads "tarballs/x.tgz" as a GitHub owner/repo and runs git
+            npm publish "./$t" --provenance --access public --tag "$DIST_TAG"
           done
 
   rehearse:
@@ -250,7 +251,7 @@ jobs:
               echo "::notice::$name@$VERSION is already on npm; bump the version to rehearse its publish."
               continue
             fi
-            npm publish "$t" --access public --tag "$DIST_TAG" --dry-run
+            npm publish "./$t" --access public --tag "$DIST_TAG" --dry-run
           done
 
   github-release:
