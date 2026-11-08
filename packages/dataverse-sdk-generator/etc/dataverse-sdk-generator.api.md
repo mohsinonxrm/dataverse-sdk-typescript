@@ -122,8 +122,10 @@ export interface DataverseGenConfig {
         outputRoot?: string;
         generateIndex?: boolean;
         fileSuffix?: string;
+        incremental?: boolean;
     };
     strictNulls?: boolean;
+    templates?: string;
 }
 
 // @public
@@ -131,6 +133,17 @@ export function dataverseScope(environmentUrl: string): string;
 
 // @public
 export const DEFAULT_CONFIG: Partial<DataverseGenConfig>;
+
+// @public
+export function ejectTemplates(dir: string, options?: EjectTemplatesOptions): Promise<{
+    written: string[];
+    skipped: string[];
+}>;
+
+// @public
+export interface EjectTemplatesOptions {
+    force?: boolean;
+}
 
 // @public
 export interface EntityKeyMetadata {
@@ -234,6 +247,7 @@ export interface FunctionType {
 // @public
 export function generateCode(config: DataverseGenConfig, accessToken?: string): Promise<{
     warnings: string[];
+    unchangedTables: string[];
 }>;
 
 // @public
@@ -408,10 +422,17 @@ export class SchemaModel {
 }
 
 // @public
+export const TEMPLATE_NAMES: readonly ["action.ejs", "complextype.ejs", "entity.ejs", "enum.ejs", "form.ejs", "function.ejs", "metadata.ejs"];
+
+// @public
+export type TemplateName = (typeof TEMPLATE_NAMES)[number];
+
+// @public
 export class TypescriptGenerator {
     constructor(model: SchemaModel, config: DataverseGenConfig);
     entityTypeName(entity: EntityType): string;
     generate(): Promise<void>;
+    readonly unchangedTables: string[];
 }
 
 // @public

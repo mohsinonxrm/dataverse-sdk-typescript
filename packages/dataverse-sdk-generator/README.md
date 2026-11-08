@@ -173,6 +173,18 @@ Options:
                        (the same as "strictNulls": true; see Strict nulls)
 ```
 
+### `eject`
+
+Copy the built-in EJS templates into a directory (default `./dataverse-gen-templates`) to
+customize them; see [Custom templates](#custom-templates).
+
+```bash
+dataverse-gen eject [dir] [options]
+
+Options:
+  --force  Overwrite templates that are already in the directory
+```
+
 ### `validate`
 
 Validate your configuration file.
@@ -217,7 +229,13 @@ interface DataverseGenConfig {
 
     /** File suffix (e.g., ".generated" → Account.generated.ts) */
     fileSuffix?: string;
+
+    /** Regenerate only the tables whose metadata changed (default: false; see Incremental generation) */
+    incremental?: boolean;
   };
+
+  /** A directory of custom EJS templates (see Custom templates) */
+  templates?: string;
 
   /** Type operation responses exactly as $metadata declares them (default: false; see Strict nulls) */
   strictNulls?: boolean;
@@ -365,6 +383,49 @@ doesn't have to spell out every property as `null`. An Output name that's alread
 complex type called `<Name>Output`) gets a suffix (`<Name>Output_2`).
 
 ---
+
+### Incremental generation
+
+`"output": { "incremental": true }` regenerates only the tables whose metadata changed. A stamp
+file in the output folder, `.dataverse-gen-stamp.json`, records a hash of each table's schema model
+(its columns, lookups, constraints, labels, …), a hash of the settings every file depends on (the
+options, the templates and the names of the generated types), and the files the run wrote. On the
+next run, a table whose hash is unchanged and whose files are still there is skipped: its
+`entities/<Entity>.ts` (and `forms/<Entity>Form.ts`) keep their content and timestamps, which
+keeps watchers, incremental builds and diffs quiet. The CLI prints the tables it kept;
+`generateCode()` returns them as `unchangedTables`.
+
+- A change of options, templates, generator version, or of which tables, enums and complex types
+  are generated regenerates every table.
+- The files that aren't per table (enums, actions, functions, complex types, `metadata.ts`,
+  indexes) are written on every run.
+- Files the previous run wrote that this one doesn't (a table removed from `entities`, an enum that
+  is gone) are deleted. Only files listed in the stamp are touched.
+- Metadata is still read in full: `$metadata` and RetrieveMetadataChanges for each table. To
+  regenerate everything, delete the stamp file.
+
+### Custom templates
+
+`"templates": "./dataverse-gen-templates"` points at a directory of EJS templates. A template there
+replaces the built-in one of the same name; the others stay built-in, so the directory needs only
+the ones you change. `dataverse-gen eject` copies all of them there to start from:
+
+| Template          | Renders                                                              |
+| ----------------- | -------------------------------------------------------------------- |
+| `entity.ejs`      | `entities/<Entity>.ts`: the interface, create/update types, metadata |
+| `enum.ejs`        | `enums/<OptionSet>.ts`                                               |
+| `action.ejs`      | `actions/<Name>Action.ts`                                            |
+| `function.ejs`    | `functions/<Name>Function.ts`                                        |
+| `complextype.ejs` | `complextypes/<Name>.ts`                                             |
+| `metadata.ejs`    | `metadata.ts`                                                        |
+| `form.ejs`        | `forms/<Entity>Form.ts` (with `formContext`)                         |
+
+A template gets the same data as the built-in one (the schema model object, such as `entity` or
+`enumType`, the type names, and helpers such as `formatType()`, `propertyKey()`, `doc()` and
+`literal()`); start from the ejected copy to see what's available. Type helpers record the imports
+they need, so a template never writes import lines. The data a template gets can change between
+versions of the generator: re-eject after an upgrade and compare. With incremental generation, a
+template change regenerates every table.
 
 ### Form contexts
 
@@ -929,6 +990,8 @@ console.log("✓ Code generation complete!");
 
 Without an access token, `generateCode(config)` signs in with `config.auth`, as the CLI does.
 `createCliTokenProvider(config)` returns the token provider for those settings.
+`generateCode()` resolves `{ warnings, unchangedTables }`; `ejectTemplates(dir, { force })` copies
+the built-in templates, as `dataverse-gen eject` does.
 
 ---
 
@@ -1203,8 +1266,8 @@ export function getLogicalName(schemaName: string): string | undefined {
 - ✅ Alternate keys read into the schema model (`EntityType.Keys`); the generated files don't use them yet
 - ✅ MSAL authentication flows (device code, client credentials)
 - ✅ Create/Update types (`<Entity>Create`, `<Entity>Update`: writable columns only)
-- ⏳ Custom template support (eject command)
-- ⏳ Incremental generation (only changed entities)
+- ✅ Custom templates (`"templates"`, `dataverse-gen eject`)
+- ✅ Incremental generation (`"output": { "incremental": true }`: only changed tables are rewritten; metadata is still read in full)
 - ✅ Validation rules (column constraints in the metadata, for `validateEntity()`)
 - ✅ Xrm.FormContext types (`"formContext": true`; per table, not per form layout)
 
