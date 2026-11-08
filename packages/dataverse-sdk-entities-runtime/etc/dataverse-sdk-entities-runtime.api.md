@@ -4,10 +4,14 @@
 
 ```ts
 
+import { DataverseClient } from '@mohsinonxrm/dataverse-sdk-core';
+import { DataverseRequestBuilder } from '@mohsinonxrm/dataverse-sdk-core';
 import { Executable } from '@mohsinonxrm/dataverse-sdk-core';
+import { ODataKey } from '@mohsinonxrm/dataverse-sdk-core';
 import { ODataParameterKind } from '@mohsinonxrm/dataverse-sdk-core';
 import { ODataRecordReference } from '@mohsinonxrm/dataverse-sdk-core';
 import { RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
+import { RequestOptions } from '@mohsinonxrm/dataverse-sdk-core';
 
 // @public
 export abstract class ActionBase<TResponse = void> implements Executable<TResponse> {
@@ -64,6 +68,19 @@ export interface EntityOperationOptions {
 }
 
 // @public
+export class EntityRecordClient<TEntity extends object, TUpdate extends object = Partial<TEntity>, TColumn extends string = string> {
+    constructor(client: DataverseClient,
+    metadata: EntityMetadata,
+    path: string, writeOptions?: FormatEntityForWriteOptions);
+    delete(options?: WriteRecordOptions): Promise<void>;
+    get(options?: GetRecordOptions<TColumn>, requestOptions?: RequestOptions): Promise<TEntity>;
+    readonly metadata: EntityMetadata;
+    readonly path: string;
+    request(): DataverseRequestBuilder;
+    update(entity: TUpdate, options?: WriteRecordOptions): Promise<void>;
+}
+
+// @public
 export interface EntityReference {
     // (undocumented)
     readonly "@odata.type": string;
@@ -80,6 +97,18 @@ export interface EntityReferenceOptions {
     entitySetName?: string;
     name?: string;
     primaryIdAttribute?: string;
+}
+
+// @public
+export class EntitySetClient<TEntity extends object, TCreate extends object = Partial<TEntity>, TUpdate extends object = TCreate, TColumn extends string = string> {
+    constructor(client: DataverseClient,
+    metadata: EntityMetadata, writeOptions?: FormatEntityForWriteOptions);
+    byId(key: ODataKey): EntityRecordClient<TEntity, TUpdate, TColumn>;
+    create(entity: TCreate, requestOptions?: RequestOptions): Promise<string>;
+    readonly entitySetName: string;
+    list(options?: ListRecordsOptions<TColumn>, requestOptions?: RequestOptions): Promise<TEntity[]>;
+    readonly metadata: EntityMetadata;
+    query(): DataverseRequestBuilder;
 }
 
 export { Executable }
@@ -120,6 +149,12 @@ export function getEntityUrl(entityMetadata: EntityMetadata, id: string, baseUrl
 export function getODataType(entityMetadata: EntityMetadata): string;
 
 // @public
+export interface GetRecordOptions<TColumn extends string = string> {
+    expand?: readonly string[];
+    select?: readonly TColumn[];
+}
+
+// @public
 export interface IEntity {
     [key: string]: unknown;
     id?: string;
@@ -131,6 +166,14 @@ export function isEntity(value: unknown): value is IEntity;
 
 // @public
 export function isEntityReference(value: unknown): value is EntityReference;
+
+// @public
+export interface ListRecordsOptions<TColumn extends string = string> extends GetRecordOptions<TColumn> {
+    filter?: string;
+    maxItems?: number;
+    orderBy?: readonly string[];
+    top?: number;
+}
 
 // @public
 export interface NavigationMetadata {
@@ -202,6 +245,11 @@ export interface WebApiEntityReference {
     readonly id?: never;
     // (undocumented)
     readonly logicalName?: never;
+}
+
+// @public
+export interface WriteRecordOptions extends RequestOptions {
+    etag?: string;
 }
 
 // (No @packageDocumentation comment for this package)

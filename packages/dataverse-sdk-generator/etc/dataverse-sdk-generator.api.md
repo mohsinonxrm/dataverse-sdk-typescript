@@ -126,6 +126,7 @@ export interface DataverseGenConfig {
     };
     strictNulls?: boolean;
     templates?: string;
+    typedClient?: boolean;
 }
 
 // @public
@@ -422,7 +423,7 @@ export class SchemaModel {
 }
 
 // @public
-export const TEMPLATE_NAMES: readonly ["action.ejs", "complextype.ejs", "entity.ejs", "enum.ejs", "form.ejs", "function.ejs", "metadata.ejs"];
+export const TEMPLATE_NAMES: readonly ["action.ejs", "client.ejs", "complextype.ejs", "entity.ejs", "enum.ejs", "form.ejs", "function.ejs", "metadata.ejs"];
 
 // @public
 export type TemplateName = (typeof TEMPLATE_NAMES)[number];

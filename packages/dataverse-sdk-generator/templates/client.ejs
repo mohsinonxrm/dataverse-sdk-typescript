@@ -1,0 +1,45 @@
+<%_ tables.forEach(function(t){ _%>
+/** The columns of <%- doc(t.entity.LogicalName) %>, for `select`. */
+export type <%- t.columnName %> =<%- t.columns.length === 0 ? ' never' : '' %>
+<%_ t.columns.forEach(function(column){ _%>
+  | <%- literal(column) %>
+<%_ }) _%>
+;
+
+<%_ }) _%>
+/**
+ * One typed request builder per generated table, by entity set name:
+ * `client.<%- doc(sample) %>.byId(id).get({ select })`, `.list()`, `.create()`, `.byId(id).update()`,
+ * `.byId(id).delete()`.
+ */
+export interface <%- clientName %> {
+<%_ tables.forEach(function(t){ _%>
+
+  /** The <%- doc(t.entity.LogicalName) %> table (<%- doc(t.entity.EntitySetName) %>) */
+  readonly <%- propertyKey(t.entity.EntitySetName) %>: EntitySetClient<<%- t.typeName %>, <%- t.createName %>, <%- t.updateName %>, <%- t.columnName %>>;
+<%_ }) _%>
+}
+
+/**
+ * Typed request builders for the generated tables, sent with `client`:
+ *
+ * ```typescript
+ * const typed = <%- factoryName %>(client);
+ * const record = await typed.<%- doc(sample) %>.byId(id).get({ select: [<%- doc(literal(sampleColumn)) %>] });
+ * ```
+ *
+ * Lookups in a create or an update take an `EntityReference`; the generated `EntityMetadataCache`
+ * gives the entity set of any generated table it points to.
+ */
+export function <%- factoryName %>(client: DataverseClient): <%- clientName %> {
+  const options = { metadataCache: EntityMetadataCache };
+  return {
+<%_ tables.forEach(function(t){ _%>
+    <%- propertyKey(t.entity.EntitySetName) %>: new EntitySetClient<<%- t.typeName %>, <%- t.createName %>, <%- t.updateName %>, <%- t.columnName %>>(
+      client,
+      <%- t.metadataName %>,
+      options
+    ),
+<%_ }) _%>
+  };
+}

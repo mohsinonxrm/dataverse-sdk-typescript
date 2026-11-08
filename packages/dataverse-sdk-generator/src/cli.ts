@@ -213,6 +213,10 @@ program
         errors.push("formContext must be true or false");
       }
 
+      if (config.typedClient !== undefined && typeof config.typedClient !== "boolean") {
+        errors.push("typedClient must be true or false");
+      }
+
       if (
         config.output?.incremental !== undefined &&
         typeof config.output.incremental !== "boolean"
@@ -295,6 +299,7 @@ program
       );
       console.log(chalk.cyan(`  Strict nulls: ${config.strictNulls === true ? "on" : "off"}`));
       console.log(chalk.cyan(`  Form contexts: ${config.formContext === true ? "on" : "off"}`));
+      console.log(chalk.cyan(`  Typed client: ${config.typedClient === true ? "on" : "off"}`));
       console.log(
         chalk.cyan(`  Incremental: ${config.output?.incremental === true ? "on" : "off"}`)
       );
