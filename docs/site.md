@@ -6,7 +6,8 @@ hosted on **Azure Static Web Apps** (Free plan). Anyone can open it and:
 - run requests in **demo mode**, without signing in: the real SDK against an in-browser fake of a
   small Dataverse environment;
 - or **sign in to their own environment** (MSAL in the browser, auth code with PKCE) with their own
-  app registration, or the site's default one;
+  app registration, or the site's default one, then pick the environment from the list the
+  Global Discovery Service returns for them (see [The visitor's flow](#the-visitors-flow));
 - in the **Explorer** page, build a raw Web API request or pick one of the typed actions,
   functions and messages, see the SDK code for it, preview the request the SDK will send, run it
   and inspect the response; or try the sample queries;
@@ -35,8 +36,11 @@ The Content-Security-Policy allows scripts from the site only (no inline script,
 SDK's browser tests check the bundles under the same rule), requests to `*.dynamics.com` and
 `login.microsoftonline.com` only, and no framing. Styles allow `'unsafe-inline'` because Fluent
 UI inserts its styles at run time and a static host can't give each response a nonce. Because of
-`connect-src`, the site works with public-cloud environments; a sovereign cloud needs its hosts
-added there and in `validateSettings()` (`src/config.ts`).
+`connect-src`, the site works with public-cloud environments; `*.dynamics.com` also covers the
+Commercial Global Discovery Service (`globaldisco.crm.dynamics.com`) the environment picker
+calls. A sovereign cloud needs its hosts added there and in `validateEnvironmentUrl()`
+(`src/config.ts`), and its own discovery endpoint (`DISCOVERY_CLOUDS` in the discovery package)
+in `src/auth/environments.ts`.
 
 ## Maintainer setup (one time)
 
@@ -75,15 +79,46 @@ added there and in `validateSettings()` (`src/config.ts`).
 
    Then set the repository **variables** (not secrets; a client id isn't secret)
    `EXPLORER_CLIENT_ID` = the application (client) id, and optionally `EXPLORER_TENANT_ID`
-   (default `organizations`). The next deploy fills them in on the sign-in form.
+   (default `organizations`). The next deploy fills them in on the sign-in form. The one
+   delegated permission covers both the environments and the Global Discovery Service: they are
+   the same Dynamics CRM resource.
 
-5. **Admin consent.** Some tenants let only an admin consent to `user_impersonation`. The sign-in
-   page links the admin consent URL for the client id entered
+   **Publisher verification** (_Branding & properties_ → _Publisher verification_, with a
+   Microsoft Cloud Partner Program id) puts a verified badge on the consent prompt, and some
+   tenants only let users consent to apps from verified publishers (for permissions their admin
+   classified as low impact). It helps, but it doesn't replace admin consent where user consent is
+   off.
+
+5. **Admin consent.** Some tenants let only an admin consent to `user_impersonation` (user
+   consent turned off or limited to verified publishers). The sign-in page and the environment
+   picker link the admin consent URL for the client id entered
    (`https://login.microsoftonline.com/<tenant>/adminconsent?client_id=<id>`); an admin of the
-   visitor's tenant opens it once.
+   visitor's tenant opens it once, for everyone in that tenant.
+
+## The visitor's flow
+
+1. **Sign in.** The form has the default app registration's client id filled in (or the visitor
+   types their own) and the tenant (`organizations` for any work or school account). The
+   environment URL is optional.
+2. **With an environment URL**, sign-in asks for that environment's `user_impersonation` scope
+   and the app opens in it.
+3. **Without one**, sign-in asks for `https://globaldisco.crm.dynamics.com/user_impersonation`,
+   and the **environment picker** lists the environments the Global Discovery Service returns for
+   the visitor (`DiscoveryClient`): friendly name, URL, region, version and state, with a filter
+   box when there are many. Disabled environments can't be picked. The visitor can type a URL
+   there instead. Choosing one continues exactly as if its URL had been typed on the sign-in form
+   (the environment's token is acquired silently, or with a popup if needed).
+4. **Switch environment** in the header's account menu brings the picker back without signing
+   out. The last environment each account chose is remembered in the browser's `localStorage` and
+   listed first next time; a reload keeps the tab's environment.
+
+An empty list or an error usually means the account has no Dataverse license or security role in
+any environment, or the tenant needs admin consent for the app; the picker says so and links the
+admin consent URL. Demo mode has the same picker, against a fake discovery service.
 
 ## Visitors with their own app registration
 
-The sign-in page asks for the environment URL, the application (client) id and the tenant. Their
-app registration needs the SPA platform with the site's URL as a redirect URI (the page shows the
-exact value) and the delegated Dynamics CRM `user_impersonation` permission.
+The sign-in page asks for the application (client) id, the tenant and, optionally, the
+environment URL. Their app registration needs the SPA platform with the site's URL as a redirect
+URI (the page shows the exact value) and the delegated Dynamics CRM `user_impersonation`
+permission.

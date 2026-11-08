@@ -2,24 +2,38 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from "react";
 import {
   canSignIn,
+  normalizeUrl,
   readConnectionSettings,
+  validateEnvironmentUrl,
   writeConnectionSettings,
   type ConnectionSettings,
 } from "../config";
 import { readSession, writeSession } from "../lib/storage";
+import { rememberEnvironment } from "./lastEnvironment";
 import type { AuthSession, AuthState } from "./session";
 
 const DEMO_FLAG = "spa-demo-mode";
 /** Set when a Microsoft sign-in starts, so MSAL is loaded after the redirect (and not otherwise). */
 const MSAL_FLAG = "spa-msal-sign-in";
+/** The environment in use in this tab, so a reload stays in it. */
+const ENVIRONMENT_KEY = "spa-environment";
 
 interface AuthContextValue {
   state: AuthState;
-  /** Microsoft sign-in (redirect) to the environment and app registration in `settings`. */
+  /**
+   * Microsoft sign-in (redirect) with the app registration in `settings`, to its environment, or
+   * without one to pick one of the user's environments next.
+   */
   signIn: (settings: ConnectionSettings) => Promise<void>;
   /** Sign in to the in-browser demo environment. */
   startDemo: () => Promise<void>;
   signOut: () => Promise<void>;
+  /** Use this environment from now on (the picker, or the Environments page). */
+  chooseEnvironment: (url: string) => void;
+  /** Show the environment picker again, without signing out. */
+  switchEnvironment: () => void;
+  /** Leave the picker for the environment in use. */
+  cancelSwitch: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -27,6 +41,13 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 async function loadDemoSession(): Promise<AuthSession> {
   const { createDemoSession } = await import("../demo/demoSession");
   return createDemoSession();
+}
+
+/** The tab's environment after a reload, else the one the session was signed in to, if any. */
+function startingEnvironment(session: AuthSession): string | undefined {
+  const saved = readSession(ENVIRONMENT_KEY);
+  if (saved && validateEnvironmentUrl(saved) === undefined) return normalizeUrl(saved);
+  return session.environmentUrl;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -46,7 +67,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     restore().then(
       (session) => {
         if (!cancelled)
-          setState(session ? { status: "signedIn", session } : { status: "signedOut" });
+          setState(
+            session
+              ? { status: "signedIn", session, environmentUrl: startingEnvironment(session) }
+              : { status: "signedOut" }
+          );
       },
       (error: unknown) => {
         writeSession(MSAL_FLAG, null);
@@ -58,10 +83,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  // Keep the environment in use for a reload of this tab, and as this account's last choice.
+  const session = state.status === "signedIn" ? state.session : undefined;
+  const environmentUrl = state.status === "signedIn" ? state.environmentUrl : undefined;
+  useEffect(() => {
+    if (!session || !environmentUrl) return;
+    writeSession(ENVIRONMENT_KEY, environmentUrl);
+    rememberEnvironment(session.accountId, environmentUrl);
+  }, [session, environmentUrl]);
+
   const signIn = useCallback(async (settings: ConnectionSettings) => {
     try {
       writeConnectionSettings(settings);
       writeSession(MSAL_FLAG, "1");
+      writeSession(ENVIRONMENT_KEY, settings.environmentUrl || null);
       const { signInWithRedirect } = await import("./msalSession");
       await signInWithRedirect(settings);
     } catch (error) {
@@ -73,25 +108,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const startDemo = useCallback(async () => {
     setState({ status: "loading" });
     try {
-      const session = await loadDemoSession();
+      const demo = await loadDemoSession();
       writeSession(DEMO_FLAG, "1");
-      setState({ status: "signedIn", session });
+      writeSession(ENVIRONMENT_KEY, null);
+      setState({ status: "signedIn", session: demo, environmentUrl: demo.environmentUrl });
     } catch (error) {
       setState({ status: "signedOut", error });
     }
   }, []);
 
   const signOut = useCallback(async () => {
-    const session = state.status === "signedIn" ? state.session : undefined;
+    const current = state.status === "signedIn" ? state.session : undefined;
     writeSession(DEMO_FLAG, null);
     writeSession(MSAL_FLAG, null);
+    writeSession(ENVIRONMENT_KEY, null);
     setState({ status: "signedOut" });
-    await session?.signOut();
+    await current?.signOut();
   }, [state]);
 
+  const chooseEnvironment = useCallback((url: string) => {
+    setState((s) =>
+      s.status === "signedIn" ? { ...s, environmentUrl: normalizeUrl(url), switching: false } : s
+    );
+  }, []);
+
+  const switchEnvironment = useCallback(() => {
+    setState((s) => (s.status === "signedIn" ? { ...s, switching: true } : s));
+  }, []);
+
+  const cancelSwitch = useCallback(() => {
+    setState((s) => (s.status === "signedIn" ? { ...s, switching: false } : s));
+  }, []);
+
   const value = useMemo(
-    () => ({ state, signIn, startDemo, signOut }),
-    [state, signIn, startDemo, signOut]
+    () => ({
+      state,
+      signIn,
+      startDemo,
+      signOut,
+      chooseEnvironment,
+      switchEnvironment,
+      cancelSwitch,
+    }),
+    [state, signIn, startDemo, signOut, chooseEnvironment, switchEnvironment, cancelSwitch]
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

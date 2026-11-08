@@ -38,17 +38,31 @@ pnpm --filter spa-fluentui-v9-sample dev    # http://localhost:3000
 Choose **Explore with demo data** on the sign-in page. The SDK clients are real; only their `fetch`
 is replaced by an in-browser fake of a small Dataverse environment (`src/demo/`), so every request
 still goes through the SDK pipeline and the inspector. Data lives in memory and resets on reload.
+**Switch environment** in the account menu opens the environment picker against the demo's fake
+Global Discovery Service (three environments, one disabled).
 
 ### Your own environment
 
 1. **Register an app** in Microsoft Entra ID: platform "Single-page application", redirect URI
    `http://localhost:3000` (the site's URL when you use the hosted site), and the delegated
-   permission `Dynamics CRM / user_impersonation`. No client secret.
-2. **Sign in with Microsoft** on the sign-in page: enter the environment URL (for example
-   `https://yourorg.crm.dynamics.com`), the app registration's application (client) id and,
-   optionally, the tenant. They are kept in `localStorage` for the next visit; none of them is a
-   secret. If your tenant lets only admins consent, the page links the admin consent URL for the
-   client id. Write scenarios create, change and delete records in that environment.
+   permission `Dynamics CRM / user_impersonation`. No client secret. On the hosted site you can
+   skip this and use the site's default app registration, which the form fills in.
+2. **Sign in with Microsoft** on the sign-in page with the app registration's application
+   (client) id and, optionally, the tenant and the environment URL (for example
+   `https://yourorg.crm.dynamics.com`). They are kept in `localStorage` for the next visit; none
+   of them is a secret. If your tenant lets only admins consent, the page links the admin consent
+   URL for the client id.
+3. **Pick an environment.** With an environment URL, the app opens in it. Without one, sign-in
+   asks for the Global Discovery Service scope
+   (`https://globaldisco.crm.dynamics.com/user_impersonation`, the same Dynamics CRM permission),
+   and the environment picker lists your environments with `DiscoveryClient`
+   (`src/auth/environments.ts`): name, URL, region, version and state, with a filter box when
+   there are more than five. You can type a URL there instead. The app then runs exactly as if you
+   had typed that URL. **Switch environment** in the account menu brings the picker back without
+   signing out. The last environment of each account is remembered in `localStorage` and listed
+   first; a reload keeps the tab's environment.
+
+Write scenarios create, change and delete records in the environment in use.
 
 The form's defaults can come from a `.env` file (`cp .env.example .env`):
 
@@ -60,7 +74,9 @@ The form's defaults can come from a `.env` file (`cp .env.example .env`):
 | `VITE_DATAVERSE_URL`      | Environment URL, for example `https://yourorg.crm.dynamics.com` |
 
 MSAL is loaded only when you sign in with Microsoft, so demo mode never downloads it. The site's
-Content-Security-Policy allows public-cloud environments (`*.dynamics.com`) only.
+Content-Security-Policy allows public-cloud environments (`*.dynamics.com`) only, which covers the
+Commercial Global Discovery Service (`globaldisco.crm.dynamics.com`) the picker asks. Sovereign
+clouds aren't listed by it; they also need their hosts added to the CSP and `validateSettings()`.
 
 ## Pages
 
@@ -190,7 +206,10 @@ default app registration and its redirect URIs) is in [docs/site.md](../../docs/
 
 - **Shell:** `FluentProvider` with `webLightTheme` or `webDarkTheme`; the header's toggle switches
   them and remembers the choice in `localStorage`. The header shows the environment, a Demo badge in
-  demo mode, and the signed-in user with **Sign out**.
+  demo mode, and the signed-in user with **Switch environment** and **Sign out**.
+- **Environment picker:** a `Card` like the sign-in page, a `CompoundButton` per environment, a
+  `SearchBox` filter, a `role="status"` count of what the filter shows, and `MessageBar` /
+  `ErrorCard` for the empty and error states.
 - **Navigation:** `NavDrawer`, grouped by scenario area. It is inline on wide screens and an overlay
   below 64em, opened from the header.
 - **Styling:** `makeStyles` and Fluent `tokens` only.
@@ -199,14 +218,14 @@ default app registration and its redirect URIs) is in [docs/site.md](../../docs/
   destructive runs, `Badge` for methods and HTTP status.
 - **Accessibility:** a skip link, one `h1` per page and `h2` per scenario, labelled fields, focus
   moved to the page after navigation, and an `aria-live` summary of each run.
-- **Code splitting:** the sign-in page, the shell, MSAL, demo mode and every page are separate
-  chunks, loaded with `React.lazy` when first needed.
+- **Code splitting:** the sign-in page, the environment picker, the shell, MSAL, demo mode and
+  every page are separate chunks, loaded with `React.lazy` when first needed.
 
 ## Layout
 
 ```
 src/
-├── auth/         # AuthProvider; MSAL sign-in (msalSession.ts, loaded on demand)
+├── auth/         # AuthProvider; MSAL sign-in (msalSession.ts, loaded on demand); environment discovery
 ├── components/   # Scenario (the page pattern), CodeBlock, RequestInspector, ErrorCard, ErrorBoundary
 ├── demo/         # Demo mode: an in-browser fake of the Web API and the Global Discovery Service
 ├── explorer/     # The explorer: catalog, raw requests, code generation, preview, samples, history
@@ -214,7 +233,7 @@ src/
 ├── pages/        # One lazily loaded page per route
 ├── scenarios/    # The code each scenario runs; its #regions are what the Code panels show
 ├── sdk/          # Client setup, the inspector middleware, the activity log
-├── shell/        # Header, navigation, sign-in page
+├── shell/        # Header, navigation, sign-in page, environment picker
 ├── theme/        # Light and dark theme
 └── routes.ts     # Every page, its group and its lazy import
 ```
@@ -241,6 +260,10 @@ set `PLAYWRIGHT_CHROMIUM_PATH` to use another one.
   consent link on the sign-in page once.
 - **Calls fail with 401 or 403:** the environment URL must be the environment you consented
   `user_impersonation` for, and your user needs a security role in it.
+- **The picker finds no environments, or fails:** the Global Discovery Service lists only
+  environments where your account has a Dataverse license and a security role. If your tenant
+  restricts user consent, an admin grants consent for the app once (the picker links it). You can
+  still type an environment URL on the picker.
 - **Build errors about missing SDK exports:** run `pnpm build` at the repository root first.
 
 ## License

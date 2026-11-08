@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useMemo } from "react";
 import type { ReactNode } from "react";
 import type { AuthSession } from "../auth/session";
 import type { Connection } from "./createSdk";
@@ -12,8 +12,21 @@ interface SdkContextValue {
 
 const SdkContext = createContext<SdkContextValue | null>(null);
 
-export function SdkProvider({ session, children }: { session: AuthSession; children: ReactNode }) {
-  const [environmentUrl, setEnvironmentUrl] = useState(session.environmentUrl);
+interface SdkProviderProps {
+  session: AuthSession;
+  /** The environment every scenario uses. */
+  environmentUrl: string;
+  /** Called to switch to another environment; the caller keeps it and passes it back. */
+  onEnvironmentChange: (url: string) => void;
+  children: ReactNode;
+}
+
+export function SdkProvider({
+  session,
+  environmentUrl,
+  onEnvironmentChange,
+  children,
+}: SdkProviderProps) {
   const value = useMemo<SdkContextValue>(
     () => ({
       session,
@@ -24,9 +37,9 @@ export function SdkProvider({ session, children }: { session: AuthSession; child
         scopesFor: session.scopesFor,
         fetchProvider: session.fetchProvider,
       },
-      setEnvironmentUrl,
+      setEnvironmentUrl: onEnvironmentChange,
     }),
-    [session, environmentUrl]
+    [session, environmentUrl, onEnvironmentChange]
   );
   return <SdkContext.Provider value={value}>{children}</SdkContext.Provider>;
 }
