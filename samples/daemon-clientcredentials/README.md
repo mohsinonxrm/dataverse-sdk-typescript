@@ -99,6 +99,12 @@ DATAVERSE_URL=https://yourorg.crm.dynamics.com
 BATCH_SIZE=100
 ```
 
+Environment variables work as well as `.env` (a value in `.env` wins). Instead of the three
+`AZURE_*` names you can set `DATAVERSE_CLIENT_ID`, `DATAVERSE_TENANT_ID` and
+`DATAVERSE_CLIENT_SECRET`, the names the repository's live tests use. That is how CI runs this
+sample against the dev org (`pnpm samples:live` from the repository root). Without these values
+the sample prints what's missing and exits with code 1.
+
 **⚠️ Security Warning:**
 
 - **Never commit** `.env` files to source control
@@ -125,6 +131,11 @@ This will:
 5. **Query** updated accounts
 6. **Demonstrate error handling** for invalid data
 7. **Cleanup** by deleting all created accounts
+
+Every account is named `sdk-sample-<tag> ...`, with a random tag per run (set
+`SAMPLE_RUN_TAG`, lowercase letters and digits, to choose it). When the run ends, also after a
+failure, the sample deletes any account of the run that is still there. It exits with code 1 if
+a step failed or an account couldn't be deleted.
 
 ### Development Mode (Auto-Reload)
 

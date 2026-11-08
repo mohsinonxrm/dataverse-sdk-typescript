@@ -36,3 +36,15 @@ jobs:
           # Fail instead of silently skipping if a secret is missing.
           DATAVERSE_INTEGRATION_REQUIRED: "1"
         run: pnpm test:integration
+      # The non-interactive Node samples, end to end against the same org. Same job, so it stays
+      # in the concurrency group; each sample deletes what it creates and exits non-zero on any
+      # failure. Runs even when the tests failed, so one run reports both.
+      - name: Run the Node samples against the live org
+        if: ${{ !cancelled() }}
+        env:
+          DATAVERSE_URL: ${{ secrets.DATAVERSE_URL }}
+          DATAVERSE_TENANT_ID: ${{ secrets.DATAVERSE_TENANT_ID }}
+          DATAVERSE_CLIENT_ID: ${{ secrets.DATAVERSE_CLIENT_ID }}
+          DATAVERSE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
+          DATAVERSE_INTEGRATION_REQUIRED: "1"
+        run: pnpm samples:live --no-build

@@ -50,6 +50,8 @@ export class UpsertMultipleRequest
   }
 
   async parseResponse(response: Response): Promise<UpsertMultipleResponse> {
+    // Dataverse answers 204 No Content although the CSDL declares a return type
+    if (response.status === 204) return UpsertMultipleResponse.fromResponse(undefined);
     // The body is the complex value, with its @odata.context
     return UpsertMultipleResponse.fromResponse(await response.json());
   }
@@ -59,11 +61,16 @@ export class UpsertMultipleRequest
  * Response from the UpsertMultiple action.
  *
  * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content, as it does for UpsertMultiple although the CSDL
+ * declares a return type: "The `UpsertMultiple` action returns `204 NoContent`. The
+ * `UpsertMultipleResponse` complex type isn't returned."
+ *
+ * @see https://learn.microsoft.com/power-apps/developer/data-platform/bulk-operations#examples
  */
-export interface UpsertMultipleResult {
+export type UpsertMultipleResult = {
   "@odata.context"?: string;
   Results: UpsertResponse[];
-}
+} | null;
 
 /**
  * UpsertMultiple response message
@@ -77,6 +84,6 @@ export class UpsertMultipleResponse extends OrganizationResponse {
 
   /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): UpsertMultipleResponse {
-    return new UpsertMultipleResponse(data as UpsertMultipleResult);
+    return new UpsertMultipleResponse((data ?? null) as UpsertMultipleResult);
   }
 }

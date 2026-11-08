@@ -15,6 +15,7 @@ import ts from "typescript";
 import type { Executable } from "@mohsinonxrm/dataverse-sdk-core";
 import { createTestClient, jsonResponse, noContent } from "@mohsinonxrm/dataverse-sdk-testing";
 import type { MetadataService } from "../src/metadata-service.js";
+import { NO_CONTENT_OPERATIONS } from "../src/no-content-operations.js";
 import { SchemaModel } from "../src/schema-model.js";
 import { TypescriptGenerator } from "../src/typescript-generator.js";
 import type { DataverseGenConfig } from "../src/types.js";
@@ -139,6 +140,9 @@ ${CASES.map(
       </Action>`
 ).join("\n")}
       <Action Name="APing" />
+      <Action Name="UpsertMultiple">
+        <ReturnType Type="mscrm.InfoResponse" Nullable="false" />
+      </Action>
       <EntityContainer Name="System">
         <EntitySet Name="accounts" EntityType="Microsoft.Dynamics.CRM.account" />
       </EntityContainer>
@@ -204,7 +208,7 @@ beforeAll(async () => {
   const config: DataverseGenConfig = {
     environmentUrl: "https://contoso.crm.dynamics.com",
     entities: ["account"],
-    actions: [...CASES.map((c) => `A${c.name}`), "APing"],
+    actions: [...CASES.map((c) => `A${c.name}`), "APing", "UpsertMultiple"],
     functions: CASES.map((c) => `F${c.name}`),
     output: { outputRoot: path.join(outputRoot, "ts") },
   };
@@ -325,5 +329,45 @@ export const b = many.value;
     const errors = (await usageDiagnostics("usage-300-bad.ts", snippet)).join("\n");
     expect(errors).toMatch(/usage-300-bad\.ts\(4\)/);
     expect(errors).toMatch(/usage-300-bad\.ts\(5\)/);
+  });
+});
+
+describe("NO_CONTENT_OPERATIONS: Dataverse answers 204 although the CSDL declares a return", () => {
+  // The listed operation returns mscrm.InfoResponse, as the Info case does
+  const info = CASES.find((c) => c.name === "Info");
+  if (!info) throw new Error("no Info case");
+
+  it("UpsertMultiple resolves null for a 204, and still reads a body", async () => {
+    const { ctor: Act } = await load("actions/UpsertMultipleAction.js", "UpsertMultipleAction");
+    const empty = createTestClient();
+    empty.fake.on("POST", /UpsertMultiple/, () => noContent());
+    expect(await empty.client.execute(new Act())).toBeNull();
+    const { client, fake } = createTestClient();
+    fake.on("POST", /UpsertMultiple/, () => jsonResponse(responseBody(info)));
+    expect(await client.execute(new Act())).toEqual(info.value);
+  });
+
+  it("the value is typed <Type> | null, and the doc comment says why", async () => {
+    const snippet = `type Equal<X, Y> =
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
+import type * as G from "./index.js";
+export const checks: true[] = [
+  {} as Equal<Extract<G.UpsertMultipleActionResponse, null>, null>,
+  {} as Equal<
+    NonNullable<G.UpsertMultipleActionResponse>["@odata.context"],
+    string | undefined
+  >,
+  {} as Equal<NonNullable<G.UpsertMultipleActionResponse>["Count"], number | undefined>,
+  // Only the listed operation: the same return type elsewhere isn't nullable
+  {} as Equal<Extract<G.AInfoActionResponse, null>, never>,
+];
+`;
+    expect(await usageDiagnostics("usage-no-content-types.ts", snippet)).toEqual([]);
+    const source = await fs.readFile(
+      path.join(outputRoot, "ts", "actions", "UpsertMultipleAction.ts"),
+      "utf-8"
+    );
+    expect(source).toContain(NO_CONTENT_OPERATIONS.UpsertMultiple.docs);
+    expect(source).toContain("if (response.status === 204) return null;");
   });
 });

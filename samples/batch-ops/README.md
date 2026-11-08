@@ -99,6 +99,12 @@ AZURE_CLIENT_SECRET=your-client-secret
 DATAVERSE_URL=https://yourorg.crm.dynamics.com
 ```
 
+Environment variables work as well as `.env` (a value in `.env` wins). Instead of the three
+`AZURE_*` names you can set `DATAVERSE_CLIENT_ID`, `DATAVERSE_TENANT_ID` and
+`DATAVERSE_CLIENT_SECRET`, the names the repository's live tests use. That is how CI runs this
+sample against the dev org (`pnpm samples:live` from the repository root). Without these values
+the sample prints what's missing and exits with code 1.
+
 ---
 
 ## Running the Sample
@@ -117,6 +123,12 @@ This executes 6 comprehensive demos:
 4. **Continue-on-Error** - partial success handling
 5. **Mixed Operations** - CRUD + query in one batch
 6. **Performance Comparison** - individual vs batch vs bulk
+
+Every account is named, and every contact's last name starts, `sdk-sample-<tag>`, with a random
+tag per run (set `SAMPLE_RUN_TAG`, lowercase letters and digits, to choose it). After the demos,
+also when one fails, the sample deletes every contact and account named with the run's id. It
+exits with code 1 if a demo failed (including a continue-on-error batch where anything but the
+deliberately invalid request failed) or a record couldn't be deleted.
 
 ### Development Mode
 
@@ -182,7 +194,9 @@ If one request fails, Dataverse rolls the changeset back and `execute()` throws 
 ### Demo 3: Content-ID References
 
 Inside a changeset, a request's id is its Content-ID. A later request refers to the record an
-earlier one creates as `$<id>`:
+earlier one creates as `$<id>`. Don't send `Prefer: return=representation` on a request that
+others refer to: Dataverse then doesn't register its Content-ID, and the reference fails with
+"Content-ID Reference: '$account' does not exist in the batch context".
 
 ```typescript
 batch.beginChangeset();

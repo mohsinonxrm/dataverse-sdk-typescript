@@ -85,6 +85,12 @@ DATAVERSE_URL=https://your-org.crm.dynamics.com
 # TEST_WORKFLOW_ID=00000000-0000-0000-0000-000000000000
 ```
 
+Environment variables work as well as `.env`. Instead of the three `AZURE_*` names you can set
+`DATAVERSE_CLIENT_ID`, `DATAVERSE_TENANT_ID` and `DATAVERSE_CLIENT_SECRET`, the names the
+repository's live tests use. That is how CI runs this sample against the dev org
+(`pnpm samples:live` from the repository root). Without these values the sample prints what's
+missing and exits with code 1.
+
 ## Running the Sample
 
 ### Build the Sample
@@ -116,6 +122,11 @@ The sample will:
 3. Show colored output for each demo
 4. Clean up test data automatically
 5. Print timings for each demo
+
+Every record is named `sdk-sample-<tag> ...`, with a random tag per run (set `SAMPLE_RUN_TAG`,
+lowercase letters and digits, to choose it). Cleanup runs also when a demo fails: it deletes the
+records the demos tracked and any account or opportunity still named with the run's id. The
+sample exits with code 1 if a demo failed or a record couldn't be deleted.
 
 ## How actions and functions run
 
@@ -295,6 +306,9 @@ await client.execute(new UpsertMultipleAction("accounts", { Targets: accounts })
 
 - The table must have an alternate key defined (e.g., on `accountnumber`)
 - Dataverse uses the key to determine create vs update
+- Without one (`account` has no key on `accountnumber` out of the box), each run creates the
+  rows again. The sample's account numbers carry its run tag, and cleanup deletes every row it
+  created
 
 **When to use:**
 
@@ -395,8 +409,9 @@ await client.execute(new WinOpportunityAction({ OpportunityClose: opportunityClo
 ## Demo 7: Merge Action (Unbound)
 
 **Action**: Merges two records of the same entity type. Moves related data to the target and
-deletes the subordinate. `new MergeAction({ Target, Subordinate, UpdateContent?, PerformParentingChecks })`,
-where the first three are references to records:
+deactivates the subordinate. `new MergeAction({ Target, Subordinate, UpdateContent, PerformParentingChecks })`,
+where `Target` and `Subordinate` are references to records and `UpdateContent` holds the
+target's new column values:
 
 ```typescript
 import { MergeAction, createEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
@@ -407,7 +422,7 @@ const subordinateId = "22222222-2222-2222-2222-222222222222";
 const merge = new MergeAction({
   Target: createEntityReference("account", targetId),
   Subordinate: createEntityReference("account", subordinateId),
-  UpdateContent: createEntityReference("account", targetId),
+  UpdateContent: { "@odata.type": "Microsoft.Dynamics.CRM.account", revenue: 800000 },
   PerformParentingChecks: false,
 });
 
@@ -417,8 +432,8 @@ await client.execute(merge);
 **What happens:**
 
 1. Activities, notes and relationships move from the subordinate to the target
-2. The subordinate record is **deleted**
-3. This cannot be undone
+2. The subordinate record is **deactivated** (`statecode` 1) and points to the target
+3. This cannot be undone; the sample deletes both accounts in its cleanup
 
 **Supported entities:**
 
@@ -437,7 +452,7 @@ await client.execute(merge);
 
 - Review related records before merging
 - Export subordinate data as backup
-- Communicate with users (the record will be deleted)
+- Communicate with users (the record will be deactivated)
 - Set `performParentingChecks` to `true` if hierarchical relationships exist
 
 ---
@@ -448,6 +463,9 @@ await client.execute(merge);
 by hand to show the actions; in your own code, `FileColumnClient` from
 `@mohsinonxrm/dataverse-sdk-files` runs all three steps (see its
 [README](../../packages/dataverse-sdk-files/README.md)).
+
+The sample uploads a generated PNG of about 5 MB (two blocks) to an account's `entityimage`: an
+image column only takes a real image.
 
 ### Step 1: Initialize Upload
 

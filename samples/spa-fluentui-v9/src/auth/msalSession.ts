@@ -1,6 +1,6 @@
 /**
- * Microsoft sign-in with MSAL, for the environment and app registration the visitor entered on
- * the sign-in page. Loaded on demand, so demo mode never downloads MSAL.
+ * Microsoft sign-in with MSAL, for the app registration (and the environment, if any) the visitor
+ * entered on the sign-in page. Loaded on demand, so demo mode never downloads MSAL.
  */
 import { PublicClientApplication, type AccountInfo } from "@azure/msal-browser";
 import {
@@ -10,6 +10,7 @@ import {
   scopesForEnvironment,
 } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
 import { redirectUri, type ConnectionSettings } from "../config";
+import { DISCOVERY_SCOPES } from "./environments";
 import type { AuthSession } from "./session";
 
 let current: { key: string; ready: Promise<PublicClientApplication> } | undefined;
@@ -34,6 +35,15 @@ function msal(settings: ConnectionSettings): Promise<PublicClientApplication> {
   return current.ready;
 }
 
+/**
+ * The scopes to sign in with: the environment's `user_impersonation`, or without an environment
+ * the Global Discovery Service's, to list the user's environments next. Both are the delegated
+ * Dynamics CRM `user_impersonation` permission.
+ */
+export function signInScopes(environmentUrl: string): string[] {
+  return environmentUrl ? scopesForEnvironment(environmentUrl) : DISCOVERY_SCOPES;
+}
+
 function toSession(
   instance: PublicClientApplication,
   account: AccountInfo,
@@ -42,9 +52,11 @@ function toSession(
   return {
     mode: "msal",
     user: { name: account.name ?? account.username, username: account.username },
-    environmentUrl,
-    // Without `account`, the provider uses MSAL's active account.
-    tokenProvider: createMsalBrowserProvider(instance, { environmentUrl }),
+    accountId: account.homeAccountId,
+    environmentUrl: environmentUrl || undefined,
+    // Without `account`, the provider uses MSAL's active account. Each client passes the scopes
+    // of the host it calls; these are only the default.
+    tokenProvider: createMsalBrowserProvider(instance, { scopes: signInScopes(environmentUrl) }),
     scopesFor: (url) => scopesForEnvironment(url),
     signOut: () => instance.logoutRedirect({ account }),
   };
@@ -64,5 +76,5 @@ export async function restoreMsalSession(
 /** Start the redirect sign-in. The page navigates away; `restoreMsalSession()` finishes it. */
 export async function signInWithRedirect(settings: ConnectionSettings): Promise<void> {
   const instance = await msal(settings);
-  await instance.loginRedirect({ scopes: scopesForEnvironment(settings.environmentUrl) });
+  await instance.loginRedirect({ scopes: signInScopes(settings.environmentUrl) });
 }

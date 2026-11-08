@@ -7,6 +7,7 @@
  * Chromium other than the one installed with Playwright.
  */
 import { describe, expect, it } from "vitest";
+import type { BrowserContext, Page } from "playwright";
 import { ROUTES } from "../../src/routes";
 import { axeViolations, problems, startDemo, useBrowser } from "./browser";
 
@@ -16,14 +17,61 @@ const CLIENT_ID = "11111111-2222-3333-4444-555555555555";
 const TENANT = "contoso.onmicrosoft.com";
 const LOGIN = "https://login.microsoftonline.com";
 
+/**
+ * Mocks Microsoft sign-in: MSAL's metadata requests are answered, and the authorize URLs MSAL
+ * redirects to are recorded (and answered with an empty page).
+ */
+async function mockMicrosoftSignIn(context: BrowserContext): Promise<string[]> {
+  const authorize: string[] = [];
+  await context.route(`${LOGIN}/**`, async (route) => {
+    const url = route.request().url();
+    if (url.includes("/discovery/instance")) {
+      return route.fulfill({
+        json: {
+          tenant_discovery_endpoint: `${LOGIN}/${TENANT}/v2.0/.well-known/openid-configuration`,
+          "api-version": "1.1",
+          metadata: [
+            {
+              preferred_network: "login.microsoftonline.com",
+              preferred_cache: "login.windows.net",
+              aliases: ["login.microsoftonline.com", "login.windows.net"],
+            },
+          ],
+        },
+      });
+    }
+    if (url.includes("openid-configuration")) {
+      return route.fulfill({
+        json: {
+          authorization_endpoint: `${LOGIN}/${TENANT}/oauth2/v2.0/authorize`,
+          token_endpoint: `${LOGIN}/${TENANT}/oauth2/v2.0/token`,
+          end_session_endpoint: `${LOGIN}/${TENANT}/oauth2/v2.0/logout`,
+          issuer: `${LOGIN}/${TENANT}/v2.0`,
+          jwks_uri: `${LOGIN}/${TENANT}/discovery/v2.0/keys`,
+        },
+      });
+    }
+    authorize.push(url);
+    return route.fulfill({ contentType: "text/html", body: "<title>Sign in</title>" });
+  });
+  return authorize;
+}
+
+/** Opens the environment picker from the account menu. */
+async function openPicker(page: Page): Promise<void> {
+  await page.getByRole("button", { name: /^Account:/ }).click();
+  await page.getByRole("menuitem", { name: "Switch environment" }).click();
+  await page.getByRole("heading", { level: 1, name: "Choose an environment" }).waitFor();
+}
+
 describe("spa-fluentui-v9", () => {
-  it("asks for the environment and app registration before Microsoft sign-in", async () => {
+  it("asks for the app registration before Microsoft sign-in; the environment is optional", async () => {
     const session = await open();
     const { page } = session;
     await page.getByRole("heading", { level: 1, name: "Dataverse SDK explorer" }).waitFor();
     await page.getByRole("button", { name: "Sign in with Microsoft" }).click();
-    await page.getByText("Enter your environment's URL.").waitFor();
     await page.getByText("Enter the application (client) id of your app registration.").waitFor();
+    await expect(page.getByText("Enter your environment's URL.").count()).resolves.toBe(0);
     await page.getByLabel("Environment URL").fill("https://example.com");
     await page.getByRole("button", { name: "Sign in with Microsoft" }).click();
     await page.getByText(/ending in \.dynamics\.com/).waitFor();
@@ -33,42 +81,73 @@ describe("spa-fluentui-v9", () => {
     expect(await problems(session)).toEqual([]);
   });
 
+  it("signs in without an environment URL, with the Global Discovery Service scope", async () => {
+    const session = await open();
+    const { page, context } = session;
+    const authorize = await mockMicrosoftSignIn(context);
+    await page.getByLabel("Environment URL").fill("");
+    await page.getByLabel("Application (client) ID").fill(CLIENT_ID);
+    await page.getByLabel("Tenant").fill(TENANT);
+    const before = await problems(session);
+    await page.getByRole("button", { name: "Sign in with Microsoft" }).click();
+    await page.waitForURL(/login\.microsoftonline\.com/);
+    expect(before).toEqual([]);
+    const scope = new URL(authorize[0] ?? "").searchParams.get("scope") ?? "";
+    // The same Dynamics CRM user_impersonation permission, for the environment list.
+    expect(scope).toContain("https://globaldisco.crm.dynamics.com/user_impersonation");
+    expect(scope).not.toContain("contoso");
+    expect(session.errors).toEqual([]);
+  });
+
+  it("switches environment from the account menu with the picker, in demo mode", async () => {
+    const session = await open();
+    const { page } = session;
+    await startDemo(page);
+    const banner = page.getByRole("banner");
+    await openPicker(page);
+    // The demo's Global Discovery Service: three environments, one disabled.
+    const list = page.getByRole("list", { name: "Your environments" });
+    const dev = list.getByRole("button", { name: /^Contoso Dev/ });
+    await dev.waitFor();
+    await expect(list.getByRole("button").count()).resolves.toBe(3);
+    await expect(list.getByRole("button", { name: /^Fabrikam Test/ }).isDisabled()).resolves.toBe(
+      true
+    );
+    await expect(
+      list.getByRole("button", { name: /^Contoso \(demo\)/ }).textContent()
+    ).resolves.toContain("in use");
+    expect(await axeViolations(page)).toEqual([]);
+
+    // Back, unchanged.
+    await page.getByRole("button", { name: /^Back to/ }).click();
+    await page.getByRole("heading", { level: 1, name: "Overview" }).waitFor();
+    await banner.getByText("contoso.crm.dynamics.com").waitFor();
+
+    // Pick another one; a reload stays in it.
+    await openPicker(page);
+    await dev.click();
+    await page.getByRole("heading", { level: 1, name: "Overview" }).waitFor();
+    await banner.getByText("contoso-dev.crm.dynamics.com").waitFor();
+    await page.reload();
+    await page.getByRole("heading", { level: 1, name: "Overview" }).waitFor();
+    await banner.getByText("contoso-dev.crm.dynamics.com").waitFor();
+
+    // Or type its URL.
+    await openPicker(page);
+    await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByText("Enter your environment's URL.").waitFor();
+    await page.getByLabel("Environment URL").fill("https://fabrikam.crm4.dynamics.com/main.aspx");
+    await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByRole("heading", { level: 1, name: "Overview" }).waitFor();
+    await banner.getByText("fabrikam.crm4.dynamics.com").waitFor();
+    expect(await problems(session)).toEqual([]);
+  });
+
   it("signs in with Microsoft to the environment and app registration typed in", async () => {
     // Microsoft sign-in is mocked; the test checks the redirect MSAL starts, under the site's CSP.
     const session = await open();
     const { page, context } = session;
-    const authorize: string[] = [];
-    await context.route(`${LOGIN}/**`, async (route) => {
-      const url = route.request().url();
-      if (url.includes("/discovery/instance")) {
-        return route.fulfill({
-          json: {
-            tenant_discovery_endpoint: `${LOGIN}/${TENANT}/v2.0/.well-known/openid-configuration`,
-            "api-version": "1.1",
-            metadata: [
-              {
-                preferred_network: "login.microsoftonline.com",
-                preferred_cache: "login.windows.net",
-                aliases: ["login.microsoftonline.com", "login.windows.net"],
-              },
-            ],
-          },
-        });
-      }
-      if (url.includes("openid-configuration")) {
-        return route.fulfill({
-          json: {
-            authorization_endpoint: `${LOGIN}/${TENANT}/oauth2/v2.0/authorize`,
-            token_endpoint: `${LOGIN}/${TENANT}/oauth2/v2.0/token`,
-            end_session_endpoint: `${LOGIN}/${TENANT}/oauth2/v2.0/logout`,
-            issuer: `${LOGIN}/${TENANT}/v2.0`,
-            jwks_uri: `${LOGIN}/${TENANT}/discovery/v2.0/keys`,
-          },
-        });
-      }
-      authorize.push(url);
-      return route.fulfill({ contentType: "text/html", body: "<title>Sign in</title>" });
-    });
+    const authorize = await mockMicrosoftSignIn(context);
     await page.getByLabel("Environment URL").fill("https://contoso.crm.dynamics.com/main.aspx");
     await page.getByLabel("Application (client) ID").fill(CLIENT_ID);
     await page.getByLabel("Tenant").fill(TENANT);
