@@ -69,15 +69,16 @@ describe("#285: removed retry options", () => {
 });
 
 describe("#285: removed circuitBreaker and bulkhead", () => {
-  it("are not client options, and their types are not exported", () => {
+  it("are not client options, and the old option shapes are gone", () => {
     expectTypeOf<DataverseClientOptions>().not.toHaveProperty("circuitBreaker");
     expectTypeOf<DataverseClientOptions>().not.toHaveProperty("bulkhead");
-    // @ts-expect-error -- CircuitBreakerOptions was removed
-    type CircuitBreaker = Core.CircuitBreakerOptions;
-    // @ts-expect-error -- BulkheadOptions was removed
-    type Bulkhead = Core.BulkheadOptions;
-    expectTypeOf<CircuitBreaker>().toBeAny();
-    expectTypeOf<Bulkhead>().toBeAny();
+    // The names now belong to the opt-in middleware (#343), whose options have no `enabled` and
+    // none of the old no-op fields.
+    expectTypeOf<Core.CircuitBreakerOptions>().not.toHaveProperty("enabled");
+    expectTypeOf<Core.CircuitBreakerOptions>().not.toHaveProperty("samplingWindowMs");
+    expectTypeOf<Core.CircuitBreakerOptions>().not.toHaveProperty("openDurationMs");
+    expectTypeOf<Core.BulkheadOptions>().not.toHaveProperty("enabled");
+    expectTypeOf<Core.BulkheadOptions>().not.toHaveProperty("maxParallel");
     // @ts-expect-error -- circuitBreaker was removed
     const a: Partial<DataverseClientOptions> = { circuitBreaker: { enabled: true } };
     // @ts-expect-error -- bulkhead was removed

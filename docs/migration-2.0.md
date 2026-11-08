@@ -44,7 +44,7 @@ In 1.0 the actions, functions, messages, entities-runtime and xrm packages each 
 - **Removed options.** Passing any of these is now a type error.
   - `retry.delay`: use `baseDelayMs`.
   - `retry.useExponentialBackoff`: it had no effect, because backoff is always exponential.
-  - `circuitBreaker` and `bulkhead`, with their `CircuitBreakerOptions` and `BulkheadOptions` types: they had no effect. Circuit breaker and bulkhead middleware are planned in [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100).
+  - `circuitBreaker` and `bulkhead`, with their `CircuitBreakerOptions` and `BulkheadOptions` types: they had no effect. 2.0 adds opt-in `CircuitBreakerMiddleware` and `BulkheadMiddleware` instead, added through the `middleware` option ([#343](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/343)). Their `CircuitBreakerOptions` and `BulkheadOptions` reuse those names, with new fields (no `enabled`).
   - The `MiddlewareRetryOptions` export: it was a second name for `RetryOptions`. Import `RetryOptions` instead; the options themselves are unchanged.
 - **Auth.**
   - A token is fetched for every attempt, and a 401 triggers one token refresh and one retry.
