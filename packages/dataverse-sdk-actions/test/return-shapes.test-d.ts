@@ -10,9 +10,11 @@ import {
   ExportSolutionAction,
   InstantiateTemplateAction,
   PublishAllXmlAction,
+  UpsertMultipleAction,
   type ExecuteWorkflowResponse,
   type ExportSolutionResponse,
   type InstantiateTemplateResponse,
+  type UpsertMultipleResponse,
 } from "../src/index.js";
 
 declare const client: DataverseClient;
@@ -38,6 +40,13 @@ expectType<ExportSolutionResponse>(exported);
 expectType<string>(exported.ExportSolutionFile);
 expectType<string | undefined>(exported["@odata.context"]);
 expectError(exported.value);
+
+// A complex type Dataverse never sends (UpsertMultiple answers 204): null, or the body if one comes
+const upserted = await client.execute(new UpsertMultipleAction("accounts", { Targets: [] }));
+expectType<UpsertMultipleResponse>(upserted);
+expectAssignable<UpsertMultipleResponse>(null);
+expectType<string | undefined>(upserted?.Results[0]?.ResponseName);
+expectType<string | undefined>(upserted?.["@odata.context"]);
 
 // A typed entity (mscrm.asyncoperation): the record with its annotations, or null for a 204
 const job = await client.execute(new ExecuteWorkflowAction(EMPTY, { EntityId: EMPTY }));

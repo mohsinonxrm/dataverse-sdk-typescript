@@ -130,6 +130,8 @@ const client = new DataverseClient({
 
 For background services and automation:
 
+<!-- live -->
+
 ```typescript
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
@@ -185,6 +187,8 @@ const client = new DataverseClient({
 
 ### Create a Record
 
+<!-- live -->
+
 ```typescript
 const account = {
   name: "Contoso Inc",
@@ -201,6 +205,8 @@ console.log("Created account:", accountId);
 ```
 
 ### Create with Return Representation
+
+<!-- live -->
 
 ```typescript
 import { Prefer } from "@mohsinonxrm/dataverse-sdk-core";
@@ -221,9 +227,10 @@ console.log("Created account name:", newAccount.name);
 
 ### Retrieve a Record
 
+<!-- live -->
+
 ```typescript
-// Get by ID
-const accountId = "00000000-0000-0000-0000-000000000001";
+// Get by ID: accountId is the id createAndGetId() returned above
 const account = await client
   .api(`/accounts(${accountId})`)
   .select("name", "revenue", "industrycode")
@@ -235,9 +242,9 @@ console.log("Revenue:", account.revenue);
 
 ### Update a Record
 
-```typescript
-const accountId = "00000000-0000-0000-0000-000000000001";
+<!-- live -->
 
+```typescript
 await client.api(`/accounts(${accountId})`).patch({
   revenue: 6000000,
   numberofemployees: 150,
@@ -247,6 +254,8 @@ console.log("Account updated successfully");
 ```
 
 ### Update with Optimistic Concurrency
+
+<!-- live -->
 
 ```typescript
 // Read the record's ETag (every retrieved record has @odata.etag)
@@ -263,9 +272,9 @@ await client.api(`/accounts(${accountId})`).ifMatch(etag).patch({
 
 ### Delete a Record
 
-```typescript
-const accountId = "00000000-0000-0000-0000-000000000001";
+<!-- live -->
 
+```typescript
 await client.api(`/accounts(${accountId})`).delete();
 
 console.log("Account deleted successfully");
@@ -274,6 +283,8 @@ console.log("Account deleted successfully");
 ## Advanced Queries
 
 ### Filter, Sort, and Paginate
+
+<!-- live -->
 
 ```typescript
 const accounts = await client
@@ -291,6 +302,8 @@ accounts.value.forEach((account) => {
 ```
 
 ### Expand Related Records
+
+<!-- live -->
 
 ```typescript
 // expand() takes strings: write nested query options inline, in OData syntax
@@ -314,6 +327,8 @@ console.log("Active Tasks:", account.Account_Tasks.length);
 
 ### Iterate Through All Pages
 
+<!-- live -->
+
 ```typescript
 // Iterate through all records (handles paging automatically)
 const allAccounts = [];
@@ -330,6 +345,8 @@ console.log(`Total accounts: ${allAccounts.length}`);
 
 ### Get All with Limits
 
+<!-- live -->
+
 ```typescript
 const accounts = await client
   .api("/accounts")
@@ -341,6 +358,8 @@ console.log(`Retrieved ${accounts.length} accounts`);
 ```
 
 ### Advanced Filtering
+
+<!-- live -->
 
 ```typescript
 // Complex filter
@@ -364,6 +383,8 @@ const contosoAccounts = await client.api("/accounts").filter("contains(name, 'Co
 Dataverse's query functions (`LastXDays`, `InFiscalYear`, `In`, `Under`, `EqualUserId`, …) work
 only inside `$filter`. `queryFunctions` in `@mohsinonxrm/dataverse-sdk-functions` writes them, with
 the values escaped, and `odata` from core combines them with other conditions:
+
+<!-- live -->
 
 ```typescript
 import { odata } from "@mohsinonxrm/dataverse-sdk-core";
@@ -392,6 +413,8 @@ Dataverse's named operations are Web API **actions** (`POST`, with side effects:
 `@mohsinonxrm/dataverse-sdk-functions` have a typed class for each one; `client.execute()` sends
 it and resolves its typed result. Parameters go in one object, by their Web API names, and a bound
 operation takes its record id (or entity set) first.
+
+<!-- live -->
 
 ```typescript
 import { QualifyLeadAction, WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
@@ -482,6 +505,8 @@ That writes an interface per table (`Account`), the columns a create and an upda
 (`AccountCreate`, `AccountUpdate`), the choices as enums, the tables' metadata, and
 `createTypedClient()`: a request builder per table, keyed by entity set name, whose columns and
 payloads are checked against the table.
+
+<!-- live -->
 
 ```typescript
 import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
@@ -583,6 +608,8 @@ has every option.
 
 ### Basic $batch Request
 
+<!-- live -->
+
 ```typescript
 import { BatchRequestBuilder, type BatchResponseStep } from "@mohsinonxrm/dataverse-sdk-batch";
 
@@ -608,6 +635,8 @@ console.log("Account detail:", result.responses.get("account")?.body);
 ```
 
 ### Batch with Change Sets
+
+<!-- live -->
 
 ```typescript
 import { BatchRequestBuilder, DataverseBatchError } from "@mohsinonxrm/dataverse-sdk-batch";
@@ -653,6 +682,8 @@ package split them into chunks, send each chunk as one `CreateMultiple` / `Updat
 request (or as a `$batch` for a table without those messages, with `strategy: "auto"`), and
 return what happened to each record:
 
+<!-- live -->
+
 ```typescript
 import { createMultiple, updateMultiple } from "@mohsinonxrm/dataverse-sdk-batch";
 
@@ -677,6 +708,8 @@ for (const r of updated.results) {
 
 `getBulkOperationSupport(client, "account")` tells which bulk messages a table supports. To send
 one bulk request yourself, use the action:
+
+<!-- live -->
 
 ```typescript
 import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
@@ -743,6 +776,8 @@ A column with no file is a 404 `DataverseODataError`. `fileClient.delete("accoun
 
 For a table with change tracking enabled, `trackChanges()` reads every row and a delta link;
 `changesSince(deltaLink)` later returns only the rows created, updated and deleted since:
+
+<!-- live -->
 
 ```typescript
 import { isDeltaLinkExpired } from "@mohsinonxrm/dataverse-sdk-core";
@@ -900,7 +935,11 @@ Check out the `samples/` directory for complete working examples:
 
 The SDK automatically retries 429 errors with `Retry-After` header respect. To adjust:
 
+<!-- live -->
+
 ```typescript
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+
 const client = new DataverseClient({
   baseUrl: "https://YOUR_ORG.crm.dynamics.com/api/data/v9.2",
   tokenProvider,
@@ -924,6 +963,8 @@ All operations support TypeScript auto-completion. Business entity types such as
 generated for your org by `@mohsinonxrm/dataverse-sdk-generator` (the metadata package holds only
 metadata types such as `EntityMetadata`):
 
+<!-- live -->
+
 ```typescript
 import type { Account } from "./generated/entities/Account.js";
 
@@ -938,6 +979,8 @@ payloads you write too (see [Your tables and the typed client](#your-tables-and-
 
 The SDK logs nothing by default. Pass a `Logger` (`debug`, `info`, `warn` and `error` methods) to
 see its diagnostics; `ConsoleLogger` writes to the console:
+
+<!-- live -->
 
 ```typescript
 import { ConsoleLogger, DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";

@@ -1,5 +1,6 @@
 /**
- * Sign-in settings: the environment URL and the Microsoft Entra app registration to sign in with.
+ * Sign-in settings: the environment URL (optional) and the Microsoft Entra app registration to
+ * sign in with.
  *
  * Visitors type them on the sign-in page; they are kept in `localStorage` (none of them is a
  * secret). The `VITE_*` variables in `.env` (see `.env.example`), or the deploy workflow's
@@ -9,7 +10,10 @@
 import { readLocal, writeLocal } from "./lib/storage";
 
 export interface ConnectionSettings {
-  /** Dataverse environment URL, e.g. `https://contoso.crm.dynamics.com`. */
+  /**
+   * Dataverse environment URL, e.g. `https://contoso.crm.dynamics.com`. Empty to pick one of the
+   * visitor's environments after signing in.
+   */
   environmentUrl: string;
   /** Application (client) id of a single-page-application app registration. */
   clientId: string;
@@ -76,28 +80,39 @@ export function writeConnectionSettings(settings: ConnectionSettings): void {
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * The problems with `settings`, by field; empty when sign-in can start. The environment must be a
+ * What is wrong with an environment URL, or `undefined` when it can be used. It must be a
  * public-cloud Dataverse URL: the site's Content-Security-Policy (`staticwebapp.config.json`)
- * allows requests to `*.dynamics.com` only.
+ * allows requests to `*.dynamics.com` only. A sovereign cloud needs its hosts added there and here.
+ */
+export function validateEnvironmentUrl(environmentUrl: string): string | undefined {
+  let url: URL | undefined;
+  try {
+    url = new URL(environmentUrl.trim());
+  } catch {
+    // Reported below.
+  }
+  if (!environmentUrl.trim()) return "Enter your environment's URL.";
+  if (!url || url.protocol !== "https:")
+    return "Enter an https:// URL, such as https://contoso.crm.dynamics.com.";
+  if (!/\.dynamics\.com$/i.test(url.hostname))
+    return "Enter a Dataverse environment URL ending in .dynamics.com, such as https://contoso.crm.dynamics.com.";
+  return undefined;
+}
+
+/**
+ * The problems with `settings`, by field; empty when sign-in can start. The environment URL is
+ * optional: without it, the visitor picks one of their environments after signing in (from the
+ * Commercial cloud's Global Discovery Service, `globaldisco.crm.dynamics.com`, also covered by
+ * the `*.dynamics.com` of the Content-Security-Policy). When given, see `validateEnvironmentUrl()`.
  */
 export function validateSettings(
   settings: ConnectionSettings
 ): Partial<Record<keyof ConnectionSettings, string>> {
   const errors: Partial<Record<keyof ConnectionSettings, string>> = {};
-  let url: URL | undefined;
-  try {
-    url = new URL(settings.environmentUrl.trim());
-  } catch {
-    // Reported below.
-  }
-  if (!settings.environmentUrl.trim()) {
-    errors.environmentUrl = "Enter your environment's URL.";
-  } else if (!url || url.protocol !== "https:") {
-    errors.environmentUrl = "Enter an https:// URL, such as https://contoso.crm.dynamics.com.";
-  } else if (!/\.dynamics\.com$/i.test(url.hostname)) {
-    errors.environmentUrl =
-      "Enter a Dataverse environment URL ending in .dynamics.com, such as https://contoso.crm.dynamics.com.";
-  }
+  const environmentUrlError = settings.environmentUrl.trim()
+    ? validateEnvironmentUrl(settings.environmentUrl)
+    : undefined;
+  if (environmentUrlError) errors.environmentUrl = environmentUrlError;
   if (!settings.clientId.trim()) {
     errors.clientId = "Enter the application (client) id of your app registration.";
   } else if (!GUID.test(settings.clientId.trim())) {

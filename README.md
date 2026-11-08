@@ -108,6 +108,8 @@ npm install @mohsinonxrm/dataverse-sdk-actions @mohsinonxrm/dataverse-sdk-functi
 
 ### Node.js (client credentials)
 
+<!-- live -->
+
 ```typescript
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
@@ -211,6 +213,8 @@ step below.
 
 ### 1. `client.api()`: queries and CRUD
 
+<!-- live -->
+
 ```typescript
 import { Prefer } from "@mohsinonxrm/dataverse-sdk-core";
 
@@ -264,6 +268,8 @@ duplicate detection, `@odata.bind`, impersonation, FetchXML, saved views, errors
 Actions (POST, with side effects) and functions (GET) are classes that `client.execute()` runs.
 Parameters go in one object, by their Web API names; the result is typed.
 
+<!-- live -->
+
 ```typescript
 import { CreateMultipleAction, WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
 import { RetrieveTotalRecordCountFunction } from "@mohsinonxrm/dataverse-sdk-functions";
@@ -300,6 +306,8 @@ console.log(counts.EntityRecordCountCollection);
 
 The `$filter` query functions (`LastXDays`, `Under`, `In`, `EqualUserId`, …) aren't operations
 you execute: `queryFunctions` writes them as filter expressions.
+
+<!-- live -->
 
 ```typescript
 import { odata } from "@mohsinonxrm/dataverse-sdk-core";
@@ -359,6 +367,8 @@ rules, form contexts for model-driven form scripts and incremental generation.
 With `"typedClient": true`, `createTypedClient()` gives a typed request builder per table, keyed
 by entity set name. Columns, create and update payloads are checked against your tables:
 
+<!-- live -->
+
 ```typescript
 import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { createTypedClient } from "./generated/client.js";
@@ -376,6 +386,8 @@ console.log(account.name, active.length);
 ```
 
 Without the typed client, the generated types work with `client.api()` directly:
+
+<!-- live -->
 
 ```typescript
 import { formatEntityForWrite } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
@@ -403,6 +415,8 @@ One short example each; the linked sections have the details.
 
 Read only what changed since the last sync, with a delta link
 ([core README](./packages/dataverse-sdk-core/README.md#change-tracking)):
+
+<!-- live -->
 
 ```typescript
 import { isDeltaLinkExpired } from "@mohsinonxrm/dataverse-sdk-core";
@@ -434,6 +448,8 @@ try {
 `createMultiple()` and `updateMultiple()` chunk the records, send `CreateMultiple` /
 `UpdateMultiple` (or `$batch` for tables without them) and return a result per record
 ([batch README](./packages/dataverse-sdk-batch/README.md#bulk-create-and-update)):
+
+<!-- live -->
 
 ```typescript
 import { createMultiple, getBulkOperationSupport } from "@mohsinonxrm/dataverse-sdk-batch";
@@ -473,6 +489,8 @@ Retry with backoff, `Retry-After` and adaptive concurrency are on by default. Ad
 the circuit breaker, the bulkhead and fault injection are opt-in middleware
 ([core README](./packages/dataverse-sdk-core/README.md#resiliency-features)):
 
+<!-- live -->
+
 ```typescript
 import {
   AdaptiveThrottlingMiddleware,
@@ -510,6 +528,8 @@ A telemetry adapter records a dependency per request attempt and sends its W3C `
 Dataverse; throttling, retries, concurrency waits and `$batch` results arrive as events
 (`dataverse.throttle`, `dataverse.retry`, …). See the
 [core README](./packages/dataverse-sdk-core/README.md#telemetryclient):
+
+<!-- live -->
 
 ```typescript
 import { trace } from "@opentelemetry/api";
@@ -563,6 +583,8 @@ await metadata.createAttributeDefinition(
 
 ### $batch
 
+<!-- live -->
+
 ```typescript
 import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 
@@ -574,12 +596,14 @@ batch.addRequest("get-accounts", "GET", "/accounts?$top=5");
 // Transactional change set
 batch.beginChangeset();
 
-// Create account; its id is the Content-ID, so later requests can refer to it as $create-account
+// Create account; its id is the Content-ID, so later requests can refer to it as $create-account.
+// No Prefer: return=representation on a request others refer to: Dataverse then doesn't
+// register its Content-ID.
 batch.addRequest(
   "create-account",
   "POST",
   "/accounts",
-  { "Content-Type": "application/json", Prefer: "return=representation" },
+  { "Content-Type": "application/json" },
   { name: "Parent Account" }
 );
 
@@ -717,6 +741,8 @@ Opt-in, added with the `middleware` option: `AdaptiveThrottlingMiddleware`,
 
 ### Custom Middleware
 
+<!-- live -->
+
 ```typescript
 import { DataverseClient, type Middleware } from "@mohsinonxrm/dataverse-sdk-core";
 
@@ -774,6 +800,8 @@ In a browser, use `@mohsinonxrm/dataverse-sdk-appinsights/browser`, on
 `@microsoft/applicationinsights-web`.
 
 ### OpenTelemetry
+
+<!-- live -->
 
 ```typescript
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";

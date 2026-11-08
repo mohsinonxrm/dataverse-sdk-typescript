@@ -19,6 +19,7 @@ import {
   Tooltip,
 } from "@fluentui/react-components";
 import {
+  ArrowSwap20Regular,
   Database20Regular,
   Globe20Regular,
   SignOut20Regular,
@@ -91,7 +92,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ navOpen, onToggleNav }: AppHeaderProps) {
   const styles = useStyles();
-  const { signOut } = useAuth();
+  const { signOut, switchEnvironment } = useAuth();
   const { session, connection } = useSdkContext();
   const { mode, toggle } = useThemeMode();
   const compact = useMediaQuery("(max-width: 47.99em)");
@@ -153,6 +154,9 @@ export function AppHeader({ navOpen, onToggleNav }: AppHeaderProps) {
               <MenuGroupHeader>{session.user.username}</MenuGroupHeader>
               <MenuItem disabled icon={<Globe20Regular />}>
                 {host}
+              </MenuItem>
+              <MenuItem icon={<ArrowSwap20Regular />} onClick={switchEnvironment}>
+                Switch environment
               </MenuItem>
             </MenuGroup>
             <MenuDivider />
