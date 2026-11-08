@@ -171,7 +171,24 @@ check-changeset:
   - Skips release-prep (chore/release-*) and forward-merge (merge/*) PRs
 release metadata (scripts/check-release.mjs):
   - Every published package has one version, and each CHANGELOG's newest section is it
+API reports (pnpm api:check, scripts/check-api-changeset.mjs):
+  - Each packages/<pkg>/etc/<name>.api.md matches the build
+  - On a PR, a changed report needs an added changeset that names the package
 ```
+
+### API Reports and Changesets
+
+The committed API Extractor reports (`packages/<pkg>/etc/<name>.api.md`, all published packages
+but the generated `actions`, `functions` and `messages`) record each package's public API. If
+your change alters one:
+
+1. Run `pnpm build && pnpm api:update` and commit the updated report.
+2. Add a changeset naming that package. The report diff tells you the bump: **major** if the
+   change can break a caller (an export removed or renamed, a type narrowed or widened the wrong
+   way, a new required option), **minor** if it only adds.
+
+CI checks that a changeset names the package; whether the bump is right is checked in review.
+See [CONTRIBUTING.md](../CONTRIBUTING.md#api-reports).
 
 ### Release Automation
 

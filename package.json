@@ -33,12 +33,15 @@
     "test:integration": "pnpm --filter @mohsinonxrm/dataverse-sdk-integration-tests test:integration",
     "test:browser": "pnpm --filter @mohsinonxrm/dataverse-sdk-browser-tests test:browser",
     "check:packages": "node scripts/check-packages.mjs && node scripts/check-require.mjs",
+    "api:check": "node scripts/api-report.mjs",
+    "api:update": "node scripts/api-report.mjs --update",
     "check:size": "node scripts/check-bundle-size.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
     "@changesets/cli": "^2.31.1",
     "@eslint/js": "^9.39.5",
+    "@microsoft/api-extractor": "7.59.4",
     "@typescript-eslint/eslint-plugin": "^8.72.1",
     "@typescript-eslint/parser": "^8.72.1",
     "@vitest/coverage-v8": "^4.1.12",

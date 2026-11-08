@@ -115,6 +115,8 @@ jobs:
       - run: pnpm test
       - name: Check package exports, types and require() (publint, attw)
         run: pnpm check:packages
+      - name: API reports match the build
+        run: pnpm api:check
       - name: Bundle-size budget
         run: pnpm check:size
       - name: Install Chromium for Playwright

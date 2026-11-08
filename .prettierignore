@@ -24,6 +24,9 @@ packages/dataverse-sdk-actions/src/index.ts
 packages/dataverse-sdk-functions/src/index.ts
 packages/dataverse-sdk-messages/src/index.ts
 
+# API reports (written by API Extractor: pnpm api:update)
+packages/*/etc/*.api.md
+
 # Lockfiles
 pnpm-lock.yaml
 package-lock.json
