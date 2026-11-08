@@ -14,6 +14,7 @@ export type {
   UsernamePasswordFlowOptions,
   SilentFlowOptions,
 } from "./MsalNodeTokenProvider.js";
+export { MsalNodeAuthenticationError } from "./msalErrors.js";
 
 // Re-export commonly used MSAL types for convenience
 export type {

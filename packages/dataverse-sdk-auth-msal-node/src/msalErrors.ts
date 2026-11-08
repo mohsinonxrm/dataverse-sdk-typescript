@@ -56,20 +56,62 @@ export function isConfidentialClientApplication(app: unknown): boolean {
   return hasMethod(app, "acquireTokenByClientCredential");
 }
 
+/** True when `app` has the username/password (ROPC) flow, which MSAL Node has deprecated. */
+export function hasUsernamePasswordFlow(app: unknown): boolean {
+  return hasMethod(app, "acquireTokenByUsernamePassword");
+}
+
+function stringField(error: unknown, field: string): string | undefined {
+  if (typeof error !== "object" || error === null) {
+    return undefined;
+  }
+  const value = (error as Record<string, unknown>)[field];
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
+
 /**
- * Wraps an MSAL failure as `DataverseAuthenticationError` (`name` `"TokenAcquisitionFailed"`),
- * keeping the MSAL error as `cause` so its `errorCode`, `subError` and `correlationId` stay
- * available.
+ * A `DataverseAuthenticationError` that keeps what MSAL said: its `errorCode`, `subError`,
+ * `correlationId` and `errorNo`, and the original error as `cause`. Same fields as the browser
+ * package's `MsalBrowserAuthenticationError`.
+ *
+ * It is still `instanceof DataverseAuthenticationError`, so existing handling keeps working.
+ */
+export class MsalNodeAuthenticationError extends DataverseAuthenticationError {
+  /** MSAL's `errorCode` when there is one (same value as `errorCode`). */
+  readonly code?: string;
+  /** MSAL `errorCode`, e.g. `invalid_grant`, `invalid_client` or `authorization_pending`. */
+  readonly errorCode?: string;
+  /** MSAL `subError`, e.g. `basic_action` or `consent_required`. */
+  readonly subError?: string;
+  /** Correlation id of the MSAL request, for support. */
+  readonly correlationId?: string;
+  /** Entra ID error number from a server error, e.g. `7000215` for AADSTS7000215. */
+  readonly errorNo?: string;
+
+  constructor(message: string, cause?: unknown) {
+    super(message, cause instanceof Error ? cause : undefined);
+    Object.setPrototypeOf(this, MsalNodeAuthenticationError.prototype);
+    this.name = "TokenAcquisitionFailed";
+    this.errorCode = stringField(cause, "errorCode");
+    this.subError = stringField(cause, "subError");
+    this.correlationId = stringField(cause, "correlationId");
+    this.errorNo = stringField(cause, "errorNo");
+    this.code = this.errorCode;
+    if (cause !== undefined && !(cause instanceof Error)) {
+      this.cause = cause;
+    }
+  }
+}
+
+/**
+ * Wraps an MSAL failure as `MsalNodeAuthenticationError` (`name` `"TokenAcquisitionFailed"`),
+ * with MSAL's `errorCode`, `subError`, `correlationId` and `errorNo` on the error and the MSAL
+ * error as `cause`.
  */
 export function tokenAcquisitionFailed(
   error: unknown,
   details?: string
-): DataverseAuthenticationError {
+): MsalNodeAuthenticationError {
   const reason = details ?? (error instanceof Error ? error.message : String(error));
-  const wrapped = new DataverseAuthenticationError(
-    `Failed to acquire access token: ${reason}`,
-    error instanceof Error ? error : undefined
-  );
-  wrapped.name = "TokenAcquisitionFailed";
-  return wrapped;
+  return new MsalNodeAuthenticationError(`Failed to acquire access token: ${reason}`, error);
 }
