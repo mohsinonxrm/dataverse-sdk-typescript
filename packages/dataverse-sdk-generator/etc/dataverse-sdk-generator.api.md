@@ -116,6 +116,7 @@ export interface DataverseGenConfig {
     auth?: DataverseGenAuthConfig;
     entities?: string[];
     environmentUrl: string;
+    formContext?: boolean;
     functions?: string[];
     output?: {
         outputRoot?: string;

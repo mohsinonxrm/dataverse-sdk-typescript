@@ -7,17 +7,14 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import ts from "typescript";
-import { generateCode } from "@mohsinonxrm/dataverse-sdk-generator";
+import { type DataverseGenConfig, generateCode } from "@mohsinonxrm/dataverse-sdk-generator";
 import { liveClient, orgUrl } from "./env.js";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const scratchRoot = path.join(packageRoot, "node_modules", ".cache", "live-generated");
 
-export interface GenerateSelection {
-  entities?: string[];
-  actions?: string[];
-  functions?: string[];
-}
+/** What to generate: the tables, actions and functions, and options such as `formContext`. */
+export type GenerateSelection = Omit<DataverseGenConfig, "environmentUrl" | "output" | "auth">;
 
 const outputDirs: string[] = [];
 

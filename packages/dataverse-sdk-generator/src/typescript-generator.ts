@@ -34,7 +34,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** The package generated code imports its base types from. */
 export const RUNTIME_PACKAGE = "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
-type Folder = "entities" | "enums" | "actions" | "functions" | "complextypes";
+type Folder = "entities" | "enums" | "actions" | "functions" | "complextypes" | "forms";
+
+/** The names of an entity's form types (`formContext`, #347). */
+interface FormNames {
+  attributes: string;
+  controls: string;
+  context: string;
+}
 
 // Reserved words that cannot name a type, a class or a variable. Contextual keywords such as
 // `type` or `of` are valid identifiers and are not listed.
@@ -190,6 +197,7 @@ export class TypescriptGenerator {
   private strictNulls: boolean;
   private outputNamesCache?: Map<string, string>;
   private writeTypeNamesCache?: Map<EntityType, { create: string; update: string }>;
+  private formNamesCache?: Map<EntityType, FormNames>;
   private actionBodyTablesCache?: ActionBodyTables;
   private functionParameterTablesCache?: ActionBodyTables;
 
@@ -212,6 +220,7 @@ export class TypescriptGenerator {
     await this.outputFunctions();
     await this.outputComplexTypes();
     await this.outputMetadata();
+    if (this.config.formContext === true) await this.outputForms();
 
     if (this.config.output?.generateIndex !== false) {
       await this.outputIndexFiles();
@@ -292,6 +301,160 @@ export class TypescriptGenerator {
     }
     this.writeTypeNamesCache = names;
     return names;
+  }
+
+  /**
+   * With `formContext`, the names of each entity's form types (#347): `<Entity>Attributes`,
+   * `<Entity>Controls` and `<Entity>FormContext`, with a `_2` suffix when another generated type
+   * has that name. Empty without the option.
+   */
+  private get formNames(): Map<EntityType, FormNames> {
+    if (this.formNamesCache) return this.formNamesCache;
+    const names = new Map<EntityType, FormNames>();
+    this.formNamesCache = names;
+    if (this.config.formContext !== true) return names;
+    const taken = new Set<string>([
+      ...this.model.EntityTypes.flatMap((e) => {
+        const typeName = this.entityTypeName(e);
+        return [typeName, `${typeName}Metadata`];
+      }),
+      ...this.model.EnumTypes.map((e) => toSafeIdentifier(e.Name)),
+      ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
+      ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
+    ]);
+    const unique = (stem: string): string => {
+      let name = stem;
+      for (let i = 2; taken.has(name); i++) name = `${stem}_${String(i)}`;
+      taken.add(name);
+      return name;
+    };
+    for (const entity of this.model.EntityTypes) {
+      const typeName = this.entityTypeName(entity);
+      names.set(entity, {
+        attributes: unique(`${typeName}Attributes`),
+        controls: unique(`${typeName}Controls`),
+        context: unique(`${typeName}FormContext`),
+      });
+    }
+    return names;
+  }
+
+  /**
+   * With `formContext` (#347): a `forms/<Entity>Form.ts` per table, with the table's columns
+   * typed as Xrm attributes and controls (`@types/xrm`) and a form context whose
+   * `getAttribute()` / `getControl()` take a column's logical name.
+   */
+  private async outputForms(): Promise<void> {
+    const dir = path.join(this.outputRoot, "forms");
+    await fs.mkdir(dir, { recursive: true });
+    const template = await this.loadTemplate("form.ejs");
+
+    for (const entity of this.model.EntityTypes) {
+      const imports = new ImportCollector();
+      const typeName = this.entityTypeName(entity);
+      const names = this.formNames.get(entity);
+      if (!names) continue;
+      const columns = this.formColumns(entity, imports);
+      const body = ejs.render(template, {
+        ...this.helpers("forms", imports),
+        entity,
+        columns,
+        attributesName: names.attributes,
+        controlsName: names.controls,
+        contextName: names.context,
+        sample: entity.PrimaryNameAttribute ?? columns.at(0)?.name ?? "name",
+      });
+      // A triple-slash directive is read only at the top of the file, before the imports
+      await this.writeFile(
+        dir,
+        `${typeName}Form`,
+        imports,
+        body,
+        '/// <reference types="xrm" />\n\n'
+      );
+    }
+  }
+
+  /**
+   * The columns a form can show and their Xrm types: text, number, date, two-option, choice
+   * (typed with the column's enum when it has one), choices and lookup columns. A lookup is keyed
+   * by its logical name (`contoso_parentaccountid`), as the form names it. Primary keys, the
+   * read-only name columns beside a lookup or choice (`AttributeOf`), and other virtual columns
+   * aren't on forms.
+   */
+  private formColumns(
+    entity: EntityType,
+    imports: ImportCollector
+  ): Array<{ name: string; attribute: string; control: string; doc: string }> {
+    const columns: Array<{ name: string; attribute: string; control: string; doc: string }> = [];
+    const names = new Set<string>();
+    const add = (name: string, attribute: string, control: string, doc: string) => {
+      if (names.has(name)) return;
+      names.add(name);
+      columns.push({ name, attribute, control, doc });
+    };
+    const enumOf = (prop: PropertyType): string => {
+      const enumType = prop.EnumName
+        ? this.model.EnumTypes.find((e) => e.Name === prop.EnumName)
+        : undefined;
+      return enumType ? this.resolveReference(enumType.Name, "forms", imports) : "number";
+    };
+
+    for (const prop of entity.Properties) {
+      if (prop.AttributeOf || prop.Name.startsWith("_")) continue;
+      const doc = [prop.Description, prop.DisplayName, prop.LogicalName].find((t) => t) ?? "";
+      const kind = prop.IsMultiSelect === true ? "MultiSelect" : (prop.AttributeType ?? "");
+      switch (kind) {
+        case "String":
+        case "Memo":
+          add(prop.Name, "Xrm.Attributes.StringAttribute", "Xrm.Controls.StringControl", doc);
+          break;
+        case "Integer":
+        case "BigInt":
+        case "Decimal":
+        case "Double":
+        case "Money":
+          add(prop.Name, "Xrm.Attributes.NumberAttribute", "Xrm.Controls.NumberControl", doc);
+          break;
+        case "DateTime":
+          add(prop.Name, "Xrm.Attributes.DateAttribute", "Xrm.Controls.DateControl", doc);
+          break;
+        case "Boolean":
+          add(prop.Name, "Xrm.Attributes.BooleanAttribute", "Xrm.Controls.StandardControl", doc);
+          break;
+        case "Picklist":
+        case "State":
+        case "Status":
+          add(
+            prop.Name,
+            `Xrm.Attributes.OptionSetAttribute<${enumOf(prop)}>`,
+            "Xrm.Controls.OptionSetControl",
+            doc
+          );
+          break;
+        case "MultiSelect":
+          add(
+            prop.Name,
+            `Xrm.Attributes.MultiSelectOptionSetAttribute<${enumOf(prop)}>`,
+            "Xrm.Controls.MultiSelectOptionSetControl",
+            doc
+          );
+          break;
+        default:
+          break;
+      }
+    }
+    for (const nav of entity.NavigationProperties) {
+      if (nav.LookupAttribute === undefined) continue;
+      const targets = nav.LookupTargets?.length ? nav.LookupTargets : [nav.TargetType];
+      add(
+        nav.LookupAttribute,
+        "Xrm.Attributes.LookupAttribute",
+        "Xrm.Controls.LookupControl",
+        `Lookup to ${targets.join(", ")}`
+      );
+    }
+    return columns;
   }
 
   /**
@@ -553,8 +716,14 @@ export * from './actions/index.js';
 export * from './functions/index.js';
 export * from './complextypes/index.js';
 export * from './metadata${suffix}.js';
-`;
+${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}`;
     await fs.writeFile(rootIndexPath, rootIndexContent, "utf-8");
+    if (this.config.formContext === true) {
+      await this.outputFolderIndex(
+        "forms",
+        this.model.EntityTypes.map((e) => `${this.entityTypeName(e)}Form`)
+      );
+    }
 
     await this.outputFolderIndex(
       "entities",
@@ -935,6 +1104,7 @@ export * from './metadata${suffix}.js';
       ...this.model.EnumTypes.map((e) => toSafeIdentifier(e.Name)),
       ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
       ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
+      ...[...this.formNames.values()].flatMap((n) => [n.attributes, n.controls, n.context]),
     ]);
     for (const type of this.model.ComplexTypes) {
       if (!returned.has(type.Name)) continue;
@@ -1073,10 +1243,12 @@ export * from './metadata${suffix}.js';
     dir: string,
     name: string,
     imports: ImportCollector,
-    body: string
+    body: string,
+    header = ""
   ): Promise<void> {
     const importBlock = imports.render();
-    const content = importBlock ? `${importBlock}\n\n${body.trimStart()}` : body.trimStart();
+    const content =
+      header + (importBlock ? `${importBlock}\n\n${body.trimStart()}` : body.trimStart());
     await fs.writeFile(path.join(dir, `${name}${this.fileSuffix}.ts`), content, "utf-8");
   }
 

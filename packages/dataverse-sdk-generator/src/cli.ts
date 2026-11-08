@@ -172,6 +172,10 @@ program
         errors.push("strictNulls must be true or false");
       }
 
+      if (config.formContext !== undefined && typeof config.formContext !== "boolean") {
+        errors.push("formContext must be true or false");
+      }
+
       if (config.auth) {
         const flow = config.auth.flow;
         if (flow !== "deviceCode" && flow !== "clientCredentials" && flow !== "clientSecret") {
@@ -232,6 +236,7 @@ program
         chalk.cyan(`  Output: ${config.output?.outputRoot ?? DEFAULT_CONFIG.output?.outputRoot}`)
       );
       console.log(chalk.cyan(`  Strict nulls: ${config.strictNulls === true ? "on" : "off"}`));
+      console.log(chalk.cyan(`  Form contexts: ${config.formContext === true ? "on" : "off"}`));
     } catch (error: unknown) {
       console.log(chalk.red("✗ Validation failed"));
       console.error(chalk.red(errorMessage(error)));

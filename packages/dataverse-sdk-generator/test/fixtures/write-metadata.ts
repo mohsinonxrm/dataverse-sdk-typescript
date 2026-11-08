@@ -26,6 +26,8 @@ export const WRITE_EDMX = `<?xml version="1.0" encoding="utf-8"?>
         <Property Name="statecode" Type="Edm.Int32" />
         <Property Name="createdon" Type="Edm.DateTimeOffset" />
         <Property Name="importsequencenumber" Type="Edm.Int32" />
+        <Property Name="creditonhold" Type="Edm.Boolean" />
+        <Property Name="contoso_channels" Type="Edm.String" Unicode="false" />
         <Property Name="versionnumber" Type="Edm.Int64" />
         <Property Name="_primarycontactid_value" Type="Edm.Guid" />
         <Property Name="_contoso_parentaccountid_value" Type="Edm.Guid" />
@@ -146,6 +148,19 @@ export const WRITE_ENTITY_METADATA: Record<string, RetrieveMetadataChangesRespon
           // Set on create only (a data import's sequence number)
           column("importsequencenumber", "ImportSequenceNumber", "Integer", { update: false }),
           column("versionnumber", "VersionNumber", "BigInt", { create: false, update: false }),
+          column("creditonhold", "CreditOnHold", "Boolean"),
+          // A choices column: sent as "1,2"
+          column("contoso_channels", "contoso_Channels", "Virtual", {
+            AttributeTypeName: { Value: "MultiSelectPicklistType" },
+            OptionSet: {
+              Name: "contoso_channel",
+              IsGlobal: false,
+              Options: [
+                { Value: 1, Label: label("Email") },
+                { Value: 2, Label: label("Phone") },
+              ],
+            },
+          }),
           column("primarycontactid", "PrimaryContactId", "Lookup", { Targets: ["contact"] }),
           // The "name" column of a lookup: read-only, beside the lookup
           column("primarycontactidname", "PrimaryContactIdName", "String", {
