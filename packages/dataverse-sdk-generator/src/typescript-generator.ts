@@ -41,6 +41,13 @@ import type {
 /** The package generated code imports its base types from. */
 export const RUNTIME_PACKAGE = "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
+/** The client package; the typed client (#312) takes its `DataverseClient`. */
+const CORE_PACKAGE = "@mohsinonxrm/dataverse-sdk-core";
+
+/** The typed client's interface and factory (`typedClient`, #312). */
+const TYPED_CLIENT = "TypedDataverseClient";
+const TYPED_CLIENT_FACTORY = "createTypedClient";
+
 type Folder = "entities" | "enums" | "actions" | "functions" | "complextypes" | "forms";
 
 /** The names of an entity's form types (`formContext`, #347). */
@@ -205,6 +212,7 @@ export class TypescriptGenerator {
   private outputNamesCache?: Map<string, string>;
   private writeTypeNamesCache?: Map<EntityType, { create: string; update: string }>;
   private formNamesCache?: Map<EntityType, FormNames>;
+  private columnTypeNamesCache?: Map<EntityType, string>;
   /** Every file this run wrote or kept, relative to the output folder, with `/`. */
   private readonly written = new Set<string>();
   /** Incremental generation: the tables whose files are kept as they are. */
@@ -262,6 +270,7 @@ export class TypescriptGenerator {
     await this.outputComplexTypes();
     await this.outputMetadata();
     if (this.config.formContext === true) await this.outputForms();
+    if (this.config.typedClient === true) await this.outputClient();
 
     if (this.config.output?.generateIndex !== false) {
       await this.outputIndexFiles();
@@ -290,6 +299,7 @@ export class TypescriptGenerator {
       fileSuffix: this.fileSuffix,
       strictNulls: this.strictNulls,
       formContext: this.config.formContext === true,
+      typedClient: this.config.typedClient === true,
       tables: this.model.EntityTypes.map((e) => [e.Name, e.LogicalName, this.entityTypeName(e)]),
       enums: this.model.EnumTypes.map((e) => e.Name),
       complexTypes: this.model.ComplexTypes.map((c) => c.Name),
@@ -416,6 +426,82 @@ export class TypescriptGenerator {
       });
     }
     return names;
+  }
+
+  /**
+   * With `typedClient`, the name of each entity's column union (#312): `<Entity>Column`, with a
+   * `_2` suffix when another generated type has that name. Empty without the option.
+   */
+  private get columnTypeNames(): Map<EntityType, string> {
+    if (this.columnTypeNamesCache) return this.columnTypeNamesCache;
+    const names = new Map<EntityType, string>();
+    this.columnTypeNamesCache = names;
+    if (this.config.typedClient !== true) return names;
+    const taken = new Set<string>([
+      ...this.model.EntityTypes.flatMap((e) => {
+        const typeName = this.entityTypeName(e);
+        return [typeName, `${typeName}Metadata`];
+      }),
+      ...this.model.EnumTypes.map((e) => toSafeIdentifier(e.Name)),
+      ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
+      ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
+      ...[...this.formNames.values()].flatMap((n) => [n.attributes, n.controls, n.context]),
+      TYPED_CLIENT,
+      TYPED_CLIENT_FACTORY,
+    ]);
+    for (const entity of this.model.EntityTypes) {
+      const stem = `${this.entityTypeName(entity)}Column`;
+      let name = stem;
+      for (let i = 2; taken.has(name); i++) name = `${stem}_${String(i)}`;
+      taken.add(name);
+      names.set(entity, name);
+    }
+    return names;
+  }
+
+  /**
+   * With `typedClient` (#312): `client.ts`, with `createTypedClient(client)` and one
+   * `EntitySetClient` per generated table, typed by the table's interface, create and update
+   * types and column union.
+   */
+  private async outputClient(): Promise<void> {
+    const imports = new ImportCollector();
+    imports.type("DataverseClient", CORE_PACKAGE);
+    imports.value("EntitySetClient", RUNTIME_PACKAGE);
+    imports.value("EntityMetadataCache", `./metadata${this.fileSuffix}.js`);
+    const tables = this.model.EntityTypes.map((entity) => {
+      const typeName = this.entityTypeName(entity);
+      const module = `./entities/${typeName}${this.fileSuffix}.js`;
+      const write = this.writeTypeNames.get(entity) ?? {
+        create: `${typeName}Create`,
+        update: `${typeName}Update`,
+      };
+      const metadataName = `${typeName}Metadata`;
+      imports.type(typeName, module);
+      imports.type(write.create, module);
+      imports.type(write.update, module);
+      imports.value(metadataName, module);
+      return {
+        entity,
+        typeName,
+        metadataName,
+        createName: write.create,
+        updateName: write.update,
+        columnName: this.columnTypeNames.get(entity) ?? `${typeName}Column`,
+        columns: [...new Set(entity.Properties.map((p) => p.Name))],
+      };
+    });
+    const first = tables.at(0);
+    const template = await this.loadTemplate("client.ejs");
+    const body = ejs.render(template, {
+      ...this.helpers("entities", imports),
+      tables,
+      clientName: TYPED_CLIENT,
+      factoryName: TYPED_CLIENT_FACTORY,
+      sample: first?.entity.EntitySetName ?? "accounts",
+      sampleColumn: first?.entity.PrimaryNameAttribute ?? first?.columns.at(0) ?? "name",
+    });
+    await this.writeFile(this.outputRoot, "client", imports, body);
   }
 
   /**
@@ -793,7 +879,9 @@ export * from './actions/index.js';
 export * from './functions/index.js';
 export * from './complextypes/index.js';
 export * from './metadata${suffix}.js';
-${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}`;
+${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}${
+      this.config.typedClient === true ? `export * from './client${suffix}.js';\n` : ""
+    }`;
     await this.emit(rootIndexPath, rootIndexContent);
     if (this.config.formContext === true) {
       await this.outputFolderIndex(
@@ -1182,6 +1270,8 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
       ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
       ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
       ...[...this.formNames.values()].flatMap((n) => [n.attributes, n.controls, n.context]),
+      ...this.columnTypeNames.values(),
+      ...(this.config.typedClient === true ? [TYPED_CLIENT, TYPED_CLIENT_FACTORY] : []),
     ]);
     for (const type of this.model.ComplexTypes) {
       if (!returned.has(type.Name)) continue;

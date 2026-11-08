@@ -249,6 +249,14 @@ export function isEntity(value: unknown): value is IEntity {
 export { formatParameterAlias, formatRecordPath, type ParameterKind } from "./parameters.js";
 
 export {
+  EntityRecordClient,
+  EntitySetClient,
+  type GetRecordOptions,
+  type ListRecordsOptions,
+  type WriteRecordOptions,
+} from "./entity-set.js";
+
+export {
   validateEntity,
   type ValidateEntityOptions,
   type ValidationIssue,

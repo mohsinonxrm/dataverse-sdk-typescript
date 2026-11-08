@@ -243,6 +243,9 @@ interface DataverseGenConfig {
   /** Typed Xrm form contexts for model-driven form scripts (default: false; see Form contexts) */
   formContext?: boolean;
 
+  /** Typed request builders per entity set: createTypedClient() (default: false; see Typed client) */
+  typedClient?: boolean;
+
   /** How `generate` signs in (see Authentication) */
   auth?: {
     flow: "deviceCode" | "clientCredentials" | "clientSecret";
@@ -427,6 +430,56 @@ they need, so a template never writes import lines. The data a template gets can
 versions of the generator: re-eject after an upgrade and compare. With incremental generation, a
 template change regenerates every table.
 
+### Typed client
+
+`"typedClient": true` generates `client.ts` with `createTypedClient(client)`: one typed request
+builder per generated table, keyed by entity set name, in the style of the Graph (Kiota) SDKs. The
+builders are entities-runtime's `EntitySetClient`, a thin layer over core's request builder, typed
+by the table's interface, its create and update types, and a union of its columns
+(`AccountColumn`) for `select`. See
+[ADR 0009](../../docs/adr/0009-typed-request-builders.md) for the design.
+
+<!-- no-check -->
+
+```typescript
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { createTypedClient } from "./generated/client.js";
+
+const typed = createTypedClient(new DataverseClient({ baseUrl, tokenProvider }));
+
+const id = await typed.accounts.create({
+  name: "Contoso",
+  primarycontactid: createEntityReference("contact", contactId), // sent as @odata.bind
+});
+const account = await typed.accounts.byId(id).get({ select: ["name", "creditlimit"] }); // Account
+const active = await typed.accounts.list({
+  select: ["name"],
+  filter: "statecode eq 0",
+  orderBy: ["name asc"],
+  top: 50, // or maxItems; without either, list() follows every @odata.nextLink
+});
+await typed.accounts.byId(id).update({ creditlimit: 5000, primarycontactid: null }); // If-Match: *
+await typed.accounts.byId({ accountnumber: "A-1" }).delete({ etag }); // alternate key, concurrency
+
+typed.accounts.byId(id).get({ select: ["nmae"] }); // error: not a column of account
+typed.accounts.create({ createdon: "…" }); // error: not in AccountCreate
+const count = await typed.accounts.query().count().top(0).get(); // core's builder for the rest
+```
+
+| Method                                                                 | Request                                                          |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `typed.<set>.byId(key).get({ select, expand })`                        | `GET <set>(<key>)`: the record (`Account`); 404 rejects          |
+| `typed.<set>.list({ select, expand, filter, orderBy, top, maxItems })` | `GET <set>`, every page unless `top` / `maxItems` stops it       |
+| `typed.<set>.create(entity)`                                           | `POST <set>` with `formatEntityForWrite()`; resolves the new id  |
+| `typed.<set>.byId(key).update(entity, { etag })`                       | `PATCH` with `If-Match: *` (or the etag): never creates a record |
+| `typed.<set>.byId(key).delete({ etag })`                               | `DELETE`, with `If-Match` for an etag                            |
+| `typed.<set>.query()` / `.byId(key).request()`                         | core's `DataverseRequestBuilder` for the set or the record       |
+
+`key` is a GUID or an alternate key object. Every method takes core's request options
+(`signal`, `headers`, `prefer`, `timeoutMs`, …) last. `client.ts` imports every generated table's
+metadata, so in all-tables mode it's large; it's off by default.
+
 ### Form contexts
 
 `"formContext": true` generates `forms/<Entity>Form.ts` for each table, for model-driven form
@@ -525,6 +578,7 @@ generated/
 ├── forms/              # with "formContext": true
 │   ├── AccountForm.ts
 │   └── index.ts
+├── client.ts           # with "typedClient": true
 ├── internal/
 │   └── actionBody.ts   # bodyValue(): enum names and entities in action bodies (not exported)
 ├── metadata.ts
@@ -1270,6 +1324,7 @@ export function getLogicalName(schemaName: string): string | undefined {
 - ✅ Incremental generation (`"output": { "incremental": true }`: only changed tables are rewritten; metadata is still read in full)
 - ✅ Validation rules (column constraints in the metadata, for `validateEntity()`)
 - ✅ Xrm.FormContext types (`"formContext": true`; per table, not per form layout)
+- ✅ Typed request builders per entity set (`"typedClient": true`: `createTypedClient()`, #312)
 
 ---
 

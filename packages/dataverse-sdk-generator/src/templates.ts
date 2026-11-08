@@ -13,6 +13,7 @@ const BUILT_IN_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "..
 /** The name of every template the generator renders. */
 export const TEMPLATE_NAMES = [
   "action.ejs",
+  "client.ejs",
   "complextype.ejs",
   "entity.ejs",
   "enum.ejs",

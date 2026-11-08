@@ -268,6 +268,46 @@ business-required columns, which only forms enforce.
 
 ---
 
+## 🧭 Typed Request Builders: `EntitySetClient`
+
+`dataverse-gen` with `"typedClient": true` generates `createTypedClient(client)`, which returns one
+`EntitySetClient` per table (`typed.accounts`). You can also make one yourself from a table's
+generated types and metadata:
+
+```typescript
+import { EntitySetClient } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import {
+  type Account,
+  type AccountCreate,
+  type AccountUpdate,
+  AccountMetadata,
+} from "./generated/entities/Account.js";
+import { EntityMetadataCache } from "./generated/metadata.js";
+
+const accounts = new EntitySetClient<Account, AccountCreate, AccountUpdate, "name" | "accountid">(
+  client,
+  AccountMetadata,
+  { metadataCache: EntityMetadataCache }
+);
+const id = await accounts.create({ name: "Contoso" });
+const account = await accounts.byId(id).get({ select: ["name"] });
+await accounts.byId(id).update({ name: "Contoso Ltd" }); // PATCH with If-Match: *
+await accounts.byId(id).delete();
+const all = await accounts.list({ filter: "statecode eq 0", maxItems: 100 });
+```
+
+- `byId(key)` takes a GUID or an alternate key object (`{ accountnumber: "A-1" }`) and returns an
+  `EntityRecordClient` with `get({ select, expand })`, `update(entity, { etag })`,
+  `delete({ etag })` and `request()` (core's builder for the record).
+- `list({ select, expand, filter, orderBy, top, maxItems })` follows `@odata.nextLink` unless `top`
+  or `maxItems` bounds it; `create(entity)` resolves the new record's id; `query()` is core's
+  builder for the entity set.
+- Writes go through `formatEntityForWrite()` with the options given to the constructor. `update()`
+  sends `If-Match: *` (or the `etag`), so it never creates a record.
+- Every method takes core's `RequestOptions` last.
+
+---
+
 ## 🔧 Base Classes for Generated Code
 
 Both base classes implement core's `Executable<TResponse>`, and `toRequestInformation()` returns

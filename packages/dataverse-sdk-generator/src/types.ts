@@ -97,6 +97,15 @@ export interface DataverseGenConfig {
   formContext?: boolean;
 
   /**
+   * Generate typed request builders per entity set (default: `false`, #312): `client.ts` with
+   * `createTypedClient(client)`, which returns one `EntitySetClient` per generated table, keyed by
+   * entity set name: `typed.accounts.byId(id).get({ select: ["name"] })`, `.list()`,
+   * `.create()`, `.byId(id).update()`, `.byId(id).delete()`, typed by the table's interface, its
+   * create and update types, and a union of its column names (`AccountColumn`).
+   */
+  typedClient?: boolean;
+
+  /**
    * MSAL authentication for metadata retrieval (used by `dataverse-gen generate`).
    * `--token` on the command line takes precedence.
    */
