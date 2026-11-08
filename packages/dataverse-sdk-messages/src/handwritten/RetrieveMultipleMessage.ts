@@ -52,7 +52,7 @@ export class RetrieveMultipleRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const { Query, EntitySetName } = this.Parameters;
-    const table = /<entity\s[^>]*?\bname\s*=\s*["']([^"']+)["']/i.exec(Query)?.[1];
+    const table = entityNameOf(Query);
     if (!table) {
       throw DataverseInvalidRequestError.invalidParameter(
         "Query",
@@ -70,6 +70,29 @@ export class RetrieveMultipleRequest
   async parseResponse(response: Response): Promise<RetrieveMultipleResponse> {
     return new RetrieveMultipleResponse((await response.json()) as RetrieveMultipleResult);
   }
+}
+
+/**
+ * The `name` of the first `<entity>` element of a FetchXML query. Found with `indexOf` and read
+ * from that one tag, so the time stays linear in the query's length whatever it holds (one
+ * backtracking pattern over the whole query was flagged by CodeQL as polynomial).
+ */
+export function entityNameOf(fetchXml: string): string | undefined {
+  const lower = fetchXml.toLowerCase();
+  for (let at = lower.indexOf("<entity"); at !== -1; at = lower.indexOf("<entity", at + 7)) {
+    // "<entity" followed by whitespace, "/" or ">", not "<entityfoo"
+    if (!/[\s/>]/.test(lower.charAt(at + 7))) continue;
+    const end = fetchXml.indexOf(">", at);
+    if (end === -1) return undefined;
+    // One tag, with no ">" in it: nothing here can backtrack across the query
+    const tag = fetchXml.slice(at + 7, end);
+    const match = /(?:^|\s)name\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag);
+    const name = match?.[1] ?? match?.[2];
+    // An empty name="" names no table
+    if (name === undefined || name === "") return undefined;
+    return name;
+  }
+  return undefined;
 }
 
 /**
