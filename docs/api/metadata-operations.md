@@ -4,14 +4,93 @@ Complete documentation for `@mohsinonxrm/dataverse-sdk-metadata`: the `MetadataC
 
 ## Table of Contents
 
-1. [Entity Operations](#entity-operations)
-2. [Column (Attribute) Operations](#column-operations)
-3. [Relationship Operations](#relationship-operations)
-4. [Global Choice Operations](#global-choice-operations)
-5. [Option Value Management](#option-value-management)
-6. [Polymorphic Lookups](#polymorphic-lookups)
-7. [Relationship Eligibility](#relationship-eligibility)
-8. [Metadata Change Tracking](#metadata-change-tracking)
+1. [Builders](#builders)
+2. [Entity Operations](#entity-operations)
+3. [Column (Attribute) Operations](#column-operations)
+4. [Relationship Operations](#relationship-operations)
+5. [Global Choice Operations](#global-choice-operations)
+6. [Option Value Management](#option-value-management)
+7. [Polymorphic Lookups](#polymorphic-lookups)
+8. [Relationship Eligibility](#relationship-eligibility)
+9. [Metadata Change Tracking](#metadata-change-tracking)
+
+## Builders
+
+The `Metadata` builders return the create payloads the methods below take, so the object
+literals in this page can be written in a few lines. Each fills in the `@odata.type`, the labels
+(`LanguageCode` 1033 unless you pass `languageCode`), `RequiredLevel` (`"None"` unless you pass
+`requiredLevel`) and Dataverse's defaults, and throws `DataverseInvalidRequestError` for input
+Dataverse would reject (a schema name without the customization prefix, a length or precision
+out of range, duplicate option values, …).
+
+```typescript
+import { Metadata } from "@mohsinonxrm/dataverse-sdk-metadata";
+
+// Table, with its primary name column (required) and other columns
+await metadataClient.createEntityDefinition(
+  Metadata.entity("new_Project", {
+    displayName: "Project",
+    displayCollectionName: "Projects",
+    primaryName: Metadata.primaryName("new_Name", { displayName: "Name" }),
+    attributes: [Metadata.string("new_Code", { displayName: "Code", maxLength: 20 })],
+  })
+);
+
+// Columns
+await metadataClient.createAttributeDefinition(
+  "new_project",
+  Metadata.picklist("new_Status", { displayName: "Status", options: ["Active", "Inactive"] })
+);
+await metadataClient.createAttributeDefinition(
+  "new_project",
+  Metadata.integer("new_Hours", { displayName: "Hours", minValue: 0, maxValue: 10000 })
+);
+await metadataClient.createAttributeDefinition(
+  "new_project",
+  Metadata.dateTime("new_DueDate", {
+    displayName: "Due date",
+    format: "DateOnly",
+    behavior: "DateOnly",
+  })
+);
+
+// Lookup: a 1:N relationship that creates the lookup column on the referencing table
+await metadataClient.createOneToManyRelationship(
+  Metadata.lookup("new_AccountId", {
+    displayName: "Account",
+    referencingEntity: "new_project",
+    referencedEntity: "account",
+    relationshipSchemaName: "new_account_project",
+  })
+);
+
+// Global choice, and a column that uses it
+const priorities = await metadataClient.createGlobalOptionSet(
+  Metadata.globalOptionSet("new_priorities", {
+    displayName: "Priorities",
+    options: ["High", "Low"],
+  })
+);
+await metadataClient.createAttributeDefinition(
+  "new_project",
+  Metadata.picklist("new_Priority", { displayName: "Priority", globalOptionSetId: priorities })
+);
+
+// N:N relationship
+await metadataClient.createManyToManyRelationship(
+  Metadata.manyToMany("new_project_contact", {
+    entity1LogicalName: "new_project",
+    entity2LogicalName: "contact",
+  })
+);
+```
+
+The builders are `label`, `entity`, `primaryName`, `string`, `memo`, `integer`, `decimal`,
+`double`, `money`, `dateTime`, `boolean`, `picklist`, `multiSelectPicklist`, `file`, `image`,
+`lookup`, `manyToMany` and `globalOptionSet`; the
+[package README](../../packages/dataverse-sdk-metadata/README.md#builders) lists their defaults.
+A builder's result is an ordinary object of the create type: spread it to add a property the
+builder doesn't take (`{ ...Metadata.string(…), IsAuditEnabled: { Value: true } }`).
 
 ## Entity Operations
 
