@@ -504,6 +504,7 @@ const support = await getBulkOperationSupport(client, "account");
 - Use `$<id>` to refer to an earlier request of the same changeset (e.g. `$account`, or `$1` for an id of `"1"`)
 - Only valid within the same changeset
 - Commonly used in `@odata.bind` properties for associations, or as the URL of a later PATCH or DELETE
+- Don't send `Prefer: return=representation` on a request that later ones refer to: Dataverse doesn't register the Content-ID of a create that returns the record, and the reference fails with "Content-ID Reference: '$account' does not exist in the batch context"
 
 ### Order
 
