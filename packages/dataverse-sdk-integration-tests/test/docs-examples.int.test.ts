@@ -57,16 +57,24 @@ const blocks: DocBlock[] = Object.keys(FILES).flatMap((file) =>
   extractLiveBlocks(readFileSync(path.join(repoRoot, file), "utf-8"), file)
 );
 
-/** A record each of these names gets when a block refers to it without declaring it. */
+/**
+ * A record each of these names gets when a block refers to it without declaring it. A last name
+ * holds at most 50 characters, so it gets the start of the name (the run id and the file).
+ */
 const FIXTURES: Record<string, { set: string; body: (name: string) => Record<string, unknown> }> = {
   accountId: { set: "accounts", body: (name) => ({ name }) },
   existingId: { set: "accounts", body: (name) => ({ name }) },
   id: { set: "accounts", body: (name) => ({ name }) },
-  contactId: { set: "contacts", body: (name) => ({ lastname: name }) },
+  contactId: { set: "contacts", body: (name) => ({ lastname: name.slice(0, 50) }) },
   opportunityId: { set: "opportunities", body: (name) => ({ name }) },
   leadId: {
     set: "leads",
-    body: (name) => ({ subject: name, firstname: "Docs", lastname: name, companyname: name }),
+    body: (name) => ({
+      subject: name,
+      firstname: "Docs",
+      lastname: name.slice(0, 50),
+      companyname: name,
+    }),
   },
 };
 

@@ -596,12 +596,14 @@ batch.addRequest("get-accounts", "GET", "/accounts?$top=5");
 // Transactional change set
 batch.beginChangeset();
 
-// Create account; its id is the Content-ID, so later requests can refer to it as $create-account
+// Create account; its id is the Content-ID, so later requests can refer to it as $create-account.
+// No Prefer: return=representation on a request others refer to: Dataverse then doesn't
+// register its Content-ID.
 batch.addRequest(
   "create-account",
   "POST",
   "/accounts",
-  { "Content-Type": "application/json", Prefer: "return=representation" },
+  { "Content-Type": "application/json" },
   { name: "Parent Account" }
 );
 
