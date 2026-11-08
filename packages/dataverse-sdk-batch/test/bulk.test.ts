@@ -343,7 +343,7 @@ describe("validation (#310)", () => {
     [{ batchSize: 1001 }, "batchSize"],
     [{ batchSize: 1.5 }, "batchSize"],
     [{ maxParallel: 0 }, "maxParallel"],
-    [{ strategy: "auto" as "bulk" }, "strategy"],
+    [{ strategy: "fast" as "bulk" }, "strategy"],
   ])("rejects %o", async (options, what) => {
     const { client, fake } = createTestClient();
     const err = await rejection(createMultiple(client, ACCOUNT, [{ name: "a" }], options));

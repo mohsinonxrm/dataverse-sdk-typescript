@@ -14,6 +14,7 @@ import {
 } from "@mohsinonxrm/dataverse-sdk-core";
 import { BatchRequestBuilder } from "./BatchRequestBuilder.js";
 import { entityIdFromBatchResponse } from "./entityId.js";
+import { getBulkOperationSupport, type BulkOperationSupport } from "./bulkSupport.js";
 import { executionSignal, fromStop, stopError, type ExecutionSignal } from "./stop.js";
 
 /**
@@ -45,11 +46,13 @@ export interface BulkTable {
 /** Options for {@link createMultiple} and {@link updateMultiple}. */
 export interface BulkOperationOptions {
   /**
-   * How the records are sent: `"bulk"` (the `CreateMultiple` / `UpdateMultiple` messages) or
-   * `"batch"` (`$batch`, for tables without bulk support). See {@link BulkStrategy}.
+   * How the records are sent: `"bulk"` (the `CreateMultiple` / `UpdateMultiple` messages),
+   * `"batch"` (`$batch`, for tables without bulk support), or `"auto"`: `"bulk"` when the table
+   * supports the message, otherwise `"batch"`, as `getBulkOperationSupport()` tells (looked up
+   * once per client and table, then cached). See {@link BulkStrategy}.
    * @default "bulk"
    */
-  strategy?: BulkStrategy;
+  strategy?: BulkStrategy | "auto";
 
   /**
    * Records per request (1 to 1000). Microsoft suggests 100 to 1,000 for standard tables and 100
@@ -317,26 +320,55 @@ async function runBulkOperation(
   records: readonly object[],
   options: BulkOperationOptions
 ): Promise<BulkOperationResult> {
-  const plan = validate(client, message, table, records, options);
+  const { requested, ...checked } = validate(client, message, table, records, options);
   const batchSize = options.batchSize ?? DEFAULT_BATCH_SIZE;
-  const results: BulkRecordResult[] = plan.records.map((_, index) => ({
+  const results: BulkRecordResult[] = checked.records.map((_, index) => ({
     index,
     status: "skipped",
   }));
 
   const chunks: number[][] = [];
-  for (let start = 0; start < plan.records.length; start += batchSize) {
+  for (let start = 0; start < checked.records.length; start += batchSize) {
     chunks.push(
-      Array.from({ length: Math.min(batchSize, plan.records.length - start) }, (_, i) => start + i)
+      Array.from(
+        { length: Math.min(batchSize, checked.records.length - start) },
+        (_, i) => start + i
+      )
     );
   }
 
   const execution = executionSignal(options.signal, options.timeoutMs);
   try {
-    return await runChunks(plan, chunks, results, execution);
+    const strategy = await resolveStrategy(checked, requested, execution);
+    return await runChunks({ ...checked, strategy }, chunks, results, execution);
   } finally {
     execution.dispose();
   }
+}
+
+/**
+ * The strategy to send with. `"auto"` asks `getBulkOperationSupport()` (cached per client and
+ * table) whether the table supports the message: `"bulk"` when it does, otherwise `"batch"`.
+ * Nothing is looked up for an empty list.
+ */
+async function resolveStrategy(
+  plan: Omit<Plan, "strategy">,
+  requested: BulkStrategy | "auto",
+  execution: ExecutionSignal
+): Promise<BulkStrategy> {
+  if (requested !== "auto") return requested;
+  if (plan.records.length === 0) return "bulk";
+  let support: BulkOperationSupport;
+  try {
+    support = await getBulkOperationSupport(plan.client, plan.table.logicalName, {
+      ...(execution.signal ? { signal: execution.signal } : {}),
+    });
+  } catch (caught) {
+    throw fromStop(caught, execution, plan.options.timeoutMs);
+  }
+  const supported =
+    plan.message === "CreateMultiple" ? support.createMultiple : support.updateMultiple;
+  return supported ? "bulk" : "batch";
 }
 
 /** Sends the chunks, `maxParallel` at a time, and fills in `results`. */
@@ -606,7 +638,7 @@ function validate(
   table: BulkTable,
   records: readonly object[],
   options: BulkOperationOptions
-): Plan {
+): Omit<Plan, "strategy"> & { requested: BulkStrategy | "auto" } {
   const invalid = (what: string): DataverseInvalidRequestError =>
     new DataverseInvalidRequestError(`${message}: ${what}`);
 
@@ -628,8 +660,8 @@ function validate(
   }
 
   const strategy: string = options.strategy ?? "bulk";
-  if (strategy !== "bulk" && strategy !== "batch") {
-    throw invalid(`strategy must be "bulk" or "batch", got ${JSON.stringify(strategy)}.`);
+  if (strategy !== "bulk" && strategy !== "batch" && strategy !== "auto") {
+    throw invalid(`strategy must be "bulk", "batch" or "auto", got ${JSON.stringify(strategy)}.`);
   }
   const batchSize = options.batchSize ?? DEFAULT_BATCH_SIZE;
   if (!Number.isInteger(batchSize) || batchSize < 1 || batchSize > MAX_BATCH_SIZE) {
@@ -648,7 +680,8 @@ function validate(
       throw invalid(`record ${String(index)} is not an object.`);
     }
     const value = record as Record<string, unknown>;
-    if (message === "UpdateMultiple" && strategy === "batch") {
+    // "auto" may pick $batch, which needs the key for the URL.
+    if (message === "UpdateMultiple" && strategy !== "bulk") {
       const id = value[primaryIdAttribute];
       if (typeof id !== "string" || !GUID.test(id)) {
         throw invalid(
@@ -664,7 +697,7 @@ function validate(
     message,
     table: { ...table, primaryIdAttribute },
     records: list,
-    strategy,
+    requested: strategy,
     options,
   };
 }
