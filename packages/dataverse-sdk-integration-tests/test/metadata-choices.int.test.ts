@@ -281,7 +281,17 @@ describe.skipIf(!live)("live: choices and option values (#324)", () => {
       const choiceId = created.globalChoiceId;
       expect(choiceId).toMatch(GUID);
       if (!choiceId) return;
-      const before = await eventually(() => md.getGlobalOptionSet(choiceId));
+      // The latest definition, not a cached copy: the test before this one inserts "Lime" and
+      // deletes it again, and a cached read could still list it (a live run did, once)
+      type OptionSet = Awaited<ReturnType<MetadataClient["getGlobalOptionSet"]>>;
+      const latest = () =>
+        liveClient()
+          .client.api(
+            `/GlobalOptionSetDefinitions(${choiceId})/Microsoft.Dynamics.CRM.OptionSetMetadata`
+          )
+          .header("Consistency", "Strong")
+          .get<OptionSet>();
+      const before = await eventually(latest);
 
       const description = `Merge-updated by SDK integration run ${runId}; safe to delete.`;
       await eventually(
@@ -291,7 +301,7 @@ describe.skipIf(!live)("live: choices and option values (#324)", () => {
       );
 
       await eventually(async () => {
-        const after = await md.getGlobalOptionSet(choiceId);
+        const after = await latest();
         expect(after.Description?.UserLocalizedLabel?.Label).toBe(description);
         expect(after.DisplayName?.UserLocalizedLabel?.Label).toBe(
           before.DisplayName?.UserLocalizedLabel?.Label
