@@ -96,3 +96,11 @@ export {
   type ParsedPagingCookie,
   type FetchXmlPaging,
 } from "./fetchxml/pagingCookie.js";
+
+// Slowing down from Dataverse's service-protection headers; opt-in (#309)
+export {
+  AdaptiveThrottlingMiddleware,
+  type AdaptiveThrottlingDelay,
+  type AdaptiveThrottlingOptions,
+  type AdaptiveThrottlingStatus,
+} from "./middleware/AdaptiveThrottlingMiddleware.js";
