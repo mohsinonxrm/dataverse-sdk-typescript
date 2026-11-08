@@ -296,6 +296,8 @@ new FileColumnClient(adapter: RequestAdapter, baseUrl?: string)
 
 ##### `upload()`
 
+<!-- no-check -->
+
 ```typescript
 async upload(
   entitySetName: string,
@@ -322,6 +324,8 @@ Upload a file to a file or image column.
 
 ##### `download()`
 
+<!-- no-check -->
+
 ```typescript
 async download(
   entitySetName: string,
@@ -344,6 +348,8 @@ Download a file from a file or image column.
 
 ##### `downloadStream()`
 
+<!-- no-check -->
+
 ```typescript
 async downloadStream(
   entitySetName: string,
@@ -356,6 +362,8 @@ async downloadStream(
 Download a file as a stream. The first request is made before the promise resolves, so a missing file rejects there (status 404).
 
 ##### `delete()`
+
+<!-- no-check -->
 
 ```typescript
 async delete(
@@ -378,6 +386,8 @@ Delete a file from a file or image column, with `DELETE /{entitySetName}({record
 
 ### FileUploadOptions
 
+<!-- no-check -->
+
 ```typescript
 interface FileUploadOptions {
   chunkSize?: number; // Chunk size in bytes (default and maximum: 4MB)
@@ -391,6 +401,8 @@ interface FileUploadOptions {
 
 ### FileDownloadOptions
 
+<!-- no-check -->
+
 ```typescript
 interface FileDownloadOptions {
   method?: "auto" | "single" | "range" | "actions"; // download(): "auto" = "single"
@@ -403,6 +415,8 @@ interface FileDownloadOptions {
 ```
 
 ### UploadProgress
+
+<!-- no-check -->
 
 ```typescript
 interface UploadProgress {

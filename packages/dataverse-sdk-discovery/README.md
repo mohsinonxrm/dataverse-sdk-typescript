@@ -144,6 +144,8 @@ the request, including a retry wait.
 
 #### `listOrganizations(options?: DiscoveryOptions)`
 
+<!-- no-check -->
+
 ```typescript
 listOrganizations(options?: DiscoveryOptions & { select?: undefined }): Promise<OrganizationDetail[]>
 listOrganizations<K extends keyof OrganizationDetail>(options: DiscoveryOptions & { select: readonly K[] }): Promise<Array<Pick<OrganizationDetail, K>>>

@@ -323,6 +323,8 @@ const client = new DataverseClient({
 
 ### Constructor
 
+<!-- no-check -->
+
 ```typescript
 constructor(
   credential: TokenCredential,
@@ -375,10 +377,10 @@ Acquires an access token using the configured credential.
 const token = await tokenProvider.getToken();
 
 // Override with different scopes
-const token = await tokenProvider.getToken(["https://other-org.crm.dynamics.com/.default"]);
+const otherOrgToken = await tokenProvider.getToken(["https://other-org.crm.dynamics.com/.default"]);
 
 // Pass additional options
-const token = await tokenProvider.getToken(undefined, {
+const guestTenantToken = await tokenProvider.getToken(undefined, {
   tenantId: "specific-tenant-id",
   claims: '{"access_token":{"email":{"essential":true}}}',
   correlationId: "correlation-123", // Stored but not passed to Azure Identity
