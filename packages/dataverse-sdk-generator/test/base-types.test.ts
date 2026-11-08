@@ -88,9 +88,9 @@ describe("#360: inherited columns", () => {
     ]) {
       expect(columns, column).toContain(column);
     }
-    // Each column once, the activity's own first
+    // Each column once, in name order (the org's $metadata doesn't fix the order)
     expect(new Set(columns).size).toBe(columns.length);
-    expect(columns.slice(0, 2)).toEqual(["directioncode", "sender"]);
+    expect(columns).toEqual([...columns].sort());
     // email has no Key of its own: activitypointer's
     expect(email?.KeyName).toBe("activityid");
     expect(email?.Properties.find((p) => p.Name === "subject")).toMatchObject({
@@ -112,12 +112,13 @@ describe("#360: inherited columns", () => {
   it("an activity that declares its own key and columns keeps them", async () => {
     const model = await modelFor({ entities: ["task"] });
     const columns = model.EntityTypes[0].Properties.map((p) => p.Name);
+    // Its own percentcomplete and the inherited columns, each once, in name order
     expect(columns).toEqual([
-      "percentcomplete",
       "_ownerid_value",
       "_regardingobjectid_value",
       "activityid",
       "description",
+      "percentcomplete",
       "scheduledend",
       "subject",
     ]);

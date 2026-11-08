@@ -566,15 +566,18 @@ export class SchemaModel {
       const key = chain.types.find((t) => t.Key?.PropertyRef)?.Key?.PropertyRef;
       const keyName = key ? this.getAttribute(key, "Name") : `${name.toLowerCase()}id`;
 
-      // Own properties first, then the inherited ones a derived type doesn't redeclare
+      // Own properties first, then the inherited ones a derived type doesn't redeclare. Then by
+      // name: the org's $metadata doesn't list a table's columns in a fixed order from one request
+      // to the next, and the model (its incremental-generation hash, the generated code) must not
+      // depend on it (#347; seen live).
       const properties = uniqueBy(
         chain.types.flatMap((t) => this.readProperties(t.Property)),
         (p) => p.Name
-      );
+      ).sort(compareByName);
       const navProps = uniqueBy(
         chain.types.flatMap((t) => this.readNavigationProperties(t.NavigationProperty)),
         (n) => n.Name
-      );
+      ).sort(compareByName);
 
       this.EntityTypes.push({
         Name: name,
@@ -635,7 +638,10 @@ export class SchemaModel {
         ...p,
         IsNavigation: true,
       }));
-      const properties = [...this.readProperties(complexType.Property), ...navigation];
+      // By name, for the same reason as a table's columns (readEntityTypes)
+      const properties = [...this.readProperties(complexType.Property), ...navigation].sort(
+        compareByName
+      );
       const baseType = this.getAttribute(complexType, "BaseType");
 
       this.ComplexTypes.push({
@@ -1021,6 +1027,11 @@ function uniqueBy<T>(items: T[], key: (item: T) => string): T[] {
  * with a digit. Labels without letters or digits fall back to `Value<n>`.
  */
 /** Order-insensitive comparison of two logical names (plain code-unit order, no locale). */
+/** Plain code-unit order of two `Name`s (no locale), for a fixed property order. */
+function compareByName(a: { Name: string }, b: { Name: string }): number {
+  return a.Name < b.Name ? -1 : a.Name > b.Name ? 1 : 0;
+}
+
 function byLogicalName(a: { LogicalName?: string }, b: { LogicalName?: string }): number {
   const x = a.LogicalName ?? "";
   const y = b.LogicalName ?? "";
