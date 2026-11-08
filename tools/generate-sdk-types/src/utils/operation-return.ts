@@ -280,17 +280,19 @@ function parseResponseLines(
 }
 
 /**
- * The response class of a generated message: `result` is the value the action of the same name
- * resolves (#300), and `fromResponse(data)` reads it from a parsed response body (`undefined`
- * for a 204), for example the body of a batch step.
+ * The response class of a generated message: `result` is the value the action (or function, #344)
+ * of the same name resolves (#300), and `fromResponse(data)` reads it from a parsed response body
+ * (`undefined` for a 204), for example the body of a batch step.
  *
  * @param resultName - The declaration from {@link operationReturn} (`<Stem>Result`).
+ * @param operation - What backs the message: a Web API action or function.
  */
 export function messageResponseClass(
   ret: OperationReturn,
   responseClassName: string,
   resultName: string,
-  messageName: string
+  messageName: string,
+  operation: "action" | "function" = "action"
 ): { responseClass: string; parseResponse: string } {
   let parseResponse = `  async parseResponse(response: Response): Promise<${responseClassName}> {\n`;
   let responseClass = `/**\n * ${messageName} response message\n`;
@@ -332,7 +334,7 @@ export function messageResponseClass(
       read = `(data ?? null) as ${resultName}`;
       break;
   }
-  responseClass += ` *\n * \`result\` is the value the ${messageName} action returns (see {@link ${resultName}}).\n`;
+  responseClass += ` *\n * \`result\` is the value the ${messageName} ${operation} returns (see {@link ${resultName}}).\n`;
   responseClass += ` */\n`;
   responseClass += `export class ${responseClassName} extends OrganizationResponse {\n`;
   responseClass += `  constructor(public result: ${resultName}) {\n    super('${messageName}');\n  }\n\n`;

@@ -45,7 +45,7 @@ The SDK is organized as a monorepo with focused, composable packages:
 | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | ----------- |
 | **[@mohsinonxrm/dataverse-sdk-actions](./packages/dataverse-sdk-actions)**     | Typed Web API actions (POST) of the platform, Sales and Customer Service                                                    | ✅ Complete |
 | **[@mohsinonxrm/dataverse-sdk-functions](./packages/dataverse-sdk-functions)** | Typed Web API functions (GET) of the platform, Sales and Customer Service                                                   | ✅ Complete |
-| **[@mohsinonxrm/dataverse-sdk-messages](./packages/dataverse-sdk-messages)**   | <!-- count:messages -->1,072<!-- /count --> typed Organization Service messages of the platform, Sales and Customer Service | ✅ Complete |
+| **[@mohsinonxrm/dataverse-sdk-messages](./packages/dataverse-sdk-messages)**   | <!-- count:messages -->1,281<!-- /count --> typed Organization Service messages of the platform, Sales and Customer Service | ✅ Complete |
 | **[@mohsinonxrm/dataverse-sdk-metadata](./packages/dataverse-sdk-metadata)**   | Strict metadata typing (EntityMetadata, AttributeMetadata, etc.)                                                            | ✅ Complete |
 | **[@mohsinonxrm/dataverse-sdk-files](./packages/dataverse-sdk-files)**         | File/image column operations with chunked upload/download                                                                   | ✅ Complete |
 
@@ -705,7 +705,7 @@ lists the breaking changes. It ships:
 - ✅ $batch operations with change sets
 - ✅ OrganizationService facade
 - ✅ Typed actions (<!-- count:actions -->1,072<!-- /count -->) and functions (<!-- count:functions -->209<!-- /count -->) of the platform, Sales and Customer Service
-- ✅ Messages (<!-- count:messages -->1,072<!-- /count --> typed Organization Service messages)
+- ✅ Messages (<!-- count:messages -->1,281<!-- /count --> typed Organization Service messages)
 - ✅ Metadata operations with strict typing
 - ✅ File/image column operations (chunked and streamed upload, ranged download)
 - ✅ FetchXML queries, with paging cookies and saved/user views

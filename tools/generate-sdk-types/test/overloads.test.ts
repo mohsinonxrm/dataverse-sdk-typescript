@@ -18,12 +18,9 @@ import { generateMessages } from "../src/generators/messages-generator.js";
 import { generateComplexTypes } from "../src/generators/complex-types-generator.js";
 import { operationNames } from "../src/utils/overloads.js";
 import { withSupplementalMetadata } from "../src/supplemental/supplemental-metadata.js";
-import { typecheck } from "./typecheck.js";
+import { copyMessagesHandWritten, typecheck } from "./typecheck.js";
 
 const OUT_ROOT = fileURLToPath(new URL(".", import.meta.url));
-const MESSAGES_SRC = fileURLToPath(
-  new URL("../../../packages/dataverse-sdk-messages/src", import.meta.url)
-);
 const PACKAGES = fileURLToPath(new URL("../../../packages/", import.meta.url));
 
 const EDMX = `<?xml version="1.0" encoding="utf-8"?>
@@ -106,10 +103,7 @@ beforeAll(async () => {
   await generateActions(csdl, join(dir, "actions"), false);
   await generateFunctions(csdl, join(dir, "functions"), false);
   await generateMessages(csdl, join(dir, "messages"), false);
-  const { copyFile } = await import("node:fs/promises");
-  for (const file of ["OrganizationRequest.ts", "types.ts"]) {
-    await copyFile(join(MESSAGES_SRC, file), join(dir, "messages", file));
-  }
+  await copyMessagesHandWritten(join(dir, "messages"));
 });
 
 afterAll(async () => {

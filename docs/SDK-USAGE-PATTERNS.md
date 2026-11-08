@@ -467,9 +467,9 @@ Messages provide **OrganizationService-style** request/response patterns that ma
 
 ### Messages Package Overview
 
-The `@mohsinonxrm/dataverse-sdk-messages` package contains <!-- count:messages -->1,072<!-- /count --> generated request/response classes:
+The `@mohsinonxrm/dataverse-sdk-messages` package contains <!-- count:messages -->1,281<!-- /count --> generated request/response classes:
 
-- ✅ **All messages implement Executable<T>** - All <!-- count:messages -->1,072<!-- /count --> message classes can be executed directly
+- ✅ **All messages implement Executable<T>** - All <!-- count:messages -->1,281<!-- /count --> message classes can be executed directly
 - ✅ **OrganizationService.execute() works** - Executes any message that implements Executable<T> interface
 - ✅ **DataverseClient.execute() works** - Also executes any Executable<T> message
 - ✅ **Direct exports only** - Import message classes directly (e.g., `import { ExecuteWorkflowRequest } from '@mohsinonxrm/dataverse-sdk-messages'`)
