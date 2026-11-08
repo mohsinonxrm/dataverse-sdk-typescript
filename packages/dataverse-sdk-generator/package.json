@@ -52,10 +52,19 @@
     "ora": "^8.2.0",
     "xml-js": "^1.6.11"
   },
+  "peerDependencies": {
+    "@types/xrm": ">=9.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/xrm": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:^",
     "@types/ejs": "^3.1.5",
     "@types/node": "^22.20.5",
+    "@types/xrm": "^9.0.97",
     "eslint": "^9.39.5",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",

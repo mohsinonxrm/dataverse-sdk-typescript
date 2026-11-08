@@ -29,6 +29,7 @@
   "devDependencies": {
     "@mohsinonxrm/dataverse-sdk-entities-runtime": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-generator": "workspace:*",
+    "@types/xrm": "^9.0.97",
     "eslint": "^9.39.5",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"

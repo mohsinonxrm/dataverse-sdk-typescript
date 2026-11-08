@@ -70,6 +70,15 @@ export interface DataverseGenConfig {
   strictNulls?: boolean;
 
   /**
+   * Generate typed form contexts for model-driven form scripts (default: `false`): a
+   * `forms/<Entity>Form.ts` per table with `<Entity>Attributes`, `<Entity>Controls` and
+   * `<Entity>FormContext`, whose `getAttribute()` and `getControl()` take a column's logical name
+   * and return its `Xrm.Attributes` / `Xrm.Controls` type. The files use the global `Xrm`
+   * namespace of `@types/xrm`, which the app then needs.
+   */
+  formContext?: boolean;
+
+  /**
    * MSAL authentication for metadata retrieval (used by `dataverse-gen generate`).
    * `--token` on the command line takes precedence.
    */

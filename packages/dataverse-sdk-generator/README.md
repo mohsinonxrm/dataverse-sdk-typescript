@@ -222,6 +222,9 @@ interface DataverseGenConfig {
   /** Type operation responses exactly as $metadata declares them (default: false; see Strict nulls) */
   strictNulls?: boolean;
 
+  /** Typed Xrm form contexts for model-driven form scripts (default: false; see Form contexts) */
+  formContext?: boolean;
+
   /** How `generate` signs in (see Authentication) */
   auth?: {
     flow: "deviceCode" | "clientCredentials" | "clientSecret";
@@ -363,6 +366,79 @@ complex type called `<Name>Output`) gets a suffix (`<Name>Output_2`).
 
 ---
 
+### Form contexts
+
+`"formContext": true` generates `forms/<Entity>Form.ts` for each table, for model-driven form
+scripts written in TypeScript: the table's columns typed with their `@types/xrm` attribute and
+control types, by logical name, and a form context whose `getAttribute()` and `getControl()` take
+those names. Install `@types/xrm` in the project that compiles the scripts (it's an optional peer
+dependency of the generator); the files reference it with `/// <reference types="xrm" />`.
+
+<!-- no-check -->
+
+```typescript
+// generated/forms/AccountForm.ts
+/// <reference types="xrm" />
+
+import type { account_industrycode } from "../enums/account_industrycode.js";
+
+export interface AccountAttributes {
+  name: Xrm.Attributes.StringAttribute;
+  industrycode: Xrm.Attributes.OptionSetAttribute<account_industrycode>;
+  creditlimit: Xrm.Attributes.NumberAttribute;
+  createdon: Xrm.Attributes.DateAttribute;
+  primarycontactid: Xrm.Attributes.LookupAttribute;
+  // ...
+}
+
+export interface AccountControls {
+  name: Xrm.Controls.StringControl;
+  industrycode: Xrm.Controls.OptionSetControl;
+  primarycontactid: Xrm.Controls.LookupControl;
+  // ...
+}
+
+export type AccountFormContext = Omit<Xrm.FormContext, "getAttribute" | "getControl"> & {
+  getAttribute<K extends keyof AccountAttributes>(name: K): AccountAttributes[K] | null;
+  getControl<K extends keyof AccountControls>(name: K): AccountControls[K] | null;
+  // also header_<name> and header_process_<name> controls, and the delegate overloads
+};
+```
+
+<!-- no-check -->
+
+```typescript
+import type { AccountFormContext } from "./generated/forms/AccountForm.js";
+import { account_industrycode } from "./generated/enums/account_industrycode.js";
+
+export function onLoad(executionContext: Xrm.Events.EventContext): void {
+  const form = executionContext.getFormContext() as AccountFormContext;
+  const industry = form.getAttribute("industrycode"); // OptionSetAttribute<account_industrycode> | null
+  if (industry?.getValue() === account_industrycode.Accounting) {
+    form.getControl("primarycontactid")?.addPreSearch(filterContacts); // LookupControl
+  }
+  form.getAttribute("industrycode")?.setValue(7); // error unless 7 is an option
+  form.getAttribute("nmae"); // error: not a column of account
+}
+```
+
+| Column type                            | Attribute                             | Control                       |
+| -------------------------------------- | ------------------------------------- | ----------------------------- |
+| Text, multiline text                   | `StringAttribute`                     | `StringControl`               |
+| Whole number, decimal, float, currency | `NumberAttribute`                     | `NumberControl`               |
+| Date and time                          | `DateAttribute`                       | `DateControl`                 |
+| Yes/no                                 | `BooleanAttribute`                    | `StandardControl`             |
+| Choice, status, status reason          | `OptionSetAttribute<enum>`            | `OptionSetControl`            |
+| Choices                                | `MultiSelectOptionSetAttribute<enum>` | `MultiSelectOptionSetControl` |
+| Lookup, customer, owner                | `LookupAttribute`                     | `LookupControl`               |
+
+A choice column whose option set the generator didn't make an enum for (a global option set) is
+`OptionSetAttribute<number>`. A lookup is keyed by its logical name (`contoso_parentaccountid`),
+as forms name it, not by its navigation property. Primary keys, the read-only name columns beside a
+lookup, and other virtual, file and image columns aren't included. The types cover every column of
+the table, not one form's layout: a column that isn't on the form returns `null`, as in
+`@types/xrm`, and a control placed twice (`name1`) isn't typed.
+
 ## 📂 Generated Output Structure
 
 ```
@@ -384,6 +460,9 @@ generated/
 │   └── index.ts
 ├── complextypes/
 │   ├── AuditDetail.ts
+│   └── index.ts
+├── forms/              # with "formContext": true
+│   ├── AccountForm.ts
 │   └── index.ts
 ├── internal/
 │   └── actionBody.ts   # bodyValue(): enum names and entities in action bodies (not exported)
@@ -1127,7 +1206,7 @@ export function getLogicalName(schemaName: string): string | undefined {
 - ⏳ Custom template support (eject command)
 - ⏳ Incremental generation (only changed entities)
 - ✅ Validation rules (column constraints in the metadata, for `validateEntity()`)
-- ⏳ Xrm.FormContext types (for model-driven apps)
+- ✅ Xrm.FormContext types (`"formContext": true`; per table, not per form layout)
 
 ---
 
