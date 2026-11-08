@@ -670,6 +670,7 @@ generator (dataverse-gen CLI)
 - [ADR-0006: Bulk Operations Strategy](./docs/adr/0006-bulk-operations.md)
 - [ADR-0007: Versioning & Release Strategy](./docs/adr/0007-versioning-release.md)
 - [ADR-0008: Telemetry & Observability Strategy](./docs/adr/0008-telemetry-observability.md)
+- [ADR-0009: Typed Per-Entity-Set Request Builders](./docs/adr/0009-typed-request-builders.md)
 
 ## 🧪 Testing
 

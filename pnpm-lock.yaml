@@ -335,6 +335,9 @@ importers:
         specifier: workspace:*
         version: link:../dataverse-sdk-core
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:^
+        version: link:../dataverse-sdk-testing
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
@@ -443,6 +446,9 @@ importers:
       '@types/node':
         specifier: ^22.20.5
         version: 22.20.5
+      '@types/xrm':
+        specifier: ^9.0.97
+        version: 9.0.97
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
@@ -498,6 +504,9 @@ importers:
       '@mohsinonxrm/dataverse-sdk-generator':
         specifier: workspace:*
         version: link:../dataverse-sdk-generator
+      '@types/xrm':
+        specifier: ^9.0.97
+        version: 9.0.97
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
@@ -3200,6 +3209,9 @@ packages:
 
   '@types/triple-beam@1.3.5':
     resolution: {integrity: sha512-6WaYesThRMCl19iryMYP7/x2OVgCtbIVflDGFpWnb9irXI3UjYE4AzmYuiUKY1AJstGijoY+MgUszMgRxIYTYw==}
+
+  '@types/xrm@9.0.97':
+    resolution: {integrity: sha512-KQvsNXyikKd359Zom74ES/L67bHzXKi6UfxB4dZZu1rZF0ILpJlImh1HjVd58uZxlfqiOgSy7v4W6YTqtAXW3w==}
 
   '@typescript-eslint/eslint-plugin@8.72.1':
     resolution: {integrity: sha512-5CokTWXpmbylfFabsbvHC0CAw3XLaGnoa+nFJX5FR592h/LoZsENUE6p/rg5xvkKrFEXz6pYmgI29AgXc2N3BQ==}
@@ -8204,6 +8216,8 @@ snapshots:
   '@types/statuses@2.0.6': {}
 
   '@types/triple-beam@1.3.5': {}
+
+  '@types/xrm@9.0.97': {}
 
   '@typescript-eslint/eslint-plugin@8.72.1(@typescript-eslint/parser@8.72.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3)':
     dependencies:
