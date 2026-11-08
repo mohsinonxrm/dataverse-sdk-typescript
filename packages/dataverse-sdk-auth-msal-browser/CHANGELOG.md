@@ -1,5 +1,20 @@
 # @mohsinonxrm/dataverse-sdk-auth-msal-browser
 
+## 2.0.0-beta.1
+
+### Patch Changes
+
+- f363a6f: README: every TypeScript example type-checks against the 2.0 packages (#311); signature listings are marked as such. The msal-browser README drops MSAL's `storeAuthStateInCookie` (for Internet Explorer 11, deprecated in MSAL 4 and removed in MSAL 5) and describes Dataverse's CORS behaviour as the browser guide does; the appinsights `/browser` example passes a connection string it defines.
+- Updated dependencies [9bb1db9]
+- Updated dependencies [83f2256]
+- Updated dependencies [f780438]
+- Updated dependencies [e606f24]
+- Updated dependencies [f988456]
+- Updated dependencies [1ca3a58]
+- Updated dependencies [ff655da]
+- Updated dependencies [b1bd587]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.0-beta.1
+
 ## 2.0.0-beta.0
 
 ### Major Changes
