@@ -11,7 +11,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import chalk from "chalk";
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, DataverseError, odata } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 import { ConfidentialClientApplication } from "@azure/msal-node";
@@ -46,23 +46,45 @@ function loadEnv(): Config {
     }
   }
 
-  const clientId = env.AZURE_CLIENT_ID || process.env.AZURE_CLIENT_ID;
-  const tenantId = env.AZURE_TENANT_ID || process.env.AZURE_TENANT_ID;
-  const clientSecret = env.AZURE_CLIENT_SECRET || process.env.AZURE_CLIENT_SECRET;
-  const dataverseUrl = env.DATAVERSE_URL || process.env.DATAVERSE_URL;
+  // AZURE_* (this sample's names) or DATAVERSE_* (the names the repository's live CI uses)
+  const setting = (...names: string[]): string | undefined =>
+    names.map((name) => env[name] || process.env[name]).find(Boolean);
+  const clientId = setting("AZURE_CLIENT_ID", "DATAVERSE_CLIENT_ID");
+  const tenantId = setting("AZURE_TENANT_ID", "DATAVERSE_TENANT_ID");
+  const clientSecret = setting("AZURE_CLIENT_SECRET", "DATAVERSE_CLIENT_SECRET");
+  const dataverseUrl = setting("DATAVERSE_URL");
 
   if (!clientId || !tenantId || !clientSecret || !dataverseUrl) {
     console.error(chalk.red("❌ Missing required environment variables!"));
-    console.error(chalk.yellow("Please create a .env file with:"));
+    console.error(chalk.yellow("Create a .env file (or set environment variables) with:"));
     console.error(chalk.yellow("  AZURE_CLIENT_ID=your-app-registration-id"));
     console.error(chalk.yellow("  AZURE_TENANT_ID=your-tenant-id"));
     console.error(chalk.yellow("  AZURE_CLIENT_SECRET=your-client-secret"));
     console.error(chalk.yellow("  DATAVERSE_URL=https://yourorg.crm.dynamics.com"));
+    console.error(
+      chalk.yellow(
+        "DATAVERSE_CLIENT_ID, DATAVERSE_TENANT_ID and DATAVERSE_CLIENT_SECRET also work."
+      )
+    );
     process.exit(1);
   }
 
   return { clientId, tenantId, clientSecret, dataverseUrl };
 }
+
+/**
+ * Every account and contact this run creates is named `sdk-sample-<tag> ...` (accounts by name,
+ * contacts by last name), so cleanup can find them all. SAMPLE_RUN_TAG sets the tag (lowercase
+ * letters and digits); otherwise it's random.
+ */
+const runTag = process.env.SAMPLE_RUN_TAG ?? Math.random().toString(36).slice(2, 8);
+if (!/^[a-z0-9]{1,10}$/.test(runTag)) {
+  console.error(chalk.red("❌ SAMPLE_RUN_TAG must be 1 to 10 lowercase letters or digits."));
+  process.exit(1);
+}
+const runId = `sdk-sample-${runTag}`;
+/** `name` prefixed with this run's id. */
+const named = (name: string): string => `${runId} ${name}`;
 
 /**
  * Demo 1: Simple batch without changeset
@@ -81,7 +103,7 @@ async function simpleBatchDemo(client: DataverseClient): Promise<void> {
     "/accounts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
-      name: "Simple Batch Account 1",
+      name: named("Simple Batch Account 1"),
       telephone1: "555-1001",
     }
   );
@@ -92,7 +114,7 @@ async function simpleBatchDemo(client: DataverseClient): Promise<void> {
     "/accounts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
-      name: "Simple Batch Account 2",
+      name: named("Simple Batch Account 2"),
       telephone1: "555-1002",
     }
   );
@@ -103,7 +125,7 @@ async function simpleBatchDemo(client: DataverseClient): Promise<void> {
     "/accounts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
-      name: "Simple Batch Account 3",
+      name: named("Simple Batch Account 3"),
       telephone1: "555-1003",
     }
   );
@@ -138,7 +160,7 @@ async function changesetDemo(client: DataverseClient): Promise<void> {
     "/accounts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
-      name: "Transactional Account",
+      name: named("Transactional Account"),
       telephone1: "555-2001",
     }
   );
@@ -151,7 +173,7 @@ async function changesetDemo(client: DataverseClient): Promise<void> {
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
       firstname: "John",
-      lastname: "Doe",
+      lastname: named("Doe"),
       telephone1: "555-2002",
     }
   );
@@ -164,7 +186,7 @@ async function changesetDemo(client: DataverseClient): Promise<void> {
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
       firstname: "Jane",
-      lastname: "Smith",
+      lastname: named("Smith"),
       telephone1: "555-2003",
     }
   );
@@ -200,7 +222,7 @@ async function contentIdReferenceDemo(client: DataverseClient): Promise<void> {
     "/accounts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
-      name: "Parent Account with References",
+      name: named("Parent Account with References"),
       telephone1: "555-3001",
     }
   );
@@ -213,7 +235,7 @@ async function contentIdReferenceDemo(client: DataverseClient): Promise<void> {
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
       firstname: "Child",
-      lastname: "Contact 1",
+      lastname: named("Contact 1"),
       telephone1: "555-3002",
       // Reference the account created by the request with id "account"
       "parentcustomerid_account@odata.bind": "$account",
@@ -229,7 +251,7 @@ async function contentIdReferenceDemo(client: DataverseClient): Promise<void> {
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
       firstname: "Child",
-      lastname: "Contact 2",
+      lastname: named("Contact 2"),
       telephone1: "555-3003",
       // Reference the same account
       "parentcustomerid_account@odata.bind": "$account",
@@ -264,7 +286,7 @@ async function continueOnErrorDemo(client: DataverseClient): Promise<void> {
     "/accounts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
-      name: "Valid Account 1",
+      name: named("Valid Account 1"),
       telephone1: "555-4001",
     }
   );
@@ -276,7 +298,7 @@ async function continueOnErrorDemo(client: DataverseClient): Promise<void> {
     "/accounts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
-      name: "Valid Account 2",
+      name: named("Valid Account 2"),
       telephone1: "555-4002",
     }
   );
@@ -288,7 +310,7 @@ async function continueOnErrorDemo(client: DataverseClient): Promise<void> {
     "/accounts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
-      name: "Invalid Account",
+      name: named("Invalid Account"),
       // Reference non-existent primary contact
       "primarycontactid@odata.bind": "/contacts(00000000-0000-0000-0000-000000000000)",
     }
@@ -301,7 +323,7 @@ async function continueOnErrorDemo(client: DataverseClient): Promise<void> {
     "/accounts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
-      name: "Valid Account 3",
+      name: named("Valid Account 3"),
       telephone1: "555-4003",
     }
   );
@@ -313,7 +335,7 @@ async function continueOnErrorDemo(client: DataverseClient): Promise<void> {
     "/accounts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
-      name: "Valid Account 4",
+      name: named("Valid Account 4"),
       telephone1: "555-4004",
     }
   );
@@ -346,6 +368,11 @@ async function continueOnErrorDemo(client: DataverseClient): Promise<void> {
   console.log(
     chalk.gray(`\n  Summary: ${String(successCount)} succeeded, ${String(failureCount)} failed`)
   );
+
+  // Only the invalid request should have failed
+  if (result.errors.size !== 1 || !result.errors.has("req3") || successCount !== 4) {
+    throw new Error("Expected exactly one failed request, req3 (the invalid account)");
+  }
 }
 
 /**
@@ -362,7 +389,7 @@ async function mixedOperationsDemo(client: DataverseClient): Promise<void> {
     .api("/accounts")
     .header("Prefer", "return=representation")
     .post<{ accountid: string }>({
-      name: "Account to Update",
+      name: named("Account to Update"),
       telephone1: "555-5001",
     });
   const testAccountId = testAccount.accountid;
@@ -371,7 +398,7 @@ async function mixedOperationsDemo(client: DataverseClient): Promise<void> {
     .api("/accounts")
     .header("Prefer", "return=representation")
     .post<{ accountid: string }>({
-      name: "Account to Delete",
+      name: named("Account to Delete"),
       telephone1: "555-5002",
     });
   const deleteAccountId = deleteAccount.accountid;
@@ -394,7 +421,7 @@ async function mixedOperationsDemo(client: DataverseClient): Promise<void> {
     "/accounts",
     { "Content-Type": "application/json", Prefer: "return=representation" },
     {
-      name: "New Account from Mixed Batch",
+      name: named("New Account from Mixed Batch"),
       telephone1: "555-5003",
     }
   );
@@ -458,7 +485,7 @@ async function performanceComparisonDemo(client: DataverseClient): Promise<void>
       .api("/accounts")
       .header("Prefer", "return=representation")
       .post<{ accountid: string }>({
-        name: `Individual Account ${String(i + 1)}`,
+        name: named(`Individual Account ${String(i + 1)}`),
         telephone1: `555-6${String(i + 1).padStart(3, "0")}`,
       });
     individualIds.push(response.accountid);
@@ -483,7 +510,7 @@ async function performanceComparisonDemo(client: DataverseClient): Promise<void>
       "/accounts",
       { "Content-Type": "application/json", Prefer: "return=representation" },
       {
-        name: `Batch Account ${String(i + 1)}`,
+        name: named(`Batch Account ${String(i + 1)}`),
         telephone1: `555-7${String(i + 1).padStart(3, "0")}`,
       }
     );
@@ -513,7 +540,7 @@ async function performanceComparisonDemo(client: DataverseClient): Promise<void>
 
   const bulkAccounts = Array.from({ length: recordCount }, (_, i) => ({
     "@odata.type": "Microsoft.Dynamics.CRM.account",
-    name: `Bulk Account ${String(i + 1)}`,
+    name: named(`Bulk Account ${String(i + 1)}`),
     telephone1: `555-8${String(i + 1).padStart(3, "0")}`,
   }));
 
@@ -586,6 +613,9 @@ async function main() {
     tokenProvider,
   });
 
+  console.log(chalk.gray(`  Run id: ${runId} (every record this run creates is named with it)\n`));
+
+  let failed = false;
   try {
     // Run all demos
     await simpleBatchDemo(client);
@@ -608,9 +638,54 @@ async function main() {
     console.log(chalk.gray("  5. Use bulk operations for same-entity creates/updates"));
     console.log(chalk.gray("  6. Use batch for mixed operations and relationships\n"));
   } catch (error: unknown) {
+    failed = true;
     console.error(chalk.bold.red("\n❌ Demo failed:"), error);
-    process.exit(1);
+  } finally {
+    // Demos 1 to 4 leave their records in place; this deletes them, and anything a failed demo
+    // left behind
+    if (!(await cleanup(client))) failed = true;
   }
+  if (failed) process.exit(1);
+}
+
+/**
+ * Delete every contact and account of this run that is still there: contacts by last name,
+ * then accounts by name. Returns false if any couldn't be deleted.
+ */
+async function cleanup(client: DataverseClient): Promise<boolean> {
+  console.log(chalk.bold.blue("\n=== Cleanup ===\n"));
+  let ok = true;
+  const tables = [
+    { set: "contacts", key: "contactid", nameColumn: "lastname" },
+    { set: "accounts", key: "accountid", nameColumn: "name" },
+  ];
+  for (const { set, key, nameColumn } of tables) {
+    try {
+      const rows = await client
+        .api(`/${set}`)
+        .select(key)
+        .filter(odata.startsWith(nameColumn, runId))
+        .getAll<Record<string, string>>();
+      let deleted = 0;
+      for (const row of rows) {
+        try {
+          await client.api(`/${set}(${row[key]})`).delete();
+          deleted++;
+        } catch (error: unknown) {
+          // Already gone (deleting an account can delete its contacts) counts as deleted
+          if (error instanceof DataverseError && error.status === 404) continue;
+          ok = false;
+          console.error(chalk.red(`  ❌ Could not delete ${set}(${row[key]}):`), error);
+        }
+      }
+      console.log(chalk.green(`  ✓ Deleted ${String(deleted)} ${set}`));
+    } catch (error: unknown) {
+      ok = false;
+      console.error(chalk.red(`  ❌ Could not look for this run's ${set}:`), error);
+    }
+  }
+  if (!ok) console.error(chalk.red(`  Delete the records named ${runId} by hand.`));
+  return ok;
 }
 
 // Run the application

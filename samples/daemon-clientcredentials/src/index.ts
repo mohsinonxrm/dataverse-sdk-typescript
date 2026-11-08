@@ -48,18 +48,26 @@ function loadEnv(): Config {
     }
   }
 
-  const clientId = env.AZURE_CLIENT_ID || process.env.AZURE_CLIENT_ID;
-  const tenantId = env.AZURE_TENANT_ID || process.env.AZURE_TENANT_ID;
-  const clientSecret = env.AZURE_CLIENT_SECRET || process.env.AZURE_CLIENT_SECRET;
-  const dataverseUrl = env.DATAVERSE_URL || process.env.DATAVERSE_URL;
+  // AZURE_* (this sample's names) or DATAVERSE_* (the names the repository's live CI uses)
+  const setting = (...names: string[]): string | undefined =>
+    names.map((name) => env[name] || process.env[name]).find(Boolean);
+  const clientId = setting("AZURE_CLIENT_ID", "DATAVERSE_CLIENT_ID");
+  const tenantId = setting("AZURE_TENANT_ID", "DATAVERSE_TENANT_ID");
+  const clientSecret = setting("AZURE_CLIENT_SECRET", "DATAVERSE_CLIENT_SECRET");
+  const dataverseUrl = setting("DATAVERSE_URL");
 
   if (!clientId || !tenantId || !clientSecret || !dataverseUrl) {
     console.error(chalk.red("❌ Missing required environment variables!"));
-    console.error(chalk.yellow("Please create a .env file with:"));
+    console.error(chalk.yellow("Create a .env file (or set environment variables) with:"));
     console.error(chalk.yellow("  AZURE_CLIENT_ID=your-app-registration-id"));
     console.error(chalk.yellow("  AZURE_TENANT_ID=your-tenant-id"));
     console.error(chalk.yellow("  AZURE_CLIENT_SECRET=your-client-secret"));
     console.error(chalk.yellow("  DATAVERSE_URL=https://yourorg.crm.dynamics.com"));
+    console.error(
+      chalk.yellow(
+        "DATAVERSE_CLIENT_ID, DATAVERSE_TENANT_ID and DATAVERSE_CLIENT_SECRET also work."
+      )
+    );
     process.exit(1);
   }
 
@@ -68,21 +76,31 @@ function loadEnv(): Config {
     tenantId,
     clientSecret,
     dataverseUrl,
-    batchSize: parseInt(env.BATCH_SIZE || "100", 10),
+    batchSize: parseInt(setting("BATCH_SIZE") ?? "100", 10),
   };
 }
+
+/**
+ * Every account this run creates is named `sdk-sample-<tag> ...`, so cleanup can find them all.
+ * SAMPLE_RUN_TAG sets the tag (lowercase letters and digits); otherwise it's random.
+ */
+const runTag = process.env.SAMPLE_RUN_TAG ?? Math.random().toString(36).slice(2, 8);
+if (!/^[a-z0-9]{1,10}$/.test(runTag)) {
+  console.error(chalk.red("❌ SAMPLE_RUN_TAG must be 1 to 10 lowercase letters or digits."));
+  process.exit(1);
+}
+const runId = `sdk-sample-${runTag}`;
 
 /**
  * Generate sample account data
  */
 function generateAccountData(count: number): Array<Record<string, unknown>> {
   const accounts: Array<Record<string, unknown>> = [];
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5);
 
   for (let i = 1; i <= count; i++) {
     accounts.push({
       "@odata.type": "Microsoft.Dynamics.CRM.account",
-      name: `Bulk Account ${String(i)} - ${timestamp}`,
+      name: `${runId} Bulk Account ${String(i)}`,
       telephone1: `555-${String(i).padStart(4, "0")}`,
       address1_city: i % 2 === 0 ? "Seattle" : "Redmond",
       address1_stateorprovince: "WA",
@@ -240,12 +258,12 @@ async function demonstrateErrorHandling(client: DataverseClient): Promise<void> 
     const invalidAccounts = [
       {
         "@odata.type": "Microsoft.Dynamics.CRM.account",
-        name: "Valid Account",
+        name: `${runId} Valid Account`,
         telephone1: "555-0001",
       },
       {
         // Missing required @odata.type - will fail
-        name: "Invalid Account",
+        name: `${runId} Invalid Account`,
         telephone1: "555-0002",
       } as Record<string, unknown>,
     ];
@@ -298,16 +316,19 @@ async function main() {
 
   console.log(chalk.bold.yellow("\n=== Bulk Operations Demo ===\n"));
 
+  console.log(chalk.gray(`  Run id: ${runId} (every account this run creates starts with it)`));
+
+  let failed = false;
   try {
     // Demo 1: Bulk create
     const accountIds = await bulkCreateAccounts(client, env.batchSize);
 
-    // Demo 2: Query the accounts created today. Today is a Dataverse query function: it only
-    // works inside $filter, with the column as PropertyName.
+    // Demo 2: Query this run's accounts created today. Today is a Dataverse query function: it
+    // only works inside $filter, with the column as PropertyName.
     await queryAccounts(
       client,
       odata.and(
-        odata.contains("name", "Bulk Account"),
+        odata.contains("name", `${runId} Bulk Account`),
         queryFunctions.today({ PropertyName: "createdon" })
       )
     );
@@ -332,8 +353,44 @@ async function main() {
     console.log(chalk.gray(`  - DeleteMultiple: ⚠️  Elastic tables only`));
     console.log(chalk.gray(`  - Individual deletes: Works for all tables, slower\n`));
   } catch (error) {
+    failed = true;
     console.error(chalk.bold.red("\n❌ Operation failed:"), error);
-    process.exit(1);
+  } finally {
+    // Whatever happened above, leave no account of this run behind
+    if (!(await deleteLeftovers(client, orgService))) failed = true;
+  }
+  if (failed) process.exit(1);
+}
+
+/**
+ * Delete every account of this run that is still there (all of them if a demo failed before its
+ * cleanup ran). Returns false if any couldn't be deleted.
+ */
+async function deleteLeftovers(
+  client: DataverseClient,
+  orgService: OrganizationService
+): Promise<boolean> {
+  try {
+    const leftovers = await client
+      .api("/accounts")
+      .select("accountid")
+      .filter(odata.startsWith("name", runId))
+      .getAll<{ accountid: string }>();
+    if (leftovers.length === 0) return true;
+    console.log(chalk.yellow(`\n🧹 Deleting ${String(leftovers.length)} leftover accounts...`));
+    let ok = true;
+    for (const { accountid } of leftovers) {
+      try {
+        await orgService.delete("accounts", accountid);
+      } catch (error) {
+        ok = false;
+        console.error(chalk.red(`❌ Could not delete account ${accountid}:`), error);
+      }
+    }
+    return ok;
+  } catch (error) {
+    console.error(chalk.red(`❌ Could not look for leftover accounts named ${runId}:`), error);
+    return false;
   }
 }
 

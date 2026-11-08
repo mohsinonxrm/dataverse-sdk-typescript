@@ -18,7 +18,7 @@
 import { config } from "dotenv";
 import chalk from "chalk";
 import { ConfidentialClientApplication } from "@azure/msal-node";
-import { DataverseClient, DataverseError } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, DataverseError, odata } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
@@ -40,18 +40,48 @@ import {
 
 config();
 
-// Validation
-if (
-  !process.env.AZURE_CLIENT_ID ||
-  !process.env.AZURE_TENANT_ID ||
-  !process.env.AZURE_CLIENT_SECRET ||
-  !process.env.DATAVERSE_URL
-) {
-  console.error(
-    chalk.red("Missing required environment variables. Copy .env.example to .env and configure.")
-  );
+/** The connection settings: AZURE_* (this sample's names) or DATAVERSE_* (the live CI's names). */
+function loadSettings(): {
+  clientId: string;
+  tenantId: string;
+  clientSecret: string;
+  dataverseUrl: string;
+} {
+  const setting = (...names: string[]): string | undefined =>
+    names.map((name) => process.env[name]).find(Boolean);
+  const clientId = setting("AZURE_CLIENT_ID", "DATAVERSE_CLIENT_ID");
+  const tenantId = setting("AZURE_TENANT_ID", "DATAVERSE_TENANT_ID");
+  const clientSecret = setting("AZURE_CLIENT_SECRET", "DATAVERSE_CLIENT_SECRET");
+  const dataverseUrl = setting("DATAVERSE_URL");
+
+  if (!clientId || !tenantId || !clientSecret || !dataverseUrl) {
+    console.error(
+      chalk.red("Missing required environment variables. Copy .env.example to .env and configure.")
+    );
+    console.error(
+      chalk.yellow(
+        "Needs AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_CLIENT_SECRET (or DATAVERSE_CLIENT_ID, " +
+          "DATAVERSE_TENANT_ID, DATAVERSE_CLIENT_SECRET) and DATAVERSE_URL."
+      )
+    );
+    process.exit(1);
+  }
+  return { clientId, tenantId, clientSecret, dataverseUrl };
+}
+
+const settings = loadSettings();
+
+/**
+ * Every record this run creates is named `sdk-sample-<tag> ...` (leads by subject), so cleanup
+ * can find them all. SAMPLE_RUN_TAG sets the tag (lowercase letters and digits); otherwise it's
+ * random.
+ */
+const runTag = process.env.SAMPLE_RUN_TAG ?? Math.random().toString(36).slice(2, 8);
+if (!/^[a-z0-9]{1,10}$/.test(runTag)) {
+  console.error(chalk.red("SAMPLE_RUN_TAG must be 1 to 10 lowercase letters or digits."));
   process.exit(1);
 }
+const runId = `sdk-sample-${runTag}`;
 
 // Track created entities for cleanup
 const createdRecords = {
@@ -60,6 +90,7 @@ const createdRecords = {
   opportunities: [] as string[],
   leads: [] as string[],
   incidents: [] as string[],
+  solutions: [] as string[],
 };
 
 /** The message of a caught error (anything can be thrown). */
@@ -99,7 +130,7 @@ async function assignDemo(orgService: OrganizationService, client: DataverseClie
   // Create test account
   console.log("Creating test account...");
   const accountId = await orgService.create("accounts", {
-    name: "Test Account for Assignment",
+    name: `${runId} Test Account for Assignment`,
     accountnumber: "ASSIGN-001",
   });
 
@@ -155,7 +186,7 @@ async function setStateDemo(
   // Create test account
   console.log("Creating test account...");
   const accountId = await orgService.create("accounts", {
-    name: "Test Account for State Change",
+    name: `${runId} Test Account for State Change`,
     accountnumber: "STATE-001",
   });
 
@@ -250,7 +281,7 @@ async function winOpportunityDemo(
   // Create test opportunity
   console.log("Creating test opportunity...");
   const opportunityId = await orgService.create("opportunities", {
-    name: "Test Opportunity for Win",
+    name: `${runId} Test Opportunity for Win`,
     estimatedvalue: 75000,
     estimatedclosedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
   });
@@ -265,6 +296,7 @@ async function winOpportunityDemo(
   const request = new WinOpportunityRequest({
     OpportunityClose: {
       "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+      subject: `${runId} Won: Test Opportunity`,
       "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
       actualrevenue: 78000,
     },
@@ -295,7 +327,7 @@ async function winOpportunityDemo(
  * Demo 6: Merge (Message - Platform)
  *
  * Merges two records of the same type.
- * All related records move to target, subordinate is deleted.
+ * All related records move to target, subordinate is deactivated.
  */
 async function mergeDemo(orgService: OrganizationService, client: DataverseClient): Promise<void> {
   console.log(chalk.cyan("\n━━━ Demo 6: Merge (MergeRequest) ━━━\n"));
@@ -306,18 +338,19 @@ async function mergeDemo(orgService: OrganizationService, client: DataverseClien
   const targetId = await orgService.create("leads", {
     firstname: "Target",
     lastname: "Lead",
-    subject: "Primary lead record",
+    subject: `${runId} Primary lead record`,
     companyname: "Target Corp",
   });
+  createdRecords.leads.push(targetId);
 
   const subordinateId = await orgService.create("leads", {
     firstname: "Subordinate",
     lastname: "Lead",
-    subject: "Duplicate lead record",
+    subject: `${runId} Duplicate lead record`,
     companyname: "Subordinate Corp",
   });
-
-  createdRecords.leads.push(targetId); // Only track target (subordinate will be deleted)
+  // Merge deactivates the subordinate; it doesn't delete it, so cleanup deletes it
+  createdRecords.leads.push(subordinateId);
 
   console.log(
     `  Target: ${chalk.green("Target Lead")} (${chalk.dim(targetId.substring(0, 8) + "...")})`
@@ -334,7 +367,7 @@ async function mergeDemo(orgService: OrganizationService, client: DataverseClien
     Subordinate: createEntityReference("lead", subordinateId),
     UpdateContent: {
       "@odata.type": "Microsoft.Dynamics.CRM.lead",
-      subject: "Merged lead - consolidated from duplicate",
+      subject: `${runId} Merged lead - consolidated from duplicate`,
     },
     PerformParentingChecks: false,
   });
@@ -359,15 +392,17 @@ async function mergeDemo(orgService: OrganizationService, client: DataverseClien
   console.log(`  Subject: ${chalk.dim(merged.subject ?? "")}`);
   console.log(`  Company: ${chalk.dim(merged.companyname ?? "")}`);
 
-  // Verify subordinate deleted
-  try {
-    await client.api(`/leads(${subordinateId})`).select("leadid").get<{ leadid: string }>();
-    console.log(chalk.red("✗ Subordinate lead still exists (unexpected)"));
-  } catch (error: unknown) {
-    if (error instanceof DataverseError && error.status === 404) {
-      console.log(chalk.green("✓ Subordinate lead deleted"));
-    }
+  // Verify subordinate deactivated (a lead's inactive state is Disqualified, statecode 2)
+  const subordinate = await client
+    .api(`/leads(${subordinateId})`)
+    .select("statecode")
+    .get<{ statecode: number }>();
+  if (subordinate.statecode === 0) {
+    throw new Error("The subordinate lead is still open after the merge");
   }
+  console.log(
+    chalk.green(`✓ Subordinate lead deactivated (statecode ${String(subordinate.statecode)})`)
+  );
 
   console.log(chalk.dim("\nℹ️  Merge supports: account, contact, lead, incident"));
 }
@@ -378,10 +413,15 @@ async function mergeDemo(orgService: OrganizationService, client: DataverseClien
  * Exports a solution as a zip file.
  * Requires solution to exist.
  */
-async function exportSolutionDemo(orgService: OrganizationService): Promise<void> {
+async function exportSolutionDemo(
+  orgService: OrganizationService,
+  client: DataverseClient
+): Promise<void> {
   console.log(chalk.cyan("\n━━━ Demo 7: ExportSolution (ExportSolutionRequest) ━━━\n"));
 
-  const solutionName = process.env.SOLUTION_NAME ?? "Default";
+  // The Default solution can't be exported, so without SOLUTION_NAME the sample exports an
+  // empty solution it creates (and deletes in cleanup)
+  const solutionName = process.env.SOLUTION_NAME ?? (await createEmptySolution(client));
 
   console.log(`Exporting solution: ${chalk.cyan(solutionName)}`);
   console.log(chalk.dim("Note: This may take 10-60 seconds depending on solution size...\n"));
@@ -413,12 +453,35 @@ async function exportSolutionDemo(orgService: OrganizationService): Promise<void
   } catch (error: unknown) {
     if (errorMessage(error).includes("does not exist")) {
       console.log(chalk.yellow(`⚠ Solution '${solutionName}' not found`));
-      console.log(chalk.dim("  Set SOLUTION_NAME in .env to an existing solution"));
-      console.log(chalk.dim("  Or export the Default solution (already attempted)"));
-    } else {
-      throw error;
+      console.log(chalk.dim("  Set SOLUTION_NAME in .env to an existing unmanaged solution,"));
+      console.log(chalk.dim("  or leave it out to export an empty solution the sample creates"));
     }
+    throw error;
   }
+}
+
+/**
+ * Create an empty unmanaged solution, named with this run's id, under the publisher of the
+ * Default solution. Returns its unique name.
+ */
+async function createEmptySolution(client: DataverseClient): Promise<string> {
+  const uniqueName = `sdksample${runTag}`;
+  console.log(`Creating an empty solution to export: ${chalk.cyan(uniqueName)}`);
+  const { value } = await client
+    .api("/solutions")
+    .select("_publisherid_value")
+    .filter(odata.eq("uniquename", "Default"))
+    .get<{ value: Array<{ _publisherid_value: string }> }>();
+  const publisherId = value.at(0)?._publisherid_value;
+  if (!publisherId) throw new Error("The org has no Default solution to take a publisher from");
+  const solutionId = await client.api("/solutions").createAndGetId({
+    uniquename: uniqueName,
+    friendlyname: `${runId} export demo`,
+    version: "1.0.0.0",
+    "publisherid@odata.bind": `/publishers(${publisherId})`,
+  });
+  createdRecords.solutions.push(solutionId);
+  return uniqueName;
 }
 
 /**
@@ -458,6 +521,7 @@ async function publishXmlDemo(orgService: OrganizationService): Promise<void> {
     console.log(chalk.dim("\nℹ️  Use PublishAllXml to publish all customizations"));
   } catch (error: unknown) {
     console.log(chalk.red("✗ Publish failed:"), errorMessage(error));
+    throw error;
   }
 }
 
@@ -466,23 +530,50 @@ async function publishXmlDemo(orgService: OrganizationService): Promise<void> {
  *
  * For messages not yet typed in the SDK, use generic OrganizationRequest.
  */
-async function genericRequestDemo(orgService: OrganizationService): Promise<void> {
+async function genericRequestDemo(
+  orgService: OrganizationService,
+  client: DataverseClient
+): Promise<void> {
   console.log(chalk.cyan("\n━━━ Demo 9: Generic OrganizationRequest ━━━\n"));
 
-  console.log("Using generic OrganizationRequest for WhoAmI...");
+  // A generic request runs as a Web API action (POST), so it suits actions such as
+  // LoseOpportunity; a function (GET) such as WhoAmI takes WhoAmIFunction (Demo 1)
+  console.log("Creating test opportunity...");
+  const opportunityId = await orgService.create("opportunities", {
+    name: `${runId} Test Opportunity for Lose`,
+    estimatedvalue: 20000,
+  });
+  createdRecords.opportunities.push(opportunityId);
+  console.log(`  Created: ${chalk.dim(opportunityId.substring(0, 8) + "...")}`);
 
-  // Create generic request
-  const request = new OrganizationRequest("WhoAmI", {});
+  console.log("\nUsing generic OrganizationRequest for LoseOpportunity...");
+
+  // Create generic request; parameter values take the Web API shapes
+  const request = new OrganizationRequest("LoseOpportunity", {
+    OpportunityClose: {
+      "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+      subject: `${runId} Lost: Test Opportunity`,
+      "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
+    },
+    Status: 4, // Canceled, a statuscode of the Lost state
+  });
 
   const response = await orgService.execute<OrganizationResponse>(request);
 
   console.log("\nGeneric response:");
-  console.log(`  User ID: ${chalk.green(response.Results.UserId)}`);
-  console.log(`  Business Unit ID: ${chalk.green(response.Results.BusinessUnitId)}`);
-  console.log(`  Organization ID: ${chalk.green(response.Results.OrganizationId)}`);
-  console.log(`  User ID: ${chalk.green(response.Results.UserId)}`);
-  console.log(`  Business Unit ID: ${chalk.green(response.Results.BusinessUnitId)}`);
-  console.log(`  Organization ID: ${chalk.green(response.Results.OrganizationId)}`);
+  console.log(`  Message: ${chalk.green(response.messageName)}`);
+  console.log(
+    `  Results: ${chalk.dim(JSON.stringify(response.Results))} (LoseOpportunity has none)`
+  );
+
+  const opportunity = await client
+    .api(`/opportunities(${opportunityId})`)
+    .select("statecode", "statuscode")
+    .get<{ statecode: number; statuscode: number }>();
+  if (opportunity.statecode !== 2) {
+    throw new Error(`The opportunity isn't lost (statecode ${String(opportunity.statecode)})`);
+  }
+  console.log(`  State: ${chalk.yellow("Lost")}, Status Code: ${String(opportunity.statuscode)}`);
 
   console.log(chalk.dim("\nℹ️  Use OrganizationRequest for:"));
   console.log(chalk.dim("  - Custom actions not in the SDK"));
@@ -493,7 +584,7 @@ async function genericRequestDemo(orgService: OrganizationService): Promise<void
   console.log(
     chalk.dim(`
   const customRequest = new OrganizationRequest('new_MyCustomAction', {
-    Target: { LogicalName: 'account', Id: accountId },
+    Target: { '@odata.type': 'Microsoft.Dynamics.CRM.account', accountid: accountId },
     InputParam1: 'value1',
     InputParam2: 42,
   });
@@ -544,71 +635,89 @@ async function optionSetDemo(_orgService: OrganizationService): Promise<void> {
 }
 
 /**
- * Cleanup - Delete all created test records
+ * Cleanup - Delete all created test records: the ones the demos tracked, then any record still
+ * named with this run's id (anything a failed demo created but didn't track). Returns false if
+ * any couldn't be deleted.
  */
-async function cleanup(orgService: OrganizationService): Promise<void> {
+async function cleanup(orgService: OrganizationService, client: DataverseClient): Promise<boolean> {
   console.log(chalk.cyan("\n━━━ Cleanup ━━━\n"));
 
   let deletedCount = 0;
+  let ok = true;
 
-  // Delete opportunities (closes related opportunityclose records)
-  for (const id of createdRecords.opportunities) {
-    try {
-      await orgService.delete("opportunities", id);
-      deletedCount++;
-      console.log(
-        `${chalk.green("✓")} Deleted opportunity ${chalk.dim(id.substring(0, 8) + "...")}`
-      );
-    } catch (error: unknown) {
-      console.log(`${chalk.red("✗")} Failed to delete opportunity: ${errorMessage(error)}`);
+  // Opportunities first (deleting one deletes its opportunityclose records)
+  const tables = [
+    {
+      set: "opportunities",
+      label: "opportunity",
+      ids: createdRecords.opportunities,
+      key: "opportunityid",
+      nameColumn: "name",
+    },
+    {
+      set: "leads",
+      label: "lead",
+      ids: createdRecords.leads,
+      key: "leadid",
+      nameColumn: "subject",
+    },
+    {
+      set: "accounts",
+      label: "account",
+      ids: createdRecords.accounts,
+      key: "accountid",
+      nameColumn: "name",
+    },
+    { set: "contacts", label: "contact", ids: createdRecords.contacts, key: "contactid" },
+    { set: "incidents", label: "incident", ids: createdRecords.incidents, key: "incidentid" },
+    {
+      set: "solutions",
+      label: "solution",
+      ids: createdRecords.solutions,
+      key: "solutionid",
+      nameColumn: "friendlyname",
+    },
+  ];
+
+  for (const { set, label, ids, key, nameColumn } of tables) {
+    const toDelete = new Set(ids);
+    if (nameColumn) {
+      try {
+        const rows = await client
+          .api(`/${set}`)
+          .select(key)
+          .filter(odata.startsWith(nameColumn, runId))
+          .getAll<Record<string, string>>();
+        for (const row of rows) toDelete.add(row[key]);
+      } catch (error: unknown) {
+        ok = false;
+        console.log(
+          `${chalk.red("✗")} Failed to look for this run's ${set}: ${errorMessage(error)}`
+        );
+      }
+    }
+    for (const id of toDelete) {
+      try {
+        await orgService.delete(set, id);
+        deletedCount++;
+        console.log(
+          `${chalk.green("✓")} Deleted ${label} ${chalk.dim(id.substring(0, 8) + "...")}`
+        );
+      } catch (error: unknown) {
+        // Already gone counts as deleted
+        if (error instanceof DataverseError && error.status === 404) continue;
+        ok = false;
+        console.log(`${chalk.red("✗")} Failed to delete ${label} ${id}: ${errorMessage(error)}`);
+      }
     }
   }
 
-  // Delete leads
-  for (const id of createdRecords.leads) {
-    try {
-      await orgService.delete("leads", id);
-      deletedCount++;
-      console.log(`${chalk.green("✓")} Deleted lead ${chalk.dim(id.substring(0, 8) + "...")}`);
-    } catch (error: unknown) {
-      console.log(`${chalk.red("✗")} Failed to delete lead: ${errorMessage(error)}`);
-    }
+  if (ok) {
+    console.log(chalk.green(`\n✓ Cleanup complete - deleted ${String(deletedCount)} records`));
+  } else {
+    console.log(chalk.red(`\n✗ Cleanup incomplete: delete the records named ${runId} by hand`));
   }
-
-  // Delete accounts
-  for (const id of createdRecords.accounts) {
-    try {
-      await orgService.delete("accounts", id);
-      deletedCount++;
-      console.log(`${chalk.green("✓")} Deleted account ${chalk.dim(id.substring(0, 8) + "...")}`);
-    } catch (error: unknown) {
-      console.log(`${chalk.red("✗")} Failed to delete account: ${errorMessage(error)}`);
-    }
-  }
-
-  // Delete contacts
-  for (const id of createdRecords.contacts) {
-    try {
-      await orgService.delete("contacts", id);
-      deletedCount++;
-      console.log(`${chalk.green("✓")} Deleted contact ${chalk.dim(id.substring(0, 8) + "...")}`);
-    } catch (error: unknown) {
-      console.log(`${chalk.red("✗")} Failed to delete contact: ${errorMessage(error)}`);
-    }
-  }
-
-  // Delete incidents
-  for (const id of createdRecords.incidents) {
-    try {
-      await orgService.delete("incidents", id);
-      deletedCount++;
-      console.log(`${chalk.green("✓")} Deleted incident ${chalk.dim(id.substring(0, 8) + "...")}`);
-    } catch (error: unknown) {
-      console.log(`${chalk.red("✗")} Failed to delete incident: ${errorMessage(error)}`);
-    }
-  }
-
-  console.log(chalk.green(`\n✓ Cleanup complete - deleted ${String(deletedCount)} records`));
+  return ok;
 }
 
 /**
@@ -623,27 +732,29 @@ async function main(): Promise<void> {
   // Initialize client
   const cca = new ConfidentialClientApplication({
     auth: {
-      clientId: process.env.AZURE_CLIENT_ID!,
-      authority: `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID!}`,
-      clientSecret: process.env.AZURE_CLIENT_SECRET!,
+      clientId: settings.clientId,
+      authority: `https://login.microsoftonline.com/${settings.tenantId}`,
+      clientSecret: settings.clientSecret,
     },
   });
 
   const tokenProvider = new MsalNodeTokenProvider(cca, {
     flow: "clientCredentials",
-    scopes: [`${process.env.DATAVERSE_URL!}/.default`],
+    scopes: [`${new URL(settings.dataverseUrl).origin}/.default`],
   });
 
   const client = new DataverseClient({
-    baseUrl: process.env.DATAVERSE_URL!,
+    baseUrl: settings.dataverseUrl,
     apiVersion: "v9.2",
     tokenProvider,
   });
 
   const orgService = new OrganizationService(client);
 
-  console.log(`Connected to: ${chalk.green(process.env.DATAVERSE_URL)}\n`);
+  console.log(`Connected to: ${chalk.green(settings.dataverseUrl)}`);
+  console.log(chalk.dim(`Run id: ${runId} (every record this run creates is named with it)\n`));
 
+  let failed = false;
   try {
     // Run all demos
     await whoAmIDemo(client);
@@ -652,31 +763,27 @@ async function main(): Promise<void> {
     await executeWorkflowDemo(orgService);
     await winOpportunityDemo(orgService, client);
     await mergeDemo(orgService, client);
-    await exportSolutionDemo(orgService);
+    await exportSolutionDemo(orgService, client);
     await publishXmlDemo(orgService);
-    await genericRequestDemo(orgService);
+    await genericRequestDemo(orgService, client);
     await optionSetDemo(orgService);
-
-    // Cleanup
-    await cleanup(orgService);
-
-    console.log(chalk.green.bold("\n✓ All demos completed successfully!\n"));
   } catch (error: unknown) {
+    failed = true;
     console.error(chalk.red("\n✗ Error:"), errorMessage(error));
     // The Web API's error body, when Dataverse answered
     if (error instanceof DataverseError && error.raw !== undefined) {
       console.error(chalk.dim(JSON.stringify(error.raw, null, 2)));
     }
-
-    // Attempt cleanup even on error
-    try {
-      await cleanup(orgService);
-    } catch (_cleanupError: unknown) {
-      console.error(chalk.red("✗ Cleanup also failed"));
-    }
-
-    process.exit(1);
+  } finally {
+    // Cleanup, also when a demo failed
+    if (!(await cleanup(orgService, client))) failed = true;
   }
+
+  if (failed) process.exit(1);
+  console.log(chalk.green.bold("\n✓ All demos completed successfully!\n"));
 }
 
-void main();
+main().catch((error: unknown) => {
+  console.error(chalk.red("Unhandled error:"), error);
+  process.exit(1);
+});

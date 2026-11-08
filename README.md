@@ -861,7 +861,7 @@ Every package has its own Vitest suite:
 - **Unit and contract tests**: a real `DataverseClient` against a recording fake `fetch` (the internal [testing package](./packages/dataverse-sdk-testing)), asserting what reaches the wire; some core and metadata tests use MSW (Mock Service Worker)
 - **Type tests**: tsd for TypeScript type correctness (actions, functions, messages and metadata)
 - **Browser smoke tests**: the browser packages bundled with Vite and run in Chromium under a strict Content-Security-Policy (`pnpm test:browser`, [browser-tests](./packages/dataverse-sdk-browser-tests))
-- **Integration tests**: live tests against a real Dataverse org, gated on `DATAVERSE_*` environment variables (`pnpm test:integration`, [integration-tests](./packages/dataverse-sdk-integration-tests))
+- **Integration tests**: live tests against a real Dataverse org, gated on `DATAVERSE_*` environment variables (`pnpm test:integration`, [integration-tests](./packages/dataverse-sdk-integration-tests)); the non-interactive Node samples run against the same org too (`pnpm samples:live`)
 
 Run tests:
 

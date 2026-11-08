@@ -32,6 +32,7 @@
     "format:check": "prettier --check .",
     "test:integration": "pnpm --filter @mohsinonxrm/dataverse-sdk-integration-tests test:integration",
     "test:browser": "pnpm --filter @mohsinonxrm/dataverse-sdk-browser-tests test:browser",
+    "samples:live": "node scripts/samples-live.mjs",
     "check:packages": "node scripts/check-packages.mjs && node scripts/check-require.mjs",
     "api:check": "node scripts/api-report.mjs",
     "api:update": "node scripts/api-report.mjs --update",
