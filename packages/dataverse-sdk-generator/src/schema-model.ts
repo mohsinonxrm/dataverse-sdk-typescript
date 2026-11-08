@@ -218,6 +218,18 @@ export class SchemaModel {
         if (attribute.AttributeTypeName?.Value === "MultiSelectPicklistType") {
           existingProp.IsMultiSelect = true;
         }
+
+        // Constraints for validation (#347)
+        if (typeof attribute.MaxLength === "number") existingProp.MaxLength = attribute.MaxLength;
+        if (typeof attribute.MinValue === "number") existingProp.MinValue = attribute.MinValue;
+        if (typeof attribute.MaxValue === "number") existingProp.MaxValue = attribute.MaxValue;
+        const options = attribute.OptionSet?.Options;
+        if (Array.isArray(options)) {
+          existingProp.OptionValues = options
+            .map((o) => o.Value)
+            .filter((v): v is number => typeof v === "number")
+            .sort((a, b) => a - b);
+        }
       }
 
       // Apply polymorphic lookup consolidation
@@ -373,6 +385,8 @@ export class SchemaModel {
       nav.LookupTargets = attribute.Targets;
       nav.IsValidForCreate = attribute.IsValidForCreate;
       nav.IsValidForUpdate = attribute.IsValidForUpdate;
+      const requiredLevel = attribute.RequiredLevel?.Value;
+      if (requiredLevel && requiredLevel !== "None") nav.RequiredLevel = requiredLevel;
     }
   }
 

@@ -238,6 +238,18 @@ export interface PropertyType {
   /** Is this a multi-select option set? */
   IsMultiSelect?: boolean;
 
+  /** Most characters a text column holds (`MaxLength`). */
+  MaxLength?: number;
+
+  /** Smallest value a number column takes (`MinValue`). */
+  MinValue?: number;
+
+  /** Largest value a number column takes (`MaxValue`). */
+  MaxValue?: number;
+
+  /** The values of a choice or choices column's options, in order. */
+  OptionValues?: number[];
+
   /** Source type: 0=simple, 1=calculated, 2=rollup */
   SourceType?: number;
 
@@ -314,6 +326,9 @@ export interface NavigationPropertyType {
 
   /** The lookup can be set in an update (`IsValidForUpdate` of {@link LookupAttribute}). */
   IsValidForUpdate?: boolean;
+
+  /** The lookup's `RequiredLevel` when it isn't None. */
+  RequiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
 }
 
 /**

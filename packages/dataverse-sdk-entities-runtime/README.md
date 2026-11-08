@@ -119,6 +119,9 @@ const accountMetadata: EntityMetadata = {
       attributeType: "Money",
       typescriptType: "number",
       odataType: "Edm.Decimal",
+      // Constraints for validateEntity() (see Validation)
+      minValue: 0,
+      maxValue: 1000000000000,
     },
   },
   navigation: {
@@ -222,6 +225,46 @@ The referenced table's entity set comes from `reference.entitySetName` (which
 `createEntityReference` fills in for the tables in the SDK's `$metadata` snapshot), then
 `options.entitySetNames`, then `options.metadataCache` (the generated `EntityMetadataCache`).
 When none of them knows it, `formatEntityForWrite()` throws a `DataverseInvalidRequestError`.
+
+### Validation: `validateEntity(entity, metadata, options?)`
+
+Opt-in: check a create or update body against the column constraints in the table's generated
+metadata before you send it. It returns the problems it finds (an empty array when there are none);
+nothing else calls it.
+
+```typescript
+import { validateEntity } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { AccountMetadata } from "./generated/entities/Account.js";
+
+const issues = validateEntity({ name: "x".repeat(200), industrycode: 99 }, AccountMetadata);
+// [
+//   { property: "name", code: "maxLength", message: "name is 200 characters long; the column holds at most 160." },
+//   { property: "industrycode", code: "invalidOption", message: "industrycode is 99, not one of its options (1, 2, …)." },
+//   { property: "primarycontactid", code: "required", message: "primarycontactid is required." }, // if business-required
+// ]
+
+validateEntity({ statecode: 1 }, AccountMetadata, { mode: "update" }); // [] — an update checks only what it sets
+```
+
+It reads the body as `formatEntityForWrite()` takes it (columns by logical name, lookups by
+navigation property with an `EntityReference`) and reports, by `code`:
+
+| `code`                                    | When                                                                                                 |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `required`                                | a business-required (ApplicationRequired) column or lookup is `null`, or left out of a create        |
+| `notValidForCreate` / `notValidForUpdate` | the column or lookup can't be set in that mode (`IsValidForCreate` / `IsValidForUpdate`)             |
+| `maxLength`                               | text longer than the column's `MaxLength`                                                            |
+| `minValue` / `maxValue`                   | a number outside the column's `MinValue` / `MaxValue`                                                |
+| `notAnInteger`                            | a fraction in a whole-number column                                                                  |
+| `invalidOption`                           | a value that isn't one of a choice column's options (each comma-separated value of a choices column) |
+| `invalidType`                             | the wrong type for the column (text for a number, …), or a lookup that isn't an `EntityReference`    |
+
+The constraints are the `maxLength`, `minValue`, `maxValue`, `optionValues`, `isRequired`,
+`isValidForCreate` and `isValidForUpdate` of `EntityMetadata.attributes`, and the `lookupAttribute`,
+`isRequired`, `isValidForCreate` and `isValidForUpdate` of a lookup's `EntityMetadata.navigation`
+entry; `dataverse-gen` fills them in. Properties the metadata doesn't describe, annotations and
+`undefined` values are skipped. Dataverse checks the same things when the request arrives, except
+business-required columns, which only forms enforce.
 
 ---
 

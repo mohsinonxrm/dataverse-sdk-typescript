@@ -24,9 +24,15 @@ export interface AttributeMetadata {
     isPrimaryKey?: boolean;
     isReadOnly?: boolean;
     isRequired?: boolean;
+    isValidForCreate?: boolean;
+    isValidForUpdate?: boolean;
     logicalName: string;
+    maxLength?: number;
+    maxValue?: number;
+    minValue?: number;
     odataType?: string;
     optionSetType?: string;
+    optionValues?: number[];
     requiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
     schemaName: string;
     sourceType?: "calculated" | "rollup";
@@ -131,10 +137,15 @@ export interface NavigationMetadata {
     fullName?: string;
     isCollection: boolean;
     isPolymorphic?: boolean;
+    isRequired?: boolean;
+    isValidForCreate?: boolean;
+    isValidForUpdate?: boolean;
+    lookupAttribute?: string;
     name: string;
     referencedProperty?: string;
     referencingProperty?: string;
     relationshipName: string;
+    requiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
     targets?: string[];
     targetType: string;
 }
@@ -143,6 +154,42 @@ export interface NavigationMetadata {
 export type ParameterKind = ODataParameterKind;
 
 export { RequestInformation }
+
+// @public
+export function validateEntity(entity: object, metadata: EntityMetadata, options?: ValidateEntityOptions): ValidationIssue[];
+
+// @public
+export interface ValidateEntityOptions {
+    mode?: "create" | "update";
+}
+
+// @public
+export interface ValidationIssue {
+    code: ValidationIssueCode;
+    message: string;
+    property: string;
+}
+
+// @public
+export type ValidationIssueCode =
+/** A business-required (ApplicationRequired) column or lookup is missing from a create, or set to `null`. */
+"required"
+/** The column or lookup can't be set in a create (`IsValidForCreate` is false). */
+| "notValidForCreate"
+/** The column or lookup can't be set in an update (`IsValidForUpdate` is false). */
+| "notValidForUpdate"
+/** The text is longer than the column's `MaxLength`. */
+| "maxLength"
+/** The number is below the column's `MinValue`. */
+| "minValue"
+/** The number is above the column's `MaxValue`. */
+| "maxValue"
+/** A whole-number column was given a fraction. */
+| "notAnInteger"
+/** A choice (or choices) column was given a value that isn't one of its options. */
+| "invalidOption"
+/** The value has the wrong type for the column: text for a number, an id for a lookup, … */
+| "invalidType";
 
 // @public
 export interface WebApiEntityReference {
