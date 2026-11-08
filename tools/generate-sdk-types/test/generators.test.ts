@@ -3,7 +3,7 @@
  * $metadata document and check the output for the fixes in #22 (function string literals),
  * #23 (lower-case content-type for actions and messages).
  */
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -15,7 +15,7 @@ import { generateMessages } from "../src/generators/messages-generator.js";
 import { generateComplexTypes } from "../src/generators/complex-types-generator.js";
 import { generateEntityTables } from "../src/generators/references-generator.js";
 import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
-import { typecheck } from "./typecheck.js";
+import { copyMessagesHandWritten, typecheck } from "./typecheck.js";
 
 /**
  * Generated output goes inside this package (and is removed afterwards), not the OS temp dir, so
@@ -826,7 +826,6 @@ describe("#70: message response parsing", () => {
 </edmx:Edmx>`;
 
   // The hand-written base classes the generated messages extend (read, not modified)
-  const MESSAGES_SRC = new URL("../../../packages/dataverse-sdk-messages/src/", import.meta.url);
   let out: string;
   const read = (path: string) => readFile(join(out, path), "utf8");
   interface ResponseClass {
@@ -851,9 +850,7 @@ describe("#70: message response parsing", () => {
     const csdl = parseEdmx(RESPONSES_EDMX);
     await generateComplexTypes(csdl, join(out, "messages", "types"));
     await generateMessages(csdl, join(out, "messages"), false);
-    for (const file of ["OrganizationRequest.ts", "types.ts"]) {
-      await writeFile(join(out, "messages", file), await readFile(new URL(file, MESSAGES_SRC)));
-    }
+    await copyMessagesHandWritten(join(out, "messages"));
   });
 
   afterAll(async () => {

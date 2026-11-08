@@ -501,6 +501,9 @@ importers:
 
   packages/dataverse-sdk-messages:
     dependencies:
+      '@mohsinonxrm/dataverse-sdk-batch':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-batch
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
@@ -940,6 +943,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-batch':
+        specifier: workspace:*
+        version: link:../../packages/dataverse-sdk-batch
       '@mohsinonxrm/dataverse-sdk-entities-runtime':
         specifier: workspace:*
         version: link:../../packages/dataverse-sdk-entities-runtime

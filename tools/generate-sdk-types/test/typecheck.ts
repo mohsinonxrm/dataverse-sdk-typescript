@@ -2,14 +2,33 @@
  * Type-check generated code together with a usage snippet, with the real TypeScript compiler, so
  * tests can assert what compiles (and what doesn't) without casts.
  */
-import { writeFile } from "node:fs/promises";
+import { cp, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
+import { MESSAGES_HAND_WRITTEN_FILES } from "../src/generators/messages-generator.js";
 
 const CORE_TYPES = fileURLToPath(
   new URL("../../../packages/dataverse-sdk-core/dist/index.d.ts", import.meta.url)
 );
+/** The hand-written messages build their `$batch` requests with the batch package (#344). */
+const BATCH_TYPES = fileURLToPath(
+  new URL("../../../packages/dataverse-sdk-batch/dist/index.d.ts", import.meta.url)
+);
+const MESSAGES_SRC = fileURLToPath(
+  new URL("../../../packages/dataverse-sdk-messages/src", import.meta.url)
+);
+
+/**
+ * Copy the messages package's hand-written files (`OrganizationRequest.ts`, `types.ts` and the
+ * hand-written messages, #344) next to a generated messages package in `dir`, as `regen` keeps
+ * them, so its index compiles.
+ */
+export async function copyMessagesHandWritten(dir: string): Promise<void> {
+  for (const file of MESSAGES_HAND_WRITTEN_FILES) {
+    await cp(join(MESSAGES_SRC, file), join(dir, file), { recursive: true });
+  }
+}
 /** Where the generated packages import `EntityReference` from (#295). */
 const ENTITIES_RUNTIME_TYPES = fileURLToPath(
   new URL("../../../packages/dataverse-sdk-entities-runtime/dist/index.d.ts", import.meta.url)
@@ -33,6 +52,7 @@ export async function typecheck(dir: string, name: string, snippet: string): Pro
     types: [],
     paths: {
       "@mohsinonxrm/dataverse-sdk-core": [CORE_TYPES],
+      "@mohsinonxrm/dataverse-sdk-batch": [BATCH_TYPES],
       "@mohsinonxrm/dataverse-sdk-entities-runtime": [ENTITIES_RUNTIME_TYPES],
     },
   });
