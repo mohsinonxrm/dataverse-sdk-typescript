@@ -342,7 +342,8 @@ async function winOpportunityDemo(client: DataverseClient): Promise<void> {
   const opportunityId = await client.api("/opportunities").createAndGetId({
     name: `${runId} Test Opportunity for Win`,
     estimatedvalue: 50000,
-    estimatedclosedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+    // A date-only column (Edm.Date): 30 days from now, yyyy-mm-dd
+    estimatedclosedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
   });
 
   createdRecords.opportunities.push(opportunityId);

@@ -284,7 +284,8 @@ async function winOpportunityDemo(
   const opportunityId = await orgService.create("opportunities", {
     name: `${runId} Test Opportunity for Win`,
     estimatedvalue: 75000,
-    estimatedclosedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    // A date-only column (Edm.Date): yyyy-mm-dd
+    estimatedclosedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
   });
 
   createdRecords.opportunities.push(opportunityId);

@@ -194,7 +194,9 @@ If one request fails, Dataverse rolls the changeset back and `execute()` throws 
 ### Demo 3: Content-ID References
 
 Inside a changeset, a request's id is its Content-ID. A later request refers to the record an
-earlier one creates as `$<id>`:
+earlier one creates as `$<id>`. Don't send `Prefer: return=representation` on a request that
+others refer to: Dataverse then doesn't register its Content-ID, and the reference fails with
+"Content-ID Reference: '$account' does not exist in the batch context".
 
 ```typescript
 batch.beginChangeset();

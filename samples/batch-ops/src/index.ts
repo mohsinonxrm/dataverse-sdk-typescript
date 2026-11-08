@@ -216,12 +216,14 @@ async function contentIdReferenceDemo(client: DataverseClient): Promise<void> {
 
   batch.beginChangeset();
 
-  // Create parent account; its id, "account", is also its Content-ID
+  // Create parent account; its id, "account", is also its Content-ID. No
+  // `Prefer: return=representation` here: Dataverse doesn't register the Content-ID of a create
+  // that returns the record, and "$account" below would fail ("does not exist in the batch context")
   batch.addRequest(
     "account",
     "POST",
     "/accounts",
-    { "Content-Type": "application/json", Prefer: "return=representation" },
+    { "Content-Type": "application/json" },
     {
       name: named("Parent Account with References"),
       telephone1: "555-3001",
