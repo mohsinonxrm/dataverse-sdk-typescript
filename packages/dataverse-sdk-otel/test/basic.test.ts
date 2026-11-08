@@ -11,7 +11,7 @@ describe("OpenTelemetryClient", () => {
     const client = new OpenTelemetryClient();
     expect(() => {
       client.trackEvent("test");
-      client.trackDependency("test", {});
+      client.startDependency("test", {}).end({});
       client.trackException(new Error("test"));
     }).not.toThrow();
   });

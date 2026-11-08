@@ -94,12 +94,14 @@ describe("#15: every request gets its own middleware context", () => {
     const telemetry: TelemetryClient = {
       trackEvent: () => undefined,
       trackException: () => undefined,
-      trackDependency: (_name, data) => {
-        attempts.push({
-          corr: data.properties?.["correlation.id"],
-          attempt: data.properties?.["retry.attempt"],
-        });
-      },
+      startDependency: (_name, data) => ({
+        end: () => {
+          attempts.push({
+            corr: data.properties?.["correlation.id"],
+            attempt: data.properties?.["retry.attempt"],
+          });
+        },
+      }),
     };
     // "slow" fails twice, "fast" succeeds at once while "slow" is still retrying.
     const rec = recording((path, n) =>

@@ -18,6 +18,7 @@ import { DataverseAbortError, DataverseNetworkError } from "../errors/NamedError
 import { isTimeoutError, startDeadline } from "../utils/signals.js";
 import { generateUUID, normalizeHeaders } from "../utils/HeaderUtils.js";
 import { FeatureUsageTracker } from "../telemetry/FeatureUsageTracker.js";
+import { guardTelemetry } from "../utils/telemetry.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 import { odataKey, type ODataKey } from "../odata/literal.js";
 import type { FetchXmlOptions, FetchXmlPage } from "../fetchxml/page.js";
@@ -70,6 +71,21 @@ export class DataverseClient {
    */
   resolveUrl(pathOrUrl: string): string {
     return resolveRequestUrl(this.baseUrl, pathOrUrl);
+  }
+
+  /**
+   * Send an event to this client's `telemetry` (nothing happens without one). Never throws: an
+   * error from the telemetry client is logged with `logger.warn` and ignored. Packages built on
+   * the client report their own events this way (the batch package's `dataverse.batch`).
+   */
+  trackEvent(
+    name: string,
+    properties?: Record<string, string>,
+    measurements?: Record<string, number>
+  ): void {
+    const telemetry = this.options.telemetry;
+    if (telemetry)
+      guardTelemetry(telemetry, this.options.logger).trackEvent(name, properties, measurements);
   }
 
   getBaseUrl(): string {

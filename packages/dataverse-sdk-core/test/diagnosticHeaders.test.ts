@@ -66,7 +66,7 @@ describe("#13: diagnostic headers can be turned off", () => {
     const dependencies: Array<Record<string, string> | undefined> = [];
     const telemetry: TelemetryClient = {
       trackEvent: () => undefined,
-      trackDependency: (_n, d) => dependencies.push(d.properties),
+      startDependency: () => ({ end: (d) => dependencies.push(d.properties) }),
       trackException: () => undefined,
     };
     const { client, sent } = setup({ diagnosticHeaders: false, telemetry });

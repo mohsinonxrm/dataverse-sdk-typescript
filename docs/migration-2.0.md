@@ -71,6 +71,33 @@ In 1.0 the actions, functions, messages, entities-runtime and xrm packages each 
 
 - **`search()` is removed (#378).** Dataverse's Web API doesn't support `$search`, so a request with it failed. For full-text search use Dataverse search (the `searchquery` message); for a column match, `$filter` with `contains()`.
 - **Paging takes request options (#378).** `getAll()` and `iterate()` accept `RequestOptions` and apply them to every page (`timeoutMs` and `attemptTimeoutMs` per page). `getAll({ maxItems: 0 })` returns `[]`. If you construct a `PageIterator` yourself, its third argument is now the request options (`{ signal }`), not the signal.
+- **`TelemetryClient`: `trackDependency` is replaced by `startDependency` (#97).** The SDK now calls `startDependency(name, data)` before each request attempt, with what is known then (`target`, `method`, redacted `url`, `properties`), and calls `end(data)` on the handle it returns once the attempt is done, with the whole record (`durationMs`, `success`, `resultCode`, and `error.type` when it threw). The handle may also carry `headers` (W3C `traceparent` / `tracestate`, which the SDK sends to Dataverse) and `run(fn)` (run the attempt with the dependency as the active span). If you implement `TelemetryClient` yourself, move the body of `trackDependency` into `end`:
+
+  <!-- no-check -->
+
+  ```typescript
+  // 1.0
+  const telemetry: TelemetryClient = {
+    trackDependency(name, data) {
+      record(name, data);
+    },
+    // trackEvent, trackException unchanged
+  };
+  ```
+
+  ```typescript
+  // 2.0
+  const telemetry: TelemetryClient = {
+    startDependency(name) {
+      return { end: (data) => record(name, data) };
+    },
+    // trackEvent, trackException unchanged
+  };
+  ```
+
+  `trackEvent` now also receives the SDK's own events (`TelemetryEvents`: `dataverse.throttle`, `dataverse.retry`, `dataverse.concurrency.wait`, `dataverse.concurrency.limit`, and `dataverse.batch` from the batch package); filter by name if you only want your own. A request with `{ type: "telemetry", disable: true }` sends none of them.
+
+- **`traceparent` is sent when the telemetry client provides it (#97).** With the otel or appinsights (Node.js) adapter and a registered propagator, each request carries the `traceparent` of its dependency span, only to origins that may receive the token. `diagnosticHeaders: { traceContext: false }` turns it off. In a browser, the Dataverse origin's CORS preflight must allow it.
 - **Telemetry treats 3xx as success (#378).** A `304 Not Modified` is a successful dependency in the otel and appinsights adapters; in 1.0 it was a failure.
 - **Concurrency settings are honoured (#356).** `concurrency.maxConcurrentRequests` is used exactly; in 1.0 it was clamped to 2..16, so `1` sent two requests at once. When you set it, `max` defaults to it, so the `x-ms-dop-hint` header can lower your limit but no longer raise it: add `max` (for example `{ maxConcurrentRequests: 4, max: 16 }`) to let it rise. Settings that aren't whole numbers of at least 1, or don't fit `min <= maxConcurrentRequests <= max`, throw `DataverseInvalidRequestError` when the client is created. The per-request `{ type: "concurrency", maxConcurrent }` option is removed: it never had an effect.
 - **`associate()`, `disassociate()` and `bindMany()` keep the builder's impersonation and headers (#355).** In 1.0, `client.api(…).impersonate(userId).associate(…)` ran as the calling identity. If you worked around that by sending the `$ref` request yourself, you can go back to `associate()`. A custom `BindManyExecutor` now gets a sixth argument with those headers and the request options; send them with your requests.
@@ -103,8 +130,10 @@ In 1.0 the actions, functions, messages, entities-runtime and xrm packages each 
 ## otel
 
 - `serviceName` is removed from `OpenTelemetryConfig`: it was ignored. `service.name` is a resource attribute, so set it on your OpenTelemetry SDK (`new NodeSDK({ serviceName })` or `OTEL_SERVICE_NAME`).
-- **Span attributes and URLs (#384, otel and appinsights).** `server.address` is the host name without the port (`server.port` carries it). `url.full` is the URL as core redacted it with your `redactUrl`; the adapters no longer redact it again, so a custom `redactUrl` (one that keeps `$top`, say) now shows in telemetry. A status of 400 or more is a failure; a 304 isn't. Dependency spans are recorded after the call and are never the active span, so these adapters don't propagate `traceparent`.
+- **Span attributes and URLs (#384, otel and appinsights).** `server.address` is the host name without the port (`server.port` carries it). `url.full` is the URL as core redacted it with your `redactUrl`; the adapters no longer redact it again, so a custom `redactUrl` (one that keeps `$top`, say) now shows in telemetry. A status of 400 or more is a failure; a 304 isn't.
+- **Dependency spans are live (#97, otel and appinsights).** `trackDependency` is replaced by `startDependency` (see core). The CLIENT span starts before the attempt and is the active span while it runs, so `fetch` auto-instrumentation spans are its children rather than its siblings, and its `traceparent` goes to Dataverse. Each retry and each resend after a 401 is a span of its own under your span, with `http.request.resend_count` on retries. If you called `trackDependency` yourself, call `startDependency(name, data).end(data)`.
 - **appinsights** warns when a second client asks for a different `connectionString`: Azure Monitor is started once per process, with the first one.
+- **appinsights in browsers (#158):** import `ApplicationInsightsBrowserTelemetryClient` from `@mohsinonxrm/dataverse-sdk-appinsights/browser` and pass your `ApplicationInsights` instance (`@microsoft/applicationinsights-web`, an optional peer dependency). The main entry point is still Node.js only.
 
 ## metadata
 

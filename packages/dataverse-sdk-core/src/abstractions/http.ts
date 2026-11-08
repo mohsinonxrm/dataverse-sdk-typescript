@@ -70,7 +70,11 @@ export interface Logger {
   error(message: string, meta?: unknown): void;
 }
 
-/** One Dataverse request attempt, as `TelemetryClient.trackDependency` receives it. */
+/**
+ * One Dataverse request attempt. `TelemetryClient.startDependency` receives what is known when
+ * the attempt starts (`target`, `method`, `url`, `properties`); `DependencyHandle.end` receives
+ * the whole record, with `durationMs`, `success` and `resultCode`.
+ */
 export interface DependencyTelemetry {
   /** Host of the request URL. */
   target?: string;
@@ -85,13 +89,48 @@ export interface DependencyTelemetry {
   properties?: Record<string, string>;
 }
 
+/**
+ * A dependency in flight, as `TelemetryClient.startDependency` returns it. The SDK calls `end`
+ * exactly once, when the attempt has a response or has failed.
+ */
+export interface DependencyHandle {
+  /**
+   * W3C Trace Context headers for this dependency (`traceparent`, and `tracestate` when there is
+   * one), so the service sees the attempt as a child of it. The SDK sends them only to origins
+   * that may receive the access token, unless `diagnosticHeaders.traceContext` is `false`; other
+   * names, and a malformed `traceparent`, are ignored.
+   */
+  headers?: Record<string, string>;
+  /**
+   * Run the attempt (`fn`) with this dependency as the active span or operation, so work done
+   * during it (for example `fetch` instrumentation) is its child. Must call `fn` once and return
+   * its result. Without `run` the attempt runs in the caller's context.
+   */
+  run?<T>(fn: () => Promise<T>): Promise<T>;
+  /** The attempt finished: the full record, with `durationMs`, `success` and `resultCode`. */
+  end(data: DependencyTelemetry): void;
+}
+
+/**
+ * Receives the SDK's telemetry (`DataverseClientOptions.telemetry`). The SDK guards every call: a
+ * method that throws is logged with `logger.warn` and ignored, and never fails a request.
+ */
 export interface TelemetryClient {
+  /**
+   * A named event: throttling, retries, waits for a concurrency slot and `$batch` executions
+   * (see `TelemetryEvents`), or your own. String properties, numeric measurements.
+   */
   trackEvent(
     name: string,
     props?: Record<string, string>,
     measurements?: Record<string, number>
   ): void;
-  trackDependency(name: string, data: DependencyTelemetry): void;
+  /**
+   * A request attempt starts (one per attempt: each retry and each resend after a 401 is its own
+   * dependency). Called in the caller's context, before the attempt is sent; the returned handle
+   * can carry trace context headers and make the dependency active while the attempt runs.
+   */
+  startDependency(name: string, data: DependencyTelemetry): DependencyHandle;
   trackException(error: unknown, props?: Record<string, string>): void;
 }
 
