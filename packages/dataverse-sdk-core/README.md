@@ -234,7 +234,8 @@ await client
   .prefer((p) => p.allAnnotations().maxPageSize(50))
   .get();
 // PreferBuilder also has returnRepresentation(), allAnnotations() (odata.include-annotations="*"),
-// continueOnError() and trackChanges() (odata.track-changes, for change tracking queries).
+// continueOnError() and trackChanges() (odata.track-changes; see Change Tracking for the
+// typed trackChanges() terminal, which reads the delta link and deleted rows for you).
 
 // Prefer helper values available:
 Prefer.returnRepresentation(); // 'return=representation'
@@ -599,6 +600,55 @@ while (page.moreRecords) {
 - `fetchXml()` can't be combined with `.select()`, `.filter()` and the other query options; they
   throw `DataverseInvalidRequestError` (`InvalidParameter`). Headers, `.impersonate()` and request
   options apply as usual.
+
+### Change Tracking
+
+Keep an external store in step with a table by reading only what changed since the last sync.
+The table must have change tracking enabled: check `ChangeTrackingEnabled` with
+`client.api("EntityDefinitions(LogicalName='account')").select("ChangeTrackingEnabled").get()`
+(`account` has it on by default; once on, it can't be turned off).
+
+```typescript
+import { isDeltaLinkExpired } from "@mohsinonxrm/dataverse-sdk-core";
+
+// First sync: every row, as of now, and the delta link (Prefer: odata.track-changes).
+const first = await client.api("accounts").select("name", "revenue").trackChanges<Account>();
+await store.replaceAll(first.changed);
+await store.saveDeltaLink(first.deltaLink);
+
+// Every later sync: rows created or updated, rows deleted, and the next delta link.
+try {
+  const changes = await client.changesSince<Account>(await store.loadDeltaLink());
+  await store.upsert(changes.changed); // each row has its primary key, e.g. accountid
+  await store.remove(changes.deleted.map((d) => d.id));
+  await store.saveDeltaLink(changes.deltaLink);
+} catch (err) {
+  if (!isDeltaLinkExpired(err)) throw err;
+  // Too old: start again with a full sync.
+}
+```
+
+- **Results.** `trackChanges()` and `changesSince()` follow `@odata.nextLink` through every page
+  and return `TrackedChanges<T>`: `changed` (new and updated rows), `deleted` (`{ id, reason }`,
+  from the `$deletedEntity` entries) and `deltaLink`. For tables too large to hold in memory,
+  `iterateChanges()` and `client.iterateChangesSince(deltaLink)` yield one `TrackedChangesPage<T>`
+  at a time; the last page carries `deltaLink`. `maxPageSize` sets `odata.maxpagesize`.
+- **Storing the delta link.** Save the whole `deltaLink` string (an absolute URL with a
+  `$deltatoken`; it keeps the `$select` of the first sync), and save it only after the changes
+  are applied, so a failed sync is retried from the same point. Replaying a delta link is safe: it
+  returns the same changes again, plus newer ones. When nothing changed, `deltaLink` may be the
+  one you passed in.
+- **Expiry.** Dataverse keeps changes for `ExpireChangeTrackingInDays` days (an `organization`
+  setting, 7 by default). An older delta link is refused with `ExpiredVersionStamp`
+  (`0x80044352`), which `isDeltaLinkExpired(err)` recognises: run `trackChanges()` again and
+  replace the store's contents.
+- **Query options.** Dataverse doesn't support `$filter`, `$orderby`, `$expand` or `$top` with
+  change tracking, so `trackChanges()` rejects them with `DataverseInvalidRequestError`
+  (`InvalidParameter`) before sending. A response without a delta link (change tracking off)
+  rejects with `NoDeltaLink`.
+- A row created and deleted between two syncs comes back as deleted, though the store never had
+  it. Deleted rows usually follow the changed ones. Reading changes needs organization-level read
+  access to the table.
 
 ### Error Handling
 

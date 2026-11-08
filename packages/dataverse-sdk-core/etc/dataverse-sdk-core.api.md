@@ -140,11 +140,13 @@ export class DataverseClient {
     // (undocumented)
     api(pathOrAbsoluteUrl: string): DataverseRequestBuilder;
     bind(navigationProperty: string, entitySetName: string, id: ODataKey): Record<string, string>;
+    changesSince<T = Record<string, unknown>>(deltaLink: string, options?: TrackChangesOptions): Promise<TrackedChanges<T>>;
     // (undocumented)
     execute<T>(request: Executable<T>, options?: RequestOptions): Promise<T>;
     fetchXml<T = Record<string, unknown>>(entitySetName: string, fetchXml: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
     // (undocumented)
     getBaseUrl(): string;
+    iterateChangesSince<T = Record<string, unknown>>(deltaLink: string, options?: TrackChangesOptions): AsyncIterable<TrackedChangesPage<T>>;
     resolveUrl(pathOrUrl: string): string;
     savedQuery<T = Record<string, unknown>>(entitySetName: string, savedQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
     // (undocumented)
@@ -297,6 +299,7 @@ export class DataverseRequestBuilder {
     }): this;
     impersonateByObjectId(objectId: string): this;
     iterate<T = unknown>(options?: RequestOptions): AsyncIterable<T>;
+    iterateChanges<T = Record<string, unknown>>(options?: TrackChangesOptions): AsyncIterable<TrackedChangesPage<T>>;
     // (undocumented)
     orderBy(...orderby: string[]): this;
     // (undocumented)
@@ -318,6 +321,7 @@ export class DataverseRequestBuilder {
     text(options?: RequestOptions): Promise<string>;
     // (undocumented)
     top(n: number): this;
+    trackChanges<T = Record<string, unknown>>(options?: TrackChangesOptions): Promise<TrackedChanges<T>>;
     updateOnly(etag: string): this;
     userQuery<T = Record<string, unknown>>(userQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
 }
@@ -353,6 +357,12 @@ export class DataverseUrlError extends DataverseError {
 
 // @public
 export function defaultRedactUrl(url: URL): string;
+
+// @public
+export interface DeletedRecord {
+    id: string;
+    reason: "deleted" | "changed";
+}
 
 // @public
 export interface DependencyTelemetry {
@@ -502,6 +512,9 @@ export function headersToObject(headers: Headers): Record<string, string>;
 
 // @public (undocumented)
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+
+// @public
+export function isDeltaLinkExpired(error: unknown): boolean;
 
 // @public
 export function isStreamContent(contentType: string | null | undefined): boolean;
@@ -871,6 +884,25 @@ export interface TokenOptions {
     forceRefresh?: boolean;
     // (undocumented)
     tenantId?: string;
+}
+
+// @public
+export interface TrackChangesOptions extends RequestOptions {
+    maxPageSize?: number;
+}
+
+// @public
+export interface TrackedChanges<T> {
+    changed: T[];
+    deleted: DeletedRecord[];
+    deltaLink: string;
+}
+
+// @public
+export interface TrackedChangesPage<T> {
+    changed: T[];
+    deleted: DeletedRecord[];
+    deltaLink?: string;
 }
 
 // (No @packageDocumentation comment for this package)

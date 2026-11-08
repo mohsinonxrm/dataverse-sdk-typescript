@@ -60,6 +60,15 @@ export {
   type ODataScalar,
 } from "./odata/literal.js";
 
+// Change tracking (#319)
+export {
+  isDeltaLinkExpired,
+  type DeletedRecord,
+  type TrackChangesOptions,
+  type TrackedChanges,
+  type TrackedChangesPage,
+} from "./changes/changeTracking.js";
+
 // FetchXML (#51)
 export type { FetchXmlPage, FetchXmlOptions } from "./fetchxml/page.js";
 export {
