@@ -273,7 +273,11 @@ export class MetadataService {
     getEdmxMetadata(): Promise<string>;
     getEntityMetadata(logicalName: string): Promise<RetrieveMetadataChangesResponse>;
     setAccessToken(token: string): void;
+    sleep: MetadataServiceSleep;
 }
+
+// @public
+export type MetadataServiceSleep = (ms: number) => Promise<void>;
 
 // @public
 export interface NavigationPropertyType {
