@@ -74,7 +74,8 @@ export function displayUrl(url: string): string {
   return text || "/";
 }
 
-function HeaderList({ headers }: { headers: Record<string, string> }) {
+/** Headers as a definition list. */
+export function HeaderList({ headers }: { headers: Record<string, string> }) {
   const styles = useStyles();
   const entries = Object.entries(headers);
   if (!entries.length) return <Caption1 className={styles.empty}>None</Caption1>;
