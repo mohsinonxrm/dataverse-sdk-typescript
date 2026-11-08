@@ -10,9 +10,10 @@
 
 import { createRequire } from "node:module";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SpanKind, context, trace } from "@opentelemetry/api";
+import { SpanKind, context, propagation, trace } from "@opentelemetry/api";
 import { logs } from "@opentelemetry/api-logs";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
+import { W3CTraceContextPropagator } from "@opentelemetry/core";
 import {
   InMemoryLogRecordExporter,
   LoggerProvider,
@@ -103,5 +104,32 @@ describe("#159: appinsights telemetry joins the app's active trace", () => {
     const exception = records.find((r) => r.attributes["exception.type"] !== undefined);
     expect(exception).toBeDefined();
     expect(exception?.spanContext?.traceId).toBe(appTraceId);
+  });
+
+  it("#97: the request carries the dependency's traceparent, and the span is active during it", async () => {
+    // What useAzureMonitor() registers: the W3C Trace Context propagator.
+    propagation.setGlobalPropagator(new W3CTraceContextPropagator());
+    try {
+      const { client, fake } = createTestClient({
+        telemetry: new ApplicationInsightsTelemetryClient(),
+      });
+      let activeDuringFetch: string | undefined;
+      fake.on("GET", "/WhoAmI", () => {
+        activeDuringFetch = trace.getActiveSpan()?.spanContext().spanId;
+        return jsonResponse({ UserId: "u1" });
+      });
+
+      await trace.getTracer("my-app").startActiveSpan("GET /orders", async (appSpan) => {
+        await client.api("/WhoAmI").get();
+        appSpan.end();
+      });
+
+      const dependency = spanExporter.getFinishedSpans().find((s) => s.kind === SpanKind.CLIENT);
+      const { traceId, spanId } = dependency?.spanContext() ?? {};
+      expect(fake.last().headers.traceparent).toBe(`00-${String(traceId)}-${String(spanId)}-01`);
+      expect(activeDuringFetch).toBe(spanId);
+    } finally {
+      propagation.disable();
+    }
   });
 });

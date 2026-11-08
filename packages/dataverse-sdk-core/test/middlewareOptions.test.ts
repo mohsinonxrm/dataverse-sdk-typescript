@@ -103,9 +103,11 @@ describe("#16: per-request middleware options reach the middleware", () => {
     const telemetry: TelemetryClient = {
       trackEvent: () => undefined,
       trackException: () => undefined,
-      trackDependency: (_n, data) => {
-        tracked.push(data.properties);
-      },
+      startDependency: () => ({
+        end: (data) => {
+          tracked.push(data.properties);
+        },
+      }),
     };
     const { client, calls } = setup(() => new Response(null, { status: 204 }), { telemetry });
     await client.send({

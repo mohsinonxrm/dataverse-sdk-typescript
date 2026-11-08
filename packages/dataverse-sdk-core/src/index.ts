@@ -48,6 +48,7 @@ export {
 } from "./errors/NamedErrors.js";
 
 export * from "./telemetry/FeatureUsageTracker.js";
+export { TelemetryEvents } from "./telemetry/events.js";
 
 export { odata, type EqValue } from "./odata/filter.js";
 export type { ExpandOptions } from "./odata/expand.js";

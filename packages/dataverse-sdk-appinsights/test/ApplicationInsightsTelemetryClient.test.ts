@@ -21,7 +21,13 @@ import {
   jsonResponse,
   odataError,
 } from "@mohsinonxrm/dataverse-sdk-testing";
+import type { DependencyTelemetry, TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { ApplicationInsightsTelemetryClient } from "../src/index.js";
+
+/** One attempt, started and ended at once (the SDK starts it before the request, ends it after). */
+function track(client: TelemetryClient, name: string, data: DependencyTelemetry): void {
+  client.startDependency(name, data).end(data);
+}
 
 const CORRELATION_ID = "0b2f8e6a-5f2b-4d8e-9a43-1f7b6c2d9e10";
 
@@ -66,9 +72,9 @@ function onlyLog(): ReadableLogRecord {
   return all[0] as ReadableLogRecord;
 }
 
-describe("ApplicationInsightsTelemetryClient.trackDependency", () => {
+describe("ApplicationInsightsTelemetryClient.startDependency", () => {
   it("records a CLIENT span that Application Insights maps to an HTTP dependency", () => {
-    adapter().trackDependency("dataverse", {
+    track(adapter(), "dataverse", {
       method: "GET",
       // As core passes it: already redacted with the app's redactUrl.
       url: `${TEST_API_URL}/contacts?…`,
@@ -95,7 +101,7 @@ describe("ApplicationInsightsTelemetryClient.trackDependency", () => {
   });
 
   it("marks a failed response with status ERROR", () => {
-    adapter().trackDependency("dataverse", {
+    track(adapter(), "dataverse", {
       method: "PATCH",
       url: `${TEST_API_URL}/accounts(00000000-0000-0000-0000-000000000001)`,
       success: false,
@@ -108,7 +114,7 @@ describe("ApplicationInsightsTelemetryClient.trackDependency", () => {
   });
 
   it("records the host name, a non-default port and the URL core passes as is (#384)", () => {
-    adapter().trackDependency("dataverse", {
+    track(adapter(), "dataverse", {
       method: "GET",
       target: "contoso.crm.dynamics.com:8443",
       url: "https://contoso.crm.dynamics.com:8443/api/data/v9.2/accounts?$top=5",
@@ -125,7 +131,7 @@ describe("ApplicationInsightsTelemetryClient.trackDependency", () => {
 
   it("marks the dependency failed from the status code when there is one (#384)", () => {
     // A core that sets `success` from `res.ok` reports a 304 as unsuccessful; it isn't an error.
-    adapter().trackDependency("dataverse", { method: "GET", success: false, resultCode: "304" });
+    track(adapter(), "dataverse", { method: "GET", success: false, resultCode: "304" });
     expect(onlySpan().status.code).toBe(SpanStatusCode.UNSET);
   });
 });
@@ -187,7 +193,7 @@ describe("ApplicationInsightsTelemetryClient never throws", () => {
       logger: { emit: fail, enabled: fail } as unknown as Logger,
     });
     expect(() => {
-      client.trackDependency("dataverse", { method: "GET", url: TEST_API_URL });
+      track(client, "dataverse", { method: "GET", url: TEST_API_URL });
       client.trackEvent("event", { a: "b" }, { n: 1 });
       client.trackException(new Error("boom"));
     }).not.toThrow();
@@ -199,7 +205,7 @@ describe("ApplicationInsightsTelemetryClient never throws", () => {
       loggerProvider,
       disableTelemetry: true,
     });
-    client.trackDependency("dataverse", { method: "GET", url: TEST_API_URL });
+    track(client, "dataverse", { method: "GET", url: TEST_API_URL });
     client.trackEvent("event");
     client.trackException(new Error("boom"));
     expect(spans()).toHaveLength(0);

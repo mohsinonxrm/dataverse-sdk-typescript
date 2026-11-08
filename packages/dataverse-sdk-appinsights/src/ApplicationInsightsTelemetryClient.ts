@@ -2,10 +2,15 @@ import { trace } from "@opentelemetry/api";
 import type { Tracer } from "@opentelemetry/api";
 import { logs, SeverityNumber } from "@opentelemetry/api-logs";
 import type { LogAttributes, Logger } from "@opentelemetry/api-logs";
-import type { DependencyTelemetry, TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
+import type {
+  DependencyHandle,
+  DependencyTelemetry,
+  TelemetryClient,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { ApplicationInsightsConfig } from "./types.js";
 import { azureMonitor, otelResources, requirePeer } from "./optionalPeers.js";
-import { propertyAttributes, recordDependencySpan, toException } from "./spans.js";
+import { propertyAttributes, toException } from "./redaction.js";
+import { NO_DEPENDENCY, startDependencySpan } from "./spans.js";
 
 const INSTRUMENTATION_SCOPE = "@mohsinonxrm/dataverse-sdk-appinsights";
 
@@ -32,10 +37,10 @@ const OTHER_CONNECTION_STRING_WARNING =
  * Application Insights implementation of the SDK's `TelemetryClient`, built on the Azure Monitor
  * OpenTelemetry distro (`@azure/monitor-opentelemetry`, Node.js only).
  *
- * - `trackDependency` records an OpenTelemetry CLIENT span per Dataverse HTTP call, which
+ * - `startDependency` starts an OpenTelemetry CLIENT span per Dataverse request attempt, which
  *   Application Insights shows as an HTTP dependency (URL as core redacted it with the app's
- *   `redactUrl`). The span is recorded after the call, so it is never active during it: the
- *   adapter propagates no `traceparent`.
+ *   `redactUrl`). The span is active while the attempt runs, and its trace context (W3C
+ *   `traceparent`, through the registered propagator) goes to Dataverse with the request.
  * - `trackEvent` emits a log record that Application Insights stores as a custom event.
  * - `trackException` emits a log record that Application Insights stores as an exception.
  *
@@ -123,12 +128,13 @@ export class ApplicationInsightsTelemetryClient implements TelemetryClient {
     }
   }
 
-  trackDependency(name: string, data: DependencyTelemetry): void {
-    if (this.config.disableTelemetry) return;
+  startDependency(name: string, data: DependencyTelemetry): DependencyHandle {
+    if (this.config.disableTelemetry) return NO_DEPENDENCY;
     try {
-      recordDependencySpan(this.tracer(), name, data);
+      return startDependencySpan(this.tracer(), name, data);
     } catch {
       // Telemetry must never break the caller.
+      return NO_DEPENDENCY;
     }
   }
 

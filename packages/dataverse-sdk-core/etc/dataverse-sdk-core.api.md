@@ -149,6 +149,7 @@ export class DataverseClient {
     savedQuery<T = Record<string, unknown>>(entitySetName: string, savedQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
     // (undocumented)
     send(request: RequestInformation): Promise<Response>;
+    trackEvent(name: string, properties?: Record<string, string>, measurements?: Record<string, number>): void;
     userQuery<T = Record<string, unknown>>(entitySetName: string, userQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
 }
 
@@ -355,6 +356,13 @@ export class DataverseUrlError extends DataverseError {
 export function defaultRedactUrl(url: URL): string;
 
 // @public
+export interface DependencyHandle {
+    end(data: DependencyTelemetry): void;
+    headers?: Record<string, string>;
+    run?<T>(fn: () => Promise<T>): Promise<T>;
+}
+
+// @public
 export interface DependencyTelemetry {
     // (undocumented)
     durationMs?: number;
@@ -374,6 +382,7 @@ export interface DiagnosticHeaderOptions {
     featureUsage?: boolean;
     retryAttempt?: boolean;
     sdkVersion?: boolean;
+    traceContext?: boolean;
 }
 
 // @public (undocumented)
@@ -839,17 +848,24 @@ export function serializeContent(content: unknown): BodyInit;
 // @public
 export function setRequestHeader(headers: HeadersLike, key: string, value: string): HeadersLike;
 
-// @public (undocumented)
+// @public
 export interface TelemetryClient {
-    // (undocumented)
-    trackDependency(name: string, data: DependencyTelemetry): void;
-    // (undocumented)
+    startDependency(name: string, data: DependencyTelemetry): DependencyHandle;
     trackEvent(name: string, props?: Record<string, string>, measurements?: Record<string, number>): void;
     // (undocumented)
     trackException(error: unknown, props?: Record<string, string>): void;
 }
 
-// @public (undocumented)
+// @public
+export const TelemetryEvents: {
+    readonly throttle: "dataverse.throttle";
+    readonly retry: "dataverse.retry";
+    readonly concurrencyWait: "dataverse.concurrency.wait";
+    readonly concurrencyLimit: "dataverse.concurrency.limit";
+    readonly batch: "dataverse.batch";
+};
+
+// @public
 export class TelemetryMiddleware implements Middleware {
     constructor(options: DataverseClientOptions);
     // (undocumented)

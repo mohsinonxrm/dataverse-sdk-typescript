@@ -4,6 +4,7 @@ import type { DataverseClientOptions } from "../abstractions/options.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 import { isStreamBody } from "../utils/body.js";
 import { parseClaimsChallenge } from "../utils/claimsChallenge.js";
+import { tokenOriginRefusal, tokenOrigins } from "../utils/tokenOrigins.js";
 
 export class AuthMiddleware implements Middleware {
   name = "AuthMiddleware";
@@ -11,11 +12,7 @@ export class AuthMiddleware implements Middleware {
   private readonly allowedOrigins: Set<string>;
 
   constructor(private options: DataverseClientOptions) {
-    this.allowedOrigins = new Set(
-      [options.baseUrl, ...(options.allowedTokenOrigins ?? [])]
-        .map((u) => originOf(u))
-        .filter((o): o is string => o !== undefined)
-    );
+    this.allowedOrigins = tokenOrigins(options);
   }
 
   async execute(
@@ -75,28 +72,6 @@ export class AuthMiddleware implements Middleware {
 
   /** Why the token may not go to `url`, or undefined when it may. */
   private refusalFor(url: string): string | undefined {
-    let parsed: URL;
-    try {
-      parsed = new URL(url, this.options.baseUrl);
-    } catch {
-      return "the request URL can't be parsed, so the access token is not sent";
-    }
-    if (parsed.username || parsed.password) {
-      return "the request URL contains credentials (user info), so the access token is not sent";
-    }
-    if (!this.allowedOrigins.has(parsed.origin)) {
-      return `refusing to send the access token to ${parsed.origin}; only ${[...this.allowedOrigins].join(", ")} may receive it (see DataverseClientOptions.allowedTokenOrigins)`;
-    }
-    return undefined;
-  }
-}
-
-/** The origin of a URL (lower-cased host, punycode), or undefined when it isn't absolute. */
-function originOf(url: string): string | undefined {
-  try {
-    const origin = new URL(url).origin;
-    return origin === "null" ? undefined : origin;
-  } catch {
-    return undefined;
+    return tokenOriginRefusal(url, this.options.baseUrl, this.allowedOrigins);
   }
 }

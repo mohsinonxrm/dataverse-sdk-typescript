@@ -55,6 +55,7 @@
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/context-async-hooks": "^2.10.0",
+    "@opentelemetry/core": "^2.10.0",
     "@opentelemetry/sdk-trace-base": "^2.10.0",
     "eslint": "^9.39.5",
     "tsup": "^8.5.1",
