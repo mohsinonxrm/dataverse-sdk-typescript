@@ -40,3 +40,8 @@ export {
   type BulkRecordStatus,
   type DataverseBulkOperationErrorInit,
 } from "./bulk.js";
+export {
+  getBulkOperationSupport,
+  type BulkOperationSupport,
+  type BulkOperationSupportOptions,
+} from "./bulkSupport.js";

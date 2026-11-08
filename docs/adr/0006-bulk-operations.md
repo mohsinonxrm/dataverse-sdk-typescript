@@ -87,8 +87,7 @@ Microsoft introduced bulk operations as a simpler alternative to $batch for comm
 
 - **Implemented:** the four bulk actions (and their messages), which take the entity set first: `new CreateMultipleAction("accounts", { Targets })` posts to `/accounts/Microsoft.Dynamics.CRM.CreateMultiple` (#69). `$batch` with change sets, `continueOnError` and auto-splitting is in `@mohsinonxrm/dataverse-sdk-batch`.
 - **Implemented (#310):** `createMultiple()` / `updateMultiple()` in `@mohsinonxrm/dataverse-sdk-batch` chunk the records, add `@odata.type` to every target that lacks it, parse elastic-table partial success from `Microsoft.PowerApps.CDS.ErrorDetails.*` into per-record results (decision 5), and can send the records with `$batch` instead (`strategy: "batch"`).
-- **Planned, not implemented** (#100):
-  - detecting which tables support bulk operations through `sdkmessagefilters` (decision 6).
+- **Implemented (#346):** `getBulkOperationSupport()` in `@mohsinonxrm/dataverse-sdk-batch` detects which tables support bulk operations through `sdkmessagefilters` and the table's `TableType` (decision 6), cached per client and table; the helpers use it with `strategy: "auto"` to choose between the bulk message and `$batch`.
 
 ### Consequences
 

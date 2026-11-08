@@ -96,7 +96,7 @@ export interface BulkOperationOptions {
     headers?: Record<string, string>;
     maxParallel?: number;
     signal?: AbortSignal;
-    strategy?: BulkStrategy;
+    strategy?: BulkStrategy | "auto";
     timeoutMs?: number;
 }
 
@@ -110,6 +110,23 @@ export interface BulkOperationResult {
     strategy: BulkStrategy;
     succeeded: number;
     success: boolean;
+}
+
+// @public
+export interface BulkOperationSupport {
+    createMultiple: boolean;
+    deleteMultiple: boolean;
+    elastic: boolean;
+    logicalName: string;
+    updateMultiple: boolean;
+    upsertMultiple: boolean;
+}
+
+// @public
+export interface BulkOperationSupportOptions {
+    refresh?: boolean;
+    signal?: AbortSignal;
+    timeoutMs?: number;
 }
 
 // @public
@@ -200,6 +217,9 @@ export function generateBoundary(): string;
 
 // @public
 export function generateChangesetBoundary(): string;
+
+// @public
+export function getBulkOperationSupport(client: DataverseClient, logicalName: string, options?: BulkOperationSupportOptions): Promise<BulkOperationSupport>;
 
 // @public
 export const JSON_PART_CONTENT_TYPE = "application/json; type=entry";
