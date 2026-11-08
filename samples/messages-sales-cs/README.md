@@ -84,6 +84,12 @@ DATAVERSE_URL=https://your-org.crm.dynamics.com
 # SOLUTION_NAME=YourSolutionUniqueName
 ```
 
+Environment variables work as well as `.env`. Instead of the three `AZURE_*` names you can set
+`DATAVERSE_CLIENT_ID`, `DATAVERSE_TENANT_ID` and `DATAVERSE_CLIENT_SECRET`, the names the
+repository's live tests use. That is how CI runs this sample against the dev org
+(`pnpm samples:live` from the repository root). Without these values the sample prints what's
+missing and exits with code 1.
+
 ## Running the Sample
 
 ### Build the Sample
@@ -115,6 +121,12 @@ The sample will:
 3. Show colored output for each message
 4. Clean up test data automatically
 5. Display message-to-WebAPI mappings
+
+Every record is named `sdk-sample-<tag> ...` (a lead by its topic), with a random tag per run
+(set `SAMPLE_RUN_TAG`, lowercase letters and digits, to choose it). Cleanup runs also when a demo
+fails: it deletes the records the demos tracked and any opportunity, lead, account or solution
+still named with the run's id. The sample exits with code 1 if a demo failed or a record couldn't
+be deleted.
 
 ## Demo 1: WhoAmI (Function)
 
@@ -340,7 +352,7 @@ new WinOpportunityRequest({
 ## Demo 6: Merge (SDK Message)
 
 **Message**: Merges two records of the same entity type. Moves related data to the target and
-deletes the subordinate. The sample merges two leads.
+deactivates the subordinate. The sample merges two leads.
 
 ```typescript
 import { MergeRequest, createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
@@ -373,7 +385,8 @@ new MergeRequest({
 
 1. Related records (activities, notes, relationships) move from the subordinate to the target
 2. The target is updated with `updateContent`
-3. The subordinate is **deleted**; this cannot be undone
+3. The subordinate is **deactivated** and points to the target; this cannot be undone (the
+   sample deletes both leads in its cleanup)
 
 Supported tables: `account`, `contact`, `lead`, `incident`.
 
@@ -399,7 +412,10 @@ await fs.writeFile("MySolution.zip", solutionZip);
 console.log(`Exported ${(solutionZip.length / 1024).toFixed(2)} KB`);
 ```
 
-The sample exports `SOLUTION_NAME` from `.env` (default: `Default`) and does not save the file.
+The sample exports `SOLUTION_NAME` from `.env` and does not save the file. The Default solution
+can't be exported, so without `SOLUTION_NAME` the sample creates an empty unmanaged solution,
+`sdksample<tag>` (under the Default solution's publisher), exports that, and deletes it in its
+cleanup.
 
 **When to use:**
 
@@ -449,17 +465,24 @@ Notes:
 ## Demo 9: Generic OrganizationRequest
 
 For messages without a typed class, use `OrganizationRequest`. It takes the message name and its
-parameters, and the response has the returned values in `Results`:
+parameters, and the response has the returned values in `Results`. It runs as a Web API action
+(`POST`), with the parameters in their Web API shapes; for a function (`GET`) such as `WhoAmI`,
+use the typed function classes (Demo 1). The sample loses an opportunity it creates:
 
 ```typescript
 import { OrganizationRequest, OrganizationResponse } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const request = new OrganizationRequest("WhoAmI", {});
+const request = new OrganizationRequest("LoseOpportunity", {
+  OpportunityClose: {
+    "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+    subject: "Lost: Test Opportunity",
+    "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
+  },
+  Status: 4, // Canceled, a statuscode of the Lost state
+});
 const response = await orgService.execute<OrganizationResponse>(request);
 
-console.log(response.Results.UserId);
-console.log(response.Results.BusinessUnitId);
-console.log(response.Results.OrganizationId);
+console.log(response.Results); // {}: LoseOpportunity returns nothing
 ```
 
 ### 1. Custom Actions

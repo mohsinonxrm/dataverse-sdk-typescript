@@ -98,9 +98,16 @@ SCHEMA_PREFIX=sample
 
 **Schema Prefix:**
 
-- All created entities will use this prefix (e.g., `sample_project`, `sample_milestone`)
+- All created entities will use this prefix (e.g., `sample_project<tag>`, `sample_milestone<tag>`)
 - Use `new` for production, `demo` or `test` for samples
-- Must follow naming rules: lowercase, start with letter
+- Must follow naming rules: 2 to 8 lowercase letters or digits, starting with a letter
+
+Environment variables work as well as `.env` (a value in `.env` wins). Instead of the three
+`AZURE_*` names you can set `DATAVERSE_CLIENT_ID`, `DATAVERSE_TENANT_ID` and
+`DATAVERSE_CLIENT_SECRET`, the names the repository's live tests use. That is how CI runs this
+sample against the dev org (`pnpm samples:live` from the repository root, with
+`SCHEMA_PREFIX=new`). Without these values the sample prints what's missing and exits with
+code 1.
 
 ---
 
@@ -115,20 +122,32 @@ pnpm start
 This runs 6 demos, three of which show the same task two ways (the HTTP-first `client.api()`
 call, and the typed `MetadataClient` method):
 
-1. **Create entities** - `<prefix>_project` through `client.api("/EntityDefinitions")` and
-   `<prefix>_milestone` through `metadataClient.createEntityDefinition()`, each with a primary
-   name column
+1. **Create entities** - `<prefix>_project<tag>` through `client.api("/EntityDefinitions")` and
+   `<prefix>_milestone<tag>` through `metadataClient.createEntityDefinition()`, each with a
+   primary name column
 2. **Add attributes** - a multi-line text column (`client.api()`) and an integer column with a
    1 to 10 range (`metadataClient.createAttributeDefinition()`)
 3. **Query metadata** - read an entity with `$select` and `$expand=Attributes(...)`, both ways
 4. **Create a 1:N relationship** - project has many milestones, with a lookup column
    (`client.api("/RelationshipDefinitions")`)
 5. **Create a global choice** - a project type option set (`metadataClient.createGlobalOptionSet()`)
-6. **Delete an entity** - `DELETE /EntityDefinitions(LogicalName='...')`
+6. **Delete metadata** - the relationship, then the milestone table, with `DELETE` through
+   `client.api()`
+
+`<tag>` is a random tag per run (set `SAMPLE_RUN_TAG`, lowercase letters and digits, to choose
+it), and every display name starts with `sdk-sample-<tag>`, so a run never collides with an
+earlier one.
+
+New metadata takes a while to reach all of the org's servers: right after a table is created, a
+request can get a 404 or a 400 from a server that doesn't know it yet. The sample retries such
+reads and creates for up to two minutes, and a delete for up to four (`eventually()` and
+`remove()` in `src/index.ts`).
 
 **Cleanup:**
-After the demos, the sample waits 2 seconds and deletes everything it created (relationships,
-then entities, then global choices). If a demo fails, it tries the same cleanup before exiting.
+After the demos, also when one fails, the sample deletes everything it created by `MetadataId`
+(relationships, then entities, then global choices). It also looks up, by name, anything of the
+run a failed create may have left. It exits with code 1 if a demo failed or something couldn't be
+deleted.
 
 ### Development Mode
 
@@ -140,10 +159,11 @@ Changes to `src/index.ts` will automatically reload.
 
 ### Skip Cleanup (for inspection)
 
-The cleanup step has no switch. To keep the metadata, comment out the `await cleanup(metadataClient)` call in `main()`, and the one in its `catch` block:
+The cleanup step has no switch. To keep the metadata, comment out the `cleanup(client)` call in
+the `finally` block of `main()`:
 
 ```typescript
-// await cleanup(metadataClient); // Comment this to keep metadata
+// if (!(await cleanup(client))) failed = true; // Comment this to keep metadata
 ```
 
 Then inspect your custom tables in the Power Apps maker portal.
@@ -191,33 +211,31 @@ const metadataClient = new MetadataClient(client);
 
 ### Demo 1: Create Entities
 
-**HTTP-first** - POST the definition with its `@odata.type`, then add the primary name column:
+**HTTP-first** - POST the definition with its `@odata.type`, with the primary name column.
+`createAndGetId()` returns the new `MetadataId` from the `OData-EntityId` header:
 
 ```typescript
-const response = await client
-  .api("/EntityDefinitions")
-  .preferRaw("return=representation")
-  .post<EntityMetadata>({
-    "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-    SchemaName: "sample_project",
-    DisplayName: { LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }] },
-    DisplayCollectionName: { LocalizedLabels: [{ Label: "Projects", LanguageCode: 1033 }] },
-    OwnershipType: OwnershipTypes.UserOwned,
-    IsActivity: false,
-    HasActivities: true,
-    HasNotes: true,
-    // The primary name column is created with the table, first in Attributes
-    Attributes: [
-      {
-        "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-        SchemaName: "sample_Name",
-        DisplayName: { LocalizedLabels: [{ Label: "Project Name", LanguageCode: 1033 }] },
-        RequiredLevel: { Value: AttributeRequiredLevel.None },
-        MaxLength: 100,
-        IsPrimaryName: true,
-      },
-    ],
-  });
+const metadataId = await client.api("/EntityDefinitions").createAndGetId({
+  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+  SchemaName: "sample_project",
+  DisplayName: { LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }] },
+  DisplayCollectionName: { LocalizedLabels: [{ Label: "Projects", LanguageCode: 1033 }] },
+  OwnershipType: OwnershipTypes.UserOwned,
+  IsActivity: false,
+  HasActivities: true,
+  HasNotes: true,
+  // The primary name column is created with the table, first in Attributes
+  Attributes: [
+    {
+      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+      SchemaName: "sample_Name",
+      DisplayName: { LocalizedLabels: [{ Label: "Project Name", LanguageCode: 1033 }] },
+      RequiredLevel: { Value: AttributeRequiredLevel.None },
+      MaxLength: 100,
+      IsPrimaryName: true,
+    },
+  ],
+});
 ```
 
 **MetadataClient** - the same for `sample_milestone`. `createEntityDefinition()` returns the new
@@ -289,22 +307,19 @@ The sample prints the name, ownership, attribute count and the first custom attr
 Project (1) to milestone (N), with the lookup column created on the milestone:
 
 ```typescript
-await client
-  .api("/RelationshipDefinitions")
-  .preferRaw("return=representation")
-  .post({
-    "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
-    SchemaName: "sample_project_milestones",
-    ReferencedEntity: "sample_project",
-    ReferencedAttribute: "sample_projectid",
-    ReferencingEntity: "sample_milestone",
-    Lookup: {
-      "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
-      SchemaName: "sample_ProjectId",
-      DisplayName: { LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }] },
-      RequiredLevel: { Value: AttributeRequiredLevel.ApplicationRequired },
-    },
-  });
+const relationshipId = await client.api("/RelationshipDefinitions").createAndGetId({
+  "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+  SchemaName: "sample_project_milestones",
+  ReferencedEntity: "sample_project",
+  ReferencedAttribute: "sample_projectid",
+  ReferencingEntity: "sample_milestone",
+  Lookup: {
+    "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
+    SchemaName: "sample_ProjectId",
+    DisplayName: { LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }] },
+    RequiredLevel: { Value: AttributeRequiredLevel.ApplicationRequired },
+  },
+});
 ```
 
 `metadataClient.createOneToManyRelationship()` and `createManyToManyRelationship()` do the same
@@ -330,11 +345,17 @@ const metadataId = await metadataClient.createGlobalOptionSet({
 To change a choice later, use `metadataClient.insertOptionValue()`, `updateOptionValue()`,
 `deleteOptionValue()` and `orderOptions()`. The sample does not call them.
 
-### Demo 6: Delete an Entity
+### Demo 6: Delete Metadata
+
+The relationship first, then the table:
 
 ```typescript
+await client.api(`/RelationshipDefinitions(${relationshipId})`).delete();
 await client.api("/EntityDefinitions(LogicalName='sample_milestone')").delete();
 ```
+
+The sample sends these through `remove()`, which retries while the org's servers catch up with
+the new components.
 
 ---
 
@@ -444,8 +465,9 @@ Attributes: [
 
 **Solution:**
 
-1. Change `SCHEMA_PREFIX` in `.env` to a different value
-2. Or manually delete existing entities in Power Apps maker portal
+1. Each run uses a new random tag, so this only happens with a fixed `SAMPLE_RUN_TAG`: change it
+2. Or manually delete existing entities in Power Apps maker portal (their display names start
+   with `sdk-sample-<tag>`)
 3. Ensure cleanup ran successfully last time
 
 ---
