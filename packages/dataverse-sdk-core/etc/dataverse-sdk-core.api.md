@@ -11,6 +11,46 @@ export interface AccessTokenProvider {
 }
 
 // @public
+export interface AdaptiveThrottlingDelay {
+    delayMs: number;
+    pressure: number;
+    reason: "pressure" | "retry-after";
+    request: RequestInformation;
+}
+
+// @public
+export class AdaptiveThrottlingMiddleware implements Middleware {
+    constructor(options?: AdaptiveThrottlingOptions);
+    // (undocumented)
+    execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    // (undocumented)
+    name: string;
+    get status(): AdaptiveThrottlingStatus;
+}
+
+// @public
+export interface AdaptiveThrottlingOptions {
+    maxPauseMs?: number;
+    maxSpacingMs?: number;
+    onDelay?: (delay: AdaptiveThrottlingDelay) => void;
+    pauseOnRetryAfter?: boolean;
+    requestBudget?: number;
+    threshold?: number;
+    timeBudget?: number;
+}
+
+// @public
+export interface AdaptiveThrottlingStatus {
+    pausedUntil?: number;
+    pressure: number;
+    requestBudget?: number;
+    requestsRemaining?: number;
+    spacingMs: number;
+    timeBudget?: number;
+    timeRemaining?: number;
+}
+
+// @public
 export type ApiVersion = `v${number}.${number}`;
 
 // @public
