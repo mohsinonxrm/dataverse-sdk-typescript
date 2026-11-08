@@ -52,10 +52,11 @@ const entityId = await metadataClient.createEntityDefinition({
     LocalizedLabels: [{ Label: "Projects", LanguageCode: 1033 }],
   },
   OwnershipType: "UserOwned", // or OwnershipTypes.UserOwned
+  IsActivity: false,
   HasActivities: true,
   HasNotes: true,
   Attributes: [
-    // Primary name column (required)
+    // The primary name column comes first (required)
     {
       "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
       SchemaName: "new_Name",
@@ -725,8 +726,20 @@ This ensures you cannot accidentally send read-only fields like `MetadataId`, `O
 
 Column creates take `AttributeMetadataCreateTypes`, a union discriminated on `@odata.type`
 (`"Microsoft.Dynamics.CRM.StringAttributeMetadata"`, …), so the type-specific properties
-(`MaxLength`, `MinValue`, `Targets`, …) are checked for the type you name. Column, relationship
-and global choice creates require `@odata.type`; for a table it's optional.
+(`MaxLength`, `MinValue`, …) are checked for the type you name. Column, relationship
+and global choice creates require `@odata.type`; for a table it's optional. A lookup column isn't
+one of them: it is created with its relationship, as the `Lookup` of
+`createOneToManyRelationship()`.
+
+A table create (`EntityMetadataCreate`) requires what Dataverse needs: `SchemaName`,
+`DisplayName`, `DisplayCollectionName`, `OwnershipType`, `IsActivity`, `HasActivities`, `HasNotes`
+and the primary name column. `Attributes` is a tuple whose first element is that column
+(`PrimaryNameAttributeMetadataCreate`: a text column with `IsPrimaryName: true`); the other
+columns follow and can't be a second primary name.
+
+The package exports the metadata types only: the definitions, their create and update payloads,
+and the parameters and responses of the metadata operations `MetadataClient` calls. Other
+operations' types are in the actions, functions and messages packages.
 
 ### Enums Are Member Names
 

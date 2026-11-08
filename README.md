@@ -415,6 +415,7 @@ const entityId = await metadata.createEntityDefinition({
     LocalizedLabels: [{ Label: "Custom Entities", LanguageCode: 1033 }],
   },
   OwnershipType: "UserOwned",
+  IsActivity: false,
   HasActivities: false,
   HasNotes: false,
   Attributes: [

@@ -17,6 +17,8 @@ import { parseEdmx } from "../src/parsers/edmx-parser.js";
 import { canonicalizeCsdl } from "../src/parsers/canonical.js";
 import {
   generateEnumTypeDeclaration,
+  METADATA_OPERATIONS,
+  metadataTypeNames,
   generateMetadataTypes,
 } from "../src/generators/metadata-generator.js";
 import { METADATA_HELPER_FILES } from "../src/generators/metadata-helpers.js";
@@ -196,6 +198,102 @@ describe("metadata generator matches the committed package (#230 drift guard)", 
       expect(squash(generateEnumTypeDeclaration({ name, members })), name).toBe(squash(committed));
       enums++;
     }
-    expect(enums).toBe(61);
+    // Only the enums the metadata types use (#385)
+    expect(enums).toBe(23);
+  });
+});
+
+/**
+ * #385: the package exported every Microsoft.Dynamics.CRM complex type and enum (about 1,500
+ * unrelated message responses: AI*, Mcp*, ...). It now generates the metadata types: the metadata
+ * entity types, the types the helpers import and the parameter and return types of the metadata
+ * operations MetadataClient calls, with what they reference and what derives from them.
+ */
+describe("metadata generator writes only the metadata types (#385)", () => {
+  const CLOSURE_EDMX = `<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
+  <edmx:DataServices>
+    <Schema Namespace="Microsoft.Dynamics.CRM" Alias="mscrm" xmlns="http://docs.oasis-open.org/odata/ns/edm">
+      <EntityType Name="crmbaseentity" Abstract="true" />
+      <EntityType Name="account" BaseType="mscrm.crmbaseentity" />
+      <EntityType Name="crmmodelbaseentity" Abstract="true" />
+      <EntityType Name="MetadataBase" BaseType="mscrm.crmmodelbaseentity" Abstract="true">
+        <Property Name="MetadataId" Type="Edm.Guid" />
+      </EntityType>
+      <EntityType Name="EntityMetadata" BaseType="mscrm.MetadataBase">
+        <Property Name="OwnershipType" Type="mscrm.OwnershipTypes" />
+      </EntityType>
+      <ComplexType Name="EntityQueryExpression">
+        <Property Name="Criteria" Type="mscrm.MetadataFilterExpression" />
+      </ComplexType>
+      <ComplexType Name="MetadataFilterExpression">
+        <Property Name="FilterOperator" Type="mscrm.LogicalOperator" />
+      </ComplexType>
+      <ComplexType Name="RetrieveMetadataChangesResponse">
+        <Property Name="EntityMetadata" Type="Collection(mscrm.ComplexEntityMetadata)" />
+      </ComplexType>
+      <ComplexType Name="ComplexEntityMetadata">
+        <Property Name="Attributes" Type="Collection(mscrm.ComplexAttributeMetadata)" />
+      </ComplexType>
+      <ComplexType Name="ComplexAttributeMetadata" />
+      <ComplexType Name="ComplexStringAttributeMetadata" BaseType="mscrm.ComplexAttributeMetadata" />
+      <ComplexType Name="WhoAmIResponse">
+        <Property Name="UserId" Type="Edm.Guid" />
+      </ComplexType>
+      <ComplexType Name="AIClassifyResponse">
+        <Property Name="Rights" Type="mscrm.AccessRights" />
+      </ComplexType>
+      <EnumType Name="OwnershipTypes"><Member Name="UserOwned" Value="1" /></EnumType>
+      <EnumType Name="LogicalOperator"><Member Name="And" Value="0" /></EnumType>
+      <EnumType Name="DeletedMetadataFilters"><Member Name="Entity" Value="1" /></EnumType>
+      <EnumType Name="AccessRights"><Member Name="ReadAccess" Value="1" /></EnumType>
+      <Function Name="RetrieveMetadataChanges">
+        <Parameter Name="Query" Type="mscrm.EntityQueryExpression" />
+        <Parameter Name="DeletedMetadataFilters" Type="mscrm.DeletedMetadataFilters" />
+        <ReturnType Type="mscrm.RetrieveMetadataChangesResponse" Nullable="false" />
+      </Function>
+      <Function Name="WhoAmI">
+        <ReturnType Type="mscrm.WhoAmIResponse" Nullable="false" />
+      </Function>
+    </Schema>
+  </edmx:DataServices>
+</edmx:Edmx>`;
+
+  it("starts from the metadata types and operations and follows references and derived types", () => {
+    expect([...metadataTypeNames(parseEdmx(CLOSURE_EDMX))].sort()).toEqual([
+      "ComplexAttributeMetadata",
+      "ComplexEntityMetadata",
+      "ComplexStringAttributeMetadata",
+      "DeletedMetadataFilters",
+      "EntityMetadata",
+      "EntityQueryExpression",
+      "LogicalOperator",
+      "MetadataBase",
+      "MetadataFilterExpression",
+      "OwnershipTypes",
+      "RetrieveMetadataChangesResponse",
+      "crmmodelbaseentity",
+    ]);
+  });
+
+  it("writes and exports no other operation's types, enums or tables", async () => {
+    const out = await mkdtemp(join(OUT_ROOT, ".gen-metadata-385-"));
+    try {
+      await generateMetadataTypes(canonicalizeCsdl(parseEdmx(CLOSURE_EDMX)), out, false);
+      const files = await readdir(out);
+      expect(files).toContain("RetrieveMetadataChangesResponse.ts");
+      for (const name of ["WhoAmIResponse", "AIClassifyResponse", "AccessRights", "account"]) {
+        expect(files, name).not.toContain(`${name}.ts`);
+      }
+      const index = await readFile(join(out, "index.ts"), "utf8");
+      expect(index).not.toMatch(/WhoAmIResponse|AIClassifyResponse|AccessRights/);
+    } finally {
+      await rm(out, { recursive: true, force: true });
+    }
+  });
+
+  it("names only operations MetadataClient calls", () => {
+    expect(METADATA_OPERATIONS).toContain("RetrieveMetadataChanges");
+    expect(METADATA_OPERATIONS).not.toContain("WhoAmI");
   });
 });

@@ -203,36 +203,41 @@ const response = await client
     DisplayName: { LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }] },
     DisplayCollectionName: { LocalizedLabels: [{ Label: "Projects", LanguageCode: 1033 }] },
     OwnershipType: OwnershipTypes.UserOwned,
+    IsActivity: false,
     HasActivities: true,
     HasNotes: true,
+    // The primary name column is created with the table, first in Attributes
+    Attributes: [
+      {
+        "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+        SchemaName: "sample_Name",
+        DisplayName: { LocalizedLabels: [{ Label: "Project Name", LanguageCode: 1033 }] },
+        RequiredLevel: { Value: AttributeRequiredLevel.None },
+        MaxLength: 100,
+        IsPrimaryName: true,
+      },
+    ],
   });
-
-await client.api("/EntityDefinitions(LogicalName='sample_project')/Attributes").post({
-  "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-  SchemaName: "sample_Name",
-  DisplayName: { LocalizedLabels: [{ Label: "Project Name", LanguageCode: 1033 }] },
-  RequiredLevel: { Value: AttributeRequiredLevel.None },
-  MaxLength: 100,
-  IsPrimaryName: true,
-});
 ```
 
 **MetadataClient** - the same for `sample_milestone`. `createEntityDefinition()` returns the new
-`MetadataId`, and `createAttributeDefinition(entityLogicalName, attribute)` adds the column:
+`MetadataId`; `EntityMetadataCreate` requires the properties a table create needs and the primary
+name column first in `Attributes`:
 
 ```typescript
 const metadataId = await metadataClient.createEntityDefinition({
   "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
   SchemaName: "sample_milestone",
-  // ...DisplayName, DisplayCollectionName, OwnershipType as above
-});
-
-await metadataClient.createAttributeDefinition("sample_milestone", {
-  "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-  SchemaName: "sample_Name",
-  MaxLength: 100,
-  IsPrimaryName: true,
-  // ...DisplayName, RequiredLevel
+  // ...DisplayName, DisplayCollectionName, OwnershipType, IsActivity, HasActivities, HasNotes
+  Attributes: [
+    {
+      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+      SchemaName: "sample_Name",
+      MaxLength: 100,
+      IsPrimaryName: true,
+      // ...DisplayName, RequiredLevel
+    },
+  ],
 });
 ```
 

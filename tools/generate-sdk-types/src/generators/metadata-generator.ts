@@ -22,32 +22,19 @@ export async function generateMetadataTypes(
 ): Promise<void> {
   const absolutePath = resolve(outputPath);
 
-  // Filter to Microsoft.Dynamics.CRM types only - include ALL metadata-related types
-  // This includes MetadataEntityTypes (22), all ComplexTypes, and all EnumTypes
+  // The metadata types (#385): the metadata entity types, the types the hand-written helpers and
+  // the metadata operations MetadataClient calls use, and every type those reference or that
+  // derives from them. Not every Microsoft.Dynamics.CRM complex type: most of those are other
+  // messages' responses, which the actions, functions and messages packages have.
+  const included = metadataTypeNames(csdl);
   const metadataEntityTypes = csdl.entityTypes.filter(
-    (et) =>
-      et.namespace === "Microsoft.Dynamics.CRM" &&
-      // Include all metadata entity types
-      (et.name.endsWith("Metadata") ||
-        et.name === "Label" ||
-        et.name === "LocalizedLabel" ||
-        et.name === "OptionMetadata" ||
-        et.name === "BooleanOptionSetMetadata" ||
-        et.name === "OptionSetMetadata" ||
-        et.name === "crmmodelbaseentity" ||
-        et.name === "MetadataBase")
+    (et) => et.namespace === CRM && included.has(et.name)
   );
-
-  // For metadata package, include ALL Microsoft.Dynamics.CRM complex types
-  // (metadata types reference many other complex types)
   const metadataComplexTypes = csdl.complexTypes.filter(
-    (ct) => ct.namespace === "Microsoft.Dynamics.CRM" && !ct.name.endsWith("[]")
+    (ct) => ct.namespace === CRM && included.has(ct.name)
   );
-
-  // For metadata package, include ALL Microsoft.Dynamics.CRM enums
-  // (complex types reference many enums beyond just metadata-specific ones)
   const metadataEnumTypes = csdl.enumTypes.filter(
-    (et) => et.namespace === "Microsoft.Dynamics.CRM"
+    (et) => et.namespace === CRM && included.has(et.name)
   );
 
   if (dryRun) {
@@ -110,6 +97,90 @@ export async function generateMetadataTypes(
   );
   console.log(`  - Total files: ${String(generatedFiles.length)}`);
   console.log(`  ✅ Generated metadata types`);
+}
+
+const CRM = "Microsoft.Dynamics.CRM";
+
+/**
+ * The metadata operations `MetadataClient` calls. Their parameter and return types are part of the
+ * package (#385); other operations' types are in the actions, functions and messages packages.
+ */
+export const METADATA_OPERATIONS: readonly string[] = [
+  "CanBeReferenced",
+  "CanBeReferencing",
+  "CanManyToMany",
+  "CreateCustomerRelationships",
+  "CreatePolymorphicLookupAttribute",
+  "DeleteOptionValue",
+  "GetValidManyToMany",
+  "GetValidReferencedEntities",
+  "GetValidReferencingEntities",
+  "InsertOptionValue",
+  "InsertStatusValue",
+  "OrderOption",
+  "RetrieveMetadataChanges",
+  "UpdateOptionValue",
+];
+
+/** Whether an entity type is a metadata type (`EntityMetadata`, `Label`, ...), not a table. */
+function isMetadataEntityType(name: string): boolean {
+  return (
+    name.endsWith("Metadata") ||
+    ["Label", "LocalizedLabel", "crmmodelbaseentity", "MetadataBase"].includes(name)
+  );
+}
+
+/** The type a CSDL type reference names, without `Collection(...)` and the namespace. */
+function referencedName(type: string): string | undefined {
+  const inner = type.startsWith("Collection(") ? type.slice("Collection(".length, -1) : type;
+  return inner.startsWith("Edm.") ? undefined : inner.split(".").pop();
+}
+
+/**
+ * The names of the types the metadata package generates (#385). It starts from the metadata
+ * entity types, the types the hand-written helpers import and the parameter and return types of
+ * `METADATA_OPERATIONS`, then adds, until nothing changes, every type one of them references (base
+ * type, properties, navigation properties) and every type derived from one of them (the
+ * `Complex*AttributeMetadata` types in a `RetrieveMetadataChanges` response, for example). Entity
+ * types other than the metadata ones (tables) are never included.
+ */
+export function metadataTypeNames(csdl: CsdlSchema): Set<string> {
+  const crm = <T extends { namespace: string; name: string }>(types: T[]): Map<string, T> =>
+    new Map(types.filter((t) => t.namespace === CRM).map((t) => [t.name, t]));
+  const entities = crm(csdl.entityTypes.filter((et) => isMetadataEntityType(et.name)));
+  const complex = crm(csdl.complexTypes.filter((ct) => !ct.name.endsWith("[]")));
+  const enums = crm(csdl.enumTypes);
+  const structured = [...entities.values(), ...complex.values()];
+
+  const names = new Set<string>();
+  const queue: string[] = [];
+  const add = (name: string | undefined): void => {
+    if (name === undefined || names.has(name)) return;
+    if (!entities.has(name) && !complex.has(name) && !enums.has(name)) return;
+    names.add(name);
+    queue.push(name);
+  };
+
+  for (const name of entities.keys()) add(name);
+  for (const helper of METADATA_HELPER_FILES) {
+    for (const [, imported] of helper.content.matchAll(/from "\.\/([\w-]+)\.js"/g)) add(imported);
+  }
+  for (const op of [...csdl.actions, ...csdl.functions]) {
+    if (op.namespace !== CRM || !METADATA_OPERATIONS.includes(op.name)) continue;
+    for (const p of op.parameters) add(referencedName(p.type));
+    if (op.returnType) add(referencedName(op.returnType));
+  }
+
+  for (let name = queue.shift(); name !== undefined; name = queue.shift()) {
+    const type = entities.get(name) ?? complex.get(name);
+    if (!type) continue;
+    if (type.baseType) add(referencedName(type.baseType));
+    for (const p of [...type.properties, ...type.navigationProperties]) add(referencedName(p.type));
+    for (const derived of structured) {
+      if (derived.baseType && referencedName(derived.baseType) === name) add(derived.name);
+    }
+  }
+  return names;
 }
 
 /** A change to one generated property: its TS type, whether it's required, and a JSDoc line. */
