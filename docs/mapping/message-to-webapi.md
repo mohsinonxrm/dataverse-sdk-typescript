@@ -1,6 +1,8 @@
-# Message ↔ Web API Mapping Guide
+# .NET SDK and Message ↔ Web API Mapping Guide
 
-This document explains how **Organization Service messages** (SDK.Messages) map to **Dataverse Web API** operations:
+This document maps code written for the .NET SDK (`IOrganizationService` and the
+`Microsoft.Xrm.Sdk.Messages` / `Microsoft.Crm.Sdk.Messages` requests) to this SDK, and explains
+how **Organization Service messages** map to **Dataverse Web API** operations:
 
 - **CRUD** via HTTP verbs (GET/POST/PATCH/DELETE)
 - **Actions** via HTTP POST (side effects)
@@ -9,9 +11,81 @@ This document explains how **Organization Service messages** (SDK.Messages) map 
 
 > **SDK principle**
 >
-> - If you use **OrgService + Messages**, responses match the documented Message Response contracts.
-> - If you use **client.execute(Action/Function request)**, responses match the Web API action/function return types.
-> - If you use **client.api(...)**, you are calling raw HTTP endpoints (escape hatch).
+> - The **main path** is `client.api(...)` for queries and CRUD, and
+>   `client.execute(new <Name>Action(…) | new <Name>Function(…))` for operations; their results are
+>   the Web API's own shapes.
+> - **`OrganizationService` + messages** (`@mohsinonxrm/dataverse-sdk-xrm`,
+>   `@mohsinonxrm/dataverse-sdk-messages`) are a compatibility layer with the .NET names: responses
+>   follow the documented message response contracts (`<Name>Response.result`). They send the same
+>   requests as the main path, through the same client.
+
+---
+
+## 0. From the .NET SDK to the main path
+
+Each row is the same request three ways: the .NET SDK call, its compatibility-layer twin (`org` is
+an `OrganizationService`), and the main-path call this SDK documents (`client` is the
+`DataverseClient`). Port with the middle column if you want the .NET shapes, then move to the right
+column call by call; both can be used side by side.
+
+| .NET SDK                                                    | Compatibility layer (xrm, messages)                        | Main path (core, actions, functions)                                                   |
+| ----------------------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `service.Create(entity)`                                    | `org.create("accounts", record)`, `new CreateRequest(…)`   | `client.api("accounts").createAndGetId(record)`                                        |
+| `service.Retrieve(name, id, new ColumnSet(…))`              | `org.retrieve("accounts", id, { select })`                 | ``client.api(`accounts(${id})`).select(…).get()``                                      |
+| `RetrieveRequest` with `RelatedEntitiesQuery`               | `org.retrieve(…, { expand })`                              | `.expand("primarycontactid", { select: […] })`                                         |
+| `service.RetrieveMultiple(QueryExpression)`                 | `org.retrieveMultiple("accounts", { filter, top })`        | `client.api("accounts").filter(…).getAll()` or `.iterate()`                            |
+| `service.RetrieveMultiple(FetchExpression)`                 | `new RetrieveMultipleRequest({ Query })`                   | `client.fetchXml("accounts", xml)`                                                     |
+| `service.Update(entity)`                                    | `org.update("accounts", id, changes)`                      | ``client.api(`accounts(${id})`).ifMatch("*").patch(changes)``                          |
+| `UpsertRequest` (.NET only)                                 | (none)                                                     | ``client.api(`accounts(${odataKey({ accountnumber: "A-1" })})`).patch(record)``        |
+| `service.Delete(name, id)`                                  | `org.delete("accounts", id)`                               | ``client.api(`accounts(${id})`).delete()``                                             |
+| `service.Associate(…)` / `Disassociate(…)`                  | `org.associate(…)` / `org.disassociate(…)`                 | ``client.api(`accounts(${id})/contact_customer_accounts/$ref`).post(…)`` / `.delete()` |
+| `AssignRequest` (.NET only)                                 | `org.assign("account", id, userId)`                        | ``.patch({ "ownerid@odata.bind": `/systemusers(${userId})` })``                        |
+| `SetStateRequest` (.NET only)                               | `org.setState("account", id, 1, 2)`                        | `.patch({ statecode: 1, statuscode: 2 })`                                              |
+| `service.Execute(new WinOpportunityRequest { … })`          | `org.execute(new WinOpportunityRequest({ … }))`            | `client.execute(new WinOpportunityAction({ … }))`                                      |
+| `service.Execute(new WhoAmIRequest())`                      | `org.execute(new WhoAmIRequest())`, `org.whoAmI()`         | `client.execute(new WhoAmIFunction())`                                                 |
+| `service.Execute(new OrganizationRequest("new_MyApi"))`     | `org.execute(new OrganizationRequest("new_MyApi", { … }))` | a class from `dataverse-gen`, or `client.api("new_MyApi").post({ … })`                 |
+| `ExecuteMultipleRequest`                                    | `new ExecuteMultipleRequest({ Requests, Settings })`       | `BatchRequestBuilder` with `execute({ continueOnError: true })`                        |
+| `ExecuteTransactionRequest`                                 | `new ExecuteTransactionRequest({ Requests })`              | `BatchRequestBuilder` with `beginChangeset()` / `endChangeset()`                       |
+| `CreateMultipleRequest`, `UpdateMultipleRequest`            | `new CreateMultipleRequest("accounts", { Targets })`       | `createMultiple()` / `updateMultiple()`, or `CreateMultipleAction`                     |
+| `CreateEntityRequest`, `CreateAttributeRequest` (.NET only) | (none)                                                     | `MetadataClient` with the `Metadata` builders                                          |
+| `RetrieveEntityRequest`, `RetrieveMetadataChangesRequest`   | `new RetrieveEntityRequest({ … })`                         | `MetadataClient`, or `RetrieveMetadataChangesFunction`                                 |
+| `RetrieveEntityChangesRequest` (.NET only)                  | (none)                                                     | `client.api("accounts").trackChanges()`, `client.changesSince(deltaLink)`              |
+| Early-bound classes (`CrmSvcUtil`, `pac modelbuilder`)      | `org.retrieve<Account>(…)` with generated interfaces       | `dataverse-gen` types and `createTypedClient(client)`                                  |
+| `CallerId` / `CallerAADObjectId`                            | `{ impersonateUserId }` option (by `systemuserid`)         | `.impersonate(systemUserId)` / `.impersonateByObjectId(objectId)`                      |
+| `OrganizationServiceFault` (`FaultException`)               | `DataverseODataError` (and its subclasses)                 | the same: every call rejects with the core error types                                 |
+
+Things that differ from .NET on every path:
+
+- **Entity set names, not logical names**, in URLs and CRUD methods (`"accounts"`, not
+  `"account"`); `org.getEntitySetName("account")` looks one up.
+- **Records are JSON**, not `Entity` objects: columns by logical name, lookups written as
+  `"<navigation property>@odata.bind": "/<entity set>(<id>)"` (or an `EntityReference` from
+  `createEntityReference()` in typed payloads), choices as numbers, money as numbers.
+- **No `$skip`**: page with `@odata.nextLink` (`iterate()`, `getAll()`), or FetchXML paging cookies.
+
+The same call on each path, for comparison:
+
+```typescript
+import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
+import { WinOpportunityRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
+
+const opportunityClose = {
+  "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+  "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
+  subject: "Won",
+};
+
+// Main path: the typed action; it resolves the action's result (none for WinOpportunity)
+await client.execute(new WinOpportunityAction({ OpportunityClose: opportunityClose, Status: 3 }));
+
+// Compatibility layer: the message, through OrganizationService; it resolves WinOpportunityResponse
+const org = new OrganizationService(client);
+await org.execute(new WinOpportunityRequest({ OpportunityClose: opportunityClose, Status: 3 }));
+
+// Escape hatch: the raw request
+await client.api("WinOpportunity").post({ OpportunityClose: opportunityClose, Status: 3 });
+```
 
 ---
 
@@ -104,32 +178,35 @@ entity sets rather than actions or functions. The messages package has them as `
 
 ## 3. Mapping table
 
-| .NET message    | This SDK                         | Web API endpoint                                          | Method |
-| --------------- | -------------------------------- | --------------------------------------------------------- | ------ |
-| WhoAmI          | `WhoAmIRequest`                  | `/WhoAmI`                                                 | GET    |
-| Create          | `CreateRequest`                  | `/{entitySet}`                                            | POST   |
-| Retrieve        | `RetrieveRequest`                | `/{entitySet}({id})`                                      | GET    |
-| Update          | `UpdateRequest`                  | `/{entitySet}({id})`                                      | PATCH  |
-| Delete          | `DeleteRequest`                  | `/{entitySet}({id})`                                      | DELETE |
-| Associate       | `AssociateRequest`               | `/{entitySet}({id})/{relationship}/$ref`                  | POST   |
-| ExecuteMultiple | `ExecuteMultipleRequest`         | `/$batch`                                                 | POST   |
-| Assign          | update `ownerid@odata.bind`      | `/{entitySet}({id})`                                      | PATCH  |
-| SetState        | update `statecode`, `statuscode` | `/{entitySet}({id})`                                      | PATCH  |
-| ExecuteWorkflow | `ExecuteWorkflowRequest`         | `/workflows({id})/Microsoft.Dynamics.CRM.ExecuteWorkflow` | POST   |
-| WinOpportunity  | `WinOpportunityRequest`          | `/WinOpportunity`                                         | POST   |
-| Merge           | `MergeRequest`                   | `/Merge`                                                  | POST   |
-| ExportSolution  | `ExportSolutionRequest`          | `/ExportSolution`                                         | POST   |
-| ImportSolution  | `ImportSolutionRequest`          | `/ImportSolution`                                         | POST   |
-| PublishXml      | `PublishXmlRequest`              | `/PublishXml`                                             | POST   |
-| PublishAllXml   | `PublishAllXmlRequest`           | `/PublishAllXml`                                          | POST   |
+| .NET message    | Compatibility layer      | Main path                                       | Web API endpoint                                          | Method |
+| --------------- | ------------------------ | ----------------------------------------------- | --------------------------------------------------------- | ------ |
+| WhoAmI          | `WhoAmIRequest`          | `WhoAmIFunction`                                | `/WhoAmI`                                                 | GET    |
+| Create          | `CreateRequest`          | `client.api(entitySet).createAndGetId(…)`       | `/{entitySet}`                                            | POST   |
+| Retrieve        | `RetrieveRequest`        | ``client.api(`{entitySet}({id})`).get()``       | `/{entitySet}({id})`                                      | GET    |
+| Update          | `UpdateRequest`          | `.ifMatch("*").patch(…)`                        | `/{entitySet}({id})`                                      | PATCH  |
+| Delete          | `DeleteRequest`          | `.delete()`                                     | `/{entitySet}({id})`                                      | DELETE |
+| Associate       | `AssociateRequest`       | ``client.api(`…/{relationship}/$ref`).post(…)`` | `/{entitySet}({id})/{relationship}/$ref`                  | POST   |
+| ExecuteMultiple | `ExecuteMultipleRequest` | `BatchRequestBuilder`                           | `/$batch`                                                 | POST   |
+| Assign          | `org.assign(…)`          | update `ownerid@odata.bind`                     | `/{entitySet}({id})`                                      | PATCH  |
+| SetState        | `org.setState(…)`        | update `statecode`, `statuscode`                | `/{entitySet}({id})`                                      | PATCH  |
+| ExecuteWorkflow | `ExecuteWorkflowRequest` | `ExecuteWorkflowAction`                         | `/workflows({id})/Microsoft.Dynamics.CRM.ExecuteWorkflow` | POST   |
+| WinOpportunity  | `WinOpportunityRequest`  | `WinOpportunityAction`                          | `/WinOpportunity`                                         | POST   |
+| Merge           | `MergeRequest`           | `MergeAction`                                   | `/Merge`                                                  | POST   |
+| ExportSolution  | `ExportSolutionRequest`  | `ExportSolutionAction`                          | `/ExportSolution`                                         | POST   |
+| ImportSolution  | `ImportSolutionRequest`  | `ImportSolutionAction`                          | `/ImportSolution`                                         | POST   |
+| PublishXml      | `PublishXmlRequest`      | `PublishXmlAction`                              | `/PublishXml`                                             | POST   |
+| PublishAllXml   | `PublishAllXmlRequest`   | `PublishAllXmlAction`                           | `/PublishAllXml`                                          | POST   |
 
 ---
 
 ## 4. Fallback for operations without a typed class
 
+- Generate a typed class with `dataverse-gen` (custom APIs and other apps' operations): see
+  [Generate the rest with dataverse-gen](../getting-started.md#generate-the-rest-with-dataverse-gen).
 - Use `client.api()` to call the endpoint directly.
-- Or use `new OrganizationRequest("OperationName", parameters)` from the messages package (POST
-  actions only; the functions of the platform, Sales and Customer Service have typed messages).
+- In the compatibility layer, `new OrganizationRequest("OperationName", parameters)` from the
+  messages package (POST actions only; the functions of the platform, Sales and Customer Service
+  have typed messages).
 
 ---
 
@@ -152,6 +229,20 @@ await client.api(`accounts(${accountId})`).patch({
 ```
 
 ### 5.3 ExecuteWorkflow (bound)
+
+Main path: the action resolves the `asyncoperation` it started, which `waitForAsyncOperation()`
+polls until the job ends.
+
+```typescript
+import { waitForAsyncOperation } from "@mohsinonxrm/dataverse-sdk-core";
+import { ExecuteWorkflowAction } from "@mohsinonxrm/dataverse-sdk-actions";
+
+const job = await client.execute(new ExecuteWorkflowAction(workflowId, { EntityId: recordId }));
+const done = await waitForAsyncOperation(client, job);
+console.log("Job finished:", done.statuscode);
+```
+
+Compatibility layer:
 
 ```typescript
 import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
@@ -190,6 +281,6 @@ For each operation we document:
 - Web API action/function name and binding (bound/unbound)
 - Request/response shape
 - Examples using:
-  - `service.execute(message)`
-  - `client.execute(action|function request)`
+  - `client.execute(action|function request)` (the main path)
+  - `service.execute(message)` (the .NET compatibility layer)
   - raw `client.api(...)` (escape hatch)

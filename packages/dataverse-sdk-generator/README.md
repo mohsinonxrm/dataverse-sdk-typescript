@@ -2,6 +2,13 @@
 
 Code generator for Dataverse entities, actions, and functions. Generates strongly-typed TypeScript code from `$metadata` CSDL.
 
+`dataverse-gen` is the typed part of the SDK's main path for your own org: interfaces for your
+tables with their create and update types, a [typed client](#typed-client) over `client.api()`,
+and action and function classes for your custom APIs and the apps the prebuilt
+`@mohsinonxrm/dataverse-sdk-actions` and `-functions` packages leave out, run with
+`client.execute()` like the prebuilt ones. It replaces the .NET SDK's early-bound class
+generators (`CrmSvcUtil`, `pac modelbuilder`).
+
 ## 📦 Installation
 
 ```bash
@@ -953,6 +960,8 @@ value is written as the OData literal for its type by `formatParameterAlias()` f
   reference is written as `{"@odata.id":"accounts(<id>)"}`.
 
 Nullable parameters are optional; a parameter left out or `undefined` is left out of the call.
+
+<!-- no-check -->
 
 ```typescript
 // generated/functions/RetrieveUserPrivilegeByPrivilegeNameFunction.ts (bound to systemuser)

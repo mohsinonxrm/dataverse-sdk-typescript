@@ -2,6 +2,16 @@
 
 C#-familiar facade over the Dataverse Web API, providing OrganizationService-like operations.
 
+This package is the SDK's **.NET compatibility layer**, with
+[`@mohsinonxrm/dataverse-sdk-messages`](../dataverse-sdk-messages): `OrganizationService` has the
+.NET SDK's method names (`create`, `retrieve`, `retrieveMultiple`, `update`, `delete`, `associate`,
+`execute`, …), so code written against `IOrganizationService` ports line by line. Each method is a
+`client.api()` call on the same `DataverseClient`. New code should use the main path,
+`client.api()` and the typed operations of `@mohsinonxrm/dataverse-sdk-actions` and
+`@mohsinonxrm/dataverse-sdk-functions`; the
+[.NET mapping](../../docs/mapping/message-to-webapi.md#0-from-the-net-sdk-to-the-main-path) gives
+the main-path equivalent of each method.
+
 ## Installation
 
 ```bash
@@ -138,6 +148,8 @@ const leadId = await service.create(
 
 Retrieves an entity record by ID.
 
+<!-- no-check -->
+
 ```typescript
 retrieve<T = EntityRecord>(
   entitySetName: string,
@@ -167,18 +179,18 @@ retrieve<T = EntityRecord>(
 const account = await service.retrieve<Account>("accounts", accountId);
 
 // Retrieve with select
-const account = await service.retrieve("accounts", accountId, {
+const withSelect = await service.retrieve("accounts", accountId, {
   select: ["name", "revenue", "createdon"],
 });
 
 // Retrieve with simple expand
-const account = await service.retrieve("accounts", accountId, {
+const withContact = await service.retrieve("accounts", accountId, {
   select: ["name"],
   expand: "primarycontactid($select=fullname,emailaddress1)",
 });
 
 // Retrieve with complex expand
-const account = await service.retrieve("accounts", accountId, {
+const withExpand = await service.retrieve("accounts", accountId, {
   select: ["name"],
   expand: [
     {
@@ -282,6 +294,8 @@ await service.update(
 
 Deletes an entity record.
 
+<!-- no-check -->
+
 ```typescript
 async delete(
   entitySetName: string,
@@ -326,6 +340,8 @@ await service.delete("leads", leadId, {
 
 Retrieves multiple entity records matching a query.
 
+<!-- no-check -->
+
 ```typescript
 retrieveMultiple<T = EntityRecord>(
   entitySetName: string,
@@ -365,22 +381,22 @@ const result = await service.retrieveMultiple("accounts");
 console.log(result.value); // Array of account records
 
 // With filter and select
-const result = await service.retrieveMultiple("accounts", {
+const filtered = await service.retrieveMultiple("accounts", {
   filter: "revenue gt 1000000",
   select: ["name", "revenue", "industrycode"],
 });
 
 // With ordering and paging
-const result = await service.retrieveMultiple("contacts", {
+const contacts = await service.retrieveMultiple("contacts", {
   select: ["fullname", "emailaddress1"],
   orderBy: ["createdon desc"],
   top: 50,
   count: true,
 });
-console.log(`Total: ${result["@odata.count"]}`);
+console.log(`Total: ${contacts["@odata.count"]}`);
 
 // With expand
-const result = await service.retrieveMultiple("opportunities", {
+const opportunities = await service.retrieveMultiple("opportunities", {
   select: ["name", "estimatedvalue"],
   expand: [
     {
@@ -399,6 +415,8 @@ const result = await service.retrieveMultiple("opportunities", {
 ### associate
 
 Associates entities through a relationship.
+
+<!-- no-check -->
 
 ```typescript
 async associate(
@@ -456,6 +474,8 @@ await service.associate(
 ### disassociate
 
 Disassociates entities from a relationship.
+
+<!-- no-check -->
 
 ```typescript
 async disassociate(
@@ -570,6 +590,8 @@ console.log("Async operation:", workflowResponse.result?.asyncoperationid);
 
 Gets the current user information.
 
+<!-- no-check -->
+
 ```typescript
 async whoAmI(options?: OperationOptions): Promise<{
   UserId: string;
@@ -641,6 +663,8 @@ await service.getEntitySetName("opportunity"); // "opportunities" (one metadata 
 
 Assigns a record to a user or team. Sends `If-Match: *`, so a missing record rejects with 404 instead of being created.
 
+<!-- no-check -->
+
 ```typescript
 async assign(
   entityName: string,
@@ -674,6 +698,8 @@ await service.assign("lead", leadId, teamId, "team");
 ### setState
 
 Sets the state and status of a record. Sends `If-Match: *`, so a missing record rejects with 404 instead of being created.
+
+<!-- no-check -->
 
 ```typescript
 async setState(
@@ -725,6 +751,8 @@ interface EntityRecord {
 ```
 
 ### RetrieveMultipleResult
+
+<!-- no-check -->
 
 ```typescript
 interface RetrieveMultipleResult<T = EntityRecord> {
@@ -933,11 +961,11 @@ await service.retrieve("accounts", "{12345678-1234-1234-1234-123456789012}".toUp
 You can use `OrganizationService` for convenience or use `DataverseClient` directly for more control:
 
 ```typescript
-// Using OrganizationService (C#-familiar)
+// Using OrganizationService (the .NET compatibility layer)
 const id = await service.create("accounts", { name: "Contoso" });
 
-// Using DataverseClient directly (HTTP-first)
-const id = await client.api("/accounts").createAndGetId({ name: "Contoso" });
+// Using DataverseClient directly (the main path): the same request
+const sameRequest = await client.api("/accounts").createAndGetId({ name: "Contoso" });
 ```
 
 ---

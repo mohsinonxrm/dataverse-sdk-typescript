@@ -2,6 +2,16 @@
 
 Organization Service messages for Dataverse, providing typed request/response pairs that map to Web API actions, functions, CRUD requests and `$batch`.
 
+This package is the SDK's **.NET compatibility layer**, with
+[`@mohsinonxrm/dataverse-sdk-xrm`](../dataverse-sdk-xrm): `<Name>Request` / `<Name>Response`
+classes with the .NET SDK's names, so code written against `IOrganizationService` ports line by
+line. Each message sends the same request as the action or function class of the same name
+(`WinOpportunityRequest` and `WinOpportunityAction`), through the same `DataverseClient`. New code
+should use the main path: those classes from `@mohsinonxrm/dataverse-sdk-actions` and
+`@mohsinonxrm/dataverse-sdk-functions`, run with `client.execute()`, and `client.api()` for CRUD.
+The [.NET mapping](../../docs/mapping/message-to-webapi.md#0-from-the-net-sdk-to-the-main-path)
+gives the main-path equivalent of each .NET call.
+
 ## Features
 
 - ✅ **<!-- count:messages -->1,281<!-- /count --> typed messages** - The Organization Service messages of the platform, Sales and Customer Service, from the Web API's actions and functions
@@ -20,7 +30,7 @@ pnpm add @mohsinonxrm/dataverse-sdk-messages @mohsinonxrm/dataverse-sdk-xrm
 
 ## Overview
 
-This package provides <!-- count:messages -->1,281<!-- /count --> typed message classes that wrap Web API actions and functions, and the hand-written [CRUD and batch messages](#crud-and-batch-messages). Each message:
+This package provides <!-- count:messages -->1,281<!-- /count --> typed message classes, one for each Web API action and function, and the hand-written [CRUD and batch messages](#crud-and-batch-messages). Each message:
 
 - Extends `OrganizationRequest` base class
 - Implements `Executable<TResponse>` interface
@@ -251,13 +261,14 @@ Executes a workflow against an entity record.
 **Maps to:** ExecuteWorkflow action (bound to workflow)
 
 ```typescript
+import { waitForAsyncOperation } from "@mohsinonxrm/dataverse-sdk-core";
 import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const request = new ExecuteWorkflowRequest(workflowId, { EntityId: recordId, InputArguments: {} });
 
 const response = await service.execute(request);
 console.log("Async Operation ID:", response.result?.asyncoperationid);
-// Wait for the workflow to finish (waitForAsyncOperation is in @mohsinonxrm/dataverse-sdk-core)
+// Wait for the workflow to finish
 const job = await waitForAsyncOperation(client, response.result);
 ```
 

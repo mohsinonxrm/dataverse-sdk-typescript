@@ -134,8 +134,9 @@ The client attaches the bearer token only to requests for its own `baseUrl` orig
 
 ## 7. Known limits
 
-| Limit                                                                                                                                                                                                                     | Tracking                                                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Claims challenges can't be read (`WWW-Authenticate` isn't exposed); 401 recovery is a forced refresh                                                                                                                      | Dataverse CORS behaviour                                                   |
-| File uploads with `method: "patch-chunked"` read the `x-ms-chunk-size` and `Location` response headers, which a browser sees only if Dataverse's CORS policy exposes them; use the default `"actions"` route in a browser | [files README](../packages/dataverse-sdk-files/README.md#upload-routes)    |
-| Application Insights adapter is Node.js only                                                                                                                                                                              | [#158](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/158) |
+| Limit                                                                                                                                                                                                                     | Tracking                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Claims challenges can't be read (`WWW-Authenticate` isn't exposed); 401 recovery is a forced refresh                                                                                                                      | Dataverse CORS behaviour                                                |
+| File uploads with `method: "patch-chunked"` read the `x-ms-chunk-size` and `Location` response headers, which a browser sees only if Dataverse's CORS policy exposes them; use the default `"actions"` route in a browser | [files README](../packages/dataverse-sdk-files/README.md#upload-routes) |
+
+> > > >

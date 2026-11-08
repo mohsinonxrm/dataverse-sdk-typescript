@@ -8,6 +8,13 @@
 
 ## Overview
 
+The messages are the SDK's **.NET compatibility layer**: for code ported from the .NET SDK. The
+main path is the action and function classes of `@mohsinonxrm/dataverse-sdk-actions` and
+`@mohsinonxrm/dataverse-sdk-functions` (see [supported-actions.md](./supported-actions.md) and
+[supported-functions.md](./supported-functions.md)), which send the same requests and resolve the
+Web API's result directly; [message-to-webapi.md](./message-to-webapi.md#0-from-the-net-sdk-to-the-main-path)
+maps each .NET call to it.
+
 Each Web API **action** and **function** has a `<Name>Request` / `<Name>Response` pair, for code
 written in the style of the .NET SDK's `OrganizationRequest` classes. A request takes the same
 arguments as the matching class in `@mohsinonxrm/dataverse-sdk-actions` or
@@ -317,25 +324,24 @@ enums are member names; see `@mohsinonxrm/dataverse-sdk-metadata`.
 
 `ExecuteWorkflow`, `BulkDelete` and asynchronous imports return or create an `asyncoperation`. Its
 `statuscode` is 0 (waiting for resources), 10 (waiting), 20 (in progress) or 21 (pausing) while it
-runs, and 30 (succeeded), 31 (failed) or 32 (canceled) once it ends, so poll until it is 30 or more
-(a `waitForAsyncOperation()` helper is planned in
-[#318](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/318)):
+runs, and 30 (succeeded), 31 (failed) or 32 (canceled) once it ends. `waitForAsyncOperation()`
+from `@mohsinonxrm/dataverse-sdk-core` polls it until it ends, resolves the job when it succeeded
+and rejects with `DataverseAsyncOperationError` when it failed or was canceled:
 
 ```typescript
-const { result } = await orgService.execute<ExecuteWorkflowResponse>(
+import { waitForAsyncOperation } from "@mohsinonxrm/dataverse-sdk-core";
+import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+
+const { result } = await orgService.execute(
   new ExecuteWorkflowRequest(workflowId, { EntityId: recordId })
 );
-// The asyncoperation record, or null if the Web API answered 204 No Content
-if (!result) throw new Error("ExecuteWorkflow returned no system job");
-let job: { statuscode: number };
-do {
-  await new Promise((r) => setTimeout(r, 2000));
-  job = await client
-    .api(`asyncoperations(${String(result.asyncoperationid)})`)
-    .select("statuscode")
-    .get<{ statuscode: number }>();
-} while (job.statuscode < 30);
+// result is the asyncoperation record (null if the Web API answered 204 No Content)
+const job = await waitForAsyncOperation(client, result, { timeoutMs: 10 * 60_000 });
+console.log("Completed on", job.completedon);
 ```
+
+See [Waiting for System Jobs](../../packages/dataverse-sdk-core/README.md#waiting-for-system-jobs-asyncoperation)
+for the polling intervals, timeouts and errors.
 
 ## Additional Resources
 

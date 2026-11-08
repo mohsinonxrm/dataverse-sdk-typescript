@@ -2,6 +2,14 @@
 
 > Core HTTP client and middleware pipeline for the Dataverse TypeScript SDK. Foundation package providing HTTP-first fluent API, adaptive resiliency, and extensible middleware architecture.
 
+This package is the SDK's main path: `client.api()` for queries and CRUD, and
+`client.execute()` for the typed operations of
+[`@mohsinonxrm/dataverse-sdk-actions`](../dataverse-sdk-actions) and
+[`@mohsinonxrm/dataverse-sdk-functions`](../dataverse-sdk-functions), or the classes and typed
+client `dataverse-gen` writes. Every other package (batch, metadata, files, discovery, and the .NET
+compatibility layer, `OrganizationService` and the messages) runs on this `DataverseClient` and its
+pipeline. The [root README](../../README.md#-which-package-do-i-need) says which package does what.
+
 ## Features
 
 - 🌐 **HTTP-first fluent API** - Graph-style request builder with full OData query support
@@ -13,6 +21,10 @@
 - 🌍 **Universal** - Works in Node 22+ and modern browsers (ESM-only, uses native `fetch`)
 - 🛡️ **Built-in validation** - Automatic URL length validation (32KB limit per Microsoft specs)
 - 🔄 **Duplicate detection** - First-class support for Dataverse duplicate detection with typed errors
+- 🔁 **Change tracking** - `trackChanges()` and `changesSince(deltaLink)` read only what changed since the last sync ([Change Tracking](#change-tracking))
+- ⏳ **System jobs** - `waitForAsyncOperation()` polls an `asyncoperation` until it ends ([Waiting for System Jobs](#waiting-for-system-jobs-asyncoperation))
+- 🛡️ **Opt-in resilience middleware** - adaptive throttling from the service-protection headers, circuit breaker, bulkhead, and `ChaosMiddleware` for fault-injection tests ([Resiliency Features](#resiliency-features))
+- 📊 **Telemetry** - a dependency per request attempt with W3C trace context, and throttle, retry, concurrency and batch events ([TelemetryClient](#telemetryclient))
 
 ## Installation
 
@@ -64,8 +76,9 @@ console.log(`Found ${accounts.value.length} accounts`);
 The main entry point for all HTTP operations. Manages middleware pipeline, base URL normalization, and request execution.
 
 ```typescript
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
 import { ConsoleLogger } from "@mohsinonxrm/dataverse-sdk-core"; // Opt-in console logger
+import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 
 const client = new DataverseClient({
   // Required: Base URL (accepts environment root or full API path)
@@ -145,6 +158,8 @@ const binding = client.bind("parentcustomerid_account", "accounts", "account-gui
 Fluent API for building OData-compliant Web API requests with method chaining.
 
 ```typescript
+import { Prefer } from "@mohsinonxrm/dataverse-sdk-core";
+
 // OData Query Options
 client
   .api("accounts")
@@ -1445,6 +1460,8 @@ const client = new DataverseClient({
 Telemetry interface for events, dependencies (one per request attempt, with W3C trace context) and
 exceptions.
 
+<!-- no-check -->
+
 ```typescript
 export interface TelemetryClient {
   /** Custom events, and the SDK's own (see TelemetryEvents below). */
@@ -1480,6 +1497,8 @@ export interface DependencyHandle {
 A minimal client records each attempt when it ends:
 
 ```typescript
+import type { TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
+
 const telemetry: TelemetryClient = {
   trackEvent: (name, props, measurements) => console.info(name, props, measurements),
   startDependency: (name) => ({
@@ -1550,6 +1569,8 @@ const client = new DataverseClient({
 
 Interface for typed action/function execution.
 
+<!-- no-check -->
+
 ```typescript
 export interface Executable<T> {
   /**
@@ -1604,41 +1625,18 @@ const result = await client.execute(
 
 ## Testing
 
-The SDK includes comprehensive test coverage:
-
-- **Unit Tests:** 109+ tests using Vitest
-  - Request builder query serialization (`$select`, `$filter`, `$expand`, etc.)
-  - Prefer header construction (fluent builder and helper)
-  - ETag operations (`If-Match`, `If-None-Match`)
-  - Navigation property binding
-  - URL validation and normalization
-  - Error parsing and typed error classes
-  - Retry middleware with backoff and jitter
-  - Concurrency middleware with semaphore logic
-
-- **Contract Tests:** MSW (Mock Service Worker) for HTTP behavior
-  - 429 throttling with `Retry-After` header handling
-  - 502/503/504 retry behavior
-  - Batch operations multipart formatting
-  - OData error response parsing
-  - Duplicate detection (412) responses
-
-- **Paging Tests:**
-  - Single page retrieval
-  - `@odata.nextLink` following
-  - AsyncIterator implementation
-  - Bounded `getAll()` with limits
-
-- **Type Tests:** (via `tsd` in downstream packages)
-  - Type-safe Prefer options
-  - Executable interface compliance
+The package's Vitest suite runs a real `DataverseClient` against a recording fake `fetch` (the
+repository's internal testing package) and asserts what reaches the wire: query serialization,
+`Prefer` and ETag headers, `@odata.bind`, URL validation and encoding, error parsing, retry with
+backoff and `Retry-After`, concurrency, 401 recovery, paging, FetchXML, change tracking,
+`waitForAsyncOperation()`, the opt-in middleware and telemetry. Some tests use MSW (Mock Service
+Worker). Typed operations are checked with `tsd` in the operation packages.
 
 **Run tests:**
 
 ```bash
-pnpm test                    # Run all tests
-pnpm test --watch           # Watch mode
-pnpm test --coverage        # Generate coverage report
+pnpm --filter @mohsinonxrm/dataverse-sdk-core test         # Run the tests
+pnpm --filter @mohsinonxrm/dataverse-sdk-core exec vitest  # Watch mode
 ```
 
 ### Fault Injection (ChaosMiddleware)
