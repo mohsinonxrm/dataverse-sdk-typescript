@@ -270,10 +270,9 @@ export class DataverseRequestBuilder {
     // (undocumented)
     filter(filter: string): this;
     get<T = unknown>(options?: RequestOptions): Promise<T>;
-    getAll<T = unknown>(opts?: {
+    getAll<T = unknown>(opts?: RequestOptions & {
         maxItems?: number;
         maxPages?: number;
-        signal?: AbortSignal;
     }): Promise<T[]>;
     // (undocumented)
     getPage<T = unknown>(options?: RequestOptions): Promise<PageResponse<T>>;
@@ -285,9 +284,7 @@ export class DataverseRequestBuilder {
         by?: "systemuserid" | "aadObjectId";
     }): this;
     impersonateByObjectId(objectId: string): this;
-    iterate<T = unknown>(options?: {
-        signal?: AbortSignal;
-    }): AsyncIterable<T>;
+    iterate<T = unknown>(options?: RequestOptions): AsyncIterable<T>;
     // (undocumented)
     orderBy(...orderby: string[]): this;
     // (undocumented)
@@ -303,8 +300,6 @@ export class DataverseRequestBuilder {
     put<T = unknown>(body?: unknown, options?: RequestOptions): Promise<T>;
     response(method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE", body?: unknown, options?: RequestOptions): Promise<Response>;
     savedQuery<T = Record<string, unknown>>(savedQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
-    // (undocumented)
-    search(text: string): this;
     // (undocumented)
     select(...fields: string[]): this;
     skipUrlValidation(): this;
@@ -658,7 +653,7 @@ export type ODataScalar = string | number | bigint | boolean | Date | null;
 export class PageIterator<T> implements AsyncIterable<T> {
     // (undocumented)
     [Symbol.asyncIterator](): AsyncIterator<T>;
-    constructor(client: DataverseClient, first: PageResponse<T>, signal?: AbortSignal | undefined, headers?: Record<string, string> | undefined);
+    constructor(client: DataverseClient, first: PageResponse<T>, options?: RequestOptions | undefined);
 }
 
 // @public (undocumented)
@@ -737,6 +732,7 @@ export interface RequestInformation {
     correlationId?: string;
     // (undocumented)
     headers: Record<string, string>;
+    idempotent?: boolean;
     // (undocumented)
     method: HttpMethod;
     middlewareOptions?: MiddlewareRequestOptions;
@@ -861,7 +857,7 @@ export interface TokenOptions {
 
 // Warnings were encountered during analysis:
 //
-// dist/index.d.ts:1898:5 - (ae-forgotten-export) The symbol "EqValue" needs to be exported by the entry point index.d.ts
+// dist/index.d.ts:1907:5 - (ae-forgotten-export) The symbol "EqValue" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

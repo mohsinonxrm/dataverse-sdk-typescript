@@ -17,9 +17,13 @@ export interface BatchChangeset {
 
 // @public
 export interface BatchExecutionOptions {
+    attemptTimeoutMs?: number;
     batchSize?: number;
     continueOnError?: boolean;
+    correlationId?: string;
     headers?: Record<string, string>;
+    signal?: AbortSignal;
+    timeoutMs?: number;
 }
 
 // @public

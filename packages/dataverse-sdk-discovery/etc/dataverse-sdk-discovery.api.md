@@ -37,7 +37,15 @@ export class DiscoveryClient {
     getOrganizationByUrl(url: string, options?: DiscoveryRequestOptions): Promise<OrganizationDetail | null>;
     getOrganizationsByRegion(region: string, options?: DiscoveryRequestOptions): Promise<OrganizationDetail[]>;
     getScopes(): string[];
-    listOrganizations(options?: DiscoveryOptions): Promise<OrganizationDetail[]>;
+    listOrganizations(options?: DiscoveryOptions & {
+        select?: undefined;
+    }): Promise<OrganizationDetail[]>;
+    // (undocumented)
+    listOrganizations<K extends keyof OrganizationDetail>(options: DiscoveryOptions & {
+        select: readonly K[];
+    }): Promise<Array<Pick<OrganizationDetail, K>>>;
+    // (undocumented)
+    listOrganizations(options?: DiscoveryOptions): Promise<Array<Partial<OrganizationDetail>>>;
 }
 
 // @public
@@ -65,7 +73,7 @@ export interface DiscoveryCloudEndpoint {
 export interface DiscoveryOptions extends DiscoveryRequestOptions {
     filter?: string;
     orderby?: string;
-    select?: string[];
+    select?: ReadonlyArray<keyof OrganizationDetail>;
 }
 
 // @public

@@ -10,6 +10,7 @@ import { AuthenticationResult } from '@azure/msal-node';
 import { AuthorizationCodeRequest } from '@azure/msal-node';
 import { ClientCredentialRequest } from '@azure/msal-node';
 import { ConfidentialClientApplication } from '@azure/msal-node';
+import { DataverseAuthenticationError } from '@mohsinonxrm/dataverse-sdk-core';
 import { DeviceCodeRequest } from '@azure/msal-node';
 import { PublicClientApplication } from '@azure/msal-node';
 import { SilentFlowRequest } from '@azure/msal-node';
@@ -58,6 +59,16 @@ export interface DeviceCodeFlowOptions extends MsalNodeTokenProviderOptionsBase 
 }
 
 export { DeviceCodeRequest }
+
+// @public
+export class MsalNodeAuthenticationError extends DataverseAuthenticationError {
+    constructor(message: string, cause?: unknown);
+    readonly code?: string;
+    readonly correlationId?: string;
+    readonly errorCode?: string;
+    readonly errorNo?: string;
+    readonly subError?: string;
+}
 
 // @public
 export class MsalNodeTokenProvider implements AccessTokenProvider {
