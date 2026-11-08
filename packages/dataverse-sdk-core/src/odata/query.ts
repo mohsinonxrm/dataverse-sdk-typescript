@@ -5,7 +5,6 @@ export interface QueryState {
   $orderby?: string;
   $top?: number;
   $count?: boolean;
-  $search?: string;
   $apply?: string;
 }
 

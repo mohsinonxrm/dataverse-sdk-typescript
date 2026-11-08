@@ -62,12 +62,13 @@ export class AuthMiddleware implements Middleware {
     _ctx.logger?.debug("401 Unauthorized: getting a new token and retrying once", {
       claimsChallenge: claims !== undefined,
     });
+    // Drop the 401 body first, so it is released even when getting the new token throws (#378).
+    // Not awaited: a tee'd stream only settles once every branch is done.
+    res.body?.cancel().catch(() => undefined);
     const retryToken = await tp.getToken(scopes, {
       ...(correlationId ? { correlationId } : {}),
       ...(claims !== undefined ? { claims } : { forceRefresh: true }),
     });
-    // Drop the 401 body without waiting: a tee'd stream only settles once every branch is done.
-    res.body?.cancel().catch(() => undefined);
     request.headers = { ...request.headers, authorization: `Bearer ${retryToken}` };
     return next(request, _ctx);
   }
