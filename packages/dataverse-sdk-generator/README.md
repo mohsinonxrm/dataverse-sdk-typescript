@@ -122,13 +122,13 @@ import {
   createEntityReference,
   formatEntityForWrite,
 } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
-import { type Account, AccountMetadata } from "./generated/entities/Account.js";
+import { type AccountCreate, AccountMetadata } from "./generated/entities/Account.js";
 import { EntityMetadataCache } from "./generated/metadata.js";
 
 const client = new DataverseClient({ baseUrl: "https://contoso.crm.dynamics.com", tokenProvider });
 
-// Type-safe entity creation. Lookups take an EntityReference.
-const account: Account = {
+// Type-safe entity creation: only the columns a create accepts. Lookups take an EntityReference.
+const account: AccountCreate = {
   name: "Contoso",
   creditlimit: 50000,
   primarycontactid: createEntityReference("contact", contactId),
@@ -490,6 +490,75 @@ need a `Date`. Operation parameters take a `string` or a `Date`.
 
 When the `entity` table is generated, its metadata const is `EntityMetadata`, so `Entity.ts` and
 `metadata.ts` import the runtime type as `RuntimeEntityMetadata`.
+
+### Create and Update Types
+
+Next to the interface, each table gets `<Entity>Create` and `<Entity>Update`: the columns
+Dataverse accepts in a create and in an update, from the `IsValidForCreate` and
+`IsValidForUpdate` metadata of each column. Read-only and server-set columns (`createdon`,
+`versionnumber`, a calculated `fullname`, a lookup's `_<name>_value`) are left out of both, and a
+column valid for only one is in that one: the primary key can be set on create but never changed,
+and `statecode` is usually set by an update only.
+
+A lookup is keyed by the navigation property it's bound through and takes an `EntityReference`:
+`primarycontactid`, a custom lookup's `contoso_ParentAccountId` (named after its schema name), or
+a polymorphic lookup's `parentcustomerid` and `ownerid`. `formatEntityForWrite()` sends it as
+`<navigation property>@odata.bind` (for a polymorphic lookup, the navigation property for the
+reference's table). `null` clears a column or a lookup.
+
+<!-- no-check -->
+
+```typescript
+// generated/entities/Account.ts (continued)
+export type AccountCreate = {
+  /** accountid */
+  accountid?: string | null;
+
+  /** Type the company or business name. */
+  name?: string | null;
+
+  /** Select the account's primary industry. */
+  industrycode?: account_industrycode | null;
+
+  /** Lookup primarycontactid (contact): a reference, sent as primarycontactid@odata.bind */
+  primarycontactid?: EntityReference | null;
+  // ...
+};
+
+export type AccountUpdate = {
+  name?: string | null;
+  statecode?: account_statecode | null;
+  primarycontactid?: EntityReference | null;
+  // ... (no accountid, createdon, ...)
+};
+```
+
+<!-- no-check -->
+
+```typescript
+const account: AccountCreate = {
+  name: "Contoso",
+  primarycontactid: createEntityReference("contact", contactId),
+  // createdon: "…", // error: not in AccountCreate
+};
+const id = await client
+  .api("accounts")
+  .createAndGetId(
+    formatEntityForWrite(account, AccountMetadata, { metadataCache: EntityMetadataCache })
+  );
+
+const change: AccountUpdate = { statecode: account_statecode.Inactive, primarycontactid: null };
+await client
+  .api(`accounts(${id})`)
+  .patch(formatEntityForWrite(change, AccountMetadata, { metadataCache: EntityMetadataCache }));
+```
+
+They're type aliases, not interfaces, so they can be passed where a `Partial<IEntity>` is taken
+(`formatEntityForWrite()`), yet still reject a column they don't have. Required columns
+(`RequiredLevel` ApplicationRequired) are optional in `<Entity>Create` too: the Web API doesn't
+enforce them, only forms do. A table with no writable column gets `Record<string, never>`.
+`<Entity>Create` or `<Entity>Update` takes a `_2` suffix when another generated type already has
+the name.
 
 ### Enum Type
 
@@ -1004,7 +1073,7 @@ export function getLogicalName(schemaName: string): string | undefined {
 - ✅ Calculated/rollup field annotations
 - ✅ Alternate keys read into the schema model (`EntityType.Keys`); the generated files don't use them yet
 - ✅ MSAL authentication flows (device code, client credentials)
-- ⏳ Create/Update type splitting (exclude read-only fields)
+- ✅ Create/Update types (`<Entity>Create`, `<Entity>Update`: writable columns only)
 - ⏳ Custom template support (eject command)
 - ⏳ Incremental generation (only changed entities)
 - ⏳ Validation rules generation

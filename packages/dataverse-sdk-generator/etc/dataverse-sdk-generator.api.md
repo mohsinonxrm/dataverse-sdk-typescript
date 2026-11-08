@@ -260,9 +260,14 @@ export interface NavigationPropertyType {
     FullName?: string;
     IsCollection: boolean;
     IsPolymorphic?: boolean;
+    IsValidForCreate?: boolean;
+    IsValidForUpdate?: boolean;
+    LookupAttribute?: string;
+    LookupTargets?: string[];
     Name: string;
     ReferencedProperty?: string;
     ReferencingProperty?: string;
+    ReferentialProperty?: string;
     RelationshipName: string;
     Targets?: string[];
     TargetType: string;
@@ -329,6 +334,8 @@ export interface PropertyType {
     IsPrimaryKey?: boolean;
     IsReadOnly?: boolean;
     IsRequired?: boolean;
+    IsValidForCreate?: boolean;
+    IsValidForUpdate?: boolean;
     LogicalName: string;
     Name: string;
     Nullable?: boolean;

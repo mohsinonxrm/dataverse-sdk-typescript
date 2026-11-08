@@ -189,6 +189,7 @@ export class TypescriptGenerator {
   /** `strictNulls` (#305): type operation responses exactly as the CSDL declares them. */
   private strictNulls: boolean;
   private outputNamesCache?: Map<string, string>;
+  private writeTypeNamesCache?: Map<EntityType, { create: string; update: string }>;
   private actionBodyTablesCache?: ActionBodyTables;
   private functionParameterTablesCache?: ActionBodyTables;
 
@@ -239,18 +240,98 @@ export class TypescriptGenerator {
       const metadataType = runtimeMetadataName([typeName, metadataName]);
       imports.type("EntityMetadata", RUNTIME_PACKAGE, metadataType);
 
+      const writeNames = this.writeTypeNames.get(entity) ?? {
+        create: `${typeName}Create`,
+        update: `${typeName}Update`,
+      };
       const body = ejs.render(template, {
         ...this.helpers("entities", imports, typeName),
         entity,
         typeName,
         metadataName,
         metadataType,
+        createName: writeNames.create,
+        updateName: writeNames.update,
+        writeColumns: (mode: "create" | "update") =>
+          this.writeColumns(entity, mode, imports, typeName),
         navigationType: (nav: NavigationPropertyType) => this.navigationType(nav, imports, entity),
         getSourceTypeComment: (sourceType?: number) => this.getSourceTypeComment(sourceType),
       });
 
       await this.writeFile(dir, typeName, imports, body);
     }
+  }
+
+  /**
+   * The names of each entity's create and update types (#347): `<Entity>Create` and
+   * `<Entity>Update`, or with a `_2` suffix when another generated type has that name.
+   */
+  private get writeTypeNames(): Map<EntityType, { create: string; update: string }> {
+    if (this.writeTypeNamesCache) return this.writeTypeNamesCache;
+    const taken = new Set<string>([
+      ...this.model.EntityTypes.flatMap((e) => {
+        const typeName = this.entityTypeName(e);
+        return [typeName, `${typeName}Metadata`];
+      }),
+      ...this.model.EnumTypes.map((e) => toSafeIdentifier(e.Name)),
+      ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
+    ]);
+    const unique = (stem: string): string => {
+      let name = stem;
+      for (let i = 2; taken.has(name); i++) name = `${stem}_${String(i)}`;
+      taken.add(name);
+      return name;
+    };
+    const names = new Map<EntityType, { create: string; update: string }>();
+    for (const entity of this.model.EntityTypes) {
+      const typeName = this.entityTypeName(entity);
+      names.set(entity, {
+        create: unique(`${typeName}Create`),
+        update: unique(`${typeName}Update`),
+      });
+    }
+    this.writeTypeNamesCache = names;
+    return names;
+  }
+
+  /**
+   * The members of an entity's create or update type (#347): the columns valid for it
+   * (`IsValidForCreate` / `IsValidForUpdate`), and the lookups valid for it, keyed by the
+   * navigation property they are bound through and typed `EntityReference`.
+   */
+  private writeColumns(
+    entity: EntityType,
+    mode: "create" | "update",
+    imports: ImportCollector,
+    selfName: string
+  ): Array<{ key: string; type: string; doc: string }> {
+    const valid = (item: { IsValidForCreate?: boolean; IsValidForUpdate?: boolean }) =>
+      mode === "create" ? item.IsValidForCreate === true : item.IsValidForUpdate === true;
+    const columns: Array<{ key: string; type: string; doc: string }> = [];
+    const keys = new Set<string>();
+    for (const prop of entity.Properties) {
+      if (!valid(prop) || keys.has(prop.Name)) continue;
+      keys.add(prop.Name);
+      const type = this.formatType(prop.TypeScriptType, "entities", imports, selfName);
+      columns.push({
+        key: prop.Name,
+        type: prop.Nullable ? `${type} | null` : type,
+        // The template's fallback for the interface: the description, display name or logical name
+        doc: [prop.Description, prop.DisplayName, prop.LogicalName].find((t) => t) ?? "",
+      });
+    }
+    for (const nav of entity.NavigationProperties) {
+      if (nav.LookupAttribute === undefined || !valid(nav) || keys.has(nav.Name)) continue;
+      keys.add(nav.Name);
+      imports.type("EntityReference", RUNTIME_PACKAGE);
+      const targets = nav.LookupTargets?.length ? nav.LookupTargets : [nav.TargetType];
+      columns.push({
+        key: nav.Name,
+        type: "EntityReference | null",
+        doc: `Lookup ${nav.LookupAttribute} (${targets.join(", ")}): a reference, sent as ${nav.Name}@odata.bind`,
+      });
+    }
+    return columns;
   }
 
   /**
@@ -853,6 +934,7 @@ export * from './metadata${suffix}.js';
       }),
       ...this.model.EnumTypes.map((e) => toSafeIdentifier(e.Name)),
       ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
+      ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
     ]);
     for (const type of this.model.ComplexTypes) {
       if (!returned.has(type.Name)) continue;
