@@ -71,9 +71,6 @@ importers:
       '@mohsinonxrm/dataverse-sdk-entities-runtime':
         specifier: workspace:*
         version: link:../dataverse-sdk-entities-runtime
-      '@mohsinonxrm/dataverse-sdk-messages':
-        specifier: workspace:*
-        version: link:../dataverse-sdk-messages
     devDependencies:
       '@mohsinonxrm/dataverse-sdk-testing':
         specifier: workspace:*
