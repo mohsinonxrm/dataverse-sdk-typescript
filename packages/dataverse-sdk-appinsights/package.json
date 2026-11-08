@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-appinsights",
-  "version": "1.0.0",
+  "version": "2.0.0-beta.0",
   "description": "Application Insights telemetry adapter for Dataverse SDK",
   "publishConfig": {
     "access": "public",
