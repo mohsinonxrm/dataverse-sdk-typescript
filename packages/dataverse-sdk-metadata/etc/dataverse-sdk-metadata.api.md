@@ -358,6 +358,13 @@ export interface BooleanAttributeMetadata extends AttributeMetadata {
 export type BooleanAttributeMetadataCreate = AttributeMetadataCreate<BooleanAttributeMetadata, "BooleanAttributeMetadata", "SourceTypeMask">;
 
 // @public
+export interface BooleanColumnOptions extends ColumnOptions {
+    defaultValue?: boolean;
+    falseLabel?: LabelInput;
+    trueLabel?: LabelInput;
+}
+
+// @public
 export interface BooleanManagedProperty {
     // (undocumented)
     CanBeChanged?: boolean;
@@ -434,6 +441,30 @@ export type ChoiceAttributeMetadataCreate<T extends EnumAttributeMetadata, Name 
     "GlobalOptionSet@odata.bind": GlobalOptionSetBind;
     OptionSet?: never;
 });
+
+// @public
+export type ChoiceColumnOptions = LocalChoiceColumnOptions | GlobalChoiceColumnOptions;
+
+// @public
+export interface ChoiceOption {
+    color?: string;
+    description?: LabelInput;
+    label: LabelInput;
+    value?: number;
+}
+
+// @public
+export type ChoiceOptionInput = string | ChoiceOption;
+
+// @public
+export interface ColumnOptions extends LabelLanguageOptions {
+    description?: LabelInput;
+    displayName: LabelInput;
+    requiredLevel?: ColumnRequiredLevel;
+}
+
+// @public
+export type ColumnRequiredLevel = Exclude<AttributeRequiredLevel, "SystemRequired">;
 
 // @public
 export interface ComplexAttributeMetadata {
@@ -1209,6 +1240,18 @@ export interface crmmodelbaseentity {
 }
 
 // @public
+export interface DateAndTimeColumnOptions extends ColumnOptions {
+    behavior?: "UserLocal" | "TimeZoneIndependent";
+    format?: "DateAndTime";
+}
+
+// @public
+export interface DateOnlyColumnOptions extends ColumnOptions {
+    behavior?: "UserLocal" | "DateOnly" | "TimeZoneIndependent";
+    format: "DateOnly";
+}
+
+// @public
 export interface DateTimeAttributeMetadata extends AttributeMetadata {
     // (undocumented)
     CanChangeDateTimeBehavior?: BooleanManagedProperty;
@@ -1238,6 +1281,9 @@ export interface DateTimeBehavior {
 }
 
 // @public
+export type DateTimeColumnOptions = DateAndTimeColumnOptions | DateOnlyColumnOptions;
+
+// @public
 export const DateTimeFormat: {
     readonly DateOnly: "DateOnly";
     readonly DateAndTime: "DateAndTime";
@@ -1264,6 +1310,13 @@ export interface DecimalAttributeMetadata extends AttributeMetadata {
 
 // @public
 export type DecimalAttributeMetadataCreate = AttributeMetadataCreate<DecimalAttributeMetadata, "DecimalAttributeMetadata", "SourceTypeMask">;
+
+// @public
+export interface DecimalColumnOptions extends ColumnOptions {
+    maxValue?: number;
+    minValue?: number;
+    precision?: number;
+}
 
 // @public
 export interface DeletedMetadataCollection {
@@ -1316,6 +1369,13 @@ export interface DoubleAttributeMetadata extends AttributeMetadata {
 export type DoubleAttributeMetadataCreate = AttributeMetadataCreate<DoubleAttributeMetadata, "DoubleAttributeMetadata", "SourceTypeMask">;
 
 // @public
+export interface DoubleColumnOptions extends ColumnOptions {
+    maxValue?: number;
+    minValue?: number;
+    precision?: number;
+}
+
+// @public
 export const EntityClusterMode: {
     readonly Partitioned: "Partitioned";
     readonly Replicated: "Replicated";
@@ -1325,6 +1385,18 @@ export const EntityClusterMode: {
 
 // @public (undocumented)
 export type EntityClusterMode = (typeof EntityClusterMode)[keyof typeof EntityClusterMode];
+
+// @public
+export interface EntityDefinitionOptions extends LabelLanguageOptions {
+    attributes?: readonly AttributeMetadataCreateTypes[];
+    description?: LabelInput;
+    displayCollectionName: LabelInput;
+    displayName: LabelInput;
+    hasActivities?: boolean;
+    hasNotes?: boolean;
+    ownershipType?: "UserOwned" | "OrganizationOwned";
+    primaryName: PrimaryNameAttributeMetadataCreate;
+}
 
 // @public
 export const EntityKeyIndexStatus: {
@@ -1691,6 +1763,11 @@ export interface FileAttributeMetadata extends AttributeMetadata {
 export type FileAttributeMetadataCreate = AttributeMetadataCreate<FileAttributeMetadata, "FileAttributeMetadata">;
 
 // @public
+export interface FileColumnOptions extends ColumnOptions {
+    maxSizeInKB?: number;
+}
+
+// @public
 export interface GetValidManyToManyResponse {
     // (undocumented)
     EntityNames?: string[];
@@ -1709,7 +1786,22 @@ export interface GetValidReferencingEntitiesResponse {
 }
 
 // @public
+export interface GlobalChoiceColumnOptions extends ColumnOptions {
+    defaultValue?: number;
+    globalOptionSetId: string;
+    // (undocumented)
+    options?: never;
+}
+
+// @public
 export type GlobalOptionSetBind = `/GlobalOptionSetDefinitions(${string})`;
+
+// @public
+export interface GlobalOptionSetOptions extends LabelLanguageOptions {
+    description?: LabelInput;
+    displayName: LabelInput;
+    options: readonly ChoiceOptionInput[];
+}
 
 // @public
 export interface GlobalOptionSetTarget {
@@ -1742,6 +1834,12 @@ export interface ImageAttributeMetadata extends AttributeMetadata {
 
 // @public
 export type ImageAttributeMetadataCreate = AttributeMetadataCreate<ImageAttributeMetadata, "ImageAttributeMetadata">;
+
+// @public
+export interface ImageColumnOptions extends ColumnOptions {
+    canStoreFullImage?: boolean;
+    maxSizeInKB?: number;
+}
 
 // @public
 export const ImeMode: {
@@ -1806,6 +1904,13 @@ export interface IntegerAttributeMetadata extends AttributeMetadata {
 export type IntegerAttributeMetadataCreate = AttributeMetadataCreate<IntegerAttributeMetadata, "IntegerAttributeMetadata", "SourceTypeMask">;
 
 // @public
+export interface IntegerColumnOptions extends ColumnOptions {
+    format?: IntegerFormat;
+    maxValue?: number;
+    minValue?: number;
+}
+
+// @public
 export const IntegerFormat: {
     readonly None: "None";
     readonly Duration: "Duration";
@@ -1827,11 +1932,30 @@ export interface Label {
 }
 
 // @public
+export type LabelInput = string | Label;
+
+// @public
+export interface LabelLanguageOptions {
+    languageCode?: number;
+}
+
+// @public
 export interface LabelQueryExpression {
     // (undocumented)
     FilterLanguages?: number[];
     // (undocumented)
     MissingLabelBehavior?: number;
+}
+
+// @public
+export type LabelTexts = Readonly<Record<number, string>>;
+
+// @public
+export interface LocalChoiceColumnOptions extends ColumnOptions {
+    defaultValue?: number;
+    // (undocumented)
+    globalOptionSetId?: never;
+    options: readonly ChoiceOptionInput[];
 }
 
 // @public
@@ -1881,6 +2005,15 @@ export interface LookupAttributeMetadata extends AttributeMetadata {
 
 // @public
 export type LookupAttributeMetadataCreate = AttributeMetadataCreate<LookupAttributeMetadata, "LookupAttributeMetadata">;
+
+// @public
+export interface LookupColumnOptions extends ColumnOptions {
+    cascade?: CascadeConfiguration;
+    referencedAttribute?: string;
+    referencedEntity: string;
+    referencingEntity: string;
+    relationshipSchemaName: string;
+}
 
 // @public
 export const LookupFormat: {
@@ -2007,6 +2140,13 @@ export type ManyToManyRelationshipMetadataUpdate = Omit<ManyToManyRelationshipMe
 };
 
 // @public
+export interface ManyToManyRelationshipOptions {
+    entity1LogicalName: string;
+    entity2LogicalName: string;
+    intersectEntityName?: string;
+}
+
+// @public
 export interface MemoAttributeMetadata extends AttributeMetadata {
     // (undocumented)
     Format?: StringFormat;
@@ -2024,10 +2164,18 @@ export interface MemoAttributeMetadata extends AttributeMetadata {
 export type MemoAttributeMetadataCreate = AttributeMetadataCreate<MemoAttributeMetadata, "MemoAttributeMetadata", "IsLocalizable">;
 
 // @public
+export interface MemoColumnOptions extends ColumnOptions {
+    maxLength?: number;
+}
+
+// @public
 export interface MemoFormatName {
     // (undocumented)
     Value?: string;
 }
+
+// @public
+export const Metadata: MetadataBuilders;
 
 // @public
 export interface MetadataBase extends crmmodelbaseentity {
@@ -2036,6 +2184,31 @@ export interface MetadataBase extends crmmodelbaseentity {
     HasChanged?: boolean;
     // (undocumented)
     MetadataId?: string;
+}
+
+// @public
+export interface MetadataBuilders {
+    readonly boolean: (schemaName: string, options: BooleanColumnOptions) => BooleanAttributeMetadataCreate;
+    readonly dateTime: (schemaName: string, options: DateTimeColumnOptions) => DateTimeAttributeMetadataCreate;
+    readonly decimal: (schemaName: string, options: DecimalColumnOptions) => DecimalAttributeMetadataCreate;
+    readonly double: (schemaName: string, options: DoubleColumnOptions) => DoubleAttributeMetadataCreate;
+    readonly entity: (schemaName: string, options: EntityDefinitionOptions) => EntityMetadataCreate;
+    readonly file: (schemaName: string, options: FileColumnOptions) => FileAttributeMetadataCreate;
+    readonly globalOptionSet: (name: string, options: GlobalOptionSetOptions) => OptionSetMetadataCreate;
+    readonly image: (schemaName: string, options: ImageColumnOptions) => ImageAttributeMetadataCreate;
+    readonly integer: (schemaName: string, options: IntegerColumnOptions) => IntegerAttributeMetadataCreate;
+    readonly label: {
+        (text: string, languageCode?: number): Label;
+        (texts: LabelTexts): Label;
+    };
+    readonly lookup: (schemaName: string, options: LookupColumnOptions) => OneToManyRelationshipMetadataCreate;
+    readonly manyToMany: (schemaName: string, options: ManyToManyRelationshipOptions) => ManyToManyRelationshipMetadataCreate;
+    readonly memo: (schemaName: string, options: MemoColumnOptions) => MemoAttributeMetadataCreate;
+    readonly money: (schemaName: string, options: MoneyColumnOptions) => MoneyAttributeMetadataCreate;
+    readonly multiSelectPicklist: (schemaName: string, options: ChoiceColumnOptions) => MultiSelectPicklistAttributeMetadataCreate;
+    readonly picklist: (schemaName: string, options: ChoiceColumnOptions) => PicklistAttributeMetadataCreate;
+    readonly primaryName: (schemaName: string, options: PrimaryNameColumnOptions) => PrimaryNameAttributeMetadataCreate;
+    readonly string: (schemaName: string, options: StringColumnOptions) => StringAttributeMetadataCreate;
 }
 
 // @public
@@ -2178,6 +2351,13 @@ export interface MoneyAttributeMetadata extends AttributeMetadata {
 
 // @public
 export type MoneyAttributeMetadataCreate = AttributeMetadataCreate<MoneyAttributeMetadata, "MoneyAttributeMetadata", "CalculationOf" | "IsBaseCurrency" | "SourceTypeMask">;
+
+// @public
+export interface MoneyColumnOptions extends ColumnOptions {
+    maxValue?: number;
+    minValue?: number;
+    precision?: number | "currency" | "pricing";
+}
 
 // @public
 export interface MultiSelectPicklistAttributeMetadata extends EnumAttributeMetadata {
@@ -2398,6 +2578,11 @@ export interface PrimaryNameAttributeMetadataCreate extends Omit<StringAttribute
 }
 
 // @public
+export interface PrimaryNameColumnOptions extends ColumnOptions {
+    maxLength?: number;
+}
+
+// @public
 export const PrivilegeType: {
     readonly None: "None";
     readonly Create: "Create";
@@ -2570,6 +2755,12 @@ export interface StringAttributeMetadata extends AttributeMetadata {
 
 // @public
 export type StringAttributeMetadataCreate = AttributeMetadataCreate<StringAttributeMetadata, "StringAttributeMetadata", "DatabaseLength" | "IsLocalizable" | "SourceTypeMask">;
+
+// @public
+export interface StringColumnOptions extends ColumnOptions {
+    format?: StringFormat;
+    maxLength?: number;
+}
 
 // @public
 export const StringFormat: {
