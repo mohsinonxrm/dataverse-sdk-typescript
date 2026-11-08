@@ -17,7 +17,11 @@ import type {
   TypeScriptType,
   ParameterType,
 } from "./types.js";
-import type { AttributeMetadataDetail, MetadataService } from "./metadata-service.js";
+import type {
+  AttributeMetadataDetail,
+  EntityMetadataDetail,
+  MetadataService,
+} from "./metadata-service.js";
 
 /**
  * Schema model that parses CSDL $metadata and builds type definitions
@@ -145,7 +149,7 @@ export class SchemaModel {
         );
       }
 
-      const entityMetadata = response.EntityMetadata[0];
+      const entityMetadata = canonicalOrder(response.EntityMetadata[0]);
 
       // Set metadata properties not available in EDMX
       entityType.SchemaName = entityMetadata.SchemaName ?? entityType.LogicalName;
@@ -1016,6 +1020,33 @@ function uniqueBy<T>(items: T[], key: (item: T) => string): T[] {
  * PascalCase ("Financial Services" -> "FinancialServices"), prefixed with `_` when it would start
  * with a digit. Labels without letters or digits fall back to `Value<n>`.
  */
+/** Order-insensitive comparison of two logical names (plain code-unit order, no locale). */
+function byLogicalName(a: { LogicalName?: string }, b: { LogicalName?: string }): number {
+  const x = a.LogicalName ?? "";
+  const y = b.LogicalName ?? "";
+  return x < y ? -1 : x > y ? 1 : 0;
+}
+
+/**
+ * A table's metadata with the lists Dataverse may return in any order sorted: attributes and keys
+ * by logical name, and each lookup's targets. The model, the generated code and incremental
+ * generation's hashes then don't change when the server orders its response differently. The
+ * order of a key's attributes is kept: it is part of the key.
+ */
+function canonicalOrder(entity: EntityMetadataDetail): EntityMetadataDetail {
+  return {
+    ...entity,
+    ...(entity.Attributes && {
+      Attributes: [...entity.Attributes]
+        .map((attribute) =>
+          attribute.Targets ? { ...attribute, Targets: [...attribute.Targets].sort() } : attribute
+        )
+        .sort(byLogicalName),
+    }),
+    ...(entity.Keys && { Keys: [...entity.Keys].sort(byLogicalName) }),
+  };
+}
+
 export function toEnumMemberName(label: string, value: number): string {
   const words = label.split(/[^\p{L}\p{Nd}_]+/u).filter((w) => w.length > 0);
   if (words.length === 0) return `Value${String(value).replace("-", "Minus")}`;
