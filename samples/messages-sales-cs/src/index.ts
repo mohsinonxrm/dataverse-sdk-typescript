@@ -312,14 +312,14 @@ async function winOpportunityDemo(
   // Verify state change
   const opportunity = await client
     .api(`/opportunities(${opportunityId})`)
-    .select("name", "statecode", "statuscode", "actualrevenue")
-    .get<{ name: string; statecode: number; statuscode: number; actualrevenue: number | null }>();
+    .select("name", "statecode", "statuscode", "actualvalue")
+    .get<{ name: string; statecode: number; statuscode: number; actualvalue: number | null }>();
 
   console.log("\nVerified opportunity:");
   console.log(`  State: ${chalk.yellow(opportunity.statecode === 1 ? "Won" : "Unknown")}`);
   console.log(`  Status Code: ${chalk.yellow(String(opportunity.statuscode))}`);
   console.log(
-    `  Actual Revenue: ${chalk.green("$" + String(opportunity.actualrevenue?.toLocaleString()))}`
+    `  Actual Revenue: ${chalk.green("$" + String(opportunity.actualvalue?.toLocaleString()))}`
   );
 
   console.log(chalk.dim("\nℹ️  Similar messages: LoseOpportunity, CloseOpportunity"));

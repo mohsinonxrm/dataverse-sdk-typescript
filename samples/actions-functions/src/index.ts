@@ -375,19 +375,19 @@ async function winOpportunityDemo(client: DataverseClient): Promise<void> {
   // Verify state change
   const updated = await client
     .api(`/opportunities(${opportunityId})`)
-    .select("name", "statecode", "statuscode", "actualrevenue")
+    .select("name", "statecode", "statuscode", "actualvalue")
     .get<{
       name: string;
       statecode: number;
       statuscode: number;
-      actualrevenue: number | null;
+      actualvalue: number | null;
     }>();
 
   console.log("\nVerified state:");
   console.log(`  State Code: ${chalk.yellow(String(updated.statecode))} (Won)`);
   console.log(`  Status Code: ${chalk.yellow(String(updated.statuscode))}`);
   console.log(
-    `  Actual Revenue: ${chalk.green("$" + String(updated.actualrevenue?.toLocaleString()))}`
+    `  Actual Revenue: ${chalk.green("$" + String(updated.actualvalue?.toLocaleString()))}`
   );
 }
 
