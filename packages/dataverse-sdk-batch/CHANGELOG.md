@@ -1,5 +1,42 @@
 # @mohsinonxrm/dataverse-sdk-batch
 
+## 2.0.0-beta.1
+
+### Minor Changes
+
+- c81fc72: Bulk helpers: `createMultiple()` and `updateMultiple()` (#310).
+
+  - **Chunks.** The records are split into chunks of `batchSize` (1 to 1000, default 100), each sent as one `CreateMultiple` / `UpdateMultiple` request (`strategy: "bulk"`, the default) or as one `$batch` with a request per record and `odata.continue-on-error` (`strategy: "batch"`, for tables without bulk support; updates are `PATCH` with `If-Match: *`, so a missing row isn't created). `maxParallel` sends several chunks at once; the client's retry policy and concurrency limit apply to every request.
+  - **Per-record results.** `BulkOperationResult.results` has one entry per record, in input order: `"succeeded"` with its `id` (the created id, or the updated row's key), `"failed"` with the typed `error`, or `"skipped"` (not sent: without `continueOnError`, no chunk is sent after one with a failure). On a standard table a failed chunk fails all its records (Dataverse rolls it back); on an elastic table only the records named by the `Microsoft.PowerApps.CDS.ErrorDetails.*` annotations fail, each with its own status.
+  - **Cancellation.** `signal`, `timeoutMs` (the whole operation), `attemptTimeoutMs` and `correlationId`, as for `execute()`. Stopped after a request finished, the helpers reject with the new `DataverseBulkOperationError`, whose `result` holds every record's outcome so far.
+  - New types: `BulkTable`, `BulkStrategy`, `BulkOperationOptions`, `BulkOperationResult`, `BulkRecordResult`, `BulkRecordStatus`, `DataverseBulkOperationErrorInit`.
+
+- 0e1dc6f: Detect which bulk-operation messages a table supports (#346).
+
+  - **`getBulkOperationSupport(client, logicalName, options?)`** returns `BulkOperationSupport`: `elastic`, `createMultiple`, `updateMultiple`, `upsertMultiple` and `deleteMultiple`. Elastic tables support all four; a standard table supports `CreateMultiple` / `UpdateMultiple` when it has an `sdkmessagefilter` for the message, `UpsertMultiple` when it supports both, and never `DeleteMultiple`. Two read-only `GET`s (the table's `TableType` and its `sdkmessagefilters`), cached per client and table; `refresh: true` reads again, and a failed lookup isn't cached. `BulkOperationSupportOptions` also takes `signal` and `timeoutMs`.
+  - **`strategy: "auto"`** for `createMultiple()` and `updateMultiple()`: the bulk message when the table supports it, otherwise `$batch`. `result.strategy` says which was used.
+
+- ff655da: **Breaking.** Telemetry events and W3C trace context (#97).
+
+  - **`TelemetryClient.trackDependency` is replaced by `startDependency(name, data)`** (core). The SDK calls it before each request attempt and calls `end(data)` on the `DependencyHandle` it returns once the attempt is done, with `durationMs`, `success` and `resultCode`. The handle can carry `headers` (`traceparent`, `tracestate`), which the SDK sends with the attempt, and `run(fn)`, which makes the dependency the active span while the attempt runs. A custom client moves its `trackDependency` body into `end` (see the 2.0 migration guide). Each retry and each resend after a 401 is its own dependency, started in the caller's context.
+  - **Trace context goes to Dataverse.** Only a valid `traceparent` and its `tracestate` are sent, only to origins that may receive the access token (`baseUrl` and `allowedTokenOrigins`), and `diagnosticHeaders: false` or the new `diagnosticHeaders: { traceContext: false }` turns it off.
+  - **Events.** `trackEvent` now receives `dataverse.throttle` (each 429, with the limit hit, `Retry-After` and `x-ms-dop-hint`), `dataverse.retry` (before each retry wait), `dataverse.concurrency.wait` (a request waited for a slot) and `dataverse.concurrency.limit` (`x-ms-dop-hint` changed the limit). The names are exported as `TelemetryEvents`. A request with telemetry turned off sends none.
+  - **`DataverseClient.trackEvent(name, props, measurements)`** sends an event to the client's telemetry, guarded like the SDK's own calls. The batch package uses it to report `dataverse.batch` for each `$batch` (requests, succeeded, failed, duration, status, correlation id); `execute()` now generates the `$batch` correlation id itself when you don't pass one.
+  - **otel and appinsights:** `OpenTelemetryClient` and `ApplicationInsightsTelemetryClient` implement `startDependency`: the CLIENT span starts with the active context, is active while the attempt runs (so `fetch` auto-instrumentation spans are its children), carries `http.request.resend_count` on retries, and its context is injected with the registered propagator, so the request carries its `traceparent`. `trackDependency` is removed from both.
+
+### Patch Changes
+
+- 9c6d970: README: a request that later ones refer to as `$<id>` can't use `Prefer: return=representation`; Dataverse doesn't register its Content-ID then.
+- Updated dependencies [9bb1db9]
+- Updated dependencies [83f2256]
+- Updated dependencies [f780438]
+- Updated dependencies [e606f24]
+- Updated dependencies [f988456]
+- Updated dependencies [1ca3a58]
+- Updated dependencies [ff655da]
+- Updated dependencies [b1bd587]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.0-beta.1
+
 ## 2.0.0-beta.0
 
 ### Major Changes

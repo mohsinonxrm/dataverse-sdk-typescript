@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-otel",
-  "version": "2.0.0-beta.0",
+  "version": "2.0.0-beta.1",
   "description": "OpenTelemetry adapter for Dataverse SDK",
   "publishConfig": {
     "access": "public",

@@ -1,5 +1,34 @@
 # @mohsinonxrm/dataverse-sdk-appinsights
 
+## 2.0.0-beta.1
+
+### Major Changes
+
+- ff655da: **Breaking.** Telemetry events and W3C trace context (#97).
+
+  - **`TelemetryClient.trackDependency` is replaced by `startDependency(name, data)`** (core). The SDK calls it before each request attempt and calls `end(data)` on the `DependencyHandle` it returns once the attempt is done, with `durationMs`, `success` and `resultCode`. The handle can carry `headers` (`traceparent`, `tracestate`), which the SDK sends with the attempt, and `run(fn)`, which makes the dependency the active span while the attempt runs. A custom client moves its `trackDependency` body into `end` (see the 2.0 migration guide). Each retry and each resend after a 401 is its own dependency, started in the caller's context.
+  - **Trace context goes to Dataverse.** Only a valid `traceparent` and its `tracestate` are sent, only to origins that may receive the access token (`baseUrl` and `allowedTokenOrigins`), and `diagnosticHeaders: false` or the new `diagnosticHeaders: { traceContext: false }` turns it off.
+  - **Events.** `trackEvent` now receives `dataverse.throttle` (each 429, with the limit hit, `Retry-After` and `x-ms-dop-hint`), `dataverse.retry` (before each retry wait), `dataverse.concurrency.wait` (a request waited for a slot) and `dataverse.concurrency.limit` (`x-ms-dop-hint` changed the limit). The names are exported as `TelemetryEvents`. A request with telemetry turned off sends none.
+  - **`DataverseClient.trackEvent(name, props, measurements)`** sends an event to the client's telemetry, guarded like the SDK's own calls. The batch package uses it to report `dataverse.batch` for each `$batch` (requests, succeeded, failed, duration, status, correlation id); `execute()` now generates the `$batch` correlation id itself when you don't pass one.
+  - **otel and appinsights:** `OpenTelemetryClient` and `ApplicationInsightsTelemetryClient` implement `startDependency`: the CLIENT span starts with the active context, is active while the attempt runs (so `fetch` auto-instrumentation spans are its children), carries `http.request.resend_count` on retries, and its context is injected with the registered propagator, so the request carries its `traceparent`. `trackDependency` is removed from both.
+
+### Minor Changes
+
+- ff655da: Browser entry point (#158): `@mohsinonxrm/dataverse-sdk-appinsights/browser` exports `ApplicationInsightsBrowserTelemetryClient`, built on the app's own `ApplicationInsights` instance from `@microsoft/applicationinsights-web` (a new optional peer dependency, `^3.0.0`). Each request attempt is one `Fetch` dependency (`trackDependencyData`) with the URL as core redacted it, the correlation id and the Node adapter's `success` rule; events and exceptions go to `trackEvent` and `trackException`, with URLs redacted. `propagateTraceContext: true` sends a W3C `traceparent` naming the dependency (off by default because of the CORS preflight). The entry imports nothing from Node.js, OpenTelemetry or `@azure/monitor-opentelemetry`; the bundle-size check enforces it. The main entry point is unchanged.
+
+### Patch Changes
+
+- f363a6f: README: every TypeScript example type-checks against the 2.0 packages (#311); signature listings are marked as such. The msal-browser README drops MSAL's `storeAuthStateInCookie` (for Internet Explorer 11, deprecated in MSAL 4 and removed in MSAL 5) and describes Dataverse's CORS behaviour as the browser guide does; the appinsights `/browser` example passes a connection string it defines.
+- Updated dependencies [9bb1db9]
+- Updated dependencies [83f2256]
+- Updated dependencies [f780438]
+- Updated dependencies [e606f24]
+- Updated dependencies [f988456]
+- Updated dependencies [1ca3a58]
+- Updated dependencies [ff655da]
+- Updated dependencies [b1bd587]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.0-beta.1
+
 ## 2.0.0-beta.0
 
 ### Major Changes

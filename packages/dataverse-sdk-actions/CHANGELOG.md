@@ -1,5 +1,29 @@
 # @mohsinonxrm/dataverse-sdk-actions
 
+## 2.0.0-beta.1
+
+### Patch Changes
+
+- e72a5fd: The package no longer depends on `@mohsinonxrm/dataverse-sdk-messages`, which nothing in it used: installing the actions package no longer installs the messages package too.
+- f988456: README: `client.api()` and the typed operations (the actions and functions packages, and what `dataverse-gen` writes) are the documented main path, and `OrganizationService` with the messages is the compatibility layer for code ported from the .NET SDK (#311). The core README lists change tracking, `waitForAsyncOperation()`, the opt-in resilience middleware and telemetry among its features; README examples import what they use.
+- 0fac2a9: **Breaking.** `UpsertMultiple` resolves `null` for Dataverse's `204 No Content` instead of throwing "Unexpected end of JSON input" after the records were written. `$metadata` declares a `mscrm.UpsertMultipleResponse` return, but ["the `UpsertMultiple` action returns `204 NoContent`"](https://learn.microsoft.com/power-apps/developer/data-platform/bulk-operations#examples).
+
+  - `UpsertMultipleResponse` (actions) and `UpsertMultipleResult` (messages) are now `{ "@odata.context"?, Results } | null` types instead of interfaces. `client.execute(new UpsertMultipleAction(...))` resolves `null`, and `UpsertMultipleRequest`'s `result` is `null`; a body is still read if Dataverse ever sends one.
+  - dataverse-gen does the same: an operation Dataverse answers with a 204 although `$metadata` declares a primitive or complex return (today `UpsertMultiple`) has a `<Class>Response` of `<Type> | null`, and resolves `null` for the 204.
+
+- Updated dependencies [9bb1db9]
+- Updated dependencies [83f2256]
+- Updated dependencies [f780438]
+- Updated dependencies [e606f24]
+- Updated dependencies [f988456]
+- Updated dependencies [ba9e84a]
+- Updated dependencies [63ec4bf]
+- Updated dependencies [1ca3a58]
+- Updated dependencies [ff655da]
+- Updated dependencies [b1bd587]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.0-beta.1
+  - @mohsinonxrm/dataverse-sdk-entities-runtime@2.0.0-beta.1
+
 ## 2.0.0-beta.0
 
 ### Major Changes

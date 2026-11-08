@@ -1,5 +1,54 @@
 # @mohsinonxrm/dataverse-sdk-generator
 
+## 2.0.0-beta.1
+
+### Minor Changes
+
+- f5c5226: Generated tables get `<Entity>Create` and `<Entity>Update` types (#347): only the columns Dataverse accepts in a create or an update (`IsValidForCreate` / `IsValidForUpdate` from RetrieveMetadataChanges), so read-only and server-set columns are left out. A lookup is keyed by the navigation property it's bound through (a custom lookup's `contoso_ParentAccountId`, a polymorphic lookup's `parentcustomerid`) and takes an `EntityReference`, which `formatEntityForWrite()` sends as `@odata.bind`. The schema model's `PropertyType` has `IsValidForCreate` and `IsValidForUpdate`, and `NavigationPropertyType` has `ReferentialProperty`, `LookupAttribute`, `LookupTargets`, `IsValidForCreate` and `IsValidForUpdate`.
+- caaba87: Typed `Xrm.FormContext` for model-driven form scripts, behind `"formContext": true` (#347). Each table gets `forms/<Entity>Form.ts` with `<Entity>Attributes` and `<Entity>Controls` (its columns by logical name, typed with their `@types/xrm` attribute and control types; choice columns with their enum) and `<Entity>FormContext`, whose `getAttribute()` and `getControl()` take those names (`header_<name>` and `header_process_<name>` for controls). `@types/xrm` is an optional peer dependency. `DataverseGenConfig` has `formContext`, and `dataverse-gen validate` checks it.
+- 5f59b36: Incremental generation and custom templates (#347).
+
+  - `"output": { "incremental": true }` regenerates only the tables whose schema model changed: a stamp file in the output folder (`.dataverse-gen-stamp.json`) records a hash of each table and of the settings, and a table whose hash is unchanged keeps its files untouched. A change of options, templates, generator version or of the set of generated types regenerates every table; files the previous run wrote that this one doesn't are removed. `generateCode()` resolves `unchangedTables`, `TypescriptGenerator` has `unchangedTables`, and the CLI prints them.
+  - `"templates": "<dir>"` uses the EJS templates in that directory instead of the built-in ones of the same name. `dataverse-gen eject [dir] [--force]` and `ejectTemplates()` copy the built-in templates there; `TEMPLATE_NAMES` lists them.
+  - `dataverse-gen validate` checks `output.incremental` and `templates`.
+
+- ba9e84a: Typed request builders per entity set, Graph (Kiota) style (#312).
+
+  - **entities-runtime**: `EntitySetClient<TEntity, TCreate, TUpdate, TColumn>` (`byId(key)`, `list({ select, expand, filter, orderBy, top, maxItems })`, `create(entity)`, `query()`) and `EntityRecordClient` (`get({ select, expand })`, `update(entity, { etag })`, `delete({ etag })`, `request()`), built on core's request builder. Writes go through `formatEntityForWrite()`; `update()` sends `If-Match: *` (or the etag) so it never creates a record; `byId()` takes a GUID or an alternate key. Option types: `GetRecordOptions`, `ListRecordsOptions`, `WriteRecordOptions`.
+  - **generator**: `"typedClient": true` generates `client.ts` with `createTypedClient(client)` → `TypedDataverseClient`, one `EntitySetClient` per generated table keyed by entity set name (`typed.accounts.byId(id).get({ select: ["name"] })`), typed by the table's interface, `<Entity>Create`, `<Entity>Update` and a generated `<Entity>Column` union. `DataverseGenConfig` has `typedClient`; `TEMPLATE_NAMES` includes `client.ejs`.
+
+- 63ec4bf: Validation rules from metadata, checked by an opt-in `validateEntity()` (#347).
+
+  - **entities-runtime**: `validateEntity(entity, metadata, { mode })` returns the `ValidationIssue`s of a create or update body: a business-required column or lookup missing or `null`, a column or lookup the mode can't set, text over `maxLength`, a number outside `minValue`/`maxValue` or a fraction in a whole-number column, a value that isn't one of a choice column's options, and a value of the wrong type. `AttributeMetadata` has `maxLength`, `minValue`, `maxValue`, `optionValues`, `isValidForCreate` and `isValidForUpdate`; `NavigationMetadata` has `lookupAttribute`, `isRequired`, `requiredLevel`, `isValidForCreate` and `isValidForUpdate`.
+  - **generator**: the generated entity metadata carries those constraints (`MinValue` and `MaxValue` are now read from RetrieveMetadataChanges too). The schema model's `PropertyType` has `MaxLength`, `MinValue`, `MaxValue` and `OptionValues`, and `NavigationPropertyType` has `RequiredLevel`.
+
+### Patch Changes
+
+- f988456: README: `client.api()` and the typed operations (the actions and functions packages, and what `dataverse-gen` writes) are the documented main path, and `OrganizationService` with the messages is the compatibility layer for code ported from the .NET SDK (#311). The core README lists change tracking, `waitForAsyncOperation()`, the opt-in resilience middleware and telemetry among its features; README examples import what they use.
+- 5c2c98f: `dataverse-gen` writes a table's columns and navigation properties, and a complex type's properties, in name order. They followed the order of the org's `$metadata`, which isn't fixed from one request to the next, so two runs over the same schema could write different files, and incremental generation (`output.incremental`) saw every table as changed. A column a table declares itself still wins over an inherited one of the same name.
+- 454b2e3: `dataverse-gen` retries its metadata requests when the org is busy: `$metadata` after a 400 (an org whose schema is changing has answered 400 for a few seconds while it rebuilds the document), a 429 or a 5xx, and `RetrieveMetadataChanges` after a 429 or a 5xx, up to five tries with backoff (or `Retry-After`). A request that still fails reports the response body. A `RetrieveMetadataChanges` query Dataverse refuses (400) isn't retried.
+- 0fac2a9: **Breaking.** `UpsertMultiple` resolves `null` for Dataverse's `204 No Content` instead of throwing "Unexpected end of JSON input" after the records were written. `$metadata` declares a `mscrm.UpsertMultipleResponse` return, but ["the `UpsertMultiple` action returns `204 NoContent`"](https://learn.microsoft.com/power-apps/developer/data-platform/bulk-operations#examples).
+
+  - `UpsertMultipleResponse` (actions) and `UpsertMultipleResult` (messages) are now `{ "@odata.context"?, Results } | null` types instead of interfaces. `client.execute(new UpsertMultipleAction(...))` resolves `null`, and `UpsertMultipleRequest`'s `result` is `null`; a body is still read if Dataverse ever sends one.
+  - dataverse-gen does the same: an operation Dataverse answers with a 204 although `$metadata` declares a primitive or complex return (today `UpsertMultiple`) has a `<Class>Response` of `<Type> | null`, and resolves `null` for the 204.
+
+- Updated dependencies [9bb1db9]
+- Updated dependencies [83f2256]
+- Updated dependencies [f780438]
+- Updated dependencies [e606f24]
+- Updated dependencies [f363a6f]
+- Updated dependencies [f988456]
+- Updated dependencies [ba9e84a]
+- Updated dependencies [63ec4bf]
+- Updated dependencies [1ca3a58]
+- Updated dependencies [92c6fc9]
+- Updated dependencies [ff655da]
+- Updated dependencies [b1bd587]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.0-beta.1
+  - @mohsinonxrm/dataverse-sdk-auth-msal-node@2.0.0-beta.1
+  - @mohsinonxrm/dataverse-sdk-entities-runtime@2.0.0-beta.1
+  - @mohsinonxrm/dataverse-sdk-metadata@2.0.0-beta.1
+
 ## 2.0.0-beta.0
 
 ### Major Changes

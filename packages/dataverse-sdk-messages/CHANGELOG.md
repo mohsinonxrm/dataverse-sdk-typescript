@@ -1,5 +1,41 @@
 # @mohsinonxrm/dataverse-sdk-messages
 
+## 2.0.0-beta.1
+
+### Minor Changes
+
+- 1ca3a58: Function-backed, CRUD and batch messages (#344).
+
+  - **A message for each Web API function** of the platform, Sales and Customer Service: `WhoAmIRequest`, `RetrieveEntityRequest`, `RetrieveUserPrivilegesRequest`, `RetrievePrincipalAccess_systemuserRequest`, … (209 of them; the `$filter` query functions such as `LastXDays` aren't messages). Each sends the same `GET` with parameter aliases as the functions package's class, takes its parameters as one object kept in `Parameters`, and `response.result` is the function's value, as for the action-backed messages. Where a complex type has the name of a function message's response or result (`CalculateTotalTimeIncidentResponse`, `ValidateFetchXmlExpressionResult`), the package root exports the message's type under that name.
+  - **CRUD messages:** `CreateRequest` (`response.id`), `RetrieveRequest` (`response.Entity`), `UpdateRequest` (with `If-Match`, so it never creates), `DeleteRequest`, `AssociateRequest`, `DisassociateRequest` and `RetrieveMultipleRequest` (a FetchXML query; `response.EntityCollection`). A record is an `EntityReference`; a new record is the Web API payload with `@odata.type`. An Associate or Disassociate of several records is one `$batch` change set.
+  - **`ExecuteMultipleRequest` and `ExecuteTransactionRequest`**, over `$batch`: ExecuteMultiple sends one part per request (`Settings.ContinueOnError` sends `Prefer: odata.continue-on-error`) and resolves an item per request that ran, with its `Response` or its `Fault`, and `IsFaulted`; ExecuteTransaction sends one change set, resolves each request's response in order, and rejects with the failed request's error. Any message, action or function class can be one of their `Requests`. The messages package now depends on `@mohsinonxrm/dataverse-sdk-batch` for the `$batch` codec.
+  - **core:** `Executable` has an optional `parsesErrorResponses` flag. When it's `true`, `client.execute()` passes an error response (status 400 or more) to `parseResponse` instead of rejecting with the error read from it: Dataverse answers a `$batch` that stopped at a failure with that failure's status, and the body still holds the responses of the requests that ran.
+
+### Patch Changes
+
+- f988456: README: `client.api()` and the typed operations (the actions and functions packages, and what `dataverse-gen` writes) are the documented main path, and `OrganizationService` with the messages is the compatibility layer for code ported from the .NET SDK (#311). The core README lists change tracking, `waitForAsyncOperation()`, the opt-in resilience middleware and telemetry among its features; README examples import what they use.
+- 0fac2a9: **Breaking.** `UpsertMultiple` resolves `null` for Dataverse's `204 No Content` instead of throwing "Unexpected end of JSON input" after the records were written. `$metadata` declares a `mscrm.UpsertMultipleResponse` return, but ["the `UpsertMultiple` action returns `204 NoContent`"](https://learn.microsoft.com/power-apps/developer/data-platform/bulk-operations#examples).
+
+  - `UpsertMultipleResponse` (actions) and `UpsertMultipleResult` (messages) are now `{ "@odata.context"?, Results } | null` types instead of interfaces. `client.execute(new UpsertMultipleAction(...))` resolves `null`, and `UpsertMultipleRequest`'s `result` is `null`; a body is still read if Dataverse ever sends one.
+  - dataverse-gen does the same: an operation Dataverse answers with a 204 although `$metadata` declares a primitive or complex return (today `UpsertMultiple`) has a `<Class>Response` of `<Type> | null`, and resolves `null` for the 204.
+
+- Updated dependencies [9bb1db9]
+- Updated dependencies [c81fc72]
+- Updated dependencies [0e1dc6f]
+- Updated dependencies [9c6d970]
+- Updated dependencies [83f2256]
+- Updated dependencies [f780438]
+- Updated dependencies [e606f24]
+- Updated dependencies [f988456]
+- Updated dependencies [ba9e84a]
+- Updated dependencies [63ec4bf]
+- Updated dependencies [1ca3a58]
+- Updated dependencies [ff655da]
+- Updated dependencies [b1bd587]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.0-beta.1
+  - @mohsinonxrm/dataverse-sdk-batch@2.0.0-beta.1
+  - @mohsinonxrm/dataverse-sdk-entities-runtime@2.0.0-beta.1
+
 ## 2.0.0-beta.0
 
 ### Major Changes

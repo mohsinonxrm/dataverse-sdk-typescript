@@ -1,5 +1,32 @@
 # @mohsinonxrm/dataverse-sdk-entities-runtime
 
+## 2.0.0-beta.1
+
+### Minor Changes
+
+- ba9e84a: Typed request builders per entity set, Graph (Kiota) style (#312).
+
+  - **entities-runtime**: `EntitySetClient<TEntity, TCreate, TUpdate, TColumn>` (`byId(key)`, `list({ select, expand, filter, orderBy, top, maxItems })`, `create(entity)`, `query()`) and `EntityRecordClient` (`get({ select, expand })`, `update(entity, { etag })`, `delete({ etag })`, `request()`), built on core's request builder. Writes go through `formatEntityForWrite()`; `update()` sends `If-Match: *` (or the etag) so it never creates a record; `byId()` takes a GUID or an alternate key. Option types: `GetRecordOptions`, `ListRecordsOptions`, `WriteRecordOptions`.
+  - **generator**: `"typedClient": true` generates `client.ts` with `createTypedClient(client)` → `TypedDataverseClient`, one `EntitySetClient` per generated table keyed by entity set name (`typed.accounts.byId(id).get({ select: ["name"] })`), typed by the table's interface, `<Entity>Create`, `<Entity>Update` and a generated `<Entity>Column` union. `DataverseGenConfig` has `typedClient`; `TEMPLATE_NAMES` includes `client.ejs`.
+
+- 63ec4bf: Validation rules from metadata, checked by an opt-in `validateEntity()` (#347).
+
+  - **entities-runtime**: `validateEntity(entity, metadata, { mode })` returns the `ValidationIssue`s of a create or update body: a business-required column or lookup missing or `null`, a column or lookup the mode can't set, text over `maxLength`, a number outside `minValue`/`maxValue` or a fraction in a whole-number column, a value that isn't one of a choice column's options, and a value of the wrong type. `AttributeMetadata` has `maxLength`, `minValue`, `maxValue`, `optionValues`, `isValidForCreate` and `isValidForUpdate`; `NavigationMetadata` has `lookupAttribute`, `isRequired`, `requiredLevel`, `isValidForCreate` and `isValidForUpdate`.
+  - **generator**: the generated entity metadata carries those constraints (`MinValue` and `MaxValue` are now read from RetrieveMetadataChanges too). The schema model's `PropertyType` has `MaxLength`, `MinValue`, `MaxValue` and `OptionValues`, and `NavigationPropertyType` has `RequiredLevel`.
+
+### Patch Changes
+
+- f988456: README: `client.api()` and the typed operations (the actions and functions packages, and what `dataverse-gen` writes) are the documented main path, and `OrganizationService` with the messages is the compatibility layer for code ported from the .NET SDK (#311). The core README lists change tracking, `waitForAsyncOperation()`, the opt-in resilience middleware and telemetry among its features; README examples import what they use.
+- Updated dependencies [9bb1db9]
+- Updated dependencies [83f2256]
+- Updated dependencies [f780438]
+- Updated dependencies [e606f24]
+- Updated dependencies [f988456]
+- Updated dependencies [1ca3a58]
+- Updated dependencies [ff655da]
+- Updated dependencies [b1bd587]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.0-beta.1
+
 ## 2.0.0-beta.0
 
 ### Major Changes

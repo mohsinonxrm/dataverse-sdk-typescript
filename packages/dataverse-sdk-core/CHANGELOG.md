@@ -1,5 +1,63 @@
 # @mohsinonxrm/dataverse-sdk-core
 
+## 2.0.0-beta.1
+
+### Major Changes
+
+- ff655da: **Breaking.** Telemetry events and W3C trace context (#97).
+
+  - **`TelemetryClient.trackDependency` is replaced by `startDependency(name, data)`** (core). The SDK calls it before each request attempt and calls `end(data)` on the `DependencyHandle` it returns once the attempt is done, with `durationMs`, `success` and `resultCode`. The handle can carry `headers` (`traceparent`, `tracestate`), which the SDK sends with the attempt, and `run(fn)`, which makes the dependency the active span while the attempt runs. A custom client moves its `trackDependency` body into `end` (see the 2.0 migration guide). Each retry and each resend after a 401 is its own dependency, started in the caller's context.
+  - **Trace context goes to Dataverse.** Only a valid `traceparent` and its `tracestate` are sent, only to origins that may receive the access token (`baseUrl` and `allowedTokenOrigins`), and `diagnosticHeaders: false` or the new `diagnosticHeaders: { traceContext: false }` turns it off.
+  - **Events.** `trackEvent` now receives `dataverse.throttle` (each 429, with the limit hit, `Retry-After` and `x-ms-dop-hint`), `dataverse.retry` (before each retry wait), `dataverse.concurrency.wait` (a request waited for a slot) and `dataverse.concurrency.limit` (`x-ms-dop-hint` changed the limit). The names are exported as `TelemetryEvents`. A request with telemetry turned off sends none.
+  - **`DataverseClient.trackEvent(name, props, measurements)`** sends an event to the client's telemetry, guarded like the SDK's own calls. The batch package uses it to report `dataverse.batch` for each `$batch` (requests, succeeded, failed, duration, status, correlation id); `execute()` now generates the `$batch` correlation id itself when you don't pass one.
+  - **otel and appinsights:** `OpenTelemetryClient` and `ApplicationInsightsTelemetryClient` implement `startDependency`: the CLIENT span starts with the active context, is active while the attempt runs (so `fetch` auto-instrumentation spans are its children), carries `http.request.resend_count` on retries, and its context is injected with the registered propagator, so the request carries its `traceparent`. `trackDependency` is removed from both.
+
+### Minor Changes
+
+- 9bb1db9: `AdaptiveThrottlingMiddleware`: slow down before Dataverse throttles, from its service-protection headers (#309). It is opt-in: add it with `middleware: { append: [new AdaptiveThrottlingMiddleware()] }`.
+
+  - **Spacing.** It reads `x-ms-ratelimit-burst-remaining-xrm-requests` (requests left in the 5-minute window, e.g. `7999`) and `x-ms-ratelimit-time-remaining-xrm-requests` (execution time left, e.g. `1,200.00`) from every response. When either falls below `threshold` (0.2) of its full value (the highest seen, or `requestBudget` / `timeBudget`), request starts are spaced out by up to `maxSpacingMs` (2 s) as the budget nears empty.
+  - **Pause after a 429.** A 429 with `Retry-After` holds every new request until the wait has passed (`pauseOnRetryAfter`, default on, capped by `maxPauseMs`, 30 s).
+  - `status` reports the budgets, the pressure and the current spacing; `onDelay` is told about each request held back.
+  - Microsoft documents the headers as being for debugging and each web server counts on its own, so this is a soft brake: the retry middleware still handles 429s. In browsers the headers aren't readable, so only the pause after a 429 applies.
+
+- 83f2256: `ChaosMiddleware`: fault injection for testing how an app copes with throttling and outages, modelled on the Microsoft Graph SDK's `ChaosHandler` (#308). It is opt-in and never part of the default pipeline: add it with `middleware: { append: [new ChaosMiddleware(options)] }`.
+
+  - **Faults.** It answers a share of requests itself (`percentage`, default 10) with a fault picked from `faults` (default 429 with `Retry-After: 1`, 502, 503, 504), without sending them. A fault is `{ status, retryAfterSeconds?, headers?, body? }`; `status: "network"` throws a `DataverseNetworkError` named `ConnectionFailed`, as a dropped connection does. The default body is a Dataverse error body (for a 429, the service-protection error `0x80072322`).
+  - **Choosing requests.** `match` (a `RegExp` tested against the full URL, or a function) limits it to some requests; `script(request, { requestIndex, attempt })` decides per request instead of the percentage; `random` takes a seeded generator; `onFault` is told about each fault.
+  - **Per request.** `new MiddlewareRequestOptions([{ type: "chaos", disable: true }])` or `{ type: "chaos", fault }` (`ChaosRequestOptions`).
+
+- f780438: Opt-in circuit breaker and bulkhead middleware (#343). Neither is in the default pipeline; add them with the `middleware` option.
+
+  - **`CircuitBreakerMiddleware`.** After `failureThreshold` (5) failures in a row (a status of 500 or more, or a `DataverseNetworkError`), it refuses requests with the new `DataverseCircuitOpenError` (`retryAfterMs`) for `breakDurationMs` (30 s), without sending them. Then it lets one probe through: success closes the circuit, failure opens it again. A 429, another 4xx, or a request its caller aborted is not a failure. `isFailure` replaces the rule. `state`, `consecutiveFailures`, `onStateChange` and `reset()` expose it for telemetry. Added with `middleware.append`, once the circuit opens, retries stop at once.
+  - **`BulkheadMiddleware`.** It limits requests in flight per category, on top of the client's concurrency limit: `limits` (e.g. `{ read: 8, write: 2 }`; GET and HEAD are `"read"`, the rest `"write"`), `defaultLimit`, and `categorize(request)` for your own categories (e.g. per entity set). Requests over the limit wait (abortable). Beyond `maxQueue` waiting, they are refused with the new `DataverseBulkheadRejectedError`. Per request: `{ type: "bulkhead", category }` or `{ type: "bulkhead", bypass: true }` (`BulkheadRequestOptions`).
+  - `CircuitBreakerOptions` and `BulkheadOptions` reuse the names of the 1.x no-op option types removed in #285, with new fields.
+
+- e606f24: Change tracking (#319).
+
+  - **`trackChanges()`** on the request builder sends `Prefer: odata.track-changes`, follows `@odata.nextLink` through every page and returns `TrackedChanges<T>`: `changed` rows, `deleted` rows (`{ id, reason }`, from the `$deletedEntity` entries) and the `deltaLink` to save. `$filter`, `$orderby`, `$expand` and `$top`, which Dataverse doesn't support with change tracking, reject before anything is sent; a response without a delta link (change tracking off for the table) rejects with `NoDeltaLink`.
+  - **`client.changesSince(deltaLink)`** returns what changed since an earlier sync, across every page, and the next delta link (the same one when Dataverse returns none).
+  - **Page by page.** `iterateChanges()` and `client.iterateChangesSince(deltaLink)` yield one `TrackedChangesPage<T>` at a time, lazily; the last page carries the delta link. `maxPageSize` sets `odata.maxpagesize`.
+  - **`isDeltaLinkExpired(err)`** recognises `ExpiredVersionStamp` (`0x80044352`), Dataverse's answer to a delta link older than the org keeps changes (7 days by default): run `trackChanges()` again.
+
+- 1ca3a58: Function-backed, CRUD and batch messages (#344).
+
+  - **A message for each Web API function** of the platform, Sales and Customer Service: `WhoAmIRequest`, `RetrieveEntityRequest`, `RetrieveUserPrivilegesRequest`, `RetrievePrincipalAccess_systemuserRequest`, … (209 of them; the `$filter` query functions such as `LastXDays` aren't messages). Each sends the same `GET` with parameter aliases as the functions package's class, takes its parameters as one object kept in `Parameters`, and `response.result` is the function's value, as for the action-backed messages. Where a complex type has the name of a function message's response or result (`CalculateTotalTimeIncidentResponse`, `ValidateFetchXmlExpressionResult`), the package root exports the message's type under that name.
+  - **CRUD messages:** `CreateRequest` (`response.id`), `RetrieveRequest` (`response.Entity`), `UpdateRequest` (with `If-Match`, so it never creates), `DeleteRequest`, `AssociateRequest`, `DisassociateRequest` and `RetrieveMultipleRequest` (a FetchXML query; `response.EntityCollection`). A record is an `EntityReference`; a new record is the Web API payload with `@odata.type`. An Associate or Disassociate of several records is one `$batch` change set.
+  - **`ExecuteMultipleRequest` and `ExecuteTransactionRequest`**, over `$batch`: ExecuteMultiple sends one part per request (`Settings.ContinueOnError` sends `Prefer: odata.continue-on-error`) and resolves an item per request that ran, with its `Response` or its `Fault`, and `IsFaulted`; ExecuteTransaction sends one change set, resolves each request's response in order, and rejects with the failed request's error. Any message, action or function class can be one of their `Requests`. The messages package now depends on `@mohsinonxrm/dataverse-sdk-batch` for the `$batch` codec.
+  - **core:** `Executable` has an optional `parsesErrorResponses` flag. When it's `true`, `client.execute()` passes an error response (status 400 or more) to `parseResponse` instead of rejecting with the error read from it: Dataverse answers a `$batch` that stopped at a failure with that failure's status, and the body still holds the responses of the requests that ran.
+
+- b1bd587: `waitForAsyncOperation(client, job, options?)` waits for a system job (`asyncoperation`): bulk delete, `ExecuteWorkflow`, `ImportSolutionAsync`, data import and so on (#318).
+
+  - **Input.** The job's id, or the response that names it: `{ JobId }`, `{ AsyncOperationId }` or the `asyncoperation` record. `null` and values that aren't GUIDs throw `DataverseInvalidRequestError` before anything is sent.
+  - **Polling.** It reads `asyncoperations(<id>)` through the client (so retry, concurrency and auth apply): at once, then after `intervalMs` (2 s), each wait `backoff` (1.5) times longer, up to `maxIntervalMs` (30 s). `onProgress` sees every read; `select` adds columns; `requestOptions` apply to every read.
+  - **Outcome.** It resolves with the job when it succeeds. A failed or canceled job rejects with the new `DataverseAsyncOperationError` (`reason` `"failed"` or `"canceled"`, the job's `friendlymessage` as the message, its `errorcode` in hex as `code`, and the job as `operation`). `timeoutMs` rejects with `reason: "timeout"`, and `signal` with `DataverseAbortError`; the job itself keeps running.
+  - `AsyncOperationStateCode` and `AsyncOperationStatusCode` name the job's `statecode` and `statuscode` values.
+
+### Patch Changes
+
+- f988456: README: `client.api()` and the typed operations (the actions and functions packages, and what `dataverse-gen` writes) are the documented main path, and `OrganizationService` with the messages is the compatibility layer for code ported from the .NET SDK (#311). The core README lists change tracking, `waitForAsyncOperation()`, the opt-in resilience middleware and telemetry among its features; README examples import what they use.
+
 ## 2.0.0-beta.0
 
 ### Major Changes

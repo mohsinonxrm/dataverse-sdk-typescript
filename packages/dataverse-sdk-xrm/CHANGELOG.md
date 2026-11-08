@@ -1,5 +1,25 @@
 # @mohsinonxrm/dataverse-sdk-xrm
 
+## 2.0.0-beta.1
+
+### Patch Changes
+
+- f988456: README: `client.api()` and the typed operations (the actions and functions packages, and what `dataverse-gen` writes) are the documented main path, and `OrganizationService` with the messages is the compatibility layer for code ported from the .NET SDK (#311). The core README lists change tracking, `waitForAsyncOperation()`, the opt-in resilience middleware and telemetry among its features; README examples import what they use.
+- Updated dependencies [9bb1db9]
+- Updated dependencies [83f2256]
+- Updated dependencies [f780438]
+- Updated dependencies [e606f24]
+- Updated dependencies [f988456]
+- Updated dependencies [ba9e84a]
+- Updated dependencies [63ec4bf]
+- Updated dependencies [1ca3a58]
+- Updated dependencies [ff655da]
+- Updated dependencies [0fac2a9]
+- Updated dependencies [b1bd587]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.0-beta.1
+  - @mohsinonxrm/dataverse-sdk-entities-runtime@2.0.0-beta.1
+  - @mohsinonxrm/dataverse-sdk-messages@2.0.0-beta.1
+
 ## 2.0.0-beta.0
 
 ### Major Changes
