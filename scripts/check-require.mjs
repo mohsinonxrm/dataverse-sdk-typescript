@@ -2,7 +2,9 @@
 /**
  * Every published package must load from CommonJS with `require()` (Node 22.12+ loads ESM that
  * way), not only with `import`. A top-level `await` anywhere in a package's module graph breaks
- * that with ERR_REQUIRE_ASYNC_MODULE (#364). Run after `pnpm build`; part of `pnpm check:packages`.
+ * that with ERR_REQUIRE_ASYNC_MODULE (#364). Each must also export `./package.json`, which tools
+ * read for the version (`require("<name>/package.json")`). Run after `pnpm build`; part of
+ * `pnpm check:packages`.
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -24,8 +26,12 @@ for (const dir of readdirSync(join(root, "packages")).sort()) {
 
   try {
     // Resolve the package by its own name from inside it (self-reference through `exports`).
-    createRequire(join(pkgDir, "package.json"))(pkg.name);
-    console.log(`✔ require("${pkg.name}")`);
+    const load = createRequire(join(pkgDir, "package.json"));
+    load(pkg.name);
+    const { version } = load(`${pkg.name}/package.json`);
+    if (version !== pkg.version)
+      throw new Error(`${pkg.name}/package.json gave version ${version}`);
+    console.log(`✔ require("${pkg.name}") and require("${pkg.name}/package.json")`);
   } catch (error) {
     failed++;
     console.error(
