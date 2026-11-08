@@ -9,6 +9,7 @@ export type {
   AttributeMetadataCast,
   AttributeQueryOptions,
   MetadataQueryOptions,
+  RelationshipQueryOptions,
   MetadataWriteOptions,
 } from "./MetadataClient.js";
 
