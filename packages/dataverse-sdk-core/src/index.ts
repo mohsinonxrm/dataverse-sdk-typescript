@@ -7,6 +7,10 @@ export * from "./client/index.js";
 export * from "./errors/index.js";
 export * from "./paging/index.js";
 
+// Waiting for system jobs (#318)
+export * from "./asyncoperation/waitForAsyncOperation.js";
+export * from "./errors/DataverseAsyncOperationError.js";
+
 // New exports for enhanced patterns
 export {
   RequestOptions as MiddlewareRequestOptions,
@@ -36,6 +40,14 @@ export { ConcurrencyMiddleware } from "./middleware/ConcurrencyMiddleware.js";
 export { RetryMiddleware } from "./middleware/RetryMiddleware.js";
 export { TelemetryMiddleware } from "./middleware/TelemetryMiddleware.js";
 export { LoggingMiddleware } from "./middleware/LoggingMiddleware.js";
+// Fault injection for resilience tests; never in the default pipeline (#308).
+export {
+  ChaosMiddleware,
+  type ChaosFault,
+  type ChaosOptions,
+  type ChaosRequestOptions,
+  type ChaosScriptInfo,
+} from "./middleware/ChaosMiddleware.js";
 export { getRetryAttempts } from "./middleware/RetryMiddleware.js";
 export type { RawBody } from "./utils/body.js";
 // Opt-in resilience middleware (#343).

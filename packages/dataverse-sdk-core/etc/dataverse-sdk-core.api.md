@@ -16,6 +16,59 @@ export type ApiVersion = `v${number}.${number}`;
 // @public
 export function appendRequestHeader(headers: HeadersLike, key: string, value: string): HeadersLike;
 
+// @public
+export interface AsyncOperation {
+    // (undocumented)
+    [column: string]: unknown;
+    // (undocumented)
+    asyncoperationid: string;
+    completedon?: string | null;
+    errorcode?: number | null;
+    friendlymessage?: string | null;
+    message?: string | null;
+    name?: string | null;
+    operationtype?: number | null;
+    startedon?: string | null;
+    statecode: number;
+    statuscode: number;
+}
+
+// @public
+export type AsyncOperationErrorReason = "failed" | "canceled" | "timeout";
+
+// @public
+export interface AsyncOperationIdSource {
+    // (undocumented)
+    AsyncOperationId?: string | null;
+    // (undocumented)
+    asyncoperationid?: string | null;
+    // (undocumented)
+    JobId?: string | null;
+}
+
+// @public
+export type AsyncOperationRef = string | AsyncOperationIdSource;
+
+// @public
+export const AsyncOperationStateCode: {
+    readonly Ready: 0;
+    readonly Suspended: 1;
+    readonly Locked: 2;
+    readonly Completed: 3;
+};
+
+// @public
+export const AsyncOperationStatusCode: {
+    readonly WaitingForResources: 0;
+    readonly Waiting: 10;
+    readonly InProgress: 20;
+    readonly Pausing: 21;
+    readonly Canceling: 22;
+    readonly Succeeded: 30;
+    readonly Failed: 31;
+    readonly Canceled: 32;
+};
+
 // @public (undocumented)
 export class AuthMiddleware implements Middleware {
     constructor(options: DataverseClientOptions);
@@ -75,6 +128,45 @@ export interface BulkheadOptions {
 export interface BulkheadRequestOptions extends MiddlewareOptions {
     bypass?: boolean;
     category?: string;
+}
+
+// @public
+export interface ChaosFault {
+    body?: unknown;
+    headers?: Record<string, string>;
+    retryAfterSeconds?: number;
+    status: number | "network";
+}
+
+// @public
+export class ChaosMiddleware implements Middleware {
+    constructor(options?: ChaosOptions);
+    // (undocumented)
+    execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    // (undocumented)
+    name: string;
+}
+
+// @public
+export interface ChaosOptions {
+    faults?: readonly ChaosFault[];
+    match?: RegExp | ((request: RequestInformation) => boolean);
+    onFault?: (fault: ChaosFault, request: RequestInformation) => void;
+    percentage?: number;
+    random?: () => number;
+    script?: (request: RequestInformation, info: ChaosScriptInfo) => ChaosFault | undefined;
+}
+
+// @public
+export interface ChaosRequestOptions extends MiddlewareOptions {
+    disable?: boolean;
+    fault?: ChaosFault;
+}
+
+// @public
+export interface ChaosScriptInfo {
+    attempt: number;
+    requestIndex: number;
 }
 
 // @public
@@ -149,6 +241,20 @@ export interface CreateAndGetIdOptions extends RequestOptions {
 // @public
 export class DataverseAbortError extends DataverseError {
     constructor(message?: string, cause?: unknown);
+}
+
+// @public
+export class DataverseAsyncOperationError extends DataverseError {
+    constructor(message: string, init: {
+        asyncOperationId: string;
+        reason: AsyncOperationErrorReason;
+        operation?: AsyncOperation;
+        code?: string;
+    });
+    readonly asyncOperationId: string;
+    readonly operation?: AsyncOperation;
+    // (undocumented)
+    readonly reason: AsyncOperationErrorReason;
 }
 
 // @public
@@ -940,6 +1046,21 @@ export interface TokenOptions {
     forceRefresh?: boolean;
     // (undocumented)
     tenantId?: string;
+}
+
+// @public
+export function waitForAsyncOperation(client: DataverseClient, asyncOperation: AsyncOperationRef | null | undefined, options?: WaitForAsyncOperationOptions): Promise<AsyncOperation>;
+
+// @public
+export interface WaitForAsyncOperationOptions {
+    backoff?: number;
+    intervalMs?: number;
+    maxIntervalMs?: number;
+    onProgress?: (operation: AsyncOperation) => void;
+    requestOptions?: Omit<RequestOptions, "signal">;
+    select?: readonly string[];
+    signal?: AbortSignal;
+    timeoutMs?: number;
 }
 
 // (No @packageDocumentation comment for this package)
