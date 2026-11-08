@@ -11,6 +11,7 @@ export function createDemoSession(): AuthSession {
   return {
     mode: "demo",
     user: { name: DEMO_USER.fullname, username: DEMO_USER.internalemailaddress },
+    accountId: "demo",
     environmentUrl: DEMO_ENVIRONMENT_URL,
     tokenProvider: { getToken: () => Promise.resolve("demo-token") },
     scopesFor: (url) => [`${new URL(url).origin}/.default`],

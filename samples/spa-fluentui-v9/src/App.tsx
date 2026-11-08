@@ -6,8 +6,10 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { SdkProvider } from "./sdk/SdkProvider";
 import { ThemeProvider } from "./theme/ThemeProvider";
 
-// The sign-in page and the signed-in shell are separate chunks: a visitor downloads one of them.
+// The sign-in page, the environment picker and the signed-in shell are separate chunks: a visitor
+// downloads the ones they reach.
 const SignInPage = lazy(() => import("./shell/SignInPage"));
+const EnvironmentPicker = lazy(() => import("./shell/EnvironmentPicker"));
 const AppShell = lazy(() => import("./shell/AppShell"));
 
 const useStyles = makeStyles({
@@ -16,19 +18,28 @@ const useStyles = makeStyles({
 
 function SignedInGate() {
   const styles = useStyles();
-  const { state } = useAuth();
+  const { state, chooseEnvironment } = useAuth();
+  let page;
+  if (state.status !== "signedIn") {
+    page = <SignInPage />;
+  } else if (!state.environmentUrl || state.switching) {
+    // Signed in without an environment, or switching: pick one of the user's environments.
+    page = <EnvironmentPicker session={state.session} current={state.environmentUrl} />;
+  } else {
+    page = (
+      <SdkProvider
+        session={state.session}
+        environmentUrl={state.environmentUrl}
+        onEnvironmentChange={chooseEnvironment}
+      >
+        <BrowserRouter>
+          <AppShell />
+        </BrowserRouter>
+      </SdkProvider>
+    );
+  }
   return (
-    <Suspense fallback={<Spinner className={styles.loading} label="Loading…" />}>
-      {state.status !== "signedIn" ? (
-        <SignInPage />
-      ) : (
-        <SdkProvider session={state.session}>
-          <BrowserRouter>
-            <AppShell />
-          </BrowserRouter>
-        </SdkProvider>
-      )}
-    </Suspense>
+    <Suspense fallback={<Spinner className={styles.loading} label="Loading…" />}>{page}</Suspense>
   );
 }
 
