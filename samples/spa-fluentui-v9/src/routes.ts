@@ -7,7 +7,9 @@ import type { ComponentType, LazyExoticComponent } from "react";
 import type { FluentIcon } from "@fluentui/react-icons";
 import {
   BookDatabase20Regular,
+  BookOpen20Regular,
   BoxMultiple20Regular,
+  Code20Regular,
   DatabaseSearch20Regular,
   DocumentArrowUp20Regular,
   ErrorCircle20Regular,
@@ -24,12 +26,14 @@ import {
 
 export const NAV_GROUPS = [
   "Overview",
+  "Explorer",
   "Data",
   "Operations",
   "Metadata",
   "Files",
   "Environments",
   "Diagnostics",
+  "Docs",
 ] as const;
 
 export type NavGroup = (typeof NAV_GROUPS)[number];
@@ -52,6 +56,15 @@ export const ROUTES: AppRoute[] = [
     icon: Home20Regular,
     summary: "What this app shows, how the client is set up, and a first request.",
     component: lazy(() => import("./pages/HomePage")),
+  },
+  {
+    path: "/explorer",
+    title: "Explorer",
+    group: "Explorer",
+    icon: Code20Regular,
+    summary:
+      "Any Web API request or typed operation: its SDK code, a preview of the request, and the response.",
+    component: lazy(() => import("./pages/ExplorerPage")),
   },
   {
     path: "/data/queries",
@@ -157,5 +170,13 @@ export const ROUTES: AppRoute[] = [
     icon: ErrorCircle20Regular,
     summary: "Typed errors for OData failures, throttling, $batch, network failures and aborts.",
     component: lazy(() => import("./pages/ErrorsPage")),
+  },
+  {
+    path: "/docs",
+    title: "Documentation",
+    group: "Docs",
+    icon: BookOpen20Regular,
+    summary: "Getting started, the guides and the API reference, on GitHub.",
+    component: lazy(() => import("./pages/DocsPage")),
   },
 ];

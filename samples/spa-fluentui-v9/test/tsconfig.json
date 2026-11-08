@@ -8,5 +8,5 @@
     "allowImportingTsExtensions": true,
     "types": ["vite/client"]
   },
-  "include": ["./**/*.ts"]
+  "include": ["./**/*.ts", "../src/explorer/virtual-modules.d.ts"]
 }

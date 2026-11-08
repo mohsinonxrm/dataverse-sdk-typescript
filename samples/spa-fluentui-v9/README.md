@@ -1,8 +1,16 @@
 # spa-fluentui-v9
 
 A React 18 single-page app, built with [Fluent UI React v9](https://react.fluentui.dev/) and
-following Fluent 2, that runs the `@mohsinonxrm/dataverse-sdk-*` packages in the browser. Every
-scenario page runs real SDK calls and shows, for each scenario:
+following Fluent 2, that runs the `@mohsinonxrm/dataverse-sdk-*` packages in the browser. It is
+also the SDK's public **explorer site**, hosted on Azure Static Web Apps (see
+[Hosting](#hosting)).
+
+The **Explorer** page (`/explorer`) works like an API explorer: build a raw Web API request, or
+pick one of the more than 2,300 typed actions, functions and messages and fill in its parameters; it shows
+the SDK code for it, a preview of the request the SDK will send, and after **Run** the response,
+its headers and every request sent.
+
+Every scenario page runs real SDK calls and shows, for each scenario:
 
 1. what it demonstrates, its inputs and a **Run** button;
 2. **Code**: the exact code the Run button calls. It is read from the scenario module's own source
@@ -34,20 +42,25 @@ still goes through the SDK pipeline and the inspector. Data lives in memory and 
 ### Your own environment
 
 1. **Register an app** in Microsoft Entra ID: platform "Single-page application", redirect URI
-   `http://localhost:3000`, and the delegated permission `Dynamics CRM / user_impersonation`.
-2. **Configure** the sample: `cp .env.example .env` in this folder, then set:
+   `http://localhost:3000` (the site's URL when you use the hosted site), and the delegated
+   permission `Dynamics CRM / user_impersonation`. No client secret.
+2. **Sign in with Microsoft** on the sign-in page: enter the environment URL (for example
+   `https://yourorg.crm.dynamics.com`), the app registration's application (client) id and,
+   optionally, the tenant. They are kept in `localStorage` for the next visit; none of them is a
+   secret. If your tenant lets only admins consent, the page links the admin consent URL for the
+   client id. Write scenarios create, change and delete records in that environment.
 
-   | Variable                  | Meaning                                                         |
-   | ------------------------- | --------------------------------------------------------------- |
-   | `VITE_AZURE_CLIENT_ID`    | Application (client) id of the app registration                 |
-   | `VITE_AZURE_TENANT_ID`    | Directory (tenant) id; defaults to `organizations`              |
-   | `VITE_AZURE_REDIRECT_URI` | Redirect URI; defaults to the page's origin                     |
-   | `VITE_DATAVERSE_URL`      | Environment URL, for example `https://yourorg.crm.dynamics.com` |
+The form's defaults can come from a `.env` file (`cp .env.example .env`):
 
-3. **Sign in with Microsoft** on the sign-in page. Write scenarios create, change and delete
-   records in that environment.
+| Variable                  | Meaning                                                         |
+| ------------------------- | --------------------------------------------------------------- |
+| `VITE_AZURE_CLIENT_ID`    | Application (client) id of the app registration                 |
+| `VITE_AZURE_TENANT_ID`    | Directory (tenant) id; defaults to `organizations`              |
+| `VITE_AZURE_REDIRECT_URI` | Redirect URI; defaults to the page's origin                     |
+| `VITE_DATAVERSE_URL`      | Environment URL, for example `https://yourorg.crm.dynamics.com` |
 
-MSAL is loaded only when you sign in with Microsoft, so demo mode never downloads it.
+MSAL is loaded only when you sign in with Microsoft, so demo mode never downloads it. The site's
+Content-Security-Policy allows public-cloud environments (`*.dynamics.com`) only.
 
 ## Pages
 
@@ -58,6 +71,33 @@ page, where each step is a separate scenario.
 
 - **Overview** (`/`): `WhoAmI` through `client.api()` and through the typed `WhoAmIFunction`, and
   how the app configures `DataverseClient` (logger, telemetry, retry hook, inspector middleware).
+
+### Explorer
+
+- **Explorer** (`/explorer`), in three panels:
+  - **Samples** (queries, writes, concurrency, impersonation, metadata, functions, actions,
+    messages and errors, each with its method), **Operations** (the catalog of one package:
+    search, then pick) and **History** (what this browser ran, kept in `localStorage`).
+  - **Request**: method, URL, body and headers for a raw request, or the constructor arguments
+    and parameters of a typed operation (text, numbers, `true`/`false`, or JSON; a record
+    reference can be `{ "logicalName": "account", "id": "…" }`). **Preview** shows the request
+    as the SDK builds it, sent to a `fetch` that sends nothing. **Edit as a raw request** opens a
+    typed operation's request in the request bar.
+  - **Response**: the result (or the typed error), the response headers, the **SDK code** and
+    the requests sent. A typed operation's code comes in three styles: `client.execute()`,
+    `OrganizationService.execute()` and the `client.api()` chain of its request.
+
+  The code shown is what **Run** runs: a raw request becomes a `client.api()` chain
+  (`$select` → `select()`, `Prefer` → `preferRaw()`, `CallerObjectId` →
+  `impersonateByObjectId()`, …) that is both run and printed (`src/explorer/rawRequest.ts`,
+  `codegen.ts`). Links open a sample or an operation: `/explorer?sample=top-accounts`,
+  `/explorer?op=functions/WhoAmI`, `/explorer?method=GET&url=accounts%3F%24top%3D3`.
+
+  The operation catalog is read from the actions, functions and messages packages' source at
+  build time (`src/explorer/catalog/parse.ts`, run by the Vite plugin in `vite.config.ts`), one
+  chunk per package (about 40 KB gzipped each), loaded when you open that package's list. Each
+  package is loaded whole (55 to 90 KB gzipped) only when you pick one of its operations; the
+  scenario pages keep importing only the classes they use.
 
 ### Data
 
@@ -128,6 +168,24 @@ page, where each step is a separate scenario.
   - `DataverseBatchError`, for a change set that fails and is rolled back;
   - and an `ErrorBoundary` catching a render error.
 
+### Docs
+
+- **Documentation** (`/docs`): links to the guides, the operation lists and each package's API
+  reference (its API Extractor report) in the repository, and a "Try it" link into the explorer
+  for every sample. The docs aren't copied into the site, so there is one copy to keep current.
+
+## Hosting
+
+The site is deployed to Azure Static Web Apps by
+[`.github/workflows/site.yml`](../../.github/workflows/site.yml) on every push to `main`, and by
+hand. [`public/staticwebapp.config.json`](./public/staticwebapp.config.json) sets the response
+headers (a strict Content-Security-Policy: scripts from the site only, requests to
+`*.dynamics.com` and Microsoft sign-in only, no framing; HSTS) and the SPA fallback to
+`index.html`. The e2e tests serve the build with those same headers.
+
+The maintainer's one-time setup (the Static Web App, the deployment token secret, the optional
+default app registration and its redirect URIs) is in [docs/site.md](../../docs/site.md).
+
 ## Design
 
 - **Shell:** `FluentProvider` with `webLightTheme` or `webDarkTheme`; the header's toggle switches
@@ -151,6 +209,7 @@ src/
 ├── auth/         # AuthProvider; MSAL sign-in (msalSession.ts, loaded on demand)
 ├── components/   # Scenario (the page pattern), CodeBlock, RequestInspector, ErrorCard, ErrorBoundary
 ├── demo/         # Demo mode: an in-browser fake of the Web API and the Global Discovery Service
+├── explorer/     # The explorer: catalog, raw requests, code generation, preview, samples, history
 ├── lib/          # Snippet extraction, error classification, safe storage
 ├── pages/        # One lazily loaded page per route
 ├── scenarios/    # The code each scenario runs; its #regions are what the Code panels show
@@ -162,14 +221,14 @@ src/
 
 ## Scripts
 
-| Script           | What it does                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------- |
-| `pnpm dev`       | Vite dev server on port 3000                                                                |
-| `pnpm build`     | Type-check, then `vite build`                                                               |
-| `pnpm typecheck` | Type-check the app and the tests                                                            |
-| `pnpm lint`      | ESLint with type-aware rules                                                                |
-| `pnpm test`      | Unit tests: the scenarios against the SDK's recording fake fetch and against demo mode      |
-| `pnpm test:e2e`  | Browser smoke tests: builds the app and drives it in Chromium with Playwright, in demo mode |
+| Script           | What it does                                                                                                                                                    |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`       | Vite dev server on port 3000                                                                                                                                    |
+| `pnpm build`     | Type-check, then `vite build`                                                                                                                                   |
+| `pnpm typecheck` | Type-check the app and the tests                                                                                                                                |
+| `pnpm lint`      | ESLint with type-aware rules                                                                                                                                    |
+| `pnpm test`      | Unit tests: the scenarios against the SDK's recording fake fetch and against demo mode, and the explorer's catalog, code generation, preview and samples        |
+| `pnpm test:e2e`  | Browser tests: builds the app once, serves it with the site's headers (CSP included) and drives it in Chromium with Playwright, in demo mode, with an axe check |
 
 `pnpm test:e2e` uses the Chromium installed with Playwright (`pnpm exec playwright install chromium`);
 set `PLAYWRIGHT_CHROMIUM_PATH` to use another one.
@@ -178,7 +237,9 @@ set `PLAYWRIGHT_CHROMIUM_PATH` to use another one.
 
 - **Sign-in fails or loops:** the redirect URI in the app registration must match
   `VITE_AZURE_REDIRECT_URI` (or the page's origin) exactly.
-- **Calls fail with 401 or 403:** `VITE_DATAVERSE_URL` must be the environment you consented
+- **"Need admin approval":** your tenant lets only admins consent; an admin opens the admin
+  consent link on the sign-in page once.
+- **Calls fail with 401 or 403:** the environment URL must be the environment you consented
   `user_impersonation` for, and your user needs a security role in it.
 - **Build errors about missing SDK exports:** run `pnpm build` at the repository root first.
 
