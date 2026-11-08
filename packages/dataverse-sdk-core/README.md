@@ -1094,6 +1094,51 @@ User Code (typed result)
   connection goes back to the pool instead of waiting for garbage collection. The response you
   get back (success, or the last failure when retries run out) is never read by the retry logic.
 
+#### Adaptive Throttling (Service-Protection Headers)
+
+Every Web API response tells you how much of the user's
+[service protection](https://learn.microsoft.com/power-apps/developer/data-platform/api-limits)
+budget is left in the 5-minute window: `x-ms-ratelimit-burst-remaining-xrm-requests` (requests,
+e.g. `7999`) and `x-ms-ratelimit-time-remaining-xrm-requests` (combined execution time, e.g.
+`1,200.00`). The opt-in `AdaptiveThrottlingMiddleware` reads them and slows down before a 429
+instead of only reacting after one:
+
+```typescript
+import { AdaptiveThrottlingMiddleware, DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+
+const throttle = new AdaptiveThrottlingMiddleware({
+  threshold: 0.2, // start slowing down below 20% of either budget (default)
+  maxSpacingMs: 2000, // gap between request starts when a budget is used up (default)
+  onDelay: ({ delayMs, reason }) => console.log(`Holding a request ${delayMs} ms (${reason})`),
+});
+
+const client = new DataverseClient({
+  baseUrl,
+  tokenProvider,
+  // append: it runs inside the retry middleware, so it sees every attempt's response, 429s included
+  middleware: { append: [throttle] },
+});
+
+throttle.status; // { requestsRemaining, requestBudget, timeRemaining, timeBudget, pressure, spacingMs, pausedUntil? }
+```
+
+- **Spacing:** while both budgets are above `threshold` of their full value, nothing changes. Below
+  it, request starts are spaced out, in turn, by up to `maxSpacingMs` as the lower budget nears
+  empty. The full value is the highest value seen. Readings older than 5 minutes are dropped. Set
+  `requestBudget` / `timeBudget` when you know the limits, e.g. if your app may start with a
+  budget that is already partly used.
+- **Pause after a 429:** a 429 with `Retry-After` holds every new request until the wait has
+  passed, not only the one that was throttled, because Dataverse rejects the user's requests until
+  then anyway. The retry middleware still retries the throttled request. Turn it off with
+  `pauseOnRetryAfter: false`; `maxPauseMs` (default 30 s) caps it. A held request still honours
+  its `signal` and `timeoutMs`.
+- **A soft brake, not a guarantee:** Microsoft documents these headers as being for debugging.
+  Each web server counts on its own, and in Node.js (no affinity cookie) consecutive responses may
+  come from different servers. The middleware lowers the odds of a 429; the retry middleware still
+  handles the ones that come.
+- **Browsers:** Dataverse doesn't expose the two headers to CORS, so in a browser only the pause
+  after a 429 applies (`Retry-After` is exposed).
+
 #### Adaptive Concurrency
 
 - **Default limit:** 8 requests at once (`concurrency.maxConcurrentRequests`), in Node.js and browsers.
