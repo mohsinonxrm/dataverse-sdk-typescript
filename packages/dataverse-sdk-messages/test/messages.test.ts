@@ -50,9 +50,9 @@ describe("OrganizationRequest/Response", () => {
   });
 });
 
-// TODO: Add tests for WhoAmI, Assign, SetState when these message classes are implemented
-// These are currently functions/actions in separate packages, not messages
-// See packages/dataverse-sdk-functions/src/WhoAmIFunction.ts
+// WhoAmI and the other function-backed messages: function-messages.test.ts. CRUD, ExecuteMultiple
+// and ExecuteTransaction: handwritten-messages.test.ts (#344). Assign and SetState aren't Web API
+// operations: they are updates.
 
 describe("Message Classes", () => {
   // Note: These are basic smoke tests. The message classes are auto-generated

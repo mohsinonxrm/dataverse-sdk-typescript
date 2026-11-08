@@ -4,7 +4,7 @@
  * messages pass each body parameter that can hold an enum through `internal/enumBody.ts`, whose
  * tables come from the CSDL: flags enums, recursive and derived complex types, collections.
  */
-import { copyFile, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -12,12 +12,9 @@ import { parseEdmx } from "../src/parsers/edmx-parser.js";
 import { generateActions } from "../src/generators/actions-generator.js";
 import { generateMessages } from "../src/generators/messages-generator.js";
 import { generateComplexTypes } from "../src/generators/complex-types-generator.js";
-import { typecheck } from "./typecheck.js";
+import { copyMessagesHandWritten, typecheck } from "./typecheck.js";
 
 const OUT_ROOT = fileURLToPath(new URL(".", import.meta.url));
-const MESSAGES_SRC = fileURLToPath(
-  new URL("../../../packages/dataverse-sdk-messages/src", import.meta.url)
-);
 
 const EDMX = `<?xml version="1.0" encoding="utf-8"?>
 <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
@@ -86,9 +83,7 @@ beforeAll(async () => {
   }
   await generateActions(csdl, join(dir, "actions"), false);
   await generateMessages(csdl, join(dir, "messages"), false);
-  for (const file of ["OrganizationRequest.ts", "types.ts"]) {
-    await copyFile(join(MESSAGES_SRC, file), join(dir, "messages", file));
-  }
+  await copyMessagesHandWritten(join(dir, "messages"));
 });
 
 afterAll(async () => {
@@ -133,7 +128,10 @@ describe("enum values in bodies (#232)", () => {
     expect(source).not.toContain("ResponseOnly");
     expect(source).not.toContain("SomeResponse");
     expect(source).not.toContain("FetchExpression");
-    expect(await read("messages/internal/enumBody.ts")).toBe(source);
+    // The messages package has the same tables (it also covers function parameters, #344, and
+    // this CSDL has no functions), under its own header
+    const tables = (text: string): string => text.slice(text.indexOf("/** The enums a body"));
+    expect(tables(await read("messages/internal/enumBody.ts"))).toBe(tables(source));
   });
 
   it("writes member names: flags, nested, derived, recursive and in collections", async () => {

@@ -41,10 +41,21 @@ Microsoft recommends using **parameter aliases** for function parameters to avoi
 - ExecuteMultipleRequest ↔ `$batch` (up to 1000 requests)
 - ExecuteTransactionRequest ↔ `$batch` change sets (transactional group)
 
-The messages package has no ExecuteMultiple or ExecuteTransaction message
-([#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100)): use
-`BatchRequestBuilder` from `@mohsinonxrm/dataverse-sdk-batch`, with `beginChangeset()` for a
-transaction.
+The messages package has both
+([#344](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/344)):
+`ExecuteMultipleRequest` sends its requests as the parts of one `$batch` (with
+`Prefer: odata.continue-on-error` for `Settings.ContinueOnError`), and `ExecuteTransactionRequest`
+as one change set. For anything else (mixing change sets and single requests, more than 1000
+requests split into several `$batch` calls) use `BatchRequestBuilder` from
+`@mohsinonxrm/dataverse-sdk-batch`.
+
+### 1.5 CRUD messages
+
+Create, Retrieve, Update, Delete, Associate, Disassociate and RetrieveMultiple are HTTP requests on
+entity sets rather than actions or functions. The messages package has them as `CreateRequest`,
+`RetrieveRequest`, `UpdateRequest`, `DeleteRequest`, `AssociateRequest`, `DisassociateRequest` and
+`RetrieveMultipleRequest` (a FetchXML query): see
+[supported-messages.md](./supported-messages.md#crud-and-batch-messages).
 
 ---
 
@@ -53,8 +64,8 @@ transaction.
 ### 2.1 WhoAmI
 
 - Web API: **WhoAmI function** (GET `/WhoAmI`) returns `WhoAmIResponse`.
-- Typed: `WhoAmIFunction` from `@mohsinonxrm/dataverse-sdk-functions`. Functions aren't messages,
-  so the messages package has no WhoAmI request (the .NET `WhoAmIRequest` maps to the function).
+- Messages: `WhoAmIRequest` → `WhoAmIResponse.result.UserId` (#344: functions have messages too).
+  Functions: `WhoAmIFunction` from `@mohsinonxrm/dataverse-sdk-functions`.
 
 ### 2.2 ExecuteWorkflow
 
@@ -95,7 +106,13 @@ transaction.
 
 | .NET message    | This SDK                         | Web API endpoint                                          | Method |
 | --------------- | -------------------------------- | --------------------------------------------------------- | ------ |
-| WhoAmI          | `WhoAmIFunction` (functions)     | `/WhoAmI`                                                 | GET    |
+| WhoAmI          | `WhoAmIRequest`                  | `/WhoAmI`                                                 | GET    |
+| Create          | `CreateRequest`                  | `/{entitySet}`                                            | POST   |
+| Retrieve        | `RetrieveRequest`                | `/{entitySet}({id})`                                      | GET    |
+| Update          | `UpdateRequest`                  | `/{entitySet}({id})`                                      | PATCH  |
+| Delete          | `DeleteRequest`                  | `/{entitySet}({id})`                                      | DELETE |
+| Associate       | `AssociateRequest`               | `/{entitySet}({id})/{relationship}/$ref`                  | POST   |
+| ExecuteMultiple | `ExecuteMultipleRequest`         | `/$batch`                                                 | POST   |
 | Assign          | update `ownerid@odata.bind`      | `/{entitySet}({id})`                                      | PATCH  |
 | SetState        | update `statecode`, `statuscode` | `/{entitySet}({id})`                                      | PATCH  |
 | ExecuteWorkflow | `ExecuteWorkflowRequest`         | `/workflows({id})/Microsoft.Dynamics.CRM.ExecuteWorkflow` | POST   |
@@ -112,7 +129,7 @@ transaction.
 
 - Use `client.api()` to call the endpoint directly.
 - Or use `new OrganizationRequest("OperationName", parameters)` from the messages package (POST
-  actions only).
+  actions only; the functions of the platform, Sales and Customer Service have typed messages).
 
 ---
 

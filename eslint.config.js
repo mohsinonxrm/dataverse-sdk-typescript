@@ -25,6 +25,8 @@ export default tseslint.config(
       "packages/dataverse-sdk-actions/src/index.ts",
       "packages/dataverse-sdk-functions/src/index.ts",
       "packages/dataverse-sdk-messages/src/index.ts",
+      // ...except the hand-written messages (#344)
+      "!packages/dataverse-sdk-messages/src/handwritten/**/*.ts",
     ],
   },
   js.configs.recommended,
