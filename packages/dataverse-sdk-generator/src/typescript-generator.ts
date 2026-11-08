@@ -25,6 +25,7 @@ import {
   removeStale,
   writeStamp,
 } from "./incremental.js";
+import { isNoContentOperation, noContentDoc } from "./no-content-operations.js";
 import type { SchemaModel } from "./schema-model.js";
 import { loadTemplate, TEMPLATE_NAMES, type TemplateName } from "./templates.js";
 import type {
@@ -955,7 +956,10 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
    *   record keeps its `@odata.etag` and `@odata.type`;
    * - a complex type: the body itself, with its `@odata.context`;
    * - an entity: the body itself, with its annotations, or `null` for a 204 (an entity output
-   *   that wasn't set: Dataverse answers 204 although the CSDL says `Nullable="false"`).
+   *   that wasn't set: Dataverse answers 204 although the CSDL says `Nullable="false"`);
+   * - an operation in `NO_CONTENT_OPERATIONS` (`UpsertMultiple`), which Dataverse answers 204
+   *   although the CSDL declares a primitive or complex return: `<Type> | null`, `null` for the
+   *   204 (a body, if one ever comes, is read as above).
    *
    * The value's type is declared as `<Class>Response`.
    *
@@ -970,7 +974,8 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
     folder: Folder,
     imports: ImportCollector,
     className: string,
-    label: string
+    label: string,
+    operation: string
   ): { responseType: string; responseDeclaration: string; parseResponse: string } {
     if (!returnType) {
       return {
@@ -1002,6 +1007,9 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
     };
     // strictNulls: the CSDL leaves the value (or a collection's items) nullable
     const orNull = this.strictNulls && nullable === true && element !== "entity";
+    // Dataverse answers 204 although the CSDL declares the return (a primitive or complex value)
+    const noContent =
+      !returnType.isArray && element !== "entity" && isNoContentOperation(operation);
     const NULLABLE_DOC =
       ' * `null` for a null value or a 204 No Content: the CSDL doesn\'t declare the return `Nullable="false"`.\n';
 
@@ -1035,8 +1043,9 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
     } else if (element === "complex") {
       kind = "complex";
       doc += " * The response body itself, with its `@odata.context` (not wrapped in `value`).\n";
-      if (orNull) {
-        doc += NULLABLE_DOC;
+      if (noContent) doc += noContentDoc(operation);
+      else if (orNull) doc += NULLABLE_DOC;
+      if (orNull || noContent) {
         declaration = `export type ${name} = (${resolved()} & { "@odata.context"?: string }) | null;\n`;
       } else {
         declaration = `export interface ${name} extends ${resolved()} {\n  "@odata.context"?: string;\n}\n`;
@@ -1047,17 +1056,23 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
       if (element === "enum") {
         doc += ' * An enum value is its member name (names separated by ", " for flags).\n';
       }
-      if (orNull) doc += NULLABLE_DOC;
+      if (noContent) doc += noContentDoc(operation);
+      else if (orNull) doc += NULLABLE_DOC;
       const value = element === "enum" ? "string" : resolved();
-      declaration = `export type ${name} = ${orNull ? `${value} | null` : value};\n`;
+      declaration = `export type ${name} = ${orNull || noContent ? `${value} | null` : value};\n`;
     }
 
     const wrapped = `((await response.json()) as { value: ${name} }).value`;
     const body = `(await response.json()) as ${name}`;
     let parse = `  async parseResponse(response: Response): Promise<${name}> {\n`;
+    if (noContent) {
+      parse +=
+        "    // Dataverse answers 204 No Content although the CSDL declares a return type\n" +
+        "    if (response.status === 204) return null;\n";
+    }
     switch (kind) {
       case "primitive":
-        if (orNull) parse += "    if (response.status === 204) return null;\n";
+        if (orNull && !noContent) parse += "    if (response.status === 204) return null;\n";
         parse += '    // A primitive comes wrapped: { "@odata.context": "…", "value": … }\n';
         parse += `    return ${wrapped};\n`;
         break;
@@ -1068,7 +1083,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
         parse += `    return ${wrapped};\n`;
         break;
       case "complex":
-        if (orNull) parse += "    if (response.status === 204) return null;\n";
+        if (orNull && !noContent) parse += "    if (response.status === 204) return null;\n";
         parse += "    // The body is the complex value, with its @odata.context\n";
         parse += `    return ${body};\n`;
         break;
@@ -1223,7 +1238,8 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
         folder,
         imports,
         className,
-        `${op.Name} ${isFunction ? "function" : "action"}`
+        `${op.Name} ${isFunction ? "function" : "action"}`,
+        op.Name
       ),
       bindingDoc,
       constructorArguments,
