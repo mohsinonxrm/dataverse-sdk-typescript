@@ -205,6 +205,15 @@ export interface PropertyType {
   /** Is this read-only? */
   IsReadOnly?: boolean;
 
+  /**
+   * The column can be set in a create (`IsValidForCreate` from RetrieveMetadataChanges). Unset
+   * for a property with no column of its own, such as a lookup's `_<name>_value`.
+   */
+  IsValidForCreate?: boolean;
+
+  /** The column can be set in an update (`IsValidForUpdate` from RetrieveMetadataChanges). */
+  IsValidForUpdate?: boolean;
+
   /** Business-required: a caller must supply a value (`RequiredLevel` is ApplicationRequired). */
   IsRequired?: boolean;
 
@@ -284,6 +293,27 @@ export interface NavigationPropertyType {
 
   /** TypeScript type (used in templates) */
   Type?: string;
+
+  /**
+   * The lookup property the CSDL constrains this navigation property with (`_primarycontactid_value`),
+   * from its `ReferentialConstraint`.
+   */
+  ReferentialProperty?: string;
+
+  /**
+   * For the navigation property a lookup column is written through (`primarycontactid`,
+   * `contoso_ParentAccountId`, the consolidated `customerid`): the lookup's logical name.
+   */
+  LookupAttribute?: string;
+
+  /** The tables {@link LookupAttribute} can point to (its `Targets`), e.g. `["systemuser", "team"]`. */
+  LookupTargets?: string[];
+
+  /** The lookup can be set in a create (`IsValidForCreate` of {@link LookupAttribute}). */
+  IsValidForCreate?: boolean;
+
+  /** The lookup can be set in an update (`IsValidForUpdate` of {@link LookupAttribute}). */
+  IsValidForUpdate?: boolean;
 }
 
 /**

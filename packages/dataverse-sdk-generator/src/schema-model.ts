@@ -17,7 +17,7 @@ import type {
   TypeScriptType,
   ParameterType,
 } from "./types.js";
-import type { MetadataService } from "./metadata-service.js";
+import type { AttributeMetadataDetail, MetadataService } from "./metadata-service.js";
 
 /**
  * Schema model that parses CSDL $metadata and builds type definitions
@@ -186,6 +186,8 @@ export class SchemaModel {
           requiredLevel && requiredLevel !== "None" ? requiredLevel : undefined;
         existingProp.AttributeOf = attribute.AttributeOf;
         existingProp.SourceType = attribute.SourceType ?? 0;
+        existingProp.IsValidForCreate = attribute.IsValidForCreate;
+        existingProp.IsValidForUpdate = attribute.IsValidForUpdate;
         existingProp.DisplayName = this.extractLabel(attribute.DisplayName);
         existingProp.Description = this.extractLabel(attribute.Description);
 
@@ -220,6 +222,7 @@ export class SchemaModel {
 
       // Apply polymorphic lookup consolidation
       this.consolidatePolymorphicLookups(entityType, entityMetadata);
+      this.markLookupNavigationProperties(entityType, entityMetadata.Attributes);
       this.ensureUniqueMemberNames(entityType);
     }
 
@@ -334,6 +337,42 @@ export class SchemaModel {
       );
 
       entityType.NavigationProperties.push(consolidatedNav);
+    }
+  }
+
+  /**
+   * Find the navigation property each lookup column is written through, and record the lookup on
+   * it with whether a create or an update can set it (#347). A lookup's CSDL property
+   * (`_primarycontactid_value`) is read-only; a write binds the navigation property instead.
+   *
+   * The navigation property is the one named after the lookup (`primarycontactid`, or a
+   * consolidated polymorphic lookup such as `customerid`), else the one single-valued navigation
+   * property the CSDL constrains with `_<lookup>_value`: a custom lookup's navigation property is
+   * named after its schema name (`contoso_ParentAccountId`). A polymorphic lookup that wasn't
+   * consolidated has one per target and gets none.
+   */
+  private markLookupNavigationProperties(
+    entityType: EntityType,
+    attributes: AttributeMetadataDetail[]
+  ): void {
+    for (const attribute of attributes) {
+      if (!attribute.LogicalName || !attribute.Targets?.length) continue;
+      const logicalName = attribute.LogicalName;
+      const singleValued = entityType.NavigationProperties.filter((nav) => !nav.IsCollection);
+      let nav = singleValued.find(
+        (n) => n.Name === logicalName || (n.IsPolymorphic === true && n.FullName === logicalName)
+      );
+      if (!nav) {
+        const constrained = singleValued.filter(
+          (n) => n.ReferentialProperty === `_${logicalName}_value`
+        );
+        if (constrained.length === 1) nav = constrained[0];
+      }
+      if (!nav || nav.LookupAttribute !== undefined) continue;
+      nav.LookupAttribute = logicalName;
+      nav.LookupTargets = attribute.Targets;
+      nav.IsValidForCreate = attribute.IsValidForCreate;
+      nav.IsValidForUpdate = attribute.IsValidForUpdate;
     }
   }
 
@@ -730,12 +769,18 @@ export class SchemaModel {
 
     const navProps: unknown[] = Array.isArray(navNode) ? navNode : [navNode];
 
-    return navProps.map((n) => ({
-      Name: this.getAttribute(n, "Name"),
-      TargetType: this.extractEntityName(this.getAttribute(n, "Type")),
-      IsCollection: this.getAttribute(n, "Type").startsWith("Collection("),
-      RelationshipName: this.getAttribute(n, "Partner") || "",
-    }));
+    return navProps.map((n) => {
+      const constraint = (n as { ReferentialConstraint?: unknown }).ReferentialConstraint;
+      const first: unknown = Array.isArray(constraint) ? constraint[0] : constraint;
+      const referentialProperty = this.getAttribute(first, "Property");
+      return {
+        Name: this.getAttribute(n, "Name"),
+        TargetType: this.extractEntityName(this.getAttribute(n, "Type")),
+        IsCollection: this.getAttribute(n, "Type").startsWith("Collection("),
+        RelationshipName: this.getAttribute(n, "Partner") || "",
+        ...(referentialProperty ? { ReferentialProperty: referentialProperty } : {}),
+      };
+    });
   }
 
   /**

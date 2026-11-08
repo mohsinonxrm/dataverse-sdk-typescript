@@ -16,6 +16,26 @@ export interface <%- typeName %> extends IEntity {
   <%- propertyKey(nav.Name) %>?: <%- navigationType(nav) %>;
 <%_ }) _%>
 }
+<%_ [['create', createName, 'a create (IsValidForCreate)', 'a new'], ['update', updateName, 'an update (IsValidForUpdate)', 'an existing']].forEach(function(write){ _%>
+<%_ const columns = writeColumns(write[0]); _%>
+
+/**
+ * The columns of <%- write[3] %> <%- doc(entity.SchemaName || entity.Name) %> record that Dataverse accepts in <%- write[2] %>.
+ * Read-only and server-set columns are left out. A lookup takes an EntityReference, which
+ * formatEntityForWrite() sends as "<navigation property>@odata.bind".
+ */
+<%_ if (columns.length === 0) { _%>
+export type <%- write[1] %> = Record<string, never>;
+<%_ } else { _%>
+export type <%- write[1] %> = {
+<%_ columns.forEach(function(column){ _%>
+
+  /** <%- doc(column.doc) %> */
+  <%- propertyKey(column.key) %>?: <%- column.type %>;
+<%_ }) _%>
+};
+<%_ } _%>
+<%_ }) _%>
 
 /**
  * Metadata for the <%- doc(entity.LogicalName) %> entity
