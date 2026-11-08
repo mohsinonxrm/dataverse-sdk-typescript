@@ -1,7 +1,8 @@
 /**
- * Web API Action Messages
+ * Organization Service messages
  *
- * Auto-generated TypeScript wrappers for Dataverse Web API actions.
+ * Auto-generated TypeScript wrappers for Dataverse Web API actions and functions, and the
+ * hand-written CRUD and ExecuteMultiple / ExecuteTransaction messages (./handwritten).
  * Use with IOrganizationService.execute() for C#-familiar patterns.
  */
 
@@ -295,6 +296,17 @@ export {
   CalculatePriceResponse,
 } from "./CalculatePriceMessage.js";
 export {
+  CalculateRollupFieldRequest,
+  type CalculateRollupFieldRequestParameters,
+  CalculateRollupFieldResponse,
+  type CalculateRollupFieldResult,
+} from "./CalculateRollupFieldMessage.js";
+export {
+  CalculateTotalTimeIncidentRequest,
+  CalculateTotalTimeIncidentResponse,
+  type CalculateTotalTimeIncidentResult,
+} from "./CalculateTotalTimeIncidentMessage.js";
+export {
   CanBeReferencedRequest,
   type CanBeReferencedRequestParameters,
   CanBeReferencedResponse,
@@ -354,6 +366,18 @@ export {
   CategorizeTextResponse,
   type CategorizeTextResult,
 } from "./CategorizeTextMessage.js";
+export {
+  CheckIncomingEmailRequest,
+  type CheckIncomingEmailRequestParameters,
+  CheckIncomingEmailResponse,
+  type CheckIncomingEmailResult,
+} from "./CheckIncomingEmailMessage.js";
+export {
+  CheckPromoteEmailRequest,
+  type CheckPromoteEmailRequestParameters,
+  CheckPromoteEmailResponse,
+  type CheckPromoteEmailResult,
+} from "./CheckPromoteEmailMessage.js";
 export {
   ClearWorkQueueRequest,
   ClearWorkQueueResponse,
@@ -734,6 +758,11 @@ export {
   type DownloadBlockResult,
 } from "./DownloadBlockMessage.js";
 export {
+  DownloadReportDefinitionRequest,
+  DownloadReportDefinitionResponse,
+  type DownloadReportDefinitionResult,
+} from "./DownloadReportDefinitionMessage.js";
+export {
   DownloadSolutionExportDataRequest,
   type DownloadSolutionExportDataRequestParameters,
   DownloadSolutionExportDataResponse,
@@ -750,6 +779,12 @@ export {
   EnqueueWorkQueueItemResponse,
   type EnqueueWorkQueueItemResult,
 } from "./EnqueueWorkQueueItemMessage.js";
+export {
+  ExecuteCosmosSqlQueryRequest,
+  type ExecuteCosmosSqlQueryRequestParameters,
+  ExecuteCosmosSqlQueryResponse,
+  type ExecuteCosmosSqlQueryResult,
+} from "./ExecuteCosmosSqlQueryMessage.js";
 export {
   ExecuteFxExpressionRequest,
   type ExecuteFxExpressionRequestParameters,
@@ -768,6 +803,17 @@ export {
   ExecuteWorkflowResponse,
   type ExecuteWorkflowResult,
 } from "./ExecuteWorkflowMessage.js";
+export {
+  ExpandCalendarRequest,
+  type ExpandCalendarRequestParameters,
+  ExpandCalendarResponse,
+  type ExpandCalendarResult,
+} from "./ExpandCalendarMessage.js";
+export {
+  ExportFieldTranslationRequest,
+  ExportFieldTranslationResponse,
+  type ExportFieldTranslationResult,
+} from "./ExportFieldTranslationMessage.js";
 export {
   ExportMappingsImportMapRequest,
   type ExportMappingsImportMapRequestParameters,
@@ -829,11 +875,29 @@ export {
   type ExtractTextEntitiesResult,
 } from "./ExtractTextEntitiesMessage.js";
 export {
+  FetchXmlToQueryExpressionRequest,
+  type FetchXmlToQueryExpressionRequestParameters,
+  FetchXmlToQueryExpressionResponse,
+  type FetchXmlToQueryExpressionResult,
+} from "./FetchXmlToQueryExpressionMessage.js";
+export {
+  FindParentResourceGroupRequest,
+  type FindParentResourceGroupRequestParameters,
+  FindParentResourceGroupResponse,
+  type FindParentResourceGroupResult,
+} from "./FindParentResourceGroupMessage.js";
+export {
   FormPredictRequest,
   type FormPredictRequestParameters,
   FormPredictResponse,
   type FormPredictResult,
 } from "./FormPredictMessage.js";
+export {
+  FormatAddressRequest,
+  type FormatAddressRequestParameters,
+  FormatAddressResponse,
+  type FormatAddressResult,
+} from "./FormatAddressMessage.js";
 export {
   FulfillSalesOrderRequest,
   type FulfillSalesOrderRequestParameters,
@@ -894,6 +958,12 @@ export {
   type GenerateSocialProfileResult,
 } from "./GenerateSocialProfileMessage.js";
 export {
+  GetAllTimeZonesWithDisplayNameRequest,
+  type GetAllTimeZonesWithDisplayNameRequestParameters,
+  GetAllTimeZonesWithDisplayNameResponse,
+  type GetAllTimeZonesWithDisplayNameResult,
+} from "./GetAllTimeZonesWithDisplayNameMessage.js";
+export {
   GetAuditStorageDetailsRequest,
   GetAuditStorageDetailsResponse,
   type GetAuditStorageDetailsResult,
@@ -911,11 +981,29 @@ export {
   type GetCertificateCredentialResult,
 } from "./GetCertificateCredentialMessage.js";
 export {
+  GetComponentManagedIdentityFICRequest,
+  type GetComponentManagedIdentityFICRequestParameters,
+  GetComponentManagedIdentityFICResponse,
+  type GetComponentManagedIdentityFICResult,
+} from "./GetComponentManagedIdentityFICMessage.js";
+export {
   GetConsentLinkRequest,
   type GetConsentLinkRequestParameters,
   GetConsentLinkResponse,
   type GetConsentLinkResult,
 } from "./GetConsentLinkMessage.js";
+export {
+  GetDefaultPriceLevelRequest,
+  type GetDefaultPriceLevelRequestParameters,
+  GetDefaultPriceLevelResponse,
+  type GetDefaultPriceLevelResult,
+} from "./GetDefaultPriceLevelMessage.js";
+export {
+  GetDistinctValuesImportFileRequest,
+  type GetDistinctValuesImportFileRequestParameters,
+  GetDistinctValuesImportFileResponse,
+  type GetDistinctValuesImportFileResult,
+} from "./GetDistinctValuesImportFileMessage.js";
 export {
   GetEntitiesEligibleForRecycleBinRequest,
   GetEntitiesEligibleForRecycleBinResponse,
@@ -933,6 +1021,28 @@ export {
   GetFeatureControlStringSettingsForNamespaceWithUserContextResponse,
   type GetFeatureControlStringSettingsForNamespaceWithUserContextResult,
 } from "./GetFeatureControlStringSettingsForNamespaceWithUserContextMessage.js";
+export {
+  GetFileSasUrlRequest,
+  type GetFileSasUrlRequestParameters,
+  GetFileSasUrlResponse,
+  type GetFileSasUrlResult,
+} from "./GetFileSasUrlMessage.js";
+export {
+  GetFileSasUrlForUploadRequest,
+  type GetFileSasUrlForUploadRequestParameters,
+  GetFileSasUrlForUploadResponse,
+  type GetFileSasUrlForUploadResult,
+} from "./GetFileSasUrlForUploadMessage.js";
+export {
+  GetHeaderColumnsImportFileRequest,
+  GetHeaderColumnsImportFileResponse,
+  type GetHeaderColumnsImportFileResult,
+} from "./GetHeaderColumnsImportFileMessage.js";
+export {
+  GetHostedRpaCapacityRequest,
+  GetHostedRpaCapacityResponse,
+  type GetHostedRpaCapacityResult,
+} from "./GetHostedRpaCapacityMessage.js";
 export {
   GetInvoiceProductsFromOpportunityRequest,
   type GetInvoiceProductsFromOpportunityRequestParameters,
@@ -957,6 +1067,17 @@ export {
   type GetNextAutoNumberValueResult,
 } from "./GetNextAutoNumberValueMessage.js";
 export {
+  GetNextRunsRequest,
+  type GetNextRunsRequestParameters,
+  GetNextRunsResponse,
+  type GetNextRunsResult,
+} from "./GetNextRunsMessage.js";
+export {
+  GetNextRunsForFlowTriggerRequest,
+  GetNextRunsForFlowTriggerResponse,
+  type GetNextRunsForFlowTriggerResult,
+} from "./GetNextRunsForFlowTriggerMessage.js";
+export {
   GetOrCreateSharedWorkspaceRequest,
   type GetOrCreateSharedWorkspaceRequestParameters,
   GetOrCreateSharedWorkspaceResponse,
@@ -969,15 +1090,55 @@ export {
   type GetPBIReportRefreshStatusResult,
 } from "./GetPBIReportRefreshStatusMessage.js";
 export {
+  GetPluginCertificateInfoRequest,
+  type GetPluginCertificateInfoRequestParameters,
+  GetPluginCertificateInfoResponse,
+  type GetPluginCertificateInfoResult,
+} from "./GetPluginCertificateInfoMessage.js";
+export {
+  GetPreferredSolutionRequest,
+  GetPreferredSolutionResponse,
+  type GetPreferredSolutionResult,
+} from "./GetPreferredSolutionMessage.js";
+export {
   GetPublicKeyRequest,
   GetPublicKeyResponse,
   type GetPublicKeyResult,
 } from "./GetPublicKeyMessage.js";
 export {
+  GetQuantityDecimal_invoiceRequest,
+  type GetQuantityDecimal_invoiceRequestParameters,
+  GetQuantityDecimal_invoiceResponse,
+  type GetQuantityDecimal_invoiceResult,
+} from "./GetQuantityDecimal_invoiceMessage.js";
+export {
+  GetQuantityDecimal_opportunityRequest,
+  type GetQuantityDecimal_opportunityRequestParameters,
+  GetQuantityDecimal_opportunityResponse,
+  type GetQuantityDecimal_opportunityResult,
+} from "./GetQuantityDecimal_opportunityMessage.js";
+export {
+  GetQuantityDecimal_quoteRequest,
+  type GetQuantityDecimal_quoteRequestParameters,
+  GetQuantityDecimal_quoteResponse,
+  type GetQuantityDecimal_quoteResult,
+} from "./GetQuantityDecimal_quoteMessage.js";
+export {
+  GetQuantityDecimal_salesorderRequest,
+  type GetQuantityDecimal_salesorderRequestParameters,
+  GetQuantityDecimal_salesorderResponse,
+  type GetQuantityDecimal_salesorderResult,
+} from "./GetQuantityDecimal_salesorderMessage.js";
+export {
   GetQuoteProductsFromOpportunityRequest,
   type GetQuoteProductsFromOpportunityRequestParameters,
   GetQuoteProductsFromOpportunityResponse,
 } from "./GetQuoteProductsFromOpportunityMessage.js";
+export {
+  GetReportHistoryLimitRequest,
+  GetReportHistoryLimitResponse,
+  type GetReportHistoryLimitResult,
+} from "./GetReportHistoryLimitMessage.js";
 export {
   GetRunMapRequest,
   type GetRunMapRequestParameters,
@@ -990,11 +1151,40 @@ export {
   GetSalesOrderProductsFromOpportunityResponse,
 } from "./GetSalesOrderProductsFromOpportunityMessage.js";
 export {
+  GetSearchInformationRequest,
+  type GetSearchInformationRequestParameters,
+  GetSearchInformationResponse,
+  type GetSearchInformationResult,
+} from "./GetSearchInformationMessage.js";
+export {
+  GetTimeZoneCodeByLocalizedNameRequest,
+  type GetTimeZoneCodeByLocalizedNameRequestParameters,
+  GetTimeZoneCodeByLocalizedNameResponse,
+  type GetTimeZoneCodeByLocalizedNameResult,
+} from "./GetTimeZoneCodeByLocalizedNameMessage.js";
+export {
   GetTrackingTokenEmailRequest,
   type GetTrackingTokenEmailRequestParameters,
   GetTrackingTokenEmailResponse,
   type GetTrackingTokenEmailResult,
 } from "./GetTrackingTokenEmailMessage.js";
+export {
+  GetValidManyToManyRequest,
+  GetValidManyToManyResponse,
+  type GetValidManyToManyResult,
+} from "./GetValidManyToManyMessage.js";
+export {
+  GetValidReferencedEntitiesRequest,
+  type GetValidReferencedEntitiesRequestParameters,
+  GetValidReferencedEntitiesResponse,
+  type GetValidReferencedEntitiesResult,
+} from "./GetValidReferencedEntitiesMessage.js";
+export {
+  GetValidReferencingEntitiesRequest,
+  type GetValidReferencingEntitiesRequestParameters,
+  GetValidReferencingEntitiesResponse,
+  type GetValidReferencingEntitiesResult,
+} from "./GetValidReferencingEntitiesMessage.js";
 export {
   GetWorkIQTaskStatusRequest,
   type GetWorkIQTaskStatusRequestParameters,
@@ -1073,6 +1263,12 @@ export {
   type ImportTranslationAsyncResult,
 } from "./ImportTranslationAsyncMessage.js";
 export {
+  IncrementKnowledgeArticleViewCountRequest,
+  type IncrementKnowledgeArticleViewCountRequestParameters,
+  IncrementKnowledgeArticleViewCountResponse,
+  type IncrementKnowledgeArticleViewCountResult,
+} from "./IncrementKnowledgeArticleViewCountMessage.js";
+export {
   InferEntityDefinitionRequest,
   type InferEntityDefinitionRequestParameters,
   InferEntityDefinitionResponse,
@@ -1114,6 +1310,12 @@ export {
   InitializeFileBlocksUploadResponse,
   type InitializeFileBlocksUploadResult,
 } from "./InitializeFileBlocksUploadMessage.js";
+export {
+  InitializeFromRequest,
+  type InitializeFromRequestParameters,
+  InitializeFromResponse,
+  type InitializeFromResult,
+} from "./InitializeFromMessage.js";
 export {
   InitializeModernFlowFromAsyncWorkflowRequest,
   InitializeModernFlowFromAsyncWorkflowResponse,
@@ -1162,10 +1364,32 @@ export {
   type InstantiateTemplateGenericResult,
 } from "./InstantiateTemplateGenericMessage.js";
 export {
+  IsCDS3ReadyRequest,
+  IsCDS3ReadyResponse,
+  type IsCDS3ReadyResult,
+} from "./IsCDS3ReadyMessage.js";
+export {
+  IsComponentCustomizableRequest,
+  type IsComponentCustomizableRequestParameters,
+  IsComponentCustomizableResponse,
+  type IsComponentCustomizableResult,
+} from "./IsComponentCustomizableMessage.js";
+export {
+  IsDataEncryptionActiveRequest,
+  IsDataEncryptionActiveResponse,
+  type IsDataEncryptionActiveResult,
+} from "./IsDataEncryptionActiveMessage.js";
+export {
   IsPaiEnabledRequest,
   IsPaiEnabledResponse,
   type IsPaiEnabledResult,
 } from "./IsPaiEnabledMessage.js";
+export {
+  IsValidStateTransitionRequest,
+  type IsValidStateTransitionRequestParameters,
+  IsValidStateTransitionResponse,
+  type IsValidStateTransitionResult,
+} from "./IsValidStateTransitionMessage.js";
 export {
   JoinLinkedChatRequest,
   type JoinLinkedChatRequestParameters,
@@ -1182,6 +1406,22 @@ export {
   ListConnectionReferencesResponse,
   type ListConnectionReferencesResult,
 } from "./ListConnectionReferencesMessage.js";
+export {
+  ListCredentialDependenciesRequest,
+  ListCredentialDependenciesResponse,
+  type ListCredentialDependenciesResult,
+} from "./ListCredentialDependenciesMessage.js";
+export {
+  ListFlowsInFlowGroupRequest,
+  ListFlowsInFlowGroupResponse,
+  type ListFlowsInFlowGroupResult,
+} from "./ListFlowsInFlowGroupMessage.js";
+export {
+  LocalTimeFromUtcTimeRequest,
+  type LocalTimeFromUtcTimeRequestParameters,
+  LocalTimeFromUtcTimeResponse,
+  type LocalTimeFromUtcTimeResult,
+} from "./LocalTimeFromUtcTimeMessage.js";
 export {
   LockInvoicePricingRequest,
   LockInvoicePricingResponse,
@@ -1207,6 +1447,12 @@ export {
   McpExecuteWorkIQTaskResponse,
   type McpExecuteWorkIQTaskResult,
 } from "./McpExecuteWorkIQTaskMessage.js";
+export {
+  McpGetGlobalOptionSetRequest,
+  type McpGetGlobalOptionSetRequestParameters,
+  McpGetGlobalOptionSetResponse,
+  type McpGetGlobalOptionSetResult,
+} from "./McpGetGlobalOptionSetMessage.js";
 export {
   McpGetWorkIQTaskStatusRequest,
   type McpGetWorkIQTaskStatusRequestParameters,
@@ -1308,6 +1554,12 @@ export {
   PredictionSchemaResponse,
   type PredictionSchemaResult,
 } from "./PredictionSchemaMessage.js";
+export {
+  PreferredSolutionUsedByRequest,
+  type PreferredSolutionUsedByRequestParameters,
+  PreferredSolutionUsedByResponse,
+  type PreferredSolutionUsedByResult,
+} from "./PreferredSolutionUsedByMessage.js";
 export {
   ProcessInboundEmailRequest,
   ProcessInboundEmailResponse,
@@ -1471,6 +1723,18 @@ export {
   type QueryExpressionToFetchXmlResult,
 } from "./QueryExpressionToFetchXmlMessage.js";
 export {
+  QueryMultipleSchedulesRequest,
+  type QueryMultipleSchedulesRequestParameters,
+  QueryMultipleSchedulesResponse,
+  type QueryMultipleSchedulesResult,
+} from "./QueryMultipleSchedulesMessage.js";
+export {
+  QueryScheduleRequest,
+  type QueryScheduleRequestParameters,
+  QueryScheduleResponse,
+  type QueryScheduleResult,
+} from "./QueryScheduleMessage.js";
+export {
   QuestionAnalyticsRequest,
   type QuestionAnalyticsRequestParameters,
   QuestionAnalyticsResponse,
@@ -1536,6 +1800,12 @@ export {
   RemoveActiveCustomizationResponse,
   type RemoveActiveCustomizationResult,
 } from "./RemoveActiveCustomizationMessage.js";
+export {
+  RemoveActiveCustomizationsRequest,
+  type RemoveActiveCustomizationsRequestParameters,
+  RemoveActiveCustomizationsResponse,
+  type RemoveActiveCustomizationsResult,
+} from "./RemoveActiveCustomizationsMessage.js";
 export {
   RemoveAppComponentsRequest,
   type RemoveAppComponentsRequestParameters,
@@ -1623,6 +1893,12 @@ export {
   type RescheduleResult,
 } from "./RescheduleMessage.js";
 export {
+  ResetInheritedAccessRequest,
+  type ResetInheritedAccessRequestParameters,
+  ResetInheritedAccessResponse,
+  type ResetInheritedAccessResult,
+} from "./ResetInheritedAccessMessage.js";
+export {
   ResetUserFiltersRequest,
   type ResetUserFiltersRequestParameters,
   ResetUserFiltersResponse,
@@ -1644,17 +1920,172 @@ export {
   type RetainResult,
 } from "./RetainMessage.js";
 export {
+  RetrieveAadUserPrivilegesRequest,
+  type RetrieveAadUserPrivilegesRequestParameters,
+  RetrieveAadUserPrivilegesResponse,
+  type RetrieveAadUserPrivilegesResult,
+} from "./RetrieveAadUserPrivilegesMessage.js";
+export {
+  RetrieveAadUserRolesRequest,
+  type RetrieveAadUserRolesRequestParameters,
+  RetrieveAadUserRolesResponse,
+  type RetrieveAadUserRolesResult,
+} from "./RetrieveAadUserRolesMessage.js";
+export {
+  RetrieveAadUserSetOfPrivilegesByIdsRequest,
+  type RetrieveAadUserSetOfPrivilegesByIdsRequestParameters,
+  RetrieveAadUserSetOfPrivilegesByIdsResponse,
+  type RetrieveAadUserSetOfPrivilegesByIdsResult,
+} from "./RetrieveAadUserSetOfPrivilegesByIdsMessage.js";
+export {
+  RetrieveAadUserSetOfPrivilegesByNamesRequest,
+  type RetrieveAadUserSetOfPrivilegesByNamesRequestParameters,
+  RetrieveAadUserSetOfPrivilegesByNamesResponse,
+  type RetrieveAadUserSetOfPrivilegesByNamesResult,
+} from "./RetrieveAadUserSetOfPrivilegesByNamesMessage.js";
+export {
+  RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationRequest,
+  RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResponse,
+  type RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationResult,
+} from "./RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationMessage.js";
+export {
+  RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteRequest,
+  RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteResponse,
+  type RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteResult,
+} from "./RetrieveAbsoluteAndSiteCollectionUrl_sharepointsiteMessage.js";
+export {
+  RetrieveAccessOriginRequest,
+  type RetrieveAccessOriginRequestParameters,
+  RetrieveAccessOriginResponse,
+  type RetrieveAccessOriginResult,
+} from "./RetrieveAccessOriginMessage.js";
+export {
+  RetrieveActivePathRequest,
+  type RetrieveActivePathRequestParameters,
+  RetrieveActivePathResponse,
+  type RetrieveActivePathResult,
+} from "./RetrieveActivePathMessage.js";
+export {
+  RetrieveAllChildUsersSystemUserRequest,
+  RetrieveAllChildUsersSystemUserResponse,
+  type RetrieveAllChildUsersSystemUserResult,
+} from "./RetrieveAllChildUsersSystemUserMessage.js";
+export {
+  RetrieveAllCompositeDataSourcesRequest,
+  type RetrieveAllCompositeDataSourcesRequestParameters,
+  RetrieveAllCompositeDataSourcesResponse,
+  type RetrieveAllCompositeDataSourcesResult,
+} from "./RetrieveAllCompositeDataSourcesMessage.js";
+export {
+  RetrieveAllEntitiesRequest,
+  type RetrieveAllEntitiesRequestParameters,
+  RetrieveAllEntitiesResponse,
+  type RetrieveAllEntitiesResult,
+} from "./RetrieveAllEntitiesMessage.js";
+export {
+  RetrieveAnalyticsStoreDetailsRequest,
+  RetrieveAnalyticsStoreDetailsResponse,
+  type RetrieveAnalyticsStoreDetailsResult,
+} from "./RetrieveAnalyticsStoreDetailsMessage.js";
+export {
+  RetrieveAppComponentsRequest,
+  type RetrieveAppComponentsRequestParameters,
+  RetrieveAppComponentsResponse,
+  type RetrieveAppComponentsResult,
+} from "./RetrieveAppComponentsMessage.js";
+export {
+  RetrieveApplicationRibbonRequest,
+  RetrieveApplicationRibbonResponse,
+  type RetrieveApplicationRibbonResult,
+} from "./RetrieveApplicationRibbonMessage.js";
+export {
   RetrieveAppsWithDelegatedAccessPermissionsRequest,
   type RetrieveAppsWithDelegatedAccessPermissionsRequestParameters,
   RetrieveAppsWithDelegatedAccessPermissionsResponse,
   type RetrieveAppsWithDelegatedAccessPermissionsResult,
 } from "./RetrieveAppsWithDelegatedAccessPermissionsMessage.js";
 export {
+  RetrieveAttributeChangeHistoryRequest,
+  type RetrieveAttributeChangeHistoryRequestParameters,
+  RetrieveAttributeChangeHistoryResponse,
+  type RetrieveAttributeChangeHistoryResult,
+} from "./RetrieveAttributeChangeHistoryMessage.js";
+export {
+  RetrieveAuditDetailsRequest,
+  RetrieveAuditDetailsResponse,
+  type RetrieveAuditDetailsResult,
+} from "./RetrieveAuditDetailsMessage.js";
+export {
+  RetrieveAuditPartitionListRequest,
+  RetrieveAuditPartitionListResponse,
+  type RetrieveAuditPartitionListResult,
+} from "./RetrieveAuditPartitionListMessage.js";
+export {
+  RetrieveAvailableLanguagesRequest,
+  RetrieveAvailableLanguagesResponse,
+  type RetrieveAvailableLanguagesResult,
+} from "./RetrieveAvailableLanguagesMessage.js";
+export {
   RetrieveBoolFeatureControlSettingRequest,
   type RetrieveBoolFeatureControlSettingRequestParameters,
   RetrieveBoolFeatureControlSettingResponse,
   type RetrieveBoolFeatureControlSettingResult,
 } from "./RetrieveBoolFeatureControlSettingMessage.js";
+export {
+  RetrieveBusinessHierarchyBusinessUnitRequest,
+  RetrieveBusinessHierarchyBusinessUnitResponse,
+  type RetrieveBusinessHierarchyBusinessUnitResult,
+} from "./RetrieveBusinessHierarchyBusinessUnitMessage.js";
+export {
+  RetrieveByGroupResourceRequest,
+  RetrieveByGroupResourceResponse,
+  type RetrieveByGroupResourceResult,
+} from "./RetrieveByGroupResourceMessage.js";
+export {
+  RetrieveByResourceResourceGroupRequest,
+  RetrieveByResourceResourceGroupResponse,
+  type RetrieveByResourceResourceGroupResult,
+} from "./RetrieveByResourceResourceGroupMessage.js";
+export {
+  RetrieveByResourcesServiceRequest,
+  type RetrieveByResourcesServiceRequestParameters,
+  RetrieveByResourcesServiceResponse,
+  type RetrieveByResourcesServiceResult,
+} from "./RetrieveByResourcesServiceMessage.js";
+export {
+  RetrieveByTopIncidentProductKbArticleRequest,
+  RetrieveByTopIncidentProductKbArticleResponse,
+  type RetrieveByTopIncidentProductKbArticleResult,
+} from "./RetrieveByTopIncidentProductKbArticleMessage.js";
+export {
+  RetrieveByTopIncidentSubjectKbArticleRequest,
+  RetrieveByTopIncidentSubjectKbArticleResponse,
+  type RetrieveByTopIncidentSubjectKbArticleResult,
+} from "./RetrieveByTopIncidentSubjectKbArticleMessage.js";
+export {
+  RetrieveCascadeAssignAsyncJobIdRequest,
+  type RetrieveCascadeAssignAsyncJobIdRequestParameters,
+  RetrieveCascadeAssignAsyncJobIdResponse,
+  type RetrieveCascadeAssignAsyncJobIdResult,
+} from "./RetrieveCascadeAssignAsyncJobIdMessage.js";
+export {
+  RetrieveCascadeDeleteAsyncJobIdRequest,
+  type RetrieveCascadeDeleteAsyncJobIdRequestParameters,
+  RetrieveCascadeDeleteAsyncJobIdResponse,
+  type RetrieveCascadeDeleteAsyncJobIdResult,
+} from "./RetrieveCascadeDeleteAsyncJobIdMessage.js";
+export {
+  RetrieveChannelAccessProfilePrivilegesRequest,
+  type RetrieveChannelAccessProfilePrivilegesRequestParameters,
+  RetrieveChannelAccessProfilePrivilegesResponse,
+  type RetrieveChannelAccessProfilePrivilegesResult,
+} from "./RetrieveChannelAccessProfilePrivilegesMessage.js";
+export {
+  RetrieveCompositeDataSourceRequest,
+  type RetrieveCompositeDataSourceRequestParameters,
+  RetrieveCompositeDataSourceResponse,
+  type RetrieveCompositeDataSourceResult,
+} from "./RetrieveCompositeDataSourceMessage.js";
 export {
   RetrieveConnectorActionsRequest,
   type RetrieveConnectorActionsRequestParameters,
@@ -1667,11 +2098,92 @@ export {
   type RetrieveConnectorSettingsResult,
 } from "./RetrieveConnectorSettingsMessage.js";
 export {
+  RetrieveCurrentOrganizationRequest,
+  type RetrieveCurrentOrganizationRequestParameters,
+  RetrieveCurrentOrganizationResponse,
+  type RetrieveCurrentOrganizationResult,
+} from "./RetrieveCurrentOrganizationMessage.js";
+export {
+  RetrieveDataEncryptionKeyRequest,
+  RetrieveDataEncryptionKeyResponse,
+  type RetrieveDataEncryptionKeyResult,
+} from "./RetrieveDataEncryptionKeyMessage.js";
+export {
+  RetrieveDependenciesForDeleteRequest,
+  type RetrieveDependenciesForDeleteRequestParameters,
+  RetrieveDependenciesForDeleteResponse,
+  type RetrieveDependenciesForDeleteResult,
+} from "./RetrieveDependenciesForDeleteMessage.js";
+export {
+  RetrieveDependenciesForUninstallRequest,
+  type RetrieveDependenciesForUninstallRequestParameters,
+  RetrieveDependenciesForUninstallResponse,
+  type RetrieveDependenciesForUninstallResult,
+} from "./RetrieveDependenciesForUninstallMessage.js";
+export {
+  RetrieveDependentComponentsRequest,
+  type RetrieveDependentComponentsRequestParameters,
+  RetrieveDependentComponentsResponse,
+  type RetrieveDependentComponentsResult,
+} from "./RetrieveDependentComponentsMessage.js";
+export {
+  RetrieveDeploymentLicenseTypeRequest,
+  RetrieveDeploymentLicenseTypeResponse,
+  type RetrieveDeploymentLicenseTypeResult,
+} from "./RetrieveDeploymentLicenseTypeMessage.js";
+export {
+  RetrieveDeprovisionedLanguagesRequest,
+  RetrieveDeprovisionedLanguagesResponse,
+  type RetrieveDeprovisionedLanguagesResult,
+} from "./RetrieveDeprovisionedLanguagesMessage.js";
+export {
+  RetrieveDuplicatesRequest,
+  type RetrieveDuplicatesRequestParameters,
+  RetrieveDuplicatesResponse,
+  type RetrieveDuplicatesResult,
+} from "./RetrieveDuplicatesMessage.js";
+export {
+  RetrieveEntityRequest,
+  type RetrieveEntityRequestParameters,
+  RetrieveEntityResponse,
+  type RetrieveEntityResult,
+} from "./RetrieveEntityMessage.js";
+export {
+  RetrieveEntityRibbonRequest,
+  type RetrieveEntityRibbonRequestParameters,
+  RetrieveEntityRibbonResponse,
+  type RetrieveEntityRibbonResult,
+} from "./RetrieveEntityRibbonMessage.js";
+export {
   RetrieveEnvironmentVariableSecretValueRequest,
   type RetrieveEnvironmentVariableSecretValueRequestParameters,
   RetrieveEnvironmentVariableSecretValueResponse,
   type RetrieveEnvironmentVariableSecretValueResult,
 } from "./RetrieveEnvironmentVariableSecretValueMessage.js";
+export {
+  RetrieveEnvironmentVariableValueRequest,
+  type RetrieveEnvironmentVariableValueRequestParameters,
+  RetrieveEnvironmentVariableValueResponse,
+  type RetrieveEnvironmentVariableValueResult,
+} from "./RetrieveEnvironmentVariableValueMessage.js";
+export {
+  RetrieveEnvironmentVariablesRequest,
+  type RetrieveEnvironmentVariablesRequestParameters,
+  RetrieveEnvironmentVariablesResponse,
+  type RetrieveEnvironmentVariablesResult,
+} from "./RetrieveEnvironmentVariablesMessage.js";
+export {
+  RetrieveExchangeAppointmentsRequest,
+  type RetrieveExchangeAppointmentsRequestParameters,
+  RetrieveExchangeAppointmentsResponse,
+  type RetrieveExchangeAppointmentsResult,
+} from "./RetrieveExchangeAppointmentsMessage.js";
+export {
+  RetrieveExchangeRateRequest,
+  type RetrieveExchangeRateRequestParameters,
+  RetrieveExchangeRateResponse,
+  type RetrieveExchangeRateResult,
+} from "./RetrieveExchangeRateMessage.js";
 export {
   RetrieveFeatureControlSettingRequest,
   type RetrieveFeatureControlSettingRequestParameters,
@@ -1702,11 +2214,121 @@ export {
   type RetrieveFeatureControlStringSettingsForNamespaceResult,
 } from "./RetrieveFeatureControlStringSettingsForNamespaceMessage.js";
 export {
+  RetrieveFilteredFormsRequest,
+  type RetrieveFilteredFormsRequestParameters,
+  RetrieveFilteredFormsResponse,
+  type RetrieveFilteredFormsResult,
+} from "./RetrieveFilteredFormsMessage.js";
+export {
+  RetrieveFinanceAndOperationsIntegrationDetailsRequest,
+  RetrieveFinanceAndOperationsIntegrationDetailsResponse,
+  type RetrieveFinanceAndOperationsIntegrationDetailsResult,
+} from "./RetrieveFinanceAndOperationsIntegrationDetailsMessage.js";
+export {
   RetrieveFlowUpdatesRequest,
   type RetrieveFlowUpdatesRequestParameters,
   RetrieveFlowUpdatesResponse,
   type RetrieveFlowUpdatesResult,
 } from "./RetrieveFlowUpdatesMessage.js";
+export {
+  RetrieveFormattedImportJobResultsRequest,
+  type RetrieveFormattedImportJobResultsRequestParameters,
+  RetrieveFormattedImportJobResultsResponse,
+  type RetrieveFormattedImportJobResultsResult,
+} from "./RetrieveFormattedImportJobResultsMessage.js";
+export {
+  RetrieveInstalledLanguagePackVersionRequest,
+  type RetrieveInstalledLanguagePackVersionRequestParameters,
+  RetrieveInstalledLanguagePackVersionResponse,
+  type RetrieveInstalledLanguagePackVersionResult,
+} from "./RetrieveInstalledLanguagePackVersionMessage.js";
+export {
+  RetrieveInstalledLanguagePacksRequest,
+  RetrieveInstalledLanguagePacksResponse,
+  type RetrieveInstalledLanguagePacksResult,
+} from "./RetrieveInstalledLanguagePacksMessage.js";
+export {
+  RetrieveLicenseInfoRequest,
+  type RetrieveLicenseInfoRequestParameters,
+  RetrieveLicenseInfoResponse,
+  type RetrieveLicenseInfoResult,
+} from "./RetrieveLicenseInfoMessage.js";
+export {
+  RetrieveLocLabelsRequest,
+  type RetrieveLocLabelsRequestParameters,
+  RetrieveLocLabelsResponse,
+  type RetrieveLocLabelsResult,
+} from "./RetrieveLocLabelsMessage.js";
+export {
+  RetrieveMailboxTrackingFoldersRequest,
+  type RetrieveMailboxTrackingFoldersRequestParameters,
+  RetrieveMailboxTrackingFoldersResponse,
+  type RetrieveMailboxTrackingFoldersResult,
+} from "./RetrieveMailboxTrackingFoldersMessage.js";
+export {
+  RetrieveMaskedAttributesForEntityRequest,
+  type RetrieveMaskedAttributesForEntityRequestParameters,
+  RetrieveMaskedAttributesForEntityResponse,
+  type RetrieveMaskedAttributesForEntityResult,
+} from "./RetrieveMaskedAttributesForEntityMessage.js";
+export {
+  RetrieveMembersBulkOperationRequest,
+  type RetrieveMembersBulkOperationRequestParameters,
+  RetrieveMembersBulkOperationResponse,
+  type RetrieveMembersBulkOperationResult,
+} from "./RetrieveMembersBulkOperationMessage.js";
+export {
+  RetrieveMetadataChangesRequest,
+  type RetrieveMetadataChangesRequestParameters,
+  RetrieveMetadataChangesResponse,
+  type RetrieveMetadataChangesResult,
+} from "./RetrieveMetadataChangesMessage.js";
+export {
+  RetrieveMissingComponentsRequest,
+  type RetrieveMissingComponentsRequestParameters,
+  RetrieveMissingComponentsResponse,
+  type RetrieveMissingComponentsResult,
+} from "./RetrieveMissingComponentsMessage.js";
+export {
+  RetrieveMissingDependenciesRequest,
+  type RetrieveMissingDependenciesRequestParameters,
+  RetrieveMissingDependenciesResponse,
+  type RetrieveMissingDependenciesResult,
+} from "./RetrieveMissingDependenciesMessage.js";
+export {
+  RetrieveMissingDependenciesWithMetadataRequest,
+  type RetrieveMissingDependenciesWithMetadataRequestParameters,
+  RetrieveMissingDependenciesWithMetadataResponse,
+  type RetrieveMissingDependenciesWithMetadataResult,
+} from "./RetrieveMissingDependenciesWithMetadataMessage.js";
+export {
+  RetrieveOrganizationInfoRequest,
+  RetrieveOrganizationInfoResponse,
+  type RetrieveOrganizationInfoResult,
+} from "./RetrieveOrganizationInfoMessage.js";
+export {
+  RetrieveOrganizationResourcesRequest,
+  RetrieveOrganizationResourcesResponse,
+  type RetrieveOrganizationResourcesResult,
+} from "./RetrieveOrganizationResourcesMessage.js";
+export {
+  RetrieveParentGroupsResourceGroupRequest,
+  type RetrieveParentGroupsResourceGroupRequestParameters,
+  RetrieveParentGroupsResourceGroupResponse,
+  type RetrieveParentGroupsResourceGroupResult,
+} from "./RetrieveParentGroupsResourceGroupMessage.js";
+export {
+  RetrieveParsedDataImportFileRequest,
+  type RetrieveParsedDataImportFileRequestParameters,
+  RetrieveParsedDataImportFileResponse,
+  type RetrieveParsedDataImportFileResult,
+} from "./RetrieveParsedDataImportFileMessage.js";
+export {
+  RetrievePersonalWallRequest,
+  type RetrievePersonalWallRequestParameters,
+  RetrievePersonalWallResponse,
+  type RetrievePersonalWallResult,
+} from "./RetrievePersonalWallMessage.js";
 export {
   RetrievePowerAppsConnectionsRequest,
   RetrievePowerAppsConnectionsResponse,
@@ -1717,6 +2339,449 @@ export {
   RetrievePowerAppsConnectorApisResponse,
   type RetrievePowerAppsConnectorApisResult,
 } from "./RetrievePowerAppsConnectorApisMessage.js";
+export {
+  RetrievePrincipalAccessInfo_systemuserRequest,
+  type RetrievePrincipalAccessInfo_systemuserRequestParameters,
+  RetrievePrincipalAccessInfo_systemuserResponse,
+  type RetrievePrincipalAccessInfo_systemuserResult,
+} from "./RetrievePrincipalAccessInfo_systemuserMessage.js";
+export {
+  RetrievePrincipalAccessInfo_teamRequest,
+  type RetrievePrincipalAccessInfo_teamRequestParameters,
+  RetrievePrincipalAccessInfo_teamResponse,
+  type RetrievePrincipalAccessInfo_teamResult,
+} from "./RetrievePrincipalAccessInfo_teamMessage.js";
+export {
+  RetrievePrincipalAccess_organizationRequest,
+  type RetrievePrincipalAccess_organizationRequestParameters,
+  RetrievePrincipalAccess_organizationResponse,
+  type RetrievePrincipalAccess_organizationResult,
+} from "./RetrievePrincipalAccess_organizationMessage.js";
+export {
+  RetrievePrincipalAccess_systemuserRequest,
+  type RetrievePrincipalAccess_systemuserRequestParameters,
+  RetrievePrincipalAccess_systemuserResponse,
+  type RetrievePrincipalAccess_systemuserResult,
+} from "./RetrievePrincipalAccess_systemuserMessage.js";
+export {
+  RetrievePrincipalAccess_teamRequest,
+  type RetrievePrincipalAccess_teamRequestParameters,
+  RetrievePrincipalAccess_teamResponse,
+  type RetrievePrincipalAccess_teamResult,
+} from "./RetrievePrincipalAccess_teamMessage.js";
+export {
+  RetrievePrincipalAttributePrivileges_systemuserRequest,
+  RetrievePrincipalAttributePrivileges_systemuserResponse,
+  type RetrievePrincipalAttributePrivileges_systemuserResult,
+} from "./RetrievePrincipalAttributePrivileges_systemuserMessage.js";
+export {
+  RetrievePrincipalAttributePrivileges_teamRequest,
+  RetrievePrincipalAttributePrivileges_teamResponse,
+  type RetrievePrincipalAttributePrivileges_teamResult,
+} from "./RetrievePrincipalAttributePrivileges_teamMessage.js";
+export {
+  RetrievePrincipalSyncAttributeMappings_systemuserRequest,
+  RetrievePrincipalSyncAttributeMappings_systemuserResponse,
+  type RetrievePrincipalSyncAttributeMappings_systemuserResult,
+} from "./RetrievePrincipalSyncAttributeMappings_systemuserMessage.js";
+export {
+  RetrievePrincipalSyncAttributeMappings_teamRequest,
+  RetrievePrincipalSyncAttributeMappings_teamResponse,
+  type RetrievePrincipalSyncAttributeMappings_teamResult,
+} from "./RetrievePrincipalSyncAttributeMappings_teamMessage.js";
+export {
+  RetrievePrivilegeSetRequest,
+  RetrievePrivilegeSetResponse,
+  type RetrievePrivilegeSetResult,
+} from "./RetrievePrivilegeSetMessage.js";
+export {
+  RetrieveProcessInstancesRequest,
+  type RetrieveProcessInstancesRequestParameters,
+  RetrieveProcessInstancesResponse,
+  type RetrieveProcessInstancesResult,
+} from "./RetrieveProcessInstancesMessage.js";
+export {
+  RetrieveProcessWithWfomJsonRequest,
+  RetrieveProcessWithWfomJsonResponse,
+  type RetrieveProcessWithWfomJsonResult,
+} from "./RetrieveProcessWithWfomJsonMessage.js";
+export {
+  RetrieveProductProperties_invoicedetailRequest,
+  RetrieveProductProperties_invoicedetailResponse,
+  type RetrieveProductProperties_invoicedetailResult,
+} from "./RetrieveProductProperties_invoicedetailMessage.js";
+export {
+  RetrieveProductProperties_opportunityproductRequest,
+  RetrieveProductProperties_opportunityproductResponse,
+  type RetrieveProductProperties_opportunityproductResult,
+} from "./RetrieveProductProperties_opportunityproductMessage.js";
+export {
+  RetrieveProductProperties_quotedetailRequest,
+  RetrieveProductProperties_quotedetailResponse,
+  type RetrieveProductProperties_quotedetailResult,
+} from "./RetrieveProductProperties_quotedetailMessage.js";
+export {
+  RetrieveProductProperties_salesorderdetailRequest,
+  RetrieveProductProperties_salesorderdetailResponse,
+  type RetrieveProductProperties_salesorderdetailResult,
+} from "./RetrieveProductProperties_salesorderdetailMessage.js";
+export {
+  RetrieveProvisionedLanguagePackVersionRequest,
+  type RetrieveProvisionedLanguagePackVersionRequestParameters,
+  RetrieveProvisionedLanguagePackVersionResponse,
+  type RetrieveProvisionedLanguagePackVersionResult,
+} from "./RetrieveProvisionedLanguagePackVersionMessage.js";
+export {
+  RetrieveProvisionedLanguagesRequest,
+  RetrieveProvisionedLanguagesResponse,
+  type RetrieveProvisionedLanguagesResult,
+} from "./RetrieveProvisionedLanguagesMessage.js";
+export {
+  RetrieveRecordChangeHistoryRequest,
+  type RetrieveRecordChangeHistoryRequestParameters,
+  RetrieveRecordChangeHistoryResponse,
+  type RetrieveRecordChangeHistoryResult,
+} from "./RetrieveRecordChangeHistoryMessage.js";
+export {
+  RetrieveRecordWallRequest,
+  type RetrieveRecordWallRequestParameters,
+  RetrieveRecordWallResponse,
+  type RetrieveRecordWallResult,
+} from "./RetrieveRecordWallMessage.js";
+export {
+  RetrieveRequiredComponentsRequest,
+  type RetrieveRequiredComponentsRequestParameters,
+  RetrieveRequiredComponentsResponse,
+  type RetrieveRequiredComponentsResult,
+} from "./RetrieveRequiredComponentsMessage.js";
+export {
+  RetrieveRolePrivilegesRoleRequest,
+  type RetrieveRolePrivilegesRoleRequestParameters,
+  RetrieveRolePrivilegesRoleResponse,
+  type RetrieveRolePrivilegesRoleResult,
+} from "./RetrieveRolePrivilegesRoleMessage.js";
+export {
+  RetrieveSettingRequest,
+  type RetrieveSettingRequestParameters,
+  RetrieveSettingResponse,
+  type RetrieveSettingResult,
+} from "./RetrieveSettingMessage.js";
+export {
+  RetrieveSharedLinksRequest,
+  type RetrieveSharedLinksRequestParameters,
+  RetrieveSharedLinksResponse,
+  type RetrieveSharedLinksResult,
+} from "./RetrieveSharedLinksMessage.js";
+export {
+  RetrieveSharedPrincipalsAndAccessRequest,
+  type RetrieveSharedPrincipalsAndAccessRequestParameters,
+  RetrieveSharedPrincipalsAndAccessResponse,
+  type RetrieveSharedPrincipalsAndAccessResult,
+} from "./RetrieveSharedPrincipalsAndAccessMessage.js";
+export {
+  RetrieveSubGroupsResourceGroupRequest,
+  RetrieveSubGroupsResourceGroupResponse,
+  type RetrieveSubGroupsResourceGroupResult,
+} from "./RetrieveSubGroupsResourceGroupMessage.js";
+export {
+  RetrieveTeamPrivilegesRequest,
+  RetrieveTeamPrivilegesResponse,
+  type RetrieveTeamPrivilegesResult,
+} from "./RetrieveTeamPrivilegesMessage.js";
+export {
+  RetrieveTimelineWallRecordsRequest,
+  type RetrieveTimelineWallRecordsRequestParameters,
+  RetrieveTimelineWallRecordsResponse,
+  type RetrieveTimelineWallRecordsResult,
+} from "./RetrieveTimelineWallRecordsMessage.js";
+export {
+  RetrieveTimestampRequest,
+  RetrieveTimestampResponse,
+  type RetrieveTimestampResult,
+} from "./RetrieveTimestampMessage.js";
+export {
+  RetrieveTotalRecordCountRequest,
+  type RetrieveTotalRecordCountRequestParameters,
+  RetrieveTotalRecordCountResponse,
+  type RetrieveTotalRecordCountResult,
+} from "./RetrieveTotalRecordCountMessage.js";
+export {
+  RetrieveUnpublishedMultiple_aiplugin_collectionRequest,
+  RetrieveUnpublishedMultiple_aiplugin_collectionResponse,
+  type RetrieveUnpublishedMultiple_aiplugin_collectionResult,
+} from "./RetrieveUnpublishedMultiple_aiplugin_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionRequest,
+  RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResponse,
+  type RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionResult,
+} from "./RetrieveUnpublishedMultiple_aipluginconversationstarter_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_aipluginconversationstartermapping_collectionRequest,
+  RetrieveUnpublishedMultiple_aipluginconversationstartermapping_collectionResponse,
+  type RetrieveUnpublishedMultiple_aipluginconversationstartermapping_collectionResult,
+} from "./RetrieveUnpublishedMultiple_aipluginconversationstartermapping_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_aipluginoperation_collectionRequest,
+  RetrieveUnpublishedMultiple_aipluginoperation_collectionResponse,
+  type RetrieveUnpublishedMultiple_aipluginoperation_collectionResult,
+} from "./RetrieveUnpublishedMultiple_aipluginoperation_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionRequest,
+  RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionResponse,
+  type RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionResult,
+} from "./RetrieveUnpublishedMultiple_aipluginoperationparameter_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_aipluginoperationresponsetemplate_collectionRequest,
+  RetrieveUnpublishedMultiple_aipluginoperationresponsetemplate_collectionResponse,
+  type RetrieveUnpublishedMultiple_aipluginoperationresponsetemplate_collectionResult,
+} from "./RetrieveUnpublishedMultiple_aipluginoperationresponsetemplate_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_aiplugintitle_collectionRequest,
+  RetrieveUnpublishedMultiple_aiplugintitle_collectionResponse,
+  type RetrieveUnpublishedMultiple_aiplugintitle_collectionResult,
+} from "./RetrieveUnpublishedMultiple_aiplugintitle_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_appconfig_collectionRequest,
+  RetrieveUnpublishedMultiple_appconfig_collectionResponse,
+  type RetrieveUnpublishedMultiple_appconfig_collectionResult,
+} from "./RetrieveUnpublishedMultiple_appconfig_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_appconfiginstance_collectionRequest,
+  RetrieveUnpublishedMultiple_appconfiginstance_collectionResponse,
+  type RetrieveUnpublishedMultiple_appconfiginstance_collectionResult,
+} from "./RetrieveUnpublishedMultiple_appconfiginstance_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_appmodule_collectionRequest,
+  RetrieveUnpublishedMultiple_appmodule_collectionResponse,
+  type RetrieveUnpublishedMultiple_appmodule_collectionResult,
+} from "./RetrieveUnpublishedMultiple_appmodule_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_computeruseagent_collectionRequest,
+  RetrieveUnpublishedMultiple_computeruseagent_collectionResponse,
+  type RetrieveUnpublishedMultiple_computeruseagent_collectionResult,
+} from "./RetrieveUnpublishedMultiple_computeruseagent_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionRequest,
+  RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionResponse,
+  type RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionResult,
+} from "./RetrieveUnpublishedMultiple_customcontroldefaultconfig_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_desktopflowbinary_collectionRequest,
+  RetrieveUnpublishedMultiple_desktopflowbinary_collectionResponse,
+  type RetrieveUnpublishedMultiple_desktopflowbinary_collectionResult,
+} from "./RetrieveUnpublishedMultiple_desktopflowbinary_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_mobileofflineprofile_collectionRequest,
+  RetrieveUnpublishedMultiple_mobileofflineprofile_collectionResponse,
+  type RetrieveUnpublishedMultiple_mobileofflineprofile_collectionResult,
+} from "./RetrieveUnpublishedMultiple_mobileofflineprofile_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_mobileofflineprofileitem_collectionRequest,
+  RetrieveUnpublishedMultiple_mobileofflineprofileitem_collectionResponse,
+  type RetrieveUnpublishedMultiple_mobileofflineprofileitem_collectionResult,
+} from "./RetrieveUnpublishedMultiple_mobileofflineprofileitem_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_navigationsetting_collectionRequest,
+  RetrieveUnpublishedMultiple_navigationsetting_collectionResponse,
+  type RetrieveUnpublishedMultiple_navigationsetting_collectionResult,
+} from "./RetrieveUnpublishedMultiple_navigationsetting_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_savedquery_collectionRequest,
+  RetrieveUnpublishedMultiple_savedquery_collectionResponse,
+  type RetrieveUnpublishedMultiple_savedquery_collectionResult,
+} from "./RetrieveUnpublishedMultiple_savedquery_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_savedqueryvisualization_collectionRequest,
+  RetrieveUnpublishedMultiple_savedqueryvisualization_collectionResponse,
+  type RetrieveUnpublishedMultiple_savedqueryvisualization_collectionResult,
+} from "./RetrieveUnpublishedMultiple_savedqueryvisualization_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_sitemap_collectionRequest,
+  RetrieveUnpublishedMultiple_sitemap_collectionResponse,
+  type RetrieveUnpublishedMultiple_sitemap_collectionResult,
+} from "./RetrieveUnpublishedMultiple_sitemap_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_systemform_collectionRequest,
+  RetrieveUnpublishedMultiple_systemform_collectionResponse,
+  type RetrieveUnpublishedMultiple_systemform_collectionResult,
+} from "./RetrieveUnpublishedMultiple_systemform_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_webresource_collectionRequest,
+  RetrieveUnpublishedMultiple_webresource_collectionResponse,
+  type RetrieveUnpublishedMultiple_webresource_collectionResult,
+} from "./RetrieveUnpublishedMultiple_webresource_collectionMessage.js";
+export {
+  RetrieveUnpublishedMultiple_workflow_collectionRequest,
+  RetrieveUnpublishedMultiple_workflow_collectionResponse,
+  type RetrieveUnpublishedMultiple_workflow_collectionResult,
+} from "./RetrieveUnpublishedMultiple_workflow_collectionMessage.js";
+export {
+  RetrieveUnpublished_aipluginRequest,
+  RetrieveUnpublished_aipluginResponse,
+  type RetrieveUnpublished_aipluginResult,
+} from "./RetrieveUnpublished_aipluginMessage.js";
+export {
+  RetrieveUnpublished_aipluginconversationstarterRequest,
+  RetrieveUnpublished_aipluginconversationstarterResponse,
+  type RetrieveUnpublished_aipluginconversationstarterResult,
+} from "./RetrieveUnpublished_aipluginconversationstarterMessage.js";
+export {
+  RetrieveUnpublished_aipluginconversationstartermappingRequest,
+  RetrieveUnpublished_aipluginconversationstartermappingResponse,
+  type RetrieveUnpublished_aipluginconversationstartermappingResult,
+} from "./RetrieveUnpublished_aipluginconversationstartermappingMessage.js";
+export {
+  RetrieveUnpublished_aipluginoperationRequest,
+  RetrieveUnpublished_aipluginoperationResponse,
+  type RetrieveUnpublished_aipluginoperationResult,
+} from "./RetrieveUnpublished_aipluginoperationMessage.js";
+export {
+  RetrieveUnpublished_aipluginoperationparameterRequest,
+  RetrieveUnpublished_aipluginoperationparameterResponse,
+  type RetrieveUnpublished_aipluginoperationparameterResult,
+} from "./RetrieveUnpublished_aipluginoperationparameterMessage.js";
+export {
+  RetrieveUnpublished_aipluginoperationresponsetemplateRequest,
+  RetrieveUnpublished_aipluginoperationresponsetemplateResponse,
+  type RetrieveUnpublished_aipluginoperationresponsetemplateResult,
+} from "./RetrieveUnpublished_aipluginoperationresponsetemplateMessage.js";
+export {
+  RetrieveUnpublished_aiplugintitleRequest,
+  RetrieveUnpublished_aiplugintitleResponse,
+  type RetrieveUnpublished_aiplugintitleResult,
+} from "./RetrieveUnpublished_aiplugintitleMessage.js";
+export {
+  RetrieveUnpublished_appconfigRequest,
+  RetrieveUnpublished_appconfigResponse,
+  type RetrieveUnpublished_appconfigResult,
+} from "./RetrieveUnpublished_appconfigMessage.js";
+export {
+  RetrieveUnpublished_appconfiginstanceRequest,
+  RetrieveUnpublished_appconfiginstanceResponse,
+  type RetrieveUnpublished_appconfiginstanceResult,
+} from "./RetrieveUnpublished_appconfiginstanceMessage.js";
+export {
+  RetrieveUnpublished_appmoduleRequest,
+  RetrieveUnpublished_appmoduleResponse,
+  type RetrieveUnpublished_appmoduleResult,
+} from "./RetrieveUnpublished_appmoduleMessage.js";
+export {
+  RetrieveUnpublished_computeruseagentRequest,
+  RetrieveUnpublished_computeruseagentResponse,
+  type RetrieveUnpublished_computeruseagentResult,
+} from "./RetrieveUnpublished_computeruseagentMessage.js";
+export {
+  RetrieveUnpublished_customcontroldefaultconfigRequest,
+  RetrieveUnpublished_customcontroldefaultconfigResponse,
+  type RetrieveUnpublished_customcontroldefaultconfigResult,
+} from "./RetrieveUnpublished_customcontroldefaultconfigMessage.js";
+export {
+  RetrieveUnpublished_desktopflowbinaryRequest,
+  RetrieveUnpublished_desktopflowbinaryResponse,
+  type RetrieveUnpublished_desktopflowbinaryResult,
+} from "./RetrieveUnpublished_desktopflowbinaryMessage.js";
+export {
+  RetrieveUnpublished_mobileofflineprofileRequest,
+  RetrieveUnpublished_mobileofflineprofileResponse,
+  type RetrieveUnpublished_mobileofflineprofileResult,
+} from "./RetrieveUnpublished_mobileofflineprofileMessage.js";
+export {
+  RetrieveUnpublished_mobileofflineprofileitemRequest,
+  RetrieveUnpublished_mobileofflineprofileitemResponse,
+  type RetrieveUnpublished_mobileofflineprofileitemResult,
+} from "./RetrieveUnpublished_mobileofflineprofileitemMessage.js";
+export {
+  RetrieveUnpublished_navigationsettingRequest,
+  RetrieveUnpublished_navigationsettingResponse,
+  type RetrieveUnpublished_navigationsettingResult,
+} from "./RetrieveUnpublished_navigationsettingMessage.js";
+export {
+  RetrieveUnpublished_savedqueryRequest,
+  RetrieveUnpublished_savedqueryResponse,
+  type RetrieveUnpublished_savedqueryResult,
+} from "./RetrieveUnpublished_savedqueryMessage.js";
+export {
+  RetrieveUnpublished_savedqueryvisualizationRequest,
+  RetrieveUnpublished_savedqueryvisualizationResponse,
+  type RetrieveUnpublished_savedqueryvisualizationResult,
+} from "./RetrieveUnpublished_savedqueryvisualizationMessage.js";
+export {
+  RetrieveUnpublished_sitemapRequest,
+  RetrieveUnpublished_sitemapResponse,
+  type RetrieveUnpublished_sitemapResult,
+} from "./RetrieveUnpublished_sitemapMessage.js";
+export {
+  RetrieveUnpublished_systemformRequest,
+  RetrieveUnpublished_systemformResponse,
+  type RetrieveUnpublished_systemformResult,
+} from "./RetrieveUnpublished_systemformMessage.js";
+export {
+  RetrieveUnpublished_webresourceRequest,
+  RetrieveUnpublished_webresourceResponse,
+  type RetrieveUnpublished_webresourceResult,
+} from "./RetrieveUnpublished_webresourceMessage.js";
+export {
+  RetrieveUnpublished_workflowRequest,
+  RetrieveUnpublished_workflowResponse,
+  type RetrieveUnpublished_workflowResult,
+} from "./RetrieveUnpublished_workflowMessage.js";
+export {
+  RetrieveUserApplicationLicenseAccessRequest,
+  type RetrieveUserApplicationLicenseAccessRequestParameters,
+  RetrieveUserApplicationLicenseAccessResponse,
+  type RetrieveUserApplicationLicenseAccessResult,
+} from "./RetrieveUserApplicationLicenseAccessMessage.js";
+export {
+  RetrieveUserLicenseInfoRequest,
+  RetrieveUserLicenseInfoResponse,
+  type RetrieveUserLicenseInfoResult,
+} from "./RetrieveUserLicenseInfoMessage.js";
+export {
+  RetrieveUserPrivilegeByPrivilegeIdRequest,
+  type RetrieveUserPrivilegeByPrivilegeIdRequestParameters,
+  RetrieveUserPrivilegeByPrivilegeIdResponse,
+  type RetrieveUserPrivilegeByPrivilegeIdResult,
+} from "./RetrieveUserPrivilegeByPrivilegeIdMessage.js";
+export {
+  RetrieveUserPrivilegeByPrivilegeNameRequest,
+  type RetrieveUserPrivilegeByPrivilegeNameRequestParameters,
+  RetrieveUserPrivilegeByPrivilegeNameResponse,
+  type RetrieveUserPrivilegeByPrivilegeNameResult,
+} from "./RetrieveUserPrivilegeByPrivilegeNameMessage.js";
+export {
+  RetrieveUserPrivilegesRequest,
+  RetrieveUserPrivilegesResponse,
+  type RetrieveUserPrivilegesResult,
+} from "./RetrieveUserPrivilegesMessage.js";
+export {
+  RetrieveUserQueuesRequest,
+  type RetrieveUserQueuesRequestParameters,
+  RetrieveUserQueuesResponse,
+  type RetrieveUserQueuesResult,
+} from "./RetrieveUserQueuesMessage.js";
+export {
+  RetrieveUserSetOfPrivilegesByIdsRequest,
+  type RetrieveUserSetOfPrivilegesByIdsRequestParameters,
+  RetrieveUserSetOfPrivilegesByIdsResponse,
+  type RetrieveUserSetOfPrivilegesByIdsResult,
+} from "./RetrieveUserSetOfPrivilegesByIdsMessage.js";
+export {
+  RetrieveUserSetOfPrivilegesByNamesRequest,
+  type RetrieveUserSetOfPrivilegesByNamesRequestParameters,
+  RetrieveUserSetOfPrivilegesByNamesResponse,
+  type RetrieveUserSetOfPrivilegesByNamesResult,
+} from "./RetrieveUserSetOfPrivilegesByNamesMessage.js";
+export {
+  RetrieveUsersPrivilegesThroughTeamsRequest,
+  type RetrieveUsersPrivilegesThroughTeamsRequestParameters,
+  RetrieveUsersPrivilegesThroughTeamsResponse,
+  type RetrieveUsersPrivilegesThroughTeamsResult,
+} from "./RetrieveUsersPrivilegesThroughTeamsMessage.js";
+export {
+  RetrieveVersionRequest,
+  RetrieveVersionResponse,
+  type RetrieveVersionResult,
+} from "./RetrieveVersionMessage.js";
 export {
   RevertProductRequest,
   type RevertProductRequestParameters,
@@ -1744,6 +2809,12 @@ export {
   RollbackRetainResponse,
   type RollbackRetainResult,
 } from "./RollbackRetainMessage.js";
+export {
+  RollupRequest,
+  type RollupRequestParameters,
+  RollupResponse,
+  type RollupResult,
+} from "./RollupMessage.js";
 export { RotateGroupKeyRequest, RotateGroupKeyResponse } from "./RotateGroupKeyMessage.js";
 export {
   RouteToRequest,
@@ -1797,6 +2868,30 @@ export {
   ScheduleTrainingResponse,
   type ScheduleTrainingResult,
 } from "./ScheduleTrainingMessage.js";
+export {
+  SearchRequest,
+  type SearchRequestParameters,
+  SearchResponse,
+  type SearchResult,
+} from "./SearchMessage.js";
+export {
+  SearchByBodyKbArticleRequest,
+  type SearchByBodyKbArticleRequestParameters,
+  SearchByBodyKbArticleResponse,
+  type SearchByBodyKbArticleResult,
+} from "./SearchByBodyKbArticleMessage.js";
+export {
+  SearchByKeywordsKbArticleRequest,
+  type SearchByKeywordsKbArticleRequestParameters,
+  SearchByKeywordsKbArticleResponse,
+  type SearchByKeywordsKbArticleResult,
+} from "./SearchByKeywordsKbArticleMessage.js";
+export {
+  SearchByTitleKbArticleRequest,
+  type SearchByTitleKbArticleRequestParameters,
+  SearchByTitleKbArticleResponse,
+  type SearchByTitleKbArticleResult,
+} from "./SearchByTitleKbArticleMessage.js";
 export {
   SendAppNotificationRequest,
   type SendAppNotificationRequestParameters,
@@ -2099,6 +3194,12 @@ export {
   type UpsertMultipleResult,
 } from "./UpsertMultipleMessage.js";
 export {
+  UtcTimeFromLocalTimeRequest,
+  type UtcTimeFromLocalTimeRequestParameters,
+  UtcTimeFromLocalTimeResponse,
+  type UtcTimeFromLocalTimeResult,
+} from "./UtcTimeFromLocalTimeMessage.js";
+export {
   ValidateRequest,
   type ValidateRequestParameters,
   ValidateResponse,
@@ -2110,6 +3211,24 @@ export {
   ValidateAIConfigurationResponse,
   type ValidateAIConfigurationResult,
 } from "./ValidateAIConfigurationMessage.js";
+export {
+  ValidateAppRequest,
+  type ValidateAppRequestParameters,
+  ValidateAppResponse,
+  type ValidateAppResult,
+} from "./ValidateAppMessage.js";
+export {
+  ValidateFetchXmlExpressionRequest,
+  type ValidateFetchXmlExpressionRequestParameters,
+  ValidateFetchXmlExpressionResponse,
+  type ValidateFetchXmlExpressionResult,
+} from "./ValidateFetchXmlExpressionMessage.js";
+export {
+  ValidateRecurrenceRuleRequest,
+  type ValidateRecurrenceRuleRequestParameters,
+  ValidateRecurrenceRuleResponse,
+  type ValidateRecurrenceRuleResult,
+} from "./ValidateRecurrenceRuleMessage.js";
 export {
   ValidateRetentionConfigRequest,
   type ValidateRetentionConfigRequestParameters,
@@ -2126,6 +3245,7 @@ export {
   type ValidateUnpublishedRequestParameters,
   ValidateUnpublishedResponse,
 } from "./ValidateUnpublishedMessage.js";
+export { WhoAmIRequest, WhoAmIResponse, type WhoAmIResult } from "./WhoAmIMessage.js";
 export {
   WinOpportunityRequest,
   type WinOpportunityRequestParameters,
@@ -2240,6 +3360,11 @@ export {
   copilotquerytextcontextResponse,
   type copilotquerytextcontextResult,
 } from "./copilotquerytextcontextMessage.js";
+export {
+  copilottextdatastatusRequest,
+  copilottextdatastatusResponse,
+  type copilottextdatastatusResult,
+} from "./copilottextdatastatusMessage.js";
 export {
   installRequest,
   type installRequestParameters,
@@ -3479,6 +4604,12 @@ export {
   type msdyn_GetEnabledChannelsResult,
 } from "./msdyn_GetEnabledChannelsMessage.js";
 export {
+  msdyn_GetEntityLinkChatConfigurationRequest,
+  type msdyn_GetEntityLinkChatConfigurationRequestParameters,
+  msdyn_GetEntityLinkChatConfigurationResponse,
+  type msdyn_GetEntityLinkChatConfigurationResult,
+} from "./msdyn_GetEntityLinkChatConfigurationMessage.js";
+export {
   msdyn_GetEntityListRequest,
   type msdyn_GetEntityListRequestParameters,
   msdyn_GetEntityListResponse,
@@ -3919,6 +5050,12 @@ export {
   msdyn_GetSwarmInvitationCardResponse,
   type msdyn_GetSwarmInvitationCardResult,
 } from "./msdyn_GetSwarmInvitationCardMessage.js";
+export {
+  msdyn_GetSwarmParticipantDetailsRequest,
+  type msdyn_GetSwarmParticipantDetailsRequestParameters,
+  msdyn_GetSwarmParticipantDetailsResponse,
+  type msdyn_GetSwarmParticipantDetailsResult,
+} from "./msdyn_GetSwarmParticipantDetailsMessage.js";
 export {
   msdyn_GetSwarmResponseCardRequest,
   type msdyn_GetSwarmResponseCardRequestParameters,
@@ -5926,6 +7063,12 @@ export {
   type msft_DataEngineIndexMgmt_CreateIndexResult,
 } from "./msft_DataEngineIndexMgmt_CreateIndexMessage.js";
 export {
+  msft_DataEngineIndexMgmt_GetIndexInfoRequest,
+  type msft_DataEngineIndexMgmt_GetIndexInfoRequestParameters,
+  msft_DataEngineIndexMgmt_GetIndexInfoResponse,
+  type msft_DataEngineIndexMgmt_GetIndexInfoResult,
+} from "./msft_DataEngineIndexMgmt_GetIndexInfoMessage.js";
+export {
   msft_DismissStorageRecommendationRequest,
   type msft_DismissStorageRecommendationRequestParameters,
   msft_DismissStorageRecommendationResponse,
@@ -5967,11 +7110,59 @@ export {
   type searchqueryResult,
 } from "./searchqueryMessage.js";
 export {
+  searchstatisticsRequest,
+  searchstatisticsResponse,
+  type searchstatisticsResult,
+} from "./searchstatisticsMessage.js";
+export {
+  searchstatusRequest,
+  searchstatusResponse,
+  type searchstatusResult,
+} from "./searchstatusMessage.js";
+export {
   searchsuggestRequest,
   type searchsuggestRequestParameters,
   searchsuggestResponse,
   type searchsuggestResult,
 } from "./searchsuggestMessage.js";
+
+// Hand-written messages: CRUD on entity sets, ExecuteMultiple / ExecuteTransaction over $batch
+export {
+  AssociateRequest,
+  type AssociateRequestParameters,
+  AssociateResponse,
+  CreateRequest,
+  type CreateRequestParameters,
+  CreateResponse,
+  type CreateResult,
+  DeleteRequest,
+  type DeleteRequestParameters,
+  DeleteResponse,
+  DisassociateRequest,
+  type DisassociateRequestParameters,
+  DisassociateResponse,
+  type ExecuteResponses,
+  ExecuteMultipleRequest,
+  type ExecuteMultipleRequestParameters,
+  ExecuteMultipleResponse,
+  type ExecuteMultipleResponseItem,
+  type ExecuteMultipleResult,
+  type ExecuteMultipleSettings,
+  ExecuteTransactionRequest,
+  type ExecuteTransactionRequestParameters,
+  ExecuteTransactionResponse,
+  RetrieveRequest,
+  type RetrieveRequestParameters,
+  RetrieveResponse,
+  type RetrieveResult,
+  RetrieveMultipleRequest,
+  type RetrieveMultipleRequestParameters,
+  RetrieveMultipleResponse,
+  type RetrieveMultipleResult,
+  UpdateRequest,
+  type UpdateRequestParameters,
+  UpdateResponse,
+} from "./handwritten/index.js";
 
 // Enums
 export {
@@ -6065,12 +7256,9 @@ export type {
   BulkRemoveActiveCustomizationsParameters,
   BusinessNotification,
   BusinessNotificationParameter,
-  CalculateTotalTimeIncidentResponse,
   CascadeConfiguration,
   ChannelAccessProfilePrivilege,
   ChannelAccessProfileWithPrivileges,
-  CheckIncomingEmailResponse,
-  CheckPromoteEmailResponse,
   Collection_Int32_String,
   Collection_String_AuditStorageDetails,
   Collection_String_String,
@@ -6111,7 +7299,6 @@ export type {
   DependencyMetadataCollection,
   DependencyMetadataInfo,
   DoubleAttributeMetadata,
-  DownloadReportDefinitionResponse,
   EndpointCollection,
   EntityKeyMetadata,
   EntityKeyQueryExpression,
@@ -6123,35 +7310,15 @@ export type {
   EnumAttributeMetadata,
   TypedEnumAttributeMetadata,
   ErrorInfo,
-  ExpandCalendarResponse,
   ExportComponentDetails,
   ExportComponentsParams,
-  ExportFieldTranslationResponse,
   FeatureControlSettingData,
   FeatureControlStringSettingData,
   FetchExpression,
-  FetchXmlToQueryExpressionResponse,
   FileAttributeMetadata,
   FileSasUrlResponse,
   FilterExpression,
-  FindParentResourceGroupResponse,
-  FormatAddressResponse,
-  GetComponentManagedIdentityFICResponse,
-  GetDistinctValuesImportFileResponse,
-  GetFileSasUrlForUploadResponse,
-  GetFileSasUrlResponse,
-  GetHeaderColumnsImportFileResponse,
-  GetHostedRpaCapacityResponse,
-  GetNextRunsForFlowTriggerResponse,
-  GetNextRunsResponse,
-  GetPluginCertificateInfoResponse,
   GetQuantityDecimalResponse,
-  GetReportHistoryLimitResponse,
-  GetSearchInformationResponse,
-  GetTimeZoneCodeByLocalizedNameResponse,
-  GetValidManyToManyResponse,
-  GetValidReferencedEntitiesResponse,
-  GetValidReferencingEntitiesResponse,
   GuidCollection,
   IPFirewallAccessAuditDetail,
   ImageAttributeMetadata,
@@ -6159,23 +7326,16 @@ export type {
   InputArgument,
   InputArgumentCollection,
   IntegerAttributeMetadata,
-  IsCDS3ReadyResponse,
-  IsComponentCustomizableResponse,
-  IsDataEncryptionActiveResponse,
-  IsValidStateTransitionResponse,
   Label,
   LabelQueryExpression,
   LayerDesiredOrder,
   LinkEntity,
-  ListCredentialDependenciesResponse,
-  LocalTimeFromUtcTimeResponse,
   LocalizedLabel,
   LookupAttributeMetadata,
   MailboxTrackingFolderMapping,
   ManagedPropertyAttributeMetadata,
   ManagedPropertyMetadata,
   ManyToManyRelationshipMetadata,
-  McpGetGlobalOptionSetResponse,
   MemoAttributeMetadata,
   MemoFormatName,
   MetadataBase,
@@ -6204,7 +7364,6 @@ export type {
   ParameterCollection,
   PicklistAttributeMetadata,
   PreferredSolutionDetails,
-  PreferredSolutionUsedByResponse,
   PrincipalAccess,
   ProposalParty,
   PullChangesFromGitParameters,
@@ -6212,81 +7371,20 @@ export type {
   TypedQueryBase,
   QueryByAttribute,
   QueryExpression,
-  QueryMultipleSchedulesResponse,
-  QueryScheduleResponse,
   RelationshipAttribute,
   RelationshipAuditDetail,
   RelationshipMetadataBase,
   TypedRelationshipMetadataBase,
   RelationshipQueryExpression,
-  RemoveActiveCustomizationsResponse,
   RequiredResource,
-  ResetInheritedAccessResponse,
   ResourceInfo,
-  RetrieveAadUserPrivilegesResponse,
-  RetrieveAadUserSetOfPrivilegesByIdsResponse,
-  RetrieveAadUserSetOfPrivilegesByNamesResponse,
   RetrieveAbsoluteAndSiteCollectionUrlResponse,
-  RetrieveAccessOriginResponse,
-  RetrieveAllEntitiesResponse,
-  RetrieveAnalyticsStoreDetailsResponse,
-  RetrieveApplicationRibbonResponse,
-  RetrieveAttributeChangeHistoryResponse,
-  RetrieveAuditDetailsResponse,
-  RetrieveAuditPartitionListResponse,
-  RetrieveAvailableLanguagesResponse,
-  RetrieveCascadeAssignAsyncJobIdResponse,
-  RetrieveCascadeDeleteAsyncJobIdResponse,
-  RetrieveChannelAccessProfilePrivilegesResponse,
-  RetrieveCurrentOrganizationResponse,
-  RetrieveDataEncryptionKeyResponse,
-  RetrieveDeploymentLicenseTypeResponse,
-  RetrieveDeprovisionedLanguagesResponse,
-  RetrieveEntityResponse,
-  RetrieveEntityRibbonResponse,
-  RetrieveEnvironmentVariableValueResponse,
-  RetrieveExchangeRateResponse,
-  RetrieveFinanceAndOperationsIntegrationDetailsResponse,
-  RetrieveFormattedImportJobResultsResponse,
-  RetrieveInstalledLanguagePackVersionResponse,
-  RetrieveInstalledLanguagePacksResponse,
-  RetrieveLicenseInfoResponse,
-  RetrieveLocLabelsResponse,
-  RetrieveMailboxTrackingFoldersResponse,
-  RetrieveMaskedAttributesForEntityResponse,
-  RetrieveMetadataChangesResponse,
-  RetrieveMissingComponentsResponse,
-  RetrieveMissingDependenciesWithMetadataResponse,
-  RetrieveOrganizationInfoResponse,
-  RetrieveOrganizationResourcesResponse,
-  RetrieveParsedDataImportFileResponse,
   RetrievePrincipalAccessInfoResponse,
   RetrievePrincipalAccessResponse,
   RetrievePrincipalAttributePrivilegesResponse,
   RetrievePrincipalSyncAttributeMappingsResponse,
-  RetrieveProcessWithWfomJsonResponse,
-  RetrieveProvisionedLanguagePackVersionResponse,
-  RetrieveProvisionedLanguagesResponse,
-  RetrieveRecordChangeHistoryResponse,
-  RetrieveRolePrivilegesRoleResponse,
-  RetrieveSettingResponse,
-  RetrieveSharedPrincipalsAndAccessResponse,
-  RetrieveTeamPrivilegesResponse,
-  RetrieveTimelineWallRecordsResponse,
-  RetrieveTimestampResponse,
-  RetrieveTotalRecordCountResponse,
-  RetrieveUserApplicationLicenseAccessResponse,
-  RetrieveUserLicenseInfoResponse,
-  RetrieveUserPrivilegeByPrivilegeIdResponse,
-  RetrieveUserPrivilegeByPrivilegeNameResponse,
-  RetrieveUserPrivilegesResponse,
-  RetrieveUserSetOfPrivilegesByIdsResponse,
-  RetrieveUserSetOfPrivilegesByNamesResponse,
-  RetrieveUsersPrivilegesThroughTeamsResponse,
-  RetrieveVersionResponse,
   RolePrivilege,
   RolePrivilegeAuditDetail,
-  SearchResponse,
   SearchResults,
   SecurityPrivilegeMetadata,
   ServicePlan,
@@ -6318,16 +7416,10 @@ export type {
   UserAccessAuditDetail,
   UserLicenseInfo,
   UserName,
-  UtcTimeFromLocalTimeResponse,
-  ValidateAppResponse,
-  ValidateFetchXmlExpressionResponse,
-  ValidateFetchXmlExpressionResult,
-  ValidateRecurrenceRuleResponse,
   ValidationIssue,
   ValidationResult,
   ValidatorIssue,
   VirtualTableColumnCandidate,
-  WhoAmIResponse,
   XrmAttributeExpression,
   activitymimeattachment,
   activityparty,
@@ -6365,7 +7457,6 @@ export type {
   connectionreference,
   contact,
   contract,
-  copilottextdatastatusResponse,
   credential,
   customcontroldefaultconfig,
   delegatedauthorization,
@@ -6402,7 +7493,6 @@ export type {
   listmember,
   mobileofflineprofile,
   mobileofflineprofileitem,
-  msdyn_GetSwarmParticipantDetailsResponse,
   msdyn_aiagentstatus,
   msdyn_aiconfiguration,
   msdyn_aimodel,
@@ -6421,7 +7511,6 @@ export type {
   msfp_alert,
   msfp_surveyinvite,
   msfp_surveyresponse,
-  msft_DataEngineIndexMgmt_GetIndexInfoResponse,
   navigationsetting,
   opportunity,
   opportunityclose,
@@ -6451,8 +7540,6 @@ export type {
   salesorderdetail,
   savedquery,
   savedqueryvisualization,
-  searchstatisticsResponse,
-  searchstatusResponse,
   service,
   serviceappointment,
   serviceendpoint,

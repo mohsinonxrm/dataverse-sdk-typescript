@@ -5,7 +5,7 @@
  * follow `Nullable="false"`, undefined ones are left out of the request, the record or entity set
  * of a bound operation is the first argument, and `parseResponse` reads 200 and 204 responses.
  */
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -17,7 +17,7 @@ import { generateMessages } from "../src/generators/messages-generator.js";
 import { generateComplexTypes } from "../src/generators/complex-types-generator.js";
 import { REQUEST_BODY_SOURCE } from "../src/utils/operation-parameters.js";
 import * as prettier from "prettier";
-import { typecheck } from "./typecheck.js";
+import { copyMessagesHandWritten, typecheck } from "./typecheck.js";
 
 const OUT_ROOT = fileURLToPath(new URL(".", import.meta.url));
 const PACKAGES = fileURLToPath(new URL("../../../packages/", import.meta.url));
@@ -131,12 +131,7 @@ beforeAll(async () => {
   await generateFunctions(csdl, join(out, "functions"), false);
   await generateMessages(csdl, join(out, "messages"), false);
   // The hand-written base classes the generated messages extend (read, not modified)
-  for (const file of ["OrganizationRequest.ts", "types.ts"]) {
-    await writeFile(
-      join(out, "messages", file),
-      await readFile(join(PACKAGES, "dataverse-sdk-messages", "src", file))
-    );
-  }
+  await copyMessagesHandWritten(join(out, "messages"));
 });
 
 afterAll(async () => {
