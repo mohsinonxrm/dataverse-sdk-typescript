@@ -4,10 +4,8 @@
 
 import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import {
-  DataverseAbortError,
   DataverseError,
   DataverseInvalidRequestError,
-  DataverseNetworkError,
   normalizeHeaders,
   parseODataError,
 } from "@mohsinonxrm/dataverse-sdk-core";
@@ -22,6 +20,7 @@ import type {
 import { DataverseBatchError } from "./errors.js";
 import { generateBoundary, encodeBatchRequest, isChangeset } from "./encoding.js";
 import { decodeBatchResponse } from "./decoding.js";
+import { executionSignal, fromStop, stopError, type ExecutionSignal } from "./stop.js";
 
 /**
  * Ids used inside a change set become the part's `Content-ID` and are referenced as `$<id>`, so
@@ -676,85 +675,6 @@ async function partError(step: BatchResponseStep): Promise<Error> {
       raw: step.body,
     });
   }
-}
-
-/** The signal an execution sends its batches with: the caller's, plus the `timeoutMs` deadline. */
-interface ExecutionSignal {
-  signal: AbortSignal | undefined;
-  /** True once `timeoutMs` has passed (as opposed to the caller aborting). */
-  readonly expired: boolean;
-  /** Stops the timer and detaches from the caller's signal. */
-  dispose(): void;
-}
-
-/**
- * Starts the signal for one execution. `timeoutMs` covers the whole execution, every batch of a
- * split one included, so it is a deadline signal linked to the caller's rather than a per-request
- * `timeoutMs`.
- */
-function executionSignal(
-  caller: AbortSignal | undefined,
-  timeoutMs: number | undefined
-): ExecutionSignal {
-  if (!timeoutMs) return { signal: caller, expired: false, dispose: () => undefined };
-  const controller = new AbortController();
-  let expired = false;
-  const timer = setTimeout(() => {
-    if (controller.signal.aborted) return;
-    expired = true;
-    controller.abort(
-      new DOMException(`Request timed out after ${String(timeoutMs)}ms`, "TimeoutError")
-    );
-  }, timeoutMs);
-  const onAbort = (): void => {
-    controller.abort(caller?.reason);
-  };
-  if (caller?.aborted) onAbort();
-  else caller?.addEventListener("abort", onAbort, { once: true });
-  return {
-    signal: controller.signal,
-    get expired() {
-      return expired;
-    },
-    dispose() {
-      clearTimeout(timer);
-      caller?.removeEventListener("abort", onAbort);
-    },
-  };
-}
-
-/**
- * The error for an execution that was stopped, as the client reports a stopped request:
- * `DataverseNetworkError` (`RequestTimeout`) when `timeoutMs` passed or the caller's signal timed
- * out (`AbortSignal.timeout()`), otherwise `DataverseAbortError`.
- */
-function stopError(
-  execution: ExecutionSignal,
-  timeoutMs: number | undefined,
-  cause?: unknown
-): DataverseError {
-  if (execution.expired) return DataverseNetworkError.timeout(timeoutMs, cause);
-  const reason: unknown = execution.signal?.reason;
-  if (reason instanceof Error && reason.name === "TimeoutError") {
-    return DataverseNetworkError.timeout(undefined, cause ?? reason);
-  }
-  return new DataverseAbortError(undefined, cause ?? reason);
-}
-
-/**
- * The error to report for a batch that failed. The client already turns an aborted request into
- * an SDK error; an abort while the response body is read still rejects with the raw
- * `AbortError` (or `TimeoutError`), which becomes the same SDK error here.
- */
-function fromStop(
-  err: unknown,
-  execution: ExecutionSignal,
-  timeoutMs: number | undefined
-): unknown {
-  if (err instanceof DataverseError || !(err instanceof Error)) return err;
-  if (!execution.signal?.aborted) return err;
-  if (err.name !== "AbortError" && err.name !== "TimeoutError") return err;
-  return stopError(execution, timeoutMs, err);
 }
 
 /** A DataverseBatchError carrying the whole result. */
