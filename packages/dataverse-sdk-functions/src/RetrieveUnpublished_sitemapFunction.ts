@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { sitemap } from "./types/index.js";
 
 /**
@@ -23,7 +27,7 @@ export class RetrieveUnpublished_sitemapFunction implements Executable<RetrieveU
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/sitemaps(${this.sitemapId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
+    let url = `${baseUrl}/sitemaps(${odataLiteral.guid(this.sitemapId)})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
 
     return {
       method: "GET",

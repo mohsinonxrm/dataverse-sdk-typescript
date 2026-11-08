@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { EntityPayload } from "./types/EntityPayload.js";
@@ -35,7 +39,7 @@ export class CopySystemFormRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/systemforms(${this.systemformId})/Microsoft.Dynamics.CRM.CopySystemForm`;
+    const url = `${baseUrl}/systemforms(${odataLiteral.guid(this.systemformId)})/Microsoft.Dynamics.CRM.CopySystemForm`;
 
     const body = requestBody({
       Target: this.Parameters.Target,

@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the RetrieveAbsoluteAndSiteCollectionUrl function.
@@ -24,7 +28,7 @@ export class RetrieveAbsoluteAndSiteCollectionUrl_sharepointdocumentlocationFunc
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/sharepointdocumentlocations(${this.sharepointdocumentlocationId})/Microsoft.Dynamics.CRM.RetrieveAbsoluteAndSiteCollectionUrl`;
+    let url = `${baseUrl}/sharepointdocumentlocations(${odataLiteral.guid(this.sharepointdocumentlocationId)})/Microsoft.Dynamics.CRM.RetrieveAbsoluteAndSiteCollectionUrl`;
 
     return {
       method: "GET",

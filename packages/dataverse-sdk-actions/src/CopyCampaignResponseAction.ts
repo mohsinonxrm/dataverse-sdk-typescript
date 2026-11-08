@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { campaignresponse } from "./types/index.js";
 
 /**
@@ -28,7 +32,7 @@ export class CopyCampaignResponseAction implements Executable<CopyCampaignRespon
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/campaignresponses(${this.campaignresponseId})/Microsoft.Dynamics.CRM.CopyCampaignResponse`;
+    const url = `${baseUrl}/campaignresponses(${odataLiteral.guid(this.campaignresponseId)})/Microsoft.Dynamics.CRM.CopyCampaignResponse`;
 
     return {
       method: "POST",

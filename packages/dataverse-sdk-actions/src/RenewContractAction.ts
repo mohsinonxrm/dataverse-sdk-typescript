@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { requestBody } from "./internal/requestBody.js";
 import type { contract } from "./types/index.js";
 
@@ -36,7 +40,7 @@ export class RenewContractAction implements Executable<RenewContractResponse> {
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/contracts(${this.contractId})/Microsoft.Dynamics.CRM.RenewContract`;
+    const url = `${baseUrl}/contracts(${odataLiteral.guid(this.contractId)})/Microsoft.Dynamics.CRM.RenewContract`;
 
     const body = requestBody({
       Status: this.parameters.Status,

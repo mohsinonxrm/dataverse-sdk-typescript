@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
@@ -44,7 +48,7 @@ export class DistributeCampaignActivityRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/campaignactivities(${this.campaignactivityId})/Microsoft.Dynamics.CRM.DistributeCampaignActivity`;
+    const url = `${baseUrl}/campaignactivities(${odataLiteral.guid(this.campaignactivityId)})/Microsoft.Dynamics.CRM.DistributeCampaignActivity`;
 
     const body = requestBody({
       Propagate: this.Parameters.Propagate,

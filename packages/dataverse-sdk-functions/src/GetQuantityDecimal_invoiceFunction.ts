@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { product, uom } from "./types/index.js";
 
@@ -37,7 +41,7 @@ export class GetQuantityDecimal_invoiceFunction implements Executable<GetQuantit
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/invoices(${this.invoiceId})/Microsoft.Dynamics.CRM.GetQuantityDecimal`;
+    let url = `${baseUrl}/invoices(${odataLiteral.guid(this.invoiceId)})/Microsoft.Dynamics.CRM.GetQuantityDecimal`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();

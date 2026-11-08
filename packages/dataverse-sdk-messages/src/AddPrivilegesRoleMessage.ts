@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { requestBody } from "./internal/requestBody.js";
 import { enumBody } from "./internal/enumBody.js";
 import type { RolePrivilege } from "./types/index.js";
@@ -34,7 +38,7 @@ export class AddPrivilegesRoleRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/roles(${this.roleId})/Microsoft.Dynamics.CRM.AddPrivilegesRole`;
+    const url = `${baseUrl}/roles(${odataLiteral.guid(this.roleId)})/Microsoft.Dynamics.CRM.AddPrivilegesRole`;
 
     const body = requestBody({
       Privileges: enumBody(this.Parameters.Privileges, "RolePrivilege"),

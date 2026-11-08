@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { resourcegroup } from "./types/index.js";
 
@@ -36,7 +40,7 @@ export class FindParentResourceGroupFunction implements Executable<FindParentRes
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/resourcegroups(${this.resourcegroupId})/Microsoft.Dynamics.CRM.FindParentResourceGroup`;
+    let url = `${baseUrl}/resourcegroups(${odataLiteral.guid(this.resourcegroupId)})/Microsoft.Dynamics.CRM.FindParentResourceGroup`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();

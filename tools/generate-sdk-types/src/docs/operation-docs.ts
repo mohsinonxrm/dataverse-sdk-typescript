@@ -26,7 +26,10 @@ export interface OperationDoc {
   /** The exported class, e.g. `WinOpportunityAction` or `WinOpportunityRequest`. */
   className: string;
   method: "GET" | "POST";
-  /** The route after the base URL, with `${this.x}` written as `{x}`. */
+  /**
+   * The route after the base URL, with `${this.x}` (and a bound record's
+   * `${odataLiteral.guid(this.x)}`, #386) written as `{x}`.
+   */
   route: string;
   /** The arguments before the parameters object: the record id or entity set of a bound operation. */
   args: Array<{ name: string; type: string }>;
@@ -89,7 +92,7 @@ export function readOperation(
     }
   }
   const url = /(?:const|let) url = `\$\{baseUrl\}\/([^`]*)`/.exec(src);
-  const route = `/${(url?.[1] ?? "").replace(/\$\{this\.(\w+)\}/g, "{$1}")}`;
+  const route = `/${(url?.[1] ?? "").replace(/\$\{(?:odataLiteral\.guid\()?this\.(\w+)\)?\}/g, "{$1}")}`;
   return { className, method: kind === "functions" ? "GET" : "POST", route, args, parameters };
 }
 

@@ -9,6 +9,14 @@ import * as actions from "../src/index.js";
 
 type ActionClass = new (...args: unknown[]) => Executable<unknown>;
 
+/**
+ * Whether the class is bound to one record: its first constructor argument is the record id
+ * (`<table>Id`), which must be a GUID (#386).
+ */
+const takesRecordId = (cls: { toString(): string }): boolean =>
+  /constructor\(\s*\w+Id\s*[,)]/.test(cls.toString());
+const RECORD_ID = "00000000-0000-0000-0000-000000000001";
+
 const actionClasses = Object.entries(actions).filter(
   (entry): entry is [string, ActionClass] =>
     entry[0].endsWith("Action") && typeof entry[1] === "function"
@@ -23,9 +31,8 @@ describe("#23: generated actions send one lower-case content-type", () => {
     const offenders: string[] = [];
     for (const [name, Action] of actionClasses) {
       // Parameter values don't affect the headers, so construct with an empty parameters object
-      // (#96), after the record id for a bound action
-      const args =
-        (Action as ActionClass).length === 2 ? ["00000000-0000-0000-0000-000000000001", {}] : [{}];
+      // (#96), after the record id or entity set for a bound action
+      const args = takesRecordId(Action) || Action.length === 2 ? [RECORD_ID, {}] : [{}];
       const info = new Action(...args).toRequestInformation(TEST_API_URL);
       const headers = info.headers ?? {};
       const contentTypeNames = Object.keys(headers).filter(

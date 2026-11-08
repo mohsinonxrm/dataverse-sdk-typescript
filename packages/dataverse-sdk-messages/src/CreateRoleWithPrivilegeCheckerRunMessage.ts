@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { requestBody } from "./internal/requestBody.js";
 
 /**
@@ -33,7 +37,7 @@ export class CreateRoleWithPrivilegeCheckerRunRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/privilegecheckerruns(${this.privilegecheckerrunId})/Microsoft.Dynamics.CRM.CreateRoleWithPrivilegeCheckerRun`;
+    const url = `${baseUrl}/privilegecheckerruns(${odataLiteral.guid(this.privilegecheckerrunId)})/Microsoft.Dynamics.CRM.CreateRoleWithPrivilegeCheckerRun`;
 
     const body = requestBody({
       PrivilegeCheckerRunId: this.Parameters.PrivilegeCheckerRunId,

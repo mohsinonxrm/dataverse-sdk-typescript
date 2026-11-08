@@ -5,6 +5,7 @@ import type {
   CsdlEnumType,
 } from "../parsers/csdl-types.js";
 import { resolve, join } from "path";
+import { compareStrings } from "../parsers/canonical.js";
 import { csdlTypeToTs, toPascalCase as _toPascalCase } from "../utils/typescript-writer.js";
 import { writeTypeScriptFile, purgeDirectory } from "../utils/file-writer.js";
 import { concreteTypesOf, generatedBaseType, typedUnionName } from "../utils/polymorphism.js";
@@ -155,7 +156,7 @@ function typeIndexEntries(csdl: CsdlSchema): TypeIndexEntry[] {
     entries.push({ name, file: type.file, kind: type.kind, union, csdlName: type.name });
   }
   // By CSDL name: `_import` sorts as `import`
-  return entries.sort((a, b) => a.csdlName.localeCompare(b.csdlName));
+  return entries.sort((a, b) => compareStrings(a.csdlName, b.csdlName));
 }
 
 /**
@@ -188,7 +189,7 @@ export function exportedEnumNames(csdl: CsdlSchema): string[] {
     seen.add(lower);
     names.push(et.name);
   }
-  return names.sort((a, b) => a.localeCompare(b));
+  return names.sort(compareStrings);
 }
 
 /**

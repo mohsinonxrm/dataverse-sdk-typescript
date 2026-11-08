@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the msdyn_StartCaseFollowupMonitoring action.
@@ -20,7 +24,7 @@ export class msdyn_StartCaseFollowupMonitoringAction implements Executable<msdyn
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/incidents(${this.incidentId})/Microsoft.Dynamics.CRM.msdyn_StartCaseFollowupMonitoring`;
+    const url = `${baseUrl}/incidents(${odataLiteral.guid(this.incidentId)})/Microsoft.Dynamics.CRM.msdyn_StartCaseFollowupMonitoring`;
 
     return {
       method: "POST",

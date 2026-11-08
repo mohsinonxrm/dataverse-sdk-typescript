@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the RetrieveProcessWithWfomJson function.
@@ -23,7 +27,7 @@ export class RetrieveProcessWithWfomJsonFunction implements Executable<RetrieveP
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/workflows(${this.workflowId})/Microsoft.Dynamics.CRM.RetrieveProcessWithWfomJson`;
+    let url = `${baseUrl}/workflows(${odataLiteral.guid(this.workflowId)})/Microsoft.Dynamics.CRM.RetrieveProcessWithWfomJson`;
 
     return {
       method: "GET",
