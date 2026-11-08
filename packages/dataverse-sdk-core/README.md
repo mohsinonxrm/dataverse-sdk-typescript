@@ -861,6 +861,78 @@ console.log(`Organization: ${result.OrganizationId}`);
 - `parseResponse()` deserializes the response into typed result
 - Enables type-safe execution with IntelliSense support
 
+#### Waiting for System Jobs (asyncoperation)
+
+Bulk delete, `ExecuteWorkflow`, `ImportSolutionAsync`, `ExportSolutionAsync`, data import and
+similar operations start a system job (an `asyncoperation` record) and return at once.
+`waitForAsyncOperation(client, job, options?)` reads the job until it completes:
+
+```typescript
+import {
+  DataverseAsyncOperationError,
+  waitForAsyncOperation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+
+const response = await client.api("BulkDelete").post<{ JobId: string }>({
+  QuerySet: [
+    {
+      EntityName: "account",
+      Criteria: {
+        FilterOperator: "And",
+        Conditions: [
+          {
+            AttributeName: "name",
+            Operator: "Equal",
+            Values: [{ Type: "System.String", Value: "Old" }],
+          },
+        ],
+      },
+    },
+  ],
+  JobName: "Delete old accounts",
+  SendEmailNotification: false,
+  ToRecipients: [],
+  CCRecipients: [],
+  RecurrencePattern: "",
+  StartDateTime: new Date().toISOString(),
+});
+
+try {
+  const job = await waitForAsyncOperation(client, response, {
+    timeoutMs: 10 * 60_000, // give up after 10 minutes (the job keeps running)
+    onProgress: (op) => console.log(`statecode ${op.statecode}, statuscode ${op.statuscode}`),
+  });
+  console.log(`Completed on ${job.completedon}`);
+} catch (err) {
+  if (err instanceof DataverseAsyncOperationError) {
+    console.error(err.reason, err.message, err.code); // "failed" | "canceled" | "timeout"
+  }
+  throw err;
+}
+```
+
+- **What it takes:** the job's id, or the response that names it: `{ JobId }` (`BulkDelete`,
+  `BulkDetectDuplicates`), `{ AsyncOperationId }` (the `…Async` actions) or the `asyncoperation`
+  record itself (`ExecuteWorkflow`, `ImportRecordsImport`, …). `null` (an action that answered 204)
+  and values that aren't GUIDs throw `DataverseInvalidRequestError` before anything is sent.
+- **Polling:** the first read is immediate; then it waits `intervalMs` (default 2 s), each wait
+  `backoff` (default 1.5) times longer, up to `maxIntervalMs` (default 30 s). Each read is
+  `GET asyncoperations(<id>)?$select=…` through the client, so its retry, concurrency, auth and
+  logging apply. `select` adds columns; `requestOptions` (headers, `middlewareOptions`, …) apply
+  to every read.
+- **Outcome:** it resolves with the job when `statuscode` is Succeeded (30). Failed (31) and
+  Canceled (32) reject with `DataverseAsyncOperationError` (`reason` `"failed"` or `"canceled"`):
+  its `message` is the job's `friendlymessage` (else `message`), `code` is the job's `errorcode`
+  in hex (e.g. `"0x80040265"`) and `operation` is the job as read. A suspended job (statecode 1) is
+  waited for like any other.
+- **Bounds:** no time limit by default. `timeoutMs` rejects with `reason: "timeout"` (and the last
+  state as `operation`); `signal` rejects with `DataverseAbortError`. Either way, only the waiting
+  stops: the job keeps running in Dataverse.
+- **Read errors** pass through: a job that doesn't exist (or that was deleted when it succeeded, as
+  workflows set to delete completed jobs do) rejects with `DataverseODataError`, status 404.
+- `AsyncOperationStateCode` and `AsyncOperationStatusCode` name the `statecode` and `statuscode`
+  values, for `onProgress`.
+
 #### Optimistic Concurrency (Full Example)
 
 ```typescript
