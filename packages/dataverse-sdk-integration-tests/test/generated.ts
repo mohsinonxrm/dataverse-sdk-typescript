@@ -20,23 +20,35 @@ const outputDirs: string[] = [];
 
 /** Generate the selection from the live org and return the output folder. */
 export async function generateLive(selection: GenerateSelection): Promise<string> {
-  const { tokenProvider } = liveClient();
-  const token = await tokenProvider.getToken();
   await fs.mkdir(scratchRoot, { recursive: true });
   const outputRoot = await fs.mkdtemp(path.join(scratchRoot, "out-"));
   outputDirs.push(outputRoot);
-  await generateCode(
+  await generateLiveInto(outputRoot, selection);
+  return outputRoot;
+}
+
+/**
+ * Generate the selection from the live org into an existing folder (`generateLive` made it), with
+ * `output` options such as `incremental`, and return what `generateCode` returns.
+ */
+export async function generateLiveInto(
+  outputRoot: string,
+  selection: GenerateSelection,
+  output: Omit<NonNullable<DataverseGenConfig["output"]>, "outputRoot"> = {}
+): Promise<{ warnings: string[]; unchangedTables: string[] }> {
+  const { tokenProvider } = liveClient();
+  const token = await tokenProvider.getToken();
+  return generateCode(
     {
       entities: [],
       actions: [],
       functions: [],
       ...selection,
       environmentUrl: orgUrl,
-      output: { outputRoot },
+      output: { ...output, outputRoot },
     },
     token
   );
-  return outputRoot;
 }
 
 /** Remove every folder `generateLive` created. */

@@ -7,7 +7,6 @@
 import * as ejs from "ejs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { fileURLToPath } from "node:url";
 import {
   ACTION_BODY_MODULE,
   type ActionBodyTables,
@@ -17,7 +16,17 @@ import {
   FUNCTION_PARAMETERS_MODULE,
   functionParametersSource,
 } from "./action-body.js";
+import {
+  allExist,
+  GENERATOR_VERSION,
+  type GenerationStamp,
+  hashOf,
+  readStamp,
+  removeStale,
+  writeStamp,
+} from "./incremental.js";
 import type { SchemaModel } from "./schema-model.js";
+import { loadTemplate, TEMPLATE_NAMES, type TemplateName } from "./templates.js";
 import type {
   ActionType,
   DataverseGenConfig,
@@ -28,8 +37,6 @@ import type {
   PropertyType,
   TypeScriptType,
 } from "./types.js";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /** The package generated code imports its base types from. */
 export const RUNTIME_PACKAGE = "@mohsinonxrm/dataverse-sdk-entities-runtime";
@@ -198,6 +205,16 @@ export class TypescriptGenerator {
   private outputNamesCache?: Map<string, string>;
   private writeTypeNamesCache?: Map<EntityType, { create: string; update: string }>;
   private formNamesCache?: Map<EntityType, FormNames>;
+  /** Every file this run wrote or kept, relative to the output folder, with `/`. */
+  private readonly written = new Set<string>();
+  /** Incremental generation: the tables whose files are kept as they are. */
+  private readonly unchanged = new Set<EntityType>();
+
+  /**
+   * After {@link generate} with `output.incremental`: the logical names of the tables whose
+   * files were kept, because neither their metadata nor the settings changed since the last run.
+   */
+  readonly unchangedTables: string[] = [];
   private actionBodyTablesCache?: ActionBodyTables;
   private functionParameterTablesCache?: ActionBodyTables;
 
@@ -214,6 +231,30 @@ export class TypescriptGenerator {
    * Generate all TypeScript files
    */
   async generate(): Promise<void> {
+    const incremental = this.config.output?.incremental === true;
+    const previous = incremental ? await readStamp(this.outputRoot) : undefined;
+    const tables: GenerationStamp["tables"] = {};
+    const settings = incremental ? await this.settingsHash() : "";
+    if (incremental) {
+      const reusable = previous?.generator === GENERATOR_VERSION && previous.settings === settings;
+      for (const entity of this.model.EntityTypes) {
+        const files = this.tableFiles(entity);
+        const hash = hashOf(JSON.stringify(entity));
+        tables[entity.LogicalName] = { hash, files };
+        const before = previous?.tables[entity.LogicalName];
+        if (
+          reusable &&
+          before?.hash === hash &&
+          before.files.join("\n") === files.join("\n") &&
+          (await allExist(this.outputRoot, files))
+        ) {
+          this.unchanged.add(entity);
+          this.unchangedTables.push(entity.LogicalName);
+          for (const file of files) this.written.add(file);
+        }
+      }
+    }
+
     await this.outputEntities();
     await this.outputEnums();
     await this.outputActions();
@@ -225,6 +266,43 @@ export class TypescriptGenerator {
     if (this.config.output?.generateIndex !== false) {
       await this.outputIndexFiles();
     }
+
+    if (incremental) {
+      if (previous) await removeStale(this.outputRoot, previous.files, this.written);
+      await writeStamp(this.outputRoot, {
+        format: 1,
+        generator: GENERATOR_VERSION,
+        settings,
+        tables,
+        files: [...this.written].sort(),
+      });
+    }
+  }
+
+  /**
+   * Incremental generation: a hash of what every generated file depends on besides its own
+   * table: the generator options, the templates (custom ones included) and the names of the
+   * generated tables, enums and complex types, which other files import.
+   */
+  private async settingsHash(): Promise<string> {
+    const templates = await Promise.all(TEMPLATE_NAMES.map((name) => this.loadTemplate(name)));
+    const settings = {
+      fileSuffix: this.fileSuffix,
+      strictNulls: this.strictNulls,
+      formContext: this.config.formContext === true,
+      tables: this.model.EntityTypes.map((e) => [e.Name, e.LogicalName, this.entityTypeName(e)]),
+      enums: this.model.EnumTypes.map((e) => e.Name),
+      complexTypes: this.model.ComplexTypes.map((c) => c.Name),
+    };
+    return hashOf(JSON.stringify(settings), ...templates);
+  }
+
+  /** The files generated from one table, relative to the output folder. */
+  private tableFiles(entity: EntityType): string[] {
+    const typeName = this.entityTypeName(entity);
+    const files = [`entities/${typeName}${this.fileSuffix}.ts`];
+    if (this.config.formContext === true) files.push(`forms/${typeName}Form${this.fileSuffix}.ts`);
+    return files;
   }
 
   /** TypeScript name of a generated entity: its schema name (`Account`), made safe. */
@@ -242,6 +320,7 @@ export class TypescriptGenerator {
     const template = await this.loadTemplate("entity.ejs");
 
     for (const entity of this.model.EntityTypes) {
+      if (this.unchanged.has(entity)) continue;
       const imports = new ImportCollector();
       imports.type("IEntity", RUNTIME_PACKAGE);
       const typeName = this.entityTypeName(entity);
@@ -350,10 +429,10 @@ export class TypescriptGenerator {
     const template = await this.loadTemplate("form.ejs");
 
     for (const entity of this.model.EntityTypes) {
+      const names = this.formNames.get(entity);
+      if (!names || this.unchanged.has(entity)) continue;
       const imports = new ImportCollector();
       const typeName = this.entityTypeName(entity);
-      const names = this.formNames.get(entity);
-      if (!names) continue;
       const columns = this.formColumns(entity, imports);
       const body = ejs.render(template, {
         ...this.helpers("forms", imports),
@@ -551,10 +630,9 @@ export class TypescriptGenerator {
     if (used) {
       const internal = path.join(this.outputRoot, "internal");
       await fs.mkdir(internal, { recursive: true });
-      await fs.writeFile(
+      await this.emit(
         path.join(internal, `${ACTION_BODY_MODULE}${this.fileSuffix}.ts`),
-        actionBodySource(tables, RUNTIME_PACKAGE, `../metadata${this.fileSuffix}.js`),
-        "utf-8"
+        actionBodySource(tables, RUNTIME_PACKAGE, `../metadata${this.fileSuffix}.js`)
       );
     }
   }
@@ -611,10 +689,9 @@ export class TypescriptGenerator {
     if (used) {
       const internal = path.join(this.outputRoot, "internal");
       await fs.mkdir(internal, { recursive: true });
-      await fs.writeFile(
+      await this.emit(
         path.join(internal, `${FUNCTION_PARAMETERS_MODULE}${this.fileSuffix}.ts`),
-        functionParametersSource(tables),
-        "utf-8"
+        functionParametersSource(tables)
       );
     }
   }
@@ -717,7 +794,7 @@ export * from './functions/index.js';
 export * from './complextypes/index.js';
 export * from './metadata${suffix}.js';
 ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}`;
-    await fs.writeFile(rootIndexPath, rootIndexContent, "utf-8");
+    await this.emit(rootIndexPath, rootIndexContent);
     if (this.config.formContext === true) {
       await this.outputFolderIndex(
         "forms",
@@ -764,7 +841,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
             .join("\n")
         : "export {};";
 
-    await fs.writeFile(indexPath, exports + "\n", "utf-8");
+    await this.emit(indexPath, exports + "\n");
   }
 
   /** Helpers every template gets. Type helpers record the imports they need. */
@@ -1249,15 +1326,18 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
     const importBlock = imports.render();
     const content =
       header + (importBlock ? `${importBlock}\n\n${body.trimStart()}` : body.trimStart());
-    await fs.writeFile(path.join(dir, `${name}${this.fileSuffix}.ts`), content, "utf-8");
+    await this.emit(path.join(dir, `${name}${this.fileSuffix}.ts`), content);
   }
 
-  /**
-   * Load EJS template
-   */
-  private async loadTemplate(name: string): Promise<string> {
-    const templatePath = path.join(__dirname, "../templates", name);
-    return await fs.readFile(templatePath, "utf-8");
+  /** Write a generated file and record it (for incremental generation's stamp). */
+  private async emit(file: string, content: string): Promise<void> {
+    await fs.writeFile(file, content, "utf-8");
+    this.written.add(path.relative(this.outputRoot, file).split(path.sep).join("/"));
+  }
+
+  /** A template: the configuration's `templates` directory's, else the built-in one (#347). */
+  private async loadTemplate(name: TemplateName): Promise<string> {
+    return await loadTemplate(name, this.config.templates);
   }
 
   /**

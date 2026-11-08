@@ -52,7 +52,25 @@ export interface DataverseGenConfig {
      * Example: ".generated" → "Account.generated.ts"
      */
     fileSuffix?: string;
+
+    /**
+     * Regenerate only the tables whose metadata changed (default: `false`). A stamp file in the
+     * output folder (`.dataverse-gen-stamp.json`) records a hash of each table and of the
+     * settings; a table whose hash is unchanged keeps its files as they are. A change of
+     * options, templates, generator version or of the set of generated types regenerates every
+     * table. Files the previous run wrote that this one doesn't are removed. Metadata is still
+     * read in full.
+     */
+    incremental?: boolean;
   };
+
+  /**
+   * A directory of custom EJS templates (default: none). A template there (`entity.ejs`,
+   * `enum.ejs`, …) is used instead of the built-in one of the same name; the others stay built-in.
+   * `dataverse-gen eject` copies the built-in templates into a directory to start from. A relative
+   * path is resolved against the working directory.
+   */
+  templates?: string;
 
   /**
    * Type operation responses exactly as `$metadata` declares them (default: `false`; the CLI's
