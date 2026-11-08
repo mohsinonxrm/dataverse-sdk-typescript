@@ -60,12 +60,19 @@ SDK (`new NodeSDK({ serviceName })` or the `OTEL_SERVICE_NAME` environment varia
 
 | `TelemetryClient` call | OpenTelemetry output                                                                                                        |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `trackDependency`      | A `CLIENT` span per Dataverse HTTP call, named `<METHOD> dataverse`, covering the call's duration.                          |
+| `startDependency`      | A `CLIENT` span per Dataverse request attempt, named `<METHOD> dataverse`, active while the attempt runs.                   |
 | `trackException`       | An `INTERNAL` span `dataverse.exception` (a child of the active span, if any) with an `exception` event and status `ERROR`. |
 | `trackEvent`           | An event on the active span; when no span is active, a short `INTERNAL` span named after the event.                         |
 
-The SDK's `TelemetryMiddleware` calls `trackDependency` for every request and `trackException`
-when a request fails without a response (for example a network error).
+The SDK calls `trackEvent` for throttling, retries, concurrency waits and `$batch` executions
+(`dataverse.throttle`, `dataverse.retry`, `dataverse.concurrency.wait`,
+`dataverse.concurrency.limit`, `dataverse.batch`; see `TelemetryEvents` in core). They are emitted
+in your context, so they become events on your span, with their measurements as `dataverse.*`
+attributes.
+
+The SDK's `TelemetryMiddleware` calls `startDependency` for every request attempt (each retry and
+each resend after a 401 is its own span) and `trackException` when a request fails without a
+response (for example a network error).
 
 ### Dependency span attributes
 
@@ -78,6 +85,7 @@ when a request fails without a response (for example a network error).
 | `http.response.status_code` | Response status, when there is a response                                              |
 | `error.type`                | On failure: the status code, or the error name when there is no response               |
 | `dataverse.correlation_id`  | The `x-ms-correlation-id` sent with the request                                        |
+| `http.request.resend_count` | On a retry: the retry number (`dataverse.retry.attempt`)                               |
 | `dataverse.*`               | Other properties from the SDK, e.g. `dataverse.sdk.version`, `dataverse.retry.attempt` |
 
 A call with a response fails when its status is 4xx or 5xx (so a `304 Not Modified` is not an
@@ -85,19 +93,27 @@ error); a call without one (a network error) fails when `success` is `false`. Fa
 span status `ERROR`. Successful calls leave the status unset, as the OpenTelemetry HTTP
 conventions recommend for client spans.
 
-### Span timing and trace context
+### Span model and trace context
 
-The `TelemetryClient` interface reports a call after it has finished: the SDK calls
-`trackDependency` with the duration once the response or the error is in. So the adapter
-records the dependency span afterwards, with its start time set back by the duration, and the
-span is never active while the request is in flight. As a result:
+The SDK calls `startDependency` before it sends an attempt and ends the handle when the response
+or the error is in. So:
 
-- the span is a child of the span that was active when the request was made (your app's span),
-  in the same trace;
-- this adapter sends no `traceparent` header to Dataverse;
-- spans from HTTP auto-instrumentation (for example `@opentelemetry/instrumentation-undici` for
-  `fetch`) are not children of the dependency span: both are children of your span. The
-  auto-instrumentation is what injects `traceparent`, with your span as the parent.
+- the dependency span is a child of the span that is active when the request is made (your app's
+  span), in the same trace. Each retry, and the resend after a 401, is a span of its own, a sibling
+  under your span, never a child of an earlier attempt;
+- the span is the active span while the attempt runs, so spans from HTTP auto-instrumentation (for
+  example `@opentelemetry/instrumentation-undici` for `fetch`) are its children;
+- the adapter injects the span's context with your registered propagator
+  (`propagation.inject`), and the SDK sends the resulting `traceparent` and `tracestate` to
+  Dataverse. `NodeSDK` registers the W3C Trace Context propagator; with a bare tracer provider,
+  call `propagation.setGlobalPropagator(new W3CTraceContextPropagator())` (from
+  `@opentelemetry/core`), or no header is sent. Other headers a propagator adds (such as
+  `baggage`) are not sent.
+
+The SDK sends trace context only to origins that may receive the access token (`baseUrl` and
+`allowedTokenOrigins`). `diagnosticHeaders: { traceContext: false }` (or `false`) turns it off; the
+spans are still recorded. In a browser, `traceparent` and `tracestate` are part of the CORS
+preflight, so the Dataverse origin must allow them.
 
 ## Example: full setup with OTLP
 
@@ -147,7 +163,7 @@ redact, so the adapter redacts every URL in them:
   `contacts(emailaddress1='REDACTED')`;
 - user info (`user:password@`) and the `#fragment` are dropped.
 
-No headers, request bodies or response bodies are recorded. If you call `trackDependency`
+No headers, request bodies or response bodies are recorded. If you call `startDependency`
 yourself, `url` is recorded as you pass it, so redact it first. Properties you pass to
 `trackEvent` or `trackException` yourself are recorded as they are (with URLs redacted), so don't
 put personal data in them.

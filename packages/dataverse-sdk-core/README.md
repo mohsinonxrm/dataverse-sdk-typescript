@@ -1029,7 +1029,7 @@ Middleware Chain (sequential execution)
    ├─ RetryMiddleware (retry on 429/502/503/504)
    ├─ ConcurrencyMiddleware (rate limiting, a slot per attempt)
    ├─ AuthMiddleware (Bearer token per attempt; one refresh-and-retry after a 401)
-   ├─ TelemetryMiddleware (diagnostic headers, track dependencies)
+   ├─ TelemetryMiddleware (diagnostic headers, a dependency and traceparent per attempt)
    ├─ LoggingMiddleware (log requests, when a logger is set)
    └─ append middleware (user-provided, optional)
    ↓
@@ -1055,7 +1055,7 @@ User Code (typed result)
 3. RetryMiddleware - Wraps the rest of the chain with retry logic (adds `retry-attempt` on retries)
 4. ConcurrencyMiddleware - Acquires a semaphore slot for this attempt (blocks if at max concurrency)
 5. AuthMiddleware - Calls `tokenProvider.getToken()` (every attempt) and adds `Authorization` header
-6. TelemetryMiddleware - Adds diagnostic headers, records start time
+6. TelemetryMiddleware - Adds diagnostic headers, starts the attempt's dependency and adds its `traceparent`
 7. LoggingMiddleware - Logs request details
 8. `append` middleware (if any)
 9. FetchRequestAdapter - Calls `fetch(url, { method, headers, body })`
@@ -1065,7 +1065,7 @@ User Code (typed result)
 1. FetchRequestAdapter - Returns Response object
 2. `append` middleware
 3. LoggingMiddleware - Logs response status and duration
-4. TelemetryMiddleware - Tracks dependency with duration and result
+4. TelemetryMiddleware - Ends the dependency with its result; a `dataverse.throttle` event for a 429
 5. AuthMiddleware - On a 401, gets a new token (with the claims challenge, if any) and resends once
 6. ConcurrencyMiddleware - Releases the semaphore slot, adjusts limit based on `x-ms-dop-hint` header
 7. RetryMiddleware - Checks status code, waits and retries if 429/502/503/504 and attempts < maxRetries (the wait holds no slot)
@@ -1442,13 +1442,12 @@ const client = new DataverseClient({
 
 ### TelemetryClient
 
-Telemetry interface for tracking events and dependencies (metrics, distributed tracing).
+Telemetry interface for events, dependencies (one per request attempt, with W3C trace context) and
+exceptions.
 
 ```typescript
 export interface TelemetryClient {
-  /**
-   * Track custom events
-   */
+  /** Custom events, and the SDK's own (see TelemetryEvents below). */
   trackEvent(
     name: string,
     props?: Record<string, string>,
@@ -1456,27 +1455,62 @@ export interface TelemetryClient {
   ): void;
 
   /**
-   * Track HTTP dependencies (outbound calls): one per request attempt
+   * A request attempt starts: called before it is sent, in the caller's context. Each retry and
+   * each resend after a 401 is its own dependency.
    */
-  trackDependency(
+  startDependency(
     name: string, // "dataverse"
-    data: {
-      target?: string; // Host, e.g. "org.crm.dynamics.com"
-      method?: string; // HTTP method
-      url?: string; // Redacted URL (see below)
-      durationMs?: number; // Duration in milliseconds
-      success?: boolean; // Whether the call succeeded
-      resultCode?: string; // HTTP status code
-      properties?: Record<string, string>; // sdk.version, correlation.id, retry.attempt, …
-    }
-  ): void;
+    data: DependencyTelemetry // target, method, url (redacted), properties
+  ): DependencyHandle;
 
-  /**
-   * Track an error thrown by a request (network failure, abort, timeout)
-   */
+  /** An error thrown by a request (network failure, abort, timeout). */
   trackException(error: unknown, props?: Record<string, string>): void;
 }
+
+export interface DependencyHandle {
+  /** `traceparent` (and `tracestate`) to send with this attempt. Optional. */
+  headers?: Record<string, string>;
+  /** Run the attempt with this dependency as the active span. Optional. */
+  run?<T>(fn: () => Promise<T>): Promise<T>;
+  /** The attempt finished: durationMs, success, resultCode, and the properties again. */
+  end(data: DependencyTelemetry): void;
+}
 ```
+
+A minimal client records each attempt when it ends:
+
+```typescript
+const telemetry: TelemetryClient = {
+  trackEvent: (name, props, measurements) => console.info(name, props, measurements),
+  startDependency: (name) => ({
+    end: (d) => console.info(name, d.method, d.resultCode, d.durationMs, d.url),
+  }),
+  trackException: (error, props) => console.error(error, props),
+};
+```
+
+**Trace context.** When the handle has `headers`, the SDK sends a valid `traceparent` (and
+`tracestate`) from it with that attempt, so Dataverse sees the request as a child of the
+dependency. Other header names are ignored. The headers go only to origins that may receive the
+access token (`baseUrl` and `allowedTokenOrigins`), and `diagnosticHeaders: false` or
+`{ traceContext: false }` turns them off. `run` keeps the dependency active while the attempt runs,
+so work done during it (for example `fetch` auto-instrumentation) nests under it. The
+`@mohsinonxrm/dataverse-sdk-otel` adapter provides both: a CLIENT span per attempt, a child of your
+active span, injected with your registered propagator.
+
+**Events (`TelemetryEvents`).** Every event carries `correlation.id`:
+
+| Event                         | When                                                      | Properties / measurements                                                                                                                                                           |
+| ----------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dataverse.throttle`          | A 429 response, per attempt                               | `request.method`, `request.url`, `throttle.limit` (`requests`, `execution_time`, `concurrent_requests`) and `error.code` when known / `retry.attempt`, `retry.after_ms`, `dop_hint` |
+| `dataverse.retry`             | Before each retry wait (when `onRetry` runs)              | `request.method`, `request.url`, `retry.reason` (`status`, `network_error`), `error.type` / `retry.attempt`, `retry.max`, `retry.delay_ms`, `retry.after_ms`, `status`              |
+| `dataverse.concurrency.wait`  | A request waited for a concurrency slot                   | `request.method`, `request.url` / `wait_ms`, `concurrency.limit`, `concurrency.queued`                                                                                              |
+| `dataverse.concurrency.limit` | `x-ms-dop-hint` changed the concurrency limit             | `concurrency.limit`, `concurrency.previous_limit`, `dop_hint`                                                                                                                       |
+| `dataverse.batch`             | A `$batch` came back (`@mohsinonxrm/dataverse-sdk-batch`) | `batch.continue_on_error` / `batch.requests`, `batch.succeeded`, `batch.failed`, `duration_ms`, `status`                                                                            |
+
+A request with `{ type: "telemetry", disable: true }` sends none of them.
+`client.trackEvent(name, props, measurements)` sends your own event to the client's telemetry,
+guarded like the SDK's.
 
 **Privacy and safety:**
 
@@ -1485,14 +1519,15 @@ export interface TelemetryClient {
   `accounts(…guid…)?$filter=…` is reported as `https://org.crm.dynamics.com/api/data/v9.2/accounts({id})?…`.
   Pass `redactUrl: (url) => …` on the client to change this (`(url) => url.href` reports full URLs).
   `defaultRedactUrl` is exported if you want to wrap it.
-- Calls into the telemetry client are guarded: if `trackDependency` or `trackException` throws, the
-  error is logged with `logger.warn` and dropped, and the request carries on (or rejects with its own
-  error).
+- Calls into the telemetry client are guarded: if any method (or a handle's `run` or `end`) throws,
+  the error is logged with `logger.warn` and dropped, and the request carries on (or rejects with its
+  own error).
 - `sdk.version` and the `x-ms-sdk-version` header carry the real package version (`SDK_VERSION`).
 
 **Example implementations:**
 
-- `@mohsinonxrm/dataverse-sdk-appinsights` - Application Insights adapter
+- `@mohsinonxrm/dataverse-sdk-appinsights` - Application Insights adapter (Node.js), and
+  `@mohsinonxrm/dataverse-sdk-appinsights/browser` on `@microsoft/applicationinsights-web`
 - `@mohsinonxrm/dataverse-sdk-otel` - OpenTelemetry adapter
 
 **Usage:**
@@ -1666,15 +1701,21 @@ new ChaosMiddleware({
 
 Besides the headers a request needs (`authorization`, `accept`, `odata-*`, and `content-type`,
 `prefer` or `if-match` when used), the SDK sends its own diagnostic headers:
-`x-ms-sdk-version`, `x-ms-correlation-id`, `x-ms-feature-usage`, and `retry-attempt` on retries.
+`x-ms-sdk-version`, `x-ms-correlation-id`, `x-ms-feature-usage`, `retry-attempt` on retries, and
+`traceparent` / `tracestate` when the telemetry client provides trace context (the OpenTelemetry
+adapter does). Trace context goes only to the origins that may receive the access token.
 
 In a browser every non-safelisted header is part of the CORS preflight. Dataverse's preflight
-currently allows these headers, so they work from SPAs, but you can turn them off to send only what
-the request needs, for example in a tool that shows "the exact request that was sent":
+currently allows the `x-ms-*` and `retry-attempt` headers, so they work from SPAs. `traceparent`
+and `tracestate` must be allowed too before you send them from a browser (with the OpenTelemetry
+adapter there, check it, or turn them off with `traceContext: false`). You can turn any of them
+off to send only what the request needs, for example in a tool that shows "the exact request that
+was sent":
 
 ```typescript
 new DataverseClient({ baseUrl, tokenProvider, diagnosticHeaders: false }); // none of them
 new DataverseClient({ baseUrl, tokenProvider, diagnosticHeaders: { featureUsage: false } }); // one off
+new DataverseClient({ baseUrl, tokenProvider, diagnosticHeaders: { traceContext: false } }); // no traceparent
 ```
 
 Telemetry still records the correlation id when the header is off. The SDK never changes the

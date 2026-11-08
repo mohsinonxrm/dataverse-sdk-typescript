@@ -10,6 +10,10 @@ import { DiscoveryClient } from "@mohsinonxrm/dataverse-sdk-discovery";
 import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
 import { MetadataClient } from "@mohsinonxrm/dataverse-sdk-metadata";
+import {
+  ApplicationInsightsBrowserTelemetryClient,
+  type ApplicationInsightsBrowserConfig,
+} from "@mohsinonxrm/dataverse-sdk-appinsights/browser";
 
 const ORG = "https://contoso.crm.dynamics.com";
 
@@ -88,6 +92,7 @@ const smoke = {
         BatchRequestBuilder,
         FileColumnClient,
         MetadataClient,
+        ApplicationInsightsBrowserTelemetryClient,
       }).map(([name, value]) => [name, typeof value])
     ),
 
@@ -121,6 +126,55 @@ const smoke = {
     return fake.calls.map(
       (r) => `${r.method} ${new URL(r.url).pathname.split("/").slice(-2).join("/")}`
     );
+  },
+
+  /**
+   * One request with the Application Insights browser adapter on a stand-in `ApplicationInsights`
+   * instance (#158): the dependencies it recorded and the headers the request carried.
+   */
+  async appInsightsDependency(): Promise<{
+    dependencies: Array<{
+      name?: string;
+      data?: string;
+      responseCode: number;
+      correlation: unknown;
+    }>;
+    correlationHeader: string | undefined;
+    traceparent: string | undefined;
+  }> {
+    const recorded: Array<
+      Parameters<ApplicationInsightsBrowserConfig["appInsights"]["trackDependencyData"]>[0]
+    > = [];
+    const appInsights = {
+      trackDependencyData: (d: (typeof recorded)[number]) => {
+        recorded.push(d);
+      },
+      trackEvent: () => undefined,
+      trackException: () => undefined,
+      getTraceCtx: () => null,
+    } as unknown as ApplicationInsightsBrowserConfig["appInsights"];
+    const fake = fakeFetch(() => json({ value: [] }));
+    const c = new DataverseClient({
+      baseUrl: ORG,
+      fetchProvider: fake.provider,
+      tokenProvider: { getToken: () => Promise.resolve("test-token") },
+      retry: { maxRetries: 0 },
+      telemetry: new ApplicationInsightsBrowserTelemetryClient({ appInsights }),
+    });
+    await c.api("contacts").filter("emailaddress1 eq 'jane@contoso.com'").get();
+    return {
+      dependencies: recorded.map((d) => {
+        const properties: Record<string, unknown> = d.properties ?? {};
+        return {
+          name: d.name,
+          data: d.data,
+          responseCode: d.responseCode,
+          correlation: properties["dataverse.correlation_id"],
+        };
+      }),
+      correlationHeader: fake.calls[0]?.headers["x-ms-correlation-id"],
+      traceparent: fake.calls[0]?.headers.traceparent,
+    };
   },
 
   /** A file upload from a Blob, as a browser app would do it (#58). Returns the file steps. */

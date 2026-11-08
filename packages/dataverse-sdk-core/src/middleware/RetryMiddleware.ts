@@ -11,6 +11,9 @@ import { withJitter } from "../utils/jitter.js";
 import { sleep } from "../utils/sleep.js";
 import { isStreamBody } from "../utils/body.js";
 import { parseRetryAfter, isStreamContent } from "../utils/HeaderUtils.js";
+import { TelemetryEvents } from "../telemetry/events.js";
+import { redactRequestUrl } from "../utils/redact.js";
+import { requestTelemetry } from "../utils/telemetry.js";
 
 const attemptsByResponse = new WeakMap<Response, readonly RetryAttempt[]>();
 
@@ -66,9 +69,30 @@ export class RetryMiddleware implements Middleware {
 
     let attempt = 0;
     const history: RetryAttempt[] = [];
-    /** Record the attempt, tell `onRetry`, then wait. */
+    const telemetry = requestTelemetry(this.options, ctx);
+    /** Record the attempt, tell telemetry and `onRetry`, then wait. */
     const waitBeforeRetry = async (entry: RetryAttempt, delayMs: number) => {
       history.push({ ...entry, delayMs });
+      if (telemetry) {
+        const measurements: Record<string, number> = {
+          "retry.attempt": attempt + 1,
+          "retry.max": opt.maxRetries,
+          "retry.delay_ms": delayMs,
+          status: entry.status,
+        };
+        if (entry.retryAfterMs !== undefined) measurements["retry.after_ms"] = entry.retryAfterMs;
+        telemetry.trackEvent(
+          TelemetryEvents.retry,
+          {
+            "correlation.id": ctx.correlationId ?? "",
+            "request.method": request.method,
+            "request.url": redactRequestUrl(request, this.options.redactUrl),
+            "retry.reason": entry.error ? "network_error" : "status",
+            ...(entry.error ? { "error.type": entry.error.name } : {}),
+          },
+          measurements
+        );
+      }
       if (opt.onRetry) {
         try {
           opt.onRetry({

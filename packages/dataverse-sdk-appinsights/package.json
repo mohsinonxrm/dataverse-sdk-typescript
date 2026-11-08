@@ -19,6 +19,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
     }
   },
   "sideEffects": false,
@@ -50,6 +54,7 @@
   },
   "peerDependencies": {
     "@azure/monitor-opentelemetry": "^1.20.1",
+    "@microsoft/applicationinsights-web": "^3.0.0",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "^0.221.0",
     "@opentelemetry/resources": "^2.0.0"
@@ -58,16 +63,21 @@
     "@azure/monitor-opentelemetry": {
       "optional": true
     },
+    "@microsoft/applicationinsights-web": {
+      "optional": true
+    },
     "@opentelemetry/resources": {
       "optional": true
     }
   },
   "devDependencies": {
     "@azure/monitor-opentelemetry": "^1.20.1",
+    "@microsoft/applicationinsights-web": "3.4.5",
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "^0.221.0",
     "@opentelemetry/context-async-hooks": "^2.10.0",
+    "@opentelemetry/core": "^2.10.0",
     "@opentelemetry/resources": "^2.10.0",
     "@opentelemetry/sdk-logs": "^0.221.0",
     "@opentelemetry/sdk-trace-base": "^2.10.0",

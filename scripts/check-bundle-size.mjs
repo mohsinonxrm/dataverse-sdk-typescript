@@ -5,13 +5,15 @@
  * them gets only those. Each entry in `scripts/bundle-budgets.json` is bundled for the browser
  * with esbuild (minified, tree-shaken) from the packages' built `dist`, and its gzipped size must
  * stay within its budget. A "tree-shaking" entry must also stay under `maxShareOfFull` of the size
- * of the whole package it imports from.
+ * of the whole package it imports from. A `browser` entry must import no Node.js built-in, and no
+ * entry may import a package listed in its `forbiddenImports` (a name, or a prefix ending in `/`),
+ * so a browser entry point can't pull in Node-only peers (#158).
  *
  *   node scripts/check-bundle-size.mjs           check every budget (run after `pnpm build`)
  *   node scripts/check-bundle-size.mjs --update  print the sizes and suggested budgets
  */
 import { readFileSync, realpathSync } from "node:fs";
-import { createRequire } from "node:module";
+import { builtinModules, createRequire } from "node:module";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
@@ -23,13 +25,17 @@ const esbuild = createRequire(realpathSync(join(root, "node_modules", "tsup", "p
 );
 const config = JSON.parse(readFileSync(join(root, "scripts", "bundle-budgets.json"), "utf8"));
 
-/** `@mohsinonxrm/dataverse-sdk-<name>` → that package's built entry; other packages are left out. */
+/**
+ * `@mohsinonxrm/dataverse-sdk-<name>` → that package's built entry, and `…/<subpath>` → its
+ * `dist/<subpath>.js` (the package's `exports`); other packages are left out.
+ */
 const workspace = {
   name: "workspace",
   setup(build) {
-    build.onResolve({ filter: /^@mohsinonxrm\/dataverse-sdk-[a-z-]+$/ }, (args) => ({
-      path: join(root, "packages", args.path.replace("@mohsinonxrm/", ""), "dist", "index.js"),
-    }));
+    build.onResolve({ filter: /^@mohsinonxrm\/dataverse-sdk-[a-z-]+(?:\/[a-z-]+)?$/ }, (args) => {
+      const [pkg, subpath] = args.path.replace("@mohsinonxrm/", "").split("/");
+      return { path: join(root, "packages", pkg, "dist", `${subpath ?? "index"}.js`) };
+    });
     // Peer dependencies (MSAL, OpenTelemetry, …) belong to the app, not to the SDK's budget.
     build.onResolve({ filter: /^[^./]/ }, (args) =>
       args.path.startsWith("@mohsinonxrm/") ? undefined : { path: args.path, external: true }
@@ -37,7 +43,8 @@ const workspace = {
   },
 };
 
-async function gzipSize(contents) {
+/** Gzipped size of `contents` bundled, and the bare imports left in the bundle. */
+async function bundle(contents) {
   const result = await esbuild.build({
     stdin: { contents, resolveDir: root, loader: "js" },
     bundle: true,
@@ -48,10 +55,23 @@ async function gzipSize(contents) {
     platform: "browser",
     target: "es2022",
     logLevel: "silent",
+    metafile: true,
     plugins: [workspace],
   });
-  return gzipSync(result.outputFiles[0].contents, { level: 9 }).byteLength;
+  const imports = Object.values(result.metafile.outputs).flatMap((o) =>
+    o.imports.filter((i) => i.external).map((i) => i.path)
+  );
+  return {
+    size: gzipSync(result.outputFiles[0].contents, { level: 9 }).byteLength,
+    imports: [...new Set(imports)],
+  };
 }
+
+const isNodeBuiltin = (name) => name.startsWith("node:") || builtinModules.includes(name);
+const matches = (name, pattern) =>
+  pattern.endsWith("/")
+    ? name.startsWith(pattern)
+    : name === pattern || name.startsWith(`${pattern}/`);
 
 const kb = (n) => `${(n / 1024).toFixed(1)} KB`;
 const update = process.argv.includes("--update");
@@ -59,7 +79,7 @@ const fullSizes = new Map();
 let failed = 0;
 
 for (const entry of config.entries) {
-  const size = await gzipSize(entry.code);
+  const { size, imports } = await bundle(entry.code);
   let line = `${entry.name.padEnd(42)} ${kb(size).padStart(10)}`;
   if (update) {
     // 15% headroom, rounded up to the next 0.5 KB
@@ -69,10 +89,18 @@ for (const entry of config.entries) {
   }
   const problems = [];
   if (size > entry.budget) problems.push(`over its budget of ${kb(entry.budget)}`);
+  const forbidden = imports.filter(
+    (name) =>
+      (entry.browser && isNodeBuiltin(name)) ||
+      (entry.forbiddenImports ?? []).some((pattern) => matches(name, pattern))
+  );
+  if (forbidden.length > 0) problems.push(`imports ${forbidden.join(", ")}, which it must not`);
   if (entry.fullPackage) {
     let full = fullSizes.get(entry.fullPackage);
     if (full === undefined) {
-      full = await gzipSize(`import * as all from "${entry.fullPackage}"; globalThis.keep = all;`);
+      ({ size: full } = await bundle(
+        `import * as all from "${entry.fullPackage}"; globalThis.keep = all;`
+      ));
       fullSizes.set(entry.fullPackage, full);
     }
     const share = size / full;

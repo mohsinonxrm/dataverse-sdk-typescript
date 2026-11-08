@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@azure/msal-browser": "^3.30.0",
+    "@mohsinonxrm/dataverse-sdk-appinsights": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-auth-msal-browser": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-batch": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*",

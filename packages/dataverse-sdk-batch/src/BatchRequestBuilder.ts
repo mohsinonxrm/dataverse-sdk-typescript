@@ -6,8 +6,10 @@ import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import {
   DataverseError,
   DataverseInvalidRequestError,
+  generateUUID,
   normalizeHeaders,
   parseODataError,
+  TelemetryEvents,
 } from "@mohsinonxrm/dataverse-sdk-core";
 import type {
   BatchItem,
@@ -501,6 +503,9 @@ export class BatchRequestBuilder {
         : "odata.continue-on-error";
     }
 
+    // One id per $batch, generated here when the caller gave none, so the event below has it.
+    const correlationId = options.correlationId ?? generateUUID();
+    const started = Date.now();
     // client.send() returns the raw Response and sends a string body unchanged.
     const response = await this.client.send({
       method: "POST",
@@ -512,14 +517,35 @@ export class BatchRequestBuilder {
       ...(options.attemptTimeoutMs !== undefined
         ? { attemptTimeoutMs: options.attemptTimeoutMs }
         : {}),
-      ...(options.correlationId ? { correlationId: options.correlationId } : {}),
+      correlationId,
     });
+    const track = (result?: BatchExecutionResult) => {
+      this.client.trackEvent(
+        TelemetryEvents.batch,
+        {
+          "correlation.id": correlationId,
+          "batch.continue_on_error": String(options.continueOnError === true),
+        },
+        {
+          "batch.requests": items.flatMap(requestsOf).length,
+          ...(result
+            ? {
+                "batch.succeeded": result.successfulRequests,
+                "batch.failed": result.failedRequests,
+              }
+            : {}),
+          duration_ms: Date.now() - started,
+          status: response.status,
+        }
+      );
+    };
 
     // Dataverse answers a batch whose first failure is a 4xx or 5xx with that status, but the
     // body is still the multipart batch response. Anything else is an error for the batch as a
     // whole (malformed batch, auth, throttling).
     const contentType = response.headers.get("content-type") ?? "";
     if (!/^\s*multipart\/mixed\s*;/i.test(contentType)) {
+      track();
       if (!response.ok) throw await parseODataError(response);
       throw new DataverseError(
         `Unexpected $batch response: expected multipart/mixed, got "${contentType || "no content type"}"`,
@@ -528,7 +554,9 @@ export class BatchRequestBuilder {
     }
 
     const parts = decodeBatchResponse(await response.text(), contentType);
-    return buildResult(items, parts);
+    const result = await buildResult(items, parts);
+    track(result);
+    return result;
   }
 
   /**

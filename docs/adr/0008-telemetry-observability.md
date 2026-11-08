@@ -37,26 +37,32 @@ export interface Logger {
   error(message: string, meta?: unknown): void;
 }
 
-// Telemetry client interface
+// Telemetry client interface (2.0, #97)
 export interface TelemetryClient {
   trackEvent(
     name: string,
     props?: Record<string, string>,
     measurements?: Record<string, number>
   ): void;
-  trackDependency(
-    name: string,
-    data: {
-      target?: string; // host
-      method?: string;
-      url?: string; // redacted (see Privacy & Security)
-      durationMs?: number;
-      success?: boolean;
-      resultCode?: string; // HTTP status, as a string
-      properties?: Record<string, string>;
-    }
-  ): void;
+  // Called before each request attempt, in the caller's context
+  startDependency(name: string, data: DependencyTelemetry): DependencyHandle;
   trackException(error: unknown, props?: Record<string, string>): void;
+}
+
+export interface DependencyTelemetry {
+  target?: string; // host
+  method?: string;
+  url?: string; // redacted (see Privacy & Security)
+  durationMs?: number; // on end
+  success?: boolean; // on end
+  resultCode?: string; // on end: HTTP status, as a string
+  properties?: Record<string, string>;
+}
+
+export interface DependencyHandle {
+  headers?: Record<string, string>; // W3C traceparent / tracestate to send
+  run?<T>(fn: () => Promise<T>): Promise<T>; // run the attempt with the dependency active
+  end(data: DependencyTelemetry): void; // the full record, once the attempt is done
 }
 
 // Console logger, opt-in. `level` drops messages below it (default "debug").
@@ -77,7 +83,9 @@ export class ConsoleLogger implements Logger {
 #### **3. Optional Telemetry Packages (v1.0)**
 
 **Application Insights Adapter** (Node.js; it emits OpenTelemetry spans and log records that the
-Azure Monitor OpenTelemetry distro exports):
+Azure Monitor OpenTelemetry distro exports. Browsers use the `/browser` entry point, on the app's own
+`ApplicationInsights` instance from `@microsoft/applicationinsights-web`, an optional peer
+dependency; it imports nothing from Node.js or OpenTelemetry, which the bundle-size check enforces):
 
 ```typescript
 // @mohsinonxrm/dataverse-sdk-appinsights
@@ -115,30 +123,46 @@ const client = new DataverseClient({
 
 **TelemetryMiddleware** in the core pipeline reports, when a `telemetry` client is set:
 
-1. **One dependency per request attempt** (`trackDependency("dataverse", …)`): `target` (host),
-   `method`, redacted `url`, `durationMs`, `success` and `resultCode`, with the properties
-   `sdk.version`, `correlation.id`, `feature.usage` and `retry.attempt` (and `error.type` when the
-   attempt threw). Retries run outside it, so each retry is its own dependency.
+1. **One dependency per request attempt** (`startDependency("dataverse", …)` before the attempt,
+   `end(…)` after it): `target` (host), `method` and redacted `url` at the start; `durationMs`,
+   `success` and `resultCode` at the end; the properties `sdk.version`, `correlation.id`,
+   `feature.usage` and `retry.attempt` (and `error.type` when the attempt threw). Retries and the
+   resend after a 401 run outside it, so each is its own dependency, started in the caller's
+   context: siblings under the caller's span, never children of an earlier attempt.
 2. **Exceptions** (`trackException`): network failures, aborts and timeouts, with
    `correlation.id`, `request.method` and `request.url`.
-3. **Per request:** `new MiddlewareRequestOptions([{ type: "telemetry", disable: true }])` turns
-   tracking off for one request; `customProperties` adds properties to its dependency.
+3. **Events** (`trackEvent`, names in `TelemetryEvents`): `dataverse.throttle` for each 429 (the
+   limit hit, from the error code, with `Retry-After` and `x-ms-dop-hint`), `dataverse.retry`
+   before each retry wait (from the retry middleware), `dataverse.concurrency.wait` when a request
+   waited for a slot and `dataverse.concurrency.limit` when `x-ms-dop-hint` changed the limit (from
+   the concurrency middleware), and `dataverse.batch` for each `$batch` (from the batch package,
+   through `DataverseClient.trackEvent`).
+4. **Per request:** `new MiddlewareRequestOptions([{ type: "telemetry", disable: true }])` turns
+   tracking (and the events) off for one request; `customProperties` adds properties to its
+   dependency.
 
-Calls into the telemetry client are guarded: if it throws, the error is logged with `logger.warn`
-and dropped, and the request carries on.
+Calls into the telemetry client are guarded: if a method, or a handle's `run` or `end`, throws, the
+error is logged with `logger.warn` and dropped, and the request carries on. A `run` that misbehaves
+still runs the attempt exactly once.
 
-Retry details are available without telemetry: `retry.onRetry(info)` runs before each retry
+Retry details are also available without telemetry: `retry.onRetry(info)` runs before each retry
 (attempt, status, delay, `Retry-After`), and `getRetryAttempts(response)` lists the attempts behind
-a response. Throttle, concurrency and batch metrics are not emitted.
+a response.
 
-#### **5. Correlation ID Propagation**
+#### **5. Correlation and Trace Context**
 
 - Each request gets a correlation id, sent as `x-ms-correlation-id` and the same on every retry.
   Pass your own with the request option `correlationId`.
 - The SDK also sends `x-ms-sdk-version` and `x-ms-feature-usage`, and `retry-attempt` on retries.
-  `diagnosticHeaders: false` (or an object, one header at a time) turns them off; telemetry still
-  records the correlation id.
-- The SDK doesn't send W3C `traceparent` headers.
+- **W3C Trace Context (#97).** When the dependency handle carries `headers`, the SDK sends its
+  `traceparent` (and `tracestate`) with that attempt, so the request is a child of the attempt's
+  dependency. Only those two names are sent, only a valid `traceparent`, and only to origins that
+  may receive the access token (`baseUrl` and `allowedTokenOrigins`, the same rule as the token).
+  The OpenTelemetry adapters start a CLIENT span with the active context, inject it with the app's
+  registered propagator and make it active (`run`) while the attempt runs. The browser App
+  Insights adapter sends trace context only with `propagateTraceContext: true` (CORS preflight).
+- `diagnosticHeaders: false` (or an object, one header at a time, including `traceContext`) turns
+  these headers off; telemetry still records the correlation id and the dependencies.
 
 ```typescript
 // Use your own correlation id for one request
@@ -151,15 +175,18 @@ await client.api("/accounts").get({ correlationId: userSessionId });
 Developers can implement custom telemetry:
 
 ```typescript
-import type { TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
+import type { DependencyHandle, TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
 
 // Send each call to your own backend; this one writes to the console
 class CustomTelemetryClient implements TelemetryClient {
   trackEvent(name: string, props?: Record<string, string>) {
     console.info("event", name, props);
   }
-  trackDependency(name: string, data: Parameters<TelemetryClient["trackDependency"]>[1]) {
-    console.info("dependency", name, data.resultCode, data.durationMs, data.url);
+  startDependency(name: string): DependencyHandle {
+    // No trace context: no `headers`, no `run`. `end` gets the outcome.
+    return {
+      end: (data) => console.info("dependency", name, data.resultCode, data.durationMs, data.url),
+    };
   }
   trackException(error: unknown, props?: Record<string, string>) {
     console.error("exception", error, props);

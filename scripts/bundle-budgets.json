@@ -41,6 +41,13 @@
       "name": "xrm: OrganizationService",
       "code": "import { OrganizationService } from \"@mohsinonxrm/dataverse-sdk-xrm\"; globalThis.keep = OrganizationService;",
       "budget": 5120
+    },
+    {
+      "name": "appinsights/browser: telemetry client",
+      "code": "import { ApplicationInsightsBrowserTelemetryClient } from \"@mohsinonxrm/dataverse-sdk-appinsights/browser\"; globalThis.keep = ApplicationInsightsBrowserTelemetryClient;",
+      "budget": 2560,
+      "browser": true,
+      "forbiddenImports": ["@azure/", "@opentelemetry/"]
     }
   ]
 }

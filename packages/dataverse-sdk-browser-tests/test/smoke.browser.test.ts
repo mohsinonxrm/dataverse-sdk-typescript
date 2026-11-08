@@ -69,6 +69,7 @@ describe("browser bundle", () => {
       BatchRequestBuilder: "function",
       FileColumnClient: "function",
       MetadataClient: "function",
+      ApplicationInsightsBrowserTelemetryClient: "function",
     });
     expect(pageErrors).toEqual([]);
     expect(consoleErrors).toEqual([]);
@@ -103,6 +104,23 @@ describe("browser behaviour", () => {
       "POST contact_customer_accounts/$ref",
       "POST contact_customer_accounts/$ref",
     ]);
+    expect(await page.evaluate(() => window.__smoke.cspViolations())).toEqual([]);
+  });
+
+  it("#158: the appinsights browser entry records one dependency per request, without query values", async () => {
+    const r = await page.evaluate(() => window.__smoke.appInsightsDependency());
+    expect(r.dependencies).toEqual([
+      {
+        name: "GET /api/data/v9.2/contacts",
+        data: "https://contoso.crm.dynamics.com/api/data/v9.2/contacts?…",
+        responseCode: 200,
+        correlation: r.correlationHeader,
+      },
+    ]);
+    expect(r.correlationHeader).toMatch(/^[0-9a-f-]{36}$/);
+    // Trace context is opt-in in the browser (CORS preflight).
+    expect(r.traceparent).toBeUndefined();
+    expect(pageErrors).toEqual([]);
     expect(await page.evaluate(() => window.__smoke.cspViolations())).toEqual([]);
   });
 
