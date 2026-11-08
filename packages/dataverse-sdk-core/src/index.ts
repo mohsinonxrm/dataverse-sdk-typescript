@@ -7,6 +7,10 @@ export * from "./client/index.js";
 export * from "./errors/index.js";
 export * from "./paging/index.js";
 
+// Waiting for system jobs (#318)
+export * from "./asyncoperation/waitForAsyncOperation.js";
+export * from "./errors/DataverseAsyncOperationError.js";
+
 // New exports for enhanced patterns
 export {
   RequestOptions as MiddlewareRequestOptions,
