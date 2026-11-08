@@ -68,15 +68,25 @@ describe.skipIf(!live)("live: basics", () => {
     expect(Number(res.headers.get("x-ms-dop-hint"))).toBeGreaterThan(0);
   });
 
-  it("$metadata returns the CSDL document as XML", async () => {
+  it("$metadata returns the CSDL document as XML", { timeout: 120_000 }, async () => {
     const { client } = liveClient();
-    const res = await client.send({
-      method: "GET",
-      url: `${client.getBaseUrl()}/$metadata`,
-      headers: { accept: "application/xml" },
-    });
-    expect(res.status).toBe(200);
-    const xml = await res.text();
+    // The suite creates tables and columns in parallel, and the org rebuilds $metadata after a
+    // schema change; twice a request at that moment got a 400. Retry 400/503 for a while, and
+    // show the body if it still fails.
+    let res: Response | undefined;
+    let body = "";
+    for (let attempt = 1; attempt <= 6; attempt++) {
+      res = await client.send({
+        method: "GET",
+        url: `${client.getBaseUrl()}/$metadata`,
+        headers: { accept: "application/xml" },
+      });
+      if (res.status !== 400 && res.status !== 503) break;
+      body = await res.text();
+      await new Promise((resolve) => setTimeout(resolve, 10_000));
+    }
+    expect(res?.status, `last error body: ${body.slice(0, 500)}`).toBe(200);
+    const xml = await (res as Response).text();
     expect(xml).toContain("<edmx:Edmx");
     expect(xml).toContain('Name="WhoAmI"');
   });
