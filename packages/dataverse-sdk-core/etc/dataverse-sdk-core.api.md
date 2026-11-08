@@ -40,6 +40,18 @@ export function buildPagedFetchXml(fetchXml: string, paging: FetchXmlPaging): st
 // @public
 export function buildUrl(req: RequestInformation): string;
 
+// @public
+export interface BuiltInMiddlewareOptions {
+    // (undocumented)
+    concurrency: MiddlewareConcurrencyOptions;
+    // (undocumented)
+    logging: LoggingOptions;
+    // (undocumented)
+    retry: RetryOptions;
+    // (undocumented)
+    telemetry: TelemetryOptions;
+}
+
 // @public (undocumented)
 export class ConcurrencyMiddleware implements Middleware {
     constructor(options: DataverseClientOptions);
@@ -343,6 +355,20 @@ export class DataverseUrlError extends DataverseError {
 export function defaultRedactUrl(url: URL): string;
 
 // @public
+export interface DependencyTelemetry {
+    // (undocumented)
+    durationMs?: number;
+    // (undocumented)
+    method?: string;
+    // (undocumented)
+    properties?: Record<string, string>;
+    resultCode?: string;
+    success?: boolean;
+    target?: string;
+    url?: string;
+}
+
+// @public
 export interface DiagnosticHeaderOptions {
     correlationId?: boolean;
     featureUsage?: boolean;
@@ -362,6 +388,9 @@ export interface DuplicateRecord {
 
 // @public
 export function entityIdFromResponse(res: Response): string;
+
+// @public
+export type EqValue = string | number | boolean | Date | null;
 
 // @public (undocumented)
 export interface Executable<TResponse> {
@@ -545,12 +574,10 @@ export interface MiddlewareCustomization {
     replace?: (defaults: Middleware[]) => Middleware[];
 }
 
-// Warning: (ae-forgotten-export) The symbol "RetryOptions_2" needs to be exported by the entry point index.d.ts
-//
 // @public
 export type MiddlewareOptionEntry = ({
     type: "retry";
-} & RetryOptions_2) | ({
+} & RetryOptions) | ({
     type: "concurrency";
 } & MiddlewareConcurrencyOptions) | ({
     type: "telemetry";
@@ -569,7 +596,6 @@ export class MiddlewareRequestOptions {
     constructor(options?: MiddlewareOptionEntry[]);
     clear(): void;
     delete(middlewareType: string): boolean;
-    // Warning: (ae-forgotten-export) The symbol "BuiltInMiddlewareOptions" needs to be exported by the entry point index.d.ts
     get<K extends keyof BuiltInMiddlewareOptions>(middlewareType: K): BuiltInMiddlewareOptions[K] | undefined;
     // (undocumented)
     get(middlewareType: string): MiddlewareOptions | undefined;
@@ -816,15 +842,7 @@ export function setRequestHeader(headers: HeadersLike, key: string, value: strin
 // @public (undocumented)
 export interface TelemetryClient {
     // (undocumented)
-    trackDependency(name: string, data: {
-        target?: string;
-        method?: string;
-        url?: string;
-        durationMs?: number;
-        success?: boolean;
-        resultCode?: string;
-        properties?: Record<string, string>;
-    }): void;
+    trackDependency(name: string, data: DependencyTelemetry): void;
     // (undocumented)
     trackEvent(name: string, props?: Record<string, string>, measurements?: Record<string, number>): void;
     // (undocumented)
@@ -854,10 +872,6 @@ export interface TokenOptions {
     // (undocumented)
     tenantId?: string;
 }
-
-// Warnings were encountered during analysis:
-//
-// dist/index.d.ts:1907:5 - (ae-forgotten-export) The symbol "EqValue" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

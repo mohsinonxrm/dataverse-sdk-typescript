@@ -5,11 +5,7 @@ import type { LogAttributes, Logger } from "@opentelemetry/api-logs";
 import type { DependencyTelemetry, TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
 import type { ApplicationInsightsConfig } from "./types.js";
 import { azureMonitor, otelResources, requirePeer } from "./optionalPeers.js";
-import {
-  propertyAttributes,
-  recordDependencySpan,
-  toException,
-} from "./spans.js";
+import { propertyAttributes, recordDependencySpan, toException } from "./spans.js";
 
 const INSTRUMENTATION_SCOPE = "@mohsinonxrm/dataverse-sdk-appinsights";
 

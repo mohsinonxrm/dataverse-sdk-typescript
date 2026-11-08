@@ -92,10 +92,18 @@ export function createBindManyExecutor(): BindManyExecutor;
 // @public
 export type DataverseBatchError = DataverseBatchError_2<BatchExecutionResult, BatchResponseStep>;
 
-// Warning: (ae-forgotten-export) The symbol "DataverseBatchErrorConstructor" needs to be exported by the entry point index.d.ts
-//
 // @public
 export const DataverseBatchError: DataverseBatchErrorConstructor;
+
+// @public
+export interface DataverseBatchErrorConstructor {
+    // (undocumented)
+    new (message: string, init?: DataverseBatchErrorInit): DataverseBatchError;
+    // (undocumented)
+    new (message: string, requestErrors: Map<string, BatchResponseStep>, totalRequests: number, successfulRequests: number, failedRequests: number, init?: DataverseBatchErrorInit): DataverseBatchError;
+    // (undocumented)
+    readonly prototype: DataverseBatchError;
+}
 
 // @public
 export type DataverseBatchErrorInit = DataverseBatchErrorInit_2<BatchExecutionResult>;

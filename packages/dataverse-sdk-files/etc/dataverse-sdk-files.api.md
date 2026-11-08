@@ -28,7 +28,6 @@ export class FileColumnClient {
     }): Promise<void>;
     download(entitySetName: string, recordId: string, columnName: string, options?: FileDownloadOptions): Promise<Blob>;
     downloadStream(entitySetName: string, recordId: string, columnName: string, options?: FileDownloadOptions): Promise<ReadableStream<Uint8Array>>;
-    // Warning: (ae-forgotten-export) The symbol "FileSource" needs to be exported by the entry point index.d.ts
     upload(entitySetName: string, recordId: string, columnName: string, file: FileSource, fileName: string, options?: FileUploadOptions): Promise<void>;
 }
 
@@ -41,6 +40,9 @@ export interface FileDownloadOptions {
     signal?: AbortSignal;
     timeout?: number;
 }
+
+// @public
+export type FileSource = Blob | ArrayBuffer | ArrayBufferView | ReadableStream<Uint8Array>;
 
 // @public
 export interface FileUploadOptions {

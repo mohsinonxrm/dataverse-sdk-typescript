@@ -1616,8 +1616,6 @@ export interface EntityMetadata extends MetadataBase {
 // @public
 export type EntityMetadataChanges = Partial<EntityMetadataUpdate>;
 
-// Warning: (ae-forgotten-export) The symbol "RequiredEntityProperty" needs to be exported by the entry point index.d.ts
-//
 // @public
 export interface EntityMetadataCreate extends Omit<EntityMetadata, ServerSetEntityProperty | RequiredEntityProperty | "@odata.type" | "Attributes"> {
     // (undocumented)
@@ -2465,6 +2463,9 @@ export const RelationshipType: {
 
 // @public (undocumented)
 export type RelationshipType = (typeof RelationshipType)[keyof typeof RelationshipType];
+
+// @public
+export type RequiredEntityProperty = "SchemaName" | "DisplayName" | "DisplayCollectionName" | "OwnershipType" | "IsActivity" | "HasActivities" | "HasNotes";
 
 // @public
 export interface RetrieveMetadataChangesResponse {

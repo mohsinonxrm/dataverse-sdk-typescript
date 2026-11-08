@@ -47,7 +47,8 @@ const messages = {
     "ae-unresolved-link": { logLevel: "none" },
     // tsup moves a @packageDocumentation comment away from the top of the bundled d.ts
     "ae-misplaced-package-tag": { logLevel: "none" },
-    "ae-forgotten-export": { logLevel: "warning", addToApiReportFile: true },
+    // A type the public API uses must be exported, so apps can name it (#397): fail, don't just note it.
+    "ae-forgotten-export": { logLevel: "error", addToApiReportFile: false },
     "ae-incompatible-release-tags": { logLevel: "warning", addToApiReportFile: true },
     "ae-internal-missing-underscore": { logLevel: "warning", addToApiReportFile: true },
     "ae-internal-mixed-release-tag": { logLevel: "warning", addToApiReportFile: true },

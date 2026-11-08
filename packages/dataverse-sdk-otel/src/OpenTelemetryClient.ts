@@ -2,11 +2,7 @@ import { SpanKind, trace } from "@opentelemetry/api";
 import type { Attributes, Tracer } from "@opentelemetry/api";
 import type { DependencyTelemetry, TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
 import type { OpenTelemetryConfig } from "./types.js";
-import {
-  propertyAttributes,
-  recordDependencySpan,
-  recordExceptionOnSpan,
-} from "./spans.js";
+import { propertyAttributes, recordDependencySpan, recordExceptionOnSpan } from "./spans.js";
 
 const INSTRUMENTATION_SCOPE = "@mohsinonxrm/dataverse-sdk-otel";
 
