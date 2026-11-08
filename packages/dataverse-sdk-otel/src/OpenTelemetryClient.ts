@@ -1,13 +1,8 @@
 import { SpanKind, trace } from "@opentelemetry/api";
 import type { Attributes, Tracer } from "@opentelemetry/api";
-import type { TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
+import type { DependencyTelemetry, TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
 import type { OpenTelemetryConfig } from "./types.js";
-import {
-  propertyAttributes,
-  recordDependencySpan,
-  recordExceptionOnSpan,
-  type DependencyData,
-} from "./spans.js";
+import { propertyAttributes, recordDependencySpan, recordExceptionOnSpan } from "./spans.js";
 
 const INSTRUMENTATION_SCOPE = "@mohsinonxrm/dataverse-sdk-otel";
 
@@ -67,7 +62,7 @@ export class OpenTelemetryClient implements TelemetryClient {
     }
   }
 
-  trackDependency(name: string, data: DependencyData): void {
+  trackDependency(name: string, data: DependencyTelemetry): void {
     if (this.config.disableTelemetry) return;
     try {
       recordDependencySpan(this.tracer(), name, data);

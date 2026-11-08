@@ -1,7 +1,8 @@
 import { odataLiteral } from "./literal.js";
 
 /** A value `odata.eq()` and `odata.ne()` compare with. */
-type EqValue = string | number | boolean | Date | null;
+/** A value `odata.eq()` / `odata.ne()` accept: formatted as an OData literal. */
+export type EqValue = string | number | boolean | Date | null;
 
 /**
  * Type-safe OData filter expression builder with automatic value escaping.

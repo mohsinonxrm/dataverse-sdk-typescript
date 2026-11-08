@@ -4,7 +4,11 @@
  */
 
 export { BatchRequestBuilder } from "./BatchRequestBuilder.js";
-export { DataverseBatchError, type DataverseBatchErrorInit } from "./errors.js";
+export {
+  DataverseBatchError,
+  type DataverseBatchErrorInit,
+  type DataverseBatchErrorConstructor,
+} from "./errors.js";
 export type {
   BatchRequestStep,
   BatchChangeset,

@@ -3,7 +3,7 @@
  * Allows fluent API: client.api('/accounts').options({ retry: {...}, concurrency: {...} })
  */
 
-import type { RetryOptions as ClientRetryOptions } from "../abstractions/options.js";
+import type { RetryOptions } from "../abstractions/options.js";
 
 /**
  * Base interface for middleware-specific options
@@ -14,12 +14,6 @@ import type { RetryOptions as ClientRetryOptions } from "../abstractions/options
 export interface MiddlewareOptions {
   // Marker interface - specific middleware options extend this
 }
-
-/**
- * Per-request retry options. This is the same type as the client's `retry` option (exported from
- * the package root as `RetryOptions`).
- */
-export type RetryOptions = ClientRetryOptions;
 
 /**
  * Per-request concurrency options. The limit itself is the client's (`DataverseClientOptions.concurrency`).

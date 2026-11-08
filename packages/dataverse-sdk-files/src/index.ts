@@ -16,3 +16,4 @@ export type {
   UploadMethod,
   DownloadMethod,
 } from "./types.js";
+export type { FileSource } from "./chunks.js";

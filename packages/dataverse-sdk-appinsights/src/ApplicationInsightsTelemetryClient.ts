@@ -2,15 +2,10 @@ import { trace } from "@opentelemetry/api";
 import type { Tracer } from "@opentelemetry/api";
 import { logs, SeverityNumber } from "@opentelemetry/api-logs";
 import type { LogAttributes, Logger } from "@opentelemetry/api-logs";
-import type { TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
+import type { DependencyTelemetry, TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
 import type { ApplicationInsightsConfig } from "./types.js";
 import { azureMonitor, otelResources, requirePeer } from "./optionalPeers.js";
-import {
-  propertyAttributes,
-  recordDependencySpan,
-  toException,
-  type DependencyData,
-} from "./spans.js";
+import { propertyAttributes, recordDependencySpan, toException } from "./spans.js";
 
 const INSTRUMENTATION_SCOPE = "@mohsinonxrm/dataverse-sdk-appinsights";
 
@@ -128,7 +123,7 @@ export class ApplicationInsightsTelemetryClient implements TelemetryClient {
     }
   }
 
-  trackDependency(name: string, data: DependencyData): void {
+  trackDependency(name: string, data: DependencyTelemetry): void {
     if (this.config.disableTelemetry) return;
     try {
       recordDependencySpan(this.tracer(), name, data);

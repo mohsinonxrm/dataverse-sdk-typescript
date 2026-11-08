@@ -4,6 +4,7 @@
 
 ```ts
 
+import { DependencyTelemetry } from '@mohsinonxrm/dataverse-sdk-core';
 import { Logger } from '@opentelemetry/api-logs';
 import { LoggerProvider } from '@opentelemetry/api-logs';
 import { TelemetryClient } from '@mohsinonxrm/dataverse-sdk-core';
@@ -24,10 +25,8 @@ export interface ApplicationInsightsConfig {
 // @public
 export class ApplicationInsightsTelemetryClient implements TelemetryClient {
     constructor(config?: ApplicationInsightsConfig);
-    // Warning: (ae-forgotten-export) The symbol "DependencyData" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
-    trackDependency(name: string, data: DependencyData): void;
+    trackDependency(name: string, data: DependencyTelemetry): void;
     // (undocumented)
     trackEvent(name: string, props?: Record<string, string>, measurements?: Record<string, number>): void;
     // (undocumented)

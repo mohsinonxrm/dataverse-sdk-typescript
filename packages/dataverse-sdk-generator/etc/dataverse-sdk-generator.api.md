@@ -22,6 +22,62 @@ export interface ActionType {
     ReturnTypeNullable?: boolean;
 }
 
+// @public
+export interface AttributeMetadataDetail {
+    // (undocumented)
+    AttributeOf?: string;
+    // (undocumented)
+    AttributeType?: string;
+    // (undocumented)
+    AttributeTypeName?: {
+        Value?: string;
+    };
+    // (undocumented)
+    DateTimeBehavior?: {
+        Value?: string;
+    };
+    // (undocumented)
+    Description?: Label;
+    // (undocumented)
+    DisplayName?: Label;
+    // (undocumented)
+    Format?: string;
+    // (undocumented)
+    IsPrimaryId?: boolean;
+    // (undocumented)
+    IsPrimaryName?: boolean;
+    // (undocumented)
+    IsValidForAdvancedFind?: boolean;
+    // (undocumented)
+    IsValidForCreate?: boolean;
+    // (undocumented)
+    IsValidForRead?: boolean;
+    // (undocumented)
+    IsValidForUpdate?: boolean;
+    // (undocumented)
+    LogicalName?: string;
+    // (undocumented)
+    MaxLength?: number;
+    // (undocumented)
+    OptionSet?: OptionSetMetadata;
+    // (undocumented)
+    Precision?: number;
+    RequiredLevel?: {
+        Value?: AttributeRequiredLevel;
+        CanBeChanged?: boolean;
+        ManagedPropertyLogicalName?: string;
+    };
+    // (undocumented)
+    SchemaName?: string;
+    // (undocumented)
+    SourceType?: number;
+    // (undocumented)
+    Targets?: string[];
+}
+
+// @public
+export type AttributeRequiredLevel = "None" | "SystemRequired" | "ApplicationRequired" | "Recommended";
+
 // @public (undocumented)
 export interface CliAuthOptions {
     env?: Record<string, string | undefined>;
@@ -72,11 +128,66 @@ export function dataverseScope(environmentUrl: string): string;
 export const DEFAULT_CONFIG: Partial<DataverseGenConfig>;
 
 // @public
+export interface EntityKeyMetadata {
+    // (undocumented)
+    DisplayName?: Label;
+    // (undocumented)
+    EntityLogicalName?: string;
+    // (undocumented)
+    KeyAttributes?: string[];
+    // (undocumented)
+    LogicalName?: string;
+    // (undocumented)
+    MetadataId?: string;
+    // (undocumented)
+    SchemaName?: string;
+}
+
+// @public
+export interface EntityKeyType {
+    // (undocumented)
+    DisplayName?: string;
+    // (undocumented)
+    EntityLogicalName?: string;
+    // (undocumented)
+    KeyAttributes?: string[];
+    // (undocumented)
+    LogicalName?: string;
+    // (undocumented)
+    MetadataId?: string;
+    // (undocumented)
+    SchemaName?: string;
+}
+
+// @public
+export interface EntityMetadataDetail {
+    // (undocumented)
+    Attributes?: AttributeMetadataDetail[];
+    // (undocumented)
+    EntitySetName?: string;
+    // (undocumented)
+    Keys?: EntityKeyMetadata[];
+    // (undocumented)
+    LogicalName?: string;
+    // (undocumented)
+    ManyToOneRelationships?: RelationshipMetadata[];
+    // (undocumented)
+    MetadataId?: string;
+    // (undocumented)
+    OneToManyRelationships?: RelationshipMetadata[];
+    // (undocumented)
+    PrimaryIdAttribute?: string;
+    // (undocumented)
+    PrimaryNameAttribute?: string;
+    // (undocumented)
+    SchemaName?: string;
+}
+
+// @public
 export interface EntityType {
     EntitySetName: string;
     IsCustomEntity: boolean;
     KeyName: string;
-    // Warning: (ae-forgotten-export) The symbol "EntityKeyType" needs to be exported by the entry point index.d.ts
     Keys?: EntityKeyType[];
     LogicalName: string;
     Name: string;
@@ -121,10 +232,25 @@ export function generateCode(config: DataverseGenConfig, accessToken?: string): 
 }>;
 
 // @public
+export interface Label {
+    // (undocumented)
+    LocalizedLabels?: LocalizedLabel[];
+    // (undocumented)
+    UserLocalizedLabel?: LocalizedLabel;
+}
+
+// @public
+export interface LocalizedLabel {
+    // (undocumented)
+    Label?: string;
+    // (undocumented)
+    LanguageCode?: number;
+}
+
+// @public
 export class MetadataService {
     constructor(config: DataverseGenConfig, accessToken?: string);
     getEdmxMetadata(): Promise<string>;
-    // Warning: (ae-forgotten-export) The symbol "RetrieveMetadataChangesResponse" needs to be exported by the entry point index.d.ts
     getEntityMetadata(logicalName: string): Promise<RetrieveMetadataChangesResponse>;
     setAccessToken(token: string): void;
 }
@@ -141,6 +267,44 @@ export interface NavigationPropertyType {
     Targets?: string[];
     TargetType: string;
     Type?: string;
+}
+
+// @public
+export interface OptionMetadata {
+    // (undocumented)
+    Color?: string | null;
+    // (undocumented)
+    Description?: Label;
+    // (undocumented)
+    IsManaged?: boolean;
+    // (undocumented)
+    Label?: Label;
+    // (undocumented)
+    MetadataId?: string | null;
+    // (undocumented)
+    Value?: number;
+}
+
+// @public
+export interface OptionSetMetadata {
+    // (undocumented)
+    Description?: Label;
+    // (undocumented)
+    DisplayName?: Label;
+    // (undocumented)
+    IsCustomOptionSet?: boolean;
+    // (undocumented)
+    IsGlobal?: boolean;
+    // (undocumented)
+    IsManaged?: boolean;
+    // (undocumented)
+    MetadataId?: string;
+    // (undocumented)
+    Name?: string;
+    // (undocumented)
+    Options?: OptionMetadata[];
+    // (undocumented)
+    OptionSetType?: string;
 }
 
 // @public
@@ -175,6 +339,34 @@ export interface PropertyType {
     Targets?: string[];
     Type: string;
     TypeScriptType: TypeScriptType;
+}
+
+// @public
+export interface RelationshipMetadata {
+    // (undocumented)
+    ReferencedAttribute?: string;
+    // (undocumented)
+    ReferencedEntity?: string;
+    // (undocumented)
+    ReferencedEntityNavigationPropertyName?: string;
+    // (undocumented)
+    ReferencingAttribute?: string;
+    // (undocumented)
+    ReferencingEntity?: string;
+    // (undocumented)
+    ReferencingEntityNavigationPropertyName?: string;
+    // (undocumented)
+    SchemaName?: string;
+}
+
+// @public
+export interface RetrieveMetadataChangesResponse {
+    // (undocumented)
+    DeletedMetadata?: any;
+    // (undocumented)
+    EntityMetadata?: EntityMetadataDetail[];
+    // (undocumented)
+    ServerVersionStamp?: string;
 }
 
 // @public

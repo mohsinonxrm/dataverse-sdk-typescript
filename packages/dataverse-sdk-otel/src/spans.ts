@@ -7,10 +7,11 @@
  */
 import { SpanKind, SpanStatusCode } from "@opentelemetry/api";
 import type { Attributes, Span, Tracer } from "@opentelemetry/api";
-import type { TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
+import type { DependencyTelemetry } from "@mohsinonxrm/dataverse-sdk-core";
 
 /** The `data` argument of {@link TelemetryClient.trackDependency}. */
-export type DependencyData = Parameters<TelemetryClient["trackDependency"]>[1];
+/** What a `TelemetryClient` receives for one request attempt (core's `DependencyTelemetry`). */
+export type DependencyData = DependencyTelemetry;
 
 /** Placeholder written in place of a redacted value. */
 export const REDACTED = "REDACTED";
