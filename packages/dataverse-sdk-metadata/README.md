@@ -20,6 +20,7 @@ Complete TypeScript metadata management for Microsoft Dataverse - create, read, 
 - ✅ **Relationship eligibility** - check which entities can participate in relationships
 - ✅ **Metadata change tracking** - RetrieveMetadataChanges with version stamps
 - ✅ **Strict typing** - separate Read/Create/Update types, internal fields excluded
+- ✅ **Builders** - `Metadata.entity`, `Metadata.string`, `Metadata.picklist`, `Metadata.lookup`, … return the create payloads with labels, `RequiredLevel` and `@odata.type` filled in
 - ✅ **ESM-only** - works in Node 22+ and browsers
 
 ## Installation
@@ -68,6 +69,111 @@ const entityId = await metadataClient.createEntityDefinition({
       IsPrimaryName: true,
     },
   ],
+});
+```
+
+---
+
+## Builders
+
+The `Metadata` builders write the create payloads for you. Each is a plain function that returns
+the create type `MetadataClient` takes (`EntityMetadataCreate`, `StringAttributeMetadataCreate`,
+`OneToManyRelationshipMetadataCreate`, …), with the parts that are easy to get wrong filled in:
+the `@odata.type`, labels with their `LanguageCode`, `RequiredLevel`, a local choice's
+`IsGlobal: false`, a global choice's bind path, and Dataverse's defaults.
+
+```typescript
+import { Metadata, MetadataClient } from "@mohsinonxrm/dataverse-sdk-metadata";
+
+// A table: its primary name column first, then any other columns
+await metadataClient.createEntityDefinition(
+  Metadata.entity("new_Project", {
+    displayName: "Project",
+    displayCollectionName: "Projects",
+    description: "Projects we run",
+    primaryName: Metadata.primaryName("new_Name", { displayName: "Name" }),
+    attributes: [
+      Metadata.string("new_Code", { displayName: "Code", maxLength: 20 }),
+      Metadata.dateTime("new_DueDate", { displayName: "Due date", format: "DateOnly" }),
+    ],
+  })
+);
+
+// Columns
+await metadataClient.createAttributeDefinition(
+  "new_project",
+  Metadata.picklist("new_Status", {
+    displayName: "Status",
+    requiredLevel: "ApplicationRequired",
+    options: ["Not started", "In progress", { label: "Done", value: 100000009 }],
+  })
+);
+await metadataClient.createAttributeDefinition(
+  "new_project",
+  Metadata.money("new_Budget", { displayName: "Budget", minValue: 0 })
+);
+
+// A lookup is created with its 1:N relationship
+await metadataClient.createOneToManyRelationship(
+  Metadata.lookup("new_AccountId", {
+    displayName: "Account",
+    referencingEntity: "new_project", // gets the lookup column
+    referencedEntity: "account", // the table it points to
+    relationshipSchemaName: "new_account_project",
+  })
+);
+```
+
+| Builder                                                                        | Returns                                                                          | Defaults                                                   |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `Metadata.label(text, lcid?)`, `Metadata.label({ 1033: "Name", 1036: "Nom" })` | `Label`                                                                          | language 1033                                              |
+| `Metadata.entity(schemaName, …)`                                               | `EntityMetadataCreate`                                                           | `UserOwned`, no activities, no notes                       |
+| `Metadata.primaryName(schemaName, …)`                                          | `PrimaryNameAttributeMetadataCreate`                                             | `MaxLength` 100                                            |
+| `Metadata.string(schemaName, …)`                                               | `StringAttributeMetadataCreate`                                                  | `MaxLength` 100, format `Text`                             |
+| `Metadata.memo(schemaName, …)`                                                 | `MemoAttributeMetadataCreate`                                                    | `MaxLength` 2,000                                          |
+| `Metadata.integer(schemaName, …)`                                              | `IntegerAttributeMetadataCreate`                                                 | format `None`                                              |
+| `Metadata.decimal` / `Metadata.double(schemaName, …)`                          | `DecimalAttributeMetadataCreate` / `DoubleAttributeMetadataCreate`               | precision 2                                                |
+| `Metadata.money(schemaName, …)`                                                | `MoneyAttributeMetadataCreate`                                                   | the currency's precision                                   |
+| `Metadata.dateTime(schemaName, …)`                                             | `DateTimeAttributeMetadataCreate`                                                | `DateAndTime`                                              |
+| `Metadata.boolean(schemaName, …)`                                              | `BooleanAttributeMetadataCreate`                                                 | Yes (1) / No (0), default No                               |
+| `Metadata.picklist` / `Metadata.multiSelectPicklist`                           | `PicklistAttributeMetadataCreate` / `MultiSelectPicklistAttributeMetadataCreate` | `options` or `globalOptionSetId`, exactly one              |
+| `Metadata.file` / `Metadata.image(schemaName, …)`                              | `FileAttributeMetadataCreate` / `ImageAttributeMetadataCreate`                   | 32 MB / 10 MB                                              |
+| `Metadata.lookup(schemaName, …)`                                               | `OneToManyRelationshipMetadataCreate`                                            | Dataverse's cascade and the referenced table's primary key |
+| `Metadata.manyToMany(schemaName, …)`                                           | `ManyToManyRelationshipMetadataCreate`                                           | intersect table = the schema name, lowercased              |
+| `Metadata.globalOptionSet(name, …)`                                            | `OptionSetMetadataCreate`                                                        | `IsGlobal: true`, `Picklist`                               |
+
+Every column takes `displayName` (required), `description`, `requiredLevel` (`"None"`, the
+default, `"Recommended"` or `"ApplicationRequired"`) and `languageCode`. Labels given as text
+are in English (1033) unless you pass `languageCode`; Dataverse needs a label in the
+organization's base language. Pass a `Label` (from `Metadata.label`) for several languages.
+
+The types reject what Dataverse would: a choice with both `options` and a `globalOptionSetId` (or
+neither), the `"DateOnly"` behavior without the `"DateOnly"` format, `SystemRequired`, a table
+without its primary name or with a lookup among its `attributes`. At run time a builder throws
+`DataverseInvalidRequestError` (`InvalidParameter`) for a schema name without the customization
+prefix, an empty label, a length, precision or range out of bounds, a minimum above the maximum,
+duplicate option values or a `globalOptionSetId` that isn't a GUID.
+
+Choice options are labels (`"Small"`), which Dataverse numbers from the publisher's choice value
+prefix, or `{ label, value, description, color }`. A global choice is bound by its `MetadataId`:
+
+```typescript
+const id = await metadataClient.createGlobalOptionSet(
+  Metadata.globalOptionSet("new_priority", { displayName: "Priority", options: ["High", "Low"] })
+);
+await metadataClient.createAttributeDefinition(
+  "new_project",
+  Metadata.picklist("new_Priority", { displayName: "Priority", globalOptionSetId: id })
+);
+```
+
+A builder's result is an ordinary object of the create type: spread it to set a property the
+builder doesn't take, and the compiler still checks it.
+
+```typescript
+await metadataClient.createAttributeDefinition("new_project", {
+  ...Metadata.string("new_Code", { displayName: "Code" }),
+  IsAuditEnabled: { Value: true },
 });
 ```
 

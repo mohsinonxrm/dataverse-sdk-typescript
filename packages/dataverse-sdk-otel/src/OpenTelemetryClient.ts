@@ -1,20 +1,26 @@
 import { SpanKind, trace } from "@opentelemetry/api";
 import type { Attributes, Tracer } from "@opentelemetry/api";
-import type { DependencyTelemetry, TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
+import type {
+  DependencyHandle,
+  DependencyTelemetry,
+  TelemetryClient,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { OpenTelemetryConfig } from "./types.js";
-import { propertyAttributes, recordDependencySpan, recordExceptionOnSpan } from "./spans.js";
+import { propertyAttributes } from "./redaction.js";
+import { NO_DEPENDENCY, recordExceptionOnSpan, startDependencySpan } from "./spans.js";
 
 const INSTRUMENTATION_SCOPE = "@mohsinonxrm/dataverse-sdk-otel";
 
 /**
  * OpenTelemetry implementation of the SDK's `TelemetryClient`.
  *
- * - `trackDependency` records a CLIENT span per Dataverse HTTP call with `http.request.method`,
- *   `url.full` (as core redacted it with the app's `redactUrl`), `server.address` (host name),
- *   `server.port`, `http.response.status_code`, `dataverse.correlation_id` and the other
- *   properties under `dataverse.*`. Failed calls (a 4xx/5xx status, or no response and
- *   `success: false`) get status ERROR and `error.type`. The span is recorded after the call, so
- *   it is never active during it: the adapter propagates no `traceparent`.
+ * - `startDependency` starts a CLIENT span per Dataverse request attempt, a child of the active
+ *   span, with `http.request.method`, `url.full` (as core redacted it with the app's
+ *   `redactUrl`), `server.address` (host name), `server.port`, `http.response.status_code`,
+ *   `dataverse.correlation_id` and the other properties under `dataverse.*`. The span is active
+ *   while the attempt runs, and its trace context (the registered propagator's headers, W3C
+ *   `traceparent` by default) goes to Dataverse with the request. Failed attempts (a 4xx/5xx
+ *   status, or no response) get status ERROR and `error.type`.
  * - `trackEvent` adds an event to the active span, or records a short INTERNAL span when no span
  *   is active.
  * - `trackException` records an INTERNAL `dataverse.exception` span (a child of the active span,
@@ -62,12 +68,13 @@ export class OpenTelemetryClient implements TelemetryClient {
     }
   }
 
-  trackDependency(name: string, data: DependencyTelemetry): void {
-    if (this.config.disableTelemetry) return;
+  startDependency(name: string, data: DependencyTelemetry): DependencyHandle {
+    if (this.config.disableTelemetry) return NO_DEPENDENCY;
     try {
-      recordDependencySpan(this.tracer(), name, data);
+      return startDependencySpan(this.tracer(), name, data);
     } catch {
       // Telemetry must never break the caller.
+      return NO_DEPENDENCY;
     }
   }
 

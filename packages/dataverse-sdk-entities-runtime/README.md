@@ -16,6 +16,8 @@ This package serves as the runtime foundation for early-bound entity types gener
 - **Metadata structures** (`EntityMetadata`, `AttributeMetadata`, `NavigationMetadata`)
 - **Type guards** (`isEntity`, `isEntityReference`)
 - **Helper functions** for URL construction, entity formatting, etc.
+- **`EntitySetClient`**, the typed request builder behind the typed client `dataverse-gen` writes
+  (`createTypedClient()`), on top of core's `client.api()`
 
 **Note:** You typically don't use this package directly. Instead, use `@mohsinonxrm/dataverse-sdk-generator` to generate strongly-typed entity classes that reference these base types.
 
@@ -119,6 +121,9 @@ const accountMetadata: EntityMetadata = {
       attributeType: "Money",
       typescriptType: "number",
       odataType: "Edm.Decimal",
+      // Constraints for validateEntity() (see Validation)
+      minValue: 0,
+      maxValue: 1000000000000,
     },
   },
   navigation: {
@@ -223,6 +228,86 @@ The referenced table's entity set comes from `reference.entitySetName` (which
 `options.entitySetNames`, then `options.metadataCache` (the generated `EntityMetadataCache`).
 When none of them knows it, `formatEntityForWrite()` throws a `DataverseInvalidRequestError`.
 
+### Validation: `validateEntity(entity, metadata, options?)`
+
+Opt-in: check a create or update body against the column constraints in the table's generated
+metadata before you send it. It returns the problems it finds (an empty array when there are none);
+nothing else calls it.
+
+```typescript
+import { validateEntity } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { AccountMetadata } from "./generated/entities/Account.js";
+
+const issues = validateEntity({ name: "x".repeat(200), industrycode: 99 }, AccountMetadata);
+// [
+//   { property: "name", code: "maxLength", message: "name is 200 characters long; the column holds at most 160." },
+//   { property: "industrycode", code: "invalidOption", message: "industrycode is 99, not one of its options (1, 2, …)." },
+//   { property: "primarycontactid", code: "required", message: "primarycontactid is required." }, // if business-required
+// ]
+
+validateEntity({ statecode: 1 }, AccountMetadata, { mode: "update" }); // [] — an update checks only what it sets
+```
+
+It reads the body as `formatEntityForWrite()` takes it (columns by logical name, lookups by
+navigation property with an `EntityReference`) and reports, by `code`:
+
+| `code`                                    | When                                                                                                 |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `required`                                | a business-required (ApplicationRequired) column or lookup is `null`, or left out of a create        |
+| `notValidForCreate` / `notValidForUpdate` | the column or lookup can't be set in that mode (`IsValidForCreate` / `IsValidForUpdate`)             |
+| `maxLength`                               | text longer than the column's `MaxLength`                                                            |
+| `minValue` / `maxValue`                   | a number outside the column's `MinValue` / `MaxValue`                                                |
+| `notAnInteger`                            | a fraction in a whole-number column                                                                  |
+| `invalidOption`                           | a value that isn't one of a choice column's options (each comma-separated value of a choices column) |
+| `invalidType`                             | the wrong type for the column (text for a number, …), or a lookup that isn't an `EntityReference`    |
+
+The constraints are the `maxLength`, `minValue`, `maxValue`, `optionValues`, `isRequired`,
+`isValidForCreate` and `isValidForUpdate` of `EntityMetadata.attributes`, and the `lookupAttribute`,
+`isRequired`, `isValidForCreate` and `isValidForUpdate` of a lookup's `EntityMetadata.navigation`
+entry; `dataverse-gen` fills them in. Properties the metadata doesn't describe, annotations and
+`undefined` values are skipped. Dataverse checks the same things when the request arrives, except
+business-required columns, which only forms enforce.
+
+---
+
+## 🧭 Typed Request Builders: `EntitySetClient`
+
+`dataverse-gen` with `"typedClient": true` generates `createTypedClient(client)`, which returns one
+`EntitySetClient` per table (`typed.accounts`). You can also make one yourself from a table's
+generated types and metadata:
+
+```typescript
+import { EntitySetClient } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import {
+  type Account,
+  type AccountCreate,
+  type AccountUpdate,
+  AccountMetadata,
+} from "./generated/entities/Account.js";
+import { EntityMetadataCache } from "./generated/metadata.js";
+
+const accounts = new EntitySetClient<Account, AccountCreate, AccountUpdate, "name" | "accountid">(
+  client,
+  AccountMetadata,
+  { metadataCache: EntityMetadataCache }
+);
+const id = await accounts.create({ name: "Contoso" });
+const account = await accounts.byId(id).get({ select: ["name"] });
+await accounts.byId(id).update({ name: "Contoso Ltd" }); // PATCH with If-Match: *
+await accounts.byId(id).delete();
+const all = await accounts.list({ filter: "statecode eq 0", maxItems: 100 });
+```
+
+- `byId(key)` takes a GUID or an alternate key object (`{ accountnumber: "A-1" }`) and returns an
+  `EntityRecordClient` with `get({ select, expand })`, `update(entity, { etag })`,
+  `delete({ etag })` and `request()` (core's builder for the record).
+- `list({ select, expand, filter, orderBy, top, maxItems })` follows `@odata.nextLink` unless `top`
+  or `maxItems` bounds it; `create(entity)` resolves the new record's id; `query()` is core's
+  builder for the entity set.
+- Writes go through `formatEntityForWrite()` with the options given to the constructor. `update()`
+  sends `If-Match: *` (or the `etag`), so it never creates a record.
+- Every method takes core's `RequestOptions` last.
+
 ---
 
 ## 🔧 Base Classes for Generated Code
@@ -325,6 +410,8 @@ formatRecordPath({ logicalName: "account", id, entitySetName: "accounts" }); // 
 ## 📖 Generated Entity Example
 
 Here's what generated entity code looks like:
+
+<!-- no-check -->
 
 ```typescript
 // Generated by @mohsinonxrm/dataverse-sdk-generator

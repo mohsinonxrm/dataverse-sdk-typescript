@@ -4,7 +4,7 @@
  * at the end, so callers need no `as any`. The messages package's references use the CSDL
  * primary key like the actions package's (it sent `id`, which the Web API rejects).
  */
-import { copyFile, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -12,12 +12,9 @@ import { parseEdmx } from "../src/parsers/edmx-parser.js";
 import { generateActions } from "../src/generators/actions-generator.js";
 import { generateMessages } from "../src/generators/messages-generator.js";
 import { generateComplexTypes } from "../src/generators/complex-types-generator.js";
-import { typecheck } from "./typecheck.js";
+import { copyMessagesHandWritten, typecheck } from "./typecheck.js";
 
 const OUT_ROOT = fileURLToPath(new URL(".", import.meta.url));
-const MESSAGES_SRC = fileURLToPath(
-  new URL("../../../packages/dataverse-sdk-messages/src", import.meta.url)
-);
 
 const EDMX = `<?xml version="1.0" encoding="utf-8"?>
 <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
@@ -88,9 +85,7 @@ beforeAll(async () => {
   await generateActions(csdl, join(dir, "actions"), false);
   await generateMessages(csdl, join(dir, "messages"), false);
   // The hand-written files of the messages package that the generator keeps.
-  for (const file of ["OrganizationRequest.ts", "types.ts"]) {
-    await copyFile(join(MESSAGES_SRC, file), join(dir, "messages", file));
-  }
+  await copyMessagesHandWritten(join(dir, "messages"));
 });
 
 afterAll(async () => {

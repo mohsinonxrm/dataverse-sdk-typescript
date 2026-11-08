@@ -6,12 +6,35 @@
 
 import type { DataverseGenConfig } from "./types.js";
 
+/** How many times a metadata request is tried before its error is thrown. */
+const ATTEMPTS = 5;
+
+/** Delays between tries, in ms (the last one repeats); a Retry-After header takes precedence. */
+const BACKOFF_MS = [2_000, 4_000, 8_000, 16_000];
+
+/** Waits `ms`. Replaceable in tests. */
+export type MetadataServiceSleep = (ms: number) => Promise<void>;
+
+const defaultSleep: MetadataServiceSleep = (ms) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Seconds or an HTTP date in a Retry-After header, as ms; undefined when absent or unreadable. */
+function retryAfterMs(header: string | null): number | undefined {
+  if (!header) return undefined;
+  const seconds = Number(header);
+  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+  const date = Date.parse(header);
+  return Number.isNaN(date) ? undefined : Math.max(0, date - Date.now());
+}
+
 /**
  * Service for retrieving metadata from Dataverse
  */
 export class MetadataService {
   private baseUrl: string;
   private accessToken?: string;
+  /** Waits between retries (tests replace it). */
+  sleep: MetadataServiceSleep = defaultSleep;
 
   constructor(
     private config: DataverseGenConfig,
@@ -44,11 +67,15 @@ export class MetadataService {
       headers.Authorization = `Bearer ${this.accessToken}`;
     }
 
-    const response = await fetch(url, { headers });
+    // $metadata takes no parameters, so a 400 can't be the caller's mistake: an org whose schema
+    // is changing has answered 400 for a few seconds while it rebuilds the document. Retry it,
+    // with 429 and 5xx.
+    const response = await this.fetchWithRetry(url, { headers }, (status) => status === 400);
 
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch $metadata: ${String(response.status)} ${response.statusText}`
+        `Failed to fetch $metadata: ${String(response.status)} ${response.statusText}
+${await response.text()}`
       );
     }
 
@@ -105,6 +132,8 @@ export class MetadataService {
             "DateTimeBehavior",
             "Format",
             "MaxLength",
+            "MinValue",
+            "MaxValue",
             "Precision",
             "IsPrimaryId",
             "IsPrimaryName",
@@ -129,7 +158,8 @@ export class MetadataService {
       headers.Authorization = `Bearer ${this.accessToken}`;
     }
 
-    const response = await fetch(url, { method: "GET", headers });
+    // A 400 here is a query Dataverse refuses: not retried. 429, 5xx and dropped connections are.
+    const response = await this.fetchWithRetry(url, { method: "GET", headers }, () => false);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -140,6 +170,34 @@ export class MetadataService {
 
     const result = await response.json();
     return result as RetrieveMetadataChangesResponse;
+  }
+
+  /**
+   * `fetch`, tried up to {@link ATTEMPTS} times: again after a dropped connection, a 429, a 5xx,
+   * or a status `retryAlso` accepts, waiting {@link BACKOFF_MS} (or Retry-After) in between.
+   * Returns the last response; throws the last network error.
+   */
+  private async fetchWithRetry(
+    url: string,
+    init: RequestInit,
+    retryAlso: (status: number) => boolean
+  ): Promise<Response> {
+    for (let attempt = 1; ; attempt++) {
+      const delay = BACKOFF_MS[Math.min(attempt - 1, BACKOFF_MS.length - 1)] ?? 0;
+      let response: Response;
+      try {
+        response = await fetch(url, init);
+      } catch (error) {
+        if (attempt >= ATTEMPTS) throw error;
+        await this.sleep(delay);
+        continue;
+      }
+      const retryable =
+        response.status === 429 || response.status >= 500 || retryAlso(response.status);
+      if (response.ok || !retryable || attempt >= ATTEMPTS) return response;
+      await response.body?.cancel().catch(() => undefined);
+      await this.sleep(retryAfterMs(response.headers.get("retry-after")) ?? delay);
+    }
   }
 }
 
@@ -206,6 +264,9 @@ export interface AttributeMetadataDetail {
   Format?: string;
   // String-specific
   MaxLength?: number;
+  // Number-specific (Integer, BigInt, Decimal, Double, Money)
+  MinValue?: number;
+  MaxValue?: number;
   // Decimal/Money-specific
   Precision?: number;
   // Additional type-specific metadata can be added as needed

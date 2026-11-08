@@ -8,7 +8,7 @@
  * The same EDMX and expectations are in
  * packages/dataverse-sdk-generator/test/return-shapes.test.ts, for dataverse-gen.
  */
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -18,7 +18,7 @@ import { generateActions } from "../src/generators/actions-generator.js";
 import { generateFunctions } from "../src/generators/functions-generator.js";
 import { generateMessages } from "../src/generators/messages-generator.js";
 import { generateComplexTypes } from "../src/generators/complex-types-generator.js";
-import { typecheck } from "./typecheck.js";
+import { copyMessagesHandWritten, typecheck } from "./typecheck.js";
 
 const OUT_ROOT = fileURLToPath(new URL(".", import.meta.url));
 const CONTEXT = "https://contoso.crm.dynamics.com/api/data/v9.2/$metadata";
@@ -146,8 +146,6 @@ ${CASES.map(
   </edmx:DataServices>
 </edmx:Edmx>`;
 
-const MESSAGES_SRC = new URL("../../../packages/dataverse-sdk-messages/src/", import.meta.url);
-
 let out: string;
 type Ctor = new () => Executable<unknown>;
 const load = async (path: string, name: string): Promise<Ctor> => {
@@ -185,9 +183,7 @@ beforeAll(async () => {
   await generateActions(csdl, join(out, "actions"), false);
   await generateFunctions(csdl, join(out, "functions"), false);
   await generateMessages(csdl, join(out, "messages"), false);
-  for (const file of ["OrganizationRequest.ts", "types.ts"]) {
-    await writeFile(join(out, "messages", file), await readFile(new URL(file, MESSAGES_SRC)));
-  }
+  await copyMessagesHandWritten(join(out, "messages"));
 });
 
 afterAll(async () => {

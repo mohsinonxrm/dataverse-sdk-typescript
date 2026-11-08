@@ -64,13 +64,19 @@ export const activityTelemetry: TelemetryClient = {
       detail: { props, measurements },
     });
   },
-  trackDependency(name, data) {
-    activity.push({
-      source: "telemetry",
-      level: data.success === false ? "warn" : "info",
-      message: `dependency ${name}: ${data.method ?? ""} ${data.resultCode ?? "-"} in ${data.durationMs ?? 0} ms`,
-      detail: data,
-    });
+  // Called when a request attempt starts; `end` gets the outcome. No trace context here, so the
+  // handle has no `headers` and the SDK sends no `traceparent`.
+  startDependency(name) {
+    return {
+      end: (data) => {
+        activity.push({
+          source: "telemetry",
+          level: data.success === false ? "warn" : "info",
+          message: `dependency ${name}: ${data.method ?? ""} ${data.resultCode ?? "-"} in ${data.durationMs ?? 0} ms`,
+          detail: data,
+        });
+      },
+    };
   },
   trackException(error, props) {
     const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);

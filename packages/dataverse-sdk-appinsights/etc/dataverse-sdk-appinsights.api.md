@@ -4,6 +4,7 @@
 
 ```ts
 
+import { DependencyHandle } from '@mohsinonxrm/dataverse-sdk-core';
 import { DependencyTelemetry } from '@mohsinonxrm/dataverse-sdk-core';
 import { Logger } from '@opentelemetry/api-logs';
 import { LoggerProvider } from '@opentelemetry/api-logs';
@@ -26,7 +27,7 @@ export interface ApplicationInsightsConfig {
 export class ApplicationInsightsTelemetryClient implements TelemetryClient {
     constructor(config?: ApplicationInsightsConfig);
     // (undocumented)
-    trackDependency(name: string, data: DependencyTelemetry): void;
+    startDependency(name: string, data: DependencyTelemetry): DependencyHandle;
     // (undocumented)
     trackEvent(name: string, props?: Record<string, string>, measurements?: Record<string, number>): void;
     // (undocumented)

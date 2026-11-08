@@ -5,10 +5,10 @@
  */
 import { describe, expect, it } from "vitest";
 import { DataverseClient } from "../src/client/DataverseClient.js";
-import type { FetchProvider, TelemetryClient } from "../src/index.js";
+import type { DependencyTelemetry, FetchProvider, TelemetryClient } from "../src/index.js";
 import { MiddlewareRequestOptions } from "../src/index.js";
 
-type DependencyData = Parameters<TelemetryClient["trackDependency"]>[1];
+type DependencyData = DependencyTelemetry;
 
 const BASE_URL = "https://contoso.crm.dynamics.com";
 const API = `${BASE_URL}/api/data/v9.2`;
@@ -119,9 +119,11 @@ describe("#378: pipeline details", () => {
   it("reports a 304 as a successful dependency", async () => {
     const deps: DependencyData[] = [];
     const telemetry: TelemetryClient = {
-      trackDependency: (_name, data) => {
-        deps.push(data);
-      },
+      startDependency: () => ({
+        end: (data) => {
+          deps.push(data);
+        },
+      }),
       trackEvent: () => undefined,
       trackException: () => undefined,
     };

@@ -8,6 +8,7 @@ import { BindManyExecutor } from '@mohsinonxrm/dataverse-sdk-core';
 import { DataverseBatchError as DataverseBatchError_2 } from '@mohsinonxrm/dataverse-sdk-core';
 import { DataverseBatchErrorInit as DataverseBatchErrorInit_2 } from '@mohsinonxrm/dataverse-sdk-core';
 import { DataverseClient } from '@mohsinonxrm/dataverse-sdk-core';
+import { DataverseError } from '@mohsinonxrm/dataverse-sdk-core';
 
 // @public
 export interface BatchChangeset {
@@ -87,7 +88,73 @@ export interface BatchResponseStep<TBody = unknown> {
 }
 
 // @public
+export interface BulkOperationOptions {
+    attemptTimeoutMs?: number;
+    batchSize?: number;
+    continueOnError?: boolean;
+    correlationId?: string;
+    headers?: Record<string, string>;
+    maxParallel?: number;
+    signal?: AbortSignal;
+    strategy?: BulkStrategy | "auto";
+    timeoutMs?: number;
+}
+
+// @public
+export interface BulkOperationResult {
+    failed: number;
+    requests: number;
+    results: BulkRecordResult[];
+    skipped: number;
+    stoppedEarly: boolean;
+    strategy: BulkStrategy;
+    succeeded: number;
+    success: boolean;
+}
+
+// @public
+export interface BulkOperationSupport {
+    createMultiple: boolean;
+    deleteMultiple: boolean;
+    elastic: boolean;
+    logicalName: string;
+    updateMultiple: boolean;
+    upsertMultiple: boolean;
+}
+
+// @public
+export interface BulkOperationSupportOptions {
+    refresh?: boolean;
+    signal?: AbortSignal;
+    timeoutMs?: number;
+}
+
+// @public
+export interface BulkRecordResult {
+    error?: Error;
+    id?: string;
+    index: number;
+    status: BulkRecordStatus;
+}
+
+// @public
+export type BulkRecordStatus = "succeeded" | "failed" | "skipped";
+
+// @public
+export type BulkStrategy = "bulk" | "batch";
+
+// @public
+export interface BulkTable {
+    entitySetName: string;
+    logicalName: string;
+    primaryIdAttribute?: string;
+}
+
+// @public
 export function createBindManyExecutor(): BindManyExecutor;
+
+// @public
+export function createMultiple(client: DataverseClient, table: BulkTable, records: readonly object[], options?: BulkOperationOptions): Promise<BulkOperationResult>;
 
 // @public
 export type DataverseBatchError = DataverseBatchError_2<BatchExecutionResult, BatchResponseStep>;
@@ -107,6 +174,18 @@ export interface DataverseBatchErrorConstructor {
 
 // @public
 export type DataverseBatchErrorInit = DataverseBatchErrorInit_2<BatchExecutionResult>;
+
+// @public
+export class DataverseBulkOperationError extends DataverseError {
+    constructor(message: string, init: DataverseBulkOperationErrorInit);
+    readonly result: BulkOperationResult;
+}
+
+// @public
+export interface DataverseBulkOperationErrorInit {
+    cause?: unknown;
+    result: BulkOperationResult;
+}
 
 // @public
 export function decodeBatchResponse(responseBody: string, contentType: string): BatchResponsePart[];
@@ -140,7 +219,13 @@ export function generateBoundary(): string;
 export function generateChangesetBoundary(): string;
 
 // @public
+export function getBulkOperationSupport(client: DataverseClient, logicalName: string, options?: BulkOperationSupportOptions): Promise<BulkOperationSupport>;
+
+// @public
 export const JSON_PART_CONTENT_TYPE = "application/json; type=entry";
+
+// @public
+export function updateMultiple(client: DataverseClient, table: BulkTable, records: readonly object[], options?: BulkOperationOptions): Promise<BulkOperationResult>;
 
 // (No @packageDocumentation comment for this package)
 

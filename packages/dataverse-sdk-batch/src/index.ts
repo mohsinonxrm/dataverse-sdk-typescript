@@ -28,3 +28,20 @@ export {
 export { decodeBatchResponse, extractBoundary } from "./decoding.js";
 export { createBindManyExecutor } from "./bindManyExecutor.js";
 export { entityIdFromBatchResponse, type EntityIdFromBatchResponseOptions } from "./entityId.js";
+export {
+  createMultiple,
+  updateMultiple,
+  DataverseBulkOperationError,
+  type BulkTable,
+  type BulkStrategy,
+  type BulkOperationOptions,
+  type BulkOperationResult,
+  type BulkRecordResult,
+  type BulkRecordStatus,
+  type DataverseBulkOperationErrorInit,
+} from "./bulk.js";
+export {
+  getBulkOperationSupport,
+  type BulkOperationSupport,
+  type BulkOperationSupportOptions,
+} from "./bulkSupport.js";

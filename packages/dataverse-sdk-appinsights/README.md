@@ -6,10 +6,16 @@
 
 ## Status
 
-**Optional package, Node.js only.** It sends the SDK's telemetry to Azure Application Insights
-through the [Azure Monitor OpenTelemetry distro](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable?tabs=nodejs)
-(`@azure/monitor-opentelemetry`): the adapter emits OpenTelemetry spans and log records, and the
-distro exports them. The distro does not run in browsers.
+**Optional package with two entry points:**
+
+- `@mohsinonxrm/dataverse-sdk-appinsights` (Node.js) sends the SDK's telemetry to Azure Application
+  Insights through the [Azure Monitor OpenTelemetry distro](https://learn.microsoft.com/azure/azure-monitor/app/opentelemetry-enable?tabs=nodejs)
+  (`@azure/monitor-opentelemetry`): the adapter emits OpenTelemetry spans and log records, and the
+  distro exports them. The distro does not run in browsers.
+- `@mohsinonxrm/dataverse-sdk-appinsights/browser` (browsers) records it on your app's own
+  `ApplicationInsights` instance from `@microsoft/applicationinsights-web`. See
+  [Browser entry point](#browser-entry-point). It imports nothing from Node.js, OpenTelemetry or the
+  Azure Monitor distro, so a browser bundle never pulls them in.
 
 ## Installation
 
@@ -21,12 +27,13 @@ The OpenTelemetry and Azure packages are **peer dependencies**, so the adapter u
 copies. Its spans and log records then go to the providers your `useAzureMonitor()` registered,
 and join the active trace.
 
-| Package                        | Range      | Needed                                                                                      |
-| ------------------------------ | ---------- | ------------------------------------------------------------------------------------------- |
-| `@opentelemetry/api`           | `^1.9.0`   | Always                                                                                      |
-| `@opentelemetry/api-logs`      | `^0.221.0` | Always (events and exceptions are log records). `@azure/monitor-opentelemetry` 1.20 uses it |
-| `@azure/monitor-opentelemetry` | `^1.20.1`  | Optional: in your app to call `useAzureMonitor()`, or for the `connectionString` option     |
-| `@opentelemetry/resources`     | `^2.0.0`   | Optional: only for `cloudRoleName`; `@azure/monitor-opentelemetry` already depends on it    |
+| Package                              | Range      | Needed                                                                                      |
+| ------------------------------------ | ---------- | ------------------------------------------------------------------------------------------- |
+| `@opentelemetry/api`                 | `^1.9.0`   | Always                                                                                      |
+| `@opentelemetry/api-logs`            | `^0.221.0` | Always (events and exceptions are log records). `@azure/monitor-opentelemetry` 1.20 uses it |
+| `@azure/monitor-opentelemetry`       | `^1.20.1`  | Optional: in your app to call `useAzureMonitor()`, or for the `connectionString` option     |
+| `@opentelemetry/resources`           | `^2.0.0`   | Optional: only for `cloudRoleName`; `@azure/monitor-opentelemetry` already depends on it    |
+| `@microsoft/applicationinsights-web` | `^3.0.0`   | Optional: only for the `/browser` entry point (your app's `ApplicationInsights` instance)   |
 
 Without `@azure/monitor-opentelemetry` the adapter still works with another OpenTelemetry setup
 (pass `tracer` / `logger`, or register global providers). Passing `connectionString` without it
@@ -96,12 +103,15 @@ The constructor takes one optional config object.
 
 | `TelemetryClient` call | Emitted as                                                                               | Application Insights table |
 | ---------------------- | ---------------------------------------------------------------------------------------- | -------------------------- |
-| `trackDependency`      | An OpenTelemetry `CLIENT` span per Dataverse HTTP call                                   | `dependencies` (HTTP)      |
+| `startDependency`      | An OpenTelemetry `CLIENT` span per Dataverse request attempt                             | `dependencies` (HTTP)      |
 | `trackEvent`           | A log record with `microsoft.custom_event.name`; measurements become custom measurements | `customEvents`             |
 | `trackException`       | A log record with `exception.type`, `exception.message`, `exception.stacktrace`          | `exceptions`               |
 
-The SDK's `TelemetryMiddleware` calls `trackDependency` for every request and `trackException`
-when a request fails without a response (for example a network error).
+The SDK's `TelemetryMiddleware` calls `startDependency` for every request attempt and
+`trackException` when a request fails without a response (for example a network error). Its
+events (`dataverse.throttle`, `dataverse.retry`, `dataverse.concurrency.wait`,
+`dataverse.concurrency.limit`, and `dataverse.batch` from the batch package; see `TelemetryEvents`
+in core) are custom events with their measurements as custom measurements.
 
 Dependency spans carry `http.request.method`, `url.full` (as the SDK redacted it),
 `server.address` (the host name, without the port), `server.port`,
@@ -113,17 +123,81 @@ without one (a network error) when `success` is `false`.
 
 ### Dependency timing and trace context
 
-The `TelemetryClient` interface reports a call after it has finished: the SDK calls
-`trackDependency` with the duration once the response or the error is in. So the adapter
-records the dependency span afterwards, with its start time set back by the duration, and the
-span is never active while the request is in flight. As a result:
+The SDK calls `startDependency` before it sends an attempt and ends the handle when the response
+or the error is in. So:
 
-- the dependency is a child of the span that was active when the request was made (your app's
-  request or span), in the same operation;
-- this adapter sends no `traceparent` header to Dataverse;
-- spans from HTTP auto-instrumentation (for example `@opentelemetry/instrumentation-undici` for
-  `fetch`) are not children of the dependency: both are children of your span. The auto-instrumentation is what injects `traceparent`, with
-  your span as the parent.
+- the dependency is a child of the span that is active when the request is made (your app's
+  request or span), in the same operation. Each retry, and the resend after a 401, is a dependency
+  of its own under that parent;
+- the span is active while the attempt runs, so spans from HTTP auto-instrumentation (for example
+  `@opentelemetry/instrumentation-undici` for `fetch`) are its children;
+- the request carries the dependency's W3C `traceparent` (injected with the propagator that
+  `useAzureMonitor()` registers), sent only to origins that may receive the access token.
+  `diagnosticHeaders: { traceContext: false }` on the client turns it off.
+
+## Browser entry point
+
+`@mohsinonxrm/dataverse-sdk-appinsights/browser` exports `ApplicationInsightsBrowserTelemetryClient`,
+built on the `ApplicationInsights` instance your app already creates with
+`@microsoft/applicationinsights-web` (`^3.0.0`, an optional peer dependency). Your app keeps
+control of the connection string, sampling and cookies.
+
+```bash
+pnpm add @mohsinonxrm/dataverse-sdk-appinsights @microsoft/applicationinsights-web
+```
+
+The package's OpenTelemetry peer dependencies are for the Node.js entry point. Your package
+manager may install them or report them as missing; the browser entry never imports them, so they
+don't reach your bundle (the repository's bundle check fails if it would).
+
+```typescript
+import { ApplicationInsights } from "@microsoft/applicationinsights-web";
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { ApplicationInsightsBrowserTelemetryClient } from "@mohsinonxrm/dataverse-sdk-appinsights/browser";
+
+// Your Application Insights resource's connection string
+const appInsights = new ApplicationInsights({
+  config: { connectionString: "InstrumentationKey=…;IngestionEndpoint=https://…" },
+});
+appInsights.loadAppInsights();
+
+const client = new DataverseClient({
+  baseUrl: "https://org.crm.dynamics.com",
+  tokenProvider,
+  telemetry: new ApplicationInsightsBrowserTelemetryClient({ appInsights }),
+});
+```
+
+| Option                  | Type                  | Description                                                                                                |
+| ----------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `appInsights`           | `ApplicationInsights` | Your loaded instance (only `trackDependencyData`, `trackEvent`, `trackException`, `getTraceCtx` are used). |
+| `propagateTraceContext` | `boolean`             | Send a W3C `traceparent` naming each dependency. Defaults to `false` (see below).                          |
+| `disableTelemetry`      | `boolean`             | Make every method a no-op. Defaults to `false`.                                                            |
+
+| `TelemetryClient` call    | Web SDK call                                                                  |
+| ------------------------- | ----------------------------------------------------------------------------- |
+| `startDependency` / `end` | `trackDependencyData`: one `Fetch` dependency per request attempt             |
+| `trackEvent`              | `trackEvent`, with the measurements as custom measurements                    |
+| `trackException`          | `trackException`, severity Error, with URLs in the message and stack redacted |
+
+Each dependency has the redacted URL as `data`, the host as `target`, `GET /api/data/v9.2/...` as
+`name`, the status as `responseCode` (0 when no response came back), the Node adapter's `success`
+rule (a 4xx or 5xx fails; a 304 doesn't), and the SDK's properties as custom dimensions
+(`dataverse.correlation_id`, `dataverse.retry.attempt`, ...). Its id is
+`|<operation id>.<span id>`, in the page's current operation, like the web SDK's own fetch
+dependencies.
+
+**Trace context** is off by default, like the web SDK's `enableCorsCorrelation`: Dataverse is
+another origin, and `traceparent` becomes part of the CORS preflight, which the Dataverse origin must
+allow. With `propagateTraceContext: true`, each request carries a `traceparent` whose parent id is
+its dependency's span id, sent only to origins that may receive the access token.
+
+**The web SDK's own fetch tracking** also records the SDK's requests if it is on, so each request
+would show up twice. To keep only this adapter's dependencies (which carry the correlation id and
+the redacted URL), exclude the Dataverse host from automatic tracking, for example
+`excludeRequestFromAutoTrackingPatterns: [/\.dynamics\.com\//]` in the web SDK config.
+
+The browser adapter never throws, like the Node one.
 
 ## Privacy
 
@@ -145,7 +219,7 @@ redact, so the adapter redacts every URL in them:
   `contacts(emailaddress1='REDACTED')`;
 - user info (`user:password@`) and the `#fragment` are dropped.
 
-No headers, request bodies or response bodies are recorded. If you call `trackDependency`
+No headers, request bodies or response bodies are recorded. If you call `startDependency`
 yourself, `url` is recorded as you pass it, so redact it first. Properties you pass to `trackEvent` or `trackException` yourself are recorded as they are (with
 URLs redacted), so don't put personal data in them.
 

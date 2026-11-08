@@ -1,6 +1,7 @@
 import type {
   CsdlSchema,
   CsdlAction,
+  CsdlFunction,
   CsdlParameter as _CsdlParameter,
 } from "../parsers/csdl-types.js";
 import { resolve, join } from "path";
@@ -46,6 +47,84 @@ import {
   isRecordBound,
   recordSegment,
 } from "../utils/binding.js";
+import {
+  functionSignature,
+  functionUrlStatements,
+  ODATA_LITERAL_MODULE,
+  ODATA_LITERAL_SOURCE,
+} from "../utils/function-request.js";
+import { isQueryFunction } from "./query-functions-generator.js";
+
+/**
+ * The hand-written messages, in `src/handwritten/` of the messages package (#344). They aren't Web
+ * API actions or functions, so the CSDL can't describe them: the CRUD messages are HTTP verbs on
+ * entity sets, and ExecuteMultiple / ExecuteTransaction are `$batch` requests. The generator keeps
+ * the folder when it purges, re-exports `exports` from the index, and refuses a generated message
+ * named like one of them.
+ */
+export const HAND_WRITTEN_MESSAGES = {
+  /** The folder, under the package's `src`. */
+  folder: "handwritten",
+  /** Message names: each has `<Name>Request` and `<Name>Response`. */
+  names: [
+    "Associate",
+    "Create",
+    "Delete",
+    "Disassociate",
+    "ExecuteMultiple",
+    "ExecuteTransaction",
+    "Retrieve",
+    "RetrieveMultiple",
+    "Update",
+  ],
+  /** What the index re-exports from the folder's `index.ts`. */
+  exports: [
+    "AssociateRequest",
+    "type AssociateRequestParameters",
+    "AssociateResponse",
+    "CreateRequest",
+    "type CreateRequestParameters",
+    "CreateResponse",
+    "type CreateResult",
+    "DeleteRequest",
+    "type DeleteRequestParameters",
+    "DeleteResponse",
+    "DisassociateRequest",
+    "type DisassociateRequestParameters",
+    "DisassociateResponse",
+    "type ExecuteResponses",
+    "ExecuteMultipleRequest",
+    "type ExecuteMultipleRequestParameters",
+    "ExecuteMultipleResponse",
+    "type ExecuteMultipleResponseItem",
+    "type ExecuteMultipleResult",
+    "type ExecuteMultipleSettings",
+    "ExecuteTransactionRequest",
+    "type ExecuteTransactionRequestParameters",
+    "ExecuteTransactionResponse",
+    "RetrieveRequest",
+    "type RetrieveRequestParameters",
+    "RetrieveResponse",
+    "type RetrieveResult",
+    "RetrieveMultipleRequest",
+    "type RetrieveMultipleRequestParameters",
+    "RetrieveMultipleResponse",
+    "type RetrieveMultipleResult",
+    "UpdateRequest",
+    "type UpdateRequestParameters",
+    "UpdateResponse",
+  ],
+} as const;
+
+/**
+ * The files of the messages package's `src` that the generator doesn't write: `purge` keeps them,
+ * and tests that generate a messages package copy them next to the generated files.
+ */
+export const MESSAGES_HAND_WRITTEN_FILES = [
+  "OrganizationRequest.ts",
+  "types.ts",
+  HAND_WRITTEN_MESSAGES.folder,
+] as const;
 
 /**
  * Map Complex* types to their non-Complex EntityType equivalents.
@@ -91,10 +170,13 @@ function mapComplexTypeToEntityType(typeName: string): string {
 }
 
 /**
- * Generate SDK messages from Web API actions.
+ * Generate SDK messages from Web API actions and functions.
  *
- * Generates request/response pairs for all Web API actions, providing
- * a C#-familiar IOrganizationService.execute() pattern for TypeScript.
+ * Generates request/response pairs for all Web API actions (`POST`) and functions (`GET` with
+ * parameter aliases, #344), providing a C#-familiar IOrganizationService.execute() pattern for
+ * TypeScript. The query functions (`LastXDays`, …) aren't messages: Dataverse runs them only inside
+ * `$filter` (#342). The CRUD messages and ExecuteMultiple / ExecuteTransaction are hand-written
+ * ({@link HAND_WRITTEN_MESSAGES}).
  *
  * Note: These are Web API actions (REST/OData), not .NET SDK messages (SOAP).
  * The IOrganizationService facade converts these to Web API calls internally.
@@ -112,12 +194,18 @@ export async function generateMessages(
 ): Promise<void> {
   const absolutePath = resolve(outputPath);
 
-  // Get all actions from Microsoft.Dynamics.CRM namespace
+  // Get all actions and functions from Microsoft.Dynamics.CRM namespace
   const allActions = csdl.actions.filter((a) => a.namespace === "Microsoft.Dynamics.CRM");
+  const allFunctions = csdl.functions.filter(
+    (f) => f.namespace === "Microsoft.Dynamics.CRM" && !isQueryFunction(f)
+  );
 
   if (dryRun) {
     console.log(`  [DRY RUN] Would write to: ${absolutePath}`);
-    console.log(`  [DRY RUN] Total messages: ${String(allActions.length)}`);
+    console.log(
+      `  [DRY RUN] Total messages: ${String(allActions.length + allFunctions.length)} ` +
+        `(${String(allFunctions.length)} from functions)`
+    );
     if (purge) {
       console.log(`  [DRY RUN] Would purge directory first`);
     }
@@ -128,18 +216,19 @@ export async function generateMessages(
   if (purge) {
     console.log(`\n  🗑️  Purging ${absolutePath}...`);
     await purgeDirectory(absolutePath, [
-      "OrganizationRequest.ts",
-      "types.ts",
+      ...MESSAGES_HAND_WRITTEN_FILES,
       "types", // Don't delete the types folder (complex types are generated first)
     ]);
     console.log(`  ✅ Directory purged`);
   }
 
-  // Enum values in bodies are sent as member names (#232)
+  // Enum values in bodies (#232) and in JSON function parameters (#358) are sent as member names
   await writeTypeScriptFile(
     join(absolutePath, "internal", `${ENUM_BODY_MODULE}.ts`),
-    enumBodySource(csdl)
+    enumBodySource(csdl, "messages")
   );
+  // Parameter-alias literals of the function-backed messages (#344)
+  await writeTypeScriptFile(join(absolutePath, `${ODATA_LITERAL_MODULE}.ts`), ODATA_LITERAL_SOURCE);
   // Bodies leave out undefined parameters (#96)
   await writeTypeScriptFile(join(absolutePath, `${REQUEST_BODY_MODULE}.ts`), REQUEST_BODY_SOURCE);
 
@@ -150,20 +239,27 @@ export async function generateMessages(
     ENTITY_PAYLOAD_SOURCE
   );
 
+  // Overloads with different bindings each get their own classes (#75)
+  const stems = messageStems(allActions, allFunctions);
+
   // Generate all messages
   console.log(`\n  Generating ${String(allActions.length)} Web API action messages...`);
-  // Overloads with different bindings each get their own classes (#75)
-  const stems = operationNames(allActions);
   for (const action of allActions) {
     const stem = stems.get(action) ?? action.name;
     const content = generateMessageClass(csdl, action, stem);
     const filename = `${stem}Message.ts`;
     await writeTypeScriptFile(join(absolutePath, filename), content);
   }
+  console.log(`  Generating ${String(allFunctions.length)} Web API function messages...`);
+  for (const func of allFunctions) {
+    const stem = stems.get(func) ?? func.name;
+    const content = generateFunctionMessageClass(csdl, func, stem);
+    await writeTypeScriptFile(join(absolutePath, `${stem}Message.ts`), content);
+  }
 
   // Generate index
   const indexContent = generateMessagesIndex(
-    allActions,
+    [...allActions, ...allFunctions],
     stems,
     exportedEnumNames(csdl),
     exportedTypeNames(csdl)
@@ -171,7 +267,37 @@ export async function generateMessages(
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
-  console.log(`\n  Total: ${String(allActions.length)} messages`);
+  console.log(`\n  Total: ${String(allActions.length + allFunctions.length)} messages`);
+}
+
+/**
+ * The class-name stem of each message: the operation name, or `<Name>_<table>` for an overload
+ * (#75). Actions and functions share the package, so a stem two of them would get, or one that a
+ * hand-written message has, is an error rather than a file that overwrites another.
+ */
+export function messageStems(
+  actions: readonly CsdlAction[],
+  functions: readonly CsdlFunction[]
+): Map<CsdlAction | CsdlFunction, string> {
+  const stems = new Map<CsdlAction | CsdlFunction, string>([
+    ...operationNames(actions),
+    ...operationNames(functions),
+  ]);
+  const owner = new Map<string, string>(
+    HAND_WRITTEN_MESSAGES.names.map((name) => [name, "a hand-written message"])
+  );
+  for (const [op, stem] of stems) {
+    const kind = actions.some((action) => action === op) ? "action" : "function";
+    const taken = owner.get(stem);
+    if (taken) {
+      throw new Error(
+        `messages: the ${kind} ${op.name} would be ${stem}Request, which is already ${taken}. ` +
+          "Decide which one keeps the name (#344)."
+      );
+    }
+    owner.set(stem, `the ${kind} ${op.name}`);
+  }
+  return stems;
 }
 
 /**
@@ -470,18 +596,121 @@ function generateToRequestInformation(
 }
 
 /**
+ * Generate the request + response classes of a message backed by a Web API function (#344): the
+ * same `GET` with parameter aliases as the `<Name>Function` class of the functions package (shared
+ * code, `utils/function-request.ts`), and the message contract of the action-backed ones: the
+ * constructor takes the record id of a bound function, then one parameters object kept in
+ * `Parameters`, and `response.result` is the value the function resolves (#300).
+ */
+function generateFunctionMessageClass(
+  csdl: CsdlSchema,
+  func: CsdlFunction,
+  stem = func.name
+): string {
+  const requestClassName = `${stem}Request`;
+  const responseClassName = `${stem}Response`;
+  const resultName = `${stem}Result`;
+
+  const ret = operationReturn(csdl, func.returnType, resultName, `${func.name} function`, [
+    requestClassName,
+    responseClassName,
+  ]);
+  const response = messageResponseClass(ret, responseClassName, resultName, func.name, "function");
+
+  // The record id of a bound function is named as in the action-backed messages
+  const signature = functionSignature(csdl, func, (table) => `${toCamelCase(table)}Id`);
+  const url = functionUrlStatements(csdl, func, signature.args, "this.Parameters", "messages");
+
+  const typeImports = new Set([...ret.imports, ...signature.typeImports]);
+  typeImports.delete("EntityReference");
+
+  let code = `import { OrganizationRequest, OrganizationResponse } from './OrganizationRequest.js';\n`;
+  code += coreImport(isRecordBound(func));
+  if (ret.needsEntityReference || signature.needsEntityReference) code += ENTITY_REFERENCE_IMPORT;
+  if (url.usesEnumBody) code += `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n`;
+  if (url.usesAliasLiteral) {
+    code += `import { formatParameterAlias } from './${ODATA_LITERAL_MODULE}.js';\n`;
+  }
+  if (typeImports.size > 0) {
+    code += `import type { ${[...typeImports].sort().join(", ")} } from './types/index.js';\n`;
+  }
+  code += `\n`;
+
+  const bindingParams = signature.args.filter((p) => p.isBinding);
+  const aliasParams = signature.args
+    .filter((p) => !p.isBinding)
+    .map((p) => ({ name: p.tsName, type: p.type, optional: p.optional === true }));
+  const parametersName = parametersInterfaceName(requestClassName);
+  if (aliasParams.length > 0) {
+    code += parametersInterface(parametersName, `${func.name} message`, aliasParams);
+    code += `\n`;
+  }
+
+  code += `/**\n`;
+  code += ` * ${func.name} request message\n`;
+  code += ` *\n`;
+  code += ` * Web API Function: ${func.name}\n`;
+  code += bindingDoc(bindingParams[0]?.name, func.bindingParameter?.type);
+  code += ` */\n`;
+  code += `export class ${requestClassName} extends OrganizationRequest implements Executable<${responseClassName}> {\n`;
+  if (aliasParams.length > 0) {
+    // The parameters by their CSDL names, as OrganizationRequest.Parameters (#96)
+    code += `  declare readonly Parameters: Readonly<${parametersName}>;\n\n`;
+  }
+  const ctorArgs = [
+    ...bindingParams.map((p) => `public ${p.name}: ${p.type}`),
+    ...(aliasParams.length > 0 ? [parametersArgument("", parametersName, aliasParams)] : []),
+  ];
+  if (ctorArgs.length > 0) {
+    code += `  constructor(\n`;
+    for (const arg of ctorArgs) code += `    ${arg},\n`;
+    code += `  ) {\n`;
+  } else {
+    code += `  constructor() {\n`;
+  }
+  code +=
+    aliasParams.length > 0
+      ? `    super('${func.name}', { ...parameters });\n`
+      : `    super('${func.name}');\n`;
+  code += `  }\n\n`;
+
+  code += `  toRequestInformation(baseUrl: string): RequestInformation {\n`;
+  code += url.code;
+  code += `    return {\n`;
+  code += `      method: 'GET',\n`;
+  code += `      url,\n`;
+  code += `      headers: {\n`;
+  code += `        'Accept': 'application/json',\n`;
+  code += `      },\n`;
+  code += `    };\n`;
+  code += `  }\n\n`;
+
+  code += response.parseResponse;
+  code += `}\n\n`;
+
+  if (ret.kind !== "none") {
+    code += ret.declaration;
+    code += `\n`;
+  }
+  code += response.responseClass;
+
+  return code;
+}
+
+/**
  * Generate index.ts for messages.
  */
 function generateMessagesIndex(
-  operations: CsdlAction[],
-  stems: Map<CsdlAction, string>,
+  operations: Array<CsdlAction | CsdlFunction>,
+  stems: Map<CsdlAction | CsdlFunction, string>,
   enumNames: string[],
   typeNames: string[]
 ): string {
   let code = `/**\n`;
-  code += ` * Web API Action Messages\n`;
+  code += ` * Organization Service messages\n`;
   code += ` *\n`;
-  code += ` * Auto-generated TypeScript wrappers for Dataverse Web API actions.\n`;
+  code += ` * Auto-generated TypeScript wrappers for Dataverse Web API actions and functions, and the\n`;
+  code += ` * hand-written CRUD and ExecuteMultiple / ExecuteTransaction messages (./${HAND_WRITTEN_MESSAGES.folder}).\n`;
   code += ` * Use with IOrganizationService.execute() for C#-familiar patterns.\n`;
   code += ` */\n\n`;
 
@@ -513,13 +742,22 @@ function generateMessagesIndex(
     code += `export { ${stem}Request${parameters}, ${stem}Response${result} } from './${stem}Message.js';\n`;
   }
 
+  // The hand-written messages (#344): CRUD, and ExecuteMultiple / ExecuteTransaction over $batch
+  code += `\n// Hand-written messages: CRUD on entity sets, ExecuteMultiple / ExecuteTransaction over $batch\n`;
+  code += `export { ${HAND_WRITTEN_MESSAGES.exports.join(", ")} } from './${HAND_WRITTEN_MESSAGES.folder}/index.js';\n`;
+
   // Enum values for parameters, as in the functions package; bodies send member names (#232)
   if (enumNames.length > 0) {
     code += `\n// Enums\nexport { ${enumNames.join(", ")} } from './types/index.js';\n`;
   }
 
-  // A message's response is the `<stem>Response` class
-  const responses = new Set(entries.map(({ stem }) => `${stem}Response`));
+  // A message's response is the `<stem>Response` class, and the value it holds `<stem>Result`
+  // (a function such as ValidateFetchXmlExpression returns a complex type of that name, #344)
+  const responses = new Set([
+    ...entries.map(({ stem }) => `${stem}Response`),
+    ...entries.filter(({ hasResult }) => hasResult).map(({ stem }) => `${stem}Result`),
+    ...HAND_WRITTEN_MESSAGES.names.map((name) => `${name}Response`),
+  ]);
   code += rootTypeExports(typeNames, code, responses);
 
   return code;

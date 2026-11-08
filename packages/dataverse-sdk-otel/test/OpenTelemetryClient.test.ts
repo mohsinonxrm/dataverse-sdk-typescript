@@ -14,8 +14,9 @@ import {
   jsonResponse,
   odataError,
 } from "@mohsinonxrm/dataverse-sdk-testing";
+import type { DependencyTelemetry, TelemetryClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { OpenTelemetryClient } from "../src/index.js";
-import { redactUrl } from "../src/spans.js";
+import { redactUrl } from "../src/redaction.js";
 
 const CORRELATION_ID = "0b2f8e6a-5f2b-4d8e-9a43-1f7b6c2d9e10";
 
@@ -43,14 +44,26 @@ function onlySpan(): ReadableSpan {
   return all[0] as ReadableSpan;
 }
 
+/** The one CLIENT span; the SDK's events (e.g. a concurrency limit change) are other spans. */
+function onlyDependencySpan(): ReadableSpan {
+  const all = spans().filter((s) => s.kind === SpanKind.CLIENT);
+  expect(all).toHaveLength(1);
+  return all[0] as ReadableSpan;
+}
+
 function durationMs(span: ReadableSpan): number {
   return span.duration[0] * 1000 + span.duration[1] / 1e6;
 }
 
-describe("OpenTelemetryClient.trackDependency", () => {
+/** One attempt, started and ended at once (the SDK starts it before the request, ends it after). */
+function track(client: TelemetryClient, name: string, data: DependencyTelemetry): void {
+  client.startDependency(name, data).end(data);
+}
+
+describe("OpenTelemetryClient.startDependency", () => {
   it("records a CLIENT span with HTTP and Dataverse attributes", () => {
     const client = new OpenTelemetryClient({ tracer });
-    client.trackDependency("dataverse", {
+    track(client, "dataverse", {
       method: "GET",
       // As core passes it: already redacted with the app's redactUrl.
       url: `${TEST_API_URL}/contacts?…`,
@@ -78,13 +91,14 @@ describe("OpenTelemetryClient.trackDependency", () => {
       "dataverse.retry.attempt": "0",
     });
     expect(span.status.code).toBe(SpanStatusCode.UNSET);
-    expect(durationMs(span)).toBeGreaterThanOrEqual(119);
+    // The span runs from startDependency to end, on the tracer's clock.
+    expect(durationMs(span)).toBeGreaterThanOrEqual(0);
     expect(durationMs(span)).toBeLessThan(1000);
   });
 
   it("marks a failed response with status ERROR and error.type", () => {
     const client = new OpenTelemetryClient({ tracer });
-    client.trackDependency("dataverse", {
+    track(client, "dataverse", {
       method: "POST",
       url: `${TEST_API_URL}/accounts`,
       durationMs: 5,
@@ -100,7 +114,7 @@ describe("OpenTelemetryClient.trackDependency", () => {
 
   it("marks a call that never got a response with the error type it was given", () => {
     const client = new OpenTelemetryClient({ tracer });
-    client.trackDependency("dataverse", {
+    track(client, "dataverse", {
       method: "GET",
       url: `${TEST_API_URL}/accounts`,
       success: false,
@@ -115,21 +129,21 @@ describe("OpenTelemetryClient.trackDependency", () => {
 
   it("treats a 4xx/5xx status as a failure when success is not given", () => {
     const client = new OpenTelemetryClient({ tracer });
-    client.trackDependency("dataverse", { method: "GET", resultCode: "404" });
+    track(client, "dataverse", { method: "GET", resultCode: "404" });
     expect(onlySpan().status.code).toBe(SpanStatusCode.ERROR);
   });
 
   it("sets server.address to the host name and server.port separately (#384)", () => {
     const client = new OpenTelemetryClient({ tracer });
-    client.trackDependency("dataverse", {
+    track(client, "dataverse", {
       method: "GET",
       // As core passes it: `target` is `URL.host`, which keeps a non-default port.
       target: "contoso.crm.dynamics.com:8443",
       url: "https://contoso.crm.dynamics.com:8443/api/data/v9.2/WhoAmI",
       resultCode: "200",
     });
-    client.trackDependency("dataverse", { method: "GET", target: "contoso.crm.dynamics.com:8443" });
-    client.trackDependency("dataverse", {
+    track(client, "dataverse", { method: "GET", target: "contoso.crm.dynamics.com:8443" });
+    track(client, "dataverse", {
       method: "GET",
       target: "contoso.crm.dynamics.com",
       url: `${TEST_API_URL}/WhoAmI`,
@@ -146,8 +160,8 @@ describe("OpenTelemetryClient.trackDependency", () => {
 
   it("records url.full as core passes it, already redacted by the app's redactUrl (#384)", () => {
     const client = new OpenTelemetryClient({ tracer });
-    client.trackDependency("dataverse", { method: "GET", url: `${TEST_API_URL}/accounts?$top=5` });
-    client.trackDependency("dataverse", { method: "GET", url: `${TEST_API_URL}/accounts({id})?…` });
+    track(client, "dataverse", { method: "GET", url: `${TEST_API_URL}/accounts?$top=5` });
+    track(client, "dataverse", { method: "GET", url: `${TEST_API_URL}/accounts({id})?…` });
 
     expect(spans().map((s) => s.attributes["url.full"])).toEqual([
       `${TEST_API_URL}/accounts?$top=5`,
@@ -158,9 +172,9 @@ describe("OpenTelemetryClient.trackDependency", () => {
   it("derives the span status from the status code when there is one (#384)", () => {
     const client = new OpenTelemetryClient({ tracer });
     // A core that sets `success` from `res.ok` reports a 304 as unsuccessful; it isn't an error.
-    client.trackDependency("dataverse", { method: "GET", success: false, resultCode: "304" });
-    client.trackDependency("dataverse", { method: "GET", success: true, resultCode: "503" });
-    client.trackDependency("dataverse", { method: "GET", success: false });
+    track(client, "dataverse", { method: "GET", success: false, resultCode: "304" });
+    track(client, "dataverse", { method: "GET", success: true, resultCode: "503" });
+    track(client, "dataverse", { method: "GET", success: false });
 
     const [notModified, unavailable, thrown] = spans();
     expect(notModified?.status.code).toBe(SpanStatusCode.UNSET);
@@ -172,14 +186,14 @@ describe("OpenTelemetryClient.trackDependency", () => {
 
   it("uses the tracerProvider option", () => {
     const client = new OpenTelemetryClient({ tracerProvider: provider });
-    client.trackDependency("dataverse", { method: "GET", url: TEST_API_URL });
+    track(client, "dataverse", { method: "GET", url: TEST_API_URL });
     expect(onlySpan().instrumentationScope.name).toBe("@mohsinonxrm/dataverse-sdk-otel");
   });
 
   it("uses the global tracer provider by default", () => {
     trace.setGlobalTracerProvider(provider);
     try {
-      new OpenTelemetryClient().trackDependency("dataverse", { method: "GET", url: TEST_API_URL });
+      track(new OpenTelemetryClient(), "dataverse", { method: "GET", url: TEST_API_URL });
       expect(onlySpan().name).toBe("GET dataverse");
     } finally {
       trace.disable();
@@ -188,7 +202,7 @@ describe("OpenTelemetryClient.trackDependency", () => {
 
   it("records nothing when disableTelemetry is set", () => {
     const client = new OpenTelemetryClient({ tracer, disableTelemetry: true });
-    client.trackDependency("dataverse", { method: "GET", url: TEST_API_URL });
+    track(client, "dataverse", { method: "GET", url: TEST_API_URL });
     client.trackEvent("event");
     client.trackException(new Error("boom"));
     expect(spans()).toHaveLength(0);
@@ -323,7 +337,7 @@ describe("OpenTelemetryClient never throws", () => {
     } as unknown as Tracer;
     const client = new OpenTelemetryClient({ tracer: broken });
     expect(() => {
-      client.trackDependency("dataverse", { method: "GET", url: TEST_API_URL });
+      track(client, "dataverse", { method: "GET", url: TEST_API_URL });
       client.trackEvent("event");
       client.trackException(new Error("boom"));
     }).not.toThrow();
@@ -332,12 +346,12 @@ describe("OpenTelemetryClient never throws", () => {
   it("swallows malformed input from JavaScript callers", () => {
     const client = new OpenTelemetryClient({ tracer });
     const loose = client as unknown as {
-      trackDependency(name: unknown, data: unknown): void;
+      startDependency(name: unknown, data: unknown): { end(data: unknown): void };
       trackEvent(name: unknown, props: unknown, measurements: unknown): void;
     };
     expect(() => {
-      loose.trackDependency("dataverse", null);
-      loose.trackDependency("dataverse", { url: 42, properties: { n: 1 } });
+      loose.startDependency("dataverse", null).end(null);
+      loose.startDependency("dataverse", { url: 42, properties: { n: 1 } }).end(undefined);
       loose.trackEvent("event", { n: 1 }, { bad: "x", nan: NaN });
     }).not.toThrow();
   });
@@ -350,7 +364,7 @@ describe("DataverseClient with OpenTelemetryClient", () => {
 
     await expect(client.api("WhoAmI").get()).resolves.toEqual({ UserId: "u1" });
 
-    const span = onlySpan();
+    const span = onlyDependencySpan();
     expect(span.name).toBe("GET dataverse");
     expect(span.kind).toBe(SpanKind.CLIENT);
     expect(span.attributes["http.response.status_code"]).toBe(200);
@@ -368,7 +382,7 @@ describe("DataverseClient with OpenTelemetryClient", () => {
     await client.api("contacts").filter("emailaddress1 eq 'jane@contoso.com'").get();
 
     expect(fake.last().url).toContain("jane");
-    const span = onlySpan();
+    const span = onlyDependencySpan();
     // Core redacts the query (#35), and the adapter records that URL as is (#384).
     expect(span.attributes["url.full"]).toBe(`${TEST_API_URL}/contacts?…`);
     expect(JSON.stringify(span.attributes)).not.toContain("jane");
@@ -383,7 +397,7 @@ describe("DataverseClient with OpenTelemetryClient", () => {
 
     await client.api("accounts").top(5).get();
 
-    expect(onlySpan().attributes["url.full"]).toBe(`${TEST_API_URL}/accounts?$top=5`);
+    expect(onlyDependencySpan().attributes["url.full"]).toBe(`${TEST_API_URL}/accounts?$top=5`);
   });
 
   it("keeps the Dataverse error of a failed request and marks the span as failed", async () => {
@@ -395,7 +409,7 @@ describe("DataverseClient with OpenTelemetryClient", () => {
       code: "0x80040217",
     });
 
-    const span = onlySpan();
+    const span = onlyDependencySpan();
     expect(span.status.code).toBe(SpanStatusCode.ERROR);
     expect(span.attributes["http.response.status_code"]).toBe(404);
   });
@@ -408,7 +422,9 @@ describe("DataverseClient with OpenTelemetryClient", () => {
 
     await expect(client.api("WhoAmI").get()).rejects.toThrow();
 
-    const [dependency, exception] = spans();
+    const [dependency, exception] = spans().filter(
+      (s) => !s.name.startsWith("dataverse.concurrency")
+    );
     expect(dependency?.kind).toBe(SpanKind.CLIENT);
     expect(dependency?.status.code).toBe(SpanStatusCode.ERROR);
     expect(exception?.name).toBe("dataverse.exception");

@@ -3,24 +3,31 @@ import { DataverseClient } from "../src/client/DataverseClient.js";
 import { SDK_VERSION, defaultRedactUrl } from "../src/index.js";
 import { FeatureUsageFlag, FeatureUsageTracker } from "../src/telemetry/FeatureUsageTracker.js";
 import type { DataverseClientOptions } from "../src/abstractions/options.js";
-import type { FetchProvider, Logger, TelemetryClient } from "../src/abstractions/http.js";
+import type {
+  DependencyTelemetry,
+  FetchProvider,
+  Logger,
+  TelemetryClient,
+} from "../src/abstractions/http.js";
 import pkg from "../package.json" with { type: "json" };
 
 const BASE_URL = "https://contoso.crm.dynamics.com";
 const API = `${BASE_URL}/api/data/v9.2`;
 const ID = "00000000-0000-0000-0000-000000000001";
 
-type Dependency = Parameters<TelemetryClient["trackDependency"]>[1];
+type Dependency = DependencyTelemetry;
 
 function recordingTelemetry(throwing = false) {
   const dependencies: Dependency[] = [];
   const exceptions: Array<Record<string, string> | undefined> = [];
   const telemetry: TelemetryClient = {
     trackEvent: () => undefined,
-    trackDependency: (_name, data) => {
-      dependencies.push(data);
-      if (throwing) throw new Error("exporter down");
-    },
+    startDependency: () => ({
+      end: (data) => {
+        dependencies.push(data);
+        if (throwing) throw new Error("exporter down");
+      },
+    }),
     trackException: (_err, props) => {
       exceptions.push(props);
       if (throwing) throw new Error("exporter down");
@@ -55,7 +62,7 @@ function setup(options: Partial<DataverseClientOptions> = {}, fail?: Error) {
 }
 
 describe("#35: telemetry never breaks a request", () => {
-  it("a throwing trackDependency doesn't fail a successful request", async () => {
+  it("a dependency end that throws doesn't fail a successful request", async () => {
     const t = recordingTelemetry(true);
     const warnings: string[] = [];
     const logger: Logger = {
@@ -67,7 +74,7 @@ describe("#35: telemetry never breaks a request", () => {
     const { client } = setup({ telemetry: t.telemetry, logger });
     await expect(client.api("WhoAmI").get()).resolves.toEqual({ value: [] });
     expect(t.dependencies).toHaveLength(1);
-    expect(warnings).toEqual(["Telemetry trackDependency threw; ignoring"]);
+    expect(warnings).toEqual(["Telemetry dependency end threw; ignoring"]);
   });
 
   it("a throwing telemetry client doesn't replace the request's own error", async () => {

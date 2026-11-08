@@ -176,4 +176,31 @@ describe("DataverseClient.execute()", () => {
     expect(capturedHeaders?.get("X-Custom-Header")).toBe("custom-value");
     expect(capturedHeaders?.get("prefer")).toContain("return=representation");
   });
+
+  it("passes an error response to parseResponse when the request reads them (#344)", async () => {
+    server.use(
+      http.get(`${API_URL}/MockFunction`, () =>
+        HttpResponse.text("--batch--", {
+          status: 400,
+          headers: { "content-type": "multipart/mixed; boundary=batch" },
+        })
+      )
+    );
+    const client = new DataverseClient({ baseUrl: BASE_URL });
+    const request: Executable<{ status: number; body: string }> = {
+      parsesErrorResponses: true,
+      toRequestInformation: (baseUrl) => ({
+        method: "GET",
+        url: `${baseUrl}/MockFunction`,
+        headers: {},
+      }),
+      parseResponse: async (response) => ({ status: response.status, body: await response.text() }),
+    };
+
+    await expect(client.execute(request)).resolves.toEqual({ status: 400, body: "--batch--" });
+    // Without the flag, the same response rejects
+    await expect(client.execute({ ...request, parsesErrorResponses: false })).rejects.toMatchObject(
+      { status: 400 }
+    );
+  });
 });

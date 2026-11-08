@@ -46,7 +46,6 @@ const msalConfig = {
   },
   cache: {
     cacheLocation: "sessionStorage", // 'sessionStorage' or 'localStorage'
-    storeAuthStateInCookie: false, // Set to true for IE11/Edge legacy
   },
 };
 
@@ -524,6 +523,8 @@ Implements `AccessTokenProvider` interface from `@mohsinonxrm/dataverse-sdk-core
 
 #### Constructor
 
+<!-- no-check -->
+
 ```typescript
 constructor(
   publicClientApplication: IPublicClientApplication,
@@ -552,10 +553,10 @@ Acquires access token using silent flow first, falls back to interactive (popup/
 const token = await tokenProvider.getToken();
 
 // Override scopes for this request
-const token = await tokenProvider.getToken(["https://org2.crm.dynamics.com/.default"]);
+const org2Token = await tokenProvider.getToken(["https://org2.crm.dynamics.com/.default"]);
 
 // With additional options
-const token = await tokenProvider.getToken(undefined, {
+const stepUpToken = await tokenProvider.getToken(undefined, {
   claims: '{"access_token":{"acrs":{"essential":true,"values":["c1"]}}}',
   correlationId: crypto.randomUUID(),
 });
@@ -606,6 +607,8 @@ await tokenProvider.signOut(accounts[0]);
 ### Configuration Options
 
 #### `MsalBrowserTokenProviderOptions`
+
+<!-- no-check -->
 
 ```typescript
 interface MsalBrowserTokenProviderOptions {
@@ -764,10 +767,12 @@ try {
 ### Session Storage (Recommended)
 
 ```typescript
-const msalConfig = {
+import type { Configuration } from "@azure/msal-browser";
+
+const msalConfig: Configuration = {
+  auth: { clientId: "your-client-id" },
   cache: {
     cacheLocation: "sessionStorage", // Tokens cleared on tab close
-    storeAuthStateInCookie: false,
   },
 };
 ```
@@ -775,24 +780,19 @@ const msalConfig = {
 ### Local Storage (Persistent)
 
 ```typescript
-const msalConfig = {
+import type { Configuration } from "@azure/msal-browser";
+
+const msalConfig: Configuration = {
+  auth: { clientId: "your-client-id" },
   cache: {
     cacheLocation: "localStorage", // Tokens persist across browser sessions
-    storeAuthStateInCookie: false,
   },
 };
 ```
 
-### Cookies (IE 11 Support)
-
-```typescript
-const msalConfig = {
-  cache: {
-    cacheLocation: "localStorage",
-    storeAuthStateInCookie: true, // For IE 11 and Edge Legacy
-  },
-};
-```
+MSAL's `storeAuthStateInCookie` option was for Internet Explorer 11 and Edge Legacy, which MSAL
+Browser 3 and later don't support: MSAL 4 deprecates the option and MSAL 5 removes it, so leave it
+out.
 
 ## Security Best Practices
 
@@ -820,7 +820,10 @@ When the browser blocks the popup (MSAL `popup_window_error` or `empty_window_er
 - Or switch to redirect flow
 
 ```typescript
-import { MsalBrowserAuthenticationError } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
+import {
+  MsalBrowserAuthenticationError,
+  MsalBrowserTokenProvider,
+} from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
 
 const tokenProvider = new MsalBrowserTokenProvider(pca, {
   scopes: ["https://org.crm.dynamics.com/.default"],
@@ -847,11 +850,15 @@ try {
 
 **Problem**: `No 'Access-Control-Allow-Origin' header`
 
-**Solution**: Dataverse automatically allows CORS from your app's redirect URI origin. Ensure:
+**Solution**: Dataverse accepts cross-origin Web API calls that carry a bearer token, from any
+origin, so a CORS error usually means the request never got a valid answer. Check that:
 
-1. Redirect URI is correctly registered
-2. Requests originate from that URI
-3. Origin header is sent by browser
+1. The `baseUrl` is the environment's URL (a typo or another host has no CORS policy)
+2. Headers you add yourself (`defaultHeaders`, `.header()`) are allowed by Dataverse's preflight;
+   the SDK's own diagnostic headers are, and `diagnosticHeaders: false` turns them off
+3. A gateway or proxy in front of Dataverse passes the preflight (`OPTIONS`) through
+
+See [CORS](../../docs/browser.md#3-cors) in the browser guide.
 
 ### Token expiration
 

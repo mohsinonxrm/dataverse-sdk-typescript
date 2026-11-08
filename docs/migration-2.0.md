@@ -44,7 +44,7 @@ In 1.0 the actions, functions, messages, entities-runtime and xrm packages each 
 - **Removed options.** Passing any of these is now a type error.
   - `retry.delay`: use `baseDelayMs`.
   - `retry.useExponentialBackoff`: it had no effect, because backoff is always exponential.
-  - `circuitBreaker` and `bulkhead`, with their `CircuitBreakerOptions` and `BulkheadOptions` types: they had no effect. Circuit breaker and bulkhead middleware are planned in [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100).
+  - `circuitBreaker` and `bulkhead`, with their `CircuitBreakerOptions` and `BulkheadOptions` types: they had no effect. 2.0 adds opt-in `CircuitBreakerMiddleware` and `BulkheadMiddleware` instead, added through the `middleware` option ([#343](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/343)). Their `CircuitBreakerOptions` and `BulkheadOptions` reuse those names, with new fields (no `enabled`).
   - The `MiddlewareRetryOptions` export: it was a second name for `RetryOptions`. Import `RetryOptions` instead; the options themselves are unchanged.
 - **Auth.**
   - A token is fetched for every attempt, and a 401 triggers one token refresh and one retry.
@@ -71,6 +71,33 @@ In 1.0 the actions, functions, messages, entities-runtime and xrm packages each 
 
 - **`search()` is removed (#378).** Dataverse's Web API doesn't support `$search`, so a request with it failed. For full-text search use Dataverse search (the `searchquery` message); for a column match, `$filter` with `contains()`.
 - **Paging takes request options (#378).** `getAll()` and `iterate()` accept `RequestOptions` and apply them to every page (`timeoutMs` and `attemptTimeoutMs` per page). `getAll({ maxItems: 0 })` returns `[]`. If you construct a `PageIterator` yourself, its third argument is now the request options (`{ signal }`), not the signal.
+- **`TelemetryClient`: `trackDependency` is replaced by `startDependency` (#97).** The SDK now calls `startDependency(name, data)` before each request attempt, with what is known then (`target`, `method`, redacted `url`, `properties`), and calls `end(data)` on the handle it returns once the attempt is done, with the whole record (`durationMs`, `success`, `resultCode`, and `error.type` when it threw). The handle may also carry `headers` (W3C `traceparent` / `tracestate`, which the SDK sends to Dataverse) and `run(fn)` (run the attempt with the dependency as the active span). If you implement `TelemetryClient` yourself, move the body of `trackDependency` into `end`:
+
+  <!-- no-check -->
+
+  ```typescript
+  // 1.0
+  const telemetry: TelemetryClient = {
+    trackDependency(name, data) {
+      record(name, data);
+    },
+    // trackEvent, trackException unchanged
+  };
+  ```
+
+  ```typescript
+  // 2.0
+  const telemetry: TelemetryClient = {
+    startDependency(name) {
+      return { end: (data) => record(name, data) };
+    },
+    // trackEvent, trackException unchanged
+  };
+  ```
+
+  `trackEvent` now also receives the SDK's own events (`TelemetryEvents`: `dataverse.throttle`, `dataverse.retry`, `dataverse.concurrency.wait`, `dataverse.concurrency.limit`, and `dataverse.batch` from the batch package); filter by name if you only want your own. A request with `{ type: "telemetry", disable: true }` sends none of them.
+
+- **`traceparent` is sent when the telemetry client provides it (#97).** With the otel or appinsights (Node.js) adapter and a registered propagator, each request carries the `traceparent` of its dependency span, only to origins that may receive the token. `diagnosticHeaders: { traceContext: false }` turns it off. In a browser, the Dataverse origin's CORS preflight must allow it.
 - **Telemetry treats 3xx as success (#378).** A `304 Not Modified` is a successful dependency in the otel and appinsights adapters; in 1.0 it was a failure.
 - **Concurrency settings are honoured (#356).** `concurrency.maxConcurrentRequests` is used exactly; in 1.0 it was clamped to 2..16, so `1` sent two requests at once. When you set it, `max` defaults to it, so the `x-ms-dop-hint` header can lower your limit but no longer raise it: add `max` (for example `{ maxConcurrentRequests: 4, max: 16 }`) to let it rise. Settings that aren't whole numbers of at least 1, or don't fit `min <= maxConcurrentRequests <= max`, throw `DataverseInvalidRequestError` when the client is created. The per-request `{ type: "concurrency", maxConcurrent }` option is removed: it never had an effect.
 - **`associate()`, `disassociate()` and `bindMany()` keep the builder's impersonation and headers (#355).** In 1.0, `client.api(…).impersonate(userId).associate(…)` ran as the calling identity. If you worked around that by sending the `$ref` request yourself, you can go back to `associate()`. A custom `BindManyExecutor` now gets a sixth argument with those headers and the request options; send them with your requests.
@@ -103,8 +130,10 @@ In 1.0 the actions, functions, messages, entities-runtime and xrm packages each 
 ## otel
 
 - `serviceName` is removed from `OpenTelemetryConfig`: it was ignored. `service.name` is a resource attribute, so set it on your OpenTelemetry SDK (`new NodeSDK({ serviceName })` or `OTEL_SERVICE_NAME`).
-- **Span attributes and URLs (#384, otel and appinsights).** `server.address` is the host name without the port (`server.port` carries it). `url.full` is the URL as core redacted it with your `redactUrl`; the adapters no longer redact it again, so a custom `redactUrl` (one that keeps `$top`, say) now shows in telemetry. A status of 400 or more is a failure; a 304 isn't. Dependency spans are recorded after the call and are never the active span, so these adapters don't propagate `traceparent`.
+- **Span attributes and URLs (#384, otel and appinsights).** `server.address` is the host name without the port (`server.port` carries it). `url.full` is the URL as core redacted it with your `redactUrl`; the adapters no longer redact it again, so a custom `redactUrl` (one that keeps `$top`, say) now shows in telemetry. A status of 400 or more is a failure; a 304 isn't.
+- **Dependency spans are live (#97, otel and appinsights).** `trackDependency` is replaced by `startDependency` (see core). The CLIENT span starts before the attempt and is the active span while it runs, so `fetch` auto-instrumentation spans are its children rather than its siblings, and its `traceparent` goes to Dataverse. Each retry and each resend after a 401 is a span of its own under your span, with `http.request.resend_count` on retries. If you called `trackDependency` yourself, call `startDependency(name, data).end(data)`.
 - **appinsights** warns when a second client asks for a different `connectionString`: Azure Monitor is started once per process, with the first one.
+- **appinsights in browsers (#158):** import `ApplicationInsightsBrowserTelemetryClient` from `@mohsinonxrm/dataverse-sdk-appinsights/browser` and pass your `ApplicationInsights` instance (`@microsoft/applicationinsights-web`, an optional peer dependency). The main entry point is still Node.js only.
 
 ## metadata
 
@@ -152,6 +181,8 @@ In 1.0 the actions, functions, messages, entities-runtime and xrm packages each 
 ## actions, functions, messages
 
 These packages are generated by `tools/generate-sdk-types`.
+
+- **New messages (#344).** The messages package now has a message for each Web API function (`WhoAmIRequest`, `RetrieveEntityRequest`, `RetrievePrincipalAccess_systemuserRequest`, …), sending the same `GET` as the functions package, and the hand-written `CreateRequest`, `RetrieveRequest`, `UpdateRequest`, `DeleteRequest`, `AssociateRequest`, `DisassociateRequest`, `RetrieveMultipleRequest`, `ExecuteMultipleRequest` and `ExecuteTransactionRequest`. Nothing to change: code that used `WhoAmIFunction`, `OrganizationService` or `BatchRequestBuilder` instead keeps working. Where a complex type has the name a function message gives its response or result (`CalculateTotalTimeIncidentResponse`, `ValidateFetchXmlExpressionResult`), the messages root now exports the message's type under that name (#333). The messages package depends on `@mohsinonxrm/dataverse-sdk-batch`.
 
 - **Bound operations check the record id (#386).** The id goes into the URL as a GUID literal: braces are stripped (`"{…}"` from Xrm works), and a value that isn't a GUID throws `DataverseInvalidRequestError` before the request is sent.
 - **Constructors take one object with the parameters, by name (#96).** In 1.0 every parameter was a positional argument in `$metadata` order, so it was easy to swap two of the same type (`RetrieveEntityFunction` takes `LogicalName` before `MetadataId`) and `ImportSolutionAction` took 17 arguments, all typed as required. Now each operation with parameters has a `<Class>Parameters` interface (`ImportSolutionActionParameters`, `RetrieveEntityFunctionParameters`, `MergeRequestParameters`), keyed by the `$metadata` parameter names. A parameter `$metadata` marks `Nullable="false"` is required, any other is optional, and one that is left out or `undefined` isn't sent. The record id or entity set of a bound operation is still the first argument, before the object. An operation without parameters still takes no arguments (`new WhoAmIFunction()`), and one with only optional parameters can be called without arguments.
@@ -316,7 +347,10 @@ These packages are generated by `tools/generate-sdk-types`.
   | --------- | ----- | ----------------------------- | --------------------------------------- |
   | actions   | 1,356 | 1,556                         | 1,072                                   |
   | functions | 229   | 229                           | 209                                     |
-  | messages  | 1,356 | 1,556                         | 1,072                                   |
+  | messages  | 1,356 | 1,785                         | 1,281                                   |
+
+  In 2.0 the messages package has a message for each function too (#344), so its count is the
+  actions' plus the functions'.
 
   The snapshot org has 1,798 operations (1,294 platform, Sales and Customer Service, 504 of other apps). The 504 are left to dataverse-gen: 484 actions (with their messages) and 20 functions. Of the 433 actions and 12 functions below that 1.0 had and 2.0 hasn't, 358 actions and 9 functions are such operations of other apps; the other 75 actions and 3 functions aren't in the snapshot org at all (mostly Field Service, which it doesn't have). The rest of the 504 are newer than 1.0, so no 1.0 code uses them.
 

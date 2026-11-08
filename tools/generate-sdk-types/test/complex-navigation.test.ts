@@ -4,7 +4,7 @@
  * parsed and generated, typed like entity-typed action parameters (a reference or a payload), in
  * the actions, functions and messages packages.
  */
-import { copyFile, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -13,12 +13,9 @@ import { generateActions } from "../src/generators/actions-generator.js";
 import { generateFunctions } from "../src/generators/functions-generator.js";
 import { generateMessages } from "../src/generators/messages-generator.js";
 import { generateComplexTypes } from "../src/generators/complex-types-generator.js";
-import { typecheck } from "./typecheck.js";
+import { copyMessagesHandWritten, typecheck } from "./typecheck.js";
 
 const OUT_ROOT = fileURLToPath(new URL(".", import.meta.url));
-const MESSAGES_SRC = fileURLToPath(
-  new URL("../../../packages/dataverse-sdk-messages/src", import.meta.url)
-);
 
 const EDMX = `<?xml version="1.0" encoding="utf-8"?>
 <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
@@ -84,9 +81,7 @@ beforeAll(async () => {
   await generateActions(csdl, join(dir, "actions"), false);
   await generateFunctions(csdl, join(dir, "functions"), false);
   await generateMessages(csdl, join(dir, "messages"), false);
-  for (const file of ["OrganizationRequest.ts", "types.ts"]) {
-    await copyFile(join(MESSAGES_SRC, file), join(dir, "messages", file));
-  }
+  await copyMessagesHandWritten(join(dir, "messages"));
 });
 
 afterAll(async () => {

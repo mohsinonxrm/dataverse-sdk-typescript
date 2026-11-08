@@ -142,6 +142,9 @@ into `main` with a merge commit, and tag `main`.
   and the package page shows provenance.
 - The GitHub Release exists with the right notes (pre-release for betas and rcs).
 - Forward merges are done; the milestone is closed when its stable release ships.
+- The **Site** workflow (`site.yml`) deployed the explorer site from `main` after the stable
+  release's merge; its run shows "Site not deployed" until the Azure setup in
+  [docs/site.md](./docs/site.md) is done.
 
 ## Rehearsing a release
 
@@ -180,6 +183,12 @@ Publishing uses npm **trusted publishing** (OIDC): no npm token is stored anywhe
 3. **Secrets:** `DATAVERSE_URL`, `DATAVERSE_TENANT_ID`, `DATAVERSE_CLIENT_ID` and
    `DATAVERSE_CLIENT_SECRET` (the live suite's dev org) are repository secrets. There is no
    `NPM_TOKEN`; delete it if it's still there.
+
+4. **Explorer site:** create the Azure Static Web App (Free plan, deployment source "Other"), store
+   its deployment token as the `AZURE_STATIC_WEB_APPS_API_TOKEN` secret, and, for a default
+   sign-in, a multi-tenant SPA app registration whose redirect URI is the site's URL, with its
+   client id in the `EXPLORER_CLIENT_ID` repository variable. Step by step in
+   [docs/site.md](./docs/site.md).
 
 ## Troubleshooting
 

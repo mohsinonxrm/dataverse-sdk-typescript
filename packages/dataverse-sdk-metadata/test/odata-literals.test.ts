@@ -67,6 +67,19 @@ describe("#53: values that don't fit their type are rejected", () => {
     expect(requests).toEqual([]);
   });
 
+  it("getRelationshipByMetadataId casts to the kind of relationship asked for", async () => {
+    const id = "00000000-0000-0000-0000-0000000000aa";
+    await metadata.getRelationshipByMetadataId(id, {
+      cast: "OneToManyRelationshipMetadata",
+      select: ["ReferencedEntity"],
+    });
+    await metadata.getRelationshipByMetadataId(id, { select: ["SchemaName"] });
+    expect(requests).toEqual([
+      `/RelationshipDefinitions(${id})/Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata?$select=ReferencedEntity`,
+      `/RelationshipDefinitions(${id})?$select=SchemaName`,
+    ]);
+  });
+
   it("a DeletedMetadataFilters value that isn't an enum member", async () => {
     await expect(
       metadata.retrieveMetadataChanges({}, "1", "Entity' or 1 eq 1 or 'x")

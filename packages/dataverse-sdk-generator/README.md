@@ -2,6 +2,13 @@
 
 Code generator for Dataverse entities, actions, and functions. Generates strongly-typed TypeScript code from `$metadata` CSDL.
 
+`dataverse-gen` is the typed part of the SDK's main path for your own org: interfaces for your
+tables with their create and update types, a [typed client](#typed-client) over `client.api()`,
+and action and function classes for your custom APIs and the apps the prebuilt
+`@mohsinonxrm/dataverse-sdk-actions` and `-functions` packages leave out, run with
+`client.execute()` like the prebuilt ones. It replaces the .NET SDK's early-bound class
+generators (`CrmSvcUtil`, `pac modelbuilder`).
+
 ## 📦 Installation
 
 ```bash
@@ -122,13 +129,13 @@ import {
   createEntityReference,
   formatEntityForWrite,
 } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
-import { type Account, AccountMetadata } from "./generated/entities/Account.js";
+import { type AccountCreate, AccountMetadata } from "./generated/entities/Account.js";
 import { EntityMetadataCache } from "./generated/metadata.js";
 
 const client = new DataverseClient({ baseUrl: "https://contoso.crm.dynamics.com", tokenProvider });
 
-// Type-safe entity creation. Lookups take an EntityReference.
-const account: Account = {
+// Type-safe entity creation: only the columns a create accepts. Lookups take an EntityReference.
+const account: AccountCreate = {
   name: "Contoso",
   creditlimit: 50000,
   primarycontactid: createEntityReference("contact", contactId),
@@ -171,6 +178,18 @@ Options:
   --token <token>      Access token to use instead of the configured auth flow
   --strict-nulls       Type operation responses exactly as $metadata declares them
                        (the same as "strictNulls": true; see Strict nulls)
+```
+
+### `eject`
+
+Copy the built-in EJS templates into a directory (default `./dataverse-gen-templates`) to
+customize them; see [Custom templates](#custom-templates).
+
+```bash
+dataverse-gen eject [dir] [options]
+
+Options:
+  --force  Overwrite templates that are already in the directory
 ```
 
 ### `validate`
@@ -217,10 +236,22 @@ interface DataverseGenConfig {
 
     /** File suffix (e.g., ".generated" → Account.generated.ts) */
     fileSuffix?: string;
+
+    /** Regenerate only the tables whose metadata changed (default: false; see Incremental generation) */
+    incremental?: boolean;
   };
+
+  /** A directory of custom EJS templates (see Custom templates) */
+  templates?: string;
 
   /** Type operation responses exactly as $metadata declares them (default: false; see Strict nulls) */
   strictNulls?: boolean;
+
+  /** Typed Xrm form contexts for model-driven form scripts (default: false; see Form contexts) */
+  formContext?: boolean;
+
+  /** Typed request builders per entity set: createTypedClient() (default: false; see Typed client) */
+  typedClient?: boolean;
 
   /** How `generate` signs in (see Authentication) */
   auth?: {
@@ -363,6 +394,172 @@ complex type called `<Name>Output`) gets a suffix (`<Name>Output_2`).
 
 ---
 
+### Incremental generation
+
+`"output": { "incremental": true }` regenerates only the tables whose metadata changed. A stamp
+file in the output folder, `.dataverse-gen-stamp.json`, records a hash of each table's schema model
+(its columns, lookups, constraints, labels, …), a hash of the settings every file depends on (the
+options, the templates and the names of the generated types), and the files the run wrote. On the
+next run, a table whose hash is unchanged and whose files are still there is skipped: its
+`entities/<Entity>.ts` (and `forms/<Entity>Form.ts`) keep their content and timestamps, which
+keeps watchers, incremental builds and diffs quiet. The CLI prints the tables it kept;
+`generateCode()` returns them as `unchangedTables`.
+
+- A change of options, templates, generator version, or of which tables, enums and complex types
+  are generated regenerates every table.
+- The files that aren't per table (enums, actions, functions, complex types, `metadata.ts`,
+  indexes) are written on every run.
+- Files the previous run wrote that this one doesn't (a table removed from `entities`, an enum that
+  is gone) are deleted. Only files listed in the stamp are touched.
+- Metadata is still read in full: `$metadata` and RetrieveMetadataChanges for each table. To
+  regenerate everything, delete the stamp file.
+
+### Custom templates
+
+`"templates": "./dataverse-gen-templates"` points at a directory of EJS templates. A template there
+replaces the built-in one of the same name; the others stay built-in, so the directory needs only
+the ones you change. `dataverse-gen eject` copies all of them there to start from:
+
+| Template          | Renders                                                              |
+| ----------------- | -------------------------------------------------------------------- |
+| `entity.ejs`      | `entities/<Entity>.ts`: the interface, create/update types, metadata |
+| `enum.ejs`        | `enums/<OptionSet>.ts`                                               |
+| `action.ejs`      | `actions/<Name>Action.ts`                                            |
+| `function.ejs`    | `functions/<Name>Function.ts`                                        |
+| `complextype.ejs` | `complextypes/<Name>.ts`                                             |
+| `metadata.ejs`    | `metadata.ts`                                                        |
+| `form.ejs`        | `forms/<Entity>Form.ts` (with `formContext`)                         |
+
+A template gets the same data as the built-in one (the schema model object, such as `entity` or
+`enumType`, the type names, and helpers such as `formatType()`, `propertyKey()`, `doc()` and
+`literal()`); start from the ejected copy to see what's available. Type helpers record the imports
+they need, so a template never writes import lines. The data a template gets can change between
+versions of the generator: re-eject after an upgrade and compare. With incremental generation, a
+template change regenerates every table.
+
+### Typed client
+
+`"typedClient": true` generates `client.ts` with `createTypedClient(client)`: one typed request
+builder per generated table, keyed by entity set name, in the style of the Graph (Kiota) SDKs. The
+builders are entities-runtime's `EntitySetClient`, a thin layer over core's request builder, typed
+by the table's interface, its create and update types, and a union of its columns
+(`AccountColumn`) for `select`. See
+[ADR 0009](../../docs/adr/0009-typed-request-builders.md) for the design.
+
+<!-- no-check -->
+
+```typescript
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { createTypedClient } from "./generated/client.js";
+
+const typed = createTypedClient(new DataverseClient({ baseUrl, tokenProvider }));
+
+const id = await typed.accounts.create({
+  name: "Contoso",
+  primarycontactid: createEntityReference("contact", contactId), // sent as @odata.bind
+});
+const account = await typed.accounts.byId(id).get({ select: ["name", "creditlimit"] }); // Account
+const active = await typed.accounts.list({
+  select: ["name"],
+  filter: "statecode eq 0",
+  orderBy: ["name asc"],
+  top: 50, // or maxItems; without either, list() follows every @odata.nextLink
+});
+await typed.accounts.byId(id).update({ creditlimit: 5000, primarycontactid: null }); // If-Match: *
+await typed.accounts.byId({ accountnumber: "A-1" }).delete({ etag }); // alternate key, concurrency
+
+typed.accounts.byId(id).get({ select: ["nmae"] }); // error: not a column of account
+typed.accounts.create({ createdon: "…" }); // error: not in AccountCreate
+const count = await typed.accounts.query().count().top(0).get(); // core's builder for the rest
+```
+
+| Method                                                                 | Request                                                          |
+| ---------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `typed.<set>.byId(key).get({ select, expand })`                        | `GET <set>(<key>)`: the record (`Account`); 404 rejects          |
+| `typed.<set>.list({ select, expand, filter, orderBy, top, maxItems })` | `GET <set>`, every page unless `top` / `maxItems` stops it       |
+| `typed.<set>.create(entity)`                                           | `POST <set>` with `formatEntityForWrite()`; resolves the new id  |
+| `typed.<set>.byId(key).update(entity, { etag })`                       | `PATCH` with `If-Match: *` (or the etag): never creates a record |
+| `typed.<set>.byId(key).delete({ etag })`                               | `DELETE`, with `If-Match` for an etag                            |
+| `typed.<set>.query()` / `.byId(key).request()`                         | core's `DataverseRequestBuilder` for the set or the record       |
+
+`key` is a GUID or an alternate key object. Every method takes core's request options
+(`signal`, `headers`, `prefer`, `timeoutMs`, …) last. `client.ts` imports every generated table's
+metadata, so in all-tables mode it's large; it's off by default.
+
+### Form contexts
+
+`"formContext": true` generates `forms/<Entity>Form.ts` for each table, for model-driven form
+scripts written in TypeScript: the table's columns typed with their `@types/xrm` attribute and
+control types, by logical name, and a form context whose `getAttribute()` and `getControl()` take
+those names. Install `@types/xrm` in the project that compiles the scripts (it's an optional peer
+dependency of the generator); the files reference it with `/// <reference types="xrm" />`.
+
+<!-- no-check -->
+
+```typescript
+// generated/forms/AccountForm.ts
+/// <reference types="xrm" />
+
+import type { account_industrycode } from "../enums/account_industrycode.js";
+
+export interface AccountAttributes {
+  name: Xrm.Attributes.StringAttribute;
+  industrycode: Xrm.Attributes.OptionSetAttribute<account_industrycode>;
+  creditlimit: Xrm.Attributes.NumberAttribute;
+  createdon: Xrm.Attributes.DateAttribute;
+  primarycontactid: Xrm.Attributes.LookupAttribute;
+  // ...
+}
+
+export interface AccountControls {
+  name: Xrm.Controls.StringControl;
+  industrycode: Xrm.Controls.OptionSetControl;
+  primarycontactid: Xrm.Controls.LookupControl;
+  // ...
+}
+
+export type AccountFormContext = Omit<Xrm.FormContext, "getAttribute" | "getControl"> & {
+  getAttribute<K extends keyof AccountAttributes>(name: K): AccountAttributes[K] | null;
+  getControl<K extends keyof AccountControls>(name: K): AccountControls[K] | null;
+  // also header_<name> and header_process_<name> controls, and the delegate overloads
+};
+```
+
+<!-- no-check -->
+
+```typescript
+import type { AccountFormContext } from "./generated/forms/AccountForm.js";
+import { account_industrycode } from "./generated/enums/account_industrycode.js";
+
+export function onLoad(executionContext: Xrm.Events.EventContext): void {
+  const form = executionContext.getFormContext() as AccountFormContext;
+  const industry = form.getAttribute("industrycode"); // OptionSetAttribute<account_industrycode> | null
+  if (industry?.getValue() === account_industrycode.Accounting) {
+    form.getControl("primarycontactid")?.addPreSearch(filterContacts); // LookupControl
+  }
+  form.getAttribute("industrycode")?.setValue(7); // error unless 7 is an option
+  form.getAttribute("nmae"); // error: not a column of account
+}
+```
+
+| Column type                            | Attribute                             | Control                       |
+| -------------------------------------- | ------------------------------------- | ----------------------------- |
+| Text, multiline text                   | `StringAttribute`                     | `StringControl`               |
+| Whole number, decimal, float, currency | `NumberAttribute`                     | `NumberControl`               |
+| Date and time                          | `DateAttribute`                       | `DateControl`                 |
+| Yes/no                                 | `BooleanAttribute`                    | `StandardControl`             |
+| Choice, status, status reason          | `OptionSetAttribute<enum>`            | `OptionSetControl`            |
+| Choices                                | `MultiSelectOptionSetAttribute<enum>` | `MultiSelectOptionSetControl` |
+| Lookup, customer, owner                | `LookupAttribute`                     | `LookupControl`               |
+
+A choice column whose option set the generator didn't make an enum for (a global option set) is
+`OptionSetAttribute<number>`. A lookup is keyed by its logical name (`contoso_parentaccountid`),
+as forms name it, not by its navigation property. Primary keys, the read-only name columns beside a
+lookup, and other virtual, file and image columns aren't included. The types cover every column of
+the table, not one form's layout: a column that isn't on the form returns `null`, as in
+`@types/xrm`, and a control placed twice (`name1`) isn't typed.
+
 ## 📂 Generated Output Structure
 
 ```
@@ -385,6 +582,10 @@ generated/
 ├── complextypes/
 │   ├── AuditDetail.ts
 │   └── index.ts
+├── forms/              # with "formContext": true
+│   ├── AccountForm.ts
+│   └── index.ts
+├── client.ts           # with "typedClient": true
 ├── internal/
 │   └── actionBody.ts   # bodyValue(): enum names and entities in action bodies (not exported)
 ├── metadata.ts
@@ -490,6 +691,125 @@ need a `Date`. Operation parameters take a `string` or a `Date`.
 
 When the `entity` table is generated, its metadata const is `EntityMetadata`, so `Entity.ts` and
 `metadata.ts` import the runtime type as `RuntimeEntityMetadata`.
+
+### Create and Update Types
+
+Next to the interface, each table gets `<Entity>Create` and `<Entity>Update`: the columns
+Dataverse accepts in a create and in an update, from the `IsValidForCreate` and
+`IsValidForUpdate` metadata of each column. Read-only and server-set columns (`createdon`,
+`versionnumber`, a calculated `fullname`, a lookup's `_<name>_value`) are left out of both, and a
+column valid for only one is in that one: the primary key can be set on create but never changed,
+and `statecode` is usually set by an update only.
+
+A lookup is keyed by the navigation property it's bound through and takes an `EntityReference`:
+`primarycontactid`, a custom lookup's `contoso_ParentAccountId` (named after its schema name), or
+a polymorphic lookup's `parentcustomerid` and `ownerid`. `formatEntityForWrite()` sends it as
+`<navigation property>@odata.bind` (for a polymorphic lookup, the navigation property for the
+reference's table). `null` clears a column or a lookup.
+
+<!-- no-check -->
+
+```typescript
+// generated/entities/Account.ts (continued)
+export type AccountCreate = {
+  /** accountid */
+  accountid?: string | null;
+
+  /** Type the company or business name. */
+  name?: string | null;
+
+  /** Select the account's primary industry. */
+  industrycode?: account_industrycode | null;
+
+  /** Lookup primarycontactid (contact): a reference, sent as primarycontactid@odata.bind */
+  primarycontactid?: EntityReference | null;
+  // ...
+};
+
+export type AccountUpdate = {
+  name?: string | null;
+  statecode?: account_statecode | null;
+  primarycontactid?: EntityReference | null;
+  // ... (no accountid, createdon, ...)
+};
+```
+
+<!-- no-check -->
+
+```typescript
+const account: AccountCreate = {
+  name: "Contoso",
+  primarycontactid: createEntityReference("contact", contactId),
+  // createdon: "…", // error: not in AccountCreate
+};
+const id = await client
+  .api("accounts")
+  .createAndGetId(
+    formatEntityForWrite(account, AccountMetadata, { metadataCache: EntityMetadataCache })
+  );
+
+const change: AccountUpdate = { statecode: account_statecode.Inactive, primarycontactid: null };
+await client
+  .api(`accounts(${id})`)
+  .patch(formatEntityForWrite(change, AccountMetadata, { metadataCache: EntityMetadataCache }));
+```
+
+They're type aliases, not interfaces, so they can be passed where a `Partial<IEntity>` is taken
+(`formatEntityForWrite()`), yet still reject a column they don't have. Required columns
+(`RequiredLevel` ApplicationRequired) are optional in `<Entity>Create` too: the Web API doesn't
+enforce them, only forms do. A table with no writable column gets `Record<string, never>`.
+`<Entity>Create` or `<Entity>Update` takes a `_2` suffix when another generated type already has
+the name.
+
+### Validation Rules
+
+The metadata const of each table carries the column constraints `RetrieveMetadataChanges`
+returns, for the runtime's opt-in `validateEntity()`:
+
+<!-- no-check -->
+
+```typescript
+// generated/entities/Account.ts (AccountMetadata)
+  attributes: {
+    name: {
+      // ...
+      isRequired: true,
+      requiredLevel: "ApplicationRequired",
+      maxLength: 160,
+    },
+    numberofemployees: { /* ... */ minValue: 0, maxValue: 1000000000 },
+    industrycode: { /* ... */ optionValues: [1, 2, 3 /* … */] },
+    createdon: { /* ... */ isValidForCreate: false, isValidForUpdate: false },
+  },
+  navigation: {
+    primarycontactid: {
+      // ...
+      lookupAttribute: "primarycontactid", // the lookup column this navigation property writes
+      // isRequired / requiredLevel / isValidForCreate: false / isValidForUpdate: false, as for a column
+    },
+  },
+```
+
+- `maxLength` (text), `minValue` / `maxValue` (numbers) and `optionValues` (choice and choices
+  columns, global option sets included) when the column has them;
+- `isValidForCreate: false` / `isValidForUpdate: false` only when false;
+- a lookup's `RequiredLevel` and valid-for flags on its navigation property, next to
+  `lookupAttribute`.
+
+Nothing checks them unless you call `validateEntity()`:
+
+<!-- no-check -->
+
+```typescript
+import { validateEntity } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+
+const issues = validateEntity(account, AccountMetadata); // mode: "create" by default
+const updateIssues = validateEntity(change, AccountMetadata, { mode: "update" });
+// [{ property: "name", code: "maxLength", message: "name is 200 characters long; …" }, …]
+```
+
+See the [entities-runtime README](../dataverse-sdk-entities-runtime/README.md#validation-validateentityentity-metadata-options)
+for the checks.
 
 ### Enum Type
 
@@ -641,6 +961,8 @@ value is written as the OData literal for its type by `formatParameterAlias()` f
 
 Nullable parameters are optional; a parameter left out or `undefined` is left out of the call.
 
+<!-- no-check -->
+
 ```typescript
 // generated/functions/RetrieveUserPrivilegeByPrivilegeNameFunction.ts (bound to systemuser)
 export interface RetrieveUserPrivilegeByPrivilegeNameFunctionParameters {
@@ -731,6 +1053,8 @@ console.log("✓ Code generation complete!");
 
 Without an access token, `generateCode(config)` signs in with `config.auth`, as the CLI does.
 `createCliTokenProvider(config)` returns the token provider for those settings.
+`generateCode()` resolves `{ warnings, unchangedTables }`; `ejectTemplates(dir, { force })` copies
+the built-in templates, as `dataverse-gen eject` does.
 
 ---
 
@@ -1004,11 +1328,12 @@ export function getLogicalName(schemaName: string): string | undefined {
 - ✅ Calculated/rollup field annotations
 - ✅ Alternate keys read into the schema model (`EntityType.Keys`); the generated files don't use them yet
 - ✅ MSAL authentication flows (device code, client credentials)
-- ⏳ Create/Update type splitting (exclude read-only fields)
-- ⏳ Custom template support (eject command)
-- ⏳ Incremental generation (only changed entities)
-- ⏳ Validation rules generation
-- ⏳ Xrm.FormContext types (for model-driven apps)
+- ✅ Create/Update types (`<Entity>Create`, `<Entity>Update`: writable columns only)
+- ✅ Custom templates (`"templates"`, `dataverse-gen eject`)
+- ✅ Incremental generation (`"output": { "incremental": true }`: only changed tables are rewritten; metadata is still read in full)
+- ✅ Validation rules (column constraints in the metadata, for `validateEntity()`)
+- ✅ Xrm.FormContext types (`"formContext": true`; per table, not per form layout)
+- ✅ Typed request builders per entity set (`"typedClient": true`: `createTypedClient()`, #312)
 
 ---
 

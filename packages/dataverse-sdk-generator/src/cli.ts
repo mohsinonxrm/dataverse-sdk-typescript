@@ -14,6 +14,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { acquireCliToken } from "./auth.js";
 import { generateCode } from "./index.js";
+import { ejectTemplates } from "./templates.js";
 import type { DataverseGenConfig } from "./types.js";
 import { DEFAULT_CONFIG } from "./types.js";
 
@@ -112,9 +113,19 @@ program
 
       // Generate code
       spinner.text = "Fetching $metadata...";
-      const { warnings } = await generateCode(config, accessToken);
+      const { warnings, unchangedTables } = await generateCode(config, accessToken);
 
       spinner.succeed(chalk.green("✓ Code generation complete!"));
+      if (config.output?.incremental === true) {
+        const kept = unchangedTables.length;
+        console.log(
+          chalk.dim(
+            kept > 0
+              ? `Incremental: kept ${String(kept)} unchanged table${kept === 1 ? "" : "s"} (${unchangedTables.join(", ")})`
+              : "Incremental: every table regenerated"
+          )
+        );
+      }
       for (const warning of warnings) console.error(chalk.yellow(`⚠ ${warning}`));
 
       console.log(chalk.dim("\nGenerated files:"));
@@ -131,6 +142,32 @@ program
       if (error instanceof Error && error.stack) {
         console.error(chalk.dim(error.stack));
       }
+      process.exit(1);
+    }
+  });
+
+/**
+ * Copy the built-in templates into a directory to customize (#347)
+ */
+program
+  .command("eject")
+  .description("Copy the built-in EJS templates into a directory, to customize them")
+  .argument("[dir]", "Directory to copy the templates into", "dataverse-gen-templates")
+  .option("--force", "Overwrite templates that are already in the directory")
+  .action(async (dir: string, options: { force?: boolean }) => {
+    try {
+      const { written, skipped } = await ejectTemplates(path.resolve(process.cwd(), dir), options);
+      for (const file of written)
+        console.log(chalk.green(`✓ ${path.relative(process.cwd(), file)}`));
+      for (const file of skipped) {
+        console.log(
+          chalk.yellow(`⚠ ${path.relative(process.cwd(), file)} exists; kept (--force overwrites)`)
+        );
+      }
+      console.log(chalk.dim("\nPoint the configuration at them, then edit the ones to change:"));
+      console.log(chalk.cyan(`  "templates": ${JSON.stringify(dir)}\n`));
+    } catch (error: unknown) {
+      console.error(chalk.red(errorMessage(error)));
       process.exit(1);
     }
   });
@@ -170,6 +207,35 @@ program
 
       if (config.strictNulls !== undefined && typeof config.strictNulls !== "boolean") {
         errors.push("strictNulls must be true or false");
+      }
+
+      if (config.formContext !== undefined && typeof config.formContext !== "boolean") {
+        errors.push("formContext must be true or false");
+      }
+
+      if (config.typedClient !== undefined && typeof config.typedClient !== "boolean") {
+        errors.push("typedClient must be true or false");
+      }
+
+      if (
+        config.output?.incremental !== undefined &&
+        typeof config.output.incremental !== "boolean"
+      ) {
+        errors.push("output.incremental must be true or false");
+      }
+
+      if (config.templates !== undefined) {
+        if (typeof config.templates !== "string") {
+          errors.push("templates must be a directory path");
+        } else {
+          try {
+            if (!(await fs.stat(path.resolve(process.cwd(), config.templates))).isDirectory()) {
+              errors.push(`templates: ${config.templates} is not a directory`);
+            }
+          } catch {
+            errors.push(`templates: ${config.templates} does not exist`);
+          }
+        }
       }
 
       if (config.auth) {
@@ -232,6 +298,12 @@ program
         chalk.cyan(`  Output: ${config.output?.outputRoot ?? DEFAULT_CONFIG.output?.outputRoot}`)
       );
       console.log(chalk.cyan(`  Strict nulls: ${config.strictNulls === true ? "on" : "off"}`));
+      console.log(chalk.cyan(`  Form contexts: ${config.formContext === true ? "on" : "off"}`));
+      console.log(chalk.cyan(`  Typed client: ${config.typedClient === true ? "on" : "off"}`));
+      console.log(
+        chalk.cyan(`  Incremental: ${config.output?.incremental === true ? "on" : "off"}`)
+      );
+      if (config.templates) console.log(chalk.cyan(`  Templates: ${config.templates}`));
     } catch (error: unknown) {
       console.log(chalk.red("✗ Validation failed"));
       console.error(chalk.red(errorMessage(error)));

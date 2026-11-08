@@ -26,6 +26,7 @@ import {
   WeatherSunny20Regular,
 } from "@fluentui/react-icons";
 import { useAuth } from "../auth/AuthProvider";
+import { APP_NAME } from "../config";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useSdkContext } from "../sdk/SdkProvider";
 import { useThemeMode } from "../theme/ThemeProvider";
@@ -105,7 +106,7 @@ export function AppHeader({ navOpen, onToggleNav }: AppHeaderProps) {
       <div className={styles.brand}>
         <Database20Regular aria-hidden />
         <Text as="span" weight="semibold" size={400} className={styles.title}>
-          {compact ? "SDK showcase" : "Dataverse SDK showcase"}
+          {compact ? "SDK explorer" : APP_NAME}
         </Text>
       </div>
       <div className={styles.spacer} />
@@ -138,10 +139,12 @@ export function AppHeader({ navOpen, onToggleNav }: AppHeaderProps) {
           <Button
             appearance="subtle"
             className={styles.user}
-            aria-label={`Account: ${session.user.name}`}
-            icon={<Avatar name={session.user.name} size={24} color="colorful" />}
+            // The initials are decoration. The name comes from the text, so it contains what is
+            // shown (WCAG 2.5.3): "Account: <name>", with the name hidden on narrow screens.
+            icon={<Avatar name={session.user.name} size={24} color="colorful" aria-hidden />}
           >
-            {!compact && <span className={styles.userName}>{session.user.name}</span>}
+            <span className={styles.srOnly}>Account: </span>
+            <span className={compact ? styles.srOnly : styles.userName}>{session.user.name}</span>
           </Button>
         </MenuTrigger>
         <MenuPopover>

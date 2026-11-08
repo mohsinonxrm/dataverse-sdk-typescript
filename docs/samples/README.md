@@ -23,7 +23,13 @@ Each sample has its own README with setup steps. Run them from the sample folder
   switching, telemetry and logging hooks
 - **demo mode** (no org needed: the SDK runs against an in-browser fake of Dataverse) and MSAL
   sign-in, which is loaded only when you sign in with Microsoft; lazy-loaded scenario pages
-- Playwright smoke tests in demo mode (`pnpm --filter spa-fluentui-v9-sample test:e2e`), run in CI
+- the **Explorer** page: any raw Web API request or any typed action, function or message, with
+  its SDK code (three styles for a typed operation), a preview of the request, and the response;
+  sample queries and a history
+- also the SDK's public explorer site on Azure Static Web Apps (see [site.md](../site.md)):
+  visitors sign in with their own environment and app registration, or use demo mode
+- Playwright tests in demo mode (`pnpm --filter spa-fluentui-v9-sample test:e2e`), under the
+  site's Content-Security-Policy and with an axe check, run in CI
 
 ### 2) node-cli-devicecode
 

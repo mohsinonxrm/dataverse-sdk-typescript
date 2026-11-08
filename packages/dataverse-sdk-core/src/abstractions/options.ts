@@ -120,6 +120,12 @@ export interface DiagnosticHeaderOptions {
   featureUsage?: boolean;
   /** `retry-attempt: <n>` on retried requests. */
   retryAttempt?: boolean;
+  /**
+   * W3C Trace Context (`traceparent`, `tracestate`) from the `telemetry` client's
+   * `startDependency`, sent only to origins that may receive the access token. Sent only when the
+   * telemetry client provides it (the OpenTelemetry adapter does when a span is recording).
+   */
+  traceContext?: boolean;
 }
 
 /** See `DataverseClientOptions.middleware`. */
@@ -249,8 +255,10 @@ export interface DataverseClientOptions {
   /** What request logging includes. Only used when `logger` is set. */
   logging?: LoggingConfig;
   /**
-   * Receives the SDK's telemetry: one dependency per request attempt, and exceptions. Calls into
-   * it are guarded, so a client that throws never fails a request.
+   * Receives the SDK's telemetry: one dependency per request attempt (with W3C trace context when
+   * the client provides it), exceptions, and the events in `TelemetryEvents` (throttling,
+   * retries, concurrency waits, `$batch` executions). Calls into it are guarded, so a client that
+   * throws never fails a request.
    */
   telemetry?: import("./http.js").TelemetryClient;
   /**
@@ -262,7 +270,8 @@ export interface DataverseClientOptions {
   redactUrl?: (url: URL) => string;
   /**
    * The SDK's own diagnostic request headers: `x-ms-sdk-version`, `x-ms-correlation-id`,
-   * `x-ms-feature-usage`, and `retry-attempt` on retries. Default `true` (all sent). `false`
+   * `x-ms-feature-usage`, `retry-attempt` on retries, and `traceparent` / `tracestate` when the
+   * telemetry client provides them. Default `true` (all sent). `false`
    * sends none of them, so `fetch` sees only the headers the request itself needs; an object
    * turns them off one by one (omitted ones stay on). Telemetry still records the correlation id.
    */

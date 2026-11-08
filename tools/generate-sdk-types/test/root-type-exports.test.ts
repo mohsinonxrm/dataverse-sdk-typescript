@@ -5,7 +5,7 @@
  * (`<Operation>Response`) isn't re-exported: the root's name is the operation's response. Any
  * other collision is an error.
  */
-import { copyFile, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -19,11 +19,10 @@ import {
   generateComplexTypes,
   rootTypeExports,
 } from "../src/generators/complex-types-generator.js";
-import { typecheck } from "./typecheck.js";
+import { copyMessagesHandWritten, typecheck } from "./typecheck.js";
 
 const OUT_ROOT = fileURLToPath(new URL(".", import.meta.url));
 const PACKAGES = fileURLToPath(new URL("../../../packages", import.meta.url));
-const MESSAGES_SRC = join(PACKAGES, "dataverse-sdk-messages", "src");
 
 const EDMX = `<?xml version="1.0" encoding="utf-8"?>
 <edmx:Edmx Version="4.0" xmlns:edmx="http://docs.oasis-open.org/odata/ns/edmx">
@@ -93,9 +92,7 @@ beforeAll(async () => {
   await generateActions(csdl, join(dir, "actions"), false);
   await generateFunctions(csdl, join(dir, "functions"), false);
   await generateMessages(csdl, join(dir, "messages"), false);
-  for (const file of ["OrganizationRequest.ts", "types.ts"]) {
-    await copyFile(join(MESSAGES_SRC, file), join(dir, "messages", file));
-  }
+  await copyMessagesHandWritten(join(dir, "messages"));
 });
 
 afterAll(async () => {
@@ -187,7 +184,8 @@ describe("generated package roots export the types (#333)", () => {
       actions: ["CountResponse", "FetchExpression", "Label", "opportunityclose", "QueryBase"],
       // The function's CountResponse shadows the complex type of the same name
       functions: ["FetchExpression", "Label", "opportunityclose", "QueryBase", "TypedQueryBase"],
-      messages: ["CountResponse", "FetchExpression", "Label", "opportunityclose", "QueryBase"],
+      // The function-backed Count message's CountResponse shadows it too (#344)
+      messages: ["FetchExpression", "Label", "opportunityclose", "QueryBase", "TypedQueryBase"],
     };
     for (const pkg of ["actions", "functions", "messages"]) {
       const index = await read(`${pkg}/index.ts`);
@@ -201,6 +199,7 @@ describe("generated package roots export the types (#333)", () => {
     }
     expect(typeOnlyTypesExports(await read("actions/index.ts"))).not.toContain("ShareResponse");
     expect(typeOnlyTypesExports(await read("functions/index.ts"))).not.toContain("CountResponse");
+    expect(typeOnlyTypesExports(await read("messages/index.ts"))).not.toContain("CountResponse");
   });
 
   it("the types compile from the root, and the root's <Operation>Response is the operation's", async () => {
@@ -254,13 +253,15 @@ describe("the committed packages (#333)", () => {
       const names = allExportedNames(index);
       expect(names.length).toBe(new Set(names).size);
 
-      // Every type-only name of types/ is re-exported type-only, or is an operation's response
+      // Every type-only name of types/ is re-exported type-only, or is an operation's response (or,
+      // in messages, the result a message's response holds, such as the function-backed
+      // ValidateFetchXmlExpression's ValidateFetchXmlExpressionResult, #344)
       const reexported = new Set(typeOnlyTypesExports(index));
       expect(reexported.size).toBeGreaterThan(0);
       const typeNames = typeOnlyTypesExports(typesIndex, "*");
       const responses = new Set(
-        [...index.matchAll(/from "\.\/(\w+)(?:Action|Function|Message)\.js";/g)].map(
-          (m) => `${m[1]}Response`
+        [...index.matchAll(/from "\.\/(\w+)(?:Action|Function|Message)\.js";/g)].flatMap((m) =>
+          pkg === "messages" ? [`${m[1]}Response`, `${m[1]}Result`] : [`${m[1]}Response`]
         )
       );
       const missing = typeNames.filter((t) => !reexported.has(t) && !responses.has(t));
@@ -268,7 +269,7 @@ describe("the committed packages (#333)", () => {
       // The shadowed ones are exactly the operations' responses, which the root exports
       for (const t of typeNames.filter((n) => !reexported.has(n))) {
         expect(names).toContain(t);
-        expect(t).toMatch(/Response$/);
+        expect(t).toMatch(pkg === "messages" ? /(?:Response|Result)$/ : /Response$/);
       }
 
       // The issue's examples
