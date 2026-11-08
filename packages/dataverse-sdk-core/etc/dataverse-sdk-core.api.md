@@ -106,6 +106,31 @@ export interface BuiltInMiddlewareOptions {
 }
 
 // @public
+export class BulkheadMiddleware implements Middleware {
+    constructor(options: BulkheadOptions);
+    // (undocumented)
+    execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    inFlight(category: string): number;
+    // (undocumented)
+    name: string;
+    queued(category: string): number;
+}
+
+// @public
+export interface BulkheadOptions {
+    categorize?: (request: RequestInformation) => string | undefined;
+    defaultLimit?: number;
+    limits?: Record<string, number>;
+    maxQueue?: number;
+}
+
+// @public
+export interface BulkheadRequestOptions extends MiddlewareOptions {
+    bypass?: boolean;
+    category?: string;
+}
+
+// @public
 export interface ChaosFault {
     body?: unknown;
     headers?: Record<string, string>;
@@ -142,6 +167,38 @@ export interface ChaosRequestOptions extends MiddlewareOptions {
 export interface ChaosScriptInfo {
     attempt: number;
     requestIndex: number;
+}
+
+// @public
+export class CircuitBreakerMiddleware implements Middleware {
+    constructor(options?: CircuitBreakerOptions);
+    get consecutiveFailures(): number;
+    // (undocumented)
+    execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    // (undocumented)
+    name: string;
+    reset(): void;
+    get state(): CircuitState;
+}
+
+// @public
+export interface CircuitBreakerOptions {
+    breakDurationMs?: number;
+    failureThreshold?: number;
+    isFailure?: (status: number, error?: Error) => boolean;
+    onStateChange?: (change: CircuitStateChange) => void;
+}
+
+// @public
+export type CircuitState = "closed" | "open" | "half-open";
+
+// @public
+export interface CircuitStateChange {
+    consecutiveFailures: number;
+    // (undocumented)
+    from: CircuitState;
+    // (undocumented)
+    to: CircuitState;
 }
 
 // @public (undocumented)
@@ -238,6 +295,18 @@ export interface DataverseBatchPartError {
     index: number;
     // (undocumented)
     status: number;
+}
+
+// @public
+export class DataverseBulkheadRejectedError extends DataverseError {
+    constructor(message: string, category: string);
+    readonly category: string;
+}
+
+// @public
+export class DataverseCircuitOpenError extends DataverseError {
+    constructor(message: string, retryAfterMs?: number);
+    readonly retryAfterMs?: number;
 }
 
 // @public (undocumented)

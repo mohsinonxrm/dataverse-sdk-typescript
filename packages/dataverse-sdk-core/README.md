@@ -1115,9 +1115,76 @@ User Code (typed result)
 
 #### Circuit Breaker & Bulkhead
 
-Not implemented yet, and there are no options for them. They are planned as middleware
-([#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100)). Until then, add your
-own through the `middleware` option.
+Both are opt-in middleware: they aren't in the default pipeline, and you add them with the
+`middleware` option.
+
+```typescript
+import {
+  BulkheadMiddleware,
+  CircuitBreakerMiddleware,
+  DataverseCircuitOpenError,
+  DataverseClient,
+} from "@mohsinonxrm/dataverse-sdk-core";
+
+const breaker = new CircuitBreakerMiddleware({
+  failureThreshold: 5, // failures in a row that open the circuit (default 5)
+  breakDurationMs: 30_000, // how long it stays open before a probe (default 30 s)
+  onStateChange: ({ from, to }) => telemetry.trackEvent("dataverse.circuit", { from, to }),
+});
+
+const client = new DataverseClient({
+  baseUrl,
+  tokenProvider,
+  middleware: {
+    // Outermost: a request keeps its bulkhead slot across its retries.
+    prepend: [new BulkheadMiddleware({ limits: { read: 8, write: 2 } })],
+    // Innermost: every attempt counts, and retries stop as soon as the circuit opens.
+    append: [breaker],
+  },
+});
+
+try {
+  await client.api("accounts").get();
+} catch (err) {
+  if (err instanceof DataverseCircuitOpenError) {
+    console.log(`Dataverse is failing; try again in ${err.retryAfterMs} ms`);
+  }
+}
+```
+
+**Circuit breaker** (`CircuitBreakerMiddleware`):
+
+- **Closed → open:** after `failureThreshold` failures in a row. A failure is a response with a
+  status of 500 or more, or a `DataverseNetworkError` (a failed connection or a timed-out attempt).
+  A 429 or another 4xx is not a failure, and neither is a request its caller aborted. Any other
+  response resets the count. `isFailure(status, error?)` replaces the rule (`status` is 0 when no
+  response came back).
+- **Open:** requests fail at once, without being sent, with `DataverseCircuitOpenError`.
+  `retryAfterMs` says when a probe may go. Inside the retry middleware this ends the retries.
+- **Half-open:** after `breakDurationMs`, one request goes through as a probe, and others fail fast
+  while it is in flight (`retryAfterMs` is then `undefined`). A successful probe closes the
+  circuit. A failed probe opens it for another `breakDurationMs`.
+- **State:** `breaker.state` (`"closed"`, `"open"` or `"half-open"`), `breaker.consecutiveFailures`
+  and `onStateChange({ from, to, consecutiveFailures })` are there for telemetry. `breaker.reset()`
+  closes it. The state belongs to the instance: use one breaker per client (org).
+
+**Bulkhead** (`BulkheadMiddleware`):
+
+- **Limits per category**, on top of the client's overall `concurrency` limit, so one kind of work
+  can't take every slot. By default GET and HEAD are `"read"` and everything else (a `$batch` POST
+  included) is `"write"`. `limits` sets each category's limit; `defaultLimit` applies to categories
+  not listed. A category with no limit isn't limited.
+- **`categorize(request)`** chooses the category, e.g. one per entity set:
+  `categorize: (r) => new URL(r.url).pathname.split("/").pop()?.split("(")[0]` with `defaultLimit: 2`.
+  Returning `undefined` leaves the request unlimited.
+- **Waiting:** requests over the limit wait for a slot, and leave the queue when their `signal`
+  aborts. With `maxQueue` (default unlimited), a request beyond that many waiting is refused at once
+  with `DataverseBulkheadRejectedError` (with its `category`).
+- **Per request:** `new MiddlewareRequestOptions([{ type: "bulkhead", category: "import" }])`
+  counts a request in another category; `{ type: "bulkhead", bypass: true }` skips the bulkhead.
+- `bulkhead.inFlight(category)` and `bulkhead.queued(category)` show the current load.
+- **Placement:** with `prepend`, a request holds its slot through its retries, so the limit counts
+  requests. With `append`, it counts attempts, like the concurrency limit.
 
 ### URL Construction
 

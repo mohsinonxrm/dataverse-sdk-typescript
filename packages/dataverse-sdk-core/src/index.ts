@@ -50,6 +50,22 @@ export {
 } from "./middleware/ChaosMiddleware.js";
 export { getRetryAttempts } from "./middleware/RetryMiddleware.js";
 export type { RawBody } from "./utils/body.js";
+// Opt-in resilience middleware (#343).
+export {
+  CircuitBreakerMiddleware,
+  type CircuitBreakerOptions,
+  type CircuitState,
+  type CircuitStateChange,
+} from "./middleware/CircuitBreakerMiddleware.js";
+export {
+  BulkheadMiddleware,
+  type BulkheadOptions,
+  type BulkheadRequestOptions,
+} from "./middleware/BulkheadMiddleware.js";
+export {
+  DataverseBulkheadRejectedError,
+  DataverseCircuitOpenError,
+} from "./errors/DataverseResilienceErrors.js";
 
 export {
   DataverseAuthenticationError,
