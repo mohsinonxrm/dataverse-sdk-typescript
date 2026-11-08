@@ -155,7 +155,9 @@ async function generate(name: string, strictNulls: boolean | undefined): Promise
     .map((e) => path.join(e.parentPath, e.name));
   const files = new Map<string, string>();
   for (const file of paths.sort()) {
-    files.set(path.relative(path.join(root, "ts"), file), await fs.readFile(file, "utf-8"));
+    // Keys with "/" and lines ending "\n" on every OS
+    const key = path.relative(path.join(root, "ts"), file).split(path.sep).join("/");
+    files.set(key, (await fs.readFile(file, "utf-8")).replace(/\r\n/g, "\n"));
   }
   const program = ts.createProgram(paths, {
     ...COMPILER_OPTIONS,
@@ -236,13 +238,13 @@ import type { Detail } from "./Detail.js";
  * InfoResponse complex type
  */
 export interface InfoResponse {
-  Label?: string | null;
   Count?: number;
-  Tags?: string[];
   Detail?: Detail | null;
   Details?: Detail[] | null;
-  Record?: Account | null;
+  Label?: string | null;
   Mode?: Mode | null;
+  Record?: Account | null;
+  Tags?: string[];
 }
 `);
     expect(outputs.unset.files.get("functions/FMaybeInfoFunction.ts")).toContain(
@@ -287,8 +289,8 @@ describe("#305: with strictNulls", () => {
  */
 export interface Detail extends DetailBase {
   Note?: string | null;
-  Weight?: number;
   Parent?: Detail | null;
+  Weight?: number;
 }
 
 /**
@@ -297,8 +299,8 @@ export interface Detail extends DetailBase {
  */
 export interface DetailOutput extends DetailBaseOutput {
   Note: string | null;
-  Weight: number;
   Parent: DetailOutput | null;
+  Weight: number;
 }
 `);
     // Not returned: no Output interface

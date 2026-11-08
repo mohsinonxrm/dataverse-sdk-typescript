@@ -93,7 +93,9 @@ export function readOperation(
   }
   const url = /(?:const|let) url = `\$\{baseUrl\}\/([^`]*)`/.exec(src);
   const route = `/${(url?.[1] ?? "").replace(/\$\{(?:odataLiteral\.guid\()?this\.(\w+)\)?\}/g, "{$1}")}`;
-  return { className, method: kind === "functions" ? "GET" : "POST", route, args, parameters };
+  // A message is backed by an action (POST) or, since #344, a function (GET)
+  const method = kind === "functions" || /method: ["']GET["']/.test(src) ? "GET" : "POST";
+  return { className, method, route, args, parameters };
 }
 
 /** The text between the bracket `open` at or after `from` and its matching `close`. */

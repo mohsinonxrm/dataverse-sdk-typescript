@@ -2,13 +2,13 @@
  * #234: `OrganizationRequestOptions` (the `boundTo` option, #185) must be importable from the
  * messages package root, both from a regenerated index and from the committed one.
  */
-import { copyFile, mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { parseEdmx } from "../src/parsers/edmx-parser.js";
 import { generateMessages } from "../src/generators/messages-generator.js";
-import { typecheck } from "./typecheck.js";
+import { copyMessagesHandWritten, typecheck } from "./typecheck.js";
 
 const OUT_ROOT = fileURLToPath(new URL(".", import.meta.url));
 const MESSAGES_SRC = fileURLToPath(
@@ -53,9 +53,7 @@ beforeAll(async () => {
   dir = await mkdtemp(join(OUT_ROOT, ".gen-messages-index-test-"));
   await generateMessages(parseEdmx(EDMX), dir, false);
   // The hand-written files the generator keeps rather than writes.
-  for (const file of ["OrganizationRequest.ts", "types.ts"]) {
-    await copyFile(join(MESSAGES_SRC, file), join(dir, file));
-  }
+  await copyMessagesHandWritten(dir);
 });
 
 afterAll(async () => {

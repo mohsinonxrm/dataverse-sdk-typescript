@@ -17,7 +17,11 @@ import type {
   TypeScriptType,
   ParameterType,
 } from "./types.js";
-import type { MetadataService } from "./metadata-service.js";
+import type {
+  AttributeMetadataDetail,
+  EntityMetadataDetail,
+  MetadataService,
+} from "./metadata-service.js";
 
 /**
  * Schema model that parses CSDL $metadata and builds type definitions
@@ -145,7 +149,7 @@ export class SchemaModel {
         );
       }
 
-      const entityMetadata = response.EntityMetadata[0];
+      const entityMetadata = canonicalOrder(response.EntityMetadata[0]);
 
       // Set metadata properties not available in EDMX
       entityType.SchemaName = entityMetadata.SchemaName ?? entityType.LogicalName;
@@ -186,6 +190,8 @@ export class SchemaModel {
           requiredLevel && requiredLevel !== "None" ? requiredLevel : undefined;
         existingProp.AttributeOf = attribute.AttributeOf;
         existingProp.SourceType = attribute.SourceType ?? 0;
+        existingProp.IsValidForCreate = attribute.IsValidForCreate;
+        existingProp.IsValidForUpdate = attribute.IsValidForUpdate;
         existingProp.DisplayName = this.extractLabel(attribute.DisplayName);
         existingProp.Description = this.extractLabel(attribute.Description);
 
@@ -216,10 +222,23 @@ export class SchemaModel {
         if (attribute.AttributeTypeName?.Value === "MultiSelectPicklistType") {
           existingProp.IsMultiSelect = true;
         }
+
+        // Constraints for validation (#347)
+        if (typeof attribute.MaxLength === "number") existingProp.MaxLength = attribute.MaxLength;
+        if (typeof attribute.MinValue === "number") existingProp.MinValue = attribute.MinValue;
+        if (typeof attribute.MaxValue === "number") existingProp.MaxValue = attribute.MaxValue;
+        const options = attribute.OptionSet?.Options;
+        if (Array.isArray(options)) {
+          existingProp.OptionValues = options
+            .map((o) => o.Value)
+            .filter((v): v is number => typeof v === "number")
+            .sort((a, b) => a - b);
+        }
       }
 
       // Apply polymorphic lookup consolidation
       this.consolidatePolymorphicLookups(entityType, entityMetadata);
+      this.markLookupNavigationProperties(entityType, entityMetadata.Attributes);
       this.ensureUniqueMemberNames(entityType);
     }
 
@@ -334,6 +353,44 @@ export class SchemaModel {
       );
 
       entityType.NavigationProperties.push(consolidatedNav);
+    }
+  }
+
+  /**
+   * Find the navigation property each lookup column is written through, and record the lookup on
+   * it with whether a create or an update can set it (#347). A lookup's CSDL property
+   * (`_primarycontactid_value`) is read-only; a write binds the navigation property instead.
+   *
+   * The navigation property is the one named after the lookup (`primarycontactid`, or a
+   * consolidated polymorphic lookup such as `customerid`), else the one single-valued navigation
+   * property the CSDL constrains with `_<lookup>_value`: a custom lookup's navigation property is
+   * named after its schema name (`contoso_ParentAccountId`). A polymorphic lookup that wasn't
+   * consolidated has one per target and gets none.
+   */
+  private markLookupNavigationProperties(
+    entityType: EntityType,
+    attributes: AttributeMetadataDetail[]
+  ): void {
+    for (const attribute of attributes) {
+      if (!attribute.LogicalName || !attribute.Targets?.length) continue;
+      const logicalName = attribute.LogicalName;
+      const singleValued = entityType.NavigationProperties.filter((nav) => !nav.IsCollection);
+      let nav = singleValued.find(
+        (n) => n.Name === logicalName || (n.IsPolymorphic === true && n.FullName === logicalName)
+      );
+      if (!nav) {
+        const constrained = singleValued.filter(
+          (n) => n.ReferentialProperty === `_${logicalName}_value`
+        );
+        if (constrained.length === 1) nav = constrained[0];
+      }
+      if (!nav || nav.LookupAttribute !== undefined) continue;
+      nav.LookupAttribute = logicalName;
+      nav.LookupTargets = attribute.Targets;
+      nav.IsValidForCreate = attribute.IsValidForCreate;
+      nav.IsValidForUpdate = attribute.IsValidForUpdate;
+      const requiredLevel = attribute.RequiredLevel?.Value;
+      if (requiredLevel && requiredLevel !== "None") nav.RequiredLevel = requiredLevel;
     }
   }
 
@@ -509,15 +566,18 @@ export class SchemaModel {
       const key = chain.types.find((t) => t.Key?.PropertyRef)?.Key?.PropertyRef;
       const keyName = key ? this.getAttribute(key, "Name") : `${name.toLowerCase()}id`;
 
-      // Own properties first, then the inherited ones a derived type doesn't redeclare
+      // Own properties first, then the inherited ones a derived type doesn't redeclare. Then by
+      // name: the org's $metadata doesn't list a table's columns in a fixed order from one request
+      // to the next, and the model (its incremental-generation hash, the generated code) must not
+      // depend on it (#347; seen live).
       const properties = uniqueBy(
         chain.types.flatMap((t) => this.readProperties(t.Property)),
         (p) => p.Name
-      );
+      ).sort(compareByName);
       const navProps = uniqueBy(
         chain.types.flatMap((t) => this.readNavigationProperties(t.NavigationProperty)),
         (n) => n.Name
-      );
+      ).sort(compareByName);
 
       this.EntityTypes.push({
         Name: name,
@@ -578,7 +638,10 @@ export class SchemaModel {
         ...p,
         IsNavigation: true,
       }));
-      const properties = [...this.readProperties(complexType.Property), ...navigation];
+      // By name, for the same reason as a table's columns (readEntityTypes)
+      const properties = [...this.readProperties(complexType.Property), ...navigation].sort(
+        compareByName
+      );
       const baseType = this.getAttribute(complexType, "BaseType");
 
       this.ComplexTypes.push({
@@ -730,12 +793,18 @@ export class SchemaModel {
 
     const navProps: unknown[] = Array.isArray(navNode) ? navNode : [navNode];
 
-    return navProps.map((n) => ({
-      Name: this.getAttribute(n, "Name"),
-      TargetType: this.extractEntityName(this.getAttribute(n, "Type")),
-      IsCollection: this.getAttribute(n, "Type").startsWith("Collection("),
-      RelationshipName: this.getAttribute(n, "Partner") || "",
-    }));
+    return navProps.map((n) => {
+      const constraint = (n as { ReferentialConstraint?: unknown }).ReferentialConstraint;
+      const first: unknown = Array.isArray(constraint) ? constraint[0] : constraint;
+      const referentialProperty = this.getAttribute(first, "Property");
+      return {
+        Name: this.getAttribute(n, "Name"),
+        TargetType: this.extractEntityName(this.getAttribute(n, "Type")),
+        IsCollection: this.getAttribute(n, "Type").startsWith("Collection("),
+        RelationshipName: this.getAttribute(n, "Partner") || "",
+        ...(referentialProperty ? { ReferentialProperty: referentialProperty } : {}),
+      };
+    });
   }
 
   /**
@@ -957,6 +1026,38 @@ function uniqueBy<T>(items: T[], key: (item: T) => string): T[] {
  * PascalCase ("Financial Services" -> "FinancialServices"), prefixed with `_` when it would start
  * with a digit. Labels without letters or digits fall back to `Value<n>`.
  */
+/** Order-insensitive comparison of two logical names (plain code-unit order, no locale). */
+/** Plain code-unit order of two `Name`s (no locale), for a fixed property order. */
+function compareByName(a: { Name: string }, b: { Name: string }): number {
+  return a.Name < b.Name ? -1 : a.Name > b.Name ? 1 : 0;
+}
+
+function byLogicalName(a: { LogicalName?: string }, b: { LogicalName?: string }): number {
+  const x = a.LogicalName ?? "";
+  const y = b.LogicalName ?? "";
+  return x < y ? -1 : x > y ? 1 : 0;
+}
+
+/**
+ * A table's metadata with the lists Dataverse may return in any order sorted: attributes and keys
+ * by logical name, and each lookup's targets. The model, the generated code and incremental
+ * generation's hashes then don't change when the server orders its response differently. The
+ * order of a key's attributes is kept: it is part of the key.
+ */
+function canonicalOrder(entity: EntityMetadataDetail): EntityMetadataDetail {
+  return {
+    ...entity,
+    ...(entity.Attributes && {
+      Attributes: [...entity.Attributes]
+        .map((attribute) =>
+          attribute.Targets ? { ...attribute, Targets: [...attribute.Targets].sort() } : attribute
+        )
+        .sort(byLogicalName),
+    }),
+    ...(entity.Keys && { Keys: [...entity.Keys].sort(byLogicalName) }),
+  };
+}
+
 export function toEnumMemberName(label: string, value: number): string {
   const words = label.split(/[^\p{L}\p{Nd}_]+/u).filter((w) => w.length > 0);
   if (words.length === 0) return `Value${String(value).replace("-", "Minus")}`;

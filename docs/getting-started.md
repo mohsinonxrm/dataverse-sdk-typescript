@@ -2,6 +2,11 @@
 
 This guide will walk you through setting up and using the Dataverse SDK for TypeScript in your applications.
 
+It follows the SDK's main path: a `DataverseClient`, `client.api()` for queries and CRUD, typed
+action and function classes run with `client.execute()`, and types generated for your org with
+`dataverse-gen`. If you are porting code from the .NET SDK, the `OrganizationService` and message
+classes keep the .NET names; see [Coming from the .NET SDK](#coming-from-the-net-sdk).
+
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
@@ -9,12 +14,13 @@ This guide will walk you through setting up and using the Dataverse SDK for Type
 3. [Authentication](#authentication)
 4. [Basic CRUD Operations](#basic-crud-operations)
 5. [Advanced Queries](#advanced-queries)
-6. [Batch Operations](#batch-operations)
-7. [File Operations](#file-operations)
-8. [OrganizationService Pattern](#organizationservice-pattern)
-9. [Typed Actions, Functions and Messages](#typed-actions-functions-and-messages)
-10. [Generate the rest with dataverse-gen](#generate-the-rest-with-dataverse-gen)
-11. [Next Steps](#next-steps)
+6. [Typed Actions and Functions](#typed-actions-and-functions)
+7. [Generate the rest with dataverse-gen](#generate-the-rest-with-dataverse-gen)
+8. [Batch and Bulk Operations](#batch-and-bulk-operations)
+9. [File Operations](#file-operations)
+10. [Change Tracking and System Jobs](#change-tracking-and-system-jobs)
+11. [Coming from the .NET SDK](#coming-from-the-net-sdk)
+12. [Next Steps](#next-steps)
 
 ## Prerequisites
 
@@ -41,21 +47,27 @@ yarn add @mohsinonxrm/dataverse-sdk-core @mohsinonxrm/dataverse-sdk-auth-msal-no
 ### Optional Packages
 
 ```bash
-# For OrganizationService pattern (C#-familiar)
-pnpm add @mohsinonxrm/dataverse-sdk-xrm @mohsinonxrm/dataverse-sdk-messages
-
-# For batch operations
-pnpm add @mohsinonxrm/dataverse-sdk-batch
-
-# For file operations
-pnpm add @mohsinonxrm/dataverse-sdk-files
-
-# For typed actions/functions
+# Typed actions and functions (WinOpportunity, WhoAmI, ...)
 pnpm add @mohsinonxrm/dataverse-sdk-actions @mohsinonxrm/dataverse-sdk-functions
 
-# For metadata operations
+# Types for your tables, the typed client, custom APIs (dataverse-gen)
+pnpm add -D @mohsinonxrm/dataverse-sdk-generator
+pnpm add @mohsinonxrm/dataverse-sdk-entities-runtime
+
+# $batch and the bulk create/update helpers
+pnpm add @mohsinonxrm/dataverse-sdk-batch
+
+# File and image columns
+pnpm add @mohsinonxrm/dataverse-sdk-files
+
+# Tables, columns, relationships and choices
 pnpm add @mohsinonxrm/dataverse-sdk-metadata
+
+# .NET compatibility layer: OrganizationService and the *Request messages
+pnpm add @mohsinonxrm/dataverse-sdk-xrm @mohsinonxrm/dataverse-sdk-messages
 ```
+
+The [root README](../README.md#-which-package-do-i-need) has a table of which package does what.
 
 ## Authentication
 
@@ -118,6 +130,8 @@ const client = new DataverseClient({
 
 For background services and automation:
 
+<!-- live -->
+
 ```typescript
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
@@ -173,6 +187,8 @@ const client = new DataverseClient({
 
 ### Create a Record
 
+<!-- live -->
+
 ```typescript
 const account = {
   name: "Contoso Inc",
@@ -189,6 +205,8 @@ console.log("Created account:", accountId);
 ```
 
 ### Create with Return Representation
+
+<!-- live -->
 
 ```typescript
 import { Prefer } from "@mohsinonxrm/dataverse-sdk-core";
@@ -209,9 +227,10 @@ console.log("Created account name:", newAccount.name);
 
 ### Retrieve a Record
 
+<!-- live -->
+
 ```typescript
-// Get by ID
-const accountId = "00000000-0000-0000-0000-000000000001";
+// Get by ID: accountId is the id createAndGetId() returned above
 const account = await client
   .api(`/accounts(${accountId})`)
   .select("name", "revenue", "industrycode")
@@ -223,9 +242,9 @@ console.log("Revenue:", account.revenue);
 
 ### Update a Record
 
-```typescript
-const accountId = "00000000-0000-0000-0000-000000000001";
+<!-- live -->
 
+```typescript
 await client.api(`/accounts(${accountId})`).patch({
   revenue: 6000000,
   numberofemployees: 150,
@@ -235,6 +254,8 @@ console.log("Account updated successfully");
 ```
 
 ### Update with Optimistic Concurrency
+
+<!-- live -->
 
 ```typescript
 // Read the record's ETag (every retrieved record has @odata.etag)
@@ -251,9 +272,9 @@ await client.api(`/accounts(${accountId})`).ifMatch(etag).patch({
 
 ### Delete a Record
 
-```typescript
-const accountId = "00000000-0000-0000-0000-000000000001";
+<!-- live -->
 
+```typescript
 await client.api(`/accounts(${accountId})`).delete();
 
 console.log("Account deleted successfully");
@@ -262,6 +283,8 @@ console.log("Account deleted successfully");
 ## Advanced Queries
 
 ### Filter, Sort, and Paginate
+
+<!-- live -->
 
 ```typescript
 const accounts = await client
@@ -279,6 +302,8 @@ accounts.value.forEach((account) => {
 ```
 
 ### Expand Related Records
+
+<!-- live -->
 
 ```typescript
 // expand() takes strings: write nested query options inline, in OData syntax
@@ -302,6 +327,8 @@ console.log("Active Tasks:", account.Account_Tasks.length);
 
 ### Iterate Through All Pages
 
+<!-- live -->
+
 ```typescript
 // Iterate through all records (handles paging automatically)
 const allAccounts = [];
@@ -318,6 +345,8 @@ console.log(`Total accounts: ${allAccounts.length}`);
 
 ### Get All with Limits
 
+<!-- live -->
+
 ```typescript
 const accounts = await client
   .api("/accounts")
@@ -329,6 +358,8 @@ console.log(`Retrieved ${accounts.length} accounts`);
 ```
 
 ### Advanced Filtering
+
+<!-- live -->
 
 ```typescript
 // Complex filter
@@ -353,6 +384,8 @@ Dataverse's query functions (`LastXDays`, `InFiscalYear`, `In`, `Under`, `EqualU
 only inside `$filter`. `queryFunctions` in `@mohsinonxrm/dataverse-sdk-functions` writes them, with
 the values escaped, and `odata` from core combines them with other conditions:
 
+<!-- live -->
+
 ```typescript
 import { odata } from "@mohsinonxrm/dataverse-sdk-core";
 import { queryFunctions } from "@mohsinonxrm/dataverse-sdk-functions";
@@ -372,187 +405,49 @@ const myRecentAccounts = await client
 See [Query functions in `$filter`](../packages/dataverse-sdk-functions/README.md#query-functions-in-filter)
 for the list.
 
-## Batch Operations
+## Typed Actions and Functions
 
-### Basic $batch Request
+Dataverse's named operations are Web API **actions** (`POST`, with side effects: `WinOpportunity`,
+`ExportSolution`, `CreateMultiple`, …) and **functions** (`GET`: `WhoAmI`,
+`RetrieveTotalRecordCount`, …). `@mohsinonxrm/dataverse-sdk-actions` and
+`@mohsinonxrm/dataverse-sdk-functions` have a typed class for each one; `client.execute()` sends
+it and resolves its typed result. Parameters go in one object, by their Web API names, and a bound
+operation takes its record id (or entity set) first.
 
-```typescript
-import { BatchRequestBuilder, type BatchResponseStep } from "@mohsinonxrm/dataverse-sdk-batch";
-
-const batch = new BatchRequestBuilder(client);
-
-// addRequest(id, method, url, headers?, body?, dependsOn?)
-// URLs are relative to the Web API root (or absolute).
-batch.addRequest("accounts", "GET", "accounts?$select=name");
-batch.addRequest("contacts", "GET", "contacts?$select=fullname&$top=10");
-batch.addRequest("account", "GET", `accounts(${accountId})`);
-
-// Execute batch: one POST $batch
-const result = await batch.execute();
-
-// Responses are keyed by the ids above (and listed in order in result.results). A body is
-// `unknown` (a batch mixes responses), so name the type of the one you read.
-type Page<T> = BatchResponseStep<{ value: T[] }>;
-const accounts = result.responses.get("accounts") as Page<{ name: string }> | undefined;
-const contacts = result.responses.get("contacts") as Page<{ fullname: string }> | undefined;
-console.log("Accounts:", accounts?.body?.value);
-console.log("Contacts:", contacts?.body?.value);
-console.log("Account detail:", result.responses.get("account")?.body);
-```
-
-### Batch with Change Sets
+<!-- live -->
 
 ```typescript
-import { BatchRequestBuilder, DataverseBatchError } from "@mohsinonxrm/dataverse-sdk-batch";
+import { QualifyLeadAction, WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
+import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 
-const batch = new BatchRequestBuilder(client);
+// Unbound function: no parameters
+const { UserId, BusinessUnitId } = await client.execute(new WhoAmIFunction());
 
-// Begin change set for transactional updates
-batch.beginChangeset();
-
-// All operations in change set succeed or fail together
-batch.addRequest("a1", "POST", "accounts", undefined, { name: "Account 1" });
-// "$a1" refers to the account created by request "a1"
-batch.addRequest(
-  "c1",
-  "POST",
-  "contacts",
-  undefined,
-  { lastname: "Smith", "parentcustomerid_account@odata.bind": "$a1" },
-  ["a1"]
+// Unbound action: an entity parameter takes the record's columns and its @odata.type
+await client.execute(
+  new WinOpportunityAction({
+    OpportunityClose: {
+      "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+      "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
+      subject: "Won the deal",
+    },
+    Status: 3,
+  })
 );
-batch.addRequest("upd", "PATCH", `accounts(${existingId})`, undefined, { revenue: 100000 });
 
-batch.endChangeset();
-
-// Execute with error handling
-try {
-  const result = await batch.execute();
-  console.log("All changes committed:", result.responses.get("a1")?.headers["odata-entityid"]);
-} catch (error) {
-  if (error instanceof DataverseBatchError) {
-    // The change set was rolled back; error.result has the failing response
-    console.error("Batch failed, all changes rolled back:", error.result?.errors);
-  }
-}
+// Bound action: the lead's id first; it resolves the records it created
+const created = await client.execute(
+  new QualifyLeadAction(leadId, {
+    CreateAccount: true,
+    CreateContact: true,
+    CreateOpportunity: false,
+    Status: 3,
+  })
+);
+console.log(UserId, BusinessUnitId, created.length);
 ```
 
-Without `continueOnError`, Dataverse stops at the first failure and `execute()` throws `DataverseBatchError`. With `execute({ continueOnError: true })` it runs every request and returns the result. More than 1000 requests are split into several `$batch` requests. See the [batch package README](../packages/dataverse-sdk-batch/README.md).
-
-### Bulk Operations (Alternative to $batch)
-
-For simple bulk creates/updates/upserts, consider using bulk actions:
-
-```typescript
-import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
-
-const accounts = [
-  { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Account 1", revenue: 50000 },
-  { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Account 2", revenue: 75000 },
-  { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Account 3", revenue: 100000 },
-];
-
-const action = new CreateMultipleAction("accounts", { Targets: accounts });
-const result = await client.execute(action);
-
-console.log(`Created ${result.Ids.length} accounts`);
-result.Ids.forEach((id) => console.log("Created ID:", id));
-```
-
-## File Operations
-
-### Upload a File (Chunked)
-
-```typescript
-import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
-import { readFileSync } from "fs";
-
-const fileClient = new FileColumnClient(client);
-
-// Read the file; a Node.js Buffer is accepted as it is (Blob, ArrayBuffer and Uint8Array too)
-const fileContent = readFileSync("./documents/proposal.pdf");
-
-// Upload (entity set, record id, file column, data, file name, options).
-// Files over 4 MB (the default and maximum chunkSize) are sent in chunks.
-await fileClient.upload("accounts", accountId, "new_document", fileContent, "proposal.pdf", {
-  onProgress: ({ percentage }) => {
-    console.log(`Upload progress: ${percentage}%`);
-  },
-});
-
-console.log("File uploaded successfully");
-```
-
-The same call works for image columns such as `entityimage`. The MIME type comes from the `Blob` you pass (`application/octet-stream` for other data).
-
-### Download a File
-
-```typescript
-import { writeFileSync } from "fs";
-
-// download() resolves to a Blob
-const blob = await fileClient.download("accounts", accountId, "new_document");
-
-console.log("File size:", blob.size);
-console.log("MIME type:", blob.type);
-
-// Save to disk
-writeFileSync("./downloaded-file.pdf", Buffer.from(await blob.arrayBuffer()));
-```
-
-A column with no file is a 404 `DataverseODataError`. `fileClient.delete("accounts", accountId, "new_document")` removes the file.
-
-## OrganizationService Pattern
-
-For developers familiar with the C# SDK, use the OrganizationService pattern:
-
-```typescript
-import { OrganizationService, createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
-import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
-
-const service = new OrganizationService(client);
-
-// CRUD methods take the entity set name ("accounts"), not the logical name ("account").
-
-// Create: returns the new id
-const accountId = await service.create("accounts", {
-  name: "Contoso Inc",
-  revenue: 5000000,
-});
-
-// Retrieve
-const account = await service.retrieve("accounts", accountId, {
-  select: ["name", "revenue", "industrycode"],
-});
-
-// Update (sends If-Match: *, so a missing record fails with 404 instead of being created)
-await service.update("accounts", accountId, {
-  revenue: 6000000,
-});
-
-// Execute Message
-const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
-  EntityId: accountId,
-  InputArguments: {},
-});
-const workflowResponse = await service.execute(workflowRequest);
-
-// Associate: related records are references from createEntityReference(logicalName, id)
-await service.associate("accounts", accountId, "contact_customer_accounts", [
-  createEntityReference("contact", contactId),
-]);
-
-// Disassociate: the related record's id
-await service.disassociate("accounts", accountId, "contact_customer_accounts", contactId);
-
-// Delete
-await service.delete("accounts", accountId);
-```
-
-## Typed Actions, Functions and Messages
-
-`@mohsinonxrm/dataverse-sdk-actions`, `-functions` and `-messages` are prebuilt: a typed class for
-each Web API operation of
+The packages are prebuilt: a typed class for each Web API operation of
 
 - the **platform**: Dataverse and the Power Platform solutions every environment has
   (`WhoAmI`, `CreateMultiple`, `ExportSolution`, `RetrieveMetadataChanges`, …, and the query
@@ -571,11 +466,15 @@ Operations, Universal Resource Scheduling, Customer Insights - Journeys (`msdynm
 Voice, Connected Customer Service (IoT), Power Pages or Process Mining, nor your own custom APIs.
 Generate those from your org, as below.
 
+The [actions](../packages/dataverse-sdk-actions/README.md) and
+[functions](../packages/dataverse-sdk-functions/README.md) READMEs describe the return values,
+entity and enum parameters, and the operations each package lists.
+
 ## Generate the rest with dataverse-gen
 
 `dataverse-gen` (`@mohsinonxrm/dataverse-sdk-generator`) reads your org's `$metadata` and writes
-typed classes for the operations you name: another app's, or your own custom APIs and custom
-process actions. They implement the same `Executable` interface as the prebuilt classes, so
+types for your tables, a typed client, and typed classes for the operations you name: another
+app's, or your own custom APIs and custom process actions. They implement the same `Executable` interface as the prebuilt classes, so
 `client.execute()` runs them the same way and resolves the same return values.
 
 ```bash
@@ -585,6 +484,51 @@ pnpm add @mohsinonxrm/dataverse-sdk-entities-runtime @mohsinonxrm/dataverse-sdk-
 
 The generated files are ES modules: your project's `package.json` needs `"type": "module"` (or a
 bundler).
+
+### Your tables and the typed client
+
+List your tables in `entities` and set `"typedClient": true`:
+
+```json
+{
+  "environmentUrl": "https://yourorg.crm.dynamics.com",
+  "entities": ["account", "contact"],
+  "actions": [],
+  "functions": [],
+  "typedClient": true,
+  "output": { "outputRoot": "./src/generated" },
+  "auth": { "flow": "clientCredentials" }
+}
+```
+
+That writes an interface per table (`Account`), the columns a create and an update accept
+(`AccountCreate`, `AccountUpdate`), the choices as enums, the tables' metadata, and
+`createTypedClient()`: a request builder per table, keyed by entity set name, whose columns and
+payloads are checked against the table.
+
+<!-- live -->
+
+```typescript
+import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { createTypedClient } from "./generated/client.js";
+
+const typed = createTypedClient(client);
+
+const accountId = await typed.accounts.create({
+  name: "Contoso",
+  primarycontactid: createEntityReference("contact", contactId), // sent as @odata.bind
+});
+const account = await typed.accounts.byId(accountId).get({ select: ["name", "creditlimit"] });
+await typed.accounts.byId(accountId).update({ creditlimit: 25000 }); // If-Match: *
+const contacts = await typed.contacts.list({ select: ["fullname"], top: 10 });
+
+// typed.accounts.byId(accountId).get({ select: ["nmae"] }) doesn't compile: not a column
+console.log(account.name, contacts.length);
+```
+
+`typed.accounts.query()` returns core's request builder for anything else (`$apply`, `$count`,
+FetchXML). The [generator README](../packages/dataverse-sdk-generator/README.md#typed-client) has
+the details, and the options for validation rules, form contexts and incremental generation.
 
 ### An excluded app's operations
 
@@ -660,14 +604,300 @@ Generate again after you change the custom API, so the classes match its paramet
 (or function) in the org. The [generator README](../packages/dataverse-sdk-generator/README.md)
 has every option.
 
+## Batch and Bulk Operations
+
+### Basic $batch Request
+
+<!-- live -->
+
+```typescript
+import { BatchRequestBuilder, type BatchResponseStep } from "@mohsinonxrm/dataverse-sdk-batch";
+
+const batch = new BatchRequestBuilder(client);
+
+// addRequest(id, method, url, headers?, body?, dependsOn?)
+// URLs are relative to the Web API root (or absolute).
+batch.addRequest("accounts", "GET", "accounts?$select=name");
+batch.addRequest("contacts", "GET", "contacts?$select=fullname&$top=10");
+batch.addRequest("account", "GET", `accounts(${accountId})`);
+
+// Execute batch: one POST $batch
+const result = await batch.execute();
+
+// Responses are keyed by the ids above (and listed in order in result.results). A body is
+// `unknown` (a batch mixes responses), so name the type of the one you read.
+type Page<T> = BatchResponseStep<{ value: T[] }>;
+const accounts = result.responses.get("accounts") as Page<{ name: string }> | undefined;
+const contacts = result.responses.get("contacts") as Page<{ fullname: string }> | undefined;
+console.log("Accounts:", accounts?.body?.value);
+console.log("Contacts:", contacts?.body?.value);
+console.log("Account detail:", result.responses.get("account")?.body);
+```
+
+### Batch with Change Sets
+
+<!-- live -->
+
+```typescript
+import { BatchRequestBuilder, DataverseBatchError } from "@mohsinonxrm/dataverse-sdk-batch";
+
+const batch = new BatchRequestBuilder(client);
+
+// Begin change set for transactional updates
+batch.beginChangeset();
+
+// All operations in change set succeed or fail together
+batch.addRequest("a1", "POST", "accounts", undefined, { name: "Account 1" });
+// "$a1" refers to the account created by request "a1"
+batch.addRequest(
+  "c1",
+  "POST",
+  "contacts",
+  undefined,
+  { lastname: "Smith", "parentcustomerid_account@odata.bind": "$a1" },
+  ["a1"]
+);
+batch.addRequest("upd", "PATCH", `accounts(${existingId})`, undefined, { revenue: 100000 });
+
+batch.endChangeset();
+
+// Execute with error handling
+try {
+  const result = await batch.execute();
+  console.log("All changes committed:", result.responses.get("a1")?.headers["odata-entityid"]);
+} catch (error) {
+  if (error instanceof DataverseBatchError) {
+    // The change set was rolled back; error.result has the failing response
+    console.error("Batch failed, all changes rolled back:", error.result?.errors);
+  }
+}
+```
+
+Without `continueOnError`, Dataverse stops at the first failure and `execute()` throws `DataverseBatchError`. With `execute({ continueOnError: true })` it runs every request and returns the result. More than 1000 requests are split into several `$batch` requests. See the [batch package README](../packages/dataverse-sdk-batch/README.md).
+
+### Bulk Create and Update
+
+To write many records of one table, `createMultiple()` and `updateMultiple()` from the batch
+package split them into chunks, send each chunk as one `CreateMultiple` / `UpdateMultiple`
+request (or as a `$batch` for a table without those messages, with `strategy: "auto"`), and
+return what happened to each record:
+
+<!-- live -->
+
+```typescript
+import { createMultiple, updateMultiple } from "@mohsinonxrm/dataverse-sdk-batch";
+
+const account = { logicalName: "account", entitySetName: "accounts" };
+
+const created = await createMultiple(client, account, [
+  { name: "Account 1", revenue: 50000 },
+  { name: "Account 2", revenue: 75000 },
+  { name: "Account 3", revenue: 100000 },
+]);
+console.log(`Created ${created.succeeded} accounts`);
+
+const updated = await updateMultiple(
+  client,
+  account,
+  created.results.map((r) => ({ accountid: r.id, creditlimit: 10000 }))
+);
+for (const r of updated.results) {
+  if (r.status === "failed") console.error(`Record ${r.index}:`, r.error?.message);
+}
+```
+
+`getBulkOperationSupport(client, "account")` tells which bulk messages a table supports. To send
+one bulk request yourself, use the action:
+
+<!-- live -->
+
+```typescript
+import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
+
+const action = new CreateMultipleAction("accounts", {
+  Targets: [
+    { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Account 1", revenue: 50000 },
+    { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Account 2", revenue: 75000 },
+  ],
+});
+const result = await client.execute(action);
+result.Ids.forEach((id) => console.log("Created ID:", id));
+```
+
+[Bulk vs batch](./mapping/bulk-vs-batch.md) compares the two, and the
+[batch README](../packages/dataverse-sdk-batch/README.md#bulk-create-and-update) has every option.
+
+## File Operations
+
+### Upload a File (Chunked)
+
+```typescript
+import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
+import { readFileSync } from "fs";
+
+const fileClient = new FileColumnClient(client);
+
+// Read the file; a Node.js Buffer is accepted as it is (Blob, ArrayBuffer and Uint8Array too)
+const fileContent = readFileSync("./documents/proposal.pdf");
+
+// Upload (entity set, record id, file column, data, file name, options).
+// Files over 4 MB (the default and maximum chunkSize) are sent in chunks.
+await fileClient.upload("accounts", accountId, "new_document", fileContent, "proposal.pdf", {
+  onProgress: ({ percentage }) => {
+    console.log(`Upload progress: ${percentage}%`);
+  },
+});
+
+console.log("File uploaded successfully");
+```
+
+The same call works for image columns such as `entityimage`. The MIME type comes from the `Blob` you pass (`application/octet-stream` for other data).
+
+### Download a File
+
+```typescript
+import { writeFileSync } from "fs";
+
+// download() resolves to a Blob
+const blob = await fileClient.download("accounts", accountId, "new_document");
+
+console.log("File size:", blob.size);
+console.log("MIME type:", blob.type);
+
+// Save to disk
+writeFileSync("./downloaded-file.pdf", Buffer.from(await blob.arrayBuffer()));
+```
+
+A column with no file is a 404 `DataverseODataError`. `fileClient.delete("accounts", accountId, "new_document")` removes the file.
+
+## Change Tracking and System Jobs
+
+### Change Tracking
+
+For a table with change tracking enabled, `trackChanges()` reads every row and a delta link;
+`changesSince(deltaLink)` later returns only the rows created, updated and deleted since:
+
+<!-- live -->
+
+```typescript
+import { isDeltaLinkExpired } from "@mohsinonxrm/dataverse-sdk-core";
+
+const first = await client
+  .api("/accounts")
+  .select("name", "revenue")
+  .trackChanges<{ accountid: string; name: string }>();
+let deltaLink = first.deltaLink; // save it with the data
+
+try {
+  const changes = await client.changesSince<{ accountid: string; name: string }>(deltaLink);
+  console.log(`${changes.changed.length} changed, ${changes.deleted.length} deleted`);
+  deltaLink = changes.deltaLink;
+} catch (error) {
+  if (!isDeltaLinkExpired(error)) throw error; // too old: start again with trackChanges()
+}
+```
+
+See [Change Tracking](../packages/dataverse-sdk-core/README.md#change-tracking) in the core
+README for paging through large tables, expiry and the query options Dataverse allows.
+
+### Waiting for System Jobs
+
+`ExecuteWorkflow`, `BulkDelete`, `ImportSolutionAsync` and similar operations start a system job
+(an `asyncoperation`) and return at once. `waitForAsyncOperation()` reads the job until it ends:
+
+```typescript
+import {
+  DataverseAsyncOperationError,
+  waitForAsyncOperation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { ExecuteWorkflowAction } from "@mohsinonxrm/dataverse-sdk-actions";
+
+const started = await client.execute(
+  new ExecuteWorkflowAction(workflowId, { EntityId: accountId })
+);
+try {
+  const job = await waitForAsyncOperation(client, started, { timeoutMs: 5 * 60_000 });
+  console.log("Completed on", job.completedon);
+} catch (error) {
+  if (error instanceof DataverseAsyncOperationError) console.error(error.reason, error.message);
+  throw error;
+}
+```
+
+[Waiting for System Jobs](../packages/dataverse-sdk-core/README.md#waiting-for-system-jobs-asyncoperation)
+in the core README describes polling, timeouts and the responses it accepts.
+
+## Coming from the .NET SDK
+
+`@mohsinonxrm/dataverse-sdk-xrm` and `@mohsinonxrm/dataverse-sdk-messages` are a compatibility
+layer for code written against `IOrganizationService`: `OrganizationService` has the .NET method
+names, and the messages are the .NET `<Name>Request` / `<Name>Response` classes. They run on the
+same `DataverseClient`, so you can port first and move to the main path call by call. The
+[.NET SDK mapping](./mapping/message-to-webapi.md#0-from-the-net-sdk-to-the-main-path) has the
+main-path equivalent of each .NET call.
+
+```typescript
+import { OrganizationService, createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
+import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+
+const service = new OrganizationService(client);
+
+// CRUD methods take the entity set name ("accounts"), not the logical name ("account").
+
+// Create: returns the new id
+const accountId = await service.create("accounts", {
+  name: "Contoso Inc",
+  revenue: 5000000,
+});
+
+// Retrieve
+const account = await service.retrieve("accounts", accountId, {
+  select: ["name", "revenue", "industrycode"],
+});
+
+// Update (sends If-Match: *, so a missing record fails with 404 instead of being created)
+await service.update("accounts", accountId, {
+  revenue: 6000000,
+});
+
+// Execute a message: the same request as ExecuteWorkflowAction, with a .NET-style response
+const workflowRequest = new ExecuteWorkflowRequest(workflowId, {
+  EntityId: accountId,
+  InputArguments: {},
+});
+const workflowResponse = await service.execute(workflowRequest);
+console.log(workflowResponse.result?.asyncoperationid);
+
+// Associate: related records are references from createEntityReference(logicalName, id)
+await service.associate("accounts", accountId, "contact_customer_accounts", [
+  createEntityReference("contact", contactId),
+]);
+
+// Disassociate: the related record's id
+await service.disassociate("accounts", accountId, "contact_customer_accounts", contactId);
+
+// Delete
+await service.delete("accounts", accountId);
+console.log(account.name);
+```
+
+| .NET                                         | Main path in this SDK                                             |
+| -------------------------------------------- | ----------------------------------------------------------------- |
+| `service.Create` / `Retrieve` / `Update`     | `client.api("accounts").createAndGetId(…)`, `.get()`, `.patch(…)` |
+| `service.RetrieveMultiple(QueryExpression)`  | `client.api("accounts").select(…).filter(…).getAll()`             |
+| `service.Execute(new WinOpportunityRequest)` | `client.execute(new WinOpportunityAction({ … }))`                 |
+| `ExecuteMultipleRequest`                     | `BatchRequestBuilder`, or `createMultiple()` / `updateMultiple()` |
+| Early-bound classes                          | `dataverse-gen` and `createTypedClient()`                         |
+
 ## Next Steps
 
 ### Explore Advanced Features
 
-- **Metadata Operations**: Use `@mohsinonxrm/dataverse-sdk-metadata` to read/write entity definitions, attributes, relationships
-- **Typed Actions**: Import specific actions from `@mohsinonxrm/dataverse-sdk-actions`
-- **Typed Functions**: Import specific functions from `@mohsinonxrm/dataverse-sdk-functions`
-- **Telemetry**: Add Application Insights or OpenTelemetry adapters for observability
+- **Metadata Operations**: `MetadataClient` and the `Metadata` builders in `@mohsinonxrm/dataverse-sdk-metadata` create and update tables, columns, relationships and choices ([reference](./api/metadata-operations.md))
+- **Resilience**: opt-in adaptive throttling, circuit breaker and bulkhead middleware, and `ChaosMiddleware` to test your app against 429s and outages ([core README](../packages/dataverse-sdk-core/README.md#resiliency-features))
+- **Telemetry**: the OpenTelemetry and Application Insights adapters record a dependency per request attempt, with W3C trace context and the SDK's throttle, retry and batch events ([core README](../packages/dataverse-sdk-core/README.md#telemetryclient))
+- **FetchXML and views**: `client.fetchXml()`, `client.savedQuery()` and `client.userQuery()` ([core README](../packages/dataverse-sdk-core/README.md#fetchxml))
+- **Discovery**: find the environments a user can open, in every cloud (`@mohsinonxrm/dataverse-sdk-discovery`)
 
 ### Review Samples
 
@@ -678,13 +908,14 @@ Check out the `samples/` directory for complete working examples:
 - `actions-functions/` - Typed actions and functions
 - `batch-ops/` - Batch operations demonstrations
 - `metadata-ops/` - Metadata operations
-- `messages-sales-cs/` - OrganizationService message examples
+- `messages-sales-cs/` - OrganizationService message examples (.NET compatibility layer)
 - `spa-fluentui-v9/` - Browser SPA (React, Fluent UI v9) with a page per SDK area
 
 ### Read Documentation
 
+- **Usage patterns**: [SDK-USAGE-PATTERNS.md](./SDK-USAGE-PATTERNS.md) shows each kind of call on the main path and in the compatibility layer
 - **ADRs**: Architecture Decision Records in `docs/adr/`
-- **Mapping Docs**: Web API mappings in `docs/mapping/`
+- **Mapping Docs**: .NET and Web API mappings in `docs/mapping/`
 - **Package READMEs**: Specific package documentation
 
 ### Get Help
@@ -704,7 +935,11 @@ Check out the `samples/` directory for complete working examples:
 
 The SDK automatically retries 429 errors with `Retry-After` header respect. To adjust:
 
+<!-- live -->
+
 ```typescript
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+
 const client = new DataverseClient({
   baseUrl: "https://YOUR_ORG.crm.dynamics.com/api/data/v9.2",
   tokenProvider,
@@ -728,6 +963,8 @@ All operations support TypeScript auto-completion. Business entity types such as
 generated for your org by `@mohsinonxrm/dataverse-sdk-generator` (the metadata package holds only
 metadata types such as `EntityMetadata`):
 
+<!-- live -->
+
 ```typescript
 import type { Account } from "./generated/entities/Account.js";
 
@@ -735,10 +972,15 @@ const account: Account = await client.api(`/accounts(${id})`).get();
 //    ^^^^^^^ Full type safety
 ```
 
+With `"typedClient": true`, `createTypedClient(client)` checks the columns you select and the
+payloads you write too (see [Your tables and the typed client](#your-tables-and-the-typed-client)).
+
 ### Debugging
 
 The SDK logs nothing by default. Pass a `Logger` (`debug`, `info`, `warn` and `error` methods) to
 see its diagnostics; `ConsoleLogger` writes to the console:
+
+<!-- live -->
 
 ```typescript
 import { ConsoleLogger, DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";

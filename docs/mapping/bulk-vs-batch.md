@@ -337,9 +337,31 @@ try {
 }
 ```
 
-The SDK doesn't parse those annotations into per-record results yet
-([#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100); per-record results
-for bulk helpers are [#310](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/310)).
+`createMultiple()` and `updateMultiple()` in `@mohsinonxrm/dataverse-sdk-batch` ask for those
+annotations and turn them into per-record results:
+
+```typescript
+import { createMultiple } from "@mohsinonxrm/dataverse-sdk-batch";
+
+const result = await createMultiple(
+  client,
+  { logicalName: "contoso_sensordata", entitySetName: "contoso_sensordatas" },
+  readings
+);
+for (const r of result.results) {
+  if (r.status === "failed") console.error(`Reading ${r.index}:`, r.error?.message);
+}
+```
+
+## Bulk helpers
+
+`createMultiple()` and `updateMultiple()` (`@mohsinonxrm/dataverse-sdk-batch`) split a long list
+of records into chunks (`batchSize`, default 100), send each with `CreateMultiple` /
+`UpdateMultiple`, or with `$batch` for a table without them (`strategy: "batch"`), and report
+each record's id or error. `strategy: "auto"` picks between the two with
+`getBulkOperationSupport()`, which reads the table's `sdkmessagefilters` once and caches the
+answer. See the
+[batch package README](../../packages/dataverse-sdk-batch/README.md#bulk-create-and-update).
 
 ### $batch with continue-on-error
 

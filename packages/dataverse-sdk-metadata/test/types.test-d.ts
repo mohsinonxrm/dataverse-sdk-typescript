@@ -807,3 +807,174 @@ expectNotAssignable<InsertStatusValueParams>({
 });
 
 expectType<Promise<void>>(metadata.deleteOptionValue({ OptionSetName: "new_colors", Value: 1 }));
+
+// ==================== Metadata builders (#345) ====================
+
+import { Metadata } from "../src/index.js";
+import type {
+  BooleanAttributeMetadataCreate,
+  DecimalAttributeMetadataCreate,
+  MemoAttributeMetadataCreate,
+} from "../src/types/index.js";
+
+// Each builder returns its create type, which MetadataClient takes as it is.
+expectType<Label>(Metadata.label("Name"));
+expectType<Label>(Metadata.label({ 1033: "Name", 1036: "Nom" }));
+expectType<StringAttributeMetadataCreate>(Metadata.string("new_Code", { displayName: "Code" }));
+expectType<PrimaryNameAttributeMetadataCreate>(
+  Metadata.primaryName("new_Name", { displayName: "Name" })
+);
+expectType<MemoAttributeMetadataCreate>(Metadata.memo("new_Notes", { displayName: "Notes" }));
+expectType<IntegerAttributeMetadataCreate>(
+  Metadata.integer("new_Count", { displayName: "Count", format: "Duration" })
+);
+expectType<DecimalAttributeMetadataCreate>(Metadata.decimal("new_Rate", { displayName: "Rate" }));
+expectType<MoneyAttributeMetadataCreate>(
+  Metadata.money("new_Budget", { displayName: "Budget", precision: "pricing" })
+);
+expectType<DateTimeAttributeMetadataCreate>(
+  Metadata.dateTime("new_Due", { displayName: "Due", format: "DateOnly", behavior: "DateOnly" })
+);
+expectType<BooleanAttributeMetadataCreate>(
+  Metadata.boolean("new_Active", { displayName: "Active" })
+);
+expectType<PicklistAttributeMetadataCreate>(
+  Metadata.picklist("new_Size", { displayName: "Size", options: ["Small", "Large"] })
+);
+expectType<MultiSelectPicklistAttributeMetadataCreate>(
+  Metadata.multiSelectPicklist("new_Tags", {
+    displayName: "Tags",
+    globalOptionSetId: "3fd0fdd5-7b1f-4ed1-90bc-b830d3ed1984",
+  })
+);
+expectType<OneToManyRelationshipMetadataCreate>(
+  Metadata.lookup("new_AccountId", {
+    displayName: "Account",
+    referencingEntity: "new_project",
+    referencedEntity: "account",
+    relationshipSchemaName: "new_account_project",
+  })
+);
+expectType<ManyToManyRelationshipMetadataCreate>(
+  Metadata.manyToMany("new_project_contact", {
+    entity1LogicalName: "new_project",
+    entity2LogicalName: "contact",
+  })
+);
+expectType<OptionSetMetadataCreate>(
+  Metadata.globalOptionSet("new_priority", { displayName: "Priority", options: ["High", "Low"] })
+);
+
+const builtTable = Metadata.entity("new_Project", {
+  displayName: "Project",
+  displayCollectionName: "Projects",
+  primaryName: Metadata.primaryName("new_Name", { displayName: "Name" }),
+  attributes: [
+    Metadata.string("new_Code", { displayName: "Code" }),
+    Metadata.picklist("new_Size", { displayName: "Size", options: ["Small"] }),
+  ],
+});
+expectType<EntityMetadataCreate>(builtTable);
+expectType<Promise<string>>(metadata.createEntityDefinition(builtTable));
+expectType<Promise<string>>(
+  metadata.createAttributeDefinition(
+    "new_project",
+    Metadata.string("new_Code", { displayName: "Code" })
+  )
+);
+expectType<Promise<string>>(
+  metadata.createOneToManyRelationship(
+    Metadata.lookup("new_AccountId", {
+      displayName: "Account",
+      referencingEntity: "new_project",
+      referencedEntity: "account",
+      relationshipSchemaName: "new_account_project",
+    })
+  )
+);
+// A builder's result can be spread to set a property the builder doesn't take.
+expectAssignable<AttributeMetadataCreateTypes>({
+  ...Metadata.string("new_Code", { displayName: "Code" }),
+  IsAuditEnabled: { Value: true },
+});
+
+// A display name is required.
+expectError(Metadata.string("new_Code", {}));
+// SystemRequired is for Dataverse's own columns.
+expectError(Metadata.string("new_Code", { displayName: "Code", requiredLevel: "SystemRequired" }));
+// A choice takes its own options or a global choice: exactly one.
+expectError(
+  Metadata.picklist("new_Size", {
+    displayName: "Size",
+    options: ["Small"],
+    globalOptionSetId: "3fd0fdd5-7b1f-4ed1-90bc-b830d3ed1984",
+  })
+);
+expectError(Metadata.picklist("new_Size", { displayName: "Size" }));
+// The DateOnly behavior needs the DateOnly format.
+expectError(Metadata.dateTime("new_Due", { displayName: "Due", behavior: "DateOnly" }));
+expectError(
+  Metadata.dateTime("new_Due", { displayName: "Due", format: "DateAndTime", behavior: "DateOnly" })
+);
+// Ownership is a user or team, or the organization.
+expectError(
+  Metadata.entity("new_Project", {
+    displayName: "Project",
+    displayCollectionName: "Projects",
+    ownershipType: "BusinessOwned",
+    primaryName: Metadata.primaryName("new_Name", { displayName: "Name" }),
+  })
+);
+// A table needs its primary name column, from Metadata.primaryName, not a plain text column.
+expectError(
+  Metadata.entity("new_Project", { displayName: "Project", displayCollectionName: "Projects" })
+);
+expectError(
+  Metadata.entity("new_Project", {
+    displayName: "Project",
+    displayCollectionName: "Projects",
+    primaryName: Metadata.string("new_Name", { displayName: "Name" }),
+  })
+);
+// The other columns can't be a second primary name, or a lookup (created with its relationship).
+expectError(
+  Metadata.entity("new_Project", {
+    displayName: "Project",
+    displayCollectionName: "Projects",
+    primaryName: Metadata.primaryName("new_Name", { displayName: "Name" }),
+    attributes: [Metadata.primaryName("new_Other", { displayName: "Other" })],
+  })
+);
+expectError(
+  Metadata.entity("new_Project", {
+    displayName: "Project",
+    displayCollectionName: "Projects",
+    primaryName: Metadata.primaryName("new_Name", { displayName: "Name" }),
+    attributes: [
+      Metadata.lookup("new_AccountId", {
+        displayName: "Account",
+        referencingEntity: "new_project",
+        referencedEntity: "account",
+        relationshipSchemaName: "new_account_project",
+      }),
+    ],
+  })
+);
+// A lookup goes to createOneToManyRelationship, not createAttributeDefinition.
+expectError(
+  metadata.createAttributeDefinition(
+    "new_project",
+    Metadata.lookup("new_AccountId", {
+      displayName: "Account",
+      referencingEntity: "new_project",
+      referencedEntity: "account",
+      relationshipSchemaName: "new_account_project",
+    })
+  )
+);
+// A lookup needs both tables and the relationship's schema name.
+expectError(
+  Metadata.lookup("new_AccountId", { displayName: "Account", referencedEntity: "account" })
+);
+// A label's language is a number (LCID).
+expectError(Metadata.label("Name", "en-US"));

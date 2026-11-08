@@ -1,0 +1,57 @@
+/**
+ * The columns of the <%- doc(entity.LogicalName) %> table on a model-driven form, by logical name,
+ * typed with their Xrm attribute types (@types/xrm).
+ */
+export interface <%- attributesName %> {
+<%_ columns.forEach(function(column){ _%>
+
+  /** <%- doc(column.doc) %> */
+  <%- propertyKey(column.name) %>: <%- column.attribute %>;
+<%_ }) _%>
+}
+
+/**
+ * The controls of the <%- doc(entity.LogicalName) %> table's columns on a model-driven form, by
+ * column logical name, typed with their Xrm control types (@types/xrm).
+ */
+export interface <%- controlsName %> {
+<%_ columns.forEach(function(column){ _%>
+
+  /** <%- doc(column.doc) %> */
+  <%- propertyKey(column.name) %>: <%- column.control %>;
+<%_ }) _%>
+}
+
+/**
+ * The form context of a <%- doc(entity.SchemaName || entity.Name) %> form: `getAttribute()` and
+ * `getControl()` take a column's logical name and return its Xrm type, or `null` when the column
+ * isn't on the form. A control in the header or the business process flow is found by
+ * `header_<name>` or `header_process_<name>`. Everything else is `Xrm.FormContext`.
+ *
+ * ```typescript
+ * export function onLoad(executionContext: Xrm.Events.EventContext): void {
+ *   const form = executionContext.getFormContext() as <%- contextName %>;
+ *   form.getAttribute("<%- doc(sample) %>")?.getValue();
+ * }
+ * ```
+ */
+export type <%- contextName %> = Omit<Xrm.FormContext, "getAttribute" | "getControl"> & {
+  /** The attribute of a column, or `null` when the column isn't on the form. */
+  getAttribute<K extends keyof <%- attributesName %>>(name: K): <%- attributesName %>[K] | null;
+  /** Every attribute of the form, or those `delegateFunction` matches. */
+  getAttribute(
+    delegateFunction?: Xrm.Collection.MatchingDelegate<Xrm.Attributes.Attribute>
+  ): Xrm.Attributes.Attribute[];
+  /** The control of a column, or `null` when the column isn't on the form. */
+  getControl<K extends keyof <%- controlsName %>>(name: K): <%- controlsName %>[K] | null;
+  /** The control of a column in the business process flow. */
+  getControl<K extends keyof <%- controlsName %>>(
+    name: `header_process_${K}`
+  ): <%- controlsName %>[K] | null;
+  /** The control of a column in the header. */
+  getControl<K extends keyof <%- controlsName %>>(name: `header_${K}`): <%- controlsName %>[K] | null;
+  /** Every control of the form, or those `delegateFunction` matches. */
+  getControl(
+    delegateFunction?: Xrm.Collection.MatchingDelegate<Xrm.Controls.Control>
+  ): Xrm.Controls.Control[];
+};

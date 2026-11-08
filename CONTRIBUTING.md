@@ -156,6 +156,11 @@ tools/generate-sdk-types/     # Generates actions, functions, messages and metad
 
 - Run against a real Dataverse dev org: `pnpm test:integration` after `pnpm build` (see `packages/dataverse-sdk-integration-tests/README.md`)
 - Need the `DATAVERSE_*` variables; CI runs them nightly with repository secrets
+- The TypeScript blocks of `README.md` and `docs/getting-started.md` marked `<!-- live -->` run there too, as written; see [Documentation examples](./packages/dataverse-sdk-integration-tests/README.md#documentation-examples)
+- `pnpm samples:live` builds the non-interactive Node samples (daemon-clientcredentials,
+  actions-functions, batch-ops, messages-sales-cs, metadata-ops) and runs each against the same
+  org with the same variables; CI runs it after the tests. Each sample names what it creates
+  `sdk-sample-<tag>` and deletes it, also when it fails
 
 ### Browser Tests
 

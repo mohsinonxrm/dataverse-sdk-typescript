@@ -6,12 +6,26 @@
 >
 > **Goal**: List what each package's `index.ts` actually exports. APIs that earlier drafts of this document promised but that don't exist are listed under [Planned](#16-planned-not-exported-yet) with their tracking issue, or were removed.
 >
+> **Exact surface**: each published package's API Extractor report (`packages/<name>/etc/*.api.md`, checked by `pnpm api:check`) is the authoritative list. The 2.0.0 features merged after this document was reconciled are summarised in [Added for 2.0.0](#added-for-200) below rather than itemised per section.
+>
+> **Which API to use**: `client.api()` and the typed operations are the documented main path; `OrganizationService` (section 5) and the messages (section 6) are the compatibility layer for code ported from the .NET SDK. See the [root README](../README.md#-one-main-path).
+>
 > Notes:
 >
 > - This is an **API contract**. Changes require an ADR + SemVer discipline.
 > - All packages are **ESM-only**, require **Node 22+** (`engines.node: ">=22"`), and the browser-facing ones run in modern browsers (see [browser.md](./browser.md)).
 > - Generated packages (actions, functions, messages, metadata types) are described by naming pattern and count rather than every generated name.
 > - What changed since 1.0.0 is in [migration-2.0.md](./migration-2.0.md) and each package's CHANGELOG.
+
+## Added for 2.0.0
+
+- **core**: change tracking (`trackChanges()`, `iterateChanges()`, `client.changesSince()`, `client.iterateChangesSince()`, `isDeltaLinkExpired()`, `TrackedChanges`, `TrackedChangesPage`); `waitForAsyncOperation()` with `DataverseAsyncOperationError`, `AsyncOperationStateCode` and `AsyncOperationStatusCode`; opt-in `AdaptiveThrottlingMiddleware`, `CircuitBreakerMiddleware` (`DataverseCircuitOpenError`), `BulkheadMiddleware` (`DataverseBulkheadRejectedError`) and `ChaosMiddleware`; telemetry events (`TelemetryEvents`, `client.trackEvent()`) and W3C trace context (`TelemetryClient.startDependency()` returning a `DependencyHandle`).
+- **batch**: `createMultiple()`, `updateMultiple()` (`DataverseBulkOperationError`) and `getBulkOperationSupport()`.
+- **metadata**: the `Metadata` builders (`Metadata.entity`, `Metadata.string`, `Metadata.lookup`, …).
+- **messages**: a message for each Web API function too (`WhoAmIRequest`, …), and `CreateRequest`, `RetrieveRequest`, `UpdateRequest`, `DeleteRequest`, `AssociateRequest`, `DisassociateRequest`, `RetrieveMultipleRequest`, `ExecuteMultipleRequest` and `ExecuteTransactionRequest`.
+- **entities-runtime**: `EntitySetClient`, the typed request builder behind `dataverse-gen`'s typed client, and `validateEntity()`.
+- **generator**: `typedClient` (`createTypedClient()`), `formContext`, create and update types, validation rules, incremental generation and custom templates (`ejectTemplates()`).
+- **appinsights**: the `@mohsinonxrm/dataverse-sdk-appinsights/browser` entry point, `ApplicationInsightsBrowserTelemetryClient`.
 
 ---
 
@@ -226,14 +240,14 @@ Peer dependency: `@azure/identity` `^4.0.0`.
 
 ### 6.2 Message exports (direct exports, no namespaces)
 
-1,072 generated message pairs, one per Web API **action** of the platform, Sales and Customer Service in the committed `$metadata` snapshot (see [supported-messages.md](./mapping/supported-messages.md)), following the pattern:
+<!-- count:messages -->1,281<!-- /count --> generated message pairs, one per Web API **action** and **function** of the platform, Sales and Customer Service in the committed `$metadata` snapshot (see [supported-messages.md](./mapping/supported-messages.md)), following the pattern:
 
 - `<MessageName>Request`, with its parameters in a `<MessageName>RequestParameters` object
 - `<MessageName>Response`, whose `result` is a `<MessageName>Result` (when the action returns something)
 
 An action bound to several tables has one pair per binding (`AddItemCampaign_campaignRequest`, …).
 
-Function-backed and CRUD messages (for example `WhoAmIRequest`) are not generated yet: see [Planned](#16-planned-not-exported-yet).
+A function's message (`WhoAmIRequest`, …) sends the function's `GET`. The CRUD and batch messages (`CreateRequest`, `RetrieveMultipleRequest`, `ExecuteMultipleRequest`, `ExecuteTransactionRequest`, …) are hand-written. The messages are the .NET compatibility layer: each sends the same request as the action or function class of the same name.
 
 **Import pattern**:
 
@@ -447,14 +461,16 @@ Strict metadata builders (`const Metadata`) are [planned](#16-planned-not-export
 
 ## 16) Planned (not exported yet)
 
-Earlier drafts of this document listed these. They don't exist in the packages today. The roadmap issue is [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100).
+Earlier drafts of this document listed APIs that didn't exist yet. The roadmap issue,
+[#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100), tracks what is left;
+these four now ship in 2.0.0, in a different shape than the drafts had:
 
-| API                                                                                  | Package     | Tracking                                                                   |
-| ------------------------------------------------------------------------------------ | ----------- | -------------------------------------------------------------------------- |
-| Circuit breaker and bulkhead middleware, and their client options                    | core        | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
-| `const Metadata` strict builders (`Label`, `Attribute`, `Entity`, `Relationship`, …) | metadata    | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
-| Function-backed and CRUD messages (`WhoAmIRequest`, `RetrieveEntityRequest`, …)      | messages    | [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) |
-| Browser Application Insights adapter                                                 | appinsights | [#158](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/158) |
+| Drafted as                                                                           | Ships as                                                                                                  | Package     |
+| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- | ----------- |
+| Circuit breaker and bulkhead middleware, and their client options                    | `CircuitBreakerMiddleware`, `BulkheadMiddleware` (opt-in, through `middleware`; no client options) (#343) | core        |
+| `const Metadata` strict builders (`Label`, `Attribute`, `Entity`, `Relationship`, …) | `Metadata.label`, `Metadata.entity`, `Metadata.string`, `Metadata.lookup`, … (#345)                       | metadata    |
+| Function-backed and CRUD messages (`WhoAmIRequest`, `RetrieveEntityRequest`, …)      | `WhoAmIRequest`, `CreateRequest`, `RetrieveMultipleRequest`, `ExecuteMultipleRequest`, … (#344)           | messages    |
+| Browser Application Insights adapter                                                 | `ApplicationInsightsBrowserTelemetryClient` from `@mohsinonxrm/dataverse-sdk-appinsights/browser` (#158)  | appinsights |
 
 Removed because the real API has a different shape (see the package sections above):
 

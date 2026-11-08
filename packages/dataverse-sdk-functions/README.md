@@ -2,6 +2,12 @@
 
 Typed Web API functions for Dataverse. Functions are read-only operations that execute via HTTP GET and should not have side effects.
 
+These classes are part of the SDK's main path: build one and run it with `client.execute()`
+(`@mohsinonxrm/dataverse-sdk-core`), which resolves the function's typed result; `queryFunctions`
+writes the `$filter` query functions. For code ported from the .NET SDK,
+`@mohsinonxrm/dataverse-sdk-messages` has a `<Name>Request` with the .NET name for each function;
+it sends the same request.
+
 ## Features
 
 - ✅ **<!-- count:functions -->209<!-- /count --> typed functions** - The Web API functions of the platform, Sales and Customer Service, generated from `$metadata`
@@ -71,6 +77,11 @@ although `$metadata` declares the return `Nullable="false"`, so an entity return
 `<Entity> | null`. `@odata.type` says which table a `crmbaseentity` record is.
 
 ```typescript
+import {
+  GetPreferredSolutionFunction,
+  RetrieveAadUserRolesFunction,
+} from "@mohsinonxrm/dataverse-sdk-functions";
+
 const roles = await client.execute(new RetrieveAadUserRolesFunction({ DirectoryObjectId: id }));
 console.log(roles.map((r) => r.name)); // role records, not { value }
 

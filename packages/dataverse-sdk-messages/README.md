@@ -1,13 +1,24 @@
 # @mohsinonxrm/dataverse-sdk-messages
 
-Organization Service messages for Dataverse, providing typed request/response pairs that map to Web API actions.
+Organization Service messages for Dataverse, providing typed request/response pairs that map to Web API actions, functions, CRUD requests and `$batch`.
+
+This package is the SDK's **.NET compatibility layer**, with
+[`@mohsinonxrm/dataverse-sdk-xrm`](../dataverse-sdk-xrm): `<Name>Request` / `<Name>Response`
+classes with the .NET SDK's names, so code written against `IOrganizationService` ports line by
+line. Each message sends the same request as the action or function class of the same name
+(`WinOpportunityRequest` and `WinOpportunityAction`), through the same `DataverseClient`. New code
+should use the main path: those classes from `@mohsinonxrm/dataverse-sdk-actions` and
+`@mohsinonxrm/dataverse-sdk-functions`, run with `client.execute()`, and `client.api()` for CRUD.
+The [.NET mapping](../../docs/mapping/message-to-webapi.md#0-from-the-net-sdk-to-the-main-path)
+gives the main-path equivalent of each .NET call.
 
 ## Features
 
-- ✅ **<!-- count:messages -->1,072<!-- /count --> typed messages** - The Organization Service messages of the platform, Sales and Customer Service
-- ✅ **Direct exports** - All message classes exported directly (e.g., `ExecuteWorkflowRequest`, `WinOpportunityRequest`)
+- ✅ **<!-- count:messages -->1,281<!-- /count --> typed messages** - The Organization Service messages of the platform, Sales and Customer Service, from the Web API's actions and functions
+- ✅ **CRUD and batch messages** - `CreateRequest`, `RetrieveRequest`, `UpdateRequest`, `DeleteRequest`, `AssociateRequest`, `DisassociateRequest`, `RetrieveMultipleRequest`, `ExecuteMultipleRequest` and `ExecuteTransactionRequest`
+- ✅ **Direct exports** - All message classes exported directly (e.g., `ExecuteWorkflowRequest`, `WhoAmIRequest`)
 - ✅ **Request/response pairs** - Full type safety for all message parameters and returns
-- ✅ **Web API mapping** - Each message sends the same `POST` as the Web API action of the same name (functions are in `@mohsinonxrm/dataverse-sdk-functions`)
+- ✅ **Web API mapping** - Each message sends the same request as the Web API action (`POST`) or function (`GET`) of the same name
 - ✅ **Generic OrganizationRequest** - Escape hatch for custom actions
 - ✅ **Executable interface** - All messages implement `Executable<TResponse>` for direct execution
 
@@ -19,7 +30,7 @@ pnpm add @mohsinonxrm/dataverse-sdk-messages @mohsinonxrm/dataverse-sdk-xrm
 
 ## Overview
 
-This package provides <!-- count:messages -->1,072<!-- /count --> typed message classes that wrap Web API actions. Each message:
+This package provides <!-- count:messages -->1,281<!-- /count --> typed message classes, one for each Web API action and function, and the hand-written [CRUD and batch messages](#crud-and-batch-messages). Each message:
 
 - Extends `OrganizationRequest` base class
 - Implements `Executable<TResponse>` interface
@@ -30,9 +41,10 @@ Messages execute via `OrganizationService.execute()` from `@mohsinonxrm/datavers
 
 ## What this package covers
 
-A message for each Web API action of the **platform** (Dataverse and the Power Platform
-solutions every environment has) and of the two core Dynamics 365 apps of a plain trial,
-**Sales** and **Customer Service**: the same operations as `@mohsinonxrm/dataverse-sdk-actions`.
+A message for each Web API action and function of the **platform** (Dataverse and the Power
+Platform solutions every environment has) and of the two core Dynamics 365 apps of a plain trial,
+**Sales** and **Customer Service**: the same operations as `@mohsinonxrm/dataverse-sdk-actions`
+and `@mohsinonxrm/dataverse-sdk-functions` (but the `$filter` query functions such as `LastXDays`).
 They are chosen by the solution each operation comes from, not by what the org the SDK was
 generated from has installed: the
 [solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt)
@@ -48,14 +60,16 @@ or send one with the generic [`OrganizationRequest`](#generic-organizationreques
 
 ## Message Categories
 
-The package has <!-- count:messages -->1,072<!-- /count --> typed messages: a `<Name>Request` /
-`<Name>Response` pair for each Web API **action** of the platform, Sales and Customer Service
-(see [What this package covers](#what-this-package-covers)). This list is generated
+The package has <!-- count:messages -->1,281<!-- /count --> typed messages: a `<Name>Request` /
+`<Name>Response` pair for each Web API **action** and **function** of the platform, Sales and
+Customer Service (see [What this package covers](#what-this-package-covers)). This list is generated
 from the package source (`pnpm --filter generate-sdk-types docs`);
 [supported-messages.md](../../docs/mapping/supported-messages.md) has more.
 
-- Functions (GET) aren't messages: `WhoAmI`, `RetrievePrincipalAccess` and
-  `RetrieveMetadataChanges` are in `@mohsinonxrm/dataverse-sdk-functions`.
+- A function's message sends the function's `GET`, with its parameters as parameter aliases:
+  `WhoAmIRequest`, `RetrieveEntityRequest`, `RetrieveMetadataChangesRequest`. A function
+  declared for several tables has one message per table: `RetrievePrincipalAccess_systemuserRequest`
+  and `RetrievePrincipalAccess_teamRequest` for the .NET `RetrievePrincipalAccessRequest`.
 - There is no AssignRequest or SetStateRequest (.NET names): they aren't Web API actions. Assign by updating
   `ownerid@odata.bind`, and change state by updating `statecode` and `statuscode`.
 - Tables and columns are created with `@mohsinonxrm/dataverse-sdk-metadata`, not with
@@ -131,6 +145,97 @@ although `$metadata` declares the return `Nullable="false"`, so an entity return
 204), for example the body of a `$batch` step. Unlike the `Results` of the generic
 `OrganizationRequest`, `result` keeps the annotations, as the action's value does.
 
+A function's message reads its value the same way: `(await service.execute(new WhoAmIRequest())).result.UserId`.
+
+## CRUD and batch messages
+
+Create, Retrieve, Update, Delete, Associate, Disassociate and RetrieveMultiple aren't Web API
+actions or functions but HTTP requests on entity sets, and ExecuteMultiple and ExecuteTransaction
+are `$batch` requests. These messages are written by hand (`src/handwritten`). A record is a
+reference from `createEntityReference`; a new record is the Web API payload, with `@odata.type`
+naming the table. Each response has `result`, and the .NET property of the same value.
+
+| Request                                                              | Sends                                            | Response                                |
+| -------------------------------------------------------------------- | ------------------------------------------------ | --------------------------------------- |
+| `new CreateRequest({ Target, EntitySetName? })`                      | `POST /{set}`                                    | `id`: the new record's id               |
+| `new RetrieveRequest({ Target, ColumnSet? })`                        | `GET /{set}({id})?$select=…`                     | `Entity`: the record                    |
+| `new UpdateRequest({ Target, Attributes, ETag? })`                   | `PATCH /{set}({id})`, `If-Match` (never creates) |                                         |
+| `new DeleteRequest({ Target, ETag? })`                               | `DELETE /{set}({id})`                            |                                         |
+| `new AssociateRequest({ Target, Relationship, RelatedEntities })`    | `POST …/{Relationship}/$ref` per record          |                                         |
+| `new DisassociateRequest({ Target, Relationship, RelatedEntities })` | `DELETE …/{Relationship}({id})/$ref` per record  |                                         |
+| `new RetrieveMultipleRequest({ Query, EntitySetName? })`             | `GET /{set}?fetchXml=…`                          | `EntityCollection`: one page of records |
+| `new ExecuteMultipleRequest({ Requests, Settings? })`                | `POST /$batch`, one part per request             | `Responses`, `IsFaulted`                |
+| `new ExecuteTransactionRequest({ Requests })`                        | `POST /$batch`, one change set (all or nothing)  | `Responses`                             |
+
+```typescript
+import {
+  CreateRequest,
+  DeleteRequest,
+  ExecuteMultipleRequest,
+  ExecuteTransactionRequest,
+  RetrieveRequest,
+  UpdateRequest,
+  WhoAmIRequest,
+  createEntityReference,
+} from "@mohsinonxrm/dataverse-sdk-messages";
+
+const { id } = await service.execute(
+  new CreateRequest({
+    Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Contoso" },
+  })
+);
+const account = createEntityReference("account", id);
+const { Entity } = await service.execute(
+  new RetrieveRequest({ Target: account, ColumnSet: ["name"] })
+);
+await service.execute(
+  new UpdateRequest({
+    Target: account,
+    Attributes: { name: "Fabrikam" },
+    ETag: Entity["@odata.etag"],
+  })
+);
+
+// Several requests in one round trip; a failure is an item with a Fault, not a rejection
+const multiple = await service.execute(
+  new ExecuteMultipleRequest({
+    Requests: [new WhoAmIRequest(), new DeleteRequest({ Target: account })],
+    Settings: { ContinueOnError: true },
+  })
+);
+console.log(
+  multiple.IsFaulted,
+  multiple.Responses.map((item) => item.Fault?.message)
+);
+
+// All or nothing: a failure rolls back and rejects with that request's error
+const { Responses } = await service.execute(
+  new ExecuteTransactionRequest({
+    Requests: [
+      new CreateRequest({
+        Target: { "@odata.type": "Microsoft.Dynamics.CRM.contact", lastname: "A" },
+      }),
+      new CreateRequest({
+        Target: { "@odata.type": "Microsoft.Dynamics.CRM.contact", lastname: "B" },
+      }),
+    ],
+  })
+);
+const [first, second] = Responses; // CreateResponse, CreateResponse
+```
+
+- `ExecuteMultipleRequest` takes 1 to 1,000 requests: messages, or the classes of the actions and
+  functions packages. Without `Settings.ContinueOnError`, Dataverse stops at the first failure and
+  the requests after it have no item; `Settings.ReturnResponses: false` keeps only the failures.
+- `ExecuteTransactionRequest` can't hold a `GET` (a function, Retrieve or RetrieveMultiple): a
+  `$batch` change set can't.
+- An Associate or Disassociate of several records is one change set too, so neither it nor
+  ExecuteMultiple / ExecuteTransaction can go inside ExecuteMultiple or ExecuteTransaction.
+- `RetrieveMultipleRequest` sends its FetchXML in the URL (up to 32,768 characters); use
+  `client.api(entitySet).fetchXml()` for a longer query.
+- For more than 1,000 requests, or change sets mixed with single requests, use
+  `BatchRequestBuilder` from `@mohsinonxrm/dataverse-sdk-batch`.
+
 ## Common Messages
 
 ### Assign and SetState
@@ -156,13 +261,15 @@ Executes a workflow against an entity record.
 **Maps to:** ExecuteWorkflow action (bound to workflow)
 
 ```typescript
+import { waitForAsyncOperation } from "@mohsinonxrm/dataverse-sdk-core";
 import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const request = new ExecuteWorkflowRequest(workflowId, { EntityId: recordId, InputArguments: {} });
 
 const response = await service.execute(request);
 console.log("Async Operation ID:", response.result?.asyncoperationid);
-// Poll asyncoperation entity to check workflow status
+// Wait for the workflow to finish
+const job = await waitForAsyncOperation(client, response.result);
 ```
 
 **Constructor:** `new ExecuteWorkflowRequest(workflowId, parameters)`
@@ -405,8 +512,9 @@ await service.execute(
 
 - `Results: Record<string, unknown>` - The response's properties, without the `@odata.*` annotations (empty for `204 No Content`)
 
-Functions (GET) are not supported by `OrganizationRequest`: use the typed classes from
-`@mohsinonxrm/dataverse-sdk-functions`, or `client.api("my_Function(...)").get()`.
+Functions (GET) are not supported by `OrganizationRequest`: use the function's typed message
+(`WhoAmIRequest`), the typed classes from `@mohsinonxrm/dataverse-sdk-functions`, or
+`client.api("my_Function(...)").get()` for a custom function.
 
 ---
 
@@ -423,6 +531,10 @@ Functions (GET) are not supported by `OrganizationRequest`: use the typed classe
 | ImportSolution  | /ImportSolution                                         | POST        | Action         |
 | PublishXml      | /PublishXml                                             | POST        | Action         |
 | PublishAllXml   | /PublishAllXml                                          | POST        | Action         |
+| WhoAmI          | /WhoAmI                                                 | GET         | Function       |
+| Create          | /{entitySet}                                            | POST        | CRUD           |
+| Retrieve        | /{entitySet}({id})                                      | GET         | CRUD           |
+| ExecuteMultiple | /$batch                                                 | POST        | Batch          |
 
 See [docs/mapping/message-to-webapi.md](../../docs/mapping/message-to-webapi.md) for complete mapping details.
 

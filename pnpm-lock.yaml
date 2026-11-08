@@ -71,9 +71,6 @@ importers:
       '@mohsinonxrm/dataverse-sdk-entities-runtime':
         specifier: workspace:*
         version: link:../dataverse-sdk-entities-runtime
-      '@mohsinonxrm/dataverse-sdk-messages':
-        specifier: workspace:*
-        version: link:../dataverse-sdk-messages
     devDependencies:
       '@mohsinonxrm/dataverse-sdk-testing':
         specifier: workspace:*
@@ -100,6 +97,9 @@ importers:
       '@azure/monitor-opentelemetry':
         specifier: ^1.20.1
         version: 1.20.1
+      '@microsoft/applicationinsights-web':
+        specifier: 3.4.5
+        version: 3.4.5(tslib@2.9.1)
       '@mohsinonxrm/dataverse-sdk-testing':
         specifier: workspace:*
         version: link:../dataverse-sdk-testing
@@ -110,6 +110,9 @@ importers:
         specifier: ^0.221.0
         version: 0.221.0
       '@opentelemetry/context-async-hooks':
+        specifier: ^2.10.0
+        version: 2.12.0(@opentelemetry/api@1.10.0)
+      '@opentelemetry/core':
         specifier: ^2.10.0
         version: 2.12.0(@opentelemetry/api@1.10.0)
       '@opentelemetry/resources':
@@ -248,6 +251,9 @@ importers:
       '@azure/msal-browser':
         specifier: ^3.30.0
         version: 3.30.0
+      '@mohsinonxrm/dataverse-sdk-appinsights':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-appinsights
       '@mohsinonxrm/dataverse-sdk-auth-msal-browser':
         specifier: workspace:*
         version: link:../dataverse-sdk-auth-msal-browser
@@ -326,6 +332,9 @@ importers:
         specifier: workspace:*
         version: link:../dataverse-sdk-core
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-testing':
+        specifier: workspace:^
+        version: link:../dataverse-sdk-testing
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
@@ -434,6 +443,9 @@ importers:
       '@types/node':
         specifier: ^22.20.5
         version: 22.20.5
+      '@types/xrm':
+        specifier: ^9.0.97
+        version: 9.0.97
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
@@ -455,6 +467,12 @@ importers:
       '@mohsinonxrm/dataverse-sdk-actions':
         specifier: workspace:*
         version: link:../dataverse-sdk-actions
+      '@mohsinonxrm/dataverse-sdk-appinsights':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-appinsights
+      '@mohsinonxrm/dataverse-sdk-auth-azure-identity':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-auth-azure-identity
       '@mohsinonxrm/dataverse-sdk-auth-msal-node':
         specifier: workspace:*
         version: link:../dataverse-sdk-auth-msal-node
@@ -479,16 +497,43 @@ importers:
       '@mohsinonxrm/dataverse-sdk-metadata':
         specifier: workspace:*
         version: link:../dataverse-sdk-metadata
+      '@mohsinonxrm/dataverse-sdk-otel':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-otel
       '@mohsinonxrm/dataverse-sdk-xrm':
         specifier: workspace:*
         version: link:../dataverse-sdk-xrm
     devDependencies:
+      '@azure/identity':
+        specifier: ^4.14.1
+        version: 4.14.1
       '@mohsinonxrm/dataverse-sdk-entities-runtime':
         specifier: workspace:*
         version: link:../dataverse-sdk-entities-runtime
       '@mohsinonxrm/dataverse-sdk-generator':
         specifier: workspace:*
         version: link:../dataverse-sdk-generator
+      '@opentelemetry/api':
+        specifier: ^1.9.0
+        version: 1.10.0
+      '@opentelemetry/api-logs':
+        specifier: ^0.221.0
+        version: 0.221.0
+      '@opentelemetry/context-async-hooks':
+        specifier: ^2.10.0
+        version: 2.12.0(@opentelemetry/api@1.10.0)
+      '@opentelemetry/core':
+        specifier: ^2.10.0
+        version: 2.12.0(@opentelemetry/api@1.10.0)
+      '@opentelemetry/sdk-logs':
+        specifier: ^0.221.0
+        version: 0.221.0(@opentelemetry/api@1.10.0)
+      '@opentelemetry/sdk-trace-base':
+        specifier: ^2.10.0
+        version: 2.12.0(@opentelemetry/api@1.10.0)
+      '@types/xrm':
+        specifier: ^9.0.97
+        version: 9.0.97
       eslint:
         specifier: ^9.39.5
         version: 9.39.5
@@ -501,6 +546,9 @@ importers:
 
   packages/dataverse-sdk-messages:
     dependencies:
+      '@mohsinonxrm/dataverse-sdk-batch':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-batch
       '@mohsinonxrm/dataverse-sdk-core':
         specifier: workspace:*
         version: link:../dataverse-sdk-core
@@ -559,6 +607,9 @@ importers:
         specifier: ^1.9.0
         version: 1.10.0
       '@opentelemetry/context-async-hooks':
+        specifier: ^2.10.0
+        version: 2.12.0(@opentelemetry/api@1.10.0)
+      '@opentelemetry/core':
         specifier: ^2.10.0
         version: 2.12.0(@opentelemetry/api@1.10.0)
       '@opentelemetry/sdk-trace-base':
@@ -900,6 +951,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^4.7.0
         version: 4.7.0(vite@6.4.5(@types/node@26.6.6)(tsx@4.23.15)(yaml@2.9.1))
+      axe-core:
+        specifier: ^4.14.0
+        version: 4.14.0
       playwright:
         specifier: 1.63.0
         version: 1.63.0
@@ -940,6 +994,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
+      '@mohsinonxrm/dataverse-sdk-batch':
+        specifier: workspace:*
+        version: link:../../packages/dataverse-sdk-batch
       '@mohsinonxrm/dataverse-sdk-entities-runtime':
         specifier: workspace:*
         version: link:../../packages/dataverse-sdk-entities-runtime
@@ -2455,8 +2512,49 @@ packages:
     engines: {node: '>=20.9.0'}
     hasBin: true
 
+  '@microsoft/applicationinsights-analytics-js@3.4.5':
+    resolution: {integrity: sha512-IWQIfCyypZvmSkXI9iWgOjEx7l8hGLzX2V+7xj9OFueCPAoeEFHqffgKMAxlQ4b8q4ZfKHDc4EtJE8r90o7Iug==}
+    peerDependencies:
+      tslib: '>= 1.0.0'
+
+  '@microsoft/applicationinsights-cfgsync-js@3.4.5':
+    resolution: {integrity: sha512-0y5C86x7vkc8DSwSC0bGq0ogheqHBeIc1AijyRQpD/MREbUe7VzfdP01M6SDtxXRKKIw6zrpc5l9TgqVTlYtbg==}
+    peerDependencies:
+      tslib: '>= 1.0.0'
+
+  '@microsoft/applicationinsights-channel-js@3.4.5':
+    resolution: {integrity: sha512-+HO5AngiAD0dCdLgablA2NYuxX8B7RjBWsidd5RPjqXm7vaw38bMW9lJ8i598D1QJx1rCV0jZ9t8qTS/Et2Xew==}
+    peerDependencies:
+      tslib: '>= 1.0.0'
+
+  '@microsoft/applicationinsights-core-js@3.4.5':
+    resolution: {integrity: sha512-SFDhIkiiilPszx0u0o9MAzwEZ0gyUmH8NTT1i6fgOeAeqcdLNxwuEznjd3tyekU9/cmByFa4ftiKgxEPBRD7aQ==}
+    peerDependencies:
+      tslib: '>= 1.0.0'
+
+  '@microsoft/applicationinsights-dependencies-js@3.4.5':
+    resolution: {integrity: sha512-vw93uGKZRZzYuBVbThChUbgPGEmQTwVr+X0oeqRxKiTA8VoREsAm2UkTAITi71y1G47IaO9Wi/2bZnDzFnCT6Q==}
+    peerDependencies:
+      tslib: '>= 1.0.0'
+
+  '@microsoft/applicationinsights-properties-js@3.4.5':
+    resolution: {integrity: sha512-o7AzTgs//Jg36xs/X/XVfgGvMbF+vCkdqOQR66RkarDLtTer1wXpDEFnLVsftgifn7TEatGwDHfqOy+U09+A0Q==}
+    peerDependencies:
+      tslib: '>= 1.0.0'
+
+  '@microsoft/applicationinsights-shims@3.0.1':
+    resolution: {integrity: sha512-DKwboF47H1nb33rSUfjqI6ryX29v+2QWcTrRvcQDA32AZr5Ilkr7whOOSsD1aBzwqX0RJEIP1Z81jfE3NBm/Lg==}
+
   '@microsoft/applicationinsights-web-snippet@1.2.3':
     resolution: {integrity: sha512-59ex4x1/PabGQIg+o0GKG5olqAJYBvMOiXec/9HCD3hK2y36YMWT0ivq5mequvtS5+21kco3SOnMB6QyScLPIA==}
+
+  '@microsoft/applicationinsights-web@3.4.5':
+    resolution: {integrity: sha512-ZXfOjlrccdIxTap04GbswmXOQdHD5406x93jB5egqMYQs2EhCWoyX9DVJ/p6qPeikytqiDaldywt1ACIl6Zl2Q==}
+    peerDependencies:
+      tslib: '>= 1.0.0'
+
+  '@microsoft/dynamicproto-js@2.0.5':
+    resolution: {integrity: sha512-V+Zr7PDKIEaItVwF/OyWQlKeugNRYg7KJJ+RhEIL2FMW6NlG8FN2l4XA9Z42hNtsjwJFlcUiF38pmM/AaXsF7g==}
 
   '@microsoft/tsdoc-config@0.18.3':
     resolution: {integrity: sha512-0I0rGXo1eJziw3EEErkDS9p/0RzBcyOiV+zbSDqOZTeURmhtut+WIvpih0LM5g+ZpZ9SyFxDfkhAcl/r8e2zGw==}
@@ -2467,6 +2565,12 @@ packages:
   '@mswjs/interceptors@0.41.9':
     resolution: {integrity: sha512-VVPPgHyQ6ShqnrmDWuxjmUIsO9gWyOZFmuOfLd9LfBGQJwZfy0gvv9pbHSJuoFNIYC7ZDX9aoFwowjcdSC4E8w==}
     engines: {node: '>=18'}
+
+  '@nevware21/ts-async@0.5.5':
+    resolution: {integrity: sha512-vwqaL05iJPjLeh5igPi8MeeAu10i+Aq7xko1fbo9F5Si6MnVN5505qaV7AhSdk5MCBJVT/UYMk3kgInNjDb4Ig==}
+
+  '@nevware21/ts-utils@0.16.0':
+    resolution: {integrity: sha512-DDln15VUBSw5JjJlNno1UCSzgAGzHHklm7u695jXDCzwSn7W2F7B2VYHwLLcT1cOWQQBQAJK6e2/Y8oTG+W0Ig==}
 
   '@nodable/entities@3.1.0':
     resolution: {integrity: sha512-LsS/DjHr+uDM647Gru/cA8+J3a3HfhttwCKLyuoyN7yXTFCxKBtSgMQBvrW9yNPa2/zDRUNuGPaH5QUFoa4arQ==}
@@ -3133,6 +3237,9 @@ packages:
   '@types/triple-beam@1.3.5':
     resolution: {integrity: sha512-6WaYesThRMCl19iryMYP7/x2OVgCtbIVflDGFpWnb9irXI3UjYE4AzmYuiUKY1AJstGijoY+MgUszMgRxIYTYw==}
 
+  '@types/xrm@9.0.97':
+    resolution: {integrity: sha512-KQvsNXyikKd359Zom74ES/L67bHzXKi6UfxB4dZZu1rZF0ILpJlImh1HjVd58uZxlfqiOgSy7v4W6YTqtAXW3w==}
+
   '@typescript-eslint/eslint-plugin@8.72.1':
     resolution: {integrity: sha512-5CokTWXpmbylfFabsbvHC0CAw3XLaGnoa+nFJX5FR592h/LoZsENUE6p/rg5xvkKrFEXz6pYmgI29AgXc2N3BQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -3341,6 +3448,10 @@ packages:
 
   async@3.2.6:
     resolution: {integrity: sha512-htCUDlxyyCLMgaM3xXg0C0LW2xqfuQ6p05pCEIsXuyQ+a1koYKTuBMzRNwmybfLgvJDMd0r1LTn4+E0Ti6C2AA==}
+
+  axe-core@4.14.0:
+    resolution: {integrity: sha512-9WTZxEjsZ7b13TH8JPmbV2z8CHbl80/2hm3XPEG4JgNdQLK81IBRXmSxHfMAOkSqQeRxT/0dwNDz2GOm3zzpcQ==}
+    engines: {node: '>=4'}
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -7320,7 +7431,80 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
+  '@microsoft/applicationinsights-analytics-js@3.4.5(tslib@2.9.1)':
+    dependencies:
+      '@microsoft/applicationinsights-core-js': 3.4.5(tslib@2.9.1)
+      '@microsoft/applicationinsights-shims': 3.0.1
+      '@microsoft/dynamicproto-js': 2.0.5
+      '@nevware21/ts-utils': 0.16.0
+      tslib: 2.9.1
+
+  '@microsoft/applicationinsights-cfgsync-js@3.4.5(tslib@2.9.1)':
+    dependencies:
+      '@microsoft/applicationinsights-core-js': 3.4.5(tslib@2.9.1)
+      '@microsoft/applicationinsights-shims': 3.0.1
+      '@microsoft/dynamicproto-js': 2.0.5
+      '@nevware21/ts-async': 0.5.5
+      '@nevware21/ts-utils': 0.16.0
+      tslib: 2.9.1
+
+  '@microsoft/applicationinsights-channel-js@3.4.5(tslib@2.9.1)':
+    dependencies:
+      '@microsoft/applicationinsights-core-js': 3.4.5(tslib@2.9.1)
+      '@microsoft/applicationinsights-shims': 3.0.1
+      '@microsoft/dynamicproto-js': 2.0.5
+      '@nevware21/ts-async': 0.5.5
+      '@nevware21/ts-utils': 0.16.0
+      tslib: 2.9.1
+
+  '@microsoft/applicationinsights-core-js@3.4.5(tslib@2.9.1)':
+    dependencies:
+      '@microsoft/applicationinsights-shims': 3.0.1
+      '@microsoft/dynamicproto-js': 2.0.5
+      '@nevware21/ts-async': 0.5.5
+      '@nevware21/ts-utils': 0.16.0
+      tslib: 2.9.1
+
+  '@microsoft/applicationinsights-dependencies-js@3.4.5(tslib@2.9.1)':
+    dependencies:
+      '@microsoft/applicationinsights-core-js': 3.4.5(tslib@2.9.1)
+      '@microsoft/applicationinsights-shims': 3.0.1
+      '@microsoft/dynamicproto-js': 2.0.5
+      '@nevware21/ts-async': 0.5.5
+      '@nevware21/ts-utils': 0.16.0
+      tslib: 2.9.1
+
+  '@microsoft/applicationinsights-properties-js@3.4.5(tslib@2.9.1)':
+    dependencies:
+      '@microsoft/applicationinsights-core-js': 3.4.5(tslib@2.9.1)
+      '@microsoft/applicationinsights-shims': 3.0.1
+      '@microsoft/dynamicproto-js': 2.0.5
+      '@nevware21/ts-utils': 0.16.0
+      tslib: 2.9.1
+
+  '@microsoft/applicationinsights-shims@3.0.1':
+    dependencies:
+      '@nevware21/ts-utils': 0.16.0
+
   '@microsoft/applicationinsights-web-snippet@1.2.3': {}
+
+  '@microsoft/applicationinsights-web@3.4.5(tslib@2.9.1)':
+    dependencies:
+      '@microsoft/applicationinsights-analytics-js': 3.4.5(tslib@2.9.1)
+      '@microsoft/applicationinsights-cfgsync-js': 3.4.5(tslib@2.9.1)
+      '@microsoft/applicationinsights-channel-js': 3.4.5(tslib@2.9.1)
+      '@microsoft/applicationinsights-core-js': 3.4.5(tslib@2.9.1)
+      '@microsoft/applicationinsights-dependencies-js': 3.4.5(tslib@2.9.1)
+      '@microsoft/applicationinsights-properties-js': 3.4.5(tslib@2.9.1)
+      '@microsoft/applicationinsights-shims': 3.0.1
+      '@microsoft/dynamicproto-js': 2.0.5
+      '@nevware21/ts-async': 0.5.5
+      '@nevware21/ts-utils': 0.16.0
+      tslib: 2.9.1
+
+  '@microsoft/dynamicproto-js@2.0.5':
+    dependencies:
+      '@nevware21/ts-utils': 0.16.0
 
   '@microsoft/tsdoc-config@0.18.3':
     dependencies:
@@ -7339,6 +7523,12 @@ snapshots:
       is-node-process: 1.2.0
       outvariant: 1.4.3
       strict-event-emitter: 0.5.1
+
+  '@nevware21/ts-async@0.5.5':
+    dependencies:
+      '@nevware21/ts-utils': 0.16.0
+
+  '@nevware21/ts-utils@0.16.0': {}
 
   '@nodable/entities@3.1.0': {}
 
@@ -8054,6 +8244,8 @@ snapshots:
 
   '@types/triple-beam@1.3.5': {}
 
+  '@types/xrm@9.0.97': {}
+
   '@typescript-eslint/eslint-plugin@8.72.1(@typescript-eslint/parser@8.72.1(eslint@9.39.5)(typescript@5.9.3))(eslint@9.39.5)(typescript@5.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
@@ -8314,6 +8506,8 @@ snapshots:
       js-tokens: 10.0.0
 
   async@3.2.6: {}
+
+  axe-core@4.14.0: {}
 
   balanced-match@1.0.2: {}
 

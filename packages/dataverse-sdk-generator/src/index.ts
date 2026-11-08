@@ -10,7 +10,7 @@
 
 export { SchemaModel } from "./schema-model.js";
 export { TypescriptGenerator } from "./typescript-generator.js";
-export { MetadataService } from "./metadata-service.js";
+export { MetadataService, type MetadataServiceSleep } from "./metadata-service.js";
 
 export type {
   DataverseGenConfig,
@@ -40,6 +40,8 @@ export type {
 } from "./metadata-service.js";
 
 export { DEFAULT_CONFIG } from "./types.js";
+export { ejectTemplates, TEMPLATE_NAMES } from "./templates.js";
+export type { EjectTemplatesOptions, TemplateName } from "./templates.js";
 export type { DataverseGenAuthConfig } from "./types.js";
 export { acquireCliToken, createCliTokenProvider, dataverseScope } from "./auth.js";
 export type { CliAuthOptions } from "./auth.js";
@@ -65,12 +67,13 @@ import { acquireCliToken } from "./auth.js";
  *
  * Without an access token, a token is acquired from `config.auth` (device code or client
  * credentials), as the CLI does. The result's `warnings` say what in the configuration was not
- * generated, such as a listed query function.
+ * generated, such as a listed query function. With `output.incremental`, `unchangedTables` lists
+ * the tables whose files were kept as they were.
  */
 export async function generateCode(
   config: DataverseGenConfig,
   accessToken?: string
-): Promise<{ warnings: string[] }> {
+): Promise<{ warnings: string[]; unchangedTables: string[] }> {
   const { SchemaModel } = await import("./schema-model.js");
   const { TypescriptGenerator } = await import("./typescript-generator.js");
   const { MetadataService } = await import("./metadata-service.js");
@@ -83,5 +86,5 @@ export async function generateCode(
 
   const generator = new TypescriptGenerator(model, config);
   await generator.generate();
-  return { warnings: model.Warnings };
+  return { warnings: model.Warnings, unchangedTables: generator.unchangedTables };
 }

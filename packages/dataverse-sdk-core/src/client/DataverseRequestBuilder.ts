@@ -29,6 +29,14 @@ import { buildSingleGetBatch, readSingleBatchResponse } from "../fetchxml/single
 import { PreferBuilder } from "./PreferBuilder.js";
 import { formatExpand, type ExpandOptions } from "../odata/expand.js";
 import { odataKey, type ODataKey } from "../odata/literal.js";
+import {
+  changePages,
+  changePreferences,
+  collectChanges,
+  type TrackChangesOptions,
+  type TrackedChanges,
+  type TrackedChangesPage,
+} from "../changes/changeTracking.js";
 import type { DataverseClient } from "./DataverseClient.js";
 
 /** Headers that are not carried from the first page to the next ones. */
@@ -494,6 +502,62 @@ export class DataverseRequestBuilder {
     }
 
     return out;
+  }
+
+  /**
+   * Start change tracking for this table (`Prefer: odata.track-changes`): every row, as of now,
+   * and the `deltaLink` that later returns only what changed. Follows `@odata.nextLink` through
+   * every page. Save `deltaLink` and pass it to `client.changesSince()` on the next sync. The table
+   * must have change tracking enabled (`ChangeTrackingEnabled`; on for `account` by default).
+   *
+   * `.select()` sets the columns, kept in the delta link. Dataverse refuses `$filter`,
+   * `$orderby`, `$expand` and `$top` with change tracking, so they reject with
+   * `DataverseInvalidRequestError` (`InvalidParameter`) before anything is sent. A response without
+   * a delta link (change tracking off) rejects with `DataverseInvalidRequestError` (`NoDeltaLink`).
+   *
+   * @example
+   * ```typescript
+   * const first = await client.api("accounts").select("name", "revenue").trackChanges<Account>();
+   * await store.replaceAll(first.changed);
+   * await store.saveDeltaLink(first.deltaLink);
+   *
+   * // Later: only what changed since then.
+   * const next = await client.changesSince<Account>(await store.loadDeltaLink());
+   * await store.upsert(next.changed);
+   * await store.remove(next.deleted.map((d) => d.id));
+   * await store.saveDeltaLink(next.deltaLink);
+   * ```
+   */
+  async trackChanges<T = Record<string, unknown>>(
+    options?: TrackChangesOptions
+  ): Promise<TrackedChanges<T>> {
+    return collectChanges(this.iterateChanges<T>(options));
+  }
+
+  /**
+   * {@link trackChanges} one page at a time, for tables too large to hold in memory. Nothing is
+   * sent until the first `next()`; the last page carries `deltaLink`. Later pages carry the first
+   * request's headers, as in {@link iterate}.
+   */
+  iterateChanges<T = Record<string, unknown>>(
+    options?: TrackChangesOptions
+  ): AsyncIterable<TrackedChangesPage<T>> {
+    const requestOptions = changePreferences(options, true);
+    const first = () => {
+      const refused = (["$filter", "$orderby", "$expand", "$top"] as const).filter(
+        (option) => this.state[option] !== undefined
+      );
+      if (refused.length > 0) {
+        throw DataverseInvalidRequestError.invalidParameter(
+          "trackChanges",
+          `Dataverse doesn't support ${refused.join(", ")} with change tracking`
+        );
+      }
+      return this.get(requestOptions);
+    };
+    const later = () => this.nextPageOptions(requestOptions);
+    const client = this.client;
+    return { [Symbol.asyncIterator]: () => changePages<T>(client, first, later) };
   }
 
   /**

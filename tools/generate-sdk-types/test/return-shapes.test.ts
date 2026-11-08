@@ -8,7 +8,7 @@
  * The same EDMX and expectations are in
  * packages/dataverse-sdk-generator/test/return-shapes.test.ts, for dataverse-gen.
  */
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -18,7 +18,12 @@ import { generateActions } from "../src/generators/actions-generator.js";
 import { generateFunctions } from "../src/generators/functions-generator.js";
 import { generateMessages } from "../src/generators/messages-generator.js";
 import { generateComplexTypes } from "../src/generators/complex-types-generator.js";
-import { typecheck } from "./typecheck.js";
+import {
+  NO_CONTENT_OPERATIONS,
+  operationReturn,
+  parseResponseMethod,
+} from "../src/utils/operation-return.js";
+import { copyMessagesHandWritten, typecheck } from "./typecheck.js";
 
 const OUT_ROOT = fileURLToPath(new URL(".", import.meta.url));
 const CONTEXT = "https://contoso.crm.dynamics.com/api/data/v9.2/$metadata";
@@ -139,14 +144,15 @@ ${CASES.map(
       </Action>`
 ).join("\n")}
       <Action Name="APing" />
+      <Action Name="UpsertMultiple">
+        <ReturnType Type="mscrm.InfoResponse" Nullable="false" />
+      </Action>
       <EntityContainer Name="System">
         <EntitySet Name="accounts" EntityType="Microsoft.Dynamics.CRM.account" />
       </EntityContainer>
     </Schema>
   </edmx:DataServices>
 </edmx:Edmx>`;
-
-const MESSAGES_SRC = new URL("../../../packages/dataverse-sdk-messages/src/", import.meta.url);
 
 let out: string;
 type Ctor = new () => Executable<unknown>;
@@ -185,9 +191,7 @@ beforeAll(async () => {
   await generateActions(csdl, join(out, "actions"), false);
   await generateFunctions(csdl, join(out, "functions"), false);
   await generateMessages(csdl, join(out, "messages"), false);
-  for (const file of ["OrganizationRequest.ts", "types.ts"]) {
-    await writeFile(join(out, "messages", file), await readFile(new URL(file, MESSAGES_SRC)));
-  }
+  await copyMessagesHandWritten(join(out, "messages"));
 });
 
 afterAll(async () => {
@@ -228,6 +232,80 @@ describe("#300: execute() resolves the returned value", () => {
     const mod = (await import(join(out, "messages", "APingMessage.ts"))) as Record<string, unknown>;
     const Request = mod.APingRequest as new () => Executable<object>;
     expect(await client(noContent).execute(new Request())).not.toHaveProperty("result");
+  });
+});
+
+describe("NO_CONTENT_OPERATIONS: Dataverse answers 204 although the CSDL declares a return", () => {
+  // The listed operation returns mscrm.InfoResponse, as the Info case does
+  const info = CASES.find((c) => c.name === "Info");
+  if (!info) throw new Error("no Info case");
+
+  it("UpsertMultiple resolves null for a 204, and still reads a body", async () => {
+    const Act = await load("actions/UpsertMultipleAction.ts", "UpsertMultipleAction");
+    expect(await client(noContent).execute(new Act())).toBeNull();
+    expect(await client(json(responseBody(info))).execute(new Act())).toEqual(info.value);
+  });
+
+  it("the message's result is null for a 204, and the body otherwise", async () => {
+    const mod = (await import(join(out, "messages", "UpsertMultipleMessage.ts"))) as Record<
+      string,
+      unknown
+    >;
+    const Request = mod.UpsertMultipleRequest as new () => Executable<{ result: unknown }>;
+    const Response_ = mod.UpsertMultipleResponse as {
+      fromResponse(data: unknown): { result: unknown };
+    };
+    expect((await client(noContent).execute(new Request())).result).toBeNull();
+    expect(Response_.fromResponse(undefined).result).toBeNull();
+    expect((await client(json(responseBody(info))).execute(new Request())).result).toEqual(
+      info.value
+    );
+  });
+
+  it("the value is typed <Type> | null, and the doc comment says why", async () => {
+    const snippet = `type Equal<X, Y> =
+  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false;
+import type * as A from "./actions/index.js";
+import type * as M from "./messages/index.js";
+export const checks: true[] = [
+  {} as Equal<Extract<A.UpsertMultipleResponse, null>, null>,
+  {} as Equal<NonNullable<A.UpsertMultipleResponse>["Count"], number>,
+  {} as Equal<M.UpsertMultipleResult, A.UpsertMultipleResponse>,
+  // Only the listed operation: the same return type elsewhere isn't nullable
+  {} as Equal<Extract<A.AInfoResponse, null>, never>,
+];
+`;
+    expect(await typecheck(out, "usage-no-content-types.ts", snippet)).toEqual([]);
+    const source = await readFile(join(out, "actions", "UpsertMultipleAction.ts"), "utf8");
+    expect(source).toContain(NO_CONTENT_OPERATIONS.UpsertMultiple.docs);
+    expect(source).toContain("204 No Content");
+  });
+
+  it("a primitive return of a listed operation is <type> | null too", () => {
+    const ret = operationReturn(
+      parseEdmx(RETURNS_EDMX),
+      "Edm.String",
+      "XResponse",
+      "UpsertMultiple action",
+      [],
+      "UpsertMultiple"
+    );
+    expect(ret.declaration).toContain("export type XResponse = string | null;");
+    expect(parseResponseMethod(ret, "XResponse")).toContain(
+      "if (response.status === 204) return null;"
+    );
+  });
+
+  it("dataverse-gen keeps the same list", async () => {
+    // Imported by path: dataverse-gen isn't a dependency of this tool
+    const genList = new URL(
+      "../../../packages/dataverse-sdk-generator/src/no-content-operations.ts",
+      import.meta.url
+    );
+    const gen = (await import(genList.href)) as {
+      NO_CONTENT_OPERATIONS: typeof NO_CONTENT_OPERATIONS;
+    };
+    expect(gen.NO_CONTENT_OPERATIONS).toEqual(NO_CONTENT_OPERATIONS);
   });
 });
 

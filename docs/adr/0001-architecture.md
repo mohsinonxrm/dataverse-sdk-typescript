@@ -37,7 +37,8 @@ Dataverse supports `$batch` operations with **up to 1000** individual requests p
 
 ### Status update (2026-11-07, 2.0.0)
 
-- **Circuit breaker and bulkhead are planned, not implemented** (#100). The `circuitBreaker` and `bulkhead` options were never read and were removed before 2.0.0 (#285). Until the middleware exists, add your own through the client's `middleware` option.
+- **Circuit breaker and bulkhead are opt-in middleware** (#343). The `circuitBreaker` and `bulkhead` client options were never read and were removed before 2.0.0 (#285); `CircuitBreakerMiddleware` and `BulkheadMiddleware` replace them, added through the client's `middleware` option, next to `AdaptiveThrottlingMiddleware` (#309) and `ChaosMiddleware` (#308).
+- **One main path in the docs (#311).** Both front doors stay, but the docs no longer present them as equals: `client.api()` and the typed operations (the actions and functions packages, and the classes and typed client `dataverse-gen` writes) are the documented main path, and `OrganizationService` with the messages is the compatibility layer for developers coming from the .NET SDK, with a mapping from each .NET call to the main path (`docs/mapping/message-to-webapi.md`). This answers the "Cons" below: the docs say which one to use.
 - **Retries (decision 5).** A `429` is retried for every method. A `502`, `503` or `504` is retried only for idempotent requests (GET, HEAD, OPTIONS, PUT, DELETE, and PATCH with `If-Match`), because the request may already have been applied (#12). `retry.retryNonIdempotent` restores the old behaviour. A `Retry-After` longer than `retry.maxRetryAfterMs` (30 s by default) is returned to the caller instead of waited out (#17).
 
 ### Consequences

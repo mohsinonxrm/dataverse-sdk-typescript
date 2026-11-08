@@ -26,7 +26,9 @@ reaches npm, its `build` and `live` jobs run:
 6. `pnpm test:browser`: the Vite-built SPA smoke tests in Chromium under a strict CSP.
 7. `pnpm test:integration`: the live suite against the dev org, with
    `DATAVERSE_INTEGRATION_REQUIRED=1`, so missing secrets fail the run instead of skipping. It
-   shares the nightly run's concurrency group, so two suites never use the org at once.
+   shares the nightly run's concurrency group, so two suites never use the org at once. Then, in
+   the same job, `pnpm samples:live` runs the five non-interactive Node samples end to end
+   against the org (`scripts/samples-live.mjs`).
 
 If any gate fails, nothing is published. The `publish` job then publishes the 16 tarballs the
 build packed (`pnpm pack` writes real versions for `workspace:*` dependencies) with

@@ -9,8 +9,8 @@ name: Release
 #
 # - build: read-only. Every gate, then packs the 16 tarballs (pnpm pack rewrites workspace:*)
 #   and writes the release notes from the packages' CHANGELOG sections.
-# - live: the live integration suite, in the same concurrency group as the nightly run, so
-#   two suites never share the org at once.
+# - live: the live integration suite and the Node samples (pnpm samples:live), in the same
+#   concurrency group as the nightly run, so two suites never share the org at once.
 # - publish: the only job that can get the npm OIDC token, and only for a tag push. It installs
 #   no project dependencies and publishes the tarballs build packed. Each package needs one
 #   trusted publisher: this file (release.yml) and the `npm` environment (RELEASING.md).
@@ -158,7 +158,8 @@ jobs:
   live:
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # The suite takes about 20 minutes and the samples about 15 (table creates and deletes)
+    timeout-minutes: 90
     # The nightly Integration Tests run uses the same group: one live suite on the org at a time
     concurrency:
       group: integration-tests
@@ -184,6 +185,15 @@ jobs:
           DATAVERSE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
           DATAVERSE_INTEGRATION_REQUIRED: "1"
         run: pnpm test:integration
+      # The non-interactive Node samples, end to end against the same org (scripts/samples-live.mjs)
+      - name: Node samples against the live org (dev org)
+        env:
+          DATAVERSE_URL: ${{ secrets.DATAVERSE_URL }}
+          DATAVERSE_TENANT_ID: ${{ secrets.DATAVERSE_TENANT_ID }}
+          DATAVERSE_CLIENT_ID: ${{ secrets.DATAVERSE_CLIENT_ID }}
+          DATAVERSE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
+          DATAVERSE_INTEGRATION_REQUIRED: "1"
+        run: pnpm samples:live --no-build
 
   publish:
     needs: [build, live]
@@ -218,7 +228,8 @@ jobs:
               echo "::notice::$name@$VERSION is already on npm; skipped."
               continue
             fi
-            npm publish "$t" --provenance --access public --tag "$DIST_TAG"
+            # "./": without it npm reads "tarballs/x.tgz" as a GitHub owner/repo and runs git
+            npm publish "./$t" --provenance --access public --tag "$DIST_TAG"
           done
 
   rehearse:
@@ -250,7 +261,7 @@ jobs:
               echo "::notice::$name@$VERSION is already on npm; bump the version to rehearse its publish."
               continue
             fi
-            npm publish "$t" --access public --tag "$DIST_TAG" --dry-run
+            npm publish "./$t" --access public --tag "$DIST_TAG" --dry-run
           done
 
   github-release:

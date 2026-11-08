@@ -1,0 +1,80 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { customcontroldefaultconfig } from "./types/index.js";
+
+/**
+ * RetrieveUnpublished request message
+ *
+ * Web API Function: RetrieveUnpublished
+ *
+ * The first argument is the id of the customcontroldefaultconfig record to call it on.
+ */
+export class RetrieveUnpublished_customcontroldefaultconfigRequest
+  extends OrganizationRequest
+  implements Executable<RetrieveUnpublished_customcontroldefaultconfigResponse>
+{
+  constructor(public customcontroldefaultconfigId: string) {
+    super("RetrieveUnpublished");
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    // Bound function
+    let url = `${baseUrl}/customcontroldefaultconfigs(${odataLiteral.guid(this.customcontroldefaultconfigId)})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
+
+    return {
+      method: "GET",
+      url,
+      headers: {
+        Accept: "application/json",
+      },
+    };
+  }
+
+  async parseResponse(
+    response: Response
+  ): Promise<RetrieveUnpublished_customcontroldefaultconfigResponse> {
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204)
+      return RetrieveUnpublished_customcontroldefaultconfigResponse.fromResponse(undefined);
+    // The body is the record, with its annotations
+    return RetrieveUnpublished_customcontroldefaultconfigResponse.fromResponse(
+      await response.json()
+    );
+  }
+}
+
+/**
+ * Response from the RetrieveUnpublished function.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
+ */
+export type RetrieveUnpublished_customcontroldefaultconfigResult =
+  | (customcontroldefaultconfig & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
+
+/**
+ * RetrieveUnpublished response message
+ *
+ * `result` is the value the RetrieveUnpublished function returns (see {@link RetrieveUnpublished_customcontroldefaultconfigResult}).
+ */
+export class RetrieveUnpublished_customcontroldefaultconfigResponse extends OrganizationResponse {
+  constructor(public result: RetrieveUnpublished_customcontroldefaultconfigResult) {
+    super("RetrieveUnpublished");
+  }
+
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
+  static fromResponse(data: unknown): RetrieveUnpublished_customcontroldefaultconfigResponse {
+    return new RetrieveUnpublished_customcontroldefaultconfigResponse(
+      (data ?? null) as RetrieveUnpublished_customcontroldefaultconfigResult
+    );
+  }
+}

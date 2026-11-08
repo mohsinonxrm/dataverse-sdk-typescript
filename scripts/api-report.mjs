@@ -7,6 +7,9 @@
  *   node scripts/api-report.mjs            check: fails if a report differs from the build
  *   node scripts/api-report.mjs --update   rewrite the reports
  *
+ * A subpath export (`"./browser"`) gets its own report, `etc/<unscoped-name>-browser.api.md`, from
+ * `dist/browser.d.ts`.
+ *
  * Run after `pnpm build`: API Extractor reads the d.ts that tsup bundles (`dist/index.d.ts`),
  * with the package's own tsconfig.json for the compiler options. The configuration lives here,
  * not in per-package api-extractor.json files. No .d.ts rollup, doc model or tsdoc metadata.
@@ -69,80 +72,84 @@ for (const dir of readdirSync(join(root, "packages")).sort()) {
   const pkg = JSON.parse(readFileSync(pkgJsonPath, "utf8"));
   if (pkg.private || GENERATED.has(dir)) continue;
 
-  const entry = join(pkgDir, "dist", "index.d.ts");
-  if (!existsSync(entry)) {
-    failed++;
-    console.error(`✖ ${pkg.name}: ${relative(root, entry)} is missing. Run 'pnpm build' first.`);
-    continue;
-  }
-
-  const problems = [];
-  let diff = "";
-  let config;
-  let result;
-  try {
-    config = ExtractorConfig.prepare({
-      configObject: {
-        projectFolder: pkgDir,
-        mainEntryPointFilePath: entry,
-        compiler: { tsconfigFilePath: join(pkgDir, "tsconfig.json") },
-        apiReport: {
-          enabled: true,
-          reportFileName: "<unscopedPackageName>",
-          reportFolder: join(pkgDir, "etc"),
-          reportTempFolder: join(tempRoot, dir),
-        },
-        docModel: { enabled: false },
-        dtsRollup: { enabled: false },
-        tsdocMetadata: { enabled: false },
-        newlineKind: "lf",
-        enumMemberOrder: "by-name",
-        messages,
-      },
-      packageJsonFullPath: pkgJsonPath,
-    });
-    if (update) mkdirSync(config.reportFolder, { recursive: true });
-    result = Extractor.invoke(config, {
-      // localBuild writes a changed report to etc/; otherwise it only goes to the temp folder
-      localBuild: update,
-      printApiReportDiff: !update,
-      messageCallback(message) {
-        // API Extractor's own console output (version notices, "the API report changed", ...)
-        // is replaced by the summary below
-        if (message.category === "console") {
-          if (message.messageId === "console-api-report-diff") diff = message.text;
-          if (message.logLevel !== "error") message.logLevel = "none";
-        }
-        if (message.logLevel === "error" || message.logLevel === "warning") {
-          problems.push(message.formatMessageWithLocation(root));
-        }
-        message.handled = true;
-      },
-    });
-  } catch (err) {
-    problems.push(err instanceof Error ? err.message : String(err));
-  }
-
-  if (problems.length || !config || !result) {
-    failed++;
-    console.error(`✖ ${pkg.name}:\n  ${problems.join("\n  ")}`);
-    continue;
-  }
-
-  // One report per package: the "complete" variant, `<unscoped-name>.api.md`
-  const reportPath = join(config.reportFolder, config.reportConfigs[0].fileName);
-  const shortPath = relative(root, reportPath).replaceAll("\\", "/");
-  if (result.apiReportChanged) {
-    if (update) {
-      console.log(`✎ ${pkg.name}: updated ${shortPath}`);
-    } else {
-      changed.push(shortPath);
-      console.error(`✖ ${pkg.name}: ${shortPath} differs from the build`);
-      if (diff) printDiff(diff);
+  // One report per entry point: `.` and each subpath export such as `./browser` (#158).
+  for (const subpath of subpathsOf(pkg)) {
+    const name = subpath ? `${pkg.name}/${subpath}` : pkg.name;
+    const entry = join(pkgDir, "dist", `${subpath ?? "index"}.d.ts`);
+    if (!existsSync(entry)) {
+      failed++;
+      console.error(`✖ ${name}: ${relative(root, entry)} is missing. Run 'pnpm build' first.`);
+      continue;
     }
-    continue;
+
+    const problems = [];
+    let diff = "";
+    let config;
+    let result;
+    try {
+      config = ExtractorConfig.prepare({
+        configObject: {
+          projectFolder: pkgDir,
+          mainEntryPointFilePath: entry,
+          compiler: { tsconfigFilePath: join(pkgDir, "tsconfig.json") },
+          apiReport: {
+            enabled: true,
+            reportFileName: subpath ? `<unscopedPackageName>-${subpath}` : "<unscopedPackageName>",
+            reportFolder: join(pkgDir, "etc"),
+            reportTempFolder: join(tempRoot, dir, subpath ?? "index"),
+          },
+          docModel: { enabled: false },
+          dtsRollup: { enabled: false },
+          tsdocMetadata: { enabled: false },
+          newlineKind: "lf",
+          enumMemberOrder: "by-name",
+          messages,
+        },
+        packageJsonFullPath: pkgJsonPath,
+      });
+      if (update) mkdirSync(config.reportFolder, { recursive: true });
+      result = Extractor.invoke(config, {
+        // localBuild writes a changed report to etc/; otherwise it only goes to the temp folder
+        localBuild: update,
+        printApiReportDiff: !update,
+        messageCallback(message) {
+          // API Extractor's own console output (version notices, "the API report changed", ...)
+          // is replaced by the summary below
+          if (message.category === "console") {
+            if (message.messageId === "console-api-report-diff") diff = message.text;
+            if (message.logLevel !== "error") message.logLevel = "none";
+          }
+          if (message.logLevel === "error" || message.logLevel === "warning") {
+            problems.push(message.formatMessageWithLocation(root));
+          }
+          message.handled = true;
+        },
+      });
+    } catch (err) {
+      problems.push(err instanceof Error ? err.message : String(err));
+    }
+
+    if (problems.length || !config || !result) {
+      failed++;
+      console.error(`✖ ${name}:\n  ${problems.join("\n  ")}`);
+      continue;
+    }
+
+    // One report per entry point: the "complete" variant, `<unscoped-name>[-<subpath>].api.md`
+    const reportPath = join(config.reportFolder, config.reportConfigs[0].fileName);
+    const shortPath = relative(root, reportPath).replaceAll("\\", "/");
+    if (result.apiReportChanged) {
+      if (update) {
+        console.log(`✎ ${name}: updated ${shortPath}`);
+      } else {
+        changed.push(shortPath);
+        console.error(`✖ ${name}: ${shortPath} differs from the build`);
+        if (diff) printDiff(diff);
+      }
+      continue;
+    }
+    console.log(`✔ ${name}`);
   }
-  console.log(`✔ ${pkg.name}`);
 }
 
 rmSync(tempRoot, { recursive: true, force: true });
@@ -156,6 +163,12 @@ if (changed.length) {
 }
 if (failed) console.error(`\n${String(failed)} package(s) failed.`);
 if (changed.length || failed) process.exit(1);
+
+/** `undefined` for the package's main entry, then the name of each `./<subpath>` export. */
+function subpathsOf(pkg) {
+  const keys = Object.keys(pkg.exports ?? { ".": null });
+  return [undefined, ...keys.filter((k) => /^\.\/[a-z-]+$/.test(k)).map((k) => k.slice(2))];
+}
 
 /** API Extractor's diff of the committed report and the new one, cut short for the CI log */
 function printDiff(text) {

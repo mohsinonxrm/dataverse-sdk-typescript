@@ -7,7 +7,6 @@
 import * as ejs from "ejs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { fileURLToPath } from "node:url";
 import {
   ACTION_BODY_MODULE,
   type ActionBodyTables,
@@ -17,7 +16,18 @@ import {
   FUNCTION_PARAMETERS_MODULE,
   functionParametersSource,
 } from "./action-body.js";
+import {
+  allExist,
+  GENERATOR_VERSION,
+  type GenerationStamp,
+  hashOf,
+  readStamp,
+  removeStale,
+  writeStamp,
+} from "./incremental.js";
+import { isNoContentOperation, noContentDoc } from "./no-content-operations.js";
 import type { SchemaModel } from "./schema-model.js";
+import { loadTemplate, TEMPLATE_NAMES, type TemplateName } from "./templates.js";
 import type {
   ActionType,
   DataverseGenConfig,
@@ -29,12 +39,24 @@ import type {
   TypeScriptType,
 } from "./types.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 /** The package generated code imports its base types from. */
 export const RUNTIME_PACKAGE = "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
-type Folder = "entities" | "enums" | "actions" | "functions" | "complextypes";
+/** The client package; the typed client (#312) takes its `DataverseClient`. */
+const CORE_PACKAGE = "@mohsinonxrm/dataverse-sdk-core";
+
+/** The typed client's interface and factory (`typedClient`, #312). */
+const TYPED_CLIENT = "TypedDataverseClient";
+const TYPED_CLIENT_FACTORY = "createTypedClient";
+
+type Folder = "entities" | "enums" | "actions" | "functions" | "complextypes" | "forms";
+
+/** The names of an entity's form types (`formContext`, #347). */
+interface FormNames {
+  attributes: string;
+  controls: string;
+  context: string;
+}
 
 // Reserved words that cannot name a type, a class or a variable. Contextual keywords such as
 // `type` or `of` are valid identifiers and are not listed.
@@ -189,6 +211,19 @@ export class TypescriptGenerator {
   /** `strictNulls` (#305): type operation responses exactly as the CSDL declares them. */
   private strictNulls: boolean;
   private outputNamesCache?: Map<string, string>;
+  private writeTypeNamesCache?: Map<EntityType, { create: string; update: string }>;
+  private formNamesCache?: Map<EntityType, FormNames>;
+  private columnTypeNamesCache?: Map<EntityType, string>;
+  /** Every file this run wrote or kept, relative to the output folder, with `/`. */
+  private readonly written = new Set<string>();
+  /** Incremental generation: the tables whose files are kept as they are. */
+  private readonly unchanged = new Set<EntityType>();
+
+  /**
+   * After {@link generate} with `output.incremental`: the logical names of the tables whose
+   * files were kept, because neither their metadata nor the settings changed since the last run.
+   */
+  readonly unchangedTables: string[] = [];
   private actionBodyTablesCache?: ActionBodyTables;
   private functionParameterTablesCache?: ActionBodyTables;
 
@@ -205,16 +240,80 @@ export class TypescriptGenerator {
    * Generate all TypeScript files
    */
   async generate(): Promise<void> {
+    const incremental = this.config.output?.incremental === true;
+    const previous = incremental ? await readStamp(this.outputRoot) : undefined;
+    const tables: GenerationStamp["tables"] = {};
+    const settings = incremental ? await this.settingsHash() : "";
+    if (incremental) {
+      const reusable = previous?.generator === GENERATOR_VERSION && previous.settings === settings;
+      for (const entity of this.model.EntityTypes) {
+        const files = this.tableFiles(entity);
+        const hash = hashOf(JSON.stringify(entity));
+        tables[entity.LogicalName] = { hash, files };
+        const before = previous?.tables[entity.LogicalName];
+        if (
+          reusable &&
+          before?.hash === hash &&
+          before.files.join("\n") === files.join("\n") &&
+          (await allExist(this.outputRoot, files))
+        ) {
+          this.unchanged.add(entity);
+          this.unchangedTables.push(entity.LogicalName);
+          for (const file of files) this.written.add(file);
+        }
+      }
+    }
+
     await this.outputEntities();
     await this.outputEnums();
     await this.outputActions();
     await this.outputFunctions();
     await this.outputComplexTypes();
     await this.outputMetadata();
+    if (this.config.formContext === true) await this.outputForms();
+    if (this.config.typedClient === true) await this.outputClient();
 
     if (this.config.output?.generateIndex !== false) {
       await this.outputIndexFiles();
     }
+
+    if (incremental) {
+      if (previous) await removeStale(this.outputRoot, previous.files, this.written);
+      await writeStamp(this.outputRoot, {
+        format: 1,
+        generator: GENERATOR_VERSION,
+        settings,
+        tables,
+        files: [...this.written].sort(),
+      });
+    }
+  }
+
+  /**
+   * Incremental generation: a hash of what every generated file depends on besides its own
+   * table: the generator options, the templates (custom ones included) and the names of the
+   * generated tables, enums and complex types, which other files import.
+   */
+  private async settingsHash(): Promise<string> {
+    const templates = await Promise.all(TEMPLATE_NAMES.map((name) => this.loadTemplate(name)));
+    const settings = {
+      fileSuffix: this.fileSuffix,
+      strictNulls: this.strictNulls,
+      formContext: this.config.formContext === true,
+      typedClient: this.config.typedClient === true,
+      tables: this.model.EntityTypes.map((e) => [e.Name, e.LogicalName, this.entityTypeName(e)]),
+      enums: this.model.EnumTypes.map((e) => e.Name),
+      complexTypes: this.model.ComplexTypes.map((c) => c.Name),
+    };
+    return hashOf(JSON.stringify(settings), ...templates);
+  }
+
+  /** The files generated from one table, relative to the output folder. */
+  private tableFiles(entity: EntityType): string[] {
+    const typeName = this.entityTypeName(entity);
+    const files = [`entities/${typeName}${this.fileSuffix}.ts`];
+    if (this.config.formContext === true) files.push(`forms/${typeName}Form${this.fileSuffix}.ts`);
+    return files;
   }
 
   /** TypeScript name of a generated entity: its schema name (`Account`), made safe. */
@@ -232,6 +331,7 @@ export class TypescriptGenerator {
     const template = await this.loadTemplate("entity.ejs");
 
     for (const entity of this.model.EntityTypes) {
+      if (this.unchanged.has(entity)) continue;
       const imports = new ImportCollector();
       imports.type("IEntity", RUNTIME_PACKAGE);
       const typeName = this.entityTypeName(entity);
@@ -239,18 +339,328 @@ export class TypescriptGenerator {
       const metadataType = runtimeMetadataName([typeName, metadataName]);
       imports.type("EntityMetadata", RUNTIME_PACKAGE, metadataType);
 
+      const writeNames = this.writeTypeNames.get(entity) ?? {
+        create: `${typeName}Create`,
+        update: `${typeName}Update`,
+      };
       const body = ejs.render(template, {
         ...this.helpers("entities", imports, typeName),
         entity,
         typeName,
         metadataName,
         metadataType,
+        createName: writeNames.create,
+        updateName: writeNames.update,
+        writeColumns: (mode: "create" | "update") =>
+          this.writeColumns(entity, mode, imports, typeName),
         navigationType: (nav: NavigationPropertyType) => this.navigationType(nav, imports, entity),
         getSourceTypeComment: (sourceType?: number) => this.getSourceTypeComment(sourceType),
       });
 
       await this.writeFile(dir, typeName, imports, body);
     }
+  }
+
+  /**
+   * The names of each entity's create and update types (#347): `<Entity>Create` and
+   * `<Entity>Update`, or with a `_2` suffix when another generated type has that name.
+   */
+  private get writeTypeNames(): Map<EntityType, { create: string; update: string }> {
+    if (this.writeTypeNamesCache) return this.writeTypeNamesCache;
+    const taken = new Set<string>([
+      ...this.model.EntityTypes.flatMap((e) => {
+        const typeName = this.entityTypeName(e);
+        return [typeName, `${typeName}Metadata`];
+      }),
+      ...this.model.EnumTypes.map((e) => toSafeIdentifier(e.Name)),
+      ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
+    ]);
+    const unique = (stem: string): string => {
+      let name = stem;
+      for (let i = 2; taken.has(name); i++) name = `${stem}_${String(i)}`;
+      taken.add(name);
+      return name;
+    };
+    const names = new Map<EntityType, { create: string; update: string }>();
+    for (const entity of this.model.EntityTypes) {
+      const typeName = this.entityTypeName(entity);
+      names.set(entity, {
+        create: unique(`${typeName}Create`),
+        update: unique(`${typeName}Update`),
+      });
+    }
+    this.writeTypeNamesCache = names;
+    return names;
+  }
+
+  /**
+   * With `formContext`, the names of each entity's form types (#347): `<Entity>Attributes`,
+   * `<Entity>Controls` and `<Entity>FormContext`, with a `_2` suffix when another generated type
+   * has that name. Empty without the option.
+   */
+  private get formNames(): Map<EntityType, FormNames> {
+    if (this.formNamesCache) return this.formNamesCache;
+    const names = new Map<EntityType, FormNames>();
+    this.formNamesCache = names;
+    if (this.config.formContext !== true) return names;
+    const taken = new Set<string>([
+      ...this.model.EntityTypes.flatMap((e) => {
+        const typeName = this.entityTypeName(e);
+        return [typeName, `${typeName}Metadata`];
+      }),
+      ...this.model.EnumTypes.map((e) => toSafeIdentifier(e.Name)),
+      ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
+      ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
+    ]);
+    const unique = (stem: string): string => {
+      let name = stem;
+      for (let i = 2; taken.has(name); i++) name = `${stem}_${String(i)}`;
+      taken.add(name);
+      return name;
+    };
+    for (const entity of this.model.EntityTypes) {
+      const typeName = this.entityTypeName(entity);
+      names.set(entity, {
+        attributes: unique(`${typeName}Attributes`),
+        controls: unique(`${typeName}Controls`),
+        context: unique(`${typeName}FormContext`),
+      });
+    }
+    return names;
+  }
+
+  /**
+   * With `typedClient`, the name of each entity's column union (#312): `<Entity>Column`, with a
+   * `_2` suffix when another generated type has that name. Empty without the option.
+   */
+  private get columnTypeNames(): Map<EntityType, string> {
+    if (this.columnTypeNamesCache) return this.columnTypeNamesCache;
+    const names = new Map<EntityType, string>();
+    this.columnTypeNamesCache = names;
+    if (this.config.typedClient !== true) return names;
+    const taken = new Set<string>([
+      ...this.model.EntityTypes.flatMap((e) => {
+        const typeName = this.entityTypeName(e);
+        return [typeName, `${typeName}Metadata`];
+      }),
+      ...this.model.EnumTypes.map((e) => toSafeIdentifier(e.Name)),
+      ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
+      ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
+      ...[...this.formNames.values()].flatMap((n) => [n.attributes, n.controls, n.context]),
+      TYPED_CLIENT,
+      TYPED_CLIENT_FACTORY,
+    ]);
+    for (const entity of this.model.EntityTypes) {
+      const stem = `${this.entityTypeName(entity)}Column`;
+      let name = stem;
+      for (let i = 2; taken.has(name); i++) name = `${stem}_${String(i)}`;
+      taken.add(name);
+      names.set(entity, name);
+    }
+    return names;
+  }
+
+  /**
+   * With `typedClient` (#312): `client.ts`, with `createTypedClient(client)` and one
+   * `EntitySetClient` per generated table, typed by the table's interface, create and update
+   * types and column union.
+   */
+  private async outputClient(): Promise<void> {
+    const imports = new ImportCollector();
+    imports.type("DataverseClient", CORE_PACKAGE);
+    imports.value("EntitySetClient", RUNTIME_PACKAGE);
+    imports.value("EntityMetadataCache", `./metadata${this.fileSuffix}.js`);
+    const tables = this.model.EntityTypes.map((entity) => {
+      const typeName = this.entityTypeName(entity);
+      const module = `./entities/${typeName}${this.fileSuffix}.js`;
+      const write = this.writeTypeNames.get(entity) ?? {
+        create: `${typeName}Create`,
+        update: `${typeName}Update`,
+      };
+      const metadataName = `${typeName}Metadata`;
+      imports.type(typeName, module);
+      imports.type(write.create, module);
+      imports.type(write.update, module);
+      imports.value(metadataName, module);
+      return {
+        entity,
+        typeName,
+        metadataName,
+        createName: write.create,
+        updateName: write.update,
+        columnName: this.columnTypeNames.get(entity) ?? `${typeName}Column`,
+        columns: [...new Set(entity.Properties.map((p) => p.Name))],
+      };
+    });
+    const first = tables.at(0);
+    const template = await this.loadTemplate("client.ejs");
+    const body = ejs.render(template, {
+      ...this.helpers("entities", imports),
+      tables,
+      clientName: TYPED_CLIENT,
+      factoryName: TYPED_CLIENT_FACTORY,
+      sample: first?.entity.EntitySetName ?? "accounts",
+      sampleColumn: first?.entity.PrimaryNameAttribute ?? first?.columns.at(0) ?? "name",
+    });
+    await this.writeFile(this.outputRoot, "client", imports, body);
+  }
+
+  /**
+   * With `formContext` (#347): a `forms/<Entity>Form.ts` per table, with the table's columns
+   * typed as Xrm attributes and controls (`@types/xrm`) and a form context whose
+   * `getAttribute()` / `getControl()` take a column's logical name.
+   */
+  private async outputForms(): Promise<void> {
+    const dir = path.join(this.outputRoot, "forms");
+    await fs.mkdir(dir, { recursive: true });
+    const template = await this.loadTemplate("form.ejs");
+
+    for (const entity of this.model.EntityTypes) {
+      const names = this.formNames.get(entity);
+      if (!names || this.unchanged.has(entity)) continue;
+      const imports = new ImportCollector();
+      const typeName = this.entityTypeName(entity);
+      const columns = this.formColumns(entity, imports);
+      const body = ejs.render(template, {
+        ...this.helpers("forms", imports),
+        entity,
+        columns,
+        attributesName: names.attributes,
+        controlsName: names.controls,
+        contextName: names.context,
+        sample: entity.PrimaryNameAttribute ?? columns.at(0)?.name ?? "name",
+      });
+      // A triple-slash directive is read only at the top of the file, before the imports
+      await this.writeFile(
+        dir,
+        `${typeName}Form`,
+        imports,
+        body,
+        '/// <reference types="xrm" />\n\n'
+      );
+    }
+  }
+
+  /**
+   * The columns a form can show and their Xrm types: text, number, date, two-option, choice
+   * (typed with the column's enum when it has one), choices and lookup columns. A lookup is keyed
+   * by its logical name (`contoso_parentaccountid`), as the form names it. Primary keys, the
+   * read-only name columns beside a lookup or choice (`AttributeOf`), and other virtual columns
+   * aren't on forms.
+   */
+  private formColumns(
+    entity: EntityType,
+    imports: ImportCollector
+  ): Array<{ name: string; attribute: string; control: string; doc: string }> {
+    const columns: Array<{ name: string; attribute: string; control: string; doc: string }> = [];
+    const names = new Set<string>();
+    const add = (name: string, attribute: string, control: string, doc: string) => {
+      if (names.has(name)) return;
+      names.add(name);
+      columns.push({ name, attribute, control, doc });
+    };
+    const enumOf = (prop: PropertyType): string => {
+      const enumType = prop.EnumName
+        ? this.model.EnumTypes.find((e) => e.Name === prop.EnumName)
+        : undefined;
+      return enumType ? this.resolveReference(enumType.Name, "forms", imports) : "number";
+    };
+
+    for (const prop of entity.Properties) {
+      if (prop.AttributeOf || prop.Name.startsWith("_")) continue;
+      const doc = [prop.Description, prop.DisplayName, prop.LogicalName].find((t) => t) ?? "";
+      const kind = prop.IsMultiSelect === true ? "MultiSelect" : (prop.AttributeType ?? "");
+      switch (kind) {
+        case "String":
+        case "Memo":
+          add(prop.Name, "Xrm.Attributes.StringAttribute", "Xrm.Controls.StringControl", doc);
+          break;
+        case "Integer":
+        case "BigInt":
+        case "Decimal":
+        case "Double":
+        case "Money":
+          add(prop.Name, "Xrm.Attributes.NumberAttribute", "Xrm.Controls.NumberControl", doc);
+          break;
+        case "DateTime":
+          add(prop.Name, "Xrm.Attributes.DateAttribute", "Xrm.Controls.DateControl", doc);
+          break;
+        case "Boolean":
+          add(prop.Name, "Xrm.Attributes.BooleanAttribute", "Xrm.Controls.StandardControl", doc);
+          break;
+        case "Picklist":
+        case "State":
+        case "Status":
+          add(
+            prop.Name,
+            `Xrm.Attributes.OptionSetAttribute<${enumOf(prop)}>`,
+            "Xrm.Controls.OptionSetControl",
+            doc
+          );
+          break;
+        case "MultiSelect":
+          add(
+            prop.Name,
+            `Xrm.Attributes.MultiSelectOptionSetAttribute<${enumOf(prop)}>`,
+            "Xrm.Controls.MultiSelectOptionSetControl",
+            doc
+          );
+          break;
+        default:
+          break;
+      }
+    }
+    for (const nav of entity.NavigationProperties) {
+      if (nav.LookupAttribute === undefined) continue;
+      const targets = nav.LookupTargets?.length ? nav.LookupTargets : [nav.TargetType];
+      add(
+        nav.LookupAttribute,
+        "Xrm.Attributes.LookupAttribute",
+        "Xrm.Controls.LookupControl",
+        `Lookup to ${targets.join(", ")}`
+      );
+    }
+    return columns;
+  }
+
+  /**
+   * The members of an entity's create or update type (#347): the columns valid for it
+   * (`IsValidForCreate` / `IsValidForUpdate`), and the lookups valid for it, keyed by the
+   * navigation property they are bound through and typed `EntityReference`.
+   */
+  private writeColumns(
+    entity: EntityType,
+    mode: "create" | "update",
+    imports: ImportCollector,
+    selfName: string
+  ): Array<{ key: string; type: string; doc: string }> {
+    const valid = (item: { IsValidForCreate?: boolean; IsValidForUpdate?: boolean }) =>
+      mode === "create" ? item.IsValidForCreate === true : item.IsValidForUpdate === true;
+    const columns: Array<{ key: string; type: string; doc: string }> = [];
+    const keys = new Set<string>();
+    for (const prop of entity.Properties) {
+      if (!valid(prop) || keys.has(prop.Name)) continue;
+      keys.add(prop.Name);
+      const type = this.formatType(prop.TypeScriptType, "entities", imports, selfName);
+      columns.push({
+        key: prop.Name,
+        type: prop.Nullable ? `${type} | null` : type,
+        // The template's fallback for the interface: the description, display name or logical name
+        doc: [prop.Description, prop.DisplayName, prop.LogicalName].find((t) => t) ?? "",
+      });
+    }
+    for (const nav of entity.NavigationProperties) {
+      if (nav.LookupAttribute === undefined || !valid(nav) || keys.has(nav.Name)) continue;
+      keys.add(nav.Name);
+      imports.type("EntityReference", RUNTIME_PACKAGE);
+      const targets = nav.LookupTargets?.length ? nav.LookupTargets : [nav.TargetType];
+      columns.push({
+        key: nav.Name,
+        type: "EntityReference | null",
+        doc: `Lookup ${nav.LookupAttribute} (${targets.join(", ")}): a reference, sent as ${nav.Name}@odata.bind`,
+      });
+    }
+    return columns;
   }
 
   /**
@@ -307,10 +717,9 @@ export class TypescriptGenerator {
     if (used) {
       const internal = path.join(this.outputRoot, "internal");
       await fs.mkdir(internal, { recursive: true });
-      await fs.writeFile(
+      await this.emit(
         path.join(internal, `${ACTION_BODY_MODULE}${this.fileSuffix}.ts`),
-        actionBodySource(tables, RUNTIME_PACKAGE, `../metadata${this.fileSuffix}.js`),
-        "utf-8"
+        actionBodySource(tables, RUNTIME_PACKAGE, `../metadata${this.fileSuffix}.js`)
       );
     }
   }
@@ -367,10 +776,9 @@ export class TypescriptGenerator {
     if (used) {
       const internal = path.join(this.outputRoot, "internal");
       await fs.mkdir(internal, { recursive: true });
-      await fs.writeFile(
+      await this.emit(
         path.join(internal, `${FUNCTION_PARAMETERS_MODULE}${this.fileSuffix}.ts`),
-        functionParametersSource(tables),
-        "utf-8"
+        functionParametersSource(tables)
       );
     }
   }
@@ -472,8 +880,16 @@ export * from './actions/index.js';
 export * from './functions/index.js';
 export * from './complextypes/index.js';
 export * from './metadata${suffix}.js';
-`;
-    await fs.writeFile(rootIndexPath, rootIndexContent, "utf-8");
+${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}${
+      this.config.typedClient === true ? `export * from './client${suffix}.js';\n` : ""
+    }`;
+    await this.emit(rootIndexPath, rootIndexContent);
+    if (this.config.formContext === true) {
+      await this.outputFolderIndex(
+        "forms",
+        this.model.EntityTypes.map((e) => `${this.entityTypeName(e)}Form`)
+      );
+    }
 
     await this.outputFolderIndex(
       "entities",
@@ -514,7 +930,7 @@ export * from './metadata${suffix}.js';
             .join("\n")
         : "export {};";
 
-    await fs.writeFile(indexPath, exports + "\n", "utf-8");
+    await this.emit(indexPath, exports + "\n");
   }
 
   /** Helpers every template gets. Type helpers record the imports they need. */
@@ -540,7 +956,10 @@ export * from './metadata${suffix}.js';
    *   record keeps its `@odata.etag` and `@odata.type`;
    * - a complex type: the body itself, with its `@odata.context`;
    * - an entity: the body itself, with its annotations, or `null` for a 204 (an entity output
-   *   that wasn't set: Dataverse answers 204 although the CSDL says `Nullable="false"`).
+   *   that wasn't set: Dataverse answers 204 although the CSDL says `Nullable="false"`);
+   * - an operation in `NO_CONTENT_OPERATIONS` (`UpsertMultiple`), which Dataverse answers 204
+   *   although the CSDL declares a primitive or complex return: `<Type> | null`, `null` for the
+   *   204 (a body, if one ever comes, is read as above).
    *
    * The value's type is declared as `<Class>Response`.
    *
@@ -555,7 +974,8 @@ export * from './metadata${suffix}.js';
     folder: Folder,
     imports: ImportCollector,
     className: string,
-    label: string
+    label: string,
+    operation: string
   ): { responseType: string; responseDeclaration: string; parseResponse: string } {
     if (!returnType) {
       return {
@@ -587,6 +1007,9 @@ export * from './metadata${suffix}.js';
     };
     // strictNulls: the CSDL leaves the value (or a collection's items) nullable
     const orNull = this.strictNulls && nullable === true && element !== "entity";
+    // Dataverse answers 204 although the CSDL declares the return (a primitive or complex value)
+    const noContent =
+      !returnType.isArray && element !== "entity" && isNoContentOperation(operation);
     const NULLABLE_DOC =
       ' * `null` for a null value or a 204 No Content: the CSDL doesn\'t declare the return `Nullable="false"`.\n';
 
@@ -620,8 +1043,9 @@ export * from './metadata${suffix}.js';
     } else if (element === "complex") {
       kind = "complex";
       doc += " * The response body itself, with its `@odata.context` (not wrapped in `value`).\n";
-      if (orNull) {
-        doc += NULLABLE_DOC;
+      if (noContent) doc += noContentDoc(operation);
+      else if (orNull) doc += NULLABLE_DOC;
+      if (orNull || noContent) {
         declaration = `export type ${name} = (${resolved()} & { "@odata.context"?: string }) | null;\n`;
       } else {
         declaration = `export interface ${name} extends ${resolved()} {\n  "@odata.context"?: string;\n}\n`;
@@ -632,17 +1056,23 @@ export * from './metadata${suffix}.js';
       if (element === "enum") {
         doc += ' * An enum value is its member name (names separated by ", " for flags).\n';
       }
-      if (orNull) doc += NULLABLE_DOC;
+      if (noContent) doc += noContentDoc(operation);
+      else if (orNull) doc += NULLABLE_DOC;
       const value = element === "enum" ? "string" : resolved();
-      declaration = `export type ${name} = ${orNull ? `${value} | null` : value};\n`;
+      declaration = `export type ${name} = ${orNull || noContent ? `${value} | null` : value};\n`;
     }
 
     const wrapped = `((await response.json()) as { value: ${name} }).value`;
     const body = `(await response.json()) as ${name}`;
     let parse = `  async parseResponse(response: Response): Promise<${name}> {\n`;
+    if (noContent) {
+      parse +=
+        "    // Dataverse answers 204 No Content although the CSDL declares a return type\n" +
+        "    if (response.status === 204) return null;\n";
+    }
     switch (kind) {
       case "primitive":
-        if (orNull) parse += "    if (response.status === 204) return null;\n";
+        if (orNull && !noContent) parse += "    if (response.status === 204) return null;\n";
         parse += '    // A primitive comes wrapped: { "@odata.context": "…", "value": … }\n';
         parse += `    return ${wrapped};\n`;
         break;
@@ -653,7 +1083,7 @@ export * from './metadata${suffix}.js';
         parse += `    return ${wrapped};\n`;
         break;
       case "complex":
-        if (orNull) parse += "    if (response.status === 204) return null;\n";
+        if (orNull && !noContent) parse += "    if (response.status === 204) return null;\n";
         parse += "    // The body is the complex value, with its @odata.context\n";
         parse += `    return ${body};\n`;
         break;
@@ -808,7 +1238,8 @@ export * from './metadata${suffix}.js';
         folder,
         imports,
         className,
-        `${op.Name} ${isFunction ? "function" : "action"}`
+        `${op.Name} ${isFunction ? "function" : "action"}`,
+        op.Name
       ),
       bindingDoc,
       constructorArguments,
@@ -853,6 +1284,10 @@ export * from './metadata${suffix}.js';
       }),
       ...this.model.EnumTypes.map((e) => toSafeIdentifier(e.Name)),
       ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
+      ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
+      ...[...this.formNames.values()].flatMap((n) => [n.attributes, n.controls, n.context]),
+      ...this.columnTypeNames.values(),
+      ...(this.config.typedClient === true ? [TYPED_CLIENT, TYPED_CLIENT_FACTORY] : []),
     ]);
     for (const type of this.model.ComplexTypes) {
       if (!returned.has(type.Name)) continue;
@@ -991,19 +1426,24 @@ export * from './metadata${suffix}.js';
     dir: string,
     name: string,
     imports: ImportCollector,
-    body: string
+    body: string,
+    header = ""
   ): Promise<void> {
     const importBlock = imports.render();
-    const content = importBlock ? `${importBlock}\n\n${body.trimStart()}` : body.trimStart();
-    await fs.writeFile(path.join(dir, `${name}${this.fileSuffix}.ts`), content, "utf-8");
+    const content =
+      header + (importBlock ? `${importBlock}\n\n${body.trimStart()}` : body.trimStart());
+    await this.emit(path.join(dir, `${name}${this.fileSuffix}.ts`), content);
   }
 
-  /**
-   * Load EJS template
-   */
-  private async loadTemplate(name: string): Promise<string> {
-    const templatePath = path.join(__dirname, "../templates", name);
-    return await fs.readFile(templatePath, "utf-8");
+  /** Write a generated file and record it (for incremental generation's stamp). */
+  private async emit(file: string, content: string): Promise<void> {
+    await fs.writeFile(file, content, "utf-8");
+    this.written.add(path.relative(this.outputRoot, file).split(path.sep).join("/"));
+  }
+
+  /** A template: the configuration's `templates` directory's, else the built-in one (#347). */
+  private async loadTemplate(name: TemplateName): Promise<string> {
+    return await loadTemplate(name, this.config.templates);
   }
 
   /**

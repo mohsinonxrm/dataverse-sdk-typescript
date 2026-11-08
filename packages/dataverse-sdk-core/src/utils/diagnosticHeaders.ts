@@ -5,7 +5,13 @@ export function resolveDiagnosticHeaders(
   option: DataverseClientOptions["diagnosticHeaders"]
 ): Required<DiagnosticHeaderOptions> {
   if (option === false) {
-    return { sdkVersion: false, correlationId: false, featureUsage: false, retryAttempt: false };
+    return {
+      sdkVersion: false,
+      correlationId: false,
+      featureUsage: false,
+      retryAttempt: false,
+      traceContext: false,
+    };
   }
   const o = option === true || option === undefined ? {} : option;
   return {
@@ -13,5 +19,6 @@ export function resolveDiagnosticHeaders(
     correlationId: o.correlationId ?? true,
     featureUsage: o.featureUsage ?? true,
     retryAttempt: o.retryAttempt ?? true,
+    traceContext: o.traceContext ?? true,
   };
 }

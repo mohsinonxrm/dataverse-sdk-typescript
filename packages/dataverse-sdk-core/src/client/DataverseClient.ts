@@ -18,9 +18,19 @@ import { DataverseAbortError, DataverseNetworkError } from "../errors/NamedError
 import { isTimeoutError, startDeadline } from "../utils/signals.js";
 import { generateUUID, normalizeHeaders } from "../utils/HeaderUtils.js";
 import { FeatureUsageTracker } from "../telemetry/FeatureUsageTracker.js";
+import { guardTelemetry } from "../utils/telemetry.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 import { odataKey, type ODataKey } from "../odata/literal.js";
 import type { FetchXmlOptions, FetchXmlPage } from "../fetchxml/page.js";
+import {
+  changePages,
+  changePreferences,
+  checkDeltaLink,
+  collectChanges,
+  type TrackChangesOptions,
+  type TrackedChanges,
+  type TrackedChangesPage,
+} from "../changes/changeTracking.js";
 
 export class DataverseClient {
   private readonly baseUrl: string;
@@ -63,6 +73,21 @@ export class DataverseClient {
     return resolveRequestUrl(this.baseUrl, pathOrUrl);
   }
 
+  /**
+   * Send an event to this client's `telemetry` (nothing happens without one). Never throws: an
+   * error from the telemetry client is logged with `logger.warn` and ignored. Packages built on
+   * the client report their own events this way (the batch package's `dataverse.batch`).
+   */
+  trackEvent(
+    name: string,
+    properties?: Record<string, string>,
+    measurements?: Record<string, number>
+  ): void {
+    const telemetry = this.options.telemetry;
+    if (telemetry)
+      guardTelemetry(telemetry, this.options.logger).trackEvent(name, properties, measurements);
+  }
+
   getBaseUrl(): string {
     return this.baseUrl;
   }
@@ -102,6 +127,53 @@ export class DataverseClient {
   }
 
   /**
+   * The rows created, updated and deleted since `deltaLink` was issued, following
+   * `@odata.nextLink` through every page, and the next `deltaLink` to save. `deltaLink` is the
+   * `TrackedChanges.deltaLink` of an earlier `trackChanges()` or `changesSince()`. When nothing
+   * changed and Dataverse returns no new link, the result's `deltaLink` is the one passed in.
+   *
+   * A delta link older than the org keeps changes (`ExpireChangeTrackingInDays`, 7 days by
+   * default) is refused with a `DataverseServiceError` that `isDeltaLinkExpired()` recognises:
+   * start over with `trackChanges()`.
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   const changes = await client.changesSince<Account>(savedDeltaLink);
+   *   // apply changes.changed and changes.deleted, then save changes.deltaLink
+   * } catch (err) {
+   *   if (!isDeltaLinkExpired(err)) throw err;
+   *   const full = await client.api("accounts").select("name").trackChanges<Account>(); // full resync
+   * }
+   * ```
+   * @throws {DataverseInvalidRequestError} When `deltaLink` is empty or has no `$deltatoken`.
+   */
+  async changesSince<T = Record<string, unknown>>(
+    deltaLink: string,
+    options?: TrackChangesOptions
+  ): Promise<TrackedChanges<T>> {
+    return collectChanges(this.iterateChangesSince<T>(deltaLink, options));
+  }
+
+  /**
+   * {@link changesSince} one page at a time. Nothing is sent until the first `next()`; the last
+   * page carries `deltaLink`.
+   */
+  iterateChangesSince<T = Record<string, unknown>>(
+    deltaLink: string,
+    options?: TrackChangesOptions
+  ): AsyncIterable<TrackedChangesPage<T>> {
+    const requestOptions = changePreferences(options, false);
+    const first = () => {
+      checkDeltaLink(deltaLink);
+      return this.api(deltaLink).get(requestOptions);
+    };
+    return {
+      [Symbol.asyncIterator]: () => changePages<T>(this, first, () => requestOptions, deltaLink),
+    };
+  }
+
+  /**
    * Create binding payload for single-valued navigation properties
    * @param navigationProperty - The navigation property name
    * @param entitySetName - The target entity set (e.g., 'accounts')
@@ -118,7 +190,7 @@ export class DataverseClient {
     const info = request.toRequestInformation(this.baseUrl);
     applyOptions(info, options);
     const res = await this.send(info);
-    if (!res.ok) {
+    if (!res.ok && request.parsesErrorResponses !== true) {
       const err = await parseODataError(res);
       throw err;
     }

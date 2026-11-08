@@ -4,10 +4,11 @@ import {
   Caption1,
   Card,
   CardHeader,
+  Divider,
+  Field,
+  Input,
+  Link,
   makeStyles,
-  MessageBar,
-  MessageBarBody,
-  MessageBarTitle,
   Spinner,
   Subtitle1,
   Title2,
@@ -22,10 +23,21 @@ import {
   WeatherMoon20Regular,
   WeatherSunny20Regular,
 } from "@fluentui/react-icons";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import { ErrorCard } from "../components/ErrorCard";
-import { isMsalConfigured, settings } from "../config";
+import {
+  adminConsentUrl,
+  APP_NAME,
+  normalizeUrl,
+  readConnectionSettings,
+  redirectUri,
+  REPO_URL,
+  validateSettings,
+  type ConnectionSettings,
+} from "../config";
+import { DOC_LINKS } from "../docs";
 import { useThemeMode } from "../theme/ThemeProvider";
 
 const useStyles = makeStyles({
@@ -39,9 +51,10 @@ const useStyles = makeStyles({
   },
   card: {
     width: "100%",
-    maxWidth: "34rem",
+    maxWidth: "38rem",
     padding: tokens.spacingHorizontalXXL,
     gap: tokens.spacingVerticalL,
+    "@media (max-width: 47.99em)": { padding: tokens.spacingHorizontalL },
   },
   brand: {
     display: "flex",
@@ -50,23 +63,56 @@ const useStyles = makeStyles({
     color: tokens.colorBrandForeground1,
   },
   title: { margin: 0, color: tokens.colorNeutralForeground1 },
-  actions: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS },
+  section: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS },
+  form: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalM },
   muted: { color: tokens.colorNeutralForeground3 },
-  code: { fontFamily: tokens.fontFamilyMonospace },
+  code: { fontFamily: tokens.fontFamilyMonospace, overflowWrap: "anywhere" },
+  links: {
+    display: "flex",
+    flexWrap: "wrap",
+    columnGap: tokens.spacingHorizontalL,
+    rowGap: tokens.spacingVerticalXS,
+    margin: 0,
+    paddingInlineStart: 0,
+    listStyle: "none",
+  },
   theme: { position: "absolute", top: tokens.spacingVerticalM, right: tokens.spacingHorizontalM },
 });
 
-/** Shown while nobody is signed in: Microsoft sign-in when configured, and the demo mode. */
+/**
+ * Shown while nobody is signed in: the demo (no sign-in), and Microsoft sign-in with the site's
+ * default app registration or the visitor's own, to an environment URL typed here or, without
+ * one, to the environment picker. Nothing here is a secret: the environment URL, client id and
+ * tenant are kept in localStorage for the next visit.
+ */
 export default function SignInPage() {
   const styles = useStyles();
   const { state, signIn, startDemo } = useAuth();
   const { mode, toggle } = useThemeMode();
+  const [settings, setSettings] = useState<ConnectionSettings>(readConnectionSettings);
+  const [submitted, setSubmitted] = useState(false);
   const loading = state.status === "loading";
   const error = state.status === "signedOut" ? state.error : undefined;
+  const errors = validateSettings(settings);
+  const shown = submitted ? errors : {};
 
   useEffect(() => {
-    document.title = "Sign in · Dataverse SDK showcase";
+    document.title = `Sign in · ${APP_NAME}`;
   }, []);
+
+  const set = (name: keyof ConnectionSettings) => (_: unknown, data: { value: string }) =>
+    setSettings((s) => ({ ...s, [name]: data.value }));
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    setSubmitted(true);
+    if (Object.keys(errors).length) return;
+    void signIn({
+      environmentUrl: normalizeUrl(settings.environmentUrl),
+      clientId: settings.clientId.trim(),
+      tenantId: settings.tenantId.trim() || "organizations",
+    });
+  };
 
   return (
     <main className={styles.root}>
@@ -88,60 +134,125 @@ export default function SignInPage() {
           image={<Database20Regular className={styles.brand} aria-hidden />}
           header={
             <Title2 as="h1" className={styles.title}>
-              Dataverse SDK showcase
+              {APP_NAME}
             </Title2>
           }
         />
         <Body1>
-          A Fluent 2 app that runs the{" "}
-          <span className={styles.code}>@mohsinonxrm/dataverse-sdk</span> packages in the browser:
-          queries, writes, <span className={styles.code}>$batch</span>, metadata, files, discovery
-          and more, each with the code it runs and the requests it sends.
+          Try the <span className={styles.code}>@mohsinonxrm/dataverse-sdk</span> packages in your
+          browser: build a Web API request or pick one of more than 2,300 typed actions, functions
+          and messages, see the SDK code for it, run it and inspect the request and response.
         </Body1>
         {loading ? (
           <Spinner label="Checking your sign-in…" />
         ) : (
-          <div className={styles.actions}>
-            <Subtitle1 as="h2">Choose how to start</Subtitle1>
-            <Button
-              appearance="primary"
-              size="large"
-              icon={<PersonRegular />}
-              disabled={!isMsalConfigured}
-              onClick={() => void signIn()}
-            >
-              Sign in with Microsoft
-            </Button>
-            {isMsalConfigured ? (
+          <>
+            <section className={styles.section} aria-labelledby="demo-heading">
+              <Subtitle1 as="h2" id="demo-heading">
+                Try it without signing in
+              </Subtitle1>
+              <Button
+                appearance="primary"
+                size="large"
+                icon={<PlayRegular />}
+                onClick={() => void startDemo()}
+              >
+                Explore with demo data
+              </Button>
               <Caption1 className={styles.muted}>
-                Connects to {new URL(settings.environmentUrl).host}.
+                Demo mode runs the real SDK against an in-browser copy of a small Dataverse
+                environment. Nothing leaves your browser.
               </Caption1>
-            ) : (
-              <MessageBar intent="info" layout="multiline">
-                <MessageBarBody>
-                  <MessageBarTitle>Sign-in isn&apos;t configured</MessageBarTitle>
-                  Set <span className={styles.code}>VITE_AZURE_CLIENT_ID</span> and{" "}
-                  <span className={styles.code}>VITE_DATAVERSE_URL</span> in{" "}
-                  <span className={styles.code}>.env</span> to use your own environment. The demo
-                  works without them.
-                </MessageBarBody>
-              </MessageBar>
-            )}
-            <Button
-              size="large"
-              appearance={isMsalConfigured ? "secondary" : "primary"}
-              icon={<PlayRegular />}
-              onClick={() => void startDemo()}
-            >
-              Explore with demo data
-            </Button>
-            <Caption1 className={styles.muted}>
-              Demo mode runs the real SDK against an in-browser copy of a small Dataverse
-              environment. Nothing leaves your browser.
-            </Caption1>
-          </div>
+            </section>
+            <Divider />
+            <section className={styles.section} aria-labelledby="org-heading">
+              <Subtitle1 as="h2" id="org-heading">
+                Use your own environment
+              </Subtitle1>
+              <Caption1 className={styles.muted}>
+                Sign in with a work or school account, then pick one of your environments, or enter
+                its URL here. The app registration needs the platform &quot;Single-page
+                application&quot; with the redirect URI{" "}
+                <span className={styles.code}>{redirectUri()}</span>, and the delegated permission{" "}
+                <span className={styles.code}>Dynamics CRM / user_impersonation</span>. Requests go
+                straight from your browser to your environment; there is no server in between.
+              </Caption1>
+              <form
+                className={styles.form}
+                onSubmit={submit}
+                aria-label="Your environment"
+                noValidate
+              >
+                <Field
+                  label="Environment URL (optional)"
+                  validationMessage={shown.environmentUrl}
+                  hint={
+                    shown.environmentUrl
+                      ? undefined
+                      : "For example https://contoso.crm.dynamics.com. Leave it empty to choose from your environments after signing in."
+                  }
+                >
+                  <Input
+                    type="url"
+                    value={settings.environmentUrl}
+                    onChange={set("environmentUrl")}
+                    autoComplete="url"
+                  />
+                </Field>
+                <Field label="Application (client) ID" required validationMessage={shown.clientId}>
+                  <Input
+                    value={settings.clientId}
+                    onChange={set("clientId")}
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                </Field>
+                <Field
+                  label="Tenant"
+                  validationMessage={shown.tenantId}
+                  hint={
+                    shown.tenantId
+                      ? undefined
+                      : "A tenant id or domain; organizations for any work or school account."
+                  }
+                >
+                  <Input value={settings.tenantId} onChange={set("tenantId")} spellCheck={false} />
+                </Field>
+                <Button type="submit" size="large" icon={<PersonRegular />}>
+                  Sign in with Microsoft
+                </Button>
+              </form>
+              {!errors.clientId && (
+                <Caption1 className={styles.muted}>
+                  Some organizations let only an admin consent to an app&apos;s permissions. If
+                  sign-in asks for admin approval, an admin can{" "}
+                  <Link href={adminConsentUrl(settings)} target="_blank" rel="noreferrer">
+                    grant admin consent for this app
+                  </Link>{" "}
+                  once for everyone.
+                </Caption1>
+              )}
+            </section>
+          </>
         )}
         {error !== undefined && <ErrorCard error={error} />}
+        <Divider />
+        <nav aria-label="Documentation">
+          <ul className={styles.links}>
+            {DOC_LINKS.filter((d) => d.onSignIn).map((d) => (
+              <li key={d.href}>
+                <Link href={d.href} target="_blank" rel="noreferrer">
+                  {d.signInTitle ?? d.title}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link href={REPO_URL} target="_blank" rel="noreferrer">
+                Source on GitHub
+              </Link>
+            </li>
+          </ul>
+        </nav>
       </Card>
     </main>
   );

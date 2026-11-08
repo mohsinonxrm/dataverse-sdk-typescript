@@ -7,6 +7,10 @@ export * from "./client/index.js";
 export * from "./errors/index.js";
 export * from "./paging/index.js";
 
+// Waiting for system jobs (#318)
+export * from "./asyncoperation/waitForAsyncOperation.js";
+export * from "./errors/DataverseAsyncOperationError.js";
+
 // New exports for enhanced patterns
 export {
   RequestOptions as MiddlewareRequestOptions,
@@ -36,8 +40,32 @@ export { ConcurrencyMiddleware } from "./middleware/ConcurrencyMiddleware.js";
 export { RetryMiddleware } from "./middleware/RetryMiddleware.js";
 export { TelemetryMiddleware } from "./middleware/TelemetryMiddleware.js";
 export { LoggingMiddleware } from "./middleware/LoggingMiddleware.js";
+// Fault injection for resilience tests; never in the default pipeline (#308).
+export {
+  ChaosMiddleware,
+  type ChaosFault,
+  type ChaosOptions,
+  type ChaosRequestOptions,
+  type ChaosScriptInfo,
+} from "./middleware/ChaosMiddleware.js";
 export { getRetryAttempts } from "./middleware/RetryMiddleware.js";
 export type { RawBody } from "./utils/body.js";
+// Opt-in resilience middleware (#343).
+export {
+  CircuitBreakerMiddleware,
+  type CircuitBreakerOptions,
+  type CircuitState,
+  type CircuitStateChange,
+} from "./middleware/CircuitBreakerMiddleware.js";
+export {
+  BulkheadMiddleware,
+  type BulkheadOptions,
+  type BulkheadRequestOptions,
+} from "./middleware/BulkheadMiddleware.js";
+export {
+  DataverseBulkheadRejectedError,
+  DataverseCircuitOpenError,
+} from "./errors/DataverseResilienceErrors.js";
 
 export {
   DataverseAuthenticationError,
@@ -48,6 +76,7 @@ export {
 } from "./errors/NamedErrors.js";
 
 export * from "./telemetry/FeatureUsageTracker.js";
+export { TelemetryEvents } from "./telemetry/events.js";
 
 export { odata, type EqValue } from "./odata/filter.js";
 export type { ExpandOptions } from "./odata/expand.js";
@@ -60,6 +89,15 @@ export {
   type ODataScalar,
 } from "./odata/literal.js";
 
+// Change tracking (#319)
+export {
+  isDeltaLinkExpired,
+  type DeletedRecord,
+  type TrackChangesOptions,
+  type TrackedChanges,
+  type TrackedChangesPage,
+} from "./changes/changeTracking.js";
+
 // FetchXML (#51)
 export type { FetchXmlPage, FetchXmlOptions } from "./fetchxml/page.js";
 export {
@@ -68,3 +106,11 @@ export {
   type ParsedPagingCookie,
   type FetchXmlPaging,
 } from "./fetchxml/pagingCookie.js";
+
+// Slowing down from Dataverse's service-protection headers; opt-in (#309)
+export {
+  AdaptiveThrottlingMiddleware,
+  type AdaptiveThrottlingDelay,
+  type AdaptiveThrottlingOptions,
+  type AdaptiveThrottlingStatus,
+} from "./middleware/AdaptiveThrottlingMiddleware.js";

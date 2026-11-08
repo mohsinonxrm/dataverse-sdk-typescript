@@ -11,9 +11,11 @@ import {
   ExportSolutionRequest,
   InstantiateTemplateRequest,
   PublishAllXmlRequest,
+  UpsertMultipleRequest,
   type ExecuteWorkflowResult,
   type ExportSolutionResult,
   type InstantiateTemplateResult,
+  type UpsertMultipleResult,
 } from "../src/index.js";
 
 declare const client: DataverseClient;
@@ -38,6 +40,13 @@ const exported = await client.execute(
 expectType<ExportSolutionResult>(exported.result);
 expectType<string>(exported.result.ExportSolutionFile);
 expectType<string | undefined>(exported.result["@odata.context"]);
+
+// A complex type Dataverse never sends (UpsertMultiple answers 204): null, or the body if one comes
+const upserted = await client.execute(new UpsertMultipleRequest("accounts", { Targets: [] }));
+expectType<UpsertMultipleResult>(upserted.result);
+expectAssignable<UpsertMultipleResult>(null);
+expectType<string | undefined>(upserted.result?.Results[0]?.ResponseName);
+expectType<string | undefined>(upserted.result?.["@odata.context"]);
 
 // A typed entity: the record with its annotations, or null for a 204
 const job = await client.execute(new ExecuteWorkflowRequest(EMPTY, { EntityId: EMPTY }));

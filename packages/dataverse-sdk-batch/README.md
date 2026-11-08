@@ -13,6 +13,8 @@ Batch operations support for the Dataverse SDK, enabling multiple requests to be
 - **Error Handling**: Comprehensive error handling with per-request error tracking
 - **Continue on Error**: Optional continue-on-error semantics for partial success scenarios
 - **Auto-Split**: More than 1000 requests (or `batchSize`) are sent as several `$batch` requests, one after the other, without splitting a changeset
+- **Bulk Helpers**: `createMultiple()` and `updateMultiple()` send many records of one table in chunks, with `CreateMultiple` / `UpdateMultiple` or `$batch`, and report each record's id or error
+- **Bulk Support Detection**: `getBulkOperationSupport()` tells which bulk messages a table supports, from `sdkmessagefilters` and its table type, cached per table
 
 ## Installation
 
@@ -430,6 +432,56 @@ batch.addRequest("getAccounts", "GET", "/accounts?$top=5");
 const result = await batch.execute();
 ```
 
+## Bulk Create and Update
+
+`createMultiple()` and `updateMultiple()` write many records of one table. They split the records into chunks of `batchSize` (default 100), send each chunk as one `CreateMultiple` / `UpdateMultiple` request, and return what happened to every record, in input order:
+
+```typescript
+import { createMultiple, updateMultiple } from "@mohsinonxrm/dataverse-sdk-batch";
+
+const account = { logicalName: "account", entitySetName: "accounts" };
+
+const created = await createMultiple(client, account, [{ name: "Contoso" }, { name: "Fabrikam" }]);
+const ids = created.results.map((r) => r.id); // the new ids, in input order
+
+const updated = await updateMultiple(
+  client,
+  account,
+  ids.map((accountid) => ({ accountid, creditlimit: 75000 }))
+);
+if (!updated.success) {
+  for (const r of updated.results) {
+    if (r.status === "failed") console.error(`Record ${r.index}:`, r.error?.message);
+  }
+}
+```
+
+- **Table**: `logicalName` gives each record its `@odata.type` (added unless the record sets one) and `entitySetName` the URL. An update names its row with the primary key column, `<logicalName>id` by default; set `primaryIdAttribute` when it differs (activity tables use `activityid`).
+- **Per-record results**: each record is `"succeeded"` (with its `id`), `"failed"` (with the typed `error`) or `"skipped"` (never sent). Failed records don't make the helpers throw: check `result.success`, or the `succeeded` / `failed` / `skipped` counts.
+- **Standard and elastic tables**: on a standard table Dataverse rolls back a chunk with an error, so every record of that chunk fails with the chunk's error. An elastic table writes the records it can: the helpers ask for the `Microsoft.PowerApps.CDS.ErrorDetails.*` annotations and fail only the records they name, each with its own status.
+- **`strategy: "batch"`**: for a table without `CreateMultiple` / `UpdateMultiple`, each chunk is one `$batch` with one `POST` (or `PATCH` with `If-Match: *`, so a missing row isn't created) per record, and `Prefer: odata.continue-on-error`, so records succeed or fail one by one.
+- **`strategy: "auto"`**: `"bulk"` when the table supports the message, otherwise `"batch"`, from `getBulkOperationSupport()` (below; looked up once per client and table). `result.strategy` says which was used. With `"auto"`, `updateMultiple()` needs every record's primary key up front.
+- **Chunks**: `batchSize` is 1 to 1000. Without `continueOnError`, no chunk is sent after one with a failure, and its records are `"skipped"`. `maxParallel` (default 1) sends that many chunks at once; the client's concurrency limit and retry policy apply to every request.
+- **Cancellation**: `signal`, `timeoutMs` (the whole operation), `attemptTimeoutMs` and `correlationId` work as for `execute()`. Stopped before any request finished, the helpers reject with `DataverseAbortError` (or `DataverseNetworkError` named `RequestTimeout`); after that, with `DataverseBulkOperationError`, whose `result` holds every record's outcome so far and whose `cause` is the abort error. An abort doesn't undo records Dataverse already wrote.
+- **Headers**: `headers` go on every request, e.g. `{ "MSCRM.BypassCustomPluginExecution": "true" }`.
+
+### Which tables support bulk operations
+
+`getBulkOperationSupport(client, logicalName, options?)` tells which of `CreateMultiple`, `UpdateMultiple`, `UpsertMultiple` and `DeleteMultiple` a table supports:
+
+```typescript
+import { getBulkOperationSupport } from "@mohsinonxrm/dataverse-sdk-batch";
+
+const support = await getBulkOperationSupport(client, "account");
+// { logicalName: "account", elastic: false, createMultiple: true, updateMultiple: true,
+//   upsertMultiple: true, deleteMultiple: false }
+```
+
+- Elastic tables (`TableType` `"Elastic"`) support all four.
+- A standard table supports `CreateMultiple` / `UpdateMultiple` when it has an `sdkmessagefilter` row for the message (Microsoft's documented check), `UpsertMultiple` when it supports both, and never `DeleteMultiple`.
+- It is read-only: two `GET`s (`EntityDefinitions(LogicalName='…')?$select=TableType` and `sdkmessagefilters`), which need read access to table metadata and to `sdkmessagefilter`.
+- The answer is cached per client and table for the life of the client. `refresh: true` reads it again, for example after a solution import. A failed lookup isn't cached. `signal` and `timeoutMs` cancel it.
+
 ## Important Notes
 
 ### Request Limits
@@ -452,6 +504,7 @@ const result = await batch.execute();
 - Use `$<id>` to refer to an earlier request of the same changeset (e.g. `$account`, or `$1` for an id of `"1"`)
 - Only valid within the same changeset
 - Commonly used in `@odata.bind` properties for associations, or as the URL of a later PATCH or DELETE
+- Don't send `Prefer: return=representation` on a request that later ones refer to: Dataverse doesn't register the Content-ID of a create that returns the record, and the reference fails with "Content-ID Reference: '$account' does not exist in the batch context"
 
 ### Order
 

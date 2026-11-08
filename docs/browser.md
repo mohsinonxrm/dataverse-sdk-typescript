@@ -70,7 +70,7 @@ Dataverse accepts cross-origin Web API calls that carry a bearer token: its resp
 
 Every SDK request sends `Authorization`, `OData-MaxVersion` and `OData-Version`. None of them is a CORS-safelisted header, so the browser sends a preflight (`OPTIONS`) before requests, as it would for any bearer-token call.
 
-The SDK also sends its own diagnostic headers: `x-ms-sdk-version`, `x-ms-correlation-id`, `x-ms-feature-usage`, and `retry-attempt` on retries. Dataverse's preflight allows them. To send none of them (for example when a gateway in front of Dataverse rejects unknown headers), turn them off:
+The SDK also sends its own diagnostic headers: `x-ms-sdk-version`, `x-ms-correlation-id`, `x-ms-feature-usage`, and `retry-attempt` on retries. Dataverse's preflight allows them. With a telemetry client that provides trace context, it also sends `traceparent` and `tracestate` (see [Logging and telemetry](#6-logging-and-telemetry)). To send none of them (for example when a gateway in front of Dataverse rejects unknown headers), turn them off:
 
 ```typescript
 const client = new DataverseClient({ baseUrl, tokenProvider, diagnosticHeaders: false });
@@ -129,12 +129,14 @@ The client attaches the bearer token only to requests for its own `baseUrl` orig
   ```
 
 - **Redacted URLs.** Logs and telemetry report request URLs through `redactUrl`, by default `defaultRedactUrl`: the origin and path, with GUID keys shown as `({id})`, other keys as `(…)` and the query as `?…`. Filters, record ids and alternate keys stay out of logs and telemetry. `logging: { fullUrls: true }` logs full URLs; a custom `redactUrl` changes what both logs and telemetry report.
-- **Telemetry.** `@mohsinonxrm/dataverse-sdk-appinsights` runs in Node.js only; a browser adapter is tracked in [#158](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/158). In a browser, pass your own `TelemetryClient` (`trackEvent`, `trackDependency`, `trackException`) as `telemetry`. `@mohsinonxrm/dataverse-sdk-otel` is not covered by the browser smoke tests.
+- **Telemetry.** For Application Insights, use `@mohsinonxrm/dataverse-sdk-appinsights/browser`: `new ApplicationInsightsBrowserTelemetryClient({ appInsights })` on your app's `ApplicationInsights` instance from `@microsoft/applicationinsights-web` ([README](../packages/dataverse-sdk-appinsights/README.md#browser-entry-point)); the smoke tests load it under the strict CSP. Or pass your own `TelemetryClient` (`trackEvent`, `startDependency`, `trackException`) as `telemetry`. `@mohsinonxrm/dataverse-sdk-otel` works in browsers too, but is not covered by the smoke tests.
+- **Trace context and CORS.** A telemetry client can give each request a W3C `traceparent` (and `tracestate`). In a browser these are part of the CORS preflight, so the Dataverse origin must allow them: the App Insights browser adapter sends them only with `propagateTraceContext: true`; with the OpenTelemetry adapter, check the preflight or turn them off with `diagnosticHeaders: { traceContext: false }`.
 
 ## 7. Known limits
 
-| Limit                                                                                                                                                                                                                     | Tracking                                                                   |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Claims challenges can't be read (`WWW-Authenticate` isn't exposed); 401 recovery is a forced refresh                                                                                                                      | Dataverse CORS behaviour                                                   |
-| File uploads with `method: "patch-chunked"` read the `x-ms-chunk-size` and `Location` response headers, which a browser sees only if Dataverse's CORS policy exposes them; use the default `"actions"` route in a browser | [files README](../packages/dataverse-sdk-files/README.md#upload-routes)    |
-| Application Insights adapter is Node.js only                                                                                                                                                                              | [#158](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/158) |
+| Limit                                                                                                                                                                                                                     | Tracking                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Claims challenges can't be read (`WWW-Authenticate` isn't exposed); 401 recovery is a forced refresh                                                                                                                      | Dataverse CORS behaviour                                                |
+| File uploads with `method: "patch-chunked"` read the `x-ms-chunk-size` and `Location` response headers, which a browser sees only if Dataverse's CORS policy exposes them; use the default `"actions"` route in a browser | [files README](../packages/dataverse-sdk-files/README.md#upload-routes) |
+
+> > > >

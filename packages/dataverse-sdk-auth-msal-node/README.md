@@ -543,6 +543,8 @@ Implements `AccessTokenProvider` interface from `@mohsinonxrm/dataverse-sdk-core
 
 #### Constructor
 
+<!-- no-check -->
+
 ```typescript
 constructor(
   clientApplication: PublicClientApplication | ConfidentialClientApplication,
@@ -570,7 +572,7 @@ Acquires access token using configured flow. Automatically routes to correct MSA
 ```typescript
 const token = await tokenProvider.getToken();
 // Or override scopes
-const token = await tokenProvider.getToken(["different-scope/.default"]);
+const otherToken = await tokenProvider.getToken(["https://other-org.crm.dynamics.com/.default"]);
 ```
 
 `options` (`TokenOptions`):
@@ -642,7 +644,8 @@ await tokenProvider.clearCache();
 {
   flow: 'deviceCode';
   scopes: string[];
-  deviceCodeCallback: (response: DeviceCodeResponse) => void;
+  // response: { userCode, deviceCode, verificationUri, expiresIn, interval, message }
+  deviceCodeCallback: (response) => void;
   correlationId?: string;
   claims?: string;
 }
