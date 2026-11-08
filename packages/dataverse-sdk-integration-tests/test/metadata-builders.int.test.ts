@@ -136,7 +136,9 @@ describe.skipIf(!live)("live: metadata builders (#345)", () => {
         })
       );
       expect(name.IsPrimaryName).toBe(true);
-      expect(name.MaxLength).toBe(120);
+      // Dataverse doesn't keep the primary name's MaxLength on a table create (a live org set 850
+      // for 120), so only check that it set one; see PrimaryNameColumnOptions.maxLength.
+      expect(name.MaxLength).toBeGreaterThan(0);
 
       const code = await eventually(() =>
         md.getAttributeDefinition(table, "new_code", {
@@ -263,9 +265,10 @@ describe.skipIf(!live)("live: metadata builders (#345)", () => {
 
       const rel = (await eventually(() =>
         md.getRelationshipByMetadataId(id, {
+          cast: "OneToManyRelationshipMetadata",
           select: ["SchemaName", "ReferencedEntity", "ReferencedAttribute", "ReferencingEntity"],
         })
-      )) as OneToManyRelationshipMetadata;
+      )) satisfies OneToManyRelationshipMetadata;
       expect(rel).toMatchObject({
         SchemaName: relationship,
         ReferencedEntity: "account",

@@ -25,3 +25,5 @@ name without the customization prefix, an empty label, a length, precision or ra
 bounds, duplicate option values and a global choice id that isn't a GUID. Their option types
 (`StringColumnOptions`, `ChoiceColumnOptions`, `LookupColumnOptions`, `EntityDefinitionOptions`, …)
 are exported.
+
+`getRelationshipByMetadataId(id, { cast })` reads a relationship as `OneToManyRelationshipMetadata` or `ManyToManyRelationshipMetadata`, so their own properties (`ReferencedEntity`, `Entity1LogicalName`, …) can be selected; without the cast, Dataverse refuses them on the base type.

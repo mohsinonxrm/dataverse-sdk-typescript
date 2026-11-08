@@ -2249,7 +2249,15 @@ export class MetadataClient {
     getManyToManyRelationships(entityLogicalName: string, options?: MetadataQueryOptions): Promise<ManyToManyRelationshipMetadata[]>;
     getManyToOneRelationships(entityLogicalName: string, options?: MetadataQueryOptions): Promise<OneToManyRelationshipMetadata[]>;
     getOneToManyRelationships(entityLogicalName: string, options?: MetadataQueryOptions): Promise<OneToManyRelationshipMetadata[]>;
-    getRelationshipByMetadataId(metadataId: string, options?: Omit<MetadataQueryOptions, "filter">): Promise<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata>;
+    getRelationshipByMetadataId(metadataId: string, options: Omit<MetadataQueryOptions, "filter"> & {
+        cast: "OneToManyRelationshipMetadata";
+    }): Promise<OneToManyRelationshipMetadata>;
+    // (undocumented)
+    getRelationshipByMetadataId(metadataId: string, options: Omit<MetadataQueryOptions, "filter"> & {
+        cast: "ManyToManyRelationshipMetadata";
+    }): Promise<ManyToManyRelationshipMetadata>;
+    // (undocumented)
+    getRelationshipByMetadataId(metadataId: string, options?: RelationshipQueryOptions): Promise<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata>;
     getRelationshipBySchemaName(schemaName: string, options?: Omit<MetadataQueryOptions, "filter">): Promise<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata>;
     getValidManyToMany(): Promise<string[]>;
     getValidReferencedEntities(referencingEntityName: string): Promise<string[]>;
@@ -2638,6 +2646,11 @@ export interface RelationshipQueryExpression {
     Criteria?: MetadataFilterExpression;
     // (undocumented)
     Properties?: MetadataPropertiesExpression;
+}
+
+// @public
+export interface RelationshipQueryOptions extends Omit<MetadataQueryOptions, "filter"> {
+    cast?: "OneToManyRelationshipMetadata" | "ManyToManyRelationshipMetadata";
 }
 
 // @public

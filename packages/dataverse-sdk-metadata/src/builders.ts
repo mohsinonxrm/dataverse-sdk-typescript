@@ -96,7 +96,11 @@ export interface StringColumnOptions extends ColumnOptions {
 
 /** Options of a table's primary name column (`Metadata.primaryName`). */
 export interface PrimaryNameColumnOptions extends ColumnOptions {
-  /** The maximum length, 1 to 4,000. Default 100. */
+  /**
+   * The maximum length, 1 to 4,000. Default 100. Dataverse may not keep it when it creates the
+   * table: a live org gave the primary name column 850 whatever was sent. Read the column back,
+   * and change its length with `mergeAndUpdateAttributeDefinition` if it matters.
+   */
   maxLength?: number;
 }
 
