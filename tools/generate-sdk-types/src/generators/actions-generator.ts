@@ -193,7 +193,9 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
     csdl,
     action.returnType,
     responseInterfaceName,
-    `${action.name} action`
+    `${action.name} action`,
+    [],
+    action.name
   );
   for (const t of ret.imports) complexTypesUsed.add(t);
 

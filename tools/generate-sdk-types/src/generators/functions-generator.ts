@@ -153,7 +153,9 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
     csdl,
     func.returnType,
     responseInterfaceName,
-    `${func.name} function`
+    `${func.name} function`,
+    [],
+    func.name
   );
   for (const t of ret.imports) complexTypesUsed.add(t);
 
