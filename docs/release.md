@@ -19,8 +19,12 @@ reaches npm, its `build` and `live` jobs run:
 4. `pnpm check:packages`: `publint` and `@arethetypeswrong/cli` (ESM-only profile) on every
    published package, and a check that each one loads with `require()`. Run it locally after
    `pnpm build`; it works on Windows, macOS and Linux.
-5. `pnpm test:browser`: the Vite-built SPA smoke tests in Chromium under a strict CSP.
-6. `pnpm test:integration`: the live suite against the dev org, with
+5. `pnpm check:size`: one action, function or message bundled for the browser must stay a small
+   fraction of its whole package (tree-shaking works), and the main entry points must stay within
+   their gzipped budgets in `scripts/bundle-budgets.json` (#307). `node scripts/check-bundle-size.mjs --update`
+   prints current sizes and suggested budgets.
+6. `pnpm test:browser`: the Vite-built SPA smoke tests in Chromium under a strict CSP.
+7. `pnpm test:integration`: the live suite against the dev org, with
    `DATAVERSE_INTEGRATION_REQUIRED=1`, so missing secrets fail the run instead of skipping. It
    shares the nightly run's concurrency group, so two suites never use the org at once.
 

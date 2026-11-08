@@ -68,7 +68,11 @@ const client = new DataverseClient({ baseUrl, tokenProvider, telemetry });
 ```
 
 The adapter calls `useAzureMonitor()` at most once per process; later clients reuse that setup.
-To flush pending telemetry on shutdown, call `shutdownAzureMonitor()` from
+A later client can't change it: if it passes a different `connectionString`, its telemetry
+still goes to the first resource (and its `cloudRoleName` is ignored), and the adapter warns, with
+a `WARN` log record through the `logger` or `loggerProvider` you passed, or else once per process
+with `console.warn`. To send to several resources, set up OpenTelemetry yourself and pass each
+client its own `tracerProvider` and `loggerProvider`. To flush pending telemetry on shutdown, call `shutdownAzureMonitor()` from
 `@azure/monitor-opentelemetry`.
 
 A telemetry failure never changes the outcome of a Dataverse request: every method catches its
@@ -99,16 +103,39 @@ The constructor takes one optional config object.
 The SDK's `TelemetryMiddleware` calls `trackDependency` for every request and `trackException`
 when a request fails without a response (for example a network error).
 
-Dependency spans carry `http.request.method`, `url.full` (redacted), `server.address`,
-`server.port`, `http.response.status_code`, `dataverse.correlation_id` (the
-`x-ms-correlation-id` sent with the request) and the SDK's other properties under `dataverse.*`
-(for example `dataverse.sdk.version`, `dataverse.retry.attempt`). Failed calls are marked as
-failed dependencies.
+Dependency spans carry `http.request.method`, `url.full` (as the SDK redacted it),
+`server.address` (the host name, without the port), `server.port`,
+`http.response.status_code`, `dataverse.correlation_id` (the `x-ms-correlation-id` sent with
+the request) and the SDK's other properties under `dataverse.*` (for example
+`dataverse.sdk.version`, `dataverse.retry.attempt`). A call with a response is a failed
+dependency when its status is 4xx or 5xx (so a `304 Not Modified` is not a failure); a call
+without one (a network error) when `success` is `false`.
+
+### Dependency timing and trace context
+
+The `TelemetryClient` interface reports a call after it has finished: the SDK calls
+`trackDependency` with the duration once the response or the error is in. So the adapter
+records the dependency span afterwards, with its start time set back by the duration, and the
+span is never active while the request is in flight. As a result:
+
+- the dependency is a child of the span that was active when the request was made (your app's
+  request or span), in the same operation;
+- this adapter sends no `traceparent` header to Dataverse;
+- spans from HTTP auto-instrumentation (for example `@opentelemetry/instrumentation-undici` for
+  `fetch`) are not children of the dependency: both are children of your span. The auto-instrumentation is what injects `traceparent`, with
+  your span as the parent.
 
 ## Privacy
 
-URLs are redacted before they are recorded, in `url.full`, in property values and in exception
-messages and stack traces:
+The SDK redacts the request URL before the adapter sees it: its `TelemetryMiddleware` runs the
+URL through the client's `redactUrl` option and passes the result, which the adapter records as
+is in `url.full` and in the exception's `dataverse.request.url`. The default keeps the origin and
+path, turns a GUID key into `({id})`, any other key into `(…)` and the query into `?…`, so
+`accounts(00000000-…)?$filter=name eq 'x'` is recorded as `…/accounts({id})?…`. A custom
+`redactUrl` (for example one that keeps `$top`) decides what is recorded.
+
+Exception messages and stack traces, and other property values, can contain URLs the SDK did not
+redact, so the adapter redacts every URL in them:
 
 - every query parameter value becomes `REDACTED` and only the names are kept, so
   `?$filter=emailaddress1 eq 'jane@contoso.com'&$top=5` is recorded as
@@ -118,8 +145,8 @@ messages and stack traces:
   `contacts(emailaddress1='REDACTED')`;
 - user info (`user:password@`) and the `#fragment` are dropped.
 
-Record GUIDs in the path are kept. No headers, request bodies or response bodies are recorded.
-Properties you pass to `trackEvent` or `trackException` yourself are recorded as they are (with
+No headers, request bodies or response bodies are recorded. If you call `trackDependency`
+yourself, `url` is recorded as you pass it, so redact it first. Properties you pass to `trackEvent` or `trackException` yourself are recorded as they are (with
 URLs redacted), so don't put personal data in them.
 
 ## License

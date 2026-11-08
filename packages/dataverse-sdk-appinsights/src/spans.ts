@@ -93,10 +93,16 @@ export function redactUrlsInText(text: string): string {
 }
 
 /**
+ * Properties core's `TelemetryMiddleware` fills with a URL it already ran through the app's
+ * `redactUrl`: recorded as is, so a custom `redactUrl` decides what is kept (#384).
+ */
+const REDACTED_BY_CORE = new Set(["request.url"]);
+
+/**
  * Map `TelemetryClient` string properties to span or log attributes.
  * `correlation.id` becomes `dataverse.correlation_id`, `error.type` is kept as is, and other
  * keys are namespaced under `dataverse.` (`sdk.version` becomes `dataverse.sdk.version`).
- * URLs inside values are redacted.
+ * URLs inside values are redacted, except in the values core already redacted.
  */
 export function propertyAttributes(props: Record<string, string> | undefined): Attributes {
   const attributes: Attributes = {};
@@ -104,7 +110,7 @@ export function propertyAttributes(props: Record<string, string> | undefined): A
   // `unknown` because JavaScript callers can pass anything.
   for (const [key, value] of Object.entries(props as Record<string, unknown>)) {
     if (typeof value !== "string") continue;
-    attributes[attributeName(key)] = redactUrlsInText(value);
+    attributes[attributeName(key)] = REDACTED_BY_CORE.has(key) ? value : redactUrlsInText(value);
   }
   return attributes;
 }
@@ -117,7 +123,8 @@ function attributeName(key: string): string {
 
 /**
  * Record a finished Dataverse HTTP call as an OpenTelemetry CLIENT span.
- * The span ends now and starts `durationMs` earlier.
+ * The span ends now and starts `durationMs` earlier. The `TelemetryClient` contract reports a
+ * call only after it finished, so the span is never active while the request is in flight.
  */
 export function recordDependencySpan(tracer: Tracer, name: string, data: DependencyData): void {
   const endTime = Date.now();
@@ -130,18 +137,19 @@ export function recordDependencySpan(tracer: Tracer, name: string, data: Depende
   const attributes: Attributes = propertyAttributes(data.properties);
 
   if (method) attributes["http.request.method"] = method;
-  if (data.url) {
-    attributes["url.full"] = redactUrl(data.url);
-    Object.assign(attributes, serverAttributes(data.url));
-  }
-  if (data.target) attributes["server.address"] = data.target;
+  // Core passes the URL already redacted with the app's `redactUrl` (#35): recorded as is (#384).
+  if (typeof data.url === "string" && data.url) attributes["url.full"] = data.url;
+  Object.assign(attributes, serverAttributes(data.url, data.target));
 
   const statusCode = data.resultCode === undefined ? NaN : Number(data.resultCode);
-  if (Number.isInteger(statusCode)) attributes["http.response.status_code"] = statusCode;
+  const hasStatus = Number.isInteger(statusCode);
+  if (hasStatus) attributes["http.response.status_code"] = statusCode;
 
-  const failed = data.success === false || (data.success === undefined && statusCode >= 400);
+  // With a response, its status decides (a 304 is not an error, whatever `success` says); without
+  // one (the call threw), `success: false` does.
+  const failed = hasStatus ? statusCode >= 400 : data.success === false;
   if (failed && attributes["error.type"] === undefined) {
-    attributes["error.type"] = Number.isInteger(statusCode) ? String(statusCode) : "_OTHER";
+    attributes["error.type"] = hasStatus ? String(statusCode) : "_OTHER";
   }
 
   const span = tracer.startSpan(method ? `${method} ${name}` : name, {
@@ -152,22 +160,44 @@ export function recordDependencySpan(tracer: Tracer, name: string, data: Depende
   if (failed) {
     span.setStatus({
       code: SpanStatusCode.ERROR,
-      message: Number.isInteger(statusCode)
-        ? `HTTP ${String(statusCode)}`
-        : String(attributes["error.type"]),
+      message: hasStatus ? `HTTP ${String(statusCode)}` : String(attributes["error.type"]),
     });
   }
   span.end(endTime);
 }
 
-function serverAttributes(raw: string): Attributes {
-  try {
-    const url = new URL(raw);
-    const port = url.port ? Number(url.port) : url.protocol === "http:" ? 80 : 443;
-    return { "server.address": url.hostname, "server.port": port };
-  } catch {
-    return {};
+/**
+ * `server.address` (the host name, never with the port) and `server.port`, as the OpenTelemetry
+ * HTTP client conventions define them. From the URL when it is absolute (the port defaults to the
+ * scheme's), else from `target`, which core sets to `URL.host` (`host[:port]`, no scheme, so only
+ * an explicit port is known).
+ */
+function serverAttributes(url: unknown, target: unknown): Attributes {
+  const fromUrl = parseUrl(url);
+  if (fromUrl) {
+    const port = fromUrl.port ? Number(fromUrl.port) : fromUrl.protocol === "http:" ? 80 : 443;
+    return { "server.address": hostName(fromUrl), "server.port": port };
   }
+  if (typeof target !== "string" || !target) return {};
+  const fromTarget = parseUrl(`https://${target}`);
+  if (!fromTarget) return { "server.address": target };
+  return fromTarget.port
+    ? { "server.address": hostName(fromTarget), "server.port": Number(fromTarget.port) }
+    : { "server.address": hostName(fromTarget) };
+}
+
+function parseUrl(raw: unknown): URL | undefined {
+  if (typeof raw !== "string" || !raw) return undefined;
+  try {
+    return new URL(raw);
+  } catch {
+    return undefined;
+  }
+}
+
+/** `URL.hostname` without the brackets of an IPv6 address. */
+function hostName(url: URL): string {
+  return url.hostname.replace(/^\[(.*)\]$/, "$1");
 }
 
 /** A thrown value normalised for telemetry, with URLs redacted. */

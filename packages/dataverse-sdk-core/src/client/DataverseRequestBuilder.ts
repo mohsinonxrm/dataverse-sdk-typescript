@@ -115,11 +115,6 @@ export class DataverseRequestBuilder {
     return this;
   }
 
-  search(text: string): this {
-    this.state.$search = text;
-    return this;
-  }
-
   apply(expr: string): this {
     this.state.$apply = expr;
     return this;
@@ -454,19 +449,19 @@ export class DataverseRequestBuilder {
   /**
    * Iterate the records of every page, following `@odata.nextLink`. Nothing is sent until the
    * first `next()`. Later pages carry the first request's headers (`Prefer`, impersonation and
-   * custom headers), so they have the same page size, annotations and caller as page 1.
+   * custom headers), so they have the same page size, annotations and caller as page 1, and the
+   * request options (`signal`, `timeoutMs` and `attemptTimeoutMs` per page, `correlationId`,
+   * `middlewareOptions`).
    */
-  iterate<T = unknown>(options?: { signal?: AbortSignal }): AsyncIterable<T> {
-    const signal = options?.signal;
-    const requestOptions: RequestOptions | undefined = signal ? { signal } : undefined;
+  iterate<T = unknown>(options?: RequestOptions): AsyncIterable<T> {
     // Lazy: the first request goes out on the first next(), so an iterable that is never
     // consumed sends nothing and can't leave an unhandled rejection behind.
-    const firstPage = () => this.getPage<T>(requestOptions);
-    const headers = () => this.nextPageHeaders(requestOptions);
+    const firstPage = () => this.getPage<T>(options);
+    const later = () => this.nextPageOptions(options);
     const client = this.client;
     async function* generator(): AsyncGenerator<T> {
       const first = await firstPage();
-      yield* new PageIterator<T>(client, first, signal, headers());
+      yield* new PageIterator<T>(client, first, later());
     }
     return { [Symbol.asyncIterator]: generator };
   }
@@ -477,14 +472,13 @@ export class DataverseRequestBuilder {
    * in {@link iterate}.
    */
   async getAll<T = unknown>(
-    opts: { maxItems?: number; maxPages?: number; signal?: AbortSignal } = {}
+    opts: RequestOptions & { maxItems?: number; maxPages?: number } = {}
   ): Promise<T[]> {
-    const requestOptions: RequestOptions | undefined = opts.signal
-      ? { signal: opts.signal }
-      : undefined;
+    const { maxItems, maxPages, ...requestOptions } = opts;
+    if (maxItems !== undefined && maxItems <= 0) return [];
     const out: T[] = [];
     let page = await this.getPage<T>(requestOptions);
-    const headers = this.nextPageHeaders(requestOptions);
+    const later = this.nextPageOptions(requestOptions);
     let pages = 0;
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- intentional infinite loop with explicit break statements
@@ -492,13 +486,11 @@ export class DataverseRequestBuilder {
       pages++;
       for (const item of page.value) {
         out.push(item);
-        if (opts.maxItems && out.length >= opts.maxItems) return out;
+        if (maxItems !== undefined && out.length >= maxItems) return out;
       }
       if (!page["@odata.nextLink"]) break;
-      if (opts.maxPages && pages >= opts.maxPages) break;
-      page = await this.client
-        .api(page["@odata.nextLink"])
-        .getPage<T>({ headers, signal: opts.signal });
+      if (maxPages !== undefined && pages >= maxPages) break;
+      page = await this.client.api(page["@odata.nextLink"]).getPage<T>(later);
     }
 
     return out;
@@ -514,6 +506,16 @@ export class DataverseRequestBuilder {
     return Object.fromEntries(
       Object.entries(headers).filter(([name]) => !FIRST_PAGE_ONLY.has(name.toLowerCase()))
     );
+  }
+
+  /**
+   * The request options for the pages after the first: the headers from
+   * {@link nextPageHeaders} (which already include `options.headers`), with `Prefer` passed as
+   * a header rather than `options.prefer` so it isn't added twice, and the other options as given.
+   */
+  private nextPageOptions(options: RequestOptions | undefined): RequestOptions {
+    const { prefer: _prefer, headers: _headers, ...rest } = options ?? {};
+    return { ...rest, headers: this.nextPageHeaders(options) };
   }
 
   /**
@@ -596,6 +598,8 @@ export class DataverseRequestBuilder {
         query: {},
         headers: { ...outerHeaders, "content-type": batch.contentType },
         body: batch.body,
+        // The $batch only carries the GET, so it can be replayed like the GET itself (#378).
+        idempotent: true,
       });
       // With one request inside, Dataverse gives the $batch the inner status (a failed query is a
       // 400 $batch), so read the multipart body whatever the outer status is.

@@ -70,7 +70,8 @@ describe("ApplicationInsightsTelemetryClient.trackDependency", () => {
   it("records a CLIENT span that Application Insights maps to an HTTP dependency", () => {
     adapter().trackDependency("dataverse", {
       method: "GET",
-      url: `${TEST_API_URL}/contacts?$select=fullname&$filter=emailaddress1 eq 'jane@contoso.com'`,
+      // As core passes it: already redacted with the app's redactUrl.
+      url: `${TEST_API_URL}/contacts?…`,
       durationMs: 80,
       success: true,
       resultCode: "200",
@@ -83,7 +84,7 @@ describe("ApplicationInsightsTelemetryClient.trackDependency", () => {
     expect(span.instrumentationScope.name).toBe("@mohsinonxrm/dataverse-sdk-appinsights");
     expect(span.attributes).toEqual({
       "http.request.method": "GET",
-      "url.full": `${TEST_API_URL}/contacts?$select=REDACTED&$filter=REDACTED`,
+      "url.full": `${TEST_API_URL}/contacts?…`,
       "server.address": "contoso.crm.dynamics.com",
       "server.port": 443,
       "http.response.status_code": 200,
@@ -104,6 +105,28 @@ describe("ApplicationInsightsTelemetryClient.trackDependency", () => {
     const span = onlySpan();
     expect(span.status).toEqual({ code: SpanStatusCode.ERROR, message: "HTTP 412" });
     expect(span.attributes["error.type"]).toBe("412");
+  });
+
+  it("records the host name, a non-default port and the URL core passes as is (#384)", () => {
+    adapter().trackDependency("dataverse", {
+      method: "GET",
+      target: "contoso.crm.dynamics.com:8443",
+      url: "https://contoso.crm.dynamics.com:8443/api/data/v9.2/accounts?$top=5",
+      resultCode: "200",
+    });
+
+    const span = onlySpan();
+    expect(span.attributes["server.address"]).toBe("contoso.crm.dynamics.com");
+    expect(span.attributes["server.port"]).toBe(8443);
+    expect(span.attributes["url.full"]).toBe(
+      "https://contoso.crm.dynamics.com:8443/api/data/v9.2/accounts?$top=5"
+    );
+  });
+
+  it("marks the dependency failed from the status code when there is one (#384)", () => {
+    // A core that sets `success` from `res.ok` reports a 304 as unsuccessful; it isn't an error.
+    adapter().trackDependency("dataverse", { method: "GET", success: false, resultCode: "304" });
+    expect(onlySpan().status.code).toBe(SpanStatusCode.UNSET);
   });
 });
 
@@ -128,7 +151,9 @@ describe("ApplicationInsightsTelemetryClient.trackException", () => {
     );
     adapter().trackException(error, {
       "correlation.id": CORRELATION_ID,
-      "request.url": `${TEST_API_URL}/contacts?$filter=fullname eq 'Jane Doe'`,
+      // Core redacted it with the app's redactUrl: recorded as is.
+      "request.url": `${TEST_API_URL}/contacts?…`,
+      note: `see ${TEST_API_URL}/contacts?$filter=fullname eq 'Jane Doe'`,
     });
 
     const log = onlyLog();
@@ -139,9 +164,8 @@ describe("ApplicationInsightsTelemetryClient.trackException", () => {
     );
     expect(log.attributes["exception.stacktrace"]).toMatch(/^TypeError: fetch failed/);
     expect(log.attributes["dataverse.correlation_id"]).toBe(CORRELATION_ID);
-    expect(log.attributes["dataverse.request.url"]).toBe(
-      `${TEST_API_URL}/contacts?$filter=REDACTED`
-    );
+    expect(log.attributes["dataverse.request.url"]).toBe(`${TEST_API_URL}/contacts?…`);
+    expect(log.attributes["dataverse.note"]).toBe(`see ${TEST_API_URL}/contacts?$filter=REDACTED`);
     expect(JSON.stringify([log.attributes, log.body])).not.toContain("Jane");
   });
 

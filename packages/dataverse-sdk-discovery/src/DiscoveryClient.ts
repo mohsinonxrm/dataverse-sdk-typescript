@@ -145,12 +145,16 @@ export class DiscoveryClient {
    * Every query option value is percent-encoded. `@odata.nextLink` pages are followed and
    * concatenated.
    *
+   * With `select`, only the selected properties come back, so the rows are typed
+   * `Pick<OrganizationDetail, K>` for the selected properties `K`. When `select` may or may not
+   * be set (a `DiscoveryOptions` variable), they are `Partial<OrganizationDetail>`.
+   *
    * @param options - Optional query options (filter, select, orderby) and an abort `signal`
    * @returns Array of organization details
    *
    * @throws {DataverseODataError} If the service returns an error status (`status`, `code`, `requestId`)
    * @throws {DataverseThrottleError} On a 429 that is still throttled after the retries (`retryAfterMs`)
-   * @throws {DOMException} `AbortError` when `signal` aborts
+   * @throws {DataverseAbortError} When `signal` aborts (its `name` is `"AbortError"`)
    *
    * @example
    * ```typescript
@@ -162,7 +166,7 @@ export class DiscoveryClient {
    *   filter: "State eq 0"
    * });
    *
-   * // Select specific properties
+   * // Select specific properties: Pick<OrganizationDetail, 'FriendlyName' | 'ApiUrl'>[]
    * const basicInfo = await discovery.listOrganizations({
    *   select: ['FriendlyName', 'ApiUrl']
    * });
@@ -181,6 +185,13 @@ export class DiscoveryClient {
    * });
    * ```
    */
+  listOrganizations(
+    options?: DiscoveryOptions & { select?: undefined }
+  ): Promise<OrganizationDetail[]>;
+  listOrganizations<K extends keyof OrganizationDetail>(
+    options: DiscoveryOptions & { select: readonly K[] }
+  ): Promise<Array<Pick<OrganizationDetail, K>>>;
+  listOrganizations(options?: DiscoveryOptions): Promise<Array<Partial<OrganizationDetail>>>;
   async listOrganizations(options?: DiscoveryOptions): Promise<OrganizationDetail[]> {
     const queryParams: string[] = [];
     if (options?.filter) {

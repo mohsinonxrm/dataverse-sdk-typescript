@@ -132,7 +132,7 @@ const tokenProvider = new MsalNodeTokenProvider(cca, {
   scopes: ["https://your-org.crm.dynamics.com/.default"],
 
   // Optional: Override tenant for multi-tenant scenarios
-  tenantId: "specific-tenant-id", // Overrides authority tenant
+  tenantId: "specific-tenant-id", // Overrides authority tenant, keeps its cloud
 });
 
 // Create Dataverse client
@@ -369,6 +369,10 @@ The password is sent once, on the first `getToken()` call. Later calls use `acqu
 with the signed-in account, and the provider signs in with the password again only when the
 silent call says the account needs a new sign-in.
 
+MSAL Node has deprecated `acquireTokenByUsernamePassword`. If the `PublicClientApplication` you
+pass doesn't have it (a future MSAL major may remove it), the constructor throws
+`DataverseInvalidRequestError` naming the method; use the device code or authorization code flow.
+
 ### 5. Silent Flow (Token Cache & Refresh)
 
 **Best for:** Token refresh, subsequent requests after interactive login
@@ -569,6 +573,31 @@ const token = await tokenProvider.getToken();
 const token = await tokenProvider.getToken(["different-scope/.default"]);
 ```
 
+`options` (`TokenOptions`):
+
+- `tenantId`: get the token from that tenant (a tenant id or domain), for example a guest
+  account in the Dataverse organization's tenant. It becomes the request's `authority` on the host
+  of the application's configured authority (or its `azureCloudOptions` cloud), so a US Government
+  or China app stays in its cloud. Every flow honours it: device code and username/password sign in
+  to that tenant, the authorization code is redeemed where it was issued and the tenant's token
+  then comes from the signed-in account's refresh token, and silent calls send it as their
+  authority. A value that isn't a tenant id or domain throws `DataverseInvalidRequestError`
+  (`name: "InvalidTenantId"`) before MSAL is called.
+- `claims`: a claims challenge (the SDK passes it after a 401 with a Conditional Access or CAE
+  challenge). Always sent to MSAL.
+- `forceRefresh`: skip MSAL's cached access token (the SDK sets it after a 401).
+
+**Configured `claims`.** MSAL skips its token cache for any request with `claims`, so the
+provider sends the `claims` option only when the request goes to Entra ID anyway: the sign-in
+(device code, authorization code, username/password), the first token for each scope set, tenant
+and account, and a forced refresh. Later calls get the token from MSAL's cache. With MSAL Node 7,
+client credentials also send them as `claimsFromClient`, which MSAL caches by value, so they are on
+every token it requests.
+
+```typescript
+const token = await tokenProvider.getToken(undefined, { tenantId: "<dataverse-tenant-id>" });
+```
+
 **`getAuthCodeUrl(redirectUri, scopes?, state?, codeChallenge?): Promise<string>`**
 
 Generates authorization URL for auth code flow (useful for web server login redirects).
@@ -627,7 +656,7 @@ await tokenProvider.clearCache();
 {
   flow: 'clientCredentials';
   scopes: string[];
-  tenantId?: string; // Override authority tenant
+  tenantId?: string; // Override authority tenant (same host/cloud); validated
   correlationId?: string;
   claims?: string;
 }
@@ -731,10 +760,15 @@ import {
   DataverseAuthenticationError,
   DataverseInvalidRequestError,
 } from "@mohsinonxrm/dataverse-sdk-core";
+import { MsalNodeAuthenticationError } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 
 try {
   const token = await tokenProvider.getToken();
 } catch (error) {
+  if (error instanceof MsalNodeAuthenticationError) {
+    // MSAL's details, copied from the MSAL error
+    console.error(error.errorCode, error.subError, error.correlationId, error.errorNo);
+  }
   if (error instanceof DataverseAuthenticationError) {
     // Authentication failures (wrong credentials, MFA required, etc.)
     console.error("Auth failed:", error.message);
@@ -754,8 +788,17 @@ try {
 
 - `DataverseAuthenticationError`: User cancelled device code, invalid credentials, token expired
 - `DataverseInvalidRequestError`: Missing required parameters, wrong client application type for flow
-- MSAL failures are thrown as `DataverseAuthenticationError` with `name` `"TokenAcquisitionFailed"`
-  and the MSAL error in `error.cause` (with its `errorCode`, `subError` and `correlationId`)
+- MSAL failures are thrown as `MsalNodeAuthenticationError` (a `DataverseAuthenticationError`)
+  with `name` `"TokenAcquisitionFailed"`, MSAL's `errorCode` (also as `code`), `subError`,
+  `correlationId` and `errorNo` on the error, and the MSAL error in `error.cause`
+
+| Property        | Example                            | Source                                |
+| --------------- | ---------------------------------- | ------------------------------------- |
+| `errorCode`     | `invalid_grant`, `invalid_client`  | MSAL `errorCode`                      |
+| `subError`      | `basic_action`, `consent_required` | MSAL `subError`                       |
+| `correlationId` | `a1b2...`                          | MSAL request correlation id           |
+| `errorNo`       | `7000215`                          | Entra ID error number (AADSTS7000215) |
+| `cause`         | the MSAL error                     | original error                        |
 
 ## Security Best Practices
 

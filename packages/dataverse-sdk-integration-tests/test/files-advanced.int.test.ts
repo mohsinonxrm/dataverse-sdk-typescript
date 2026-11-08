@@ -333,11 +333,20 @@ describe.skipIf(!live)("live: image column sizes (#95)", () => {
         if (!r.ok) throw new Error(`get ${String(r.status)}`);
         return (await r.json()) as Record<string, unknown>;
       });
-      const put = await client.send({
-        method: "PUT",
-        url: attrUrl,
-        headers: { "MSCRM.MergeLabels": "true" },
-        body: { ...cur, CanStoreFullImage: true },
+      // The new column reaches the org's servers over several seconds, and a server that hasn't
+      // seen it yet refuses the PUT with a 400 (seen once in a full live run). A refused PUT
+      // changed nothing, and the PUT is idempotent, so retry those; anything else fails at once.
+      const put = await eventually(async () => {
+        const r = await client.send({
+          method: "PUT",
+          url: attrUrl,
+          headers: { "MSCRM.MergeLabels": "true" },
+          body: { ...cur, CanStoreFullImage: true },
+        });
+        if (r.status === 400 || r.status === 404) {
+          throw new Error(`put ${String(r.status)}: ${await r.text()}`);
+        }
+        return r;
       });
       expect(put.status).toBe(204);
       const pub = await client.send({

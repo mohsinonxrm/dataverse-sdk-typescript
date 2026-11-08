@@ -24,6 +24,12 @@ export interface RequestInformation {
    * `new MiddlewareRequestOptions([{ type: "retry", maxRetries: 0 }])`.
    */
   middlewareOptions?: import("../middleware/RequestOptions.js").RequestOptions;
+  /**
+   * Replaying the request can't apply it twice, whatever its method: for example a `$batch` POST
+   * that only carries GETs. The retry middleware then treats it like a GET (retries it after a
+   * 502/503/504 or a dropped connection). Leave it unset unless that is certain.
+   */
+  idempotent?: boolean;
 }
 
 export interface FetchProvider {

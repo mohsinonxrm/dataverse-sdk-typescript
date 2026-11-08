@@ -66,6 +66,7 @@ function idToken(): string {
 interface NetworkCall {
   url: string;
   grantType: string | null;
+  claims: string | null;
 }
 
 /** MSAL's `INetworkModule`, answering like Entra ID's device code and token endpoints. */
@@ -78,8 +79,9 @@ function fakeEntraId() {
       throw new Error(`Unexpected GET ${url}`);
     },
     sendPostRequestAsync: (url: string, options?: { body?: string }) => {
-      const grantType = new URLSearchParams(options?.body ?? "").get("grant_type");
-      calls.push({ url, grantType });
+      const body = new URLSearchParams(options?.body ?? "");
+      const grantType = body.get("grant_type");
+      calls.push({ url, grantType, claims: body.get("claims") });
       if (url.startsWith(`${login}/oauth2/v2.0/devicecode`)) {
         return respond({
           user_code: "ABCD-EFGH",
@@ -92,6 +94,14 @@ function fakeEntraId() {
       }
       if (url.startsWith(`${login}/oauth2/v2.0/token`)) {
         issued++;
+        if (grantType === "client_credentials") {
+          return respond({
+            token_type: "Bearer",
+            expires_in: 3600,
+            ext_expires_in: 3600,
+            access_token: `app-${String(issued)}`,
+          });
+        }
         return respond({
           token_type: "Bearer",
           scope: scopes.join(" "),
@@ -112,12 +122,23 @@ function fakeEntraId() {
 }
 
 const copies = [
-  { label: "@azure/msal-node 2.x", PublicClientApplication: msal2.PublicClientApplication },
-  { label: "@azure/msal-node 7.x", PublicClientApplication: msal7.PublicClientApplication },
+  {
+    label: "@azure/msal-node 2.x",
+    PublicClientApplication: msal2.PublicClientApplication,
+    ConfidentialClientApplication: msal2.ConfidentialClientApplication,
+  },
+  {
+    label: "@azure/msal-node 7.x",
+    PublicClientApplication: msal7.PublicClientApplication,
+    ConfidentialClientApplication: msal7.ConfidentialClientApplication,
+  },
 ] as const;
 
+/** Conditional Access auth context claims, as an app would configure them. */
+const configuredClaims = '{"access_token":{"acrs":{"essential":true,"value":"c1"}}}';
+
 describe.each(copies)("#85 with real MSAL ($label)", ({ PublicClientApplication }) => {
-  function setup() {
+  function setup(claims?: string) {
     const entra = fakeEntraId();
     const pca = new PublicClientApplication({
       auth: {
@@ -133,7 +154,7 @@ describe.each(copies)("#85 with real MSAL ($label)", ({ PublicClientApplication 
     const prompts: string[] = [];
     const tokenProvider = new MsalNodeTokenProvider(
       pca as unknown as ConstructorParameters<typeof MsalNodeTokenProvider>[0],
-      { flow: "deviceCode", scopes, deviceCodeCallback: (r) => prompts.push(r.userCode) }
+      { flow: "deviceCode", scopes, claims, deviceCodeCallback: (r) => prompts.push(r.userCode) }
     );
     const { client, fake } = createTestClient({ tokenProvider });
     fake.on("GET", "/WhoAmI", () =>
@@ -181,4 +202,59 @@ describe.each(copies)("#85 with real MSAL ($label)", ({ PublicClientApplication 
       "Bearer access-2",
     ]);
   });
+
+  it("#382: configured claims go on the sign-in; later requests still use MSAL's cache", async () => {
+    const { entra, client, fake } = setup(configuredClaims);
+
+    for (let i = 0; i < 3; i++) {
+      await client.api("/WhoAmI").get();
+    }
+
+    // Before #382 every silent call carried the claims, and MSAL sends a request with claims to
+    // Entra ID instead of its cache: one refresh_token call per Dataverse request.
+    expect(entra.calls.map((c) => c.grantType ?? "devicecode")).toEqual([
+      "devicecode",
+      "device_code",
+    ]);
+    expect(entra.calls[1]?.claims).toContain('"acrs"');
+    expect(fake.requests.map((r) => r.headers.authorization)).toEqual([
+      "Bearer access-1",
+      "Bearer access-1",
+      "Bearer access-1",
+    ]);
+  });
 });
+
+describe.each(copies)(
+  "#382 client credentials with real MSAL ($label)",
+  ({ ConfidentialClientApplication }) => {
+    it("configured claims are sent to Entra ID once; later tokens come from MSAL's cache", async () => {
+      const entra = fakeEntraId();
+      const cca = new ConfidentialClientApplication({
+        auth: {
+          clientId,
+          clientSecret: "not-a-real-secret",
+          authority: login,
+          knownAuthorities: ["login.microsoftonline.com"],
+          authorityMetadata,
+          cloudDiscoveryMetadata,
+        },
+        system: { networkClient: entra.networkClient as never },
+      });
+      const tokenProvider = new MsalNodeTokenProvider(
+        cca as unknown as ConstructorParameters<typeof MsalNodeTokenProvider>[0],
+        { flow: "clientCredentials", scopes, claims: configuredClaims }
+      );
+
+      const tokens = [
+        await tokenProvider.getToken(),
+        await tokenProvider.getToken(),
+        await tokenProvider.getToken(),
+      ];
+
+      expect(tokens).toEqual(["app-1", "app-1", "app-1"]);
+      expect(entra.calls.map((c) => c.grantType)).toEqual(["client_credentials"]);
+      expect(entra.calls[0]?.claims).toContain('"acrs"');
+    });
+  }
+);
