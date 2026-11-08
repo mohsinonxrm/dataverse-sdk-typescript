@@ -59,6 +59,10 @@ export interface AttributeMetadataDetail {
     // (undocumented)
     MaxLength?: number;
     // (undocumented)
+    MaxValue?: number;
+    // (undocumented)
+    MinValue?: number;
+    // (undocumented)
     OptionSet?: OptionSetMetadata;
     // (undocumented)
     Precision?: number;
@@ -269,6 +273,7 @@ export interface NavigationPropertyType {
     ReferencingProperty?: string;
     ReferentialProperty?: string;
     RelationshipName: string;
+    RequiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
     Targets?: string[];
     TargetType: string;
     Type?: string;
@@ -337,9 +342,13 @@ export interface PropertyType {
     IsValidForCreate?: boolean;
     IsValidForUpdate?: boolean;
     LogicalName: string;
+    MaxLength?: number;
+    MaxValue?: number;
+    MinValue?: number;
     Name: string;
     Nullable?: boolean;
     OptionSetType?: string;
+    OptionValues?: number[];
     RequiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
     SchemaName?: string;
     SourceType?: number;

@@ -105,6 +105,8 @@ export class MetadataService {
             "DateTimeBehavior",
             "Format",
             "MaxLength",
+            "MinValue",
+            "MaxValue",
             "Precision",
             "IsPrimaryId",
             "IsPrimaryName",
@@ -206,6 +208,9 @@ export interface AttributeMetadataDetail {
   Format?: string;
   // String-specific
   MaxLength?: number;
+  // Number-specific (Integer, BigInt, Decimal, Double, Money)
+  MinValue?: number;
+  MaxValue?: number;
   // Decimal/Money-specific
   Precision?: number;
   // Additional type-specific metadata can be added as needed

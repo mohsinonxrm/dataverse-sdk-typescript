@@ -3,7 +3,8 @@
  * update, on one of them only, or never (`IsValidForCreate` / `IsValidForUpdate` as
  * RetrieveMetadataChanges returns them), a lookup whose navigation property has its name, a custom
  * lookup whose navigation property is named after its schema name (`contoso_ParentAccountId`), a
- * polymorphic lookup (`parentcustomerid`) and an owner lookup (`ownerid`).
+ * polymorphic lookup (`parentcustomerid`) and an owner lookup (`ownerid`). Some columns have
+ * constraints for validation: `MaxLength`, `MinValue`/`MaxValue`, options, `RequiredLevel`.
  */
 import type { RetrieveMetadataChangesResponse } from "../../src/metadata-service.js";
 import type { AttributeMetadataDetail } from "../../src/metadata-service.js";
@@ -114,8 +115,11 @@ export const WRITE_ENTITY_METADATA: Record<string, RetrieveMetadataChangesRespon
             MaxLength: 160,
           }),
           column("description", "Description", "Memo", { MaxLength: 2000 }),
-          column("creditlimit", "CreditLimit", "Money"),
-          column("numberofemployees", "NumberOfEmployees", "Integer"),
+          column("creditlimit", "CreditLimit", "Money", { MinValue: 0, MaxValue: 1000000000 }),
+          column("numberofemployees", "NumberOfEmployees", "Integer", {
+            MinValue: 0,
+            MaxValue: 1000000,
+          }),
           column("industrycode", "IndustryCode", "Picklist", {
             OptionSet: {
               Name: "account_industrycode",
@@ -182,6 +186,7 @@ export const WRITE_ENTITY_METADATA: Record<string, RetrieveMetadataChangesRespon
           column("fullname", "FullName", "String", { create: false, update: false }),
           column("parentcustomerid", "ParentCustomerId", "Customer", {
             Targets: ["account", "contact"],
+            RequiredLevel: { Value: "ApplicationRequired" },
           }),
         ],
       },

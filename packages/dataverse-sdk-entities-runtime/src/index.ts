@@ -94,6 +94,24 @@ export interface AttributeMetadata {
 
   /** For option set attributes: enum type name */
   optionSetType?: string;
+
+  /** Most characters a text column holds (`MaxLength`). */
+  maxLength?: number;
+
+  /** Smallest value a number column takes (`MinValue`). */
+  minValue?: number;
+
+  /** Largest value a number column takes (`MaxValue`). */
+  maxValue?: number;
+
+  /** The values of a choice or choices column's options. */
+  optionValues?: number[];
+
+  /** `false` when a create can't set the column (`IsValidForCreate`); unset when it can. */
+  isValidForCreate?: boolean;
+
+  /** `false` when an update can't set the column (`IsValidForUpdate`); unset when it can. */
+  isValidForUpdate?: boolean;
 }
 
 /**
@@ -129,6 +147,25 @@ export interface NavigationMetadata {
 
   /** Referencing property (for reverse lookups) */
   referencingProperty?: string;
+
+  /**
+   * For the navigation property a lookup column is written through: the lookup's logical name
+   * (`primarycontactid` for `primarycontactid`, `contoso_parentaccountid` for
+   * `contoso_ParentAccountId`).
+   */
+  lookupAttribute?: string;
+
+  /** The lookup is business-required (`RequiredLevel` is ApplicationRequired). */
+  isRequired?: boolean;
+
+  /** The lookup's `RequiredLevel` when it isn't None. */
+  requiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
+
+  /** `false` when a create can't set the lookup (`IsValidForCreate`); unset when it can. */
+  isValidForCreate?: boolean;
+
+  /** `false` when an update can't set the lookup (`IsValidForUpdate`); unset when it can. */
+  isValidForUpdate?: boolean;
 }
 
 /**
@@ -210,6 +247,13 @@ export function isEntity(value: unknown): value is IEntity {
 }
 
 export { formatParameterAlias, formatRecordPath, type ParameterKind } from "./parameters.js";
+
+export {
+  validateEntity,
+  type ValidateEntityOptions,
+  type ValidationIssue,
+  type ValidationIssueCode,
+} from "./validate.js";
 
 /**
  * Helper to get the OData type annotation for an entity.

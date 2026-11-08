@@ -2,7 +2,8 @@
  * Live tests for the generator's create and update types (#347): `AccountCreate`,
  * `AccountUpdate`, `ContactCreate`, … have only the columns the org's metadata says a create or an
  * update accepts (`IsValidForCreate` / `IsValidForUpdate`), lookups set with an `EntityReference`.
- * A record written with them is accepted by the org.
+ * A record written with them is accepted by the org, and the metadata carries the column
+ * constraints `validateEntity()` checks.
  * See ./env.ts for configuration. Every record is named with this run's `runId` and deleted in
  * `afterAll`.
  */
@@ -13,6 +14,7 @@ import {
   createEntityReference,
   formatEntityForWrite,
   type EntityMetadata,
+  validateEntity,
 } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { live, liveClient, runId } from "./env.js";
 import {
@@ -155,4 +157,35 @@ describe.skipIf(!live)("live: generated create and update types (#347)", () => {
     },
     SLOW
   );
+
+  it("the metadata carries the org's column constraints for validateEntity", () => {
+    // RetrieveMetadataChanges accepted MinValue and MaxValue in the attribute query (the
+    // generation above would have failed otherwise), and they reached the metadata.
+    const account = gen.AccountMetadata;
+    expect(account.attributes?.name.maxLength).toBeGreaterThan(0);
+    expect(typeof account.attributes?.numberofemployees.minValue).toBe("number");
+    expect(typeof account.attributes?.numberofemployees.maxValue).toBe("number");
+    expect(account.attributes?.industrycode.optionValues?.length).toBeGreaterThan(0);
+    expect(account.attributes?.createdon).toMatchObject({
+      isValidForCreate: false,
+      isValidForUpdate: false,
+    });
+    expect(account.navigation.primarycontactid.lookupAttribute).toBe("primarycontactid");
+    expect(gen.ContactMetadata.attributes?.lastname.isRequired).toBe(true);
+
+    const maxLength = account.attributes?.name.maxLength ?? 0;
+    expect(
+      validateEntity(
+        { name: "x".repeat(maxLength + 1), industrycode: -1, createdon: "2024-01-01" },
+        account
+      ).map((i) => [i.property, i.code])
+    ).toEqual([
+      ["name", "maxLength"],
+      ["industrycode", "invalidOption"],
+      ["createdon", "notValidForCreate"],
+    ]);
+    expect(validateEntity({ firstname: "Jane" }, gen.ContactMetadata)).toContainEqual(
+      expect.objectContaining({ property: "lastname", code: "required" })
+    );
+  });
 });

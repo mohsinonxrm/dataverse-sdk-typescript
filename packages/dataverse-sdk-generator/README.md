@@ -560,6 +560,56 @@ enforce them, only forms do. A table with no writable column gets `Record<string
 `<Entity>Create` or `<Entity>Update` takes a `_2` suffix when another generated type already has
 the name.
 
+### Validation Rules
+
+The metadata const of each table carries the column constraints `RetrieveMetadataChanges`
+returns, for the runtime's opt-in `validateEntity()`:
+
+<!-- no-check -->
+
+```typescript
+// generated/entities/Account.ts (AccountMetadata)
+  attributes: {
+    name: {
+      // ...
+      isRequired: true,
+      requiredLevel: "ApplicationRequired",
+      maxLength: 160,
+    },
+    numberofemployees: { /* ... */ minValue: 0, maxValue: 1000000000 },
+    industrycode: { /* ... */ optionValues: [1, 2, 3 /* … */] },
+    createdon: { /* ... */ isValidForCreate: false, isValidForUpdate: false },
+  },
+  navigation: {
+    primarycontactid: {
+      // ...
+      lookupAttribute: "primarycontactid", // the lookup column this navigation property writes
+      // isRequired / requiredLevel / isValidForCreate: false / isValidForUpdate: false, as for a column
+    },
+  },
+```
+
+- `maxLength` (text), `minValue` / `maxValue` (numbers) and `optionValues` (choice and choices
+  columns, global option sets included) when the column has them;
+- `isValidForCreate: false` / `isValidForUpdate: false` only when false;
+- a lookup's `RequiredLevel` and valid-for flags on its navigation property, next to
+  `lookupAttribute`.
+
+Nothing checks them unless you call `validateEntity()`:
+
+<!-- no-check -->
+
+```typescript
+import { validateEntity } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+
+const issues = validateEntity(account, AccountMetadata); // mode: "create" by default
+const updateIssues = validateEntity(change, AccountMetadata, { mode: "update" });
+// [{ property: "name", code: "maxLength", message: "name is 200 characters long; …" }, …]
+```
+
+See the [entities-runtime README](../dataverse-sdk-entities-runtime/README.md#validation-validateentityentity-metadata-options)
+for the checks.
+
 ### Enum Type
 
 <!-- no-check -->
@@ -1076,7 +1126,7 @@ export function getLogicalName(schemaName: string): string | undefined {
 - ✅ Create/Update types (`<Entity>Create`, `<Entity>Update`: writable columns only)
 - ⏳ Custom template support (eject command)
 - ⏳ Incremental generation (only changed entities)
-- ⏳ Validation rules generation
+- ✅ Validation rules (column constraints in the metadata, for `validateEntity()`)
 - ⏳ Xrm.FormContext types (for model-driven apps)
 
 ---
