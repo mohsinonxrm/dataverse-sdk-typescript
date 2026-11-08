@@ -590,8 +590,20 @@ const entityDef: EntityMetadataCreate = {
   DisplayName: { LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }] },
   DisplayCollectionName: { LocalizedLabels: [{ Label: "Projects", LanguageCode: 1033 }] },
   OwnershipType: "UserOwned",
+  IsActivity: false,
   HasActivities: true,
   HasNotes: true,
+  // The primary name column first (required), then any other columns
+  Attributes: [
+    {
+      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+      SchemaName: "new_Name",
+      DisplayName: { LocalizedLabels: [{ Label: "Name", LanguageCode: 1033 }] },
+      RequiredLevel: { Value: "ApplicationRequired" },
+      MaxLength: 100,
+      IsPrimaryName: true,
+    },
+  ],
 };
 
 const entityMetadataId = await metadataClient.createEntityDefinition(entityDef);

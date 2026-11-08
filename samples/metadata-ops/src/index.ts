@@ -121,8 +121,22 @@ async function demo1A_CreateEntityHttpFirst(
       ],
     },
     OwnershipType: OwnershipTypes.UserOwned,
+    IsActivity: false,
     HasActivities: true,
     HasNotes: true,
+    // The primary name column is created with the table, first in Attributes
+    Attributes: [
+      {
+        "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+        SchemaName: `${schemaPrefix}_Name`,
+        DisplayName: {
+          LocalizedLabels: [{ Label: "Project Name", LanguageCode: 1033 }],
+        },
+        RequiredLevel: { Value: AttributeRequiredLevel.None },
+        MaxLength: 100,
+        IsPrimaryName: true,
+      },
+    ],
   };
 
   const startTime = Date.now();
@@ -145,27 +159,6 @@ async function demo1A_CreateEntityHttpFirst(
   console.log(chalk.cyan("  ℹ️  Approach: Direct Web API call using client.api()"));
 
   createdMetadata.entities.push(`${schemaPrefix}_project`);
-
-  // Now add primary name attribute (required for custom entities)
-  console.log(chalk.gray("\nAdding primary name column..."));
-
-  const primaryNameAttr: StringAttributeMetadataCreate = {
-    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-    SchemaName: `${schemaPrefix}_Name`,
-    DisplayName: {
-      LocalizedLabels: [{ Label: "Project Name", LanguageCode: 1033 }],
-    },
-    RequiredLevel: { Value: AttributeRequiredLevel.None },
-    MaxLength: 100,
-    IsPrimaryName: true,
-  };
-
-  await client
-    .api(`/EntityDefinitions(LogicalName='${schemaPrefix}_project')/Attributes`)
-    .header("Content-Type", "application/json")
-    .post(primaryNameAttr);
-
-  console.log(chalk.green("  ✓ Primary name column added"));
 
   return `${schemaPrefix}_project`;
 }
@@ -197,8 +190,22 @@ async function demo1B_CreateEntityMetadataClient(
       ],
     },
     OwnershipType: OwnershipTypes.UserOwned,
+    IsActivity: false,
     HasActivities: false,
     HasNotes: false,
+    // The primary name column is created with the table, first in Attributes
+    Attributes: [
+      {
+        "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+        SchemaName: `${schemaPrefix}_Name`,
+        DisplayName: {
+          LocalizedLabels: [{ Label: "Milestone Name", LanguageCode: 1033 }],
+        },
+        RequiredLevel: { Value: AttributeRequiredLevel.None },
+        MaxLength: 100,
+        IsPrimaryName: true,
+      },
+    ],
   };
 
   const startTime = Date.now();
@@ -218,24 +225,6 @@ async function demo1B_CreateEntityMetadataClient(
   console.log(chalk.cyan("  ℹ️  Approach: Typed MetadataClient wrapper method"));
 
   createdMetadata.entities.push(`${schemaPrefix}_milestone`);
-
-  // Add primary name attribute
-  console.log(chalk.gray("\nAdding primary name column..."));
-
-  const primaryNameAttr: StringAttributeMetadataCreate = {
-    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-    SchemaName: `${schemaPrefix}_Name`,
-    DisplayName: {
-      LocalizedLabels: [{ Label: "Milestone Name", LanguageCode: 1033 }],
-    },
-    RequiredLevel: { Value: AttributeRequiredLevel.None },
-    MaxLength: 100,
-    IsPrimaryName: true,
-  };
-
-  await metadataClient.createAttributeDefinition(`${schemaPrefix}_milestone`, primaryNameAttr);
-
-  console.log(chalk.green("  ✓ Primary name column added"));
 
   return `${schemaPrefix}_milestone`;
 }

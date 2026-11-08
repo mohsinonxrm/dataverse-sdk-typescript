@@ -1,4 +1,0 @@
-/**
- * EntityCollection
- */
-export interface EntityCollection {}
