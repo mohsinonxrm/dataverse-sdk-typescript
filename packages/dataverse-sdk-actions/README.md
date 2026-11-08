@@ -2,6 +2,11 @@
 
 Typed Web API actions for Dataverse. Actions are operations with side effects that execute via HTTP POST.
 
+These classes are part of the SDK's main path: build one and run it with `client.execute()`
+(`@mohsinonxrm/dataverse-sdk-core`), which resolves the action's typed result. For code ported
+from the .NET SDK, `@mohsinonxrm/dataverse-sdk-messages` has a `<Name>Request` with the .NET name
+for each action; it sends the same request.
+
 ## Features
 
 - ✅ **<!-- count:actions -->1,072<!-- /count --> typed actions** - The Web API actions of the platform, Sales and Customer Service, generated from `$metadata`
@@ -116,6 +121,8 @@ although `$metadata` declares the return `Nullable="false"`, so an entity return
 `<Entity> | null`. `@odata.type` says which table a `crmbaseentity` record is.
 
 ```typescript
+import { InstantiateTemplateAction, PublishAllXmlAction } from "@mohsinonxrm/dataverse-sdk-actions";
+
 await client.execute(new PublishAllXmlAction()); // undefined
 
 const emails = await client.execute(
@@ -312,6 +319,9 @@ A flags value such as `AccessRights.ReadAccess | AccessRights.WriteAccess` is se
 `PrincipalAccess.Principal`, takes a reference or a payload, like an entity-typed parameter:
 
 ```typescript
+import { AccessRights, GrantAccessAction } from "@mohsinonxrm/dataverse-sdk-actions";
+import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+
 await client.execute(
   new GrantAccessAction({
     Target: createEntityReference("account", accountId),

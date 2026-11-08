@@ -2,6 +2,11 @@
 
 Complete documentation for `@mohsinonxrm/dataverse-sdk-metadata`: the `MetadataClient` methods for managing Dataverse metadata.
 
+`MetadataClient` and the `Metadata` builders are the SDK's way to change schema; they run on the
+same `DataverseClient` as `client.api()`. Code ported from the .NET SDK's `CreateEntityRequest`,
+`CreateAttributeRequest` or `CreateOneToManyRequest` (.NET messages that the Web API replaces
+with requests on `EntityDefinitions` and `RelationshipDefinitions`) uses the methods below.
+
 ## Table of Contents
 
 1. [Builders](#builders)

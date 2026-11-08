@@ -6,21 +6,22 @@ This document provides a complete reference of all **<!-- count:operations -->2,
 
 The SDK provides comprehensive coverage of Dataverse Web API operations through three complementary packages:
 
-| Package                                  | Count                                       | Description                            | HTTP Method |
-| ---------------------------------------- | ------------------------------------------- | -------------------------------------- | ----------- |
-| **@mohsinonxrm/dataverse-sdk-functions** | <!-- count:functions -->209<!-- /count -->  | Read-only operations (query, retrieve) | GET         |
-| **@mohsinonxrm/dataverse-sdk-actions**   | <!-- count:actions -->1,072<!-- /count -->  | Operations with side effects           | POST        |
-| **@mohsinonxrm/dataverse-sdk-messages**  | <!-- count:messages -->1,281<!-- /count --> | Organization Service message pattern   | POST        |
+| Package                                  | Count                                       | Description                                                                 | HTTP Method |
+| ---------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------- | ----------- |
+| **@mohsinonxrm/dataverse-sdk-functions** | <!-- count:functions -->209<!-- /count -->  | Read-only operations (query, retrieve)                                      | GET         |
+| **@mohsinonxrm/dataverse-sdk-actions**   | <!-- count:actions -->1,072<!-- /count -->  | Operations with side effects                                                | POST        |
+| **@mohsinonxrm/dataverse-sdk-messages**  | <!-- count:messages -->1,281<!-- /count --> | The same actions and functions as .NET-style messages (compatibility layer) | POST / GET  |
 
-**Total Coverage:** <!-- count:operations -->2,562<!-- /count --> typed operations
+**Total Coverage:** <!-- count:operations -->2,562<!-- /count --> typed operations (each message is the same request as an action or function, so there are <!-- count:messages -->1,281<!-- /count --> distinct operations)
 
-## Two Front Doors
+## The Main Path and the .NET Compatibility Layer
 
-The SDK offers **two ways** to interact with Dataverse, providing flexibility for different developer backgrounds:
+The SDK's main path is `client.api()` plus the typed action and function classes; the messages,
+with `OrganizationService`, are a compatibility layer for developers coming from the .NET SDK.
 
-### 1. HTTP/OData Fluent API (Modern JavaScript/TypeScript)
+### 1. Main path: `client.api()` and typed operations
 
-Direct Web API operations using a chainable request builder:
+Direct Web API operations using a chainable request builder, and the typed classes `client.execute()` runs:
 
 ```typescript
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
@@ -41,9 +42,12 @@ const whoAmI = new WhoAmIFunction();
 const userInfo = await client.execute(whoAmI);
 ```
 
-### 2. OrganizationService Facade (C#-Familiar)
+### 2. .NET compatibility layer: OrganizationService and messages
 
-Familiar patterns for developers coming from .NET SDK:
+Familiar patterns for developers coming from .NET SDK. Each message sends the same request as
+the action or function of the same name; see the
+[.NET mapping](./message-to-webapi.md#0-from-the-net-sdk-to-the-main-path) for the main-path
+equivalent of each call.
 
 ```typescript
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
@@ -55,7 +59,7 @@ const service = new OrganizationService(client);
 const accountId = await service.create("accounts", { name: "Contoso" });
 const account = await service.retrieve("accounts", accountId, { select: ["name"] });
 
-// Message execution (messages are Web API actions; WhoAmI is a function, WhoAmIFunction)
+// Message execution: the same request as client.execute(new PublishAllXmlAction())
 await service.execute(new PublishAllXmlRequest());
 ```
 

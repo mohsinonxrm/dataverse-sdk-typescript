@@ -1,10 +1,11 @@
 # Dataverse SDK TypeScript - Complete Usage Patterns
 
-> **Purpose**: Comprehensive guide showing ALL ways to interact with Dataverse using this SDK
+> **Purpose**: Comprehensive guide showing ALL ways to interact with Dataverse using this SDK:
+> the main path first, then the .NET compatibility layer
 
 ## Table of Contents
 
-1. [Two Front Doors, Plus Typed Executables](#two-front-doors-plus-typed-executables)
+1. [One Main Path, Plus a .NET Compatibility Layer](#one-main-path-plus-a-net-compatibility-layer)
 2. [CRUD Operations](#crud-operations)
 3. [Actions](#actions)
 4. [Functions](#functions)
@@ -14,34 +15,37 @@
 
 ---
 
-## Two Front Doors, Plus Typed Executables
+## One Main Path, Plus a .NET Compatibility Layer
 
-Based on ADR-0001, this SDK has **two front doors**: the HTTP-first fluent API and the
-OrganizationService facade. Typed actions, functions and messages are `Executable<T>` classes that
-either front door runs, with `client.execute()` or `service.execute()`.
+Every call goes through one `DataverseClient` and its middleware pipeline. The documented way to
+use it, the **main path**, is:
 
-### 1. HTTP-First Fluent API (`client.api()`)
+### 1. `client.api()`: queries and CRUD
 
-- **Direct** OData/Web API access
-- **Fluent** query building
-- Maximum **flexibility**
-- Best for: Web developers, custom scenarios, direct HTTP control
+- **Direct** OData/Web API access, with **fluent** query building
+- Paging (`iterate()`, `getAll()`), ETags, change tracking (`trackChanges()`), FetchXML
+- With `dataverse-gen`, the **typed client** (`createTypedClient(client)`) wraps it per table, with
+  your columns and payload types checked at compile time
 
-### 2. OrganizationService Facade (`orgService.create/retrieve/update/delete/execute`)
+### 2. Typed operations: `client.execute(new <Name>Action(…))`
 
-- **C#-familiar** API surface
-- Matches **Dataverse C# SDK** patterns
-- Built on top of HTTP primitives
-- Best for: C# developers migrating to TypeScript, familiar patterns
+- A class for each Web API action and function of the platform, Sales and Customer Service, in
+  `@mohsinonxrm/dataverse-sdk-actions` and `@mohsinonxrm/dataverse-sdk-functions`; `dataverse-gen`
+  writes the same classes for custom APIs and other apps' operations
+- Each implements `Executable<T>`: `client.execute()` resolves its typed result
+- `queryFunctions` writes the `$filter` query functions (`LastXDays`, `Under`, …)
 
-### Typed Executables (`client.execute()` / `service.execute()`)
+### The .NET compatibility layer: `OrganizationService` and messages
 
-Not a third front door: typed requests that either front door executes.
-
-- **Typed** action/function/message classes
-- **Type-safe** at compile time
-- Implements `Executable<T>` interface
-- Best for: Type safety, IDE autocomplete, compile-time validation
+- **C#-familiar** API surface: `service.create/retrieve/update/delete/execute`, and the
+  `<Name>Request` / `<Name>Response` messages of `@mohsinonxrm/dataverse-sdk-messages`
+- For developers porting code from the **Dataverse .NET SDK**: the same names, so
+  `IOrganizationService` code ports line by line
+- Built on the main path: each method is a `client.api()` call, and each message sends the same
+  request as the action or function of the same name, through the same client
+- New code should use the main path; the
+  [.NET mapping](./mapping/message-to-webapi.md#0-from-the-net-sdk-to-the-main-path) gives the
+  main-path equivalent of each .NET call
 
 ---
 
@@ -161,7 +165,7 @@ const allAccounts = await client
   .getAll({ maxPages: 10, maxItems: 100 });
 ```
 
-### 2. Late-Bound with `OrganizationService`
+### 2. Late-Bound with `OrganizationService` (.NET compatibility layer)
 
 ```typescript
 import { OrganizationService, createEntityReference } from "@mohsinonxrm/dataverse-sdk-xrm";
@@ -265,6 +269,25 @@ await service.disassociate("accounts", accountId, "contact_customer_accounts", c
 ```
 
 ### 3. Early-Bound (Generated Types)
+
+With `"typedClient": true` in `.dataverse-gen.json`, the generated `createTypedClient()` is the
+main path for your tables: a request builder per entity set whose columns and payloads are checked
+against the table.
+
+```typescript
+import { createTypedClient } from "./generated/client.js";
+
+const typed = createTypedClient(client);
+
+const newId = await typed.accounts.create({ name: "Typed Account", creditlimit: 1000 });
+const typedAccount = await typed.accounts.byId(newId).get({ select: ["name", "creditlimit"] });
+const page = await typed.accounts.list({ select: ["name"], filter: "statecode eq 0", top: 10 });
+await typed.accounts.byId(newId).update({ creditlimit: 2000 });
+await typed.accounts.byId(newId).delete();
+console.log(typedAccount.name, page.length);
+```
+
+The generated interfaces also work with `client.api()` and `OrganizationService`:
 
 ```typescript
 // Assuming you've generated types using @mohsinonxrm/dataverse-sdk-generator
@@ -386,7 +409,7 @@ const executeResponse = await client
 console.log(`Async operation ID: ${executeResponse.asyncoperationid}`);
 ```
 
-### 3. Using OrganizationService.execute() with Typed Executables
+### 3. Using OrganizationService.execute() with Typed Executables (.NET compatibility layer)
 
 ```typescript
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
@@ -463,7 +486,10 @@ const result = await client
 
 ## Messages
 
-Messages provide **OrganizationService-style** request/response patterns that map to Web API operations.
+Messages are the **.NET compatibility layer** for operations: OrganizationService-style
+`<Name>Request` / `<Name>Response` classes with the .NET names, for code ported from the .NET SDK.
+Each sends the same request as the action or function of the same name; on the main path, use
+that action or function class instead.
 
 ### Messages Package Overview
 
@@ -744,29 +770,25 @@ await client.api("/RelationshipDefinitions").post({
 
 ### When to Use Each Approach
 
-#### Use `client.api()` (HTTP-First) when:
+#### Use `client.api()` (main path) for:
 
-- ✅ You want maximum flexibility
-- ✅ You're comfortable with OData/Web API
-- ✅ You need direct HTTP control (custom headers, etc.)
-- ✅ You're building custom queries with complex filters
-- ✅ Examples: Custom reporting, admin tools, exploratory queries
+- ✅ Queries and CRUD: `$select`, `$filter`, `$expand`, paging, ETags, associate (`$ref`)
+- ✅ Change tracking, FetchXML and saved views
+- ✅ Direct HTTP control (custom headers, impersonation, `Prefer`)
+- ✅ With `dataverse-gen`'s typed client, the same requests with your columns checked at compile time
 
-#### Use `client.execute(typedAction/Function)` when:
+#### Use `client.execute(typedAction/Function)` (main path) for:
 
-- ✅ You want **type safety**
-- ✅ You need IDE autocomplete
-- ✅ You're calling **actions** or **functions**
-- ✅ Compile-time validation is important
-- ✅ Examples: Business operations (WinOpportunity, ExecuteWorkflow), typed metadata operations
+- ✅ Dataverse's named operations: **actions** and **functions**
+- ✅ **Type safety** and IDE autocomplete for their parameters and results
+- ✅ Examples: Business operations (WinOpportunity, ExecuteWorkflow, ExportSolution)
+- ✅ Custom APIs and other apps' operations, generated with `dataverse-gen`
 
-#### Use `OrganizationService` when:
+#### Use `OrganizationService` and messages (.NET compatibility layer) when:
 
-- ✅ You're migrating from **C# Dataverse SDK**
-- ✅ You want familiar **C#-style** patterns
-- ✅ You're doing standard CRUD operations
-- ✅ You want simple associate/disassociate
-- ✅ Examples: Line-of-business apps, migrations, C# developer onboarding
+- ✅ You're porting code from the **.NET Dataverse SDK** and want the .NET names first
+- ✅ You want `<Name>Response` objects shaped like the .NET message responses
+- ✅ Examples: migrations, C# developer onboarding; move to the main path call by call
 
 #### Use `MetadataClient` when:
 
@@ -842,16 +864,16 @@ Metadata types use `ComplexLookupAttributeMetadata` and `ComplexOneToManyRelatio
 
 ## Summary Table
 
-| Operation        | HTTP-First (`client.api()`)                                               | Typed Executable (`client.execute()`)             | OrganizationService                                | Best For            |
+| Operation        | Main path: `client.api()`                                                 | Main path: typed operation (`client.execute()`)   | Compatibility layer: OrganizationService           | Best For            |
 | ---------------- | ------------------------------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------- | ------------------- |
-| **Create**       | `client.api('/accounts').post({...})`                                     | N/A (use HTTP or OrgService)                      | `service.create('accounts', {...})`                | Standard CRUD       |
-| **Retrieve**     | `client.api('/accounts(id)').get()`                                       | N/A                                               | `service.retrieve('accounts', id)`                 | Standard CRUD       |
+| **Create**       | `client.api('/accounts').post({...})`, or `typed.accounts.create({...})`  | N/A                                               | `service.create('accounts', {...})`                | Standard CRUD       |
+| **Retrieve**     | `client.api('/accounts(id)').get()`, or `typed.accounts.byId(id).get()`   | N/A                                               | `service.retrieve('accounts', id)`                 | Standard CRUD       |
 | **Update**       | `client.api('/accounts(id)').patch({...})`                                | N/A                                               | `service.update('accounts', id, {...})`            | Standard CRUD       |
 | **Delete**       | `client.api('/accounts(id)').delete()`                                    | N/A                                               | `service.delete('accounts', id)`                   | Standard CRUD       |
-| **Query**        | `client.api('/accounts').filter(...).get()`                               | N/A                                               | `service.retrieveMultiple('accounts', {...})`      | Queries             |
+| **Query**        | `client.api('/accounts').filter(...).get()`, or `typed.accounts.list()`   | N/A                                               | `service.retrieveMultiple('accounts', {...})`      | Queries             |
 | **Actions**      | `client.api('/WinOpportunity').post({...})`                               | `client.execute(new WinOpportunityAction(...))`   | `service.execute(new WinOpportunityAction(...))`   | Business operations |
 | **Functions**    | `client.api('/WhoAmI').get()`                                             | `client.execute(new WhoAmIFunction())`            | `service.execute(new WhoAmIFunction())`            | Read operations     |
-| **Messages**     | N/A (use messages)                                                        | `client.execute(new ExecuteWorkflowRequest(...))` | `service.execute(new ExecuteWorkflowRequest(...))` | SDK messages        |
+| **Messages**     | N/A: use the action or function of the same name                          | `client.execute(new ExecuteWorkflowRequest(...))` | `service.execute(new ExecuteWorkflowRequest(...))` | Ported .NET code    |
 | **Metadata**     | `client.api('/EntityDefinitions').post({...})`                            | Use MetadataClient                                | N/A                                                | Schema management   |
 | **Associate**    | `client.api('/accounts(id)/contact_customer_accounts/$ref').post({...})`  | N/A                                               | `service.associate(...)`                           | Relationships       |
 | **Disassociate** | `client.api('/accounts(id)/contact_customer_accounts(id)/$ref').delete()` | N/A                                               | `service.disassociate(...)`                        | Relationships       |
@@ -860,17 +882,17 @@ Metadata types use `ComplexLookupAttributeMetadata` and `ComplexOneToManyRelatio
 
 ## Conclusion
 
-The SDK provides **flexibility** with two front doors, and typed executables that run through
-either of them:
+The SDK has **one main path** and a **.NET compatibility layer** on top of it:
 
-1. **HTTP-First** (`client.api()`) - Maximum control, OData expertise required
-2. **OrganizationService** - C#-familiar, good for CRUD, built on HTTP primitives
-3. **Typed Executables** (`client.execute()` / `service.execute()`) - Type safety, IDE support, recommended for actions/functions
+1. **`client.api()`** (and the generated typed client) - queries and CRUD
+2. **Typed operations** (`client.execute(new <Name>Action(…))`) - actions and functions, prebuilt or generated
+3. **OrganizationService and messages** - the .NET names, for code ported from the .NET SDK
 
 **Recommendation**:
 
-- Use **OrganizationService** for standard CRUD
-- Use **Typed Executables** for actions/functions/metadata
-- Use **HTTP-First** for advanced scenarios
+- Use **`client.api()`** for queries and CRUD, through `createTypedClient()` when you generate types
+- Use **typed actions and functions** for Dataverse's named operations
+- Use **`MetadataClient`** for schema changes
+- Use **OrganizationService and messages** to port .NET code; move to the main path call by call
 
-All three approaches use the **same underlying pipeline** for auth, retry, concurrency, and telemetry.
+All of them use the **same underlying pipeline** for auth, retry, concurrency, and telemetry.
