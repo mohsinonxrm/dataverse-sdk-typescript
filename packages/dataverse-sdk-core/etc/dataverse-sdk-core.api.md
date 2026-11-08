@@ -146,6 +146,31 @@ export interface BuiltInMiddlewareOptions {
 }
 
 // @public
+export class BulkheadMiddleware implements Middleware {
+    constructor(options: BulkheadOptions);
+    // (undocumented)
+    execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    inFlight(category: string): number;
+    // (undocumented)
+    name: string;
+    queued(category: string): number;
+}
+
+// @public
+export interface BulkheadOptions {
+    categorize?: (request: RequestInformation) => string | undefined;
+    defaultLimit?: number;
+    limits?: Record<string, number>;
+    maxQueue?: number;
+}
+
+// @public
+export interface BulkheadRequestOptions extends MiddlewareOptions {
+    bypass?: boolean;
+    category?: string;
+}
+
+// @public
 export interface ChaosFault {
     body?: unknown;
     headers?: Record<string, string>;
@@ -182,6 +207,38 @@ export interface ChaosRequestOptions extends MiddlewareOptions {
 export interface ChaosScriptInfo {
     attempt: number;
     requestIndex: number;
+}
+
+// @public
+export class CircuitBreakerMiddleware implements Middleware {
+    constructor(options?: CircuitBreakerOptions);
+    get consecutiveFailures(): number;
+    // (undocumented)
+    execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    // (undocumented)
+    name: string;
+    reset(): void;
+    get state(): CircuitState;
+}
+
+// @public
+export interface CircuitBreakerOptions {
+    breakDurationMs?: number;
+    failureThreshold?: number;
+    isFailure?: (status: number, error?: Error) => boolean;
+    onStateChange?: (change: CircuitStateChange) => void;
+}
+
+// @public
+export type CircuitState = "closed" | "open" | "half-open";
+
+// @public
+export interface CircuitStateChange {
+    consecutiveFailures: number;
+    // (undocumented)
+    from: CircuitState;
+    // (undocumented)
+    to: CircuitState;
 }
 
 // @public (undocumented)
@@ -280,17 +337,31 @@ export interface DataverseBatchPartError {
     status: number;
 }
 
+// @public
+export class DataverseBulkheadRejectedError extends DataverseError {
+    constructor(message: string, category: string);
+    readonly category: string;
+}
+
+// @public
+export class DataverseCircuitOpenError extends DataverseError {
+    constructor(message: string, retryAfterMs?: number);
+    readonly retryAfterMs?: number;
+}
+
 // @public (undocumented)
 export class DataverseClient {
     constructor(options: DataverseClientOptions);
     // (undocumented)
     api(pathOrAbsoluteUrl: string): DataverseRequestBuilder;
     bind(navigationProperty: string, entitySetName: string, id: ODataKey): Record<string, string>;
+    changesSince<T = Record<string, unknown>>(deltaLink: string, options?: TrackChangesOptions): Promise<TrackedChanges<T>>;
     // (undocumented)
     execute<T>(request: Executable<T>, options?: RequestOptions): Promise<T>;
     fetchXml<T = Record<string, unknown>>(entitySetName: string, fetchXml: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
     // (undocumented)
     getBaseUrl(): string;
+    iterateChangesSince<T = Record<string, unknown>>(deltaLink: string, options?: TrackChangesOptions): AsyncIterable<TrackedChangesPage<T>>;
     resolveUrl(pathOrUrl: string): string;
     savedQuery<T = Record<string, unknown>>(entitySetName: string, savedQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
     // (undocumented)
@@ -443,6 +514,7 @@ export class DataverseRequestBuilder {
     }): this;
     impersonateByObjectId(objectId: string): this;
     iterate<T = unknown>(options?: RequestOptions): AsyncIterable<T>;
+    iterateChanges<T = Record<string, unknown>>(options?: TrackChangesOptions): AsyncIterable<TrackedChangesPage<T>>;
     // (undocumented)
     orderBy(...orderby: string[]): this;
     // (undocumented)
@@ -464,6 +536,7 @@ export class DataverseRequestBuilder {
     text(options?: RequestOptions): Promise<string>;
     // (undocumented)
     top(n: number): this;
+    trackChanges<T = Record<string, unknown>>(options?: TrackChangesOptions): Promise<TrackedChanges<T>>;
     updateOnly(etag: string): this;
     userQuery<T = Record<string, unknown>>(userQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
 }
@@ -499,6 +572,12 @@ export class DataverseUrlError extends DataverseError {
 
 // @public
 export function defaultRedactUrl(url: URL): string;
+
+// @public
+export interface DeletedRecord {
+    id: string;
+    reason: "deleted" | "changed";
+}
 
 // @public
 export interface DependencyTelemetry {
@@ -649,6 +728,9 @@ export function headersToObject(headers: Headers): Record<string, string>;
 
 // @public (undocumented)
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+
+// @public
+export function isDeltaLinkExpired(error: unknown): boolean;
 
 // @public
 export function isStreamContent(contentType: string | null | undefined): boolean;
@@ -1018,6 +1100,25 @@ export interface TokenOptions {
     forceRefresh?: boolean;
     // (undocumented)
     tenantId?: string;
+}
+
+// @public
+export interface TrackChangesOptions extends RequestOptions {
+    maxPageSize?: number;
+}
+
+// @public
+export interface TrackedChanges<T> {
+    changed: T[];
+    deleted: DeletedRecord[];
+    deltaLink: string;
+}
+
+// @public
+export interface TrackedChangesPage<T> {
+    changed: T[];
+    deleted: DeletedRecord[];
+    deltaLink?: string;
 }
 
 // @public
