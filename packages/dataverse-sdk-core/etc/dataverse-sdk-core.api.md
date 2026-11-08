@@ -52,6 +52,45 @@ export interface BuiltInMiddlewareOptions {
     telemetry: TelemetryOptions;
 }
 
+// @public
+export interface ChaosFault {
+    body?: unknown;
+    headers?: Record<string, string>;
+    retryAfterSeconds?: number;
+    status: number | "network";
+}
+
+// @public
+export class ChaosMiddleware implements Middleware {
+    constructor(options?: ChaosOptions);
+    // (undocumented)
+    execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    // (undocumented)
+    name: string;
+}
+
+// @public
+export interface ChaosOptions {
+    faults?: readonly ChaosFault[];
+    match?: RegExp | ((request: RequestInformation) => boolean);
+    onFault?: (fault: ChaosFault, request: RequestInformation) => void;
+    percentage?: number;
+    random?: () => number;
+    script?: (request: RequestInformation, info: ChaosScriptInfo) => ChaosFault | undefined;
+}
+
+// @public
+export interface ChaosRequestOptions extends MiddlewareOptions {
+    disable?: boolean;
+    fault?: ChaosFault;
+}
+
+// @public
+export interface ChaosScriptInfo {
+    attempt: number;
+    requestIndex: number;
+}
+
 // @public (undocumented)
 export class ConcurrencyMiddleware implements Middleware {
     constructor(options: DataverseClientOptions);
