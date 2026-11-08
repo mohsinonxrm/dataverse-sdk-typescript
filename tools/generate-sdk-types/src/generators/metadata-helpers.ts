@@ -275,7 +275,7 @@ export interface PrimaryNameAttributeMetadataCreate extends Omit<
  * Table properties a create must set: Dataverse rejects a table create without them
  * (Learn: "Create and update table definitions using the Web API").
  */
-type RequiredEntityProperty =
+export type RequiredEntityProperty =
   | "SchemaName"
   | "DisplayName"
   | "DisplayCollectionName"

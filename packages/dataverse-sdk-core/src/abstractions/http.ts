@@ -70,24 +70,28 @@ export interface Logger {
   error(message: string, meta?: unknown): void;
 }
 
+/** One Dataverse request attempt, as `TelemetryClient.trackDependency` receives it. */
+export interface DependencyTelemetry {
+  /** Host of the request URL. */
+  target?: string;
+  method?: string;
+  /** The request URL, redacted with the client's `redactUrl` (see `DataverseClientOptions`). */
+  url?: string;
+  durationMs?: number;
+  /** `false` for a status of 400 or more, or when no response came back. */
+  success?: boolean;
+  /** The response status, as a string, when there was a response. */
+  resultCode?: string;
+  properties?: Record<string, string>;
+}
+
 export interface TelemetryClient {
   trackEvent(
     name: string,
     props?: Record<string, string>,
     measurements?: Record<string, number>
   ): void;
-  trackDependency(
-    name: string,
-    data: {
-      target?: string;
-      method?: string;
-      url?: string;
-      durationMs?: number;
-      success?: boolean;
-      resultCode?: string;
-      properties?: Record<string, string>;
-    }
-  ): void;
+  trackDependency(name: string, data: DependencyTelemetry): void;
   trackException(error: unknown, props?: Record<string, string>): void;
 }
 

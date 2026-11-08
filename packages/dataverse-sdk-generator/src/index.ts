@@ -24,7 +24,9 @@ export type {
   ParameterType,
   TypeScriptType,
   EnumMember,
+  EntityKeyType,
 } from "./types.js";
+export type { RetrieveMetadataChangesResponse } from "./metadata-service.js";
 
 export { DEFAULT_CONFIG } from "./types.js";
 export type { DataverseGenAuthConfig } from "./types.js";

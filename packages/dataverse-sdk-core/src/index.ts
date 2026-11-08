@@ -15,6 +15,7 @@ export {
   LoggingOptions,
   type MiddlewareOptions,
   type MiddlewareOptionEntry,
+  type BuiltInMiddlewareOptions,
 } from "./middleware/RequestOptions.js";
 
 export * from "./utils/HeaderUtils.js";
@@ -48,7 +49,7 @@ export {
 
 export * from "./telemetry/FeatureUsageTracker.js";
 
-export { odata } from "./odata/filter.js";
+export { odata, type EqValue } from "./odata/filter.js";
 export type { ExpandOptions } from "./odata/expand.js";
 export {
   odataLiteral,
