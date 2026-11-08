@@ -10,7 +10,7 @@
 
 export { SchemaModel } from "./schema-model.js";
 export { TypescriptGenerator } from "./typescript-generator.js";
-export { MetadataService } from "./metadata-service.js";
+export { MetadataService, type MetadataServiceSleep } from "./metadata-service.js";
 
 export type {
   DataverseGenConfig,
