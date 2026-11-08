@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { customcontroldefaultconfig } from "./types/index.js";
 
 /**
@@ -28,7 +32,7 @@ export class RetrieveUnpublished_customcontroldefaultconfigFunction implements E
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/customcontroldefaultconfigs(${this.customcontroldefaultconfigId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
+    let url = `${baseUrl}/customcontroldefaultconfigs(${odataLiteral.guid(this.customcontroldefaultconfigId)})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
 
     return {
       method: "GET",

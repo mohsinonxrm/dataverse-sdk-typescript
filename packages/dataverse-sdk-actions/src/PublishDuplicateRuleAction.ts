@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { asyncoperation } from "./types/index.js";
 
 /**
@@ -24,7 +28,7 @@ export class PublishDuplicateRuleAction implements Executable<PublishDuplicateRu
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/duplicaterules(${this.duplicateruleId})/Microsoft.Dynamics.CRM.PublishDuplicateRule`;
+    const url = `${baseUrl}/duplicaterules(${odataLiteral.guid(this.duplicateruleId)})/Microsoft.Dynamics.CRM.PublishDuplicateRule`;
 
     return {
       method: "POST",

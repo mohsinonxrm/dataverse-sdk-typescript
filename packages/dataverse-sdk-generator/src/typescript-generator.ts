@@ -120,10 +120,18 @@ export function toDocText(text: string): string {
 }
 
 /**
+ * Compare by UTF-16 code unit, not `localeCompare`, so the generated files don't depend on the
+ * machine's locale.
+ */
+function compareCodeUnits(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+/**
  * Collects the imports one generated file needs and renders them, so templates only reference
  * types and never write import lines themselves.
  */
-class ImportCollector {
+export class ImportCollector {
   private readonly modules = new Map<string, Map<string, boolean>>();
 
   /**
@@ -146,12 +154,12 @@ class ImportCollector {
       const aRelative = a.startsWith(".");
       const bRelative = b.startsWith(".");
       if (aRelative !== bRelative) return aRelative ? 1 : -1;
-      return a.localeCompare(b);
+      return compareCodeUnits(a, b);
     });
     return specifiers
       .map((from) => {
         const names = [...(this.modules.get(from) ?? new Map<string, boolean>())].sort(([a], [b]) =>
-          a.localeCompare(b)
+          compareCodeUnits(a, b)
         );
         const allTypes = names.every(([, isValue]) => !isValue);
         const list = names

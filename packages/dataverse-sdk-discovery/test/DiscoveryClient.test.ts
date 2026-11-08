@@ -234,4 +234,17 @@ describe("toEnvironment", () => {
     expect(env).not.toHaveProperty("region");
     expect(env).not.toHaveProperty("environmentId");
   });
+
+  // #381: a row listed with a $select that leaves out Url or ApiUrl crashed with a TypeError.
+  it.each(["Url", "ApiUrl"] as const)(
+    "rejects a row without %s with DataverseInvalidRequestError",
+    (property) => {
+      const row = Object.fromEntries(
+        Object.entries(orgs[0]).filter(([name]) => name !== property)
+      ) as unknown as OrganizationDetail;
+      const call = (): unknown => toEnvironment(row);
+      expect(call).toThrow(DataverseInvalidRequestError);
+      expect(call).toThrow(new RegExp(`${property}.*\\$select`));
+    }
+  );
 });

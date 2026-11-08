@@ -4,8 +4,10 @@
 
 import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import {
+  DataverseAbortError,
   DataverseError,
   DataverseInvalidRequestError,
+  DataverseNetworkError,
   normalizeHeaders,
   parseODataError,
 } from "@mohsinonxrm/dataverse-sdk-core";
@@ -26,6 +28,50 @@ import { decodeBatchResponse } from "./decoding.js";
  * they are limited to characters that are safe in a MIME header and in a URL.
  */
 const CONTENT_ID_PATTERN = /^[A-Za-z0-9._~-]+$/;
+
+/** The id a `$<id>` URL refers to, e.g. `acct` in `$acct/contact_customer_accounts`. */
+const CONTENT_ID_REFERENCE = /^\$([A-Za-z0-9._~-]+)(?:[/?]|$)/;
+
+/** An HTTP token (RFC 9110): what a method or a header name may contain. */
+const HTTP_TOKEN = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+
+/** Characters that would end a line of the multipart body (CR, LF) or that fetch rejects (NUL). */
+const LINE_BREAK = /[\r\n\0]/;
+
+/**
+ * Checks that a part can be written into the multipart body as it is: the method and header
+ * names are HTTP tokens, and the URL and header values contain no line breaks, which would add
+ * lines (headers, or a whole request) to the batch body.
+ */
+function validatePart(
+  id: string,
+  method: string,
+  url: string,
+  headers: Record<string, string> | undefined
+): void {
+  if (!HTTP_TOKEN.test(method)) {
+    throw new DataverseInvalidRequestError(
+      `Request "${id}" has an invalid method: ${JSON.stringify(method)}.`
+    );
+  }
+  if (LINE_BREAK.test(url)) {
+    throw new DataverseInvalidRequestError(
+      `Request "${id}" has a URL with a line break (CR, LF or NUL), which would add lines to the batch body.`
+    );
+  }
+  for (const [name, value] of Object.entries(headers ?? {})) {
+    if (!HTTP_TOKEN.test(name)) {
+      throw new DataverseInvalidRequestError(
+        `Request "${id}" has an invalid header name: ${JSON.stringify(name)}.`
+      );
+    }
+    if (LINE_BREAK.test(value)) {
+      throw new DataverseInvalidRequestError(
+        `Request "${id}" has a line break (CR, LF or NUL) in the value of the "${name}" header, which would add lines to the batch body.`
+      );
+    }
+  }
+}
 
 function headersToRecord(headers: Headers): Record<string, string> {
   const out: Record<string, string> = {};
@@ -136,8 +182,30 @@ export class BatchRequestBuilder {
       );
     }
 
+    validatePart(id, method, url, headers);
+
+    const earlier = new Set((this.currentChangeset ?? []).map((r) => r.id));
+    if (url.startsWith("$")) {
+      if (!this.currentChangeset) {
+        throw new DataverseInvalidRequestError(
+          `Request "${id}" has the URL "${url}", a $<id> reference, but it isn't in a changeset. A $<id> reference only works inside the changeset of the request it refers to. For a path that starts with "$", such as "$metadata", write it with a leading "/".`
+        );
+      }
+      const ref = CONTENT_ID_REFERENCE.exec(url)?.[1];
+      if (ref === undefined || !earlier.has(ref)) {
+        throw new DataverseInvalidRequestError(
+          `Request "${id}" has the URL "${url}", which doesn't refer to an earlier request in the same changeset. A $<id> reference only works inside one changeset.`
+        );
+      }
+    }
+
+    if (this.currentChangeset && method.toUpperCase() === "GET") {
+      throw new DataverseInvalidRequestError(
+        `Request "${id}" is a GET inside a changeset. Dataverse doesn't allow GET requests in a changeset: add it outside the changeset.`
+      );
+    }
+
     if (dependsOn?.length) {
-      const earlier = new Set((this.currentChangeset ?? []).map((r) => r.id));
       for (const dep of dependsOn) {
         if (!earlier.has(dep)) {
           throw new DataverseInvalidRequestError(
@@ -279,12 +347,18 @@ export class BatchRequestBuilder {
    * several `$batch` requests, one after the other. A changeset is never split. Without
    * `continueOnError`, the batches after one with a failure are not sent.
    *
+   * `signal` and `timeoutMs` stop the execution: the batch in flight is aborted and no later
+   * batch is sent. `timeoutMs` covers the whole execution, every batch included.
+   *
    * @param options - Execution options
    * @returns Batch execution result
    * @throws DataverseBatchError when a request fails and `continueOnError` is not set; or when a
-   *   later batch of a split one fails as a whole (its typed error is the `cause`)
+   *   later batch of a split one fails as a whole, is aborted or times out (its typed error is the
+   *   `cause`, and `result` holds what ran)
    * @throws DataverseODataError or DataverseThrottleError when a single (or the first) batch
    *   fails as a whole
+   * @throws DataverseAbortError, or DataverseNetworkError (`RequestTimeout`), when the execution
+   *   is aborted or times out before or during the first batch
    *
    * @example
    * ```typescript
@@ -325,17 +399,38 @@ export class BatchRequestBuilder {
     }
 
     const chunks = this.split(batchSize);
+    const execution = executionSignal(options.signal, options.timeoutMs);
+    try {
+      return await this.executeChunks(chunks, options, execution);
+    } finally {
+      execution.dispose();
+    }
+  }
+
+  /** Sends the batches one after the other, stopping when the execution is aborted. */
+  private async executeChunks(
+    chunks: BatchItem[][],
+    options: BatchExecutionOptions,
+    execution: ExecutionSignal
+  ): Promise<BatchExecutionResult> {
     const results: BatchExecutionResult[] = [];
     for (const [index, chunk] of chunks.entries()) {
       let chunkResult: BatchExecutionResult;
+      // An abort or timeout between two batches stops before the next one is sent.
+      const stopped = execution.signal?.aborted ?? false;
       try {
-        chunkResult = await this.executeSingleBatch(chunk, options);
-      } catch (err) {
+        if (stopped) throw stopError(execution, options.timeoutMs);
+        chunkResult = await this.executeSingleBatch(chunk, options, execution.signal);
+      } catch (caught) {
+        const err = fromStop(caught, execution, options.timeoutMs);
         if (index === 0) throw err;
         // Earlier batches have run: keep their results on the error.
         const result = this.mergeResults(results, chunks.slice(index));
+        const what = stopped
+          ? `Stopped before batch ${String(index + 1)} of ${String(chunks.length)}`
+          : `Batch ${String(index + 1)} of ${String(chunks.length)} failed as a whole`;
         throw batchError(
-          `Batch ${String(index + 1)} of ${String(chunks.length)} failed as a whole after ${String(index)} ran: ${err instanceof Error ? err.message : String(err)}`,
+          `${what} after ${String(index)} ran: ${err instanceof Error ? err.message : String(err)}`,
           result,
           err
         );
@@ -391,7 +486,8 @@ export class BatchRequestBuilder {
    */
   private async executeSingleBatch(
     items: BatchItem[],
-    options: BatchExecutionOptions
+    options: BatchExecutionOptions,
+    signal: AbortSignal | undefined
   ): Promise<BatchExecutionResult> {
     const boundary = generateBoundary();
     const batchBody = encodeBatchRequest(this.resolveItems(items), boundary);
@@ -412,6 +508,12 @@ export class BatchRequestBuilder {
       url: "$batch",
       headers,
       body: batchBody,
+      // timeoutMs is the whole execution's: it is in `signal`, with the caller's signal.
+      ...(signal ? { signal } : {}),
+      ...(options.attemptTimeoutMs !== undefined
+        ? { attemptTimeoutMs: options.attemptTimeoutMs }
+        : {}),
+      ...(options.correlationId ? { correlationId: options.correlationId } : {}),
     });
 
     // Dataverse answers a batch whose first failure is a 4xx or 5xx with that status, but the
@@ -574,6 +676,85 @@ async function partError(step: BatchResponseStep): Promise<Error> {
       raw: step.body,
     });
   }
+}
+
+/** The signal an execution sends its batches with: the caller's, plus the `timeoutMs` deadline. */
+interface ExecutionSignal {
+  signal: AbortSignal | undefined;
+  /** True once `timeoutMs` has passed (as opposed to the caller aborting). */
+  readonly expired: boolean;
+  /** Stops the timer and detaches from the caller's signal. */
+  dispose(): void;
+}
+
+/**
+ * Starts the signal for one execution. `timeoutMs` covers the whole execution, every batch of a
+ * split one included, so it is a deadline signal linked to the caller's rather than a per-request
+ * `timeoutMs`.
+ */
+function executionSignal(
+  caller: AbortSignal | undefined,
+  timeoutMs: number | undefined
+): ExecutionSignal {
+  if (!timeoutMs) return { signal: caller, expired: false, dispose: () => undefined };
+  const controller = new AbortController();
+  let expired = false;
+  const timer = setTimeout(() => {
+    if (controller.signal.aborted) return;
+    expired = true;
+    controller.abort(
+      new DOMException(`Request timed out after ${String(timeoutMs)}ms`, "TimeoutError")
+    );
+  }, timeoutMs);
+  const onAbort = (): void => {
+    controller.abort(caller?.reason);
+  };
+  if (caller?.aborted) onAbort();
+  else caller?.addEventListener("abort", onAbort, { once: true });
+  return {
+    signal: controller.signal,
+    get expired() {
+      return expired;
+    },
+    dispose() {
+      clearTimeout(timer);
+      caller?.removeEventListener("abort", onAbort);
+    },
+  };
+}
+
+/**
+ * The error for an execution that was stopped, as the client reports a stopped request:
+ * `DataverseNetworkError` (`RequestTimeout`) when `timeoutMs` passed or the caller's signal timed
+ * out (`AbortSignal.timeout()`), otherwise `DataverseAbortError`.
+ */
+function stopError(
+  execution: ExecutionSignal,
+  timeoutMs: number | undefined,
+  cause?: unknown
+): DataverseError {
+  if (execution.expired) return DataverseNetworkError.timeout(timeoutMs, cause);
+  const reason: unknown = execution.signal?.reason;
+  if (reason instanceof Error && reason.name === "TimeoutError") {
+    return DataverseNetworkError.timeout(undefined, cause ?? reason);
+  }
+  return new DataverseAbortError(undefined, cause ?? reason);
+}
+
+/**
+ * The error to report for a batch that failed. The client already turns an aborted request into
+ * an SDK error; an abort while the response body is read still rejects with the raw
+ * `AbortError` (or `TimeoutError`), which becomes the same SDK error here.
+ */
+function fromStop(
+  err: unknown,
+  execution: ExecutionSignal,
+  timeoutMs: number | undefined
+): unknown {
+  if (err instanceof DataverseError || !(err instanceof Error)) return err;
+  if (!execution.signal?.aborted) return err;
+  if (err.name !== "AbortError" && err.name !== "TimeoutError") return err;
+  return stopError(execution, timeoutMs, err);
 }
 
 /** A DataverseBatchError carrying the whole result. */

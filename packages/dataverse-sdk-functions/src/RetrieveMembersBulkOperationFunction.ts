@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
@@ -38,7 +42,7 @@ export class RetrieveMembersBulkOperationFunction implements Executable<Retrieve
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/bulkoperations(${this.bulkoperationId})/Microsoft.Dynamics.CRM.RetrieveMembersBulkOperation`;
+    let url = `${baseUrl}/bulkoperations(${odataLiteral.guid(this.bulkoperationId)})/Microsoft.Dynamics.CRM.RetrieveMembersBulkOperation`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();

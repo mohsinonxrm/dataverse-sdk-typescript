@@ -180,7 +180,21 @@ export class FileColumnClient {
     const size = knownSize(file) ?? options?.size;
     const columnUrl = `${this.baseUrl}/${entitySetName}(${normalizeGuid(recordId)})/${columnName}`;
 
-    if (method === "single" || (method === "patch-chunked" && size === 0)) {
+    // Dataverse stores an empty file only through the actions route, as an empty block list: a
+    // PATCH with no body is refused (400, 0x80060888) and so is an empty chunk (416), checked
+    // against a live org (#383). So a 0-byte file takes that route whatever `method` says.
+    if (size === 0) {
+      await this.uploadActions(
+        entitySetName,
+        recordId,
+        columnName,
+        file,
+        fileName,
+        size,
+        requestedChunk ?? DEFAULT_CHUNK_SIZE,
+        options
+      );
+    } else if (method === "single") {
       await this.uploadSingle(columnUrl, file, fileName, options);
     } else if (method === "patch-chunked") {
       if (size === undefined) {
@@ -252,6 +266,7 @@ export class FileColumnClient {
       index++;
     }
 
+    // An empty file has no blocks: committing an empty block list stores it (#383).
     // Step 3: Commit upload
     const mimeType =
       options?.mimeType ?? ((isBlob(file) && file.type) || "application/octet-stream");

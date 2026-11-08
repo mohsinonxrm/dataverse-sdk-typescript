@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { requestBody } from "./internal/requestBody.js";
 import type { AnyEntityPayload } from "./types/EntityPayload.js";
@@ -34,7 +38,7 @@ export class AddPrincipalToQueueAction implements Executable<AddPrincipalToQueue
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/queues(${this.queueId})/Microsoft.Dynamics.CRM.AddPrincipalToQueue`;
+    const url = `${baseUrl}/queues(${odataLiteral.guid(this.queueId)})/Microsoft.Dynamics.CRM.AddPrincipalToQueue`;
 
     const body = requestBody({
       Principal: this.parameters.Principal,

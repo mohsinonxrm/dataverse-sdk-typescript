@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the PublishTheme action.
@@ -20,7 +24,7 @@ export class PublishThemeAction implements Executable<PublishThemeResponse> {
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/themes(${this.themeId})/Microsoft.Dynamics.CRM.PublishTheme`;
+    const url = `${baseUrl}/themes(${odataLiteral.guid(this.themeId)})/Microsoft.Dynamics.CRM.PublishTheme`;
 
     return {
       method: "POST",

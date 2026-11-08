@@ -1,5 +1,9 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * PvaDeleteBotComponentCollection request message
@@ -18,7 +22,7 @@ export class PvaDeleteBotComponentCollectionRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/botcomponentcollections(${this.botcomponentcollectionId})/Microsoft.Dynamics.CRM.PvaDeleteBotComponentCollection`;
+    const url = `${baseUrl}/botcomponentcollections(${odataLiteral.guid(this.botcomponentcollectionId)})/Microsoft.Dynamics.CRM.PvaDeleteBotComponentCollection`;
 
     return {
       method: "POST",

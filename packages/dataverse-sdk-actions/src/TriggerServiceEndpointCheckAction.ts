@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the TriggerServiceEndpointCheck action.
@@ -20,7 +24,7 @@ export class TriggerServiceEndpointCheckAction implements Executable<TriggerServ
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/serviceendpoints(${this.serviceendpointId})/Microsoft.Dynamics.CRM.TriggerServiceEndpointCheck`;
+    const url = `${baseUrl}/serviceendpoints(${odataLiteral.guid(this.serviceendpointId)})/Microsoft.Dynamics.CRM.TriggerServiceEndpointCheck`;
 
     return {
       method: "POST",

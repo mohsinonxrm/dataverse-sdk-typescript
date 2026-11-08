@@ -129,10 +129,10 @@ describe("operation overloads (#75)", () => {
       ])
     );
     expect(await read("functions/RetrievePrincipalAccess_systemuserFunction.ts")).toContain(
-      "/systemusers(${this.systemuserId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess"
+      "/systemusers(${odataLiteral.guid(this.systemuserId)})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess"
     );
     expect(await read("functions/RetrievePrincipalAccess_teamFunction.ts")).toContain(
-      "/teams(${this.teamId})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess"
+      "/teams(${odataLiteral.guid(this.teamId)})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess"
     );
   });
 

@@ -34,7 +34,8 @@
     "test:browser": "pnpm --filter @mohsinonxrm/dataverse-sdk-browser-tests test:browser",
     "check:packages": "node scripts/check-packages.mjs && node scripts/check-require.mjs",
     "api:check": "node scripts/api-report.mjs",
-    "api:update": "node scripts/api-report.mjs --update"
+    "api:update": "node scripts/api-report.mjs --update",
+    "check:size": "node scripts/check-bundle-size.mjs"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",

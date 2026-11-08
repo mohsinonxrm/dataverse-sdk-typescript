@@ -132,11 +132,7 @@ export class RetryMiddleware implements Middleware {
         }
       } else if (!opt.retryableStatusCodes.includes(res.status)) {
         return done(res);
-      } else if (
-        res.status !== 429 &&
-        !opt.retryNonIdempotent &&
-        !isIdempotent(request.method, request.headers)
-      ) {
+      } else if (res.status !== 429 && !opt.retryNonIdempotent && !isIdempotent(request)) {
         // A 5xx from a gateway can arrive after Dataverse applied the request; replaying a
         // create, an action or an unconditional PATCH could apply it twice.
         ctx.logger?.debug("Not retrying a non-idempotent request after a server error", {
@@ -147,7 +143,7 @@ export class RetryMiddleware implements Middleware {
       } else if (
         res.status === 429 &&
         !opt.retryNonIdempotent &&
-        !isIdempotent(request.method, request.headers) &&
+        !isIdempotent(request) &&
         /^multipart\/mixed/i.test(contentType ?? "")
       ) {
         // A 429 is normally safe to replay: Dataverse rejects a throttled request before doing
@@ -201,7 +197,7 @@ export class RetryMiddleware implements Middleware {
     // connection can come after Dataverse applied a create or an action. Replaying those after a
     // network error takes `retryNetworkErrors: true` as well as `retryNonIdempotent: true`.
     if (opt.retryNetworkErrors === true && opt.retryNonIdempotent) return true;
-    return isIdempotent(request.method, request.headers);
+    return isIdempotent(request);
   }
 }
 
@@ -233,9 +229,11 @@ function definedOnly<T extends object>(o: T): Partial<T> {
 
 /**
  * Whether replaying the request can't apply it twice: GET, HEAD, OPTIONS, PUT and DELETE are
- * idempotent; PATCH is when it carries `If-Match` (so a replay can only update the same version).
+ * idempotent; PATCH is when it carries `If-Match` (so a replay can only update the same version);
+ * any request is when it says so (`idempotent: true`, e.g. a `$batch` of GETs).
  */
-function isIdempotent(method: string, headers: Record<string, string>): boolean {
+function isIdempotent({ method, headers, idempotent }: RequestInformation): boolean {
+  if (idempotent === true) return true;
   const m = method.toUpperCase();
   if (m === "GET" || m === "HEAD" || m === "OPTIONS" || m === "PUT" || m === "DELETE") return true;
   return m === "PATCH" && Boolean(headers["if-match"]);

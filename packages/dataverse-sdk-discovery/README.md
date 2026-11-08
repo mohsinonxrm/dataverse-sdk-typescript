@@ -142,14 +142,20 @@ the request, including a retry wait.
 
 ### Methods
 
-#### `listOrganizations(options?: DiscoveryOptions): Promise<OrganizationDetail[]>`
+#### `listOrganizations(options?: DiscoveryOptions)`
+
+```typescript
+listOrganizations(options?: DiscoveryOptions & { select?: undefined }): Promise<OrganizationDetail[]>
+listOrganizations<K extends keyof OrganizationDetail>(options: DiscoveryOptions & { select: readonly K[] }): Promise<Array<Pick<OrganizationDetail, K>>>
+listOrganizations(options?: DiscoveryOptions): Promise<Array<Partial<OrganizationDetail>>>
+```
 
 Lists all Dataverse organizations the authenticated user has access to.
 
 **Parameters:**
 
 - `options.filter`: OData filter expression (e.g., `"State eq 0"`). String comparisons are case sensitive. Sent as written: build it with `odata` from `@mohsinonxrm/dataverse-sdk-core` (or double each `'` yourself) when it contains user input. The helper methods escape their arguments.
-- `options.select`: Array of properties to return
+- `options.select`: The `OrganizationDetail` properties to return. Only those come back, so the rows are typed `Pick<OrganizationDetail, K>` for the selected properties `K`. When `select` may or may not be set (a `DiscoveryOptions` variable), the rows are `Partial<OrganizationDetail>`
 - `options.orderby`: Property to order results by
 - `options.signal`: `AbortSignal` to cancel the request
 
@@ -165,7 +171,7 @@ const allOrgs = await discovery.listOrganizations();
 // Enabled organizations only (State is an integer: 0 = enabled, 1 = disabled)
 const enabledOrgs = await discovery.listOrganizations({ filter: "State eq 0" });
 
-// Select just what an environment picker needs
+// Select just what an environment picker needs: Pick<OrganizationDetail, "FriendlyName" | "ApiUrl">[]
 const basicInfo = await discovery.listOrganizations({ select: ["FriendlyName", "ApiUrl"] });
 
 // Order by friendly name
@@ -216,7 +222,8 @@ console.log(`You have access to ${enabledOrgs.length} enabled organizations`);
 
 ### `toEnvironment(org: OrganizationDetail): DiscoveredEnvironment`
 
-A camel-cased summary of an `OrganizationDetail`:
+A camel-cased summary of an `OrganizationDetail`. It needs a full row: one without `Url` or
+`ApiUrl` (listed with a `select` that leaves them out) throws `DataverseInvalidRequestError`.
 
 ```typescript
 interface DiscoveredEnvironment {

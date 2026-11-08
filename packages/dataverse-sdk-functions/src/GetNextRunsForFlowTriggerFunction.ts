@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Response from the GetNextRunsForFlowTrigger function.
@@ -23,7 +27,7 @@ export class GetNextRunsForFlowTriggerFunction implements Executable<GetNextRuns
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/flowtriggers(${this.flowtriggerId})/Microsoft.Dynamics.CRM.GetNextRunsForFlowTrigger`;
+    let url = `${baseUrl}/flowtriggers(${odataLiteral.guid(this.flowtriggerId)})/Microsoft.Dynamics.CRM.GetNextRunsForFlowTrigger`;
 
     return {
       method: "GET",

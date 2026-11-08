@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { desktopflowbinary } from "./types/index.js";
 
 /**
@@ -28,7 +32,7 @@ export class RetrieveUnpublished_desktopflowbinaryFunction implements Executable
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/desktopflowbinaries(${this.desktopflowbinaryId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
+    let url = `${baseUrl}/desktopflowbinaries(${odataLiteral.guid(this.desktopflowbinaryId)})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
 
     return {
       method: "GET",

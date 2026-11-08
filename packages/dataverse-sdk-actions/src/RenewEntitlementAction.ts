@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { requestBody } from "./internal/requestBody.js";
 import type { entitlement } from "./types/index.js";
 
@@ -36,7 +40,7 @@ export class RenewEntitlementAction implements Executable<RenewEntitlementRespon
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/entitlements(${this.entitlementId})/Microsoft.Dynamics.CRM.RenewEntitlement`;
+    const url = `${baseUrl}/entitlements(${odataLiteral.guid(this.entitlementId)})/Microsoft.Dynamics.CRM.RenewEntitlement`;
 
     const body = requestBody({
       Status: this.parameters.Status,

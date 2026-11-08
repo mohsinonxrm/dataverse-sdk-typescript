@@ -4,6 +4,7 @@ import type {
   CsdlParameter as _CsdlParameter,
 } from "../parsers/csdl-types.js";
 import { resolve, join } from "path";
+import { compareStrings } from "../parsers/canonical.js";
 import {
   csdlTypeToTs,
   toPascalCase as _toPascalCase,
@@ -40,7 +41,13 @@ import {
   ENTITY_PAYLOAD_SOURCE,
   entityParameterType,
 } from "../utils/entity-payload.js";
-import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
+import {
+  collectionBinding,
+  coreImport,
+  ENTITY_SET_PARAM,
+  isRecordBound,
+  recordSegment,
+} from "../utils/binding.js";
 
 /**
  * Map Complex* types to their non-Complex EntityType equivalents.
@@ -212,7 +219,7 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
     }
   }
 
-  let code = `import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';\n`;
+  let code = coreImport(isRecordBound(action));
 
   // EntityReference is needed by the return type's declaration or by a parameter
   let needsEntityReference = ret.needsEntityReference;
@@ -381,12 +388,12 @@ function generateActionClass(csdl: CsdlSchema, action: CsdlAction, stem = action
     const entitySetName = getEntitySetName(action.bindingParameter.type, csdl.entitySetMap);
 
     if (entitySetName) {
-      code += `    const url = \`\${baseUrl}/${entitySetName}(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
+      code += `    const url = \`\${baseUrl}/${recordSegment(entitySetName, bindingParam.name)}/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
     } else {
       // Fallback: extract entity type name from binding parameter type
       const entityTypeName = extractEntityTypeName(action.bindingParameter.type);
       code += `    // WARNING: Entity set not found in metadata, using entity type name as fallback\n`;
-      code += `    const url = \`\${baseUrl}/${entityTypeName}s(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
+      code += `    const url = \`\${baseUrl}/${recordSegment(`${entityTypeName}s`, bindingParam.name)}/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
     }
   } else if (collection) {
     // Collection-bound action: POST /{entityset}/Microsoft.Dynamics.CRM.{name}
@@ -448,7 +455,7 @@ function generateActionsIndex(
       stem: stems.get(op) ?? op.name,
       hasParameters: op.parameters.some((p) => p.name),
     }))
-    .sort((a, b) => a.stem.localeCompare(b.stem));
+    .sort((a, b) => compareStrings(a.stem, b.stem));
   for (const { stem, hasParameters } of entries) {
     // The parameters interface of the constructor (#96)
     const parameters = hasParameters ? `, type ${parametersInterfaceName(`${stem}Action`)}` : "";

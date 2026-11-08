@@ -4,6 +4,7 @@ import type {
   CsdlParameter as _CsdlParameter,
 } from "../parsers/csdl-types.js";
 import { resolve, join } from "path";
+import { compareStrings } from "../parsers/canonical.js";
 import {
   csdlTypeToTs,
   csdlTypeToTsWithExpansion as _csdlTypeToTsWithExpansion,
@@ -38,7 +39,13 @@ import { ENTITY_REFERENCE_EXPORT, ENTITY_REFERENCE_IMPORT } from "../utils/entit
 import { operationNames } from "../utils/overloads.js";
 import { polymorphicParameterType } from "../utils/polymorphism.js";
 import { messageResponseClass, operationReturn } from "../utils/operation-return.js";
-import { collectionBinding, ENTITY_SET_PARAM } from "../utils/binding.js";
+import {
+  collectionBinding,
+  coreImport,
+  ENTITY_SET_PARAM,
+  isRecordBound,
+  recordSegment,
+} from "../utils/binding.js";
 
 /**
  * Map Complex* types to their non-Complex EntityType equivalents.
@@ -183,7 +190,7 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction, stem = actio
   let needsEntityReference = false;
 
   let code = `import { OrganizationRequest, OrganizationResponse } from './OrganizationRequest.js';\n`;
-  code += `import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';\n`;
+  code += coreImport(isRecordBound(action));
 
   // Check parameters for complex types and EntityReference
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -415,12 +422,12 @@ function generateToRequestInformation(
     const entitySetName = getEntitySetName(action.bindingParameter.type, csdl.entitySetMap);
 
     if (entitySetName) {
-      code += `    const url = \`\${baseUrl}/${entitySetName}(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
+      code += `    const url = \`\${baseUrl}/${recordSegment(entitySetName, bindingParam.name)}/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
     } else {
       // Fallback: extract entity type name from binding parameter type
       const entityTypeName = extractEntityTypeName(action.bindingParameter.type);
       code += `    // WARNING: Entity set not found in metadata, using entity type name as fallback\n`;
-      code += `    const url = \`\${baseUrl}/${entityTypeName}s(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
+      code += `    const url = \`\${baseUrl}/${recordSegment(`${entityTypeName}s`, bindingParam.name)}/Microsoft.Dynamics.CRM.${action.name}\`;\n\n`;
     }
   } else if (isCollectionBound && action.bindingParameter) {
     // Collection-bound action: POST /{entityset}/Microsoft.Dynamics.CRM.{name} (#69)
@@ -498,7 +505,7 @@ function generateMessagesIndex(
       hasParameters: op.parameters.some((p) => p.name),
       hasResult: op.returnType !== undefined,
     }))
-    .sort((a, b) => a.stem.localeCompare(b.stem));
+    .sort((a, b) => compareStrings(a.stem, b.stem));
   for (const { stem, hasParameters, hasResult } of entries) {
     // The parameters interface of the constructor (#96), and the type of `result` (#300)
     const parameters = hasParameters ? `, type ${parametersInterfaceName(`${stem}Request`)}` : "";

@@ -86,11 +86,15 @@ describe("#74: message entity payloads", () => {
 
   it("a trailing parameter without Nullable=false can be left out", async () => {
     const { client, fake } = createTestClient();
-    fake.on("POST", "/workflows(w1)/Microsoft.Dynamics.CRM.ExecuteWorkflow", () =>
-      jsonResponse({ asyncoperationid: "j1" })
+    fake.on(
+      "POST",
+      "/workflows(00000000-0000-0000-0000-0000000000f1)/Microsoft.Dynamics.CRM.ExecuteWorkflow",
+      () => jsonResponse({ asyncoperationid: "j1" })
     );
 
-    await client.execute(new ExecuteWorkflowRequest("w1", { EntityId: "a1" }));
+    await client.execute(
+      new ExecuteWorkflowRequest("00000000-0000-0000-0000-0000000000f1", { EntityId: "a1" })
+    );
 
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({ EntityId: "a1" });
   });

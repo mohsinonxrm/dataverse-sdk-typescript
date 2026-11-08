@@ -1,4 +1,8 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { mobileofflineprofileitem } from "./types/index.js";
 
 /**
@@ -28,7 +32,7 @@ export class RetrieveUnpublished_mobileofflineprofileitemFunction implements Exe
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/mobileofflineprofileitems(${this.mobileofflineprofileitemId})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
+    let url = `${baseUrl}/mobileofflineprofileitems(${odataLiteral.guid(this.mobileofflineprofileitemId)})/Microsoft.Dynamics.CRM.RetrieveUnpublished`;
 
     return {
       method: "GET",
