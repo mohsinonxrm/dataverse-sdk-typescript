@@ -4,6 +4,7 @@
 
 import {
   DataverseAbortError,
+  DataverseInvalidRequestError,
   odataLiteral,
   odataKey,
   Prefer,
@@ -55,6 +56,20 @@ interface PendingLookup {
 /** The error an aborted operation rejects with, the same type the core client throws. */
 function abortError(signal: AbortSignal): DataverseAbortError {
   return new DataverseAbortError(undefined, signal.reason);
+}
+
+/**
+ * The record a `Prefer: return=representation` write resolved, or a `DataverseInvalidRequestError`
+ * when the response had none (a 204 or an empty body), rather than a made-up record.
+ */
+function representation<T>(record: T | undefined, operation: "create" | "update"): T {
+  if (record === undefined || record === null) {
+    throw new DataverseInvalidRequestError(
+      `${operation}() with returnRepresentation got no representation back: the response had no ` +
+        "record (204 No Content or an empty body), so there is nothing to return."
+    );
+  }
+  return record;
 }
 
 /** The request options that carry a caller's signal, or `undefined` without one. */
@@ -127,8 +142,8 @@ export class OrganizationService {
    * `associate()`) use this. It reads `EntityDefinitions(LogicalName='…')?$select=EntitySetName`
    * once per logical name and caches the answer on this service. Names given with
    * `options.entitySetNames` or {@link setEntitySetName} are used without a lookup. A failed
-   * lookup rejects (with the core `DataverseError`, e.g. 404 for an unknown table) and is not
-   * cached.
+   * lookup rejects (with the core `DataverseError`, e.g. 404 for an unknown table, or
+   * `DataverseInvalidRequestError` when the definition has no `EntitySetName`) and is not cached.
    *
    * Concurrent callers share one lookup. Aborting a caller's `signal` rejects that caller's
    * promise; the lookup request itself is aborted once every caller waiting on it has aborted.
@@ -179,7 +194,9 @@ export class OrganizationService {
       .get<{ EntitySetName?: string } | undefined>({ signal: controller.signal })
       .then((definition) => {
         if (!definition?.EntitySetName) {
-          throw new Error(`EntityDefinitions returned no EntitySetName for '${logicalName}'.`);
+          throw new DataverseInvalidRequestError(
+            `EntityDefinitions returned no EntitySetName for '${logicalName}'.`
+          );
         }
         return definition.EntitySetName;
       });
@@ -222,7 +239,8 @@ export class OrganizationService {
    *
    * Without `returnRepresentation` this resolves the new record's id, read from the
    * `OData-EntityId` response header. With it, the request sends
-   * `Prefer: return=representation` and resolves the created record.
+   * `Prefer: return=representation` and resolves the created record; a response with no record
+   * (a 204 or an empty body) rejects with `DataverseInvalidRequestError`.
    *
    * @typeParam T - The created record's type when `returnRepresentation` is true; without one,
    *   {@link EntityRecord}
@@ -230,6 +248,8 @@ export class OrganizationService {
    * @param entity - The columns to set: an object literal, or an object of your own record type
    * @param options - Optional creation settings
    * @returns The ID of the created record, or the record when `returnRepresentation` is true
+   * @throws {DataverseInvalidRequestError} With `returnRepresentation`, when the response has no
+   *   record
    *
    * @example
    * ```typescript
@@ -271,8 +291,7 @@ export class OrganizationService {
     const requestOptions = this.applyWriteOptions(builder, options);
 
     if (options?.returnRepresentation) {
-      const created = await builder.post<T | undefined>(entity, requestOptions);
-      return created ?? ({} as T);
+      return representation(await builder.post<T | undefined>(entity, requestOptions), "create");
     }
 
     return builder.createAndGetId(entity, requestOptions);
@@ -337,6 +356,8 @@ export class OrganizationService {
    * @param entity - The columns to change: an object literal, or an object of your own record type
    * @param options - Optional update settings
    * @returns The updated record if returnRepresentation is true, otherwise nothing
+   * @throws {DataverseInvalidRequestError} With `returnRepresentation`, when the response has no
+   *   record (a 204 or an empty body)
    *
    * @example
    * ```typescript
@@ -395,7 +416,7 @@ export class OrganizationService {
 
     const updated = await builder.patch<T | undefined>(entity, requestOptions);
     if (options?.returnRepresentation) {
-      return updated ?? ({} as T);
+      return representation(updated, "update");
     }
     return undefined;
   }
@@ -721,8 +742,8 @@ export class OrganizationService {
    * @param request - The message request to execute (must implement Executable<T> interface)
    * @param options - Optional settings, such as a `signal` to cancel the request
    * @returns The message response
-   * @throws Error when `request` has no `toRequestInformation()` and `parseResponse()` methods
-   *   (possible only from JavaScript or through a cast)
+   * @throws {DataverseInvalidRequestError} When `request` has no `toRequestInformation()` and
+   *   `parseResponse()` methods (possible only from JavaScript or through a cast)
    *
    * @example
    * ```typescript
@@ -752,7 +773,7 @@ export class OrganizationService {
       return await this.client.execute(request, signalOptions(options));
     }
 
-    throw new Error(
+    throw new DataverseInvalidRequestError(
       "Request must implement Executable<T> interface with toRequestInformation() and parseResponse() methods. " +
         "Use generated classes from @mohsinonxrm/dataverse-sdk-messages, @mohsinonxrm/dataverse-sdk-actions, or @mohsinonxrm/dataverse-sdk-functions."
     );

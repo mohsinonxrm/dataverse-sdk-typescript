@@ -3,7 +3,7 @@
  * override, never from guessing a plural.
  */
 import { describe, it, expect } from "vitest";
-import { DataverseError } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseError, DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
 import {
   TEST_API_URL,
   createTestClient,
@@ -106,6 +106,20 @@ describe("#76: OrganizationService resolves entity set names from metadata", () 
     fake.on("GET", "/EntityDefinitions(LogicalName='new_odd')", () => jsonResponse({}));
     const service = new OrganizationService(client);
     await expect(service.getEntitySetName("new_odd")).rejects.toThrow(/no EntitySetName/);
+  });
+
+  it.each([
+    ["no EntitySetName", () => jsonResponse({})],
+    ["a 204", () => noContent()],
+  ])("a definition with %s rejects with a DataverseError (#381)", async (_, response) => {
+    const { client, fake } = createTestClient();
+    fake.on("GET", "/EntityDefinitions(LogicalName='new_odd')", response);
+    const service = new OrganizationService(client);
+
+    const lookup = service.getEntitySetName("new_odd");
+
+    await expect(lookup).rejects.toBeInstanceOf(DataverseInvalidRequestError);
+    await expect(lookup).rejects.toBeInstanceOf(DataverseError);
   });
 
   it("escapes quotes in the logical name", async () => {
