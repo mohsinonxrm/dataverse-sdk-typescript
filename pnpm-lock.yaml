@@ -467,6 +467,12 @@ importers:
       '@mohsinonxrm/dataverse-sdk-actions':
         specifier: workspace:*
         version: link:../dataverse-sdk-actions
+      '@mohsinonxrm/dataverse-sdk-appinsights':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-appinsights
+      '@mohsinonxrm/dataverse-sdk-auth-azure-identity':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-auth-azure-identity
       '@mohsinonxrm/dataverse-sdk-auth-msal-node':
         specifier: workspace:*
         version: link:../dataverse-sdk-auth-msal-node
@@ -491,22 +497,40 @@ importers:
       '@mohsinonxrm/dataverse-sdk-metadata':
         specifier: workspace:*
         version: link:../dataverse-sdk-metadata
+      '@mohsinonxrm/dataverse-sdk-otel':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-otel
       '@mohsinonxrm/dataverse-sdk-xrm':
         specifier: workspace:*
         version: link:../dataverse-sdk-xrm
     devDependencies:
+      '@azure/identity':
+        specifier: ^4.14.1
+        version: 4.14.1
       '@mohsinonxrm/dataverse-sdk-entities-runtime':
         specifier: workspace:*
         version: link:../dataverse-sdk-entities-runtime
       '@mohsinonxrm/dataverse-sdk-generator':
         specifier: workspace:*
         version: link:../dataverse-sdk-generator
-      '@mohsinonxrm/dataverse-sdk-otel':
-        specifier: workspace:*
-        version: link:../dataverse-sdk-otel
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.10.0
+      '@opentelemetry/api-logs':
+        specifier: ^0.221.0
+        version: 0.221.0
+      '@opentelemetry/context-async-hooks':
+        specifier: ^2.10.0
+        version: 2.12.0(@opentelemetry/api@1.10.0)
+      '@opentelemetry/core':
+        specifier: ^2.10.0
+        version: 2.12.0(@opentelemetry/api@1.10.0)
+      '@opentelemetry/sdk-logs':
+        specifier: ^0.221.0
+        version: 0.221.0(@opentelemetry/api@1.10.0)
+      '@opentelemetry/sdk-trace-base':
+        specifier: ^2.10.0
+        version: 2.12.0(@opentelemetry/api@1.10.0)
       '@types/xrm':
         specifier: ^9.0.97
         version: 9.0.97

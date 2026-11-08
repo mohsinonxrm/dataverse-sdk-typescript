@@ -80,9 +80,10 @@ const useStyles = makeStyles({
 });
 
 /**
- * Shown while nobody is signed in: the demo (no sign-in), and Microsoft sign-in to the visitor's
- * own environment with their own app registration. Nothing here is a secret: the environment URL,
- * client id and tenant are kept in localStorage for the next visit.
+ * Shown while nobody is signed in: the demo (no sign-in), and Microsoft sign-in with the site's
+ * default app registration or the visitor's own, to an environment URL typed here or, without
+ * one, to the environment picker. Nothing here is a secret: the environment URL, client id and
+ * tenant are kept in localStorage for the next visit.
  */
 export default function SignInPage() {
   const styles = useStyles();
@@ -169,7 +170,8 @@ export default function SignInPage() {
                 Use your own environment
               </Subtitle1>
               <Caption1 className={styles.muted}>
-                You need an app registration in Microsoft Entra ID: platform &quot;Single-page
+                Sign in with a work or school account, then pick one of your environments, or enter
+                its URL here. The app registration needs the platform &quot;Single-page
                 application&quot; with the redirect URI{" "}
                 <span className={styles.code}>{redirectUri()}</span>, and the delegated permission{" "}
                 <span className={styles.code}>Dynamics CRM / user_impersonation</span>. Requests go
@@ -182,13 +184,12 @@ export default function SignInPage() {
                 noValidate
               >
                 <Field
-                  label="Environment URL"
-                  required
+                  label="Environment URL (optional)"
                   validationMessage={shown.environmentUrl}
                   hint={
                     shown.environmentUrl
                       ? undefined
-                      : "For example https://contoso.crm.dynamics.com"
+                      : "For example https://contoso.crm.dynamics.com. Leave it empty to choose from your environments after signing in."
                   }
                 >
                   <Input

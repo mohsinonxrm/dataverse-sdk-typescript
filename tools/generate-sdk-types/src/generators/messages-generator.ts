@@ -358,10 +358,14 @@ function generateMessageClass(csdl: CsdlSchema, action: CsdlAction, stem = actio
 
   // Return type: `result` is the value the action of the same name resolves (#70, #300)
   const resultName = `${stem}Result`;
-  const ret = operationReturn(csdl, action.returnType, resultName, `${action.name} action`, [
-    requestClassName,
-    responseClassName,
-  ]);
+  const ret = operationReturn(
+    csdl,
+    action.returnType,
+    resultName,
+    `${action.name} action`,
+    [requestClassName, responseClassName],
+    action.name
+  );
   for (const t of ret.imports) complexTypesUsed.add(t);
   if (ret.needsEntityReference) needsEntityReference = true;
   const response = messageResponseClass(ret, responseClassName, resultName, action.name);
@@ -611,10 +615,14 @@ function generateFunctionMessageClass(
   const responseClassName = `${stem}Response`;
   const resultName = `${stem}Result`;
 
-  const ret = operationReturn(csdl, func.returnType, resultName, `${func.name} function`, [
-    requestClassName,
-    responseClassName,
-  ]);
+  const ret = operationReturn(
+    csdl,
+    func.returnType,
+    resultName,
+    `${func.name} function`,
+    [requestClassName, responseClassName],
+    func.name
+  );
   const response = messageResponseClass(ret, responseClassName, resultName, func.name, "function");
 
   // The record id of a bound function is named as in the action-backed messages

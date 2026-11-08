@@ -12,6 +12,7 @@
  * | collection (`Collection(…)`)         | `{ "@odata.context", "value": [ … ] }`         | the array (`[]` for a 204)          |
  * | complex type                         | the complex value, with `@odata.context`       | the body                            |
  * | entity (or `crmbaseentity`)          | the record, with `@odata.context`, `@odata.etag` | the body (`null` for a 204)       |
+ * | in {@link NO_CONTENT_OPERATIONS}     | `204 No Content`, although a return is declared | `null` (a body, if any, as above) |
  *
  * Primitive and collection values are unwrapped from `value`. A complex or entity value is the
  * body itself, with its annotations, as `retrieve()` returns a record: `@odata.etag` is the
@@ -20,6 +21,10 @@
  * Dataverse answers `204 No Content` for an entity or entity-collection output that wasn't set,
  * although the CSDL says `Nullable="false"`; that is `null` and `[]`. A complex output that
  * wasn't set is still a 200, with the properties `null`.
+ *
+ * A few operations always answer `204 No Content` although the CSDL declares a primitive or
+ * complex return type (`UpsertMultiple`): {@link NO_CONTENT_OPERATIONS}. Their value is typed
+ * `<Type> | null` and is `null` for the 204; a body, if Dataverse ever sends one, is still read.
  */
 import type { CsdlSchema } from "../parsers/csdl-types.js";
 import { SYSTEM_ENTITIES } from "./polymorphism.js";
@@ -56,6 +61,45 @@ const EDM_TYPES: Record<string, string> = {
   TimeOfDay: "string",
 };
 
+/**
+ * Operations Dataverse answers `204 No Content` although the CSDL declares a return type, by
+ * their CSDL name, with the documentation that says so. Reading their response as JSON throws
+ * ("Unexpected end of JSON input"), so their generated `parseResponse` resolves `null` for a 204
+ * and their value is typed `<Type> | null`. Only a primitive or complex return is affected: an
+ * entity is already `null` for a 204, a collection `[]`.
+ *
+ * dataverse-gen keeps the same list in packages/dataverse-sdk-generator/src/no-content-operations.ts
+ * (test/return-shapes.test.ts checks that the two agree).
+ */
+export const NO_CONTENT_OPERATIONS: Readonly<Record<string, { reason: string; docs: string }>> = {
+  UpsertMultiple: {
+    reason:
+      "The `UpsertMultiple` action returns `204 NoContent`. The `UpsertMultipleResponse` complex type isn't returned.",
+    docs: "https://learn.microsoft.com/power-apps/developer/data-platform/bulk-operations#examples",
+  },
+};
+
+/** The doc comment lines for an operation in {@link NO_CONTENT_OPERATIONS}. */
+function noContentDoc(operation: string): string {
+  const entry = NO_CONTENT_OPERATIONS[operation];
+  const text =
+    `\`null\` when the Web API answers 204 No Content, as it does for ${operation} although the ` +
+    `CSDL declares a return type: "${entry.reason}"`;
+  // Wrapped at 100 columns, as prettier leaves comments as they are
+  const lines: string[] = [];
+  let line = "";
+  for (const word of text.split(" ")) {
+    if (line !== "" && ` * ${line} ${word}`.length > 100) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = line === "" ? word : `${line} ${word}`;
+    }
+  }
+  lines.push(line);
+  return `${lines.map((l) => ` * ${l}\n`).join("")} *\n * @see ${entry.docs}\n`;
+}
+
 /** How an operation's response is typed and read. */
 export interface OperationReturn {
   kind: ReturnKind;
@@ -65,6 +109,11 @@ export interface OperationReturn {
   needsEntityReference: boolean;
   /** `export type|interface <name> …`: the value `execute()` resolves. */
   declaration: string;
+  /**
+   * The operation is in {@link NO_CONTENT_OPERATIONS}: the value is `null` for a 204 (set only
+   * for a primitive or complex return).
+   */
+  noContent?: boolean;
 }
 
 /** What a return type is: its kind and, for a collection, the kind of its elements. */
@@ -101,13 +150,15 @@ function arrayOf(element: string): string {
  * @param name - Name of the declaration (`WhoAmIResponse`; `WhoAmIResult` in a message).
  * @param label - What the operation is, for the doc comment (`WhoAmI function`).
  * @param reserved - Names already used in the file: a type named like one is imported as `…Data`.
+ * @param operation - The operation's CSDL name, looked up in {@link NO_CONTENT_OPERATIONS}.
  */
 export function operationReturn(
   csdl: CsdlSchema,
   returnType: string | undefined,
   name: string,
   label: string,
-  reserved: readonly string[] = []
+  reserved: readonly string[] = [],
+  operation?: string
 ): OperationReturn {
   const imports: string[] = [];
   let needsEntityReference = false;
@@ -135,6 +186,11 @@ export function operationReturn(
   }
 
   const { element, name: elementName } = classify(csdl, returnType);
+  const noContentOf =
+    operation !== undefined && Object.hasOwn(NO_CONTENT_OPERATIONS, operation)
+      ? operation
+      : undefined;
+  const noContent = noContentOf !== undefined;
   const elementType = (): string => {
     switch (element) {
       case "primitive":
@@ -171,12 +227,14 @@ export function operationReturn(
     doc += ` * The value, read from the \`value\` of the response body.\n`;
     if (element === "enum")
       doc += ` * An enum value is its member name (names separated by ", " for flags).\n`;
+    if (noContentOf !== undefined) doc += noContentDoc(noContentOf);
     doc += ` */\n`;
     return {
       kind: "primitive",
       imports,
       needsEntityReference,
-      declaration: `${doc}export type ${name} = ${elementType()};\n`,
+      declaration: `${doc}export type ${name} = ${elementType()}${noContent ? " | null" : ""};\n`,
+      ...(noContent ? { noContent } : {}),
     };
   }
 
@@ -196,10 +254,14 @@ export function operationReturn(
   }
 
   // A complex type: the body itself, its properties expanded with their CSDL nullability
-  doc += ` * The response body itself, with its \`@odata.context\` (not wrapped in \`value\`).\n */\n`;
+  doc += ` * The response body itself, with its \`@odata.context\` (not wrapped in \`value\`).\n`;
+  if (noContentOf !== undefined) doc += noContentDoc(noContentOf);
+  doc += ` */\n`;
   const qualified = returnType.replace(/^mscrm\./, "Microsoft.Dynamics.CRM.");
   const complexType = csdl.complexTypes.find((c) => `${c.namespace}.${c.name}` === qualified);
-  let declaration = `${doc}export interface ${name} {\n`;
+  let declaration = noContent
+    ? `${doc}export type ${name} = {\n`
+    : `${doc}export interface ${name} {\n`;
   declaration += `  "@odata.context"?: string;\n`;
   for (const prop of complexType?.properties ?? []) {
     let tsType = csdlTypeToTsWithExpansion(prop.type, csdl);
@@ -213,8 +275,14 @@ export function operationReturn(
     const optional = prop.nullable ? "?" : "";
     declaration += `  ${prop.name}${optional}: ${tsType};\n`;
   }
-  declaration += `}\n`;
-  return { kind: "complex", imports: [...new Set(imports)], needsEntityReference, declaration };
+  declaration += noContent ? `} | null;\n` : `}\n`;
+  return {
+    kind: "complex",
+    imports: [...new Set(imports)],
+    needsEntityReference,
+    declaration,
+    ...(noContent ? { noContent } : {}),
+  };
 }
 
 /**
@@ -231,9 +299,13 @@ export function parseResponseMethod(ret: OperationReturn, typeName: string): str
     return code;
   }
   let code = `  async parseResponse(response: Response): Promise<${typeName}> {\n`;
-  code += parseResponseLines(ret.kind, "    ", (data) => `${data} as ${typeName}`, {
-    wrapped: (data) => `(${data} as { value: ${typeName} }).value`,
-  });
+  code += parseResponseLines(
+    ret.kind,
+    "    ",
+    (data) => `${data} as ${typeName}`,
+    { wrapped: (data) => `(${data} as { value: ${typeName} }).value` },
+    ret.noContent === true
+  );
   code += `  }\n`;
   return code;
 }
@@ -243,17 +315,24 @@ export function parseResponseMethod(ret: OperationReturn, typeName: string): str
  *
  * @param body - Expression for the value of a body that is the value itself.
  * @param read.wrapped - Expression for the value of a body wrapped in `value`.
+ * @param noContent - The operation is in {@link NO_CONTENT_OPERATIONS}: `null` for a 204.
  */
 function parseResponseLines(
   kind: Exclude<ReturnKind, "none">,
   indent: string,
   body: (data: string) => string,
-  read: { wrapped: (data: string) => string }
+  read: { wrapped: (data: string) => string },
+  noContent = false
 ): string {
   const json = "(await response.json())";
+  const nullFor204 = noContent
+    ? `${indent}// Dataverse answers 204 No Content although the CSDL declares a return type\n` +
+      `${indent}if (response.status === 204) return null;\n`
+    : "";
   switch (kind) {
     case "primitive":
       return (
+        nullFor204 +
         `${indent}// A primitive comes wrapped: { "@odata.context": "…", "value": … }\n` +
         `${indent}return ${read.wrapped(json)};\n`
       );
@@ -266,6 +345,7 @@ function parseResponseLines(
       );
     case "complex":
       return (
+        nullFor204 +
         `${indent}// The body is the complex value, with its @odata.context\n` +
         `${indent}return ${body(json)};\n`
       );
@@ -313,7 +393,8 @@ export function messageResponseClass(
     ret.kind,
     "    ",
     (data) => `${responseClassName}.fromResponse(${data})`,
-    { wrapped: (data) => `${responseClassName}.fromResponse(${data})` }
+    { wrapped: (data) => `${responseClassName}.fromResponse(${data})` },
+    ret.noContent === true
   )
     .replace("return [];", `return ${responseClassName}.fromResponse(undefined);`)
     .replace("return null;", `return ${responseClassName}.fromResponse(undefined);`);
@@ -322,13 +403,15 @@ export function messageResponseClass(
   let read: string;
   switch (ret.kind) {
     case "primitive":
-      read = `(data as { value: ${resultName} }).value`;
+      read = ret.noContent
+        ? `data === undefined ? null : (data as { value: ${resultName} }).value`
+        : `(data as { value: ${resultName} }).value`;
       break;
     case "collection":
       read = `data === undefined ? [] : (data as { value: ${resultName} }).value`;
       break;
     case "complex":
-      read = `data as ${resultName}`;
+      read = ret.noContent ? `(data ?? null) as ${resultName}` : `data as ${resultName}`;
       break;
     case "entity":
       read = `(data ?? null) as ${resultName}`;

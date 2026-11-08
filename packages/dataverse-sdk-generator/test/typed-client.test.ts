@@ -162,7 +162,11 @@ describe("typed per-entity-set request builders (#312)", () => {
     expect(source).toContain(
       "  readonly accounts: EntitySetClient<Account, AccountCreate, AccountUpdate, AccountColumn>;"
     );
-    expect(source).toMatch(/export type AccountColumn =\n {2}\| "accountid"/);
+    // Columns in name order
+    expect(source).toMatch(
+      /export type AccountColumn =\r?\n {2}\| "_contoso_parentaccountid_value"/
+    );
+    expect(source).toContain('  | "accountid"');
     expect(await fs.readFile(path.join(dir, "index.ts"), "utf-8")).toContain(
       "export * from './client.js';"
     );

@@ -6,7 +6,14 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { adminConsentUrl, canSignIn, normalizeUrl, validateSettings } from "../../src/config";
+import { DISCOVERY_ORIGIN } from "../../src/auth/environments";
+import {
+  adminConsentUrl,
+  canSignIn,
+  normalizeUrl,
+  validateEnvironmentUrl,
+  validateSettings,
+} from "../../src/config";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -49,6 +56,17 @@ describe("staticwebapp.config.json", () => {
     expect(csp.get("frame-src")).toEqual(["https://login.microsoftonline.com"]);
   });
 
+  it("lets the environment picker call the Global Discovery Service", () => {
+    // `https://*.dynamics.com` matches any subdomain depth, globaldisco.crm.dynamics.com too.
+    const host = new URL(DISCOVERY_ORIGIN).hostname;
+    const allowed = (csp.get("connect-src") ?? []).some((source) => {
+      const m = /^https:\/\/\*\.(.+)$/.exec(source);
+      return m?.[1] !== undefined && host.endsWith(`.${m[1]}`);
+    });
+    expect(DISCOVERY_ORIGIN).toBe("https://globaldisco.crm.dynamics.com");
+    expect(allowed).toBe(true);
+  });
+
   it("can't be framed, and is HTTPS only", () => {
     expect(csp.get("frame-ancestors")).toEqual(["'none'"]);
     expect(swa.globalHeaders["Strict-Transport-Security"]).toMatch(/max-age=\d{7,}/);
@@ -73,9 +91,16 @@ describe("sign-in settings", () => {
     expect(canSignIn(good)).toBe(true);
   });
 
+  it("lets the environment URL be left out, to pick one after signing in", () => {
+    expect(validateSettings({ ...good, environmentUrl: "  " })).toEqual({});
+    expect(canSignIn({ ...good, environmentUrl: "" })).toBe(true);
+    // The picker's own URL box requires one.
+    expect(validateEnvironmentUrl("")).toBe("Enter your environment's URL.");
+    expect(validateEnvironmentUrl("https://contoso.crm4.dynamics.com")).toBeUndefined();
+  });
+
   it("says what's wrong with each field", () => {
     expect(validateSettings({ environmentUrl: "", clientId: "", tenantId: "" })).toEqual({
-      environmentUrl: "Enter your environment's URL.",
       clientId: "Enter the application (client) id of your app registration.",
     });
     const errors = validateSettings({
