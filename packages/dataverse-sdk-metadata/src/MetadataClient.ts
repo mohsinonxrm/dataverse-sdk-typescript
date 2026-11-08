@@ -89,6 +89,15 @@ export interface MetadataQueryOptions {
   labelLanguages?: number | number[];
 }
 
+/** Options of `getRelationshipByMetadataId`: the query options, and the kind to read it as. */
+export interface RelationshipQueryOptions extends Omit<MetadataQueryOptions, "filter"> {
+  /**
+   * Read the relationship as this kind, so its own properties can be selected
+   * (`/RelationshipDefinitions(id)/Microsoft.Dynamics.CRM.<cast>`).
+   */
+  cast?: "OneToManyRelationshipMetadata" | "ManyToManyRelationshipMetadata";
+}
+
 /**
  * The attribute types `getAttributeDefinitions` and `getAttributeDefinition` can cast to, and
  * the metadata type each one returns.
@@ -626,19 +635,42 @@ export class MetadataClient {
   }
 
   /**
-   * Get a relationship by metadata ID
+   * Get a relationship by metadata ID.
+   *
+   * `RelationshipDefinitions` holds the base type, so properties of one kind of relationship
+   * (`ReferencedEntity`, `Entity1LogicalName`, …) can be selected only with a `cast`:
+   *
+   * ```typescript
+   * const rel = await md.getRelationshipByMetadataId(id, {
+   *   cast: "OneToManyRelationshipMetadata",
+   *   select: ["SchemaName", "ReferencedEntity", "ReferencingEntity"],
+   * });
+   * ```
    * @param metadataId Relationship metadata ID
-   * @param options Query options
+   * @param options Query options, and `cast` to read the relationship as one kind
    * @returns Relationship metadata
    */
   async getRelationshipByMetadataId(
     metadataId: string,
-    options?: Omit<MetadataQueryOptions, "filter">
+    options: Omit<MetadataQueryOptions, "filter"> & { cast: "OneToManyRelationshipMetadata" }
+  ): Promise<OneToManyRelationshipMetadata>;
+  async getRelationshipByMetadataId(
+    metadataId: string,
+    options: Omit<MetadataQueryOptions, "filter"> & { cast: "ManyToManyRelationshipMetadata" }
+  ): Promise<ManyToManyRelationshipMetadata>;
+  async getRelationshipByMetadataId(
+    metadataId: string,
+    options?: RelationshipQueryOptions
+  ): Promise<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata>;
+  async getRelationshipByMetadataId(
+    metadataId: string,
+    options?: RelationshipQueryOptions
   ): Promise<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata> {
-    return await this.query(
-      `/RelationshipDefinitions(${odataLiteral.guid(metadataId)})`,
-      options
-    ).get<OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata>();
+    const { cast, ...query } = options ?? {};
+    const path = `/RelationshipDefinitions(${odataLiteral.guid(metadataId)})${cast ? `/Microsoft.Dynamics.CRM.${cast}` : ""}`;
+    return await this.query(path, query).get<
+      OneToManyRelationshipMetadata | ManyToManyRelationshipMetadata
+    >();
   }
 
   /**
