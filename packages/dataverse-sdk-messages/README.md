@@ -162,7 +162,8 @@ const request = new ExecuteWorkflowRequest(workflowId, { EntityId: recordId, Inp
 
 const response = await service.execute(request);
 console.log("Async Operation ID:", response.result?.asyncoperationid);
-// Poll asyncoperation entity to check workflow status
+// Wait for the workflow to finish (waitForAsyncOperation is in @mohsinonxrm/dataverse-sdk-core)
+const job = await waitForAsyncOperation(client, response.result);
 ```
 
 **Constructor:** `new ExecuteWorkflowRequest(workflowId, parameters)`

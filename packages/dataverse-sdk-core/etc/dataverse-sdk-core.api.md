@@ -11,10 +11,103 @@ export interface AccessTokenProvider {
 }
 
 // @public
+export interface AdaptiveThrottlingDelay {
+    delayMs: number;
+    pressure: number;
+    reason: "pressure" | "retry-after";
+    request: RequestInformation;
+}
+
+// @public
+export class AdaptiveThrottlingMiddleware implements Middleware {
+    constructor(options?: AdaptiveThrottlingOptions);
+    // (undocumented)
+    execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    // (undocumented)
+    name: string;
+    get status(): AdaptiveThrottlingStatus;
+}
+
+// @public
+export interface AdaptiveThrottlingOptions {
+    maxPauseMs?: number;
+    maxSpacingMs?: number;
+    onDelay?: (delay: AdaptiveThrottlingDelay) => void;
+    pauseOnRetryAfter?: boolean;
+    requestBudget?: number;
+    threshold?: number;
+    timeBudget?: number;
+}
+
+// @public
+export interface AdaptiveThrottlingStatus {
+    pausedUntil?: number;
+    pressure: number;
+    requestBudget?: number;
+    requestsRemaining?: number;
+    spacingMs: number;
+    timeBudget?: number;
+    timeRemaining?: number;
+}
+
+// @public
 export type ApiVersion = `v${number}.${number}`;
 
 // @public
 export function appendRequestHeader(headers: HeadersLike, key: string, value: string): HeadersLike;
+
+// @public
+export interface AsyncOperation {
+    // (undocumented)
+    [column: string]: unknown;
+    // (undocumented)
+    asyncoperationid: string;
+    completedon?: string | null;
+    errorcode?: number | null;
+    friendlymessage?: string | null;
+    message?: string | null;
+    name?: string | null;
+    operationtype?: number | null;
+    startedon?: string | null;
+    statecode: number;
+    statuscode: number;
+}
+
+// @public
+export type AsyncOperationErrorReason = "failed" | "canceled" | "timeout";
+
+// @public
+export interface AsyncOperationIdSource {
+    // (undocumented)
+    AsyncOperationId?: string | null;
+    // (undocumented)
+    asyncoperationid?: string | null;
+    // (undocumented)
+    JobId?: string | null;
+}
+
+// @public
+export type AsyncOperationRef = string | AsyncOperationIdSource;
+
+// @public
+export const AsyncOperationStateCode: {
+    readonly Ready: 0;
+    readonly Suspended: 1;
+    readonly Locked: 2;
+    readonly Completed: 3;
+};
+
+// @public
+export const AsyncOperationStatusCode: {
+    readonly WaitingForResources: 0;
+    readonly Waiting: 10;
+    readonly InProgress: 20;
+    readonly Pausing: 21;
+    readonly Canceling: 22;
+    readonly Succeeded: 30;
+    readonly Failed: 31;
+    readonly Canceled: 32;
+};
 
 // @public (undocumented)
 export class AuthMiddleware implements Middleware {
@@ -50,6 +143,102 @@ export interface BuiltInMiddlewareOptions {
     retry: RetryOptions;
     // (undocumented)
     telemetry: TelemetryOptions;
+}
+
+// @public
+export class BulkheadMiddleware implements Middleware {
+    constructor(options: BulkheadOptions);
+    // (undocumented)
+    execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    inFlight(category: string): number;
+    // (undocumented)
+    name: string;
+    queued(category: string): number;
+}
+
+// @public
+export interface BulkheadOptions {
+    categorize?: (request: RequestInformation) => string | undefined;
+    defaultLimit?: number;
+    limits?: Record<string, number>;
+    maxQueue?: number;
+}
+
+// @public
+export interface BulkheadRequestOptions extends MiddlewareOptions {
+    bypass?: boolean;
+    category?: string;
+}
+
+// @public
+export interface ChaosFault {
+    body?: unknown;
+    headers?: Record<string, string>;
+    retryAfterSeconds?: number;
+    status: number | "network";
+}
+
+// @public
+export class ChaosMiddleware implements Middleware {
+    constructor(options?: ChaosOptions);
+    // (undocumented)
+    execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    // (undocumented)
+    name: string;
+}
+
+// @public
+export interface ChaosOptions {
+    faults?: readonly ChaosFault[];
+    match?: RegExp | ((request: RequestInformation) => boolean);
+    onFault?: (fault: ChaosFault, request: RequestInformation) => void;
+    percentage?: number;
+    random?: () => number;
+    script?: (request: RequestInformation, info: ChaosScriptInfo) => ChaosFault | undefined;
+}
+
+// @public
+export interface ChaosRequestOptions extends MiddlewareOptions {
+    disable?: boolean;
+    fault?: ChaosFault;
+}
+
+// @public
+export interface ChaosScriptInfo {
+    attempt: number;
+    requestIndex: number;
+}
+
+// @public
+export class CircuitBreakerMiddleware implements Middleware {
+    constructor(options?: CircuitBreakerOptions);
+    get consecutiveFailures(): number;
+    // (undocumented)
+    execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    // (undocumented)
+    name: string;
+    reset(): void;
+    get state(): CircuitState;
+}
+
+// @public
+export interface CircuitBreakerOptions {
+    breakDurationMs?: number;
+    failureThreshold?: number;
+    isFailure?: (status: number, error?: Error) => boolean;
+    onStateChange?: (change: CircuitStateChange) => void;
+}
+
+// @public
+export type CircuitState = "closed" | "open" | "half-open";
+
+// @public
+export interface CircuitStateChange {
+    consecutiveFailures: number;
+    // (undocumented)
+    from: CircuitState;
+    // (undocumented)
+    to: CircuitState;
 }
 
 // @public (undocumented)
@@ -95,6 +284,20 @@ export class DataverseAbortError extends DataverseError {
 }
 
 // @public
+export class DataverseAsyncOperationError extends DataverseError {
+    constructor(message: string, init: {
+        asyncOperationId: string;
+        reason: AsyncOperationErrorReason;
+        operation?: AsyncOperation;
+        code?: string;
+    });
+    readonly asyncOperationId: string;
+    readonly operation?: AsyncOperation;
+    // (undocumented)
+    readonly reason: AsyncOperationErrorReason;
+}
+
+// @public
 export class DataverseAuthenticationError extends DataverseError {
     constructor(message?: string, baseError?: Error);
     static emptyAccessToken(): DataverseAuthenticationError;
@@ -134,17 +337,31 @@ export interface DataverseBatchPartError {
     status: number;
 }
 
+// @public
+export class DataverseBulkheadRejectedError extends DataverseError {
+    constructor(message: string, category: string);
+    readonly category: string;
+}
+
+// @public
+export class DataverseCircuitOpenError extends DataverseError {
+    constructor(message: string, retryAfterMs?: number);
+    readonly retryAfterMs?: number;
+}
+
 // @public (undocumented)
 export class DataverseClient {
     constructor(options: DataverseClientOptions);
     // (undocumented)
     api(pathOrAbsoluteUrl: string): DataverseRequestBuilder;
     bind(navigationProperty: string, entitySetName: string, id: ODataKey): Record<string, string>;
+    changesSince<T = Record<string, unknown>>(deltaLink: string, options?: TrackChangesOptions): Promise<TrackedChanges<T>>;
     // (undocumented)
     execute<T>(request: Executable<T>, options?: RequestOptions): Promise<T>;
     fetchXml<T = Record<string, unknown>>(entitySetName: string, fetchXml: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
     // (undocumented)
     getBaseUrl(): string;
+    iterateChangesSince<T = Record<string, unknown>>(deltaLink: string, options?: TrackChangesOptions): AsyncIterable<TrackedChangesPage<T>>;
     resolveUrl(pathOrUrl: string): string;
     savedQuery<T = Record<string, unknown>>(entitySetName: string, savedQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
     // (undocumented)
@@ -298,6 +515,7 @@ export class DataverseRequestBuilder {
     }): this;
     impersonateByObjectId(objectId: string): this;
     iterate<T = unknown>(options?: RequestOptions): AsyncIterable<T>;
+    iterateChanges<T = Record<string, unknown>>(options?: TrackChangesOptions): AsyncIterable<TrackedChangesPage<T>>;
     // (undocumented)
     orderBy(...orderby: string[]): this;
     // (undocumented)
@@ -319,6 +537,7 @@ export class DataverseRequestBuilder {
     text(options?: RequestOptions): Promise<string>;
     // (undocumented)
     top(n: number): this;
+    trackChanges<T = Record<string, unknown>>(options?: TrackChangesOptions): Promise<TrackedChanges<T>>;
     updateOnly(etag: string): this;
     userQuery<T = Record<string, unknown>>(userQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
 }
@@ -354,6 +573,12 @@ export class DataverseUrlError extends DataverseError {
 
 // @public
 export function defaultRedactUrl(url: URL): string;
+
+// @public
+export interface DeletedRecord {
+    id: string;
+    reason: "deleted" | "changed";
+}
 
 // @public
 export interface DependencyHandle {
@@ -511,6 +736,9 @@ export function headersToObject(headers: Headers): Record<string, string>;
 
 // @public (undocumented)
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
+
+// @public
+export function isDeltaLinkExpired(error: unknown): boolean;
 
 // @public
 export function isStreamContent(contentType: string | null | undefined): boolean;
@@ -887,6 +1115,40 @@ export interface TokenOptions {
     forceRefresh?: boolean;
     // (undocumented)
     tenantId?: string;
+}
+
+// @public
+export interface TrackChangesOptions extends RequestOptions {
+    maxPageSize?: number;
+}
+
+// @public
+export interface TrackedChanges<T> {
+    changed: T[];
+    deleted: DeletedRecord[];
+    deltaLink: string;
+}
+
+// @public
+export interface TrackedChangesPage<T> {
+    changed: T[];
+    deleted: DeletedRecord[];
+    deltaLink?: string;
+}
+
+// @public
+export function waitForAsyncOperation(client: DataverseClient, asyncOperation: AsyncOperationRef | null | undefined, options?: WaitForAsyncOperationOptions): Promise<AsyncOperation>;
+
+// @public
+export interface WaitForAsyncOperationOptions {
+    backoff?: number;
+    intervalMs?: number;
+    maxIntervalMs?: number;
+    onProgress?: (operation: AsyncOperation) => void;
+    requestOptions?: Omit<RequestOptions, "signal">;
+    select?: readonly string[];
+    signal?: AbortSignal;
+    timeoutMs?: number;
 }
 
 // (No @packageDocumentation comment for this package)
