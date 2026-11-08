@@ -8,6 +8,7 @@
  * - Performance comparison: batch vs individual vs bulk
  */
 
+import { randomBytes } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import chalk from "chalk";
@@ -77,7 +78,7 @@ function loadEnv(): Config {
  * contacts by last name), so cleanup can find them all. SAMPLE_RUN_TAG sets the tag (lowercase
  * letters and digits); otherwise it's random.
  */
-const runTag = process.env.SAMPLE_RUN_TAG ?? Math.random().toString(36).slice(2, 8);
+const runTag = process.env.SAMPLE_RUN_TAG ?? randomBytes(3).toString("hex");
 if (!/^[a-z0-9]{1,10}$/.test(runTag)) {
   console.error(chalk.red("❌ SAMPLE_RUN_TAG must be 1 to 10 lowercase letters or digits."));
   process.exit(1);

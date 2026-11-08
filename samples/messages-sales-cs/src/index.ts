@@ -15,6 +15,7 @@
  * 4. Copy .env.example to .env and configure
  */
 
+import { randomBytes } from "node:crypto";
 import { config } from "dotenv";
 import chalk from "chalk";
 import { ConfidentialClientApplication } from "@azure/msal-node";
@@ -76,7 +77,7 @@ const settings = loadSettings();
  * can find them all. SAMPLE_RUN_TAG sets the tag (lowercase letters and digits); otherwise it's
  * random.
  */
-const runTag = process.env.SAMPLE_RUN_TAG ?? Math.random().toString(36).slice(2, 8);
+const runTag = process.env.SAMPLE_RUN_TAG ?? randomBytes(3).toString("hex");
 if (!/^[a-z0-9]{1,10}$/.test(runTag)) {
   console.error(chalk.red("SAMPLE_RUN_TAG must be 1 to 10 lowercase letters or digits."));
   process.exit(1);
