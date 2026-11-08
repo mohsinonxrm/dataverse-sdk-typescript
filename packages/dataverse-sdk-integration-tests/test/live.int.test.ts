@@ -85,8 +85,9 @@ describe.skipIf(!live)("live: basics", () => {
       body = await res.text();
       await new Promise((resolve) => setTimeout(resolve, 10_000));
     }
-    expect(res?.status, `last error body: ${body.slice(0, 500)}`).toBe(200);
-    const xml = await (res as Response).text();
+    if (!res) throw new Error("no $metadata request was sent");
+    expect(res.status, `last error body: ${body.slice(0, 500)}`).toBe(200);
+    const xml = await res.text();
     expect(xml).toContain("<edmx:Edmx");
     expect(xml).toContain('Name="WhoAmI"');
   });
