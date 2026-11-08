@@ -118,7 +118,7 @@ export class DataverseClient {
     const info = request.toRequestInformation(this.baseUrl);
     applyOptions(info, options);
     const res = await this.send(info);
-    if (!res.ok) {
+    if (!res.ok && request.parsesErrorResponses !== true) {
       const err = await parseODataError(res);
       throw err;
     }

@@ -396,6 +396,7 @@ export type EqValue = string | number | boolean | Date | null;
 export interface Executable<TResponse> {
     // (undocumented)
     parseResponse(response: Response): Promise<TResponse>;
+    readonly parsesErrorResponses?: boolean;
     // (undocumented)
     toRequestInformation(baseUrl: string): RequestInformation;
 }
