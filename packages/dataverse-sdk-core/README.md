@@ -1444,6 +1444,50 @@ pnpm test --watch           # Watch mode
 pnpm test --coverage        # Generate coverage report
 ```
 
+### Fault Injection (ChaosMiddleware)
+
+To see how your app copes with throttling and outages, add `ChaosMiddleware` (modelled on the
+Microsoft Graph SDK's `ChaosHandler`). It answers some requests itself, with a fake 429 (with
+`Retry-After`), 502, 503 or 504, or fails them like a dropped connection, without sending them.
+It is never in the default pipeline; add it only in test or development builds.
+
+```typescript
+import { ChaosMiddleware, DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+
+const client = new DataverseClient({
+  baseUrl,
+  tokenProvider,
+  middleware: {
+    // append: it runs last, so its faults go through retry, concurrency and telemetry like real ones
+    append: [
+      new ChaosMiddleware({
+        percentage: 20, // default 10
+        faults: [{ status: 429, retryAfterSeconds: 2 }, { status: 503 }, { status: "network" }],
+        match: /\/accounts/, // only requests whose URL matches (default: every request)
+      }),
+    ],
+  },
+});
+
+// A script decides instead of the percentage: here, the first two attempts of each request fail.
+new ChaosMiddleware({
+  script: (request, { attempt }) => (attempt < 2 ? { status: 503 } : undefined),
+});
+```
+
+- **Faults:** `{ status }` with any status from 200 to 599, plus optional `retryAfterSeconds`
+  (default 1 for a 429), `headers` and `body` (default: a Dataverse error body; for a 429 the
+  service-protection error `0x80072322`). `status: "network"` throws a `DataverseNetworkError`
+  named `ConnectionFailed`, as `fetch` failing does. The default faults are 429 (`Retry-After: 1`),
+  502, 503 and 504, picked at random.
+- **Choosing requests:** `percentage` (0 to 100) of the requests that pass `match` (a `RegExp`
+  tested against the full URL, or a function of the request). A `script` replaces `percentage`
+  and `faults`: it gets the request and `{ requestIndex, attempt }`, and returns a fault or
+  `undefined`. Each retry attempt is a request of its own. `random` takes a seeded generator for repeatable runs, and `onFault` is told
+  about each fault.
+- **Per request:** `new MiddlewareRequestOptions([{ type: "chaos", disable: true }])` keeps a
+  request clean; `{ type: "chaos", fault: { status: 504 } }` forces a fault on it (`ChaosRequestOptions`).
+
 ## Bundle Size
 
 - **ESM only**, marked `"sideEffects": false` so bundlers can tree-shake it
