@@ -501,6 +501,12 @@ importers:
       '@mohsinonxrm/dataverse-sdk-generator':
         specifier: workspace:*
         version: link:../dataverse-sdk-generator
+      '@mohsinonxrm/dataverse-sdk-otel':
+        specifier: workspace:*
+        version: link:../dataverse-sdk-otel
+      '@opentelemetry/api':
+        specifier: ^1.9.0
+        version: 1.10.0
       '@types/xrm':
         specifier: ^9.0.97
         version: 9.0.97

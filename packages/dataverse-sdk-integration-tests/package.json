@@ -29,6 +29,8 @@
   "devDependencies": {
     "@mohsinonxrm/dataverse-sdk-entities-runtime": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-generator": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-otel": "workspace:*",
+    "@opentelemetry/api": "^1.9.0",
     "@types/xrm": "^9.0.97",
     "eslint": "^9.39.5",
     "typescript": "^5.9.3",
