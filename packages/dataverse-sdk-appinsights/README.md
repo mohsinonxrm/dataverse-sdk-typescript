@@ -155,7 +155,10 @@ import { ApplicationInsights } from "@microsoft/applicationinsights-web";
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { ApplicationInsightsBrowserTelemetryClient } from "@mohsinonxrm/dataverse-sdk-appinsights/browser";
 
-const appInsights = new ApplicationInsights({ config: { connectionString } });
+// Your Application Insights resource's connection string
+const appInsights = new ApplicationInsights({
+  config: { connectionString: "InstrumentationKey=…;IngestionEndpoint=https://…" },
+});
 appInsights.loadAppInsights();
 
 const client = new DataverseClient({
