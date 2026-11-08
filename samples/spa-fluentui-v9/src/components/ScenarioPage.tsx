@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { Body1, makeStyles, Title2, tokens } from "@fluentui/react-components";
+import { APP_NAME } from "../config";
 
 const useStyles = makeStyles({
   root: {
@@ -27,7 +28,7 @@ interface ScenarioPageProps {
 export function ScenarioPage({ title, description, children }: ScenarioPageProps) {
   const styles = useStyles();
   useEffect(() => {
-    document.title = `${title} · Dataverse SDK showcase`;
+    document.title = `${title} · ${APP_NAME}`;
   }, [title]);
   return (
     <div className={styles.root}>

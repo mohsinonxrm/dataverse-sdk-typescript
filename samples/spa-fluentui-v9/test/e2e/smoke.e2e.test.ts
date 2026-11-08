@@ -1,96 +1,104 @@
 /**
- * Browser smoke tests: build the app with Vite, serve the build with `vite preview`, and drive
- * it in Chromium with Playwright. They run in demo mode, so they need no org and no secrets.
+ * Browser smoke tests: the build, served with the site's response headers (its strict
+ * Content-Security-Policy among them, test/e2e/globalSetup.ts), driven in Chromium with
+ * Playwright. They run in demo mode, so they need no org and no secrets.
  *
  * Run with `pnpm --filter spa-fluentui-v9-sample test:e2e`. PLAYWRIGHT_CHROMIUM_PATH picks a
  * Chromium other than the one installed with Playwright.
  */
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { build, preview, type PreviewServer } from "vite";
-import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
+import { describe, expect, it } from "vitest";
 import { ROUTES } from "../../src/routes";
+import { axeViolations, problems, startDemo, useBrowser } from "./browser";
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
-const outDir = mkdtempSync(join(tmpdir(), "spa-e2e-"));
+const { baseUrl, open } = useBrowser();
 
-let server: PreviewServer;
-let browser: Browser;
-let baseUrl: string;
-
-interface Session {
-  context: BrowserContext;
-  page: Page;
-  errors: string[];
-}
-
-const sessions: Session[] = [];
-
-async function open(viewport = { width: 1280, height: 900 }): Promise<Session> {
-  const context = await browser.newContext({ viewport, deviceScaleFactor: 1 });
-  const page = await context.newPage();
-  const errors: string[] = [];
-  page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
-  page.on("console", (m) => {
-    if (m.type() === "error") errors.push(`console: ${m.text()}`);
-  });
-  const session = { context, page, errors };
-  sessions.push(session);
-  await page.goto(baseUrl);
-  return session;
-}
-
-async function startDemo(page: Page): Promise<void> {
-  await page.getByRole("button", { name: "Explore with demo data" }).click();
-  await page.getByRole("heading", { level: 1, name: "Overview" }).waitFor();
-}
-
-beforeAll(async () => {
-  // envDir points at a folder without .env, so a developer's sign-in settings don't apply.
-  const shared = {
-    root,
-    configFile: join(root, "vite.config.ts"),
-    envDir: join(root, "test/e2e"),
-    logLevel: "warn" as const,
-  };
-  await build({ ...shared, build: { outDir, emptyOutDir: true, sourcemap: false } });
-  server = await preview({
-    ...shared,
-    build: { outDir },
-    preview: { port: 0, host: "127.0.0.1", strictPort: false },
-  });
-  const url = server.resolvedUrls?.local[0];
-  if (!url) throw new Error("preview server has no URL");
-  baseUrl = url;
-  browser = await chromium.launch(
-    process.env.PLAYWRIGHT_CHROMIUM_PATH
-      ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH }
-      : {}
-  );
-});
-
-afterAll(async () => {
-  for (const s of sessions) await s.context.close();
-  await browser.close();
-  await new Promise<void>((done) => server.httpServer.close(() => done()));
-});
+const CLIENT_ID = "11111111-2222-3333-4444-555555555555";
+const TENANT = "contoso.onmicrosoft.com";
+const LOGIN = "https://login.microsoftonline.com";
 
 describe("spa-fluentui-v9", () => {
-  it("shows the sign-in page, with sign-in disabled when it isn't configured", async () => {
-    const { page, errors } = await open();
-    await page.getByRole("heading", { level: 1, name: "Dataverse SDK showcase" }).waitFor();
-    await expect(
-      page.getByRole("button", { name: "Sign in with Microsoft" }).isDisabled()
-    ).resolves.toBe(true);
-    await page.getByText("Sign-in isn't configured").waitFor();
-    expect(errors).toEqual([]);
+  it("asks for the environment and app registration before Microsoft sign-in", async () => {
+    const session = await open();
+    const { page } = session;
+    await page.getByRole("heading", { level: 1, name: "Dataverse SDK explorer" }).waitFor();
+    await page.getByRole("button", { name: "Sign in with Microsoft" }).click();
+    await page.getByText("Enter your environment's URL.").waitFor();
+    await page.getByText("Enter the application (client) id of your app registration.").waitFor();
+    await page.getByLabel("Environment URL").fill("https://example.com");
+    await page.getByRole("button", { name: "Sign in with Microsoft" }).click();
+    await page.getByText(/ending in \.dynamics\.com/).waitFor();
+    // Nothing was sent anywhere: the page is still the site.
+    expect(new URL(page.url()).origin).toBe(new URL(baseUrl).origin);
+    expect(await axeViolations(page)).toEqual([]);
+    expect(await problems(session)).toEqual([]);
+  });
+
+  it("signs in with Microsoft to the environment and app registration typed in", async () => {
+    // Microsoft sign-in is mocked; the test checks the redirect MSAL starts, under the site's CSP.
+    const session = await open();
+    const { page, context } = session;
+    const authorize: string[] = [];
+    await context.route(`${LOGIN}/**`, async (route) => {
+      const url = route.request().url();
+      if (url.includes("/discovery/instance")) {
+        return route.fulfill({
+          json: {
+            tenant_discovery_endpoint: `${LOGIN}/${TENANT}/v2.0/.well-known/openid-configuration`,
+            "api-version": "1.1",
+            metadata: [
+              {
+                preferred_network: "login.microsoftonline.com",
+                preferred_cache: "login.windows.net",
+                aliases: ["login.microsoftonline.com", "login.windows.net"],
+              },
+            ],
+          },
+        });
+      }
+      if (url.includes("openid-configuration")) {
+        return route.fulfill({
+          json: {
+            authorization_endpoint: `${LOGIN}/${TENANT}/oauth2/v2.0/authorize`,
+            token_endpoint: `${LOGIN}/${TENANT}/oauth2/v2.0/token`,
+            end_session_endpoint: `${LOGIN}/${TENANT}/oauth2/v2.0/logout`,
+            issuer: `${LOGIN}/${TENANT}/v2.0`,
+            jwks_uri: `${LOGIN}/${TENANT}/discovery/v2.0/keys`,
+          },
+        });
+      }
+      authorize.push(url);
+      return route.fulfill({ contentType: "text/html", body: "<title>Sign in</title>" });
+    });
+    await page.getByLabel("Environment URL").fill("https://contoso.crm.dynamics.com/main.aspx");
+    await page.getByLabel("Application (client) ID").fill(CLIENT_ID);
+    await page.getByLabel("Tenant").fill(TENANT);
+    // The admin consent link is for this app registration.
+    const consent = new URL(
+      (await page
+        .getByRole("link", { name: "grant admin consent for this app" })
+        .getAttribute("href")) ?? ""
+    );
+    expect(consent.pathname).toBe(`/${TENANT}/adminconsent`);
+    expect(consent.searchParams.get("client_id")).toBe(CLIENT_ID);
+    // Before leaving the site: no CSP violation from MSAL's requests.
+    const before = await problems(session);
+    await page.getByRole("button", { name: "Sign in with Microsoft" }).click();
+    await page.waitForURL(/login\.microsoftonline\.com/);
+    expect(before).toEqual([]);
+    const url = new URL(authorize[0] ?? "");
+    expect(url.pathname).toBe(`/${TENANT}/oauth2/v2.0/authorize`);
+    expect(url.searchParams.get("client_id")).toBe(CLIENT_ID);
+    expect(url.searchParams.get("redirect_uri")).toBe(new URL(baseUrl).origin);
+    expect(url.searchParams.get("scope")).toContain(
+      "https://contoso.crm.dynamics.com/user_impersonation"
+    );
+    expect(url.searchParams.get("code_challenge_method")).toBe("S256");
+    expect(session.errors).toEqual([]);
   });
 
   it("opens every page from the navigation", async () => {
-    const { page, errors } = await open();
+    const session = await open();
+    const { page } = session;
     await startDemo(page);
     const nav = page.getByRole("navigation");
     for (const route of ROUTES) {
@@ -115,11 +123,12 @@ describe("spa-fluentui-v9", () => {
       );
       expect(unlabelled, route.path).toEqual([]);
     }
-    expect(errors).toEqual([]);
+    expect(await problems(session)).toEqual([]);
   });
 
   it("runs every scenario against the demo environment", async () => {
-    const { page, errors } = await open();
+    const session = await open();
+    const { page } = session;
     await startDemo(page);
     for (const route of ROUTES) {
       await page.goto(new URL(route.path, baseUrl).href);
@@ -148,11 +157,19 @@ describe("spa-fluentui-v9", () => {
         expect(`${route.path} ${title}: ${outcome}`).toBe(`${route.path} ${title}: ${expected}`);
       }
     }
-    expect(errors).toEqual([]);
+    expect(await problems(session)).toEqual([]);
+  });
+
+  it("serves the app's routes from index.html (the SPA fallback)", async () => {
+    const session = await open("/docs");
+    await startDemo(session.page, "Documentation");
+    expect(new URL(session.page.url()).pathname).toBe("/docs");
+    expect(await problems(session)).toEqual([]);
   });
 
   it("switches between the light and dark theme and remembers the choice", async () => {
-    const { page, errors } = await open();
+    const session = await open();
+    const { page } = session;
     await startDemo(page);
     const provider = page.locator(".fui-FluentProvider").first();
     const before = await provider.getAttribute("data-theme");
@@ -167,11 +184,12 @@ describe("spa-fluentui-v9", () => {
     await expect(
       page.locator(".fui-FluentProvider").first().getAttribute("data-theme")
     ).resolves.toBe(after);
-    expect(errors).toEqual([]);
+    expect(await problems(session)).toEqual([]);
   });
 
   it("collapses the navigation at narrow widths and opens it from the header", async () => {
-    const { page, errors } = await open({ width: 390, height: 844 });
+    const session = await open("/", { width: 390, height: 844 });
+    const { page } = session;
     await startDemo(page);
     const link = page.getByRole("navigation").getByRole("link", { name: "Error handling" });
     await link.waitFor({ state: "hidden" });
@@ -187,11 +205,12 @@ describe("spa-fluentui-v9", () => {
       () => document.documentElement.scrollWidth - window.innerWidth
     );
     expect(overflow).toBeLessThanOrEqual(0);
-    expect(errors).toEqual([]);
+    expect(await problems(session)).toEqual([]);
   });
 
   it("works from the keyboard: skip link, navigation and focus after navigating", async () => {
-    const { page, errors } = await open();
+    const session = await open();
+    const { page } = session;
     await startDemo(page);
     // The skip link is the first stop, shown when focused; Tab goes on to the header.
     const skip = page.getByRole("link", { name: "Skip to content" });
@@ -209,15 +228,16 @@ describe("spa-fluentui-v9", () => {
     await page.getByRole("heading", { level: 1, name: "Queries" }).waitFor();
     // Focus moves to the new page, so the next Tab starts there.
     await expect(page.evaluate(() => document.activeElement?.id)).resolves.toBe("main");
-    expect(errors).toEqual([]);
+    expect(await problems(session)).toEqual([]);
   });
 
   it("signs out of demo mode", async () => {
-    const { page, errors } = await open();
+    const session = await open();
+    const { page } = session;
     await startDemo(page);
     await page.getByRole("button", { name: /^Account:/ }).click();
     await page.getByRole("menuitem", { name: "Sign out" }).click();
     await page.getByRole("button", { name: "Explore with demo data" }).waitFor();
-    expect(errors).toEqual([]);
+    expect(await problems(session)).toEqual([]);
   });
 });
