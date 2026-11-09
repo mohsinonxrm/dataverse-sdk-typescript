@@ -1,5 +1,309 @@
 # @mohsinonxrm/dataverse-sdk-otel
 
+## 2.0.0
+
+### Major Changes
+
+- d9eebf3: **2.0.0.** Every package moves to 2.0.0 together. Most of 2.0 fixes code that didn't work against Dataverse in 1.0, and several changes alter existing behaviour. See [docs/migration-2.0.md](https://github.com/mohsinonxrm/dataverse-sdk-typescript/blob/main/docs/migration-2.0.md) for what to change. In short:
+
+  - **Install:** Node 22+. `@azure/msal-browser`, `@azure/msal-node`, and the OpenTelemetry and Azure Monitor packages are now peer dependencies of the auth and telemetry packages (#24, #85, #159).
+  - **core:** nothing is logged by default. URLs in logs and telemetry are redacted.
+  - **core, retries:** a `Retry-After` beyond `retry.maxRetryAfterMs` (30 s) is returned instead of waited out, and non-idempotent requests aren't replayed after 502/503/504.
+  - **core, timeouts:** `timeoutMs` covers the whole request.
+  - **core, pipeline:** the default middleware order is ODataHeaders, Retry, Concurrency, Auth, Telemetry, Logging.
+  - **core, queries:** query options are encoded with `%20`, and `expand()` calls add up.
+  - **core, removed options:** `RetryOptions.delay` and `useExponentialBackoff`, `circuitBreaker`, `bulkhead` and `DataverseError.statusCode` are gone (#285).
+  - **errors:** every SDK error extends `DataverseError`. Network failures and aborts are `DataverseNetworkError` and `DataverseAbortError`. A 412 is a `DataverseDuplicateError` only for `0x80040333`.
+  - **metadata:** enums are string member names, and creates return the id from `OData-EntityId`.
+  - **xrm:** record ids must be GUIDs, and entity sets come from metadata. `execute()` infers its result from the request, and records are `EntityRecord` instead of `any`.
+  - **discovery:** `OrganizationDetail` matches the v2.0 response.
+  - **actions, functions, messages:**
+    - constructors take one object with the parameters by name; a bound operation's record id or entity set comes first, and bulk operations take the entity set first (#96);
+    - each binding of an overloaded operation has its own class, and the plain-name classes of bound-only operations are removed (#286);
+    - one `EntityReference` for the whole SDK: `createEntityReference` returns the Web API shape and takes an options object (#295);
+    - `client.execute()` resolves the operation's value, not the OData envelope: the entity (`null` for a 204), the array, the primitive, or nothing (#300);
+    - `toRequestBody()` is removed.
+
+  See each package's CHANGELOG for the full list.
+
+- fd963bc: **Install change:** the OpenTelemetry and Azure Monitor packages are now **peer dependencies** of the telemetry adapters (#159). The app installs them, and the adapters use the app's copies.
+
+  Before, they were regular dependencies. The adapter could then get its own `@opentelemetry/api` next to the app's. With two copies the adapter's spans could go to a no-op tracer instead of the app's provider. For example, with an app on `@opentelemetry/api` 1.8, the old adapter got its own 1.10 copy and recorded no dependency span. Installing the Application Insights adapter also always installed the whole Azure Monitor distro, about 190 packages.
+
+  - **otel:** `@opentelemetry/api` `^1.9.0` is a peer.
+  - **appinsights:** `@opentelemetry/api` `^1.9.0` and `@opentelemetry/api-logs` `^0.221.0` are peers. `@azure/monitor-opentelemetry` `^1.20.1` and `@opentelemetry/resources` `^2.0.0` are **optional** peers: only the `connectionString` (and `cloudRoleName`) setup needs them. The adapter imports them only if they are installed, so an app that calls `useAzureMonitor()` itself, or uses another OpenTelemetry setup, can leave them out. Passing `connectionString` without the distro throws a `DataverseInvalidRequestError` that names the package to install.
+  - Both `package.json` files list `types` first in `exports`, with `default` instead of `import`, so TypeScript always resolves the types.
+
+  **Migration:** add the packages to your app if it doesn't list them already:
+
+  ```bash
+  # otel
+  npm install @opentelemetry/api
+  # appinsights
+  npm install @opentelemetry/api @opentelemetry/api-logs @azure/monitor-opentelemetry
+  ```
+
+  An app on a version outside these ranges now gets a peer-dependency error from npm when it installs, instead of a silent second copy.
+
+- ff655da: **Breaking.** Telemetry events and W3C trace context (#97).
+
+  - **`TelemetryClient.trackDependency` is replaced by `startDependency(name, data)`** (core). The SDK calls it before each request attempt and calls `end(data)` on the `DependencyHandle` it returns once the attempt is done, with `durationMs`, `success` and `resultCode`. The handle can carry `headers` (`traceparent`, `tracestate`), which the SDK sends with the attempt, and `run(fn)`, which makes the dependency the active span while the attempt runs. A custom client moves its `trackDependency` body into `end` (see the 2.0 migration guide). Each retry and each resend after a 401 is its own dependency, started in the caller's context.
+  - **Trace context goes to Dataverse.** Only a valid `traceparent` and its `tracestate` are sent, only to origins that may receive the access token (`baseUrl` and `allowedTokenOrigins`), and `diagnosticHeaders: false` or the new `diagnosticHeaders: { traceContext: false }` turns it off.
+  - **Events.** `trackEvent` now receives `dataverse.throttle` (each 429, with the limit hit, `Retry-After` and `x-ms-dop-hint`), `dataverse.retry` (before each retry wait), `dataverse.concurrency.wait` (a request waited for a slot) and `dataverse.concurrency.limit` (`x-ms-dop-hint` changed the limit). The names are exported as `TelemetryEvents`. A request with telemetry turned off sends none.
+  - **`DataverseClient.trackEvent(name, props, measurements)`** sends an event to the client's telemetry, guarded like the SDK's own calls. The batch package uses it to report `dataverse.batch` for each `$batch` (requests, succeeded, failed, duration, status, correlation id); `execute()` now generates the `$batch` correlation id itself when you don't pass one.
+  - **otel and appinsights:** `OpenTelemetryClient` and `ApplicationInsightsTelemetryClient` implement `startDependency`: the CLIENT span starts with the active context, is active while the attempt runs (so `fetch` auto-instrumentation spans are its children), carries `http.request.resend_count` on retries, and its context is injected with the registered propagator, so the request carries its `traceparent`. `trackDependency` is removed from both.
+
+### Minor Changes
+
+- bf38170: Every type the public API uses is now exported, so an app can name it, for example to type a wrapper or a mock (#397):
+
+  - core: `DependencyTelemetry` (what `TelemetryClient.trackDependency` receives, now a named interface), `BuiltInMiddlewareOptions`, and `EqValue` (the values `odata.eq()` / `odata.ne()` take). The per-request retry options are the same `RetryOptions` type as the client's, so there is one `RetryOptions`.
+  - batch: `DataverseBatchErrorConstructor`.
+  - files: `FileSource` (what `upload()` accepts).
+  - generator: `EntityKeyType`, and `RetrieveMetadataChangesResponse` with the metadata detail types it uses.
+  - otel, appinsights: their dependency data is core's `DependencyTelemetry`.
+  - metadata: `RequiredEntityProperty`.
+
+- f6d4f8a: Implement the telemetry adapters (#14). In 1.0.0 every method of `OpenTelemetryClient` and `ApplicationInsightsTelemetryClient` threw "not implemented", so passing either one as `telemetry` made **every Dataverse request fail**, even on a 200 response. Both now work, and no method ever throws: each catches its own errors, so telemetry can't change the outcome of a request.
+
+  - **otel:** `trackDependency` records an OpenTelemetry `CLIENT` span per request with `http.request.method`, `url.full`, `server.address`, `server.port`, `http.response.status_code`, `dataverse.correlation_id` and the SDK's other properties under `dataverse.*`; failed calls get status `ERROR` and `error.type`. `trackException` records a `dataverse.exception` span with the exception event, and `trackEvent` adds an event to the active span (or records a short span). The config is now optional: `tracer`, a new `tracerProvider`, or the global provider by default. Set `service.name` on your OpenTelemetry SDK.
+  - **appinsights:** built on the Azure Monitor OpenTelemetry distro. Dependencies are spans (Application Insights `dependencies`), events are log records with `microsoft.custom_event.name` (`customEvents`) and exceptions are log records with `exception.*` attributes (`exceptions`). Call `useAzureMonitor()` in your app and use `new ApplicationInsightsTelemetryClient()`, or pass `connectionString` (now optional) and the adapter calls `useAzureMonitor()` once per process, with `cloudRoleName` as `service.name`. New options: `tracer`, `tracerProvider`, `logger`, `loggerProvider`. New dependencies: `@opentelemetry/api`, `@opentelemetry/api-logs`, `@opentelemetry/resources`.
+  - **Privacy:** URLs are redacted before they are recorded: query parameter values become `REDACTED` (names such as `$filter` are kept), quoted literals in the path (alternate keys) become `'REDACTED'`, and user info and fragments are dropped. This also applies to URLs inside property values and exception messages.
+  - **Docs:** the READMEs now use the real option name, `telemetry` (not `telemetryClient`), the real config-object constructors, and an OTLP exporter example instead of the deprecated Jaeger exporter.
+
+- 365ceca: Remove the deprecated and no-op options (#285). Passing any of them is now a type error.
+
+  - **core, retries:** `RetryOptions.delay` is removed: use `baseDelayMs`. `RetryOptions.useExponentialBackoff` is removed: it had no effect, because backoff is always exponential.
+  - **core, client options:** `circuitBreaker` and `bulkhead` are removed, with their `CircuitBreakerOptions` and `BulkheadOptions` types. They were never implemented and only logged a warning. Circuit breaker and bulkhead middleware are planned in #100; until then, add your own through the `middleware` option.
+  - **core, errors:** `DataverseError.statusCode` is removed: read `status`.
+  - **otel:** `OpenTelemetryConfig.serviceName` is removed. It was ignored. `service.name` is a resource attribute: set it on your OpenTelemetry SDK (`new NodeSDK({ serviceName })` or `OTEL_SERVICE_NAME`).
+
+### Patch Changes
+
+- 8c5cf39: Export `./package.json`, so `require("<package>/package.json")` and tools that read a package's version through it work.
+- 6bbb784: Declare `engines: { "node": ">=22" }`. Node 18 and Node 20 are end of life (April 2025 and April 2026). CI now tests on Node 22, 24 and 26. Installing on an older Node shows an engine warning, or fails with `engine-strict`.
+- 5e1125c: Dependency spans follow the OpenTelemetry HTTP client conventions and the app's URL redaction (#384):
+
+  - `server.address` is the host name without the port (`org.example.com`, not `org.example.com:8443`); the port is in `server.port`.
+  - `url.full` and the exception's `dataverse.request.url` are recorded as the SDK passes them, already redacted with the client's `redactUrl` option, so a custom `redactUrl` (for example one that keeps `$top`) takes effect. URLs inside exception messages, stack traces and other property values are still redacted by the adapter.
+  - A call with a response fails when its status is 4xx or 5xx, whatever `success` says, so a `304 Not Modified` is not an error; a call without a response fails when `success` is `false`.
+
+  The READMEs now explain that the dependency span is recorded after the call, so it is never the active span: the adapters send no `traceparent`, and HTTP auto-instrumentation spans are its siblings, not its children.
+
+- Updated dependencies [9bb1db9]
+- Updated dependencies [ca11ddf]
+- Updated dependencies [aec5a48]
+- Updated dependencies [83f2256]
+- Updated dependencies [f780438]
+- Updated dependencies [c262ad7]
+- Updated dependencies [f900b0c]
+- Updated dependencies [9d1e26d]
+- Updated dependencies [78e7716]
+- Updated dependencies [a32fd68]
+- Updated dependencies [b1f2738]
+- Updated dependencies [e606f24]
+- Updated dependencies [eb27877]
+- Updated dependencies [afb5242]
+- Updated dependencies [60ccef3]
+- Updated dependencies [7096f24]
+- Updated dependencies [08efbd7]
+- Updated dependencies [6b0dc00]
+- Updated dependencies [4c62fee]
+- Updated dependencies [1848068]
+- Updated dependencies [c3337f8]
+- Updated dependencies [63ee065]
+- Updated dependencies [39b3917]
+- Updated dependencies [f988456]
+- Updated dependencies [bf38170]
+- Updated dependencies [8c5cf39]
+- Updated dependencies [2bb4ed3]
+- Updated dependencies [7b1ef12]
+- Updated dependencies [c426eac]
+- Updated dependencies [0bfa5fe]
+- Updated dependencies [02038b3]
+- Updated dependencies [7e13e73]
+- Updated dependencies [4f96909]
+- Updated dependencies [ac42045]
+- Updated dependencies [e3dcff1]
+- Updated dependencies [1ca3a58]
+- Updated dependencies [254a8ec]
+- Updated dependencies [6bbb784]
+- Updated dependencies [dd2acd8]
+- Updated dependencies [652ad75]
+- Updated dependencies [329c0b0]
+- Updated dependencies [608d915]
+- Updated dependencies [9728b8c]
+- Updated dependencies [d9eebf3]
+- Updated dependencies [365ceca]
+- Updated dependencies [3d4614d]
+- Updated dependencies [61bd4aa]
+- Updated dependencies [4e804b4]
+- Updated dependencies [b040687]
+- Updated dependencies [496b4cb]
+- Updated dependencies [d3a1a01]
+- Updated dependencies [2d4323f]
+- Updated dependencies [e237826]
+- Updated dependencies [ff655da]
+- Updated dependencies [6df2528]
+- Updated dependencies [a464f3a]
+- Updated dependencies [b1bd587]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.0
+
+## 2.0.0-beta.1
+
+### Major Changes
+
+- ff655da: **Breaking.** Telemetry events and W3C trace context (#97).
+
+  - **`TelemetryClient.trackDependency` is replaced by `startDependency(name, data)`** (core). The SDK calls it before each request attempt and calls `end(data)` on the `DependencyHandle` it returns once the attempt is done, with `durationMs`, `success` and `resultCode`. The handle can carry `headers` (`traceparent`, `tracestate`), which the SDK sends with the attempt, and `run(fn)`, which makes the dependency the active span while the attempt runs. A custom client moves its `trackDependency` body into `end` (see the 2.0 migration guide). Each retry and each resend after a 401 is its own dependency, started in the caller's context.
+  - **Trace context goes to Dataverse.** Only a valid `traceparent` and its `tracestate` are sent, only to origins that may receive the access token (`baseUrl` and `allowedTokenOrigins`), and `diagnosticHeaders: false` or the new `diagnosticHeaders: { traceContext: false }` turns it off.
+  - **Events.** `trackEvent` now receives `dataverse.throttle` (each 429, with the limit hit, `Retry-After` and `x-ms-dop-hint`), `dataverse.retry` (before each retry wait), `dataverse.concurrency.wait` (a request waited for a slot) and `dataverse.concurrency.limit` (`x-ms-dop-hint` changed the limit). The names are exported as `TelemetryEvents`. A request with telemetry turned off sends none.
+  - **`DataverseClient.trackEvent(name, props, measurements)`** sends an event to the client's telemetry, guarded like the SDK's own calls. The batch package uses it to report `dataverse.batch` for each `$batch` (requests, succeeded, failed, duration, status, correlation id); `execute()` now generates the `$batch` correlation id itself when you don't pass one.
+  - **otel and appinsights:** `OpenTelemetryClient` and `ApplicationInsightsTelemetryClient` implement `startDependency`: the CLIENT span starts with the active context, is active while the attempt runs (so `fetch` auto-instrumentation spans are its children), carries `http.request.resend_count` on retries, and its context is injected with the registered propagator, so the request carries its `traceparent`. `trackDependency` is removed from both.
+
+### Patch Changes
+
+- Updated dependencies [9bb1db9]
+- Updated dependencies [83f2256]
+- Updated dependencies [f780438]
+- Updated dependencies [e606f24]
+- Updated dependencies [f988456]
+- Updated dependencies [1ca3a58]
+- Updated dependencies [ff655da]
+- Updated dependencies [b1bd587]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.0-beta.1
+
+## 2.0.0-beta.0
+
+### Major Changes
+
+- d9eebf3: **2.0.0.** Every package moves to 2.0.0 together. Most of 2.0 fixes code that didn't work against Dataverse in 1.0, and several changes alter existing behaviour. See [docs/migration-2.0.md](https://github.com/mohsinonxrm/dataverse-sdk-typescript/blob/main/docs/migration-2.0.md) for what to change. In short:
+
+  - **Install:** Node 22+. `@azure/msal-browser`, `@azure/msal-node`, and the OpenTelemetry and Azure Monitor packages are now peer dependencies of the auth and telemetry packages (#24, #85, #159).
+  - **core:** nothing is logged by default. URLs in logs and telemetry are redacted.
+  - **core, retries:** a `Retry-After` beyond `retry.maxRetryAfterMs` (30 s) is returned instead of waited out, and non-idempotent requests aren't replayed after 502/503/504.
+  - **core, timeouts:** `timeoutMs` covers the whole request.
+  - **core, pipeline:** the default middleware order is ODataHeaders, Retry, Concurrency, Auth, Telemetry, Logging.
+  - **core, queries:** query options are encoded with `%20`, and `expand()` calls add up.
+  - **core, removed options:** `RetryOptions.delay` and `useExponentialBackoff`, `circuitBreaker`, `bulkhead` and `DataverseError.statusCode` are gone (#285).
+  - **errors:** every SDK error extends `DataverseError`. Network failures and aborts are `DataverseNetworkError` and `DataverseAbortError`. A 412 is a `DataverseDuplicateError` only for `0x80040333`.
+  - **metadata:** enums are string member names, and creates return the id from `OData-EntityId`.
+  - **xrm:** record ids must be GUIDs, and entity sets come from metadata. `execute()` infers its result from the request, and records are `EntityRecord` instead of `any`.
+  - **discovery:** `OrganizationDetail` matches the v2.0 response.
+  - **actions, functions, messages:**
+    - constructors take one object with the parameters by name; a bound operation's record id or entity set comes first, and bulk operations take the entity set first (#96);
+    - each binding of an overloaded operation has its own class, and the plain-name classes of bound-only operations are removed (#286);
+    - one `EntityReference` for the whole SDK: `createEntityReference` returns the Web API shape and takes an options object (#295);
+    - `client.execute()` resolves the operation's value, not the OData envelope: the entity (`null` for a 204), the array, the primitive, or nothing (#300);
+    - `toRequestBody()` is removed.
+
+  See each package's CHANGELOG for the full list.
+
+- fd963bc: **Install change:** the OpenTelemetry and Azure Monitor packages are now **peer dependencies** of the telemetry adapters (#159). The app installs them, and the adapters use the app's copies.
+
+  Before, they were regular dependencies. The adapter could then get its own `@opentelemetry/api` next to the app's. With two copies the adapter's spans could go to a no-op tracer instead of the app's provider. For example, with an app on `@opentelemetry/api` 1.8, the old adapter got its own 1.10 copy and recorded no dependency span. Installing the Application Insights adapter also always installed the whole Azure Monitor distro, about 190 packages.
+
+  - **otel:** `@opentelemetry/api` `^1.9.0` is a peer.
+  - **appinsights:** `@opentelemetry/api` `^1.9.0` and `@opentelemetry/api-logs` `^0.221.0` are peers. `@azure/monitor-opentelemetry` `^1.20.1` and `@opentelemetry/resources` `^2.0.0` are **optional** peers: only the `connectionString` (and `cloudRoleName`) setup needs them. The adapter imports them only if they are installed, so an app that calls `useAzureMonitor()` itself, or uses another OpenTelemetry setup, can leave them out. Passing `connectionString` without the distro throws a `DataverseInvalidRequestError` that names the package to install.
+  - Both `package.json` files list `types` first in `exports`, with `default` instead of `import`, so TypeScript always resolves the types.
+
+  **Migration:** add the packages to your app if it doesn't list them already:
+
+  ```bash
+  # otel
+  npm install @opentelemetry/api
+  # appinsights
+  npm install @opentelemetry/api @opentelemetry/api-logs @azure/monitor-opentelemetry
+  ```
+
+  An app on a version outside these ranges now gets a peer-dependency error from npm when it installs, instead of a silent second copy.
+
+### Minor Changes
+
+- bf38170: Every type the public API uses is now exported, so an app can name it, for example to type a wrapper or a mock (#397):
+
+  - core: `DependencyTelemetry` (what `TelemetryClient.trackDependency` receives, now a named interface), `BuiltInMiddlewareOptions`, and `EqValue` (the values `odata.eq()` / `odata.ne()` take). The per-request retry options are the same `RetryOptions` type as the client's, so there is one `RetryOptions`.
+  - batch: `DataverseBatchErrorConstructor`.
+  - files: `FileSource` (what `upload()` accepts).
+  - generator: `EntityKeyType`, and `RetrieveMetadataChangesResponse` with the metadata detail types it uses.
+  - otel, appinsights: their dependency data is core's `DependencyTelemetry`.
+  - metadata: `RequiredEntityProperty`.
+
+- f6d4f8a: Implement the telemetry adapters (#14). In 1.0.0 every method of `OpenTelemetryClient` and `ApplicationInsightsTelemetryClient` threw "not implemented", so passing either one as `telemetry` made **every Dataverse request fail**, even on a 200 response. Both now work, and no method ever throws: each catches its own errors, so telemetry can't change the outcome of a request.
+
+  - **otel:** `trackDependency` records an OpenTelemetry `CLIENT` span per request with `http.request.method`, `url.full`, `server.address`, `server.port`, `http.response.status_code`, `dataverse.correlation_id` and the SDK's other properties under `dataverse.*`; failed calls get status `ERROR` and `error.type`. `trackException` records a `dataverse.exception` span with the exception event, and `trackEvent` adds an event to the active span (or records a short span). The config is now optional: `tracer`, a new `tracerProvider`, or the global provider by default. Set `service.name` on your OpenTelemetry SDK.
+  - **appinsights:** built on the Azure Monitor OpenTelemetry distro. Dependencies are spans (Application Insights `dependencies`), events are log records with `microsoft.custom_event.name` (`customEvents`) and exceptions are log records with `exception.*` attributes (`exceptions`). Call `useAzureMonitor()` in your app and use `new ApplicationInsightsTelemetryClient()`, or pass `connectionString` (now optional) and the adapter calls `useAzureMonitor()` once per process, with `cloudRoleName` as `service.name`. New options: `tracer`, `tracerProvider`, `logger`, `loggerProvider`. New dependencies: `@opentelemetry/api`, `@opentelemetry/api-logs`, `@opentelemetry/resources`.
+  - **Privacy:** URLs are redacted before they are recorded: query parameter values become `REDACTED` (names such as `$filter` are kept), quoted literals in the path (alternate keys) become `'REDACTED'`, and user info and fragments are dropped. This also applies to URLs inside property values and exception messages.
+  - **Docs:** the READMEs now use the real option name, `telemetry` (not `telemetryClient`), the real config-object constructors, and an OTLP exporter example instead of the deprecated Jaeger exporter.
+
+- 365ceca: Remove the deprecated and no-op options (#285). Passing any of them is now a type error.
+
+  - **core, retries:** `RetryOptions.delay` is removed: use `baseDelayMs`. `RetryOptions.useExponentialBackoff` is removed: it had no effect, because backoff is always exponential.
+  - **core, client options:** `circuitBreaker` and `bulkhead` are removed, with their `CircuitBreakerOptions` and `BulkheadOptions` types. They were never implemented and only logged a warning. Circuit breaker and bulkhead middleware are planned in #100; until then, add your own through the `middleware` option.
+  - **core, errors:** `DataverseError.statusCode` is removed: read `status`.
+  - **otel:** `OpenTelemetryConfig.serviceName` is removed. It was ignored. `service.name` is a resource attribute: set it on your OpenTelemetry SDK (`new NodeSDK({ serviceName })` or `OTEL_SERVICE_NAME`).
+
+### Patch Changes
+
+- 6bbb784: Declare `engines: { "node": ">=22" }`. Node 18 and Node 20 are end of life (April 2025 and April 2026). CI now tests on Node 22, 24 and 26. Installing on an older Node shows an engine warning, or fails with `engine-strict`.
+- 5e1125c: Dependency spans follow the OpenTelemetry HTTP client conventions and the app's URL redaction (#384):
+
+  - `server.address` is the host name without the port (`org.example.com`, not `org.example.com:8443`); the port is in `server.port`.
+  - `url.full` and the exception's `dataverse.request.url` are recorded as the SDK passes them, already redacted with the client's `redactUrl` option, so a custom `redactUrl` (for example one that keeps `$top`) takes effect. URLs inside exception messages, stack traces and other property values are still redacted by the adapter.
+  - A call with a response fails when its status is 4xx or 5xx, whatever `success` says, so a `304 Not Modified` is not an error; a call without a response fails when `success` is `false`.
+
+  The READMEs now explain that the dependency span is recorded after the call, so it is never the active span: the adapters send no `traceparent`, and HTTP auto-instrumentation spans are its siblings, not its children.
+
+- Updated dependencies [ca11ddf]
+- Updated dependencies [aec5a48]
+- Updated dependencies [c262ad7]
+- Updated dependencies [f900b0c]
+- Updated dependencies [9d1e26d]
+- Updated dependencies [78e7716]
+- Updated dependencies [a32fd68]
+- Updated dependencies [b1f2738]
+- Updated dependencies [eb27877]
+- Updated dependencies [afb5242]
+- Updated dependencies [60ccef3]
+- Updated dependencies [7096f24]
+- Updated dependencies [08efbd7]
+- Updated dependencies [6b0dc00]
+- Updated dependencies [4c62fee]
+- Updated dependencies [1848068]
+- Updated dependencies [c3337f8]
+- Updated dependencies [63ee065]
+- Updated dependencies [39b3917]
+- Updated dependencies [bf38170]
+- Updated dependencies [2bb4ed3]
+- Updated dependencies [7b1ef12]
+- Updated dependencies [c426eac]
+- Updated dependencies [0bfa5fe]
+- Updated dependencies [02038b3]
+- Updated dependencies [7e13e73]
+- Updated dependencies [4f96909]
+- Updated dependencies [ac42045]
+- Updated dependencies [e3dcff1]
+- Updated dependencies [254a8ec]
+- Updated dependencies [6bbb784]
+- Updated dependencies [dd2acd8]
+- Updated dependencies [652ad75]
+- Updated dependencies [329c0b0]
+- Updated dependencies [608d915]
+- Updated dependencies [9728b8c]
+- Updated dependencies [d9eebf3]
+- Updated dependencies [365ceca]
+- Updated dependencies [3d4614d]
+- Updated dependencies [61bd4aa]
+- Updated dependencies [4e804b4]
+- Updated dependencies [b040687]
+- Updated dependencies [496b4cb]
+- Updated dependencies [d3a1a01]
+- Updated dependencies [2d4323f]
+- Updated dependencies [e237826]
+- Updated dependencies [6df2528]
+- Updated dependencies [a464f3a]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.0-beta.0
+
 ## 1.0.0
 
 ### Major Changes
