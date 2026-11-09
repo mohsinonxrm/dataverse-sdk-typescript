@@ -15,13 +15,15 @@ jobs:
     name: Check for Changeset
     runs-on: ubuntu-latest
     # PRs into the release branches (main, release/X.Y, support/X.Y) are hotfixes and need a
-    # changeset; release-prep PRs (chore/release-*) consume the changesets and forward merges
-    # (merge/*) carry existing ones, so they're skipped (RELEASING.md).
+    # changeset; release-prep PRs (chore/release-*) consume the changesets, forward merges
+    # (merge/*) carry existing ones, and a release branch merged into main (release/X.Y, the
+    # stable release) has consumed them, so they're skipped (RELEASING.md).
     if: >
       github.event_name == 'pull_request' &&
       (github.base_ref == 'main' || startsWith(github.base_ref, 'release/') || startsWith(github.base_ref, 'support/')) &&
       !startsWith(github.head_ref, 'chore/release-') &&
-      !startsWith(github.head_ref, 'merge/')
+      !startsWith(github.head_ref, 'merge/') &&
+      !startsWith(github.head_ref, 'release/')
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
