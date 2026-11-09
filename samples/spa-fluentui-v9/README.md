@@ -2,8 +2,8 @@
 
 A React 18 single-page app, built with [Fluent UI React v9](https://react.fluentui.dev/) and
 following Fluent 2, that runs the `@mohsinonxrm/dataverse-sdk-*` packages in the browser. It is
-also the SDK's public **explorer site**, hosted on Azure Static Web Apps (see
-[Hosting](#hosting)).
+also the SDK's public **explorer site**, https://dataverse-sdk.mohsinonxrm.com, hosted on Azure
+Static Web Apps (see [Hosting](#hosting)).
 
 The **Explorer** page (`/explorer`) works like an API explorer: build a raw Web API request, or
 pick one of the more than 2,300 typed actions, functions and messages and fill in its parameters; it shows
