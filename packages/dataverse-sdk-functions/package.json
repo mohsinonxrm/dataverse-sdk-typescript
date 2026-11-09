@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-functions",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0",
   "description": "Typed Web API functions for Dataverse (GET operations without side effects)",
   "publishConfig": {
     "access": "public",
