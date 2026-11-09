@@ -833,9 +833,9 @@ Comprehensive sample projects demonstrating SDK capabilities:
 
 ### Browser Sample
 
-| Sample                                           | Description                                                              | Features                                                                                                                                                                                                                                                                                                                                               |
-| ------------------------------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **[spa-fluentui-v9](./samples/spa-fluentui-v9)** | React 18 SPA with Fluent UI v9; also the [explorer site](./docs/site.md) | An explorer for any Web API request or typed operation, with its SDK code, a request preview and the response; a page per SDK area (queries, CRUD, concurrency, `$batch`, `OrganizationService`, messages, metadata, files, discovery, telemetry), each showing its code, result and every request; demo mode needs no org; MSAL loads only on sign-in |
+| Sample                                           | Description                                                                                                                      | Features                                                                                                                                                                                                                                                                                                                                               |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **[spa-fluentui-v9](./samples/spa-fluentui-v9)** | React 18 SPA with Fluent UI v9; also the [explorer site](https://dataverse-sdk.mohsinonxrm.com) ([docs/site.md](./docs/site.md)) | An explorer for any Web API request or typed operation, with its SDK code, a request preview and the response; a page per SDK area (queries, CRUD, concurrency, `$batch`, `OrganizationService`, messages, metadata, files, discovery, telemetry), each showing its code, result and every request; demo mode needs no org; MSAL loads only on sign-in |
 
 ## 🏗️ Architecture
 
@@ -925,7 +925,7 @@ lists the breaking changes. It ships:
 - ✅ Entity and operation generator (`dataverse-gen`): create/update types, validation rules, form contexts, incremental generation, custom templates and the typed client
 - ✅ Telemetry adapters (OpenTelemetry, and Application Insights for Node.js and browsers), with telemetry events and W3C trace context
 - ✅ .NET compatibility layer: `OrganizationService` and <!-- count:messages -->1,281<!-- /count --> typed messages, with the CRUD, `ExecuteMultiple` and `ExecuteTransaction` messages
-- ✅ An SDK explorer site, built on the Fluent UI sample ([docs/site.md](./docs/site.md))
+- ✅ An SDK explorer site, built on the Fluent UI sample: https://dataverse-sdk.mohsinonxrm.com ([docs/site.md](./docs/site.md))
 
 ### Planned
 

@@ -1,7 +1,8 @@
 # The explorer site
 
 The SDK's public site is the Fluent UI sample app, [`samples/spa-fluentui-v9`](../samples/spa-fluentui-v9),
-hosted on **Azure Static Web Apps** (Free plan). Anyone can open it and:
+hosted on **Azure Static Web Apps** (Free plan) at **https://dataverse-sdk.mohsinonxrm.com**.
+Anyone can open it and:
 
 - run requests in **demo mode**, without signing in: the real SDK against an in-browser fake of a
   small Dataverse environment;
@@ -65,6 +66,20 @@ in `src/auth/environments.ts`.
 3. **Deploy.** _Actions_ → _Site_ → _Run workflow_ on `main` (later, every push to `main`
    deploys). Check the headers: `curl -sI https://<name>.azurestaticapps.net/explorer` shows the
    `Content-Security-Policy` and returns 200 (the SPA fallback).
+
+   **Optional: a custom domain.** The site uses `dataverse-sdk.mohsinonxrm.com`, whose DNS is on
+   Cloudflare. Add a `CNAME` record from the subdomain to `<name>.azurestaticapps.net` with the
+   proxy **off** (_DNS only_, grey cloud): with Cloudflare's proxy on, Azure sees Cloudflare's
+   address instead of the CNAME and can't validate the domain. Then add the hostname to the Static
+   Web App:
+
+   ```bash
+   az staticwebapp hostname set --name dataverse-sdk-explorer --resource-group <group> --hostname dataverse-sdk.mohsinonxrm.com
+   ```
+
+   Azure validates it through the CNAME and issues and renews the certificate (a few minutes;
+   `az staticwebapp hostname list` shows `Ready`). Add the domain's URL as a redirect URI of the
+   app registration (step 4). The `azurestaticapps.net` URL keeps working.
 
 4. **Optional: a default app registration**, so visitors don't need their own. In Microsoft Entra
    ID: _App registrations_ → _New registration_:
