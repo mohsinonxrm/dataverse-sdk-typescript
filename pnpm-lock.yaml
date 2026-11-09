@@ -702,8 +702,8 @@ importers:
         specifier: ^5.6.2
         version: 5.6.2
       dotenv:
-        specifier: ^16.6.1
-        version: 16.6.1
+        specifier: ^18.0.9
+        version: 18.0.9
     devDependencies:
       '@types/node':
         specifier: ^22.20.5
@@ -807,8 +807,8 @@ importers:
         specifier: ^5.6.2
         version: 5.6.2
       dotenv:
-        specifier: ^16.6.1
-        version: 16.6.1
+        specifier: ^18.0.9
+        version: 18.0.9
     devDependencies:
       '@types/node':
         specifier: ^22.20.5
@@ -982,8 +982,8 @@ importers:
         specifier: ^13.1.0
         version: 13.1.0
       dotenv:
-        specifier: ^16.6.1
-        version: 16.6.1
+        specifier: ^18.0.9
+        version: 18.0.9
       ejs:
         specifier: ^4.0.1
         version: 4.0.1
@@ -3672,9 +3672,10 @@ packages:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
 
-  dotenv@16.6.1:
-    resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+  dotenv@18.0.9:
+    resolution: {integrity: sha512-3fVOW4cB02R066PUSwn8O4TJyz9NckQl7F81blIbaq9jKBm2tSmOKky7ZHIXzGvkVPXCSn6jkpziBPZdGFs8Tw==}
     engines: {node: '>=12'}
+    hasBin: true
 
   ecdsa-sig-formatter@1.0.11:
     resolution: {integrity: sha512-nagl3RYrbNv6kQkeJIpt6NJZy8twLB/2vtz6yN9Z4vRKHN4/QZJIEbqohALSgwKdnksuY3k5Addp5lg8sVoVcQ==}
@@ -8689,7 +8690,7 @@ snapshots:
     dependencies:
       path-type: 4.0.0
 
-  dotenv@16.6.1: {}
+  dotenv@18.0.9: {}
 
   ecdsa-sig-formatter@1.0.11:
     dependencies:
