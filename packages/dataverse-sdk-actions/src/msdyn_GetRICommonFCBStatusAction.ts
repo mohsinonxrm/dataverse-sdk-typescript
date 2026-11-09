@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetRICommonFCBStatus action
+ * Response from the msdyn_GetRICommonFCBStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetRICommonFCBStatusResponse {
+  "@odata.context"?: string;
   Status: boolean;
+}
+
+/**
+ * Parameters of the msdyn_GetRICommonFCBStatus action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetRICommonFCBStatusActionParameters {
+  FCBName: string;
 }
 
 /**
@@ -13,27 +25,27 @@ export interface msdyn_GetRICommonFCBStatusResponse {
  * Unbound action
  */
 export class msdyn_GetRICommonFCBStatusAction implements Executable<msdyn_GetRICommonFCBStatusResponse> {
-  constructor(public readonly fCBName: string) {}
+  constructor(public readonly parameters: msdyn_GetRICommonFCBStatusActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetRICommonFCBStatus`;
 
-    const body: Record<string, unknown> = {
-      FCBName: this.fCBName,
-    };
+    const body = requestBody({
+      FCBName: this.parameters.FCBName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRICommonFCBStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetRICommonFCBStatusResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetRICommonFCBStatusResponse;
   }
 }

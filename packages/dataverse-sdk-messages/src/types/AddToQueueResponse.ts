@@ -2,5 +2,5 @@
  * AddToQueueResponse complex type
  */
 export interface AddToQueueResponse {
-  QueueItemId: string;
+  QueueItemId?: string;
 }

@@ -1,9 +1,16 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from PvaPublish action
+ * Response from the PvaPublish action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PvaPublishResponse {
+  "@odata.context"?: string;
   PublishedBotContentId: string;
 }
 
@@ -12,25 +19,27 @@ export interface PvaPublishResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.bot)
+ *
+ * The first argument is the id of the bot record to call it on.
  */
 export class PvaPublishAction implements Executable<PvaPublishResponse> {
   constructor(public readonly botId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/bots(${this.botId})/Microsoft.Dynamics.CRM.PvaPublish`;
+    const url = `${baseUrl}/bots(${odataLiteral.guid(this.botId)})/Microsoft.Dynamics.CRM.PvaPublish`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<PvaPublishResponse> {
-    const data = await response.json();
-    return data as PvaPublishResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as PvaPublishResponse;
   }
 }

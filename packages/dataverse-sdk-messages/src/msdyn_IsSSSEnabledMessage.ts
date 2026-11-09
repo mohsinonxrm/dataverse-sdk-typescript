@@ -21,30 +21,39 @@ export class msdyn_IsSSSEnabledRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsSSSEnabledResponse> {
-    const data = await response.json();
-    return msdyn_IsSSSEnabledResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_IsSSSEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IsSSSEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IsSSSEnabledResult {
+  "@odata.context"?: string;
+  IsSSSEnabled: boolean;
+}
+
+/**
  * msdyn_IsSSSEnabled response message
+ *
+ * `result` is the value the msdyn_IsSSSEnabled action returns (see {@link msdyn_IsSSSEnabledResult}).
  */
 export class msdyn_IsSSSEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IsSSSEnabledResponse) {
+  constructor(public result: msdyn_IsSSSEnabledResult) {
     super("msdyn_IsSSSEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IsSSSEnabledResponse {
-    return new msdyn_IsSSSEnabledResponse((data as any).value);
+    return new msdyn_IsSSSEnabledResponse(data as msdyn_IsSSSEnabledResult);
   }
 }

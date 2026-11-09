@@ -1,10 +1,23 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ConfirmConsentCode action
+ * Response from the ConfirmConsentCode action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ConfirmConsentCodeResponse {
-  // No content returned
+export type ConfirmConsentCodeResponse = void;
+
+/**
+ * Parameters of the ConfirmConsentCode action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ConfirmConsentCodeActionParameters {
+  code: string;
 }
 
 /**
@@ -12,33 +25,35 @@ export interface ConfirmConsentCodeResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.connectioninstance)
+ *
+ * The first argument is the id of the connectioninstance record to call it on.
  */
 export class ConfirmConsentCodeAction implements Executable<ConfirmConsentCodeResponse> {
   constructor(
     public readonly connectioninstanceId: string,
-    public readonly code: string
+    public readonly parameters: ConfirmConsentCodeActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/connectioninstances(${this.connectioninstanceId})/Microsoft.Dynamics.CRM.ConfirmConsentCode`;
+    const url = `${baseUrl}/connectioninstances(${odataLiteral.guid(this.connectioninstanceId)})/Microsoft.Dynamics.CRM.ConfirmConsentCode`;
 
-    const body: Record<string, unknown> = {
-      code: this.code,
-    };
+    const body = requestBody({
+      code: this.parameters.code,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ConfirmConsentCodeResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<ConfirmConsentCodeResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

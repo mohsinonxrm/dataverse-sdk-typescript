@@ -1,5 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_AIBRealTimePredict message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AIBRealTimePredictRequestParameters {
+  SuggestionType: string;
+  Filters: string;
+  Context: string;
+  SuggestionFor: string;
+  Version: string;
+}
 
 /**
  * msdyn_AIBRealTimePredict request message
@@ -10,62 +23,61 @@ export class msdyn_AIBRealTimePredictRequest
   extends OrganizationRequest
   implements Executable<msdyn_AIBRealTimePredictResponse>
 {
-  constructor(
-    public filters: string,
-    public suggestionFor: string,
-    public context: string,
-    public version: string,
-    public suggestionType: string
-  ) {
-    super("msdyn_AIBRealTimePredict");
+  declare readonly Parameters: Readonly<msdyn_AIBRealTimePredictRequestParameters>;
+
+  constructor(parameters: msdyn_AIBRealTimePredictRequestParameters) {
+    super("msdyn_AIBRealTimePredict", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AIBRealTimePredict`;
 
-    const body: Record<string, unknown> = {
-      Filters: this.filters,
-      SuggestionFor: this.suggestionFor,
-      Context: this.context,
-      Version: this.version,
-      SuggestionType: this.suggestionType,
-    };
+    const body = requestBody({
+      SuggestionType: this.Parameters.SuggestionType,
+      Filters: this.Parameters.Filters,
+      Context: this.Parameters.Context,
+      SuggestionFor: this.Parameters.SuggestionFor,
+      Version: this.Parameters.Version,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_AIBRealTimePredictResponse> {
-    const data = await response.json();
-    return msdyn_AIBRealTimePredictResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Filters: this.filters,
-      SuggestionFor: this.suggestionFor,
-      Context: this.context,
-      Version: this.version,
-      SuggestionType: this.suggestionType,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_AIBRealTimePredictResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_AIBRealTimePredict action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_AIBRealTimePredictResult {
+  "@odata.context"?: string;
+  Suggestions: string;
+}
+
+/**
  * msdyn_AIBRealTimePredict response message
+ *
+ * `result` is the value the msdyn_AIBRealTimePredict action returns (see {@link msdyn_AIBRealTimePredictResult}).
  */
 export class msdyn_AIBRealTimePredictResponse extends OrganizationResponse {
-  constructor(public result: msdyn_AIBRealTimePredictResponse) {
+  constructor(public result: msdyn_AIBRealTimePredictResult) {
     super("msdyn_AIBRealTimePredict");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_AIBRealTimePredictResponse {
-    return new msdyn_AIBRealTimePredictResponse((data as any).value);
+    return new msdyn_AIBRealTimePredictResponse(data as msdyn_AIBRealTimePredictResult);
   }
 }

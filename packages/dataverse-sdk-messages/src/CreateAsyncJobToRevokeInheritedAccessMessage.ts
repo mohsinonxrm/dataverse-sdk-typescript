@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CreateAsyncJobToRevokeInheritedAccess message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateAsyncJobToRevokeInheritedAccessRequestParameters {
+  RelationshipSchema: string;
+}
 
 /**
  * CreateAsyncJobToRevokeInheritedAccess request message
@@ -10,36 +19,32 @@ export class CreateAsyncJobToRevokeInheritedAccessRequest
   extends OrganizationRequest
   implements Executable<CreateAsyncJobToRevokeInheritedAccessResponse>
 {
-  constructor(public relationshipSchema: string) {
-    super("CreateAsyncJobToRevokeInheritedAccess");
+  declare readonly Parameters: Readonly<CreateAsyncJobToRevokeInheritedAccessRequestParameters>;
+
+  constructor(parameters: CreateAsyncJobToRevokeInheritedAccessRequestParameters) {
+    super("CreateAsyncJobToRevokeInheritedAccess", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateAsyncJobToRevokeInheritedAccess`;
 
-    const body: Record<string, unknown> = {
-      RelationshipSchema: this.relationshipSchema,
-    };
+    const body = requestBody({
+      RelationshipSchema: this.Parameters.RelationshipSchema,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<CreateAsyncJobToRevokeInheritedAccessResponse> {
+  parseResponse(_response: Response): Promise<CreateAsyncJobToRevokeInheritedAccessResponse> {
     // No return value (204 No Content)
-    return new CreateAsyncJobToRevokeInheritedAccessResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RelationshipSchema: this.relationshipSchema,
-    };
+    return Promise.resolve(new CreateAsyncJobToRevokeInheritedAccessResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class CreateAsyncJobToRevokeInheritedAccessResponse extends OrganizationR
     super("CreateAsyncJobToRevokeInheritedAccess");
   }
 
-  static fromResponse(_data: unknown): CreateAsyncJobToRevokeInheritedAccessResponse {
+  static fromResponse(_data?: unknown): CreateAsyncJobToRevokeInheritedAccessResponse {
     return new CreateAsyncJobToRevokeInheritedAccessResponse();
   }
 }

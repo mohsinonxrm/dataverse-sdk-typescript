@@ -21,30 +21,43 @@ export class msdyn_CheckIfQueueInRTQIsActiveRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfQueueInRTQIsActiveResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfQueueInRTQIsActiveResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_CheckIfQueueInRTQIsActiveResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfQueueInRTQIsActive action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfQueueInRTQIsActiveResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfQueueInRTQIsActive response message
+ *
+ * `result` is the value the msdyn_CheckIfQueueInRTQIsActive action returns (see {@link msdyn_CheckIfQueueInRTQIsActiveResult}).
  */
 export class msdyn_CheckIfQueueInRTQIsActiveResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfQueueInRTQIsActiveResponse) {
+  constructor(public result: msdyn_CheckIfQueueInRTQIsActiveResult) {
     super("msdyn_CheckIfQueueInRTQIsActive");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfQueueInRTQIsActiveResponse {
-    return new msdyn_CheckIfQueueInRTQIsActiveResponse((data as any).value);
+    return new msdyn_CheckIfQueueInRTQIsActiveResponse(
+      data as msdyn_CheckIfQueueInRTQIsActiveResult
+    );
   }
 }

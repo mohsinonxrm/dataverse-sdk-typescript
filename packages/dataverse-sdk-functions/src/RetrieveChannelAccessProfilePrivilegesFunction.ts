@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { ChannelAccessProfileWithPrivileges } from "./types/index.js";
 
 /**
- * Response from RetrieveChannelAccessProfilePrivileges function
+ * Response from the RetrieveChannelAccessProfilePrivileges function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveChannelAccessProfilePrivilegesResponse {
+  "@odata.context"?: string;
   ChannelAccessProfile: ChannelAccessProfileWithPrivileges;
+}
+
+/**
+ * Parameters of the RetrieveChannelAccessProfilePrivileges function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveChannelAccessProfilePrivilegesFunctionParameters {
+  ChannelAccessProfileId: string;
 }
 
 /**
@@ -14,7 +26,9 @@ export interface RetrieveChannelAccessProfilePrivilegesResponse {
  * Unbound function
  */
 export class RetrieveChannelAccessProfilePrivilegesFunction implements Executable<RetrieveChannelAccessProfilePrivilegesResponse> {
-  constructor(public readonly channelAccessProfileId: string) {}
+  constructor(
+    public readonly parameters: RetrieveChannelAccessProfilePrivilegesFunctionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveChannelAccessProfilePrivileges`;
@@ -22,13 +36,11 @@ export class RetrieveChannelAccessProfilePrivilegesFunction implements Executabl
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.channelAccessProfileId !== undefined) {
+    if (this.parameters.ChannelAccessProfileId !== undefined) {
       aliases.push(`ChannelAccessProfileId=@p1`);
       params.append(
         "@p1",
-        typeof this.channelAccessProfileId === "string"
-          ? `'${this.channelAccessProfileId}'`
-          : String(this.channelAccessProfileId)
+        formatParameterAlias(this.parameters.ChannelAccessProfileId, "Edm.Guid")
       );
     }
     if (aliases.length > 0) {
@@ -45,7 +57,7 @@ export class RetrieveChannelAccessProfilePrivilegesFunction implements Executabl
   }
 
   async parseResponse(response: Response): Promise<RetrieveChannelAccessProfilePrivilegesResponse> {
-    const data = await response.json();
-    return data as RetrieveChannelAccessProfilePrivilegesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveChannelAccessProfilePrivilegesResponse;
   }
 }

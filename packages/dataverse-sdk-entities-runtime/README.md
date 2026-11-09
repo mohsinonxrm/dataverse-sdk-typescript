@@ -16,6 +16,8 @@ This package serves as the runtime foundation for early-bound entity types gener
 - **Metadata structures** (`EntityMetadata`, `AttributeMetadata`, `NavigationMetadata`)
 - **Type guards** (`isEntity`, `isEntityReference`)
 - **Helper functions** for URL construction, entity formatting, etc.
+- **`EntitySetClient`**, the typed request builder behind the typed client `dataverse-gen` writes
+  (`createTypedClient()`), on top of core's `client.api()`
 
 **Note:** You typically don't use this package directly. Instead, use `@mohsinonxrm/dataverse-sdk-generator` to generate strongly-typed entity classes that reference these base types.
 
@@ -31,16 +33,34 @@ Base interface for all Dataverse entities. Generated entity interfaces extend th
 import type { IEntity } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 const account: IEntity = {
-  logicalName: "account",
   id: "123e4567-e89b-12d3-a456-426614174000",
   name: "Contoso",
   creditlimit: 50000,
 };
 ```
 
+`IEntity` has an optional `logicalName`, which is never sent: `formatEntityForWrite()` drops it,
+because the Web API rejects unknown properties. Send entities through `formatEntityForWrite()`
+rather than posting them as they are.
+
+Any other property is `unknown` (`[key: string]: unknown`). A generated interface that extends
+`IEntity` declares its columns' types; for a column it doesn't declare, check the value before
+using it:
+
+```typescript
+const record = await client.api(`accounts(${id})`).get<IEntity>();
+
+// record.name.toUpperCase(); // error: 'record.name' is of type 'unknown'
+if (typeof record.name === "string") console.log(record.name.toUpperCase());
+```
+
 ### `EntityReference`
 
-Represents a reference to another entity record (for lookups).
+A reference to one record: the SDK's one `EntityReference`. This package defines it, with
+`createEntityReference`, `getEntitySetNameFromReference` and `WebApiEntityReference`; the actions,
+functions, messages and xrm packages re-export the same ones. So a reference from any package's
+`createEntityReference` works everywhere: as an action or message parameter, a function
+parameter, a lookup in `formatEntityForWrite()`, and in `OrganizationService.associate()`.
 
 ```typescript
 import {
@@ -51,9 +71,28 @@ import {
 const contactRef: EntityReference = createEntityReference(
   "contact",
   "456e7890-e89b-12d3-a456-426614174000",
-  "Jane Doe"
+  { name: "Jane Doe" } // kept on the reference, never sent
 );
+JSON.stringify(contactRef); // {"@odata.type":"Microsoft.Dynamics.CRM.contact","contactid":"456e…"}
+contactRef.entitySetName; // "contacts"
+
+// A table the SDK's $metadata snapshot doesn't know, such as a custom table
+const widgetRef = createEntityReference("new_widget", widgetId, {
+  entitySetName: "new_widgets",
+  primaryIdAttribute: "new_widgetid", // the default is <logicalName>id
+});
 ```
+
+Its enumerable properties are the Web API shape, `@odata.type` and the primary key (activities
+use `activityid`). `logicalName`, `id`, `entitySetName` and `name` are there too, not
+enumerable, so they aren't sent. The primary keys and entity sets of the tables come from the
+`$metadata` snapshot the SDK is generated from (`src/generated/entity-tables.ts`, written by
+`pnpm --filter generate-sdk-types regen`).
+
+Only `createEntityReference` makes an `EntityReference`: the type carries a brand, so a
+hand-written `{ logicalName, id }` doesn't type-check as one. To write the JSON by hand, type it
+as `WebApiEntityReference`
+(`{ "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "<id>" }`).
 
 ### `EntityMetadata`
 
@@ -68,10 +107,24 @@ const accountMetadata: EntityMetadata = {
   collectionName: "accounts",
   primaryIdAttribute: "accountid",
   primaryNameAttribute: "name",
+  // Column logical name -> OData type
   attributeTypes: {
-    accountid: "Guid",
-    name: "String",
-    creditlimit: "Money",
+    accountid: "Edm.Guid",
+    name: "Edm.String",
+    creditlimit: "Edm.Decimal",
+  },
+  // Optional details per column (the generator fills these in)
+  attributes: {
+    creditlimit: {
+      logicalName: "creditlimit",
+      schemaName: "CreditLimit",
+      attributeType: "Money",
+      typescriptType: "number",
+      odataType: "Edm.Decimal",
+      // Constraints for validateEntity() (see Validation)
+      minValue: 0,
+      maxValue: 1000000000000,
+    },
   },
   navigation: {
     primarycontactid: {
@@ -79,6 +132,16 @@ const accountMetadata: EntityMetadata = {
       targetType: "contact",
       isCollection: false,
       relationshipName: "account_primary_contact",
+    },
+    // A polymorphic lookup: one navigation property per target, `<fullName>_<target>`
+    parentcustomerid: {
+      name: "parentcustomerid",
+      fullName: "parentcustomerid",
+      targetType: "account",
+      isPolymorphic: true,
+      targets: ["account", "contact"],
+      isCollection: false,
+      relationshipName: "contact_customer_accounts",
     },
   },
 };
@@ -102,6 +165,9 @@ if (isEntityReference(value)) {
 }
 ```
 
+`isEntityReference` is true for what `createEntityReference` makes: an object with a string
+`@odata.type`, `logicalName` and `id`.
+
 ### URL Construction
 
 ```typescript
@@ -121,48 +187,159 @@ const accountUrl = getEntityUrl(accountMetadata, "123-guid", baseUrl);
 ### Entity Formatting for Create/Update
 
 ```typescript
-import { formatEntityForWrite } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import {
+  createEntityReference,
+  formatEntityForWrite,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 const entity: Partial<IEntity> = {
-  logicalName: "account",
   name: "Contoso",
   creditlimit: 50000,
+  description: null, // null is kept: it clears the column
+  primarycontactid: createEntityReference("contact", contactId),
 };
 
+// contact is in the SDK's $metadata snapshot, so the reference knows its entity set. A lookup to
+// a custom table needs a third argument: { entitySetNames: { new_widget: "new_widgets" } } (or
+// { metadataCache: EntityMetadataCache }).
 const payload = formatEntityForWrite(entity, accountMetadata);
 // {
 //   '@odata.type': 'Microsoft.Dynamics.CRM.account',
 //   'name': 'Contoso',
-//   'creditlimit': 50000
+//   'creditlimit': 50000,
+//   'description': null,
+//   'primarycontactid@odata.bind': '/contacts(<contactId>)'
 // }
+
+await client.api("/accounts").post(payload);
 ```
+
+What it does:
+
+- adds `@odata.type`;
+- drops `id`, `logicalName` and `undefined` values;
+- turns each `EntityReference` value into `<navigation property>@odata.bind: "/<entity set>(<id>)"`,
+  and an array of references into an array of paths (associating records on create). For a
+  polymorphic lookup (`customerid`, `parentcustomerid`), it binds through the navigation property
+  for the reference's table (`parentcustomerid_account`).
+
+The referenced table's entity set comes from `reference.entitySetName` (which
+`createEntityReference` fills in for the tables in the SDK's `$metadata` snapshot), then
+`options.entitySetNames`, then `options.metadataCache` (the generated `EntityMetadataCache`).
+When none of them knows it, `formatEntityForWrite()` throws a `DataverseInvalidRequestError`.
+
+### Validation: `validateEntity(entity, metadata, options?)`
+
+Opt-in: check a create or update body against the column constraints in the table's generated
+metadata before you send it. It returns the problems it finds (an empty array when there are none);
+nothing else calls it.
+
+```typescript
+import { validateEntity } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { AccountMetadata } from "./generated/entities/Account.js";
+
+const issues = validateEntity({ name: "x".repeat(200), industrycode: 99 }, AccountMetadata);
+// [
+//   { property: "name", code: "maxLength", message: "name is 200 characters long; the column holds at most 160." },
+//   { property: "industrycode", code: "invalidOption", message: "industrycode is 99, not one of its options (1, 2, …)." },
+//   { property: "primarycontactid", code: "required", message: "primarycontactid is required." }, // if business-required
+// ]
+
+validateEntity({ statecode: 1 }, AccountMetadata, { mode: "update" }); // [] — an update checks only what it sets
+```
+
+It reads the body as `formatEntityForWrite()` takes it (columns by logical name, lookups by
+navigation property with an `EntityReference`) and reports, by `code`:
+
+| `code`                                    | When                                                                                                 |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `required`                                | a business-required (ApplicationRequired) column or lookup is `null`, or left out of a create        |
+| `notValidForCreate` / `notValidForUpdate` | the column or lookup can't be set in that mode (`IsValidForCreate` / `IsValidForUpdate`)             |
+| `maxLength`                               | text longer than the column's `MaxLength`                                                            |
+| `minValue` / `maxValue`                   | a number outside the column's `MinValue` / `MaxValue`                                                |
+| `notAnInteger`                            | a fraction in a whole-number column                                                                  |
+| `invalidOption`                           | a value that isn't one of a choice column's options (each comma-separated value of a choices column) |
+| `invalidType`                             | the wrong type for the column (text for a number, …), or a lookup that isn't an `EntityReference`    |
+
+The constraints are the `maxLength`, `minValue`, `maxValue`, `optionValues`, `isRequired`,
+`isValidForCreate` and `isValidForUpdate` of `EntityMetadata.attributes`, and the `lookupAttribute`,
+`isRequired`, `isValidForCreate` and `isValidForUpdate` of a lookup's `EntityMetadata.navigation`
+entry; `dataverse-gen` fills them in. Properties the metadata doesn't describe, annotations and
+`undefined` values are skipped. Dataverse checks the same things when the request arrives, except
+business-required columns, which only forms enforce.
+
+---
+
+## 🧭 Typed Request Builders: `EntitySetClient`
+
+`dataverse-gen` with `"typedClient": true` generates `createTypedClient(client)`, which returns one
+`EntitySetClient` per table (`typed.accounts`). You can also make one yourself from a table's
+generated types and metadata:
+
+```typescript
+import { EntitySetClient } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import {
+  type Account,
+  type AccountCreate,
+  type AccountUpdate,
+  AccountMetadata,
+} from "./generated/entities/Account.js";
+import { EntityMetadataCache } from "./generated/metadata.js";
+
+const accounts = new EntitySetClient<Account, AccountCreate, AccountUpdate, "name" | "accountid">(
+  client,
+  AccountMetadata,
+  { metadataCache: EntityMetadataCache }
+);
+const id = await accounts.create({ name: "Contoso" });
+const account = await accounts.byId(id).get({ select: ["name"] });
+await accounts.byId(id).update({ name: "Contoso Ltd" }); // PATCH with If-Match: *
+await accounts.byId(id).delete();
+const all = await accounts.list({ filter: "statecode eq 0", maxItems: 100 });
+```
+
+- `byId(key)` takes a GUID or an alternate key object (`{ accountnumber: "A-1" }`) and returns an
+  `EntityRecordClient` with `get({ select, expand })`, `update(entity, { etag })`,
+  `delete({ etag })` and `request()` (core's builder for the record).
+- `list({ select, expand, filter, orderBy, top, maxItems })` follows `@odata.nextLink` unless `top`
+  or `maxItems` bounds it; `create(entity)` resolves the new record's id; `query()` is core's
+  builder for the entity set.
+- Writes go through `formatEntityForWrite()` with the options given to the constructor. `update()`
+  sends `If-Match: *` (or the `etag`), so it never creates a record.
+- Every method takes core's `RequestOptions` last.
 
 ---
 
 ## 🔧 Base Classes for Generated Code
+
+Both base classes implement core's `Executable<TResponse>`, and `toRequestInformation()` returns
+core's `RequestInformation` (re-exported from this package), so instances go straight to
+`client.execute()` without a cast.
 
 ### `ActionBase<TResponse>`
 
 Abstract base class for generated action classes.
 
 ```typescript
-import { ActionBase } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { ActionBase, type RequestInformation } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 class CustomAction extends ActionBase<{ Result: string }> {
-  toRequestInformation(baseUrl: string) {
+  toRequestInformation(baseUrl: string): RequestInformation {
     return {
       method: "POST",
-      url: `${baseUrl}/CustomAction`,
-      headers: { "Content-Type": "application/json" },
+      url: `${baseUrl}/contoso_CustomAction`,
+      headers: { "content-type": "application/json" },
       body: { Parameter: "value" },
     };
   }
 
   async parseResponse(response: Response) {
-    const data = await response.json();
+    const data = (await response.json()) as { Result: string };
     return { Result: data.Result };
   }
 }
+
+const { Result } = await client.execute(new CustomAction());
 ```
 
 ### `FunctionBase<TResponse>`
@@ -170,23 +347,62 @@ class CustomAction extends ActionBase<{ Result: string }> {
 Abstract base class for generated function classes.
 
 ```typescript
-import { FunctionBase } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import {
+  FunctionBase,
+  formatParameterAlias,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 class CustomFunction extends FunctionBase<{ Count: number }> {
-  toRequestInformation(baseUrl: string) {
+  constructor(private name: string) {
+    super();
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const value = encodeURIComponent(formatParameterAlias(this.name, "Edm.String"));
     return {
       method: "GET",
-      url: `${baseUrl}/CustomFunction(Name=@Name)`,
-      headers: {},
-      query: { "@Name": "value" },
+      url: `${baseUrl}/contoso_CustomFunction(Name=@p1)?@p1=${value}`,
+      headers: { accept: "application/json" },
     };
   }
 
   async parseResponse(response: Response) {
-    const data = await response.json();
+    const data = (await response.json()) as { Count: number };
     return { Count: data.Count };
   }
 }
+```
+
+### Function parameters: `formatParameterAlias(value, odataType, kind?)`
+
+Function parameters go in the URL as parameter aliases, so each value must be an OData literal.
+`formatParameterAlias()` builds it from the parameter's OData type (the generated functions use
+it); URL-encode the result. It calls `odataLiteral.parameter()` from
+`@mohsinonxrm/dataverse-sdk-core`, the one OData literal serializer, and `formatRecordPath()` calls
+`odataLiteral.recordPath()`. A value that can't be a literal of its type (a GUID that isn't one,
+`NaN`, a date-time without a zone, an enum member with a quote) throws
+`DataverseInvalidRequestError` instead of sending a request the Web API rejects.
+
+```typescript
+import {
+  formatParameterAlias,
+  formatRecordPath,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+
+formatParameterAlias("O'Brien", "Edm.String"); // 'O''Brien'
+formatParameterAlias("{6f6a…}", "Edm.Guid"); // 6f6a… (bare, braces dropped)
+formatParameterAlias(new Date(), "Edm.DateTimeOffset"); // 2024-05-01T10:00:00.000Z
+formatParameterAlias(1, "mscrm.EntityFilters", "EnumerationType"); // Microsoft.Dynamics.CRM.EntityFilters'1'
+formatParameterAlias(["account"], "Collection(Edm.String)"); // ["account"]
+formatParameterAlias({ PageNumber: 1 }, "mscrm.PagingInfo", "ComplexType"); // {"PageNumber":1}
+formatParameterAlias(
+  { logicalName: "account", id, entitySetName: "accounts" },
+  "mscrm.crmbaseentity",
+  "EntityType"
+); // {"@odata.id":"accounts(<id>)"}
+
+formatRecordPath({ logicalName: "account", id, entitySetName: "accounts" }); // accounts(<id>)
 ```
 
 ---
@@ -195,17 +411,23 @@ class CustomFunction extends FunctionBase<{ Count: number }> {
 
 Here's what generated entity code looks like:
 
+<!-- no-check -->
+
 ```typescript
 // Generated by @mohsinonxrm/dataverse-sdk-generator
 
-import type { IEntity, EntityMetadata } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type {
+  EntityMetadata,
+  EntityReference,
+  IEntity,
+} from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { Contact } from "./Contact.js";
 
 export interface Account extends IEntity {
-  accountid?: string;
-  name?: string;
-  creditlimit?: number;
-  primarycontactid?: Contact;
+  accountid?: string | null;
+  name?: string | null;
+  creditlimit?: number | null;
+  primarycontactid?: Contact | EntityReference;
 }
 
 export const AccountMetadata: EntityMetadata = {
@@ -215,10 +437,11 @@ export const AccountMetadata: EntityMetadata = {
   primaryIdAttribute: "accountid",
   primaryNameAttribute: "name",
   attributeTypes: {
-    accountid: "Guid",
-    name: "String",
-    creditlimit: "Money",
+    accountid: "Edm.Guid",
+    name: "Edm.String",
+    creditlimit: "Edm.Decimal",
   },
+  attributes: {},
   navigation: {
     primarycontactid: {
       name: "primarycontactid",
@@ -255,21 +478,22 @@ export const AccountMetadata: EntityMetadata = {
 4. **Use generated types:**
 
    ```typescript
-   import { Account, AccountMetadata } from "./generated/entities/Account.js";
+   import { type Account, AccountMetadata } from "./generated/entities/Account.js";
    import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+   import { formatEntityForWrite } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
    const client = new DataverseClient({
-     /* ... */
+     baseUrl: "https://contoso.crm.dynamics.com",
+     tokenProvider,
    });
 
    // Type-safe entity operations
    const account: Account = {
-     logicalName: "account",
      name: "Contoso",
      creditlimit: 50000,
    };
 
-   await client.api("/accounts").post(account);
+   await client.api("/accounts").post(formatEntityForWrite(account, AccountMetadata));
    ```
 
 ---

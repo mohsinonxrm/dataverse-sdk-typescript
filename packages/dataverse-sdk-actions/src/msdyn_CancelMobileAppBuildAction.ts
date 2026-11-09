@@ -1,11 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_mobileapp } from "./types/index.js";
 
 /**
- * Response from msdyn_CancelMobileAppBuild action
+ * Response from the msdyn_CancelMobileAppBuild action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CancelMobileAppBuildResponse {
+  "@odata.context"?: string;
   Result: string;
+}
+
+/**
+ * Parameters of the msdyn_CancelMobileAppBuild action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CancelMobileAppBuildActionParameters {
+  OperationId: string;
+  msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
 }
 
 /**
@@ -14,31 +29,28 @@ export interface msdyn_CancelMobileAppBuildResponse {
  * Unbound action
  */
 export class msdyn_CancelMobileAppBuildAction implements Executable<msdyn_CancelMobileAppBuildResponse> {
-  constructor(
-    public readonly operationId: string,
-    public readonly msdyn_MobileApp: msdyn_mobileapp
-  ) {}
+  constructor(public readonly parameters: msdyn_CancelMobileAppBuildActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CancelMobileAppBuild`;
 
-    const body: Record<string, unknown> = {
-      OperationId: this.operationId,
-      msdyn_MobileApp: this.msdyn_MobileApp,
-    };
+    const body = requestBody({
+      OperationId: this.parameters.OperationId,
+      msdyn_MobileApp: this.parameters.msdyn_MobileApp,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CancelMobileAppBuildResponse> {
-    const data = await response.json();
-    return data as msdyn_CancelMobileAppBuildResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CancelMobileAppBuildResponse;
   }
 }

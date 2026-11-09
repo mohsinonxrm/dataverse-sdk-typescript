@@ -1,12 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesMeetingPreparation action
+ * Response from the msdyn_SalesMeetingPreparation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesMeetingPreparationResponse {
+  "@odata.context"?: string;
+  msdyn_summary: string;
   msdyn_summary_raw: string;
   msdyn_version: string;
-  msdyn_summary: string;
+}
+
+/**
+ * Parameters of the msdyn_SalesMeetingPreparation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesMeetingPreparationActionParameters {
+  msdyn_responseFormat?: string;
+  msdyn_activityId?: string;
+  msdyn_sessionId?: string;
+  msdyn_id: string;
 }
 
 /**
@@ -15,35 +30,30 @@ export interface msdyn_SalesMeetingPreparationResponse {
  * Unbound action
  */
 export class msdyn_SalesMeetingPreparationAction implements Executable<msdyn_SalesMeetingPreparationResponse> {
-  constructor(
-    public readonly msdyn_sessionId: string,
-    public readonly msdyn_activityId: string,
-    public readonly msdyn_id: string,
-    public readonly msdyn_responseFormat: string
-  ) {}
+  constructor(public readonly parameters: msdyn_SalesMeetingPreparationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesMeetingPreparation`;
 
-    const body: Record<string, unknown> = {
-      msdyn_sessionId: this.msdyn_sessionId,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_id: this.msdyn_id,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-    };
+    const body = requestBody({
+      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
+      msdyn_activityId: this.parameters.msdyn_activityId,
+      msdyn_sessionId: this.parameters.msdyn_sessionId,
+      msdyn_id: this.parameters.msdyn_id,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesMeetingPreparationResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesMeetingPreparationResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_SalesMeetingPreparationResponse;
   }
 }

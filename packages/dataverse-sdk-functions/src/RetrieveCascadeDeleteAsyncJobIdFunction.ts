@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrieveCascadeDeleteAsyncJobId function
+ * Response from the RetrieveCascadeDeleteAsyncJobId function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveCascadeDeleteAsyncJobIdResponse {
-  AsyncJobName: string;
+  "@odata.context"?: string;
   AsyncJobId: string;
+  AsyncJobName: string;
+}
+
+/**
+ * Parameters of the RetrieveCascadeDeleteAsyncJobId function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveCascadeDeleteAsyncJobIdFunctionParameters {
+  ParentEntityIds: string[];
 }
 
 /**
@@ -14,7 +26,7 @@ export interface RetrieveCascadeDeleteAsyncJobIdResponse {
  * Unbound function
  */
 export class RetrieveCascadeDeleteAsyncJobIdFunction implements Executable<RetrieveCascadeDeleteAsyncJobIdResponse> {
-  constructor(public readonly parentEntityIds: string[]) {}
+  constructor(public readonly parameters: RetrieveCascadeDeleteAsyncJobIdFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveCascadeDeleteAsyncJobId`;
@@ -22,9 +34,12 @@ export class RetrieveCascadeDeleteAsyncJobIdFunction implements Executable<Retri
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.parentEntityIds !== undefined) {
+    if (this.parameters.ParentEntityIds !== undefined) {
       aliases.push(`ParentEntityIds=@p1`);
-      params.append("@p1", JSON.stringify(this.parentEntityIds));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.ParentEntityIds, "Collection(Edm.Guid)", "Collection")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +55,7 @@ export class RetrieveCascadeDeleteAsyncJobIdFunction implements Executable<Retri
   }
 
   async parseResponse(response: Response): Promise<RetrieveCascadeDeleteAsyncJobIdResponse> {
-    const data = await response.json();
-    return data as RetrieveCascadeDeleteAsyncJobIdResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveCascadeDeleteAsyncJobIdResponse;
   }
 }

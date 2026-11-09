@@ -1,10 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from LocalTimeFromUtcTime function
+ * Response from the LocalTimeFromUtcTime function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface LocalTimeFromUtcTimeResponse {
+  "@odata.context"?: string;
   LocalTime: string;
+}
+
+/**
+ * Parameters of the LocalTimeFromUtcTime function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface LocalTimeFromUtcTimeFunctionParameters {
+  TimeZoneCode: number;
+  UtcTime: string | Date;
 }
 
 /**
@@ -13,10 +26,7 @@ export interface LocalTimeFromUtcTimeResponse {
  * Unbound function
  */
 export class LocalTimeFromUtcTimeFunction implements Executable<LocalTimeFromUtcTimeResponse> {
-  constructor(
-    public readonly timeZoneCode: number,
-    public readonly utcTime: string
-  ) {}
+  constructor(public readonly parameters: LocalTimeFromUtcTimeFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/LocalTimeFromUtcTime`;
@@ -24,19 +34,13 @@ export class LocalTimeFromUtcTimeFunction implements Executable<LocalTimeFromUtc
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.timeZoneCode !== undefined) {
+    if (this.parameters.TimeZoneCode !== undefined) {
       aliases.push(`TimeZoneCode=@p1`);
-      params.append(
-        "@p1",
-        typeof this.timeZoneCode === "string" ? `'${this.timeZoneCode}'` : String(this.timeZoneCode)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.TimeZoneCode, "Edm.Int32"));
     }
-    if (this.utcTime !== undefined) {
+    if (this.parameters.UtcTime !== undefined) {
       aliases.push(`UtcTime=@p2`);
-      params.append(
-        "@p2",
-        typeof this.utcTime === "string" ? `'${this.utcTime}'` : String(this.utcTime)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.UtcTime, "Edm.DateTimeOffset"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -52,7 +56,7 @@ export class LocalTimeFromUtcTimeFunction implements Executable<LocalTimeFromUtc
   }
 
   async parseResponse(response: Response): Promise<LocalTimeFromUtcTimeResponse> {
-    const data = await response.json();
-    return data as LocalTimeFromUtcTimeResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as LocalTimeFromUtcTimeResponse;
   }
 }

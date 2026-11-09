@@ -1,14 +1,28 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CheckIfSLAOwnerIsActiveOrInactive action
+ * Response from the msdyn_CheckIfSLAOwnerIsActiveOrInactive action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse {
+  "@odata.context"?: string;
   Message: string;
   ResultEntities: string;
-  ReturnStatus: number;
-  ReturnSeverity: number;
   ReturnLevel: number;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
+ * Parameters of the msdyn_CheckIfSLAOwnerIsActiveOrInactive action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckIfSLAOwnerIsActiveOrInactiveActionParameters {
+  EntityIds?: string;
+  SolutionId?: string;
+  ExcludeSolutionIds?: string;
 }
 
 /**
@@ -18,25 +32,23 @@ export interface msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse {
  */
 export class msdyn_CheckIfSLAOwnerIsActiveOrInactiveAction implements Executable<msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse> {
   constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string,
-    public readonly excludeSolutionIds: string
+    public readonly parameters: msdyn_CheckIfSLAOwnerIsActiveOrInactiveActionParameters = {}
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckIfSLAOwnerIsActiveOrInactive`;
 
-    const body: Record<string, unknown> = {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-      ExcludeSolutionIds: this.excludeSolutionIds,
-    };
+    const body = requestBody({
+      EntityIds: this.parameters.EntityIds,
+      SolutionId: this.parameters.SolutionId,
+      ExcludeSolutionIds: this.parameters.ExcludeSolutionIds,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -45,7 +57,7 @@ export class msdyn_CheckIfSLAOwnerIsActiveOrInactiveAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CheckIfSLAOwnerIsActiveOrInactiveResponse;
   }
 }

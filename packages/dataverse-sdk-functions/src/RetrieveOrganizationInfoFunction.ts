@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { OrganizationInfo } from "./types/index.js";
 
 /**
- * Response from RetrieveOrganizationInfo function
+ * Response from the RetrieveOrganizationInfo function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveOrganizationInfoResponse {
+  "@odata.context"?: string;
   organizationInfo: OrganizationInfo;
 }
 
@@ -27,7 +30,7 @@ export class RetrieveOrganizationInfoFunction implements Executable<RetrieveOrga
   }
 
   async parseResponse(response: Response): Promise<RetrieveOrganizationInfoResponse> {
-    const data = await response.json();
-    return data as RetrieveOrganizationInfoResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveOrganizationInfoResponse;
   }
 }

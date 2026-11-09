@@ -1,11 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation action
+ * Response from the msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse {
-  msdyn_QualificationDecision: number;
+  "@odata.context"?: string;
   msdyn_IsEvaluationComplete: boolean;
+  msdyn_QualificationDecision: number;
+}
+
+/**
+ * Parameters of the msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationActionParameters {
+  msdyn_QueueAgentRunRequestTimestamp: string;
+  msdyn_TrackingId: string;
+  msdyn_SalesAgentRun: string;
 }
 
 /**
@@ -15,25 +29,23 @@ export interface msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationRes
  */
 export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationAction implements Executable<msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse> {
   constructor(
-    public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_QueueAgentRunRequestTimestamp: string,
-    public readonly msdyn_TrackingId: string
+    public readonly parameters: msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluation`;
 
-    const body: Record<string, unknown> = {
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_QueueAgentRunRequestTimestamp: this.msdyn_QueueAgentRunRequestTimestamp,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_QueueAgentRunRequestTimestamp: this.parameters.msdyn_QueueAgentRunRequestTimestamp,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -42,7 +54,7 @@ export class msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationAction 
   async parseResponse(
     response: Response
   ): Promise<msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse> {
-    const data = await response.json();
-    return data as msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_AutonomousSQA_GetLatestQualificationCriteriaEvaluationResponse;
   }
 }

@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * CalculateActualValueOpportunity request message
  *
  * Web API Action: CalculateActualValueOpportunity
+ *
+ * The first argument is the id of the opportunity record to call it on.
  */
 export class CalculateActualValueOpportunityRequest
   extends OrganizationRequest
@@ -16,38 +22,47 @@ export class CalculateActualValueOpportunityRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/opportunitys(${this.opportunityId})/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity`;
+    const url = `${baseUrl}/opportunities(${odataLiteral.guid(this.opportunityId)})/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<CalculateActualValueOpportunityResponse> {
-    const data = await response.json();
-    return CalculateActualValueOpportunityResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.opportunityId,
-    };
+    // The body is the complex value, with its @odata.context
+    return CalculateActualValueOpportunityResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CalculateActualValueOpportunity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CalculateActualValueOpportunityResult {
+  "@odata.context"?: string;
+  Value: number;
+}
+
+/**
  * CalculateActualValueOpportunity response message
+ *
+ * `result` is the value the CalculateActualValueOpportunity action returns (see {@link CalculateActualValueOpportunityResult}).
  */
 export class CalculateActualValueOpportunityResponse extends OrganizationResponse {
-  constructor(public result: CalculateActualValueOpportunityResponse) {
+  constructor(public result: CalculateActualValueOpportunityResult) {
     super("CalculateActualValueOpportunity");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CalculateActualValueOpportunityResponse {
-    return new CalculateActualValueOpportunityResponse((data as any).value);
+    return new CalculateActualValueOpportunityResponse(
+      data as CalculateActualValueOpportunityResult
+    );
   }
 }

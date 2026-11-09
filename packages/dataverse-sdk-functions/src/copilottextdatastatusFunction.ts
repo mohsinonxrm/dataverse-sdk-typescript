@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from copilottextdatastatus function
+ * Response from the copilottextdatastatus function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface copilottextdatastatusResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -26,7 +29,7 @@ export class copilottextdatastatusFunction implements Executable<copilottextdata
   }
 
   async parseResponse(response: Response): Promise<copilottextdatastatusResponse> {
-    const data = await response.json();
-    return data as copilottextdatastatusResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as copilottextdatastatusResponse;
   }
 }

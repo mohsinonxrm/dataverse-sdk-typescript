@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_RetrieveKnowledgeManagementSettings action
+ * Response from the msdyn_RetrieveKnowledgeManagementSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_RetrieveKnowledgeManagementSettingsResponse {
+  "@odata.context"?: string;
   Result: string;
+}
+
+/**
+ * Parameters of the msdyn_RetrieveKnowledgeManagementSettings action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveKnowledgeManagementSettingsActionParameters {
+  RecordTypes?: string;
 }
 
 /**
@@ -13,20 +25,22 @@ export interface msdyn_RetrieveKnowledgeManagementSettingsResponse {
  * Unbound action
  */
 export class msdyn_RetrieveKnowledgeManagementSettingsAction implements Executable<msdyn_RetrieveKnowledgeManagementSettingsResponse> {
-  constructor(public readonly recordTypes: string) {}
+  constructor(
+    public readonly parameters: msdyn_RetrieveKnowledgeManagementSettingsActionParameters = {}
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveKnowledgeManagementSettings`;
 
-    const body: Record<string, unknown> = {
-      RecordTypes: this.recordTypes,
-    };
+    const body = requestBody({
+      RecordTypes: this.parameters.RecordTypes,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -35,7 +49,7 @@ export class msdyn_RetrieveKnowledgeManagementSettingsAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveKnowledgeManagementSettingsResponse> {
-    const data = await response.json();
-    return data as msdyn_RetrieveKnowledgeManagementSettingsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_RetrieveKnowledgeManagementSettingsResponse;
   }
 }

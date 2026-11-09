@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { AppValidationResponse } from "./types/index.js";
 
 /**
- * Response from ValidateApp function
+ * Response from the ValidateApp function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ValidateAppResponse {
+  "@odata.context"?: string;
   AppValidationResponse: AppValidationResponse;
+}
+
+/**
+ * Parameters of the ValidateApp function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ValidateAppFunctionParameters {
+  AppModuleId: string;
 }
 
 /**
@@ -14,7 +26,7 @@ export interface ValidateAppResponse {
  * Unbound function
  */
 export class ValidateAppFunction implements Executable<ValidateAppResponse> {
-  constructor(public readonly appModuleId: string) {}
+  constructor(public readonly parameters: ValidateAppFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/ValidateApp`;
@@ -22,12 +34,9 @@ export class ValidateAppFunction implements Executable<ValidateAppResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.appModuleId !== undefined) {
+    if (this.parameters.AppModuleId !== undefined) {
       aliases.push(`AppModuleId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.appModuleId === "string" ? `'${this.appModuleId}'` : String(this.appModuleId)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.AppModuleId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -43,7 +52,7 @@ export class ValidateAppFunction implements Executable<ValidateAppResponse> {
   }
 
   async parseResponse(response: Response): Promise<ValidateAppResponse> {
-    const data = await response.json();
-    return data as ValidateAppResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as ValidateAppResponse;
   }
 }

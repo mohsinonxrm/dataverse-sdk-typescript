@@ -1,58 +1,67 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { businessunit } from "./types/index.js";
+
+/**
+ * Parameters of the SetBusinessSystemUser message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetBusinessSystemUserRequestParameters {
+  BusinessUnit: EntityReference | EntityPayload<businessunit>;
+  ReassignPrincipal: EntityReference | AnyEntityPayload;
+  DoNotMoveAllRecords?: boolean;
+}
 
 /**
  * SetBusinessSystemUser request message
  *
  * Web API Action: SetBusinessSystemUser
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class SetBusinessSystemUserRequest
   extends OrganizationRequest
   implements Executable<SetBusinessSystemUserResponse>
 {
+  declare readonly Parameters: Readonly<SetBusinessSystemUserRequestParameters>;
+
   constructor(
     public systemuserId: string,
-    public businessUnit: businessunit,
-    public reassignPrincipal: EntityReference,
-    public doNotMoveAllRecords: boolean
+    parameters: SetBusinessSystemUserRequestParameters
   ) {
-    super("SetBusinessSystemUser");
+    super("SetBusinessSystemUser", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/systemusers(${this.systemuserId})/Microsoft.Dynamics.CRM.SetBusinessSystemUser`;
+    const url = `${baseUrl}/systemusers(${odataLiteral.guid(this.systemuserId)})/Microsoft.Dynamics.CRM.SetBusinessSystemUser`;
 
-    const body: Record<string, unknown> = {
-      BusinessUnit: this.businessUnit,
-      ReassignPrincipal: this.reassignPrincipal,
-      DoNotMoveAllRecords: this.doNotMoveAllRecords,
-    };
+    const body = requestBody({
+      BusinessUnit: this.Parameters.BusinessUnit,
+      ReassignPrincipal: this.Parameters.ReassignPrincipal,
+      DoNotMoveAllRecords: this.Parameters.DoNotMoveAllRecords,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<SetBusinessSystemUserResponse> {
+  parseResponse(_response: Response): Promise<SetBusinessSystemUserResponse> {
     // No return value (204 No Content)
-    return new SetBusinessSystemUserResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.systemuserId,
-      BusinessUnit: this.businessUnit,
-      ReassignPrincipal: this.reassignPrincipal,
-      DoNotMoveAllRecords: this.doNotMoveAllRecords,
-    };
+    return Promise.resolve(new SetBusinessSystemUserResponse());
   }
 }
 
@@ -64,7 +73,7 @@ export class SetBusinessSystemUserResponse extends OrganizationResponse {
     super("SetBusinessSystemUser");
   }
 
-  static fromResponse(_data: unknown): SetBusinessSystemUserResponse {
+  static fromResponse(_data?: unknown): SetBusinessSystemUserResponse {
     return new SetBusinessSystemUserResponse();
   }
 }

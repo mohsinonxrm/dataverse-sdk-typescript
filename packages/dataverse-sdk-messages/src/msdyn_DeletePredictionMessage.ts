@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_DeletePrediction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DeletePredictionRequestParameters {
+  ModelId?: string;
+  IsCrmDeleteOnly?: boolean;
+  PredictionName?: string;
+  IsActiveModel?: boolean;
+}
 
 /**
  * msdyn_DeletePrediction request message
@@ -10,47 +22,35 @@ export class msdyn_DeletePredictionRequest
   extends OrganizationRequest
   implements Executable<msdyn_DeletePredictionResponse>
 {
-  constructor(
-    public modelId: string,
-    public isCrmDeleteOnly: boolean,
-    public predictionName: string,
-    public isActiveModel: boolean
-  ) {
-    super("msdyn_DeletePrediction");
+  declare readonly Parameters: Readonly<msdyn_DeletePredictionRequestParameters>;
+
+  constructor(parameters: msdyn_DeletePredictionRequestParameters = {}) {
+    super("msdyn_DeletePrediction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DeletePrediction`;
 
-    const body: Record<string, unknown> = {
-      ModelId: this.modelId,
-      IsCrmDeleteOnly: this.isCrmDeleteOnly,
-      PredictionName: this.predictionName,
-      IsActiveModel: this.isActiveModel,
-    };
+    const body = requestBody({
+      ModelId: this.Parameters.ModelId,
+      IsCrmDeleteOnly: this.Parameters.IsCrmDeleteOnly,
+      PredictionName: this.Parameters.PredictionName,
+      IsActiveModel: this.Parameters.IsActiveModel,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_DeletePredictionResponse> {
+  parseResponse(_response: Response): Promise<msdyn_DeletePredictionResponse> {
     // No return value (204 No Content)
-    return new msdyn_DeletePredictionResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ModelId: this.modelId,
-      IsCrmDeleteOnly: this.isCrmDeleteOnly,
-      PredictionName: this.predictionName,
-      IsActiveModel: this.isActiveModel,
-    };
+    return Promise.resolve(new msdyn_DeletePredictionResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_DeletePredictionResponse extends OrganizationResponse {
     super("msdyn_DeletePrediction");
   }
 
-  static fromResponse(_data: unknown): msdyn_DeletePredictionResponse {
+  static fromResponse(_data?: unknown): msdyn_DeletePredictionResponse {
     return new msdyn_DeletePredictionResponse();
   }
 }

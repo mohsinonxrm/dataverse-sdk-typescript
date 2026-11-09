@@ -21,30 +21,41 @@ export class msdyn_GetACIMarsConnectorStatusRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetACIMarsConnectorStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetACIMarsConnectorStatusResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetACIMarsConnectorStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetACIMarsConnectorStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetACIMarsConnectorStatusResult {
+  "@odata.context"?: string;
+  MarsStatus: string;
+}
+
+/**
  * msdyn_GetACIMarsConnectorStatus response message
+ *
+ * `result` is the value the msdyn_GetACIMarsConnectorStatus action returns (see {@link msdyn_GetACIMarsConnectorStatusResult}).
  */
 export class msdyn_GetACIMarsConnectorStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetACIMarsConnectorStatusResponse) {
+  constructor(public result: msdyn_GetACIMarsConnectorStatusResult) {
     super("msdyn_GetACIMarsConnectorStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetACIMarsConnectorStatusResponse {
-    return new msdyn_GetACIMarsConnectorStatusResponse((data as any).value);
+    return new msdyn_GetACIMarsConnectorStatusResponse(
+      data as msdyn_GetACIMarsConnectorStatusResult
+    );
   }
 }

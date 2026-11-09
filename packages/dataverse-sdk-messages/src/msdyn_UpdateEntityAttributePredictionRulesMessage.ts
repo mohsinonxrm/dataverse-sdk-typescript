@@ -1,0 +1,85 @@
+import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
+import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_UpdateEntityAttributePredictionRules message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateEntityAttributePredictionRulesRequestParameters {
+  BotConversationId?: string;
+  RuleName: string;
+  ConditionsXml: string;
+  PredictedFields: string;
+}
+
+/**
+ * msdyn_UpdateEntityAttributePredictionRules request message
+ *
+ * Web API Action: msdyn_UpdateEntityAttributePredictionRules
+ */
+export class msdyn_UpdateEntityAttributePredictionRulesRequest
+  extends OrganizationRequest
+  implements Executable<msdyn_UpdateEntityAttributePredictionRulesResponse>
+{
+  declare readonly Parameters: Readonly<msdyn_UpdateEntityAttributePredictionRulesRequestParameters>;
+
+  constructor(parameters: msdyn_UpdateEntityAttributePredictionRulesRequestParameters) {
+    super("msdyn_UpdateEntityAttributePredictionRules", { ...parameters });
+  }
+
+  toRequestInformation(baseUrl: string): RequestInformation {
+    const url = `${baseUrl}/msdyn_UpdateEntityAttributePredictionRules`;
+
+    const body = requestBody({
+      BotConversationId: this.Parameters.BotConversationId,
+      RuleName: this.Parameters.RuleName,
+      ConditionsXml: this.Parameters.ConditionsXml,
+      PredictedFields: this.Parameters.PredictedFields,
+    });
+
+    return {
+      method: "POST",
+      url,
+      headers: {
+        "content-type": "application/json",
+      },
+      body,
+    };
+  }
+
+  async parseResponse(
+    response: Response
+  ): Promise<msdyn_UpdateEntityAttributePredictionRulesResponse> {
+    // The body is the complex value, with its @odata.context
+    return msdyn_UpdateEntityAttributePredictionRulesResponse.fromResponse(await response.json());
+  }
+}
+
+/**
+ * Response from the msdyn_UpdateEntityAttributePredictionRules action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_UpdateEntityAttributePredictionRulesResult {
+  "@odata.context"?: string;
+  SettingsLink: string;
+}
+
+/**
+ * msdyn_UpdateEntityAttributePredictionRules response message
+ *
+ * `result` is the value the msdyn_UpdateEntityAttributePredictionRules action returns (see {@link msdyn_UpdateEntityAttributePredictionRulesResult}).
+ */
+export class msdyn_UpdateEntityAttributePredictionRulesResponse extends OrganizationResponse {
+  constructor(public result: msdyn_UpdateEntityAttributePredictionRulesResult) {
+    super("msdyn_UpdateEntityAttributePredictionRules");
+  }
+
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
+  static fromResponse(data: unknown): msdyn_UpdateEntityAttributePredictionRulesResponse {
+    return new msdyn_UpdateEntityAttributePredictionRulesResponse(
+      data as msdyn_UpdateEntityAttributePredictionRulesResult
+    );
+  }
+}

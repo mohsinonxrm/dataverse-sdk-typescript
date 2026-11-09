@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AddSuggestedCards action
+ * Response from the msdyn_AddSuggestedCards action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_AddSuggestedCardsResponse {
-  // No content returned
+export type msdyn_AddSuggestedCardsResponse = void;
+
+/**
+ * Parameters of the msdyn_AddSuggestedCards action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AddSuggestedCardsActionParameters {
+  scope: string;
+  BusinessProcessFlowId?: string;
+  BusinessProcessFlowInstanceId?: string;
+  ActionStepId?: string;
 }
 
 /**
@@ -13,35 +25,30 @@ export interface msdyn_AddSuggestedCardsResponse {
  * Unbound action
  */
 export class msdyn_AddSuggestedCardsAction implements Executable<msdyn_AddSuggestedCardsResponse> {
-  constructor(
-    public readonly scope: string,
-    public readonly businessProcessFlowId: string,
-    public readonly businessProcessFlowInstanceId: string,
-    public readonly actionStepId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_AddSuggestedCardsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AddSuggestedCards`;
 
-    const body: Record<string, unknown> = {
-      scope: this.scope,
-      BusinessProcessFlowId: this.businessProcessFlowId,
-      BusinessProcessFlowInstanceId: this.businessProcessFlowInstanceId,
-      ActionStepId: this.actionStepId,
-    };
+    const body = requestBody({
+      scope: this.parameters.scope,
+      BusinessProcessFlowId: this.parameters.BusinessProcessFlowId,
+      BusinessProcessFlowInstanceId: this.parameters.BusinessProcessFlowInstanceId,
+      ActionStepId: this.parameters.ActionStepId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AddSuggestedCardsResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_AddSuggestedCardsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

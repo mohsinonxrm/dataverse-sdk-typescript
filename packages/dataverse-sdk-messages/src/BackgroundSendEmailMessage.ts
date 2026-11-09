@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { QueryBase } from "./types/index.js";
+import { requestBody } from "./internal/requestBody.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { TypedQueryBase } from "./types/index.js";
+
+/**
+ * Parameters of the BackgroundSendEmail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface BackgroundSendEmailRequestParameters {
+  Query?: TypedQueryBase;
+}
 
 /**
  * BackgroundSendEmail request message
@@ -11,48 +21,57 @@ export class BackgroundSendEmailRequest
   extends OrganizationRequest
   implements Executable<BackgroundSendEmailResponse>
 {
-  constructor(public query: QueryBase) {
-    super("BackgroundSendEmail");
+  declare readonly Parameters: Readonly<BackgroundSendEmailRequestParameters>;
+
+  constructor(parameters: BackgroundSendEmailRequestParameters = {}) {
+    super("BackgroundSendEmail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BackgroundSendEmail`;
 
-    const body: Record<string, unknown> = {
-      Query: this.query,
-    };
+    const body = requestBody({
+      Query: enumBody(this.Parameters.Query, "QueryBase"),
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<BackgroundSendEmailResponse> {
-    const data = await response.json();
-    return BackgroundSendEmailResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Query: this.query,
-    };
+    // The body is the complex value, with its @odata.context
+    return BackgroundSendEmailResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the BackgroundSendEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface BackgroundSendEmailResult {
+  "@odata.context"?: string;
+  HasAttachments: boolean[];
+}
+
+/**
  * BackgroundSendEmail response message
+ *
+ * `result` is the value the BackgroundSendEmail action returns (see {@link BackgroundSendEmailResult}).
  */
 export class BackgroundSendEmailResponse extends OrganizationResponse {
-  constructor(public result: BackgroundSendEmailResponse) {
+  constructor(public result: BackgroundSendEmailResult) {
     super("BackgroundSendEmail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): BackgroundSendEmailResponse {
-    return new BackgroundSendEmailResponse((data as any).value);
+    return new BackgroundSendEmailResponse(data as BackgroundSendEmailResult);
   }
 }

@@ -2,5 +2,6 @@
  * GetLinkedChatsResponse complex type
  */
 export interface GetLinkedChatsResponse {
-  LinkedChatDetails: string;
+  LinkedChatDetails?: string;
+  LinkedChatList?: Record<string, unknown>[];
 }

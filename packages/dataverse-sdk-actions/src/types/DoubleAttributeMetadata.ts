@@ -1,13 +1,14 @@
+import type { AttributeMetadata } from "./AttributeMetadata.js";
 import type { ImeMode } from "./ImeMode.js";
 
 /**
  * DoubleAttributeMetadata entity type
  */
-export interface DoubleAttributeMetadata {
-  ImeMode: ImeMode;
-  MaxValue: number;
-  MinValue: number;
-  Precision: number;
-  FormulaDefinition: string;
-  SourceTypeMask: number;
+export interface DoubleAttributeMetadata extends AttributeMetadata {
+  FormulaDefinition?: string;
+  ImeMode?: ImeMode;
+  MaxValue?: number;
+  MinValue?: number;
+  Precision?: number;
+  SourceTypeMask?: number;
 }

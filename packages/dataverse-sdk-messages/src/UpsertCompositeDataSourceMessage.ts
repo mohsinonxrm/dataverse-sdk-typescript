@@ -1,5 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UpsertCompositeDataSource message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpsertCompositeDataSourceRequestParameters {
+  ParentDisplayName?: string;
+  ParentSchemaName: string;
+  ParentParameterKey: string;
+  ParentApiId?: string;
+  ParentValue?: string;
+  ChildDisplayName?: string;
+  ChildSchemaName?: string;
+  ChildParameterKey?: string;
+  ChildValue?: string;
+}
 
 /**
  * UpsertCompositeDataSource request message
@@ -10,62 +27,40 @@ export class UpsertCompositeDataSourceRequest
   extends OrganizationRequest
   implements Executable<UpsertCompositeDataSourceResponse>
 {
-  constructor(
-    public parentDisplayName: string,
-    public parentSchemaName: string,
-    public parentParameterKey: string,
-    public parentApiId: string,
-    public parentValue: string,
-    public childDisplayName: string,
-    public childSchemaName: string,
-    public childParameterKey: string,
-    public childValue: string
-  ) {
-    super("UpsertCompositeDataSource");
+  declare readonly Parameters: Readonly<UpsertCompositeDataSourceRequestParameters>;
+
+  constructor(parameters: UpsertCompositeDataSourceRequestParameters) {
+    super("UpsertCompositeDataSource", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpsertCompositeDataSource`;
 
-    const body: Record<string, unknown> = {
-      ParentDisplayName: this.parentDisplayName,
-      ParentSchemaName: this.parentSchemaName,
-      ParentParameterKey: this.parentParameterKey,
-      ParentApiId: this.parentApiId,
-      ParentValue: this.parentValue,
-      ChildDisplayName: this.childDisplayName,
-      ChildSchemaName: this.childSchemaName,
-      ChildParameterKey: this.childParameterKey,
-      ChildValue: this.childValue,
-    };
+    const body = requestBody({
+      ParentDisplayName: this.Parameters.ParentDisplayName,
+      ParentSchemaName: this.Parameters.ParentSchemaName,
+      ParentParameterKey: this.Parameters.ParentParameterKey,
+      ParentApiId: this.Parameters.ParentApiId,
+      ParentValue: this.Parameters.ParentValue,
+      ChildDisplayName: this.Parameters.ChildDisplayName,
+      ChildSchemaName: this.Parameters.ChildSchemaName,
+      ChildParameterKey: this.Parameters.ChildParameterKey,
+      ChildValue: this.Parameters.ChildValue,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UpsertCompositeDataSourceResponse> {
+  parseResponse(_response: Response): Promise<UpsertCompositeDataSourceResponse> {
     // No return value (204 No Content)
-    return new UpsertCompositeDataSourceResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ParentDisplayName: this.parentDisplayName,
-      ParentSchemaName: this.parentSchemaName,
-      ParentParameterKey: this.parentParameterKey,
-      ParentApiId: this.parentApiId,
-      ParentValue: this.parentValue,
-      ChildDisplayName: this.childDisplayName,
-      ChildSchemaName: this.childSchemaName,
-      ChildParameterKey: this.childParameterKey,
-      ChildValue: this.childValue,
-    };
+    return Promise.resolve(new UpsertCompositeDataSourceResponse());
   }
 }
 
@@ -77,7 +72,7 @@ export class UpsertCompositeDataSourceResponse extends OrganizationResponse {
     super("UpsertCompositeDataSource");
   }
 
-  static fromResponse(_data: unknown): UpsertCompositeDataSourceResponse {
+  static fromResponse(_data?: unknown): UpsertCompositeDataSourceResponse {
     return new UpsertCompositeDataSourceResponse();
   }
 }

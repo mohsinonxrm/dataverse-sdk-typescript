@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetACIMarsConnectorStatus action
+ * Response from the msdyn_GetACIMarsConnectorStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetACIMarsConnectorStatusResponse {
+  "@odata.context"?: string;
   MarsStatus: string;
 }
 
@@ -20,13 +23,13 @@ export class msdyn_GetACIMarsConnectorStatusAction implements Executable<msdyn_G
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetACIMarsConnectorStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetACIMarsConnectorStatusResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetACIMarsConnectorStatusResponse;
   }
 }

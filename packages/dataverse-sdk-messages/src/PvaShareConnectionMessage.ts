@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * PvaShareConnection request message
  *
  * Web API Action: PvaShareConnection
+ *
+ * The first argument is the id of the connectionreference record to call it on.
  */
 export class PvaShareConnectionRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class PvaShareConnectionRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/connectionreferences(${this.connectionreferenceId})/Microsoft.Dynamics.CRM.PvaShareConnection`;
+    const url = `${baseUrl}/connectionreferences(${odataLiteral.guid(this.connectionreferenceId)})/Microsoft.Dynamics.CRM.PvaShareConnection`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaShareConnectionResponse> {
+  parseResponse(_response: Response): Promise<PvaShareConnectionResponse> {
     // No return value (204 No Content)
-    return new PvaShareConnectionResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.connectionreferenceId,
-    };
+    return Promise.resolve(new PvaShareConnectionResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class PvaShareConnectionResponse extends OrganizationResponse {
     super("PvaShareConnection");
   }
 
-  static fromResponse(_data: unknown): PvaShareConnectionResponse {
+  static fromResponse(_data?: unknown): PvaShareConnectionResponse {
     return new PvaShareConnectionResponse();
   }
 }

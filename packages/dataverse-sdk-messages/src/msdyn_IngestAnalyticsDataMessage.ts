@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_IngestAnalyticsData message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IngestAnalyticsDataRequestParameters {
+  IngestionRequest: string;
+}
 
 /**
  * msdyn_IngestAnalyticsData request message
@@ -10,36 +19,32 @@ export class msdyn_IngestAnalyticsDataRequest
   extends OrganizationRequest
   implements Executable<msdyn_IngestAnalyticsDataResponse>
 {
-  constructor(public ingestionRequest: string) {
-    super("msdyn_IngestAnalyticsData");
+  declare readonly Parameters: Readonly<msdyn_IngestAnalyticsDataRequestParameters>;
+
+  constructor(parameters: msdyn_IngestAnalyticsDataRequestParameters) {
+    super("msdyn_IngestAnalyticsData", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IngestAnalyticsData`;
 
-    const body: Record<string, unknown> = {
-      IngestionRequest: this.ingestionRequest,
-    };
+    const body = requestBody({
+      IngestionRequest: this.Parameters.IngestionRequest,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_IngestAnalyticsDataResponse> {
+  parseResponse(_response: Response): Promise<msdyn_IngestAnalyticsDataResponse> {
     // No return value (204 No Content)
-    return new msdyn_IngestAnalyticsDataResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      IngestionRequest: this.ingestionRequest,
-    };
+    return Promise.resolve(new msdyn_IngestAnalyticsDataResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class msdyn_IngestAnalyticsDataResponse extends OrganizationResponse {
     super("msdyn_IngestAnalyticsData");
   }
 
-  static fromResponse(_data: unknown): msdyn_IngestAnalyticsDataResponse {
+  static fromResponse(_data?: unknown): msdyn_IngestAnalyticsDataResponse {
     return new msdyn_IngestAnalyticsDataResponse();
   }
 }

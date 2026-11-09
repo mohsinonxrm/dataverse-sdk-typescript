@@ -1,3 +1,4 @@
+import type { AttributeMetadata } from "./AttributeMetadata.js";
 import type { ImeMode } from "./ImeMode.js";
 import type { MemoFormatName } from "./MemoFormatName.js";
 import type { StringFormat } from "./StringFormat.js";
@@ -5,10 +6,10 @@ import type { StringFormat } from "./StringFormat.js";
 /**
  * MemoAttributeMetadata entity type
  */
-export interface MemoAttributeMetadata {
-  Format: StringFormat;
-  FormatName: MemoFormatName;
-  ImeMode: ImeMode;
-  MaxLength: number;
-  IsLocalizable: boolean;
+export interface MemoAttributeMetadata extends AttributeMetadata {
+  Format?: StringFormat;
+  FormatName?: MemoFormatName;
+  ImeMode?: ImeMode;
+  IsLocalizable?: boolean;
+  MaxLength?: number;
 }

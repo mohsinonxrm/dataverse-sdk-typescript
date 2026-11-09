@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * RestartHostedMachine request message
  *
  * Web API Action: RestartHostedMachine
+ *
+ * The first argument is the id of the flowmachine record to call it on.
  */
 export class RestartHostedMachineRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class RestartHostedMachineRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowmachines(${this.flowmachineId})/Microsoft.Dynamics.CRM.RestartHostedMachine`;
+    const url = `${baseUrl}/flowmachines(${odataLiteral.guid(this.flowmachineId)})/Microsoft.Dynamics.CRM.RestartHostedMachine`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<RestartHostedMachineResponse> {
+  parseResponse(_response: Response): Promise<RestartHostedMachineResponse> {
     // No return value (204 No Content)
-    return new RestartHostedMachineResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachineId,
-    };
+    return Promise.resolve(new RestartHostedMachineResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class RestartHostedMachineResponse extends OrganizationResponse {
     super("RestartHostedMachine");
   }
 
-  static fromResponse(_data: unknown): RestartHostedMachineResponse {
+  static fromResponse(_data?: unknown): RestartHostedMachineResponse {
     return new RestartHostedMachineResponse();
   }
 }

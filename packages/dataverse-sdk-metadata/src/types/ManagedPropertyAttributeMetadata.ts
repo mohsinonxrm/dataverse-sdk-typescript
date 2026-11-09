@@ -7,7 +7,7 @@ import type { AttributeTypeCode } from "./AttributeTypeCode.js";
  */
 export interface ManagedPropertyAttributeMetadata extends AttributeMetadata {
   ManagedPropertyLogicalName?: string;
-  ParentComponentType?: number;
   ParentAttributeName?: string;
+  ParentComponentType?: number;
   ValueAttributeTypeCode: AttributeTypeCode;
 }

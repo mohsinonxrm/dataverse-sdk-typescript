@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { AccessRights } from "./types/index.js";
+
+/**
+ * Parameters of the RevokeSharedLink message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RevokeSharedLinkRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+  SharedRights: AccessRights;
+}
 
 /**
  * RevokeSharedLink request message
@@ -12,41 +24,33 @@ export class RevokeSharedLinkRequest
   extends OrganizationRequest
   implements Executable<RevokeSharedLinkResponse>
 {
-  constructor(
-    public target: EntityReference,
-    public sharedRights: AccessRights
-  ) {
-    super("RevokeSharedLink");
+  declare readonly Parameters: Readonly<RevokeSharedLinkRequestParameters>;
+
+  constructor(parameters: RevokeSharedLinkRequestParameters) {
+    super("RevokeSharedLink", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RevokeSharedLink`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      SharedRights: this.sharedRights,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      SharedRights: enumBody(this.Parameters.SharedRights, "AccessRights"),
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<RevokeSharedLinkResponse> {
+  parseResponse(_response: Response): Promise<RevokeSharedLinkResponse> {
     // No return value (204 No Content)
-    return new RevokeSharedLinkResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      SharedRights: this.sharedRights,
-    };
+    return Promise.resolve(new RevokeSharedLinkResponse());
   }
 }
 
@@ -58,7 +62,7 @@ export class RevokeSharedLinkResponse extends OrganizationResponse {
     super("RevokeSharedLink");
   }
 
-  static fromResponse(_data: unknown): RevokeSharedLinkResponse {
+  static fromResponse(_data?: unknown): RevokeSharedLinkResponse {
     return new RevokeSharedLinkResponse();
   }
 }

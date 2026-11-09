@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from InstallSampleData action
+ * Response from the InstallSampleData action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface InstallSampleDataResponse {
-  // No content returned
-}
+export type InstallSampleDataResponse = void;
 
 /**
  * InstallSampleData action
@@ -20,13 +20,13 @@ export class InstallSampleDataAction implements Executable<InstallSampleDataResp
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<InstallSampleDataResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<InstallSampleDataResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

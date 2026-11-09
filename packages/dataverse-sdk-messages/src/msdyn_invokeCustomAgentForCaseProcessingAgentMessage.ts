@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_invokeCustomAgentForCaseProcessingAgent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_invokeCustomAgentForCaseProcessingAgentRequestParameters {
+  msdyn_customAgentDetails: string;
+  msdyn_caseProcessingAgentDetails: string;
+  RunId?: string;
+}
 
 /**
  * msdyn_invokeCustomAgentForCaseProcessingAgent request message
@@ -10,43 +21,36 @@ export class msdyn_invokeCustomAgentForCaseProcessingAgentRequest
   extends OrganizationRequest
   implements Executable<msdyn_invokeCustomAgentForCaseProcessingAgentResponse>
 {
-  constructor(
-    public msdyn_caseProcessingAgentDetails: string,
-    public msdyn_customAgentDetails: string
-  ) {
-    super("msdyn_invokeCustomAgentForCaseProcessingAgent");
+  declare readonly Parameters: Readonly<msdyn_invokeCustomAgentForCaseProcessingAgentRequestParameters>;
+
+  constructor(parameters: msdyn_invokeCustomAgentForCaseProcessingAgentRequestParameters) {
+    super("msdyn_invokeCustomAgentForCaseProcessingAgent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_invokeCustomAgentForCaseProcessingAgent`;
 
-    const body: Record<string, unknown> = {
-      msdyn_caseProcessingAgentDetails: this.msdyn_caseProcessingAgentDetails,
-      msdyn_customAgentDetails: this.msdyn_customAgentDetails,
-    };
+    const body = requestBody({
+      msdyn_customAgentDetails: this.Parameters.msdyn_customAgentDetails,
+      msdyn_caseProcessingAgentDetails: this.Parameters.msdyn_caseProcessingAgentDetails,
+      RunId: this.Parameters.RunId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_invokeCustomAgentForCaseProcessingAgentResponse> {
     // No return value (204 No Content)
-    return new msdyn_invokeCustomAgentForCaseProcessingAgentResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_caseProcessingAgentDetails: this.msdyn_caseProcessingAgentDetails,
-      msdyn_customAgentDetails: this.msdyn_customAgentDetails,
-    };
+    return Promise.resolve(new msdyn_invokeCustomAgentForCaseProcessingAgentResponse());
   }
 }
 
@@ -58,7 +62,7 @@ export class msdyn_invokeCustomAgentForCaseProcessingAgentResponse extends Organ
     super("msdyn_invokeCustomAgentForCaseProcessingAgent");
   }
 
-  static fromResponse(_data: unknown): msdyn_invokeCustomAgentForCaseProcessingAgentResponse {
+  static fromResponse(_data?: unknown): msdyn_invokeCustomAgentForCaseProcessingAgentResponse {
     return new msdyn_invokeCustomAgentForCaseProcessingAgentResponse();
   }
 }

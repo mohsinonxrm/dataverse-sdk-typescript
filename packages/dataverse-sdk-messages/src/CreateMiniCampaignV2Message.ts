@@ -1,5 +1,28 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CreateMiniCampaignV2 message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateMiniCampaignV2RequestParameters {
+  MiniCampaignForTypeCode: number;
+  TemplateId: string;
+  TargetOption: number;
+  TargetIds: string;
+  FetchXml: string;
+  MiniCampaignType: string;
+  ActivitiesOwnerOption: number;
+  ActivityXml: string;
+  MiniCampaignName: string;
+  PostWorkflowEvent: boolean;
+  OwnerId: string;
+  OwnerTypeCode: number;
+  sendEmail: boolean;
+  QueueId?: string;
+  ExtendedActivityParameters?: string;
+}
 
 /**
  * CreateMiniCampaignV2 request message
@@ -10,89 +33,71 @@ export class CreateMiniCampaignV2Request
   extends OrganizationRequest
   implements Executable<CreateMiniCampaignV2Response>
 {
-  constructor(
-    public miniCampaignForTypeCode: number,
-    public templateId: string,
-    public targetOption: number,
-    public targetIds: string,
-    public fetchXml: string,
-    public miniCampaignType: string,
-    public activitiesOwnerOption: number,
-    public activityXml: string,
-    public miniCampaignName: string,
-    public postWorkflowEvent: boolean,
-    public ownerId: string,
-    public ownerTypeCode: number,
-    public sendEmail: boolean,
-    public queueId: string
-  ) {
-    super("CreateMiniCampaignV2");
+  declare readonly Parameters: Readonly<CreateMiniCampaignV2RequestParameters>;
+
+  constructor(parameters: CreateMiniCampaignV2RequestParameters) {
+    super("CreateMiniCampaignV2", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateMiniCampaignV2`;
 
-    const body: Record<string, unknown> = {
-      MiniCampaignForTypeCode: this.miniCampaignForTypeCode,
-      TemplateId: this.templateId,
-      TargetOption: this.targetOption,
-      TargetIds: this.targetIds,
-      FetchXml: this.fetchXml,
-      MiniCampaignType: this.miniCampaignType,
-      ActivitiesOwnerOption: this.activitiesOwnerOption,
-      ActivityXml: this.activityXml,
-      MiniCampaignName: this.miniCampaignName,
-      PostWorkflowEvent: this.postWorkflowEvent,
-      OwnerId: this.ownerId,
-      OwnerTypeCode: this.ownerTypeCode,
-      sendEmail: this.sendEmail,
-      QueueId: this.queueId,
-    };
+    const body = requestBody({
+      MiniCampaignForTypeCode: this.Parameters.MiniCampaignForTypeCode,
+      TemplateId: this.Parameters.TemplateId,
+      TargetOption: this.Parameters.TargetOption,
+      TargetIds: this.Parameters.TargetIds,
+      FetchXml: this.Parameters.FetchXml,
+      MiniCampaignType: this.Parameters.MiniCampaignType,
+      ActivitiesOwnerOption: this.Parameters.ActivitiesOwnerOption,
+      ActivityXml: this.Parameters.ActivityXml,
+      MiniCampaignName: this.Parameters.MiniCampaignName,
+      PostWorkflowEvent: this.Parameters.PostWorkflowEvent,
+      OwnerId: this.Parameters.OwnerId,
+      OwnerTypeCode: this.Parameters.OwnerTypeCode,
+      sendEmail: this.Parameters.sendEmail,
+      QueueId: this.Parameters.QueueId,
+      ExtendedActivityParameters: this.Parameters.ExtendedActivityParameters,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<CreateMiniCampaignV2Response> {
-    const data = await response.json();
-    return CreateMiniCampaignV2Response.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      MiniCampaignForTypeCode: this.miniCampaignForTypeCode,
-      TemplateId: this.templateId,
-      TargetOption: this.targetOption,
-      TargetIds: this.targetIds,
-      FetchXml: this.fetchXml,
-      MiniCampaignType: this.miniCampaignType,
-      ActivitiesOwnerOption: this.activitiesOwnerOption,
-      ActivityXml: this.activityXml,
-      MiniCampaignName: this.miniCampaignName,
-      PostWorkflowEvent: this.postWorkflowEvent,
-      OwnerId: this.ownerId,
-      OwnerTypeCode: this.ownerTypeCode,
-      sendEmail: this.sendEmail,
-      QueueId: this.queueId,
-    };
+    // The body is the complex value, with its @odata.context
+    return CreateMiniCampaignV2Response.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateMiniCampaignV2 action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateMiniCampaignV2Result {
+  "@odata.context"?: string;
+  BulkOperationId: string;
+}
+
+/**
  * CreateMiniCampaignV2 response message
+ *
+ * `result` is the value the CreateMiniCampaignV2 action returns (see {@link CreateMiniCampaignV2Result}).
  */
 export class CreateMiniCampaignV2Response extends OrganizationResponse {
-  constructor(public result: CreateMiniCampaignV2Response) {
+  constructor(public result: CreateMiniCampaignV2Result) {
     super("CreateMiniCampaignV2");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateMiniCampaignV2Response {
-    return new CreateMiniCampaignV2Response((data as any).value);
+    return new CreateMiniCampaignV2Response(data as CreateMiniCampaignV2Result);
   }
 }

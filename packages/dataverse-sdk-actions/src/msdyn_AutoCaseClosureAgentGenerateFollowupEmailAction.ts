@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AutoCaseClosureAgentGenerateFollowupEmail action
+ * Response from the msdyn_AutoCaseClosureAgentGenerateFollowupEmail action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse {
-  // No content returned
+export type msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse = void;
+
+/**
+ * Parameters of the msdyn_AutoCaseClosureAgentGenerateFollowupEmail action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutoCaseClosureAgentGenerateFollowupEmailActionParameters {
+  Payload: string;
 }
 
 /**
@@ -13,29 +22,31 @@ export interface msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse {
  * Unbound action
  */
 export class msdyn_AutoCaseClosureAgentGenerateFollowupEmailAction implements Executable<msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse> {
-  constructor(public readonly payload: string) {}
+  constructor(
+    public readonly parameters: msdyn_AutoCaseClosureAgentGenerateFollowupEmailActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutoCaseClosureAgentGenerateFollowupEmail`;
 
-    const body: Record<string, unknown> = {
-      Payload: this.payload,
-    };
+    const body = requestBody({
+      Payload: this.parameters.Payload,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse> {
-    // No return value (204 No Content)
-    return {};
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

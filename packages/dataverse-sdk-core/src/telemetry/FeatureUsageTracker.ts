@@ -195,9 +195,8 @@ export class FeatureUsageTracker {
 
     for (const key in FeatureUsageFlag) {
       if (typeof FeatureUsageFlag[key] === "number") {
-        const flag = FeatureUsageFlag[key] as number;
-        const noneFlag = FeatureUsageFlag.NONE as number;
-        if (flag !== noneFlag && this.hasFeature(flag as FeatureUsageFlag)) {
+        const flag = FeatureUsageFlag[key as keyof typeof FeatureUsageFlag];
+        if (flag !== FeatureUsageFlag.NONE && this.hasFeature(flag)) {
           enabled.push(key);
         }
       }

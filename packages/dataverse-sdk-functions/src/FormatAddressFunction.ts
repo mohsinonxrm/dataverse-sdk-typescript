@@ -1,10 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from FormatAddress function
+ * Response from the FormatAddress function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface FormatAddressResponse {
+  "@odata.context"?: string;
   Address: string;
+}
+
+/**
+ * Parameters of the FormatAddress function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface FormatAddressFunctionParameters {
+  Line1: string;
+  City: string;
+  StateOrProvince: string;
+  PostalCode: string;
+  Country: string;
 }
 
 /**
@@ -13,13 +29,7 @@ export interface FormatAddressResponse {
  * Unbound function
  */
 export class FormatAddressFunction implements Executable<FormatAddressResponse> {
-  constructor(
-    public readonly line1: string,
-    public readonly city: string,
-    public readonly stateOrProvince: string,
-    public readonly postalCode: string,
-    public readonly country: string
-  ) {}
+  constructor(public readonly parameters: FormatAddressFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/FormatAddress`;
@@ -27,36 +37,25 @@ export class FormatAddressFunction implements Executable<FormatAddressResponse> 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.line1 !== undefined) {
+    if (this.parameters.Line1 !== undefined) {
       aliases.push(`Line1=@p1`);
-      params.append("@p1", typeof this.line1 === "string" ? `'${this.line1}'` : String(this.line1));
+      params.append("@p1", formatParameterAlias(this.parameters.Line1, "Edm.String"));
     }
-    if (this.city !== undefined) {
+    if (this.parameters.City !== undefined) {
       aliases.push(`City=@p2`);
-      params.append("@p2", typeof this.city === "string" ? `'${this.city}'` : String(this.city));
+      params.append("@p2", formatParameterAlias(this.parameters.City, "Edm.String"));
     }
-    if (this.stateOrProvince !== undefined) {
+    if (this.parameters.StateOrProvince !== undefined) {
       aliases.push(`StateOrProvince=@p3`);
-      params.append(
-        "@p3",
-        typeof this.stateOrProvince === "string"
-          ? `'${this.stateOrProvince}'`
-          : String(this.stateOrProvince)
-      );
+      params.append("@p3", formatParameterAlias(this.parameters.StateOrProvince, "Edm.String"));
     }
-    if (this.postalCode !== undefined) {
+    if (this.parameters.PostalCode !== undefined) {
       aliases.push(`PostalCode=@p4`);
-      params.append(
-        "@p4",
-        typeof this.postalCode === "string" ? `'${this.postalCode}'` : String(this.postalCode)
-      );
+      params.append("@p4", formatParameterAlias(this.parameters.PostalCode, "Edm.String"));
     }
-    if (this.country !== undefined) {
+    if (this.parameters.Country !== undefined) {
       aliases.push(`Country=@p5`);
-      params.append(
-        "@p5",
-        typeof this.country === "string" ? `'${this.country}'` : String(this.country)
-      );
+      params.append("@p5", formatParameterAlias(this.parameters.Country, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -72,7 +71,7 @@ export class FormatAddressFunction implements Executable<FormatAddressResponse> 
   }
 
   async parseResponse(response: Response): Promise<FormatAddressResponse> {
-    const data = await response.json();
-    return data as FormatAddressResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as FormatAddressResponse;
   }
 }

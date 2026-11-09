@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_knowledgeHarvestAgentTrigger action
+ * Response from the msdyn_knowledgeHarvestAgentTrigger action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_knowledgeHarvestAgentTriggerResponse {
-  // No content returned
+export type msdyn_knowledgeHarvestAgentTriggerResponse = void;
+
+/**
+ * Parameters of the msdyn_knowledgeHarvestAgentTrigger action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_knowledgeHarvestAgentTriggerActionParameters {
+  Payload: string;
 }
 
 /**
@@ -13,27 +22,27 @@ export interface msdyn_knowledgeHarvestAgentTriggerResponse {
  * Unbound action
  */
 export class msdyn_knowledgeHarvestAgentTriggerAction implements Executable<msdyn_knowledgeHarvestAgentTriggerResponse> {
-  constructor(public readonly payload: string) {}
+  constructor(public readonly parameters: msdyn_knowledgeHarvestAgentTriggerActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_knowledgeHarvestAgentTrigger`;
 
-    const body: Record<string, unknown> = {
-      Payload: this.payload,
-    };
+    const body = requestBody({
+      Payload: this.parameters.Payload,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_knowledgeHarvestAgentTriggerResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_knowledgeHarvestAgentTriggerResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

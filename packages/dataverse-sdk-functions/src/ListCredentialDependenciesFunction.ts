@@ -1,9 +1,16 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from ListCredentialDependencies function
+ * Response from the ListCredentialDependencies function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ListCredentialDependenciesResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -12,13 +19,15 @@ export interface ListCredentialDependenciesResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.credential)
+ *
+ * The first argument is the id of the credential record to call it on.
  */
 export class ListCredentialDependenciesFunction implements Executable<ListCredentialDependenciesResponse> {
   constructor(public readonly credentialId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/credentials(${this.credentialId})/Microsoft.Dynamics.CRM.ListCredentialDependencies`;
+    let url = `${baseUrl}/credentials(${odataLiteral.guid(this.credentialId)})/Microsoft.Dynamics.CRM.ListCredentialDependencies`;
 
     return {
       method: "GET",
@@ -30,7 +39,7 @@ export class ListCredentialDependenciesFunction implements Executable<ListCreden
   }
 
   async parseResponse(response: Response): Promise<ListCredentialDependenciesResponse> {
-    const data = await response.json();
-    return data as ListCredentialDependenciesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as ListCredentialDependenciesResponse;
   }
 }

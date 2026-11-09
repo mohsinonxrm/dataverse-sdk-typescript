@@ -1,10 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetKeywords action
+ * Response from the msdyn_GetKeywords action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetKeywordsResponse {
+  "@odata.context"?: string;
   msdyn_response: string;
+}
+
+/**
+ * Parameters of the msdyn_GetKeywords action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetKeywordsActionParameters {
+  msdyn_activityId?: string;
+  msdyn_entityType?: string;
+  msdyn_queryLocale?: string;
+  msdyn_entityName?: string;
+  msdyn_userquery: string;
 }
 
 /**
@@ -13,37 +29,31 @@ export interface msdyn_GetKeywordsResponse {
  * Unbound action
  */
 export class msdyn_GetKeywordsAction implements Executable<msdyn_GetKeywordsResponse> {
-  constructor(
-    public readonly msdyn_entityType: string,
-    public readonly msdyn_activityId: string,
-    public readonly msdyn_queryLocale: string,
-    public readonly msdyn_userquery: string,
-    public readonly msdyn_entityName: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetKeywordsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetKeywords`;
 
-    const body: Record<string, unknown> = {
-      msdyn_entityType: this.msdyn_entityType,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_queryLocale: this.msdyn_queryLocale,
-      msdyn_userquery: this.msdyn_userquery,
-      msdyn_entityName: this.msdyn_entityName,
-    };
+    const body = requestBody({
+      msdyn_activityId: this.parameters.msdyn_activityId,
+      msdyn_entityType: this.parameters.msdyn_entityType,
+      msdyn_queryLocale: this.parameters.msdyn_queryLocale,
+      msdyn_entityName: this.parameters.msdyn_entityName,
+      msdyn_userquery: this.parameters.msdyn_userquery,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetKeywordsResponse> {
-    const data = await response.json();
-    return data as msdyn_GetKeywordsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetKeywordsResponse;
   }
 }

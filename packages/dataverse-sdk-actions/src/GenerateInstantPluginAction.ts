@@ -1,12 +1,30 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from GenerateInstantPlugin action
+ * Response from the GenerateInstantPlugin action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GenerateInstantPluginResponse {
-  msdyn_functionid: string;
+  "@odata.context"?: string;
   CustomApiId: string;
   FxExpressionId: string;
+  msdyn_functionid: string;
+}
+
+/**
+ * Parameters of the GenerateInstantPlugin action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GenerateInstantPluginActionParameters {
+  Parameters?: string;
+  Expression: string;
+  Description: string;
+  Name: string;
+  Context?: string;
+  SolutionUniqueName?: string;
+  EntityLogicalName?: string;
 }
 
 /**
@@ -15,41 +33,33 @@ export interface GenerateInstantPluginResponse {
  * Unbound action
  */
 export class GenerateInstantPluginAction implements Executable<GenerateInstantPluginResponse> {
-  constructor(
-    public readonly solutionUniqueName: string,
-    public readonly expression: string,
-    public readonly context: string,
-    public readonly description: string,
-    public readonly entityLogicalName: string,
-    public readonly parameters: string,
-    public readonly name: string
-  ) {}
+  constructor(public readonly parameters: GenerateInstantPluginActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GenerateInstantPlugin`;
 
-    const body: Record<string, unknown> = {
-      SolutionUniqueName: this.solutionUniqueName,
-      Expression: this.expression,
-      Context: this.context,
-      Description: this.description,
-      EntityLogicalName: this.entityLogicalName,
-      Parameters: this.parameters,
-      Name: this.name,
-    };
+    const body = requestBody({
+      Parameters: this.parameters.Parameters,
+      Expression: this.parameters.Expression,
+      Description: this.parameters.Description,
+      Name: this.parameters.Name,
+      Context: this.parameters.Context,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<GenerateInstantPluginResponse> {
-    const data = await response.json();
-    return data as GenerateInstantPluginResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as GenerateInstantPluginResponse;
   }
 }

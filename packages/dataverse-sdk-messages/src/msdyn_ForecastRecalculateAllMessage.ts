@@ -21,18 +21,14 @@ export class msdyn_ForecastRecalculateAllRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ForecastRecalculateAllResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ForecastRecalculateAllResponse> {
     // No return value (204 No Content)
-    return new msdyn_ForecastRecalculateAllResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    return Promise.resolve(new msdyn_ForecastRecalculateAllResponse());
   }
 }
 
@@ -44,7 +40,7 @@ export class msdyn_ForecastRecalculateAllResponse extends OrganizationResponse {
     super("msdyn_ForecastRecalculateAll");
   }
 
-  static fromResponse(_data: unknown): msdyn_ForecastRecalculateAllResponse {
+  static fromResponse(_data?: unknown): msdyn_ForecastRecalculateAllResponse {
     return new msdyn_ForecastRecalculateAllResponse();
   }
 }

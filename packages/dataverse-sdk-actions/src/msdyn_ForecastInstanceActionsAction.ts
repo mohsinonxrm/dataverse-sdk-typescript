@@ -1,10 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ForecastInstanceActions action
+ * Response from the msdyn_ForecastInstanceActions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ForecastInstanceActionsResponse {
+  "@odata.context"?: string;
   response: string;
+}
+
+/**
+ * Parameters of the msdyn_ForecastInstanceActions action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ForecastInstanceActionsActionParameters {
+  ServiceName: string;
+  WebApiName?: string;
+  RequestJson: string;
 }
 
 /**
@@ -13,33 +27,29 @@ export interface msdyn_ForecastInstanceActionsResponse {
  * Unbound action
  */
 export class msdyn_ForecastInstanceActionsAction implements Executable<msdyn_ForecastInstanceActionsResponse> {
-  constructor(
-    public readonly serviceName: string,
-    public readonly webApiName: string,
-    public readonly requestJson: string
-  ) {}
+  constructor(public readonly parameters: msdyn_ForecastInstanceActionsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ForecastInstanceActions`;
 
-    const body: Record<string, unknown> = {
-      ServiceName: this.serviceName,
-      WebApiName: this.webApiName,
-      RequestJson: this.requestJson,
-    };
+    const body = requestBody({
+      ServiceName: this.parameters.ServiceName,
+      WebApiName: this.parameters.WebApiName,
+      RequestJson: this.parameters.RequestJson,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_ForecastInstanceActionsResponse> {
-    const data = await response.json();
-    return data as msdyn_ForecastInstanceActionsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_ForecastInstanceActionsResponse;
   }
 }

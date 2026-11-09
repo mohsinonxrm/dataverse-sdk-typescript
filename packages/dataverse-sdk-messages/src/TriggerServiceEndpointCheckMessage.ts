@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * TriggerServiceEndpointCheck request message
  *
  * Web API Action: TriggerServiceEndpointCheck
+ *
+ * The first argument is the id of the serviceendpoint record to call it on.
  */
 export class TriggerServiceEndpointCheckRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class TriggerServiceEndpointCheckRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/serviceendpoints(${this.serviceendpointId})/Microsoft.Dynamics.CRM.TriggerServiceEndpointCheck`;
+    const url = `${baseUrl}/serviceendpoints(${odataLiteral.guid(this.serviceendpointId)})/Microsoft.Dynamics.CRM.TriggerServiceEndpointCheck`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<TriggerServiceEndpointCheckResponse> {
+  parseResponse(_response: Response): Promise<TriggerServiceEndpointCheckResponse> {
     // No return value (204 No Content)
-    return new TriggerServiceEndpointCheckResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.serviceendpointId,
-    };
+    return Promise.resolve(new TriggerServiceEndpointCheckResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class TriggerServiceEndpointCheckResponse extends OrganizationResponse {
     super("TriggerServiceEndpointCheck");
   }
 
-  static fromResponse(_data: unknown): TriggerServiceEndpointCheckResponse {
+  static fromResponse(_data?: unknown): TriggerServiceEndpointCheckResponse {
     return new TriggerServiceEndpointCheckResponse();
   }
 }

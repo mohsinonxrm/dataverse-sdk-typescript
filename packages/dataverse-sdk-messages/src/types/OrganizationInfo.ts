@@ -5,6 +5,7 @@ import type { Solution } from "./Solution.js";
  * OrganizationInfo complex type
  */
 export interface OrganizationInfo {
-  InstanceType: OrganizationType;
-  Solutions: Solution[];
+  InstanceType?: OrganizationType;
+  SingletonScenarioName?: string;
+  Solutions?: Solution[];
 }

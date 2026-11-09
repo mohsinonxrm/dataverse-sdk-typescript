@@ -1,11 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { TimeCode, TimeInfo } from "./types/index.js";
 
 /**
- * Response from QuerySchedule function
+ * Response from the QuerySchedule function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface QueryScheduleResponse {
+  "@odata.context"?: string;
   TimeInfos: TimeInfo[];
+}
+
+/**
+ * Parameters of the QuerySchedule function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface QueryScheduleFunctionParameters {
+  ResourceId: string;
+  Start: string | Date;
+  End: string | Date;
+  TimeCodes: TimeCode[];
 }
 
 /**
@@ -14,12 +30,7 @@ export interface QueryScheduleResponse {
  * Unbound function
  */
 export class QueryScheduleFunction implements Executable<QueryScheduleResponse> {
-  constructor(
-    public readonly resourceId: string,
-    public readonly start: string,
-    public readonly end: string,
-    public readonly timeCodes: TimeCode[]
-  ) {}
+  constructor(public readonly parameters: QueryScheduleFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/QuerySchedule`;
@@ -27,24 +38,28 @@ export class QueryScheduleFunction implements Executable<QueryScheduleResponse> 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.resourceId !== undefined) {
+    if (this.parameters.ResourceId !== undefined) {
       aliases.push(`ResourceId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.resourceId === "string" ? `'${this.resourceId}'` : String(this.resourceId)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.ResourceId, "Edm.Guid"));
     }
-    if (this.start !== undefined) {
+    if (this.parameters.Start !== undefined) {
       aliases.push(`Start=@p2`);
-      params.append("@p2", typeof this.start === "string" ? `'${this.start}'` : String(this.start));
+      params.append("@p2", formatParameterAlias(this.parameters.Start, "Edm.DateTimeOffset"));
     }
-    if (this.end !== undefined) {
+    if (this.parameters.End !== undefined) {
       aliases.push(`End=@p3`);
-      params.append("@p3", typeof this.end === "string" ? `'${this.end}'` : String(this.end));
+      params.append("@p3", formatParameterAlias(this.parameters.End, "Edm.DateTimeOffset"));
     }
-    if (this.timeCodes !== undefined) {
+    if (this.parameters.TimeCodes !== undefined) {
       aliases.push(`TimeCodes=@p4`);
-      params.append("@p4", JSON.stringify(this.timeCodes));
+      params.append(
+        "@p4",
+        formatParameterAlias(
+          enumBody(this.parameters.TimeCodes, "TimeCode"),
+          "Collection(mscrm.TimeCode)",
+          "Collection"
+        )
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -60,7 +75,7 @@ export class QueryScheduleFunction implements Executable<QueryScheduleResponse> 
   }
 
   async parseResponse(response: Response): Promise<QueryScheduleResponse> {
-    const data = await response.json();
-    return data as QueryScheduleResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as QueryScheduleResponse;
   }
 }

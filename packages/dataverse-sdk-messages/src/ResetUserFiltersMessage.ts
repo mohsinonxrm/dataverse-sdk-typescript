@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the ResetUserFilters message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ResetUserFiltersRequestParameters {
+  QueryType: number;
+}
 
 /**
  * ResetUserFilters request message
@@ -10,36 +19,32 @@ export class ResetUserFiltersRequest
   extends OrganizationRequest
   implements Executable<ResetUserFiltersResponse>
 {
-  constructor(public queryType: number) {
-    super("ResetUserFilters");
+  declare readonly Parameters: Readonly<ResetUserFiltersRequestParameters>;
+
+  constructor(parameters: ResetUserFiltersRequestParameters) {
+    super("ResetUserFilters", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ResetUserFilters`;
 
-    const body: Record<string, unknown> = {
-      QueryType: this.queryType,
-    };
+    const body = requestBody({
+      QueryType: this.Parameters.QueryType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ResetUserFiltersResponse> {
+  parseResponse(_response: Response): Promise<ResetUserFiltersResponse> {
     // No return value (204 No Content)
-    return new ResetUserFiltersResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      QueryType: this.queryType,
-    };
+    return Promise.resolve(new ResetUserFiltersResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class ResetUserFiltersResponse extends OrganizationResponse {
     super("ResetUserFilters");
   }
 
-  static fromResponse(_data: unknown): ResetUserFiltersResponse {
+  static fromResponse(_data?: unknown): ResetUserFiltersResponse {
     return new ResetUserFiltersResponse();
   }
 }

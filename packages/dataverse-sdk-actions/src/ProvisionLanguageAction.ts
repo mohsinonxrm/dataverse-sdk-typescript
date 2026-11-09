@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ProvisionLanguage action
+ * Response from the ProvisionLanguage action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ProvisionLanguageResponse {
-  // No content returned
+export type ProvisionLanguageResponse = void;
+
+/**
+ * Parameters of the ProvisionLanguage action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ProvisionLanguageActionParameters {
+  Language: number;
 }
 
 /**
@@ -13,27 +22,27 @@ export interface ProvisionLanguageResponse {
  * Unbound action
  */
 export class ProvisionLanguageAction implements Executable<ProvisionLanguageResponse> {
-  constructor(public readonly language: number) {}
+  constructor(public readonly parameters: ProvisionLanguageActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ProvisionLanguage`;
 
-    const body: Record<string, unknown> = {
-      Language: this.language,
-    };
+    const body = requestBody({
+      Language: this.parameters.Language,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ProvisionLanguageResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<ProvisionLanguageResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

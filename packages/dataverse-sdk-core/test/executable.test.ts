@@ -2,7 +2,9 @@ import { describe, it, expect, beforeAll, afterAll, afterEach } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { DataverseClient } from "../src/client/DataverseClient.js";
-import type { Executable, RequestInformation } from "../src/abstractions/http.js";
+import type { Executable } from "../src/abstractions/executable.js";
+import type { RequestInformation } from "../src/abstractions/http.js";
+import { Prefer } from "../src/abstractions/options.js";
 
 const BASE_URL = "https://org.crm.dynamics.com";
 const API_URL = `${BASE_URL}/api/data/v9.2`;
@@ -168,10 +170,37 @@ describe("DataverseClient.execute()", () => {
 
     await client.execute(mockFunction, {
       headers: { "X-Custom-Header": "custom-value" },
-      prefer: ["return=representation"],
+      prefer: [Prefer.returnRepresentation()],
     });
 
     expect(capturedHeaders?.get("X-Custom-Header")).toBe("custom-value");
     expect(capturedHeaders?.get("prefer")).toContain("return=representation");
+  });
+
+  it("passes an error response to parseResponse when the request reads them (#344)", async () => {
+    server.use(
+      http.get(`${API_URL}/MockFunction`, () =>
+        HttpResponse.text("--batch--", {
+          status: 400,
+          headers: { "content-type": "multipart/mixed; boundary=batch" },
+        })
+      )
+    );
+    const client = new DataverseClient({ baseUrl: BASE_URL });
+    const request: Executable<{ status: number; body: string }> = {
+      parsesErrorResponses: true,
+      toRequestInformation: (baseUrl) => ({
+        method: "GET",
+        url: `${baseUrl}/MockFunction`,
+        headers: {},
+      }),
+      parseResponse: async (response) => ({ status: response.status, body: await response.text() }),
+    };
+
+    await expect(client.execute(request)).resolves.toEqual({ status: 400, body: "--batch--" });
+    // Without the flag, the same response rejects
+    await expect(client.execute({ ...request, parsesErrorResponses: false })).rejects.toMatchObject(
+      { status: 400 }
+    );
   });
 });

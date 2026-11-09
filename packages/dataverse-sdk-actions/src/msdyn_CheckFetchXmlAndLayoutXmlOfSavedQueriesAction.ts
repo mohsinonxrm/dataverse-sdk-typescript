@@ -1,14 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries action
+ * Response from the msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse {
-  ReturnStatus: number;
-  ResultEntities: string;
-  Message: string;
-  ReturnSeverity: number;
+  "@odata.context"?: string;
   HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
+ * Parameters of the msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesActionParameters {
+  IdFetchAndLayoutXmlList: string;
 }
 
 /**
@@ -17,20 +29,22 @@ export interface msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse {
  * Unbound action
  */
 export class msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesAction implements Executable<msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse> {
-  constructor(public readonly idFetchAndLayoutXmlList: string) {}
+  constructor(
+    public readonly parameters: msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueries`;
 
-    const body: Record<string, unknown> = {
-      IdFetchAndLayoutXmlList: this.idFetchAndLayoutXmlList,
-    };
+    const body = requestBody({
+      IdFetchAndLayoutXmlList: this.parameters.IdFetchAndLayoutXmlList,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -39,7 +53,7 @@ export class msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CheckFetchXmlAndLayoutXmlOfSavedQueriesResponse;
   }
 }

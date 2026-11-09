@@ -1,9 +1,16 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from CalculateActualValueOpportunity action
+ * Response from the CalculateActualValueOpportunity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CalculateActualValueOpportunityResponse {
+  "@odata.context"?: string;
   Value: number;
 }
 
@@ -12,25 +19,27 @@ export interface CalculateActualValueOpportunityResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.opportunity)
+ *
+ * The first argument is the id of the opportunity record to call it on.
  */
 export class CalculateActualValueOpportunityAction implements Executable<CalculateActualValueOpportunityResponse> {
   constructor(public readonly opportunityId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/opportunities(${this.opportunityId})/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity`;
+    const url = `${baseUrl}/opportunities(${odataLiteral.guid(this.opportunityId)})/Microsoft.Dynamics.CRM.CalculateActualValueOpportunity`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<CalculateActualValueOpportunityResponse> {
-    const data = await response.json();
-    return data as CalculateActualValueOpportunityResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as CalculateActualValueOpportunityResponse;
   }
 }

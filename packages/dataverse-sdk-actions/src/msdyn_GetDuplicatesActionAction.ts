@@ -1,11 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_GetDuplicatesAction action
+ * Response from the msdyn_GetDuplicatesAction action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface msdyn_GetDuplicatesActionResponse {
-  value: EntityReference[];
+export type msdyn_GetDuplicatesActionResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
+ * Parameters of the msdyn_GetDuplicatesAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetDuplicatesActionActionParameters {
+  Record?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -14,27 +29,29 @@ export interface msdyn_GetDuplicatesActionResponse {
  * Unbound action
  */
 export class msdyn_GetDuplicatesActionAction implements Executable<msdyn_GetDuplicatesActionResponse> {
-  constructor(public readonly record: EntityReference) {}
+  constructor(public readonly parameters: msdyn_GetDuplicatesActionActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetDuplicatesAction`;
 
-    const body: Record<string, unknown> = {
-      Record: this.record,
-    };
+    const body = requestBody({
+      Record: this.parameters.Record,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetDuplicatesActionResponse> {
-    const data = await response.json();
-    return data as msdyn_GetDuplicatesActionResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: msdyn_GetDuplicatesActionResponse }).value;
   }
 }

@@ -1,14 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_CheckOrgSettingOOBPriceCalculationEnabled action
+ * Response from the msdyn_CheckOrgSettingOOBPriceCalculationEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse {
-  ReturnStatus: number;
-  ResultEntities: string;
-  Message: string;
-  ReturnSeverity: number;
+  "@odata.context"?: string;
   HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
 }
 
 /**
@@ -24,7 +27,7 @@ export class msdyn_CheckOrgSettingOOBPriceCalculationEnabledAction implements Ex
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -32,7 +35,7 @@ export class msdyn_CheckOrgSettingOOBPriceCalculationEnabledAction implements Ex
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CheckOrgSettingOOBPriceCalculationEnabledResponse;
   }
 }

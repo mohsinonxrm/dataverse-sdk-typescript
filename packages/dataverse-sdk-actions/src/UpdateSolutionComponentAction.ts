@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UpdateSolutionComponent action
+ * Response from the UpdateSolutionComponent action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpdateSolutionComponentResponse {
-  // No content returned
+export type UpdateSolutionComponentResponse = void;
+
+/**
+ * Parameters of the UpdateSolutionComponent action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateSolutionComponentActionParameters {
+  ComponentId: string;
+  ComponentType: number;
+  SolutionUniqueName: string;
+  IncludedComponentSettingsValues?: string[];
 }
 
 /**
@@ -13,35 +25,30 @@ export interface UpdateSolutionComponentResponse {
  * Unbound action
  */
 export class UpdateSolutionComponentAction implements Executable<UpdateSolutionComponentResponse> {
-  constructor(
-    public readonly componentId: string,
-    public readonly componentType: number,
-    public readonly solutionUniqueName: string,
-    public readonly includedComponentSettingsValues: string[]
-  ) {}
+  constructor(public readonly parameters: UpdateSolutionComponentActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateSolutionComponent`;
 
-    const body: Record<string, unknown> = {
-      ComponentId: this.componentId,
-      ComponentType: this.componentType,
-      SolutionUniqueName: this.solutionUniqueName,
-      IncludedComponentSettingsValues: this.includedComponentSettingsValues,
-    };
+    const body = requestBody({
+      ComponentId: this.parameters.ComponentId,
+      ComponentType: this.parameters.ComponentType,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+      IncludedComponentSettingsValues: this.parameters.IncludedComponentSettingsValues,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateSolutionComponentResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<UpdateSolutionComponentResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -2,6 +2,6 @@
  * CreateCustomerRelationshipsResponse complex type
  */
 export interface CreateCustomerRelationshipsResponse {
-  RelationshipIds: string[];
-  AttributeId: string;
+  AttributeId?: string;
+  RelationshipIds?: string[];
 }

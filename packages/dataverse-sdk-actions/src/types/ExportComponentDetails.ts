@@ -2,7 +2,7 @@
  * ExportComponentDetails complex type
  */
 export interface ExportComponentDetails {
-  ComponentId: string;
-  ComponentType: number;
-  AddRequiredComponents: boolean;
+  AddRequiredComponents?: boolean;
+  ComponentId?: string;
+  ComponentType?: number;
 }

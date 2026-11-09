@@ -1,80 +1,97 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the RunDesktopFlow message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RunDesktopFlowRequestParameters {
+  connectionType?: number;
+  connectionName: string;
+  runMode: string;
+  timeout?: number;
+  callbackUrl?: string;
+  runPriority?: string;
+  inputs?: string;
+}
 
 /**
  * RunDesktopFlow request message
  *
  * Web API Action: RunDesktopFlow
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class RunDesktopFlowRequest
   extends OrganizationRequest
   implements Executable<RunDesktopFlowResponse>
 {
+  declare readonly Parameters: Readonly<RunDesktopFlowRequestParameters>;
+
   constructor(
     public workflowId: string,
-    public inputs: string,
-    public runMode: string,
-    public connectionName: string,
-    public runPriority: string,
-    public timeout: number,
-    public connectionType: number,
-    public callbackUrl: string
+    parameters: RunDesktopFlowRequestParameters
   ) {
-    super("RunDesktopFlow");
+    super("RunDesktopFlow", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/workflows(${this.workflowId})/Microsoft.Dynamics.CRM.RunDesktopFlow`;
+    const url = `${baseUrl}/workflows(${odataLiteral.guid(this.workflowId)})/Microsoft.Dynamics.CRM.RunDesktopFlow`;
 
-    const body: Record<string, unknown> = {
-      inputs: this.inputs,
-      runMode: this.runMode,
-      connectionName: this.connectionName,
-      runPriority: this.runPriority,
-      timeout: this.timeout,
-      connectionType: this.connectionType,
-      callbackUrl: this.callbackUrl,
-    };
+    const body = requestBody({
+      connectionType: this.Parameters.connectionType,
+      connectionName: this.Parameters.connectionName,
+      runMode: this.Parameters.runMode,
+      timeout: this.Parameters.timeout,
+      callbackUrl: this.Parameters.callbackUrl,
+      runPriority: this.Parameters.runPriority,
+      inputs: this.Parameters.inputs,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<RunDesktopFlowResponse> {
-    const data = await response.json();
-    return RunDesktopFlowResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workflowId,
-      inputs: this.inputs,
-      runMode: this.runMode,
-      connectionName: this.connectionName,
-      runPriority: this.runPriority,
-      timeout: this.timeout,
-      connectionType: this.connectionType,
-      callbackUrl: this.callbackUrl,
-    };
+    // The body is the complex value, with its @odata.context
+    return RunDesktopFlowResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RunDesktopFlow action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RunDesktopFlowResult {
+  "@odata.context"?: string;
+  flowsessionId: string;
+}
+
+/**
  * RunDesktopFlow response message
+ *
+ * `result` is the value the RunDesktopFlow action returns (see {@link RunDesktopFlowResult}).
  */
 export class RunDesktopFlowResponse extends OrganizationResponse {
-  constructor(public result: RunDesktopFlowResponse) {
+  constructor(public result: RunDesktopFlowResult) {
     super("RunDesktopFlow");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RunDesktopFlowResponse {
-    return new RunDesktopFlowResponse((data as any).value);
+    return new RunDesktopFlowResponse(data as RunDesktopFlowResult);
   }
 }

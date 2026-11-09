@@ -1,6 +1,32 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { LayerDesiredOrder, SolutionParameters } from "./types/index.js";
+
+/**
+ * Parameters of the ImportSolution message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportSolutionRequestParameters {
+  OverwriteUnmanagedCustomizations: boolean;
+  PublishWorkflows: boolean;
+  CustomizationFile: string;
+  ImportJobId: string;
+  ConvertToManaged?: boolean;
+  SkipProductUpdateDependencies?: boolean;
+  HoldingSolution?: boolean;
+  SkipQueueRibbonJob?: boolean;
+  LayerDesiredOrder?: LayerDesiredOrder;
+  AsyncRibbonProcessing?: boolean;
+  ComponentParameters?: Record<string, unknown>[];
+  IsTemplateMode?: boolean;
+  TemplateSuffix?: string;
+  SolutionParameters?: SolutionParameters;
+  TemplateDisplayNamePrefix?: string;
+  StageAndUpgrade?: boolean;
+  SchemaUpdatesOnly?: boolean;
+}
 
 /**
  * ImportSolution request message
@@ -11,86 +37,48 @@ export class ImportSolutionRequest
   extends OrganizationRequest
   implements Executable<ImportSolutionResponse>
 {
-  constructor(
-    public overwriteUnmanagedCustomizations: boolean,
-    public publishWorkflows: boolean,
-    public customizationFile: string,
-    public importJobId: string,
-    public convertToManaged: boolean,
-    public skipProductUpdateDependencies: boolean,
-    public holdingSolution: boolean,
-    public skipQueueRibbonJob: boolean,
-    public layerDesiredOrder: LayerDesiredOrder,
-    public asyncRibbonProcessing: boolean,
-    public componentParameters: Record<string, unknown>[],
-    public isTemplateMode: boolean,
-    public templateSuffix: string,
-    public solutionParameters: SolutionParameters,
-    public templateDisplayNamePrefix: string,
-    public stageAndUpgrade: boolean,
-    public schemaUpdatesOnly: boolean
-  ) {
-    super("ImportSolution");
+  declare readonly Parameters: Readonly<ImportSolutionRequestParameters>;
+
+  constructor(parameters: ImportSolutionRequestParameters) {
+    super("ImportSolution", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportSolution`;
 
-    const body: Record<string, unknown> = {
-      OverwriteUnmanagedCustomizations: this.overwriteUnmanagedCustomizations,
-      PublishWorkflows: this.publishWorkflows,
-      CustomizationFile: this.customizationFile,
-      ImportJobId: this.importJobId,
-      ConvertToManaged: this.convertToManaged,
-      SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
-      HoldingSolution: this.holdingSolution,
-      SkipQueueRibbonJob: this.skipQueueRibbonJob,
-      LayerDesiredOrder: this.layerDesiredOrder,
-      AsyncRibbonProcessing: this.asyncRibbonProcessing,
-      ComponentParameters: this.componentParameters,
-      IsTemplateMode: this.isTemplateMode,
-      TemplateSuffix: this.templateSuffix,
-      SolutionParameters: this.solutionParameters,
-      TemplateDisplayNamePrefix: this.templateDisplayNamePrefix,
-      StageAndUpgrade: this.stageAndUpgrade,
-      SchemaUpdatesOnly: this.schemaUpdatesOnly,
-    };
+    const body = requestBody({
+      OverwriteUnmanagedCustomizations: this.Parameters.OverwriteUnmanagedCustomizations,
+      PublishWorkflows: this.Parameters.PublishWorkflows,
+      CustomizationFile: this.Parameters.CustomizationFile,
+      ImportJobId: this.Parameters.ImportJobId,
+      ConvertToManaged: this.Parameters.ConvertToManaged,
+      SkipProductUpdateDependencies: this.Parameters.SkipProductUpdateDependencies,
+      HoldingSolution: this.Parameters.HoldingSolution,
+      SkipQueueRibbonJob: this.Parameters.SkipQueueRibbonJob,
+      LayerDesiredOrder: enumBody(this.Parameters.LayerDesiredOrder, "LayerDesiredOrder"),
+      AsyncRibbonProcessing: this.Parameters.AsyncRibbonProcessing,
+      ComponentParameters: this.Parameters.ComponentParameters,
+      IsTemplateMode: this.Parameters.IsTemplateMode,
+      TemplateSuffix: this.Parameters.TemplateSuffix,
+      SolutionParameters: enumBody(this.Parameters.SolutionParameters, "SolutionParameters"),
+      TemplateDisplayNamePrefix: this.Parameters.TemplateDisplayNamePrefix,
+      StageAndUpgrade: this.Parameters.StageAndUpgrade,
+      SchemaUpdatesOnly: this.Parameters.SchemaUpdatesOnly,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ImportSolutionResponse> {
+  parseResponse(_response: Response): Promise<ImportSolutionResponse> {
     // No return value (204 No Content)
-    return new ImportSolutionResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OverwriteUnmanagedCustomizations: this.overwriteUnmanagedCustomizations,
-      PublishWorkflows: this.publishWorkflows,
-      CustomizationFile: this.customizationFile,
-      ImportJobId: this.importJobId,
-      ConvertToManaged: this.convertToManaged,
-      SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
-      HoldingSolution: this.holdingSolution,
-      SkipQueueRibbonJob: this.skipQueueRibbonJob,
-      LayerDesiredOrder: this.layerDesiredOrder,
-      AsyncRibbonProcessing: this.asyncRibbonProcessing,
-      ComponentParameters: this.componentParameters,
-      IsTemplateMode: this.isTemplateMode,
-      TemplateSuffix: this.templateSuffix,
-      SolutionParameters: this.solutionParameters,
-      TemplateDisplayNamePrefix: this.templateDisplayNamePrefix,
-      StageAndUpgrade: this.stageAndUpgrade,
-      SchemaUpdatesOnly: this.schemaUpdatesOnly,
-    };
+    return Promise.resolve(new ImportSolutionResponse());
   }
 }
 
@@ -102,7 +90,7 @@ export class ImportSolutionResponse extends OrganizationResponse {
     super("ImportSolution");
   }
 
-  static fromResponse(_data: unknown): ImportSolutionResponse {
+  static fromResponse(_data?: unknown): ImportSolutionResponse {
     return new ImportSolutionResponse();
   }
 }

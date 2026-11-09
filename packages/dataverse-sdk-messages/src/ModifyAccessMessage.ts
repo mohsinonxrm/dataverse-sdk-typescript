@@ -1,7 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PrincipalAccess } from "./types/index.js";
+
+/**
+ * Parameters of the ModifyAccess message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ModifyAccessRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+  PrincipalAccess?: PrincipalAccess;
+}
 
 /**
  * ModifyAccess request message
@@ -12,41 +24,33 @@ export class ModifyAccessRequest
   extends OrganizationRequest
   implements Executable<ModifyAccessResponse>
 {
-  constructor(
-    public target: EntityReference,
-    public principalAccess: PrincipalAccess
-  ) {
-    super("ModifyAccess");
+  declare readonly Parameters: Readonly<ModifyAccessRequestParameters>;
+
+  constructor(parameters: ModifyAccessRequestParameters) {
+    super("ModifyAccess", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ModifyAccess`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      PrincipalAccess: this.principalAccess,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      PrincipalAccess: enumBody(this.Parameters.PrincipalAccess, "PrincipalAccess"),
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ModifyAccessResponse> {
+  parseResponse(_response: Response): Promise<ModifyAccessResponse> {
     // No return value (204 No Content)
-    return new ModifyAccessResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      PrincipalAccess: this.principalAccess,
-    };
+    return Promise.resolve(new ModifyAccessResponse());
   }
 }
 
@@ -58,7 +62,7 @@ export class ModifyAccessResponse extends OrganizationResponse {
     super("ModifyAccess");
   }
 
-  static fromResponse(_data: unknown): ModifyAccessResponse {
+  static fromResponse(_data?: unknown): ModifyAccessResponse {
     return new ModifyAccessResponse();
   }
 }

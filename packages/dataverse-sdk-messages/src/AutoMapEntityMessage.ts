@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the AutoMapEntity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AutoMapEntityRequestParameters {
+  EntityMapId: string;
+}
 
 /**
  * AutoMapEntity request message
@@ -10,36 +19,32 @@ export class AutoMapEntityRequest
   extends OrganizationRequest
   implements Executable<AutoMapEntityResponse>
 {
-  constructor(public entityMapId: string) {
-    super("AutoMapEntity");
+  declare readonly Parameters: Readonly<AutoMapEntityRequestParameters>;
+
+  constructor(parameters: AutoMapEntityRequestParameters) {
+    super("AutoMapEntity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AutoMapEntity`;
 
-    const body: Record<string, unknown> = {
-      EntityMapId: this.entityMapId,
-    };
+    const body = requestBody({
+      EntityMapId: this.Parameters.EntityMapId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<AutoMapEntityResponse> {
+  parseResponse(_response: Response): Promise<AutoMapEntityResponse> {
     // No return value (204 No Content)
-    return new AutoMapEntityResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityMapId: this.entityMapId,
-    };
+    return Promise.resolve(new AutoMapEntityResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class AutoMapEntityResponse extends OrganizationResponse {
     super("AutoMapEntity");
   }
 
-  static fromResponse(_data: unknown): AutoMapEntityResponse {
+  static fromResponse(_data?: unknown): AutoMapEntityResponse {
     return new AutoMapEntityResponse();
   }
 }

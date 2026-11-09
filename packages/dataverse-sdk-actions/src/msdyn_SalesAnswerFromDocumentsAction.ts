@@ -1,10 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAnswerFromDocuments action
+ * Response from the msdyn_SalesAnswerFromDocuments action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesAnswerFromDocumentsResponse {
+  "@odata.context"?: string;
   msdyn_sales_copilot_output: string;
+}
+
+/**
+ * Parameters of the msdyn_SalesAnswerFromDocuments action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAnswerFromDocumentsActionParameters {
+  msdyn_queryLocale?: string;
+  msdyn_activityId?: string;
+  msdyn_responseFormat?: string;
+  msdyn_additionalParameters?: string;
+  msdyn_userQuery: string;
 }
 
 /**
@@ -13,37 +29,31 @@ export interface msdyn_SalesAnswerFromDocumentsResponse {
  * Unbound action
  */
 export class msdyn_SalesAnswerFromDocumentsAction implements Executable<msdyn_SalesAnswerFromDocumentsResponse> {
-  constructor(
-    public readonly msdyn_queryLocale: string,
-    public readonly msdyn_responseFormat: string,
-    public readonly msdyn_userQuery: string,
-    public readonly msdyn_additionalParameters: string,
-    public readonly msdyn_activityId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_SalesAnswerFromDocumentsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAnswerFromDocuments`;
 
-    const body: Record<string, unknown> = {
-      msdyn_queryLocale: this.msdyn_queryLocale,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-      msdyn_userQuery: this.msdyn_userQuery,
-      msdyn_additionalParameters: this.msdyn_additionalParameters,
-      msdyn_activityId: this.msdyn_activityId,
-    };
+    const body = requestBody({
+      msdyn_queryLocale: this.parameters.msdyn_queryLocale,
+      msdyn_activityId: this.parameters.msdyn_activityId,
+      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
+      msdyn_additionalParameters: this.parameters.msdyn_additionalParameters,
+      msdyn_userQuery: this.parameters.msdyn_userQuery,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAnswerFromDocumentsResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAnswerFromDocumentsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_SalesAnswerFromDocumentsResponse;
   }
 }

@@ -21,7 +21,7 @@ export class msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -29,24 +29,39 @@ export class msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfWorkstreamHasDeletedSessionTemplates action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfWorkstreamHasDeletedSessionTemplates response message
+ *
+ * `result` is the value the msdyn_CheckIfWorkstreamHasDeletedSessionTemplates action returns (see {@link msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResult}).
  */
 export class msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse) {
+  constructor(public result: msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResult) {
     super("msdyn_CheckIfWorkstreamHasDeletedSessionTemplates");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse {
-    return new msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse((data as any).value);
+    return new msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResponse(
+      data as msdyn_CheckIfWorkstreamHasDeletedSessionTemplatesResult
+    );
   }
 }

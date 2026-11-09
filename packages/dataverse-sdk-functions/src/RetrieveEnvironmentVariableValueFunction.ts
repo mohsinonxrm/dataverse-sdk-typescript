@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrieveEnvironmentVariableValue function
+ * Response from the RetrieveEnvironmentVariableValue function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveEnvironmentVariableValueResponse {
+  "@odata.context"?: string;
   Value: string;
+}
+
+/**
+ * Parameters of the RetrieveEnvironmentVariableValue function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveEnvironmentVariableValueFunctionParameters {
+  DefinitionSchemaName: string;
 }
 
 /**
@@ -13,7 +25,7 @@ export interface RetrieveEnvironmentVariableValueResponse {
  * Unbound function
  */
 export class RetrieveEnvironmentVariableValueFunction implements Executable<RetrieveEnvironmentVariableValueResponse> {
-  constructor(public readonly definitionSchemaName: string) {}
+  constructor(public readonly parameters: RetrieveEnvironmentVariableValueFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveEnvironmentVariableValue`;
@@ -21,13 +33,11 @@ export class RetrieveEnvironmentVariableValueFunction implements Executable<Retr
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.definitionSchemaName !== undefined) {
+    if (this.parameters.DefinitionSchemaName !== undefined) {
       aliases.push(`DefinitionSchemaName=@p1`);
       params.append(
         "@p1",
-        typeof this.definitionSchemaName === "string"
-          ? `'${this.definitionSchemaName}'`
-          : String(this.definitionSchemaName)
+        formatParameterAlias(this.parameters.DefinitionSchemaName, "Edm.String")
       );
     }
     if (aliases.length > 0) {
@@ -44,7 +54,7 @@ export class RetrieveEnvironmentVariableValueFunction implements Executable<Retr
   }
 
   async parseResponse(response: Response): Promise<RetrieveEnvironmentVariableValueResponse> {
-    const data = await response.json();
-    return data as RetrieveEnvironmentVariableValueResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveEnvironmentVariableValueResponse;
   }
 }

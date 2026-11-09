@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingState message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateRequestParameters {
+  msdyn_SARRecordsToCreate: string;
+  msdyn_SalesAgentType: number;
+  msdyn_TrackingId?: string;
+}
 
 /**
  * msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingState request message
@@ -10,46 +21,40 @@ export class msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateRequ
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateResponse>
 {
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateRequestParameters>;
+
   constructor(
-    public msdyn_TrackingId: string,
-    public msdyn_SARRecordsToCreate: string,
-    public msdyn_SalesAgentType: number
+    parameters: msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateRequestParameters
   ) {
-    super("msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingState");
+    super("msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingState", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingState`;
 
-    const body: Record<string, unknown> = {
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SARRecordsToCreate: this.msdyn_SARRecordsToCreate,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-    };
+    const body = requestBody({
+      msdyn_SARRecordsToCreate: this.Parameters.msdyn_SARRecordsToCreate,
+      msdyn_SalesAgentType: this.Parameters.msdyn_SalesAgentType,
+      msdyn_TrackingId: this.Parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateResponse> {
     // No return value (204 No Content)
-    return new msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SARRecordsToCreate: this.msdyn_SARRecordsToCreate,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-    };
+    return Promise.resolve(
+      new msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateResponse()
+    );
   }
 }
 
@@ -62,7 +67,7 @@ export class msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateResp
   }
 
   static fromResponse(
-    _data: unknown
+    _data?: unknown
   ): msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateResponse {
     return new msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateResponse();
   }

@@ -21,30 +21,39 @@ export class msdyn_GetODOSMetadataRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetODOSMetadataResponse> {
-    const data = await response.json();
-    return msdyn_GetODOSMetadataResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetODOSMetadataResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetODOSMetadata action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetODOSMetadataResult {
+  "@odata.context"?: string;
+  Metadata: string;
+}
+
+/**
  * msdyn_GetODOSMetadata response message
+ *
+ * `result` is the value the msdyn_GetODOSMetadata action returns (see {@link msdyn_GetODOSMetadataResult}).
  */
 export class msdyn_GetODOSMetadataResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetODOSMetadataResponse) {
+  constructor(public result: msdyn_GetODOSMetadataResult) {
     super("msdyn_GetODOSMetadata");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetODOSMetadataResponse {
-    return new msdyn_GetODOSMetadataResponse((data as any).value);
+    return new msdyn_GetODOSMetadataResponse(data as msdyn_GetODOSMetadataResult);
   }
 }

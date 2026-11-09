@@ -1,11 +1,10 @@
-import { describe, it, expect } from "vitest";
+import { DataverseError } from "../src/errors/DataverseError.js";
+import { describe, it, expect, expectTypeOf } from "vitest";
 import {
-  DataverseError,
   DataverseAuthenticationError,
   DataverseInvalidRequestError,
   DataverseServiceError,
   DataverseNetworkError,
-  DataverseBatchError,
 } from "../src/errors/NamedErrors.js";
 
 describe("NamedErrors", () => {
@@ -41,13 +40,13 @@ describe("NamedErrors", () => {
     it("creates unauthorized error with status code", () => {
       const error = DataverseAuthenticationError.unauthorized();
       expect(error.name).toBe("Unauthorized");
-      expect(error.statusCode).toBe(401);
+      expect(error.status).toBe(401);
     });
 
     it("creates forbidden error with status code", () => {
       const error = DataverseAuthenticationError.forbidden();
       expect(error.name).toBe("Forbidden");
-      expect(error.statusCode).toBe(403);
+      expect(error.status).toBe(403);
     });
   });
 
@@ -87,14 +86,14 @@ describe("NamedErrors", () => {
   describe("DataverseServiceError", () => {
     it("creates service error with status code", () => {
       const error = new DataverseServiceError(400, "Bad request");
-      expect(error.statusCode).toBe(400);
+      expect(error.status).toBe(400);
       expect(error.message).toBe("Bad request");
     });
 
     it("creates throttled error", () => {
       const error = DataverseServiceError.throttled(5000);
       expect(error.name).toBe("TooManyRequests");
-      expect(error.statusCode).toBe(429);
+      expect(error.status).toBe(429);
       expect(error.code).toBe("Throttled");
       expect(error.message).toContain("5000");
     });
@@ -102,7 +101,7 @@ describe("NamedErrors", () => {
     it("creates not found error", () => {
       const error = DataverseServiceError.notFound("account", "123");
       expect(error.name).toBe("NotFound");
-      expect(error.statusCode).toBe(404);
+      expect(error.status).toBe(404);
       expect(error.message).toContain("account");
       expect(error.message).toContain("123");
     });
@@ -110,7 +109,7 @@ describe("NamedErrors", () => {
     it("creates bad request error", () => {
       const error = DataverseServiceError.badRequest("Invalid filter");
       expect(error.name).toBe("BadRequest");
-      expect(error.statusCode).toBe(400);
+      expect(error.status).toBe(400);
       expect(error.message).toBe("Invalid filter");
     });
 
@@ -142,6 +141,56 @@ describe("NamedErrors", () => {
       expect(error.message).toBe("The request is invalid");
       expect(error.body).toEqual(errorBody);
     });
+
+    it("takes the body as unknown (#294)", () => {
+      expectTypeOf<
+        Parameters<typeof DataverseServiceError.fromResponse>[1]
+      >().toEqualTypeOf<unknown>();
+    });
+
+    it("reads an OData error from the response when no body is passed", async () => {
+      const response = new Response(
+        JSON.stringify({ error: { code: "0x80040217", message: "Does Not Exist" } }),
+        { status: 404, headers: { "x-ms-service-request-id": "req-1" } }
+      );
+      const error = await DataverseServiceError.fromResponse(response);
+      expect(error.code).toBe("0x80040217");
+      expect(error.message).toBe("Does Not Exist");
+      expect(error.requestId).toBe("req-1");
+    });
+
+    it("keeps a body that isn't JSON as the text (#294)", async () => {
+      const response = new Response("<html>Bad Gateway</html>", { status: 502 });
+      const error = await DataverseServiceError.fromResponse(response);
+      expect(error.status).toBe(502);
+      expect(error.message).toBe("HTTP 502");
+      expect(error.code).toBeUndefined();
+      expect(error.body).toBe("<html>Bad Gateway</html>");
+      expect(error.name).toBe("ServerError");
+    });
+
+    it("ignores an error body whose code or message isn't a string (#294)", async () => {
+      const response = new Response(null, { status: 400 });
+      const error = await DataverseServiceError.fromResponse(response, {
+        error: { code: 42, message: { text: "nested" } },
+      });
+      expect(error.code).toBeUndefined();
+      expect(error.message).toBe("HTTP 400");
+      expect(error.body).toEqual({ error: { code: 42, message: { text: "nested" } } });
+    });
+
+    it("keeps a text or array body without reading code or message from it (#294)", async () => {
+      const text = await DataverseServiceError.fromResponse(
+        new Response(null, { status: 500 }),
+        "boom"
+      );
+      expect(text.body).toBe("boom");
+      expect(text.message).toBe("HTTP 500");
+      const array = await DataverseServiceError.fromResponse(new Response(null, { status: 400 }), [
+        { error: { code: "x" } },
+      ]);
+      expect(array.code).toBeUndefined();
+    });
   });
 
   describe("DataverseNetworkError", () => {
@@ -160,25 +209,6 @@ describe("NamedErrors", () => {
     it("creates aborted error", () => {
       const error = DataverseNetworkError.aborted();
       expect(error.name).toBe("RequestAborted");
-    });
-  });
-
-  describe("DataverseBatchError", () => {
-    it("creates batch error with sub-errors", () => {
-      const subErrors = [
-        { index: 0, error: new Error("Request 0 failed") },
-        { index: 2, error: new Error("Request 2 failed") },
-      ];
-      const error = new DataverseBatchError("Batch failed", subErrors);
-      expect(error.subErrors).toHaveLength(2);
-      expect(error.subErrors[0].index).toBe(0);
-    });
-
-    it("creates partial failure error", () => {
-      const subErrors = [{ index: 1, error: new Error("Failed") }];
-      const error = DataverseBatchError.partialFailure(subErrors);
-      expect(error.name).toBe("BatchPartialFailure");
-      expect(error.message).toContain("1 error");
     });
   });
 

@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the SetDataEncryptionKey message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetDataEncryptionKeyRequestParameters {
+  EncryptionKey: string;
+  ChangeEncryptionKey: boolean;
+}
 
 /**
  * SetDataEncryptionKey request message
@@ -10,41 +20,33 @@ export class SetDataEncryptionKeyRequest
   extends OrganizationRequest
   implements Executable<SetDataEncryptionKeyResponse>
 {
-  constructor(
-    public encryptionKey: string,
-    public changeEncryptionKey: boolean
-  ) {
-    super("SetDataEncryptionKey");
+  declare readonly Parameters: Readonly<SetDataEncryptionKeyRequestParameters>;
+
+  constructor(parameters: SetDataEncryptionKeyRequestParameters) {
+    super("SetDataEncryptionKey", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SetDataEncryptionKey`;
 
-    const body: Record<string, unknown> = {
-      EncryptionKey: this.encryptionKey,
-      ChangeEncryptionKey: this.changeEncryptionKey,
-    };
+    const body = requestBody({
+      EncryptionKey: this.Parameters.EncryptionKey,
+      ChangeEncryptionKey: this.Parameters.ChangeEncryptionKey,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<SetDataEncryptionKeyResponse> {
+  parseResponse(_response: Response): Promise<SetDataEncryptionKeyResponse> {
     // No return value (204 No Content)
-    return new SetDataEncryptionKeyResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EncryptionKey: this.encryptionKey,
-      ChangeEncryptionKey: this.changeEncryptionKey,
-    };
+    return Promise.resolve(new SetDataEncryptionKeyResponse());
   }
 }
 
@@ -56,7 +58,7 @@ export class SetDataEncryptionKeyResponse extends OrganizationResponse {
     super("SetDataEncryptionKey");
   }
 
-  static fromResponse(_data: unknown): SetDataEncryptionKeyResponse {
+  static fromResponse(_data?: unknown): SetDataEncryptionKeyResponse {
     return new SetDataEncryptionKeyResponse();
   }
 }

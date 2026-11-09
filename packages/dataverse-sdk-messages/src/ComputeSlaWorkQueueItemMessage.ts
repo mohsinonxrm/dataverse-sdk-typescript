@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * ComputeSlaWorkQueueItem request message
  *
  * Web API Action: ComputeSlaWorkQueueItem
+ *
+ * The first argument is the id of the workqueue record to call it on.
  */
 export class ComputeSlaWorkQueueItemRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class ComputeSlaWorkQueueItemRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/workqueues(${this.workqueueId})/Microsoft.Dynamics.CRM.ComputeSlaWorkQueueItem`;
+    const url = `${baseUrl}/workqueues(${odataLiteral.guid(this.workqueueId)})/Microsoft.Dynamics.CRM.ComputeSlaWorkQueueItem`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<ComputeSlaWorkQueueItemResponse> {
+  parseResponse(_response: Response): Promise<ComputeSlaWorkQueueItemResponse> {
     // No return value (204 No Content)
-    return new ComputeSlaWorkQueueItemResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workqueueId,
-    };
+    return Promise.resolve(new ComputeSlaWorkQueueItemResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class ComputeSlaWorkQueueItemResponse extends OrganizationResponse {
     super("ComputeSlaWorkQueueItem");
   }
 
-  static fromResponse(_data: unknown): ComputeSlaWorkQueueItemResponse {
+  static fromResponse(_data?: unknown): ComputeSlaWorkQueueItemResponse {
     return new ComputeSlaWorkQueueItemResponse();
   }
 }

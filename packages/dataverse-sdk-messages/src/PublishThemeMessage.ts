@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * PublishTheme request message
  *
  * Web API Action: PublishTheme
+ *
+ * The first argument is the id of the theme record to call it on.
  */
 export class PublishThemeRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class PublishThemeRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/themes(${this.themeId})/Microsoft.Dynamics.CRM.PublishTheme`;
+    const url = `${baseUrl}/themes(${odataLiteral.guid(this.themeId)})/Microsoft.Dynamics.CRM.PublishTheme`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<PublishThemeResponse> {
+  parseResponse(_response: Response): Promise<PublishThemeResponse> {
     // No return value (204 No Content)
-    return new PublishThemeResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.themeId,
-    };
+    return Promise.resolve(new PublishThemeResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class PublishThemeResponse extends OrganizationResponse {
     super("PublishTheme");
   }
 
-  static fromResponse(_data: unknown): PublishThemeResponse {
+  static fromResponse(_data?: unknown): PublishThemeResponse {
     return new PublishThemeResponse();
   }
 }

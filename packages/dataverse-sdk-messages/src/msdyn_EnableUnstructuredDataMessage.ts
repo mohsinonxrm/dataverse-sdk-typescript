@@ -21,18 +21,14 @@ export class msdyn_EnableUnstructuredDataRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_EnableUnstructuredDataResponse> {
+  parseResponse(_response: Response): Promise<msdyn_EnableUnstructuredDataResponse> {
     // No return value (204 No Content)
-    return new msdyn_EnableUnstructuredDataResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    return Promise.resolve(new msdyn_EnableUnstructuredDataResponse());
   }
 }
 
@@ -44,7 +40,7 @@ export class msdyn_EnableUnstructuredDataResponse extends OrganizationResponse {
     super("msdyn_EnableUnstructuredData");
   }
 
-  static fromResponse(_data: unknown): msdyn_EnableUnstructuredDataResponse {
+  static fromResponse(_data?: unknown): msdyn_EnableUnstructuredDataResponse {
     return new msdyn_EnableUnstructuredDataResponse();
   }
 }

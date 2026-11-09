@@ -21,30 +21,39 @@ export class msdyn_ProvisionAnalyticsRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_ProvisionAnalyticsResponse> {
-    const data = await response.json();
-    return msdyn_ProvisionAnalyticsResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_ProvisionAnalyticsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ProvisionAnalytics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ProvisionAnalyticsResult {
+  "@odata.context"?: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_ProvisionAnalytics response message
+ *
+ * `result` is the value the msdyn_ProvisionAnalytics action returns (see {@link msdyn_ProvisionAnalyticsResult}).
  */
 export class msdyn_ProvisionAnalyticsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ProvisionAnalyticsResponse) {
+  constructor(public result: msdyn_ProvisionAnalyticsResult) {
     super("msdyn_ProvisionAnalytics");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ProvisionAnalyticsResponse {
-    return new msdyn_ProvisionAnalyticsResponse((data as any).value);
+    return new msdyn_ProvisionAnalyticsResponse(data as msdyn_ProvisionAnalyticsResult);
   }
 }

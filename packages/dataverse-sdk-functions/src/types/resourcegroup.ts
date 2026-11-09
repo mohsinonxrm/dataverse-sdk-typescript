@@ -2,15 +2,15 @@
  * resourcegroup entity type
  */
 export interface resourcegroup {
-  overriddencreatedon: string;
-  utcconversiontimezonecode: number;
-  versionnumber: number;
-  name: string;
-  grouptypecode: number;
-  objecttypecode: string;
-  _organizationid_value: string;
-  timezoneruleversionnumber: number;
-  resourcegroupid: string;
-  _businessunitid_value: string;
-  importsequencenumber: number;
+  _businessunitid_value?: string;
+  _organizationid_value?: string;
+  grouptypecode?: number;
+  importsequencenumber?: number;
+  name?: string;
+  objecttypecode?: string;
+  overriddencreatedon?: string;
+  resourcegroupid?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

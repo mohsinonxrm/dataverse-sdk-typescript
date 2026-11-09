@@ -3,9 +3,7 @@
  * Provides helpers for header manipulation, UUID generation, and content serialization
  */
 
-// Type-safe reference to Node.js Buffer when available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-declare const Buffer: any;
+import { toFetchBody } from "./body.js";
 
 /**
  * Supported header formats:
@@ -168,7 +166,9 @@ export function generateUUID(): string {
  * Handles various types and ensures compatibility between Node and browser
  *
  * @param content - The content to serialize
- * @returns Serialized content ready for fetch body
+ * @returns Serialized content ready for fetch body: JSON for plain objects and arrays,
+ *   everything else unchanged (a typed-array view as a `Uint8Array` over exactly its bytes)
+ * @throws When a plain object can't be serialised (e.g. a circular reference)
  *
  * @example
  * ```typescript
@@ -176,90 +176,48 @@ export function generateUUID(): string {
  * // Result: '{"name":"Account","revenue":1000000}'
  * ```
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function serializeContent(content: any): string | FormData | Blob | ArrayBuffer {
+export function serializeContent(content: unknown): BodyInit {
   if (content === null || content === undefined) {
     return "";
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-  const className = content.constructor?.name;
-
-  // Already in a format fetch accepts
-  if (
-    typeof content === "string" ||
-    className === "FormData" ||
-    className === "Blob" ||
-    className === "File" ||
-    className === "ArrayBuffer" ||
-    className === "Buffer"
-  ) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return content;
-  }
-
-  // TypedArray - convert to buffer/blob
-  if (
-    className === "Int8Array" ||
-    className === "Int16Array" ||
-    className === "Int32Array" ||
-    className === "Uint8Array" ||
-    className === "Uint16Array" ||
-    className === "Uint32Array" ||
-    className === "Uint8ClampedArray" ||
-    className === "Float32Array" ||
-    className === "Float64Array" ||
-    className === "DataView"
-  ) {
-    // In Node, we can use Buffer; in browser, we use the underlying ArrayBuffer
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (typeof Buffer !== "undefined" && Buffer.from) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      return Buffer.from(content.buffer as ArrayBuffer);
-    }
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return content.buffer as ArrayBuffer;
-  }
-
-  // Everything else - serialize to JSON
-  try {
-    return JSON.stringify(content);
-  } catch (error) {
-    throw new Error(
-      `Unable to serialize content: ${error instanceof Error ? error.message : String(error)}`
-    );
-  }
+  // Same rules as the client's own request bodies: raw bodies (string, Blob, FormData,
+  // URLSearchParams, streams, ArrayBuffer and typed-array views) go as-is, and a view sends only
+  // its own bytes (byteOffset/byteLength), never the rest of the underlying buffer (#34).
+  const body = toFetchBody(content);
+  if (body !== undefined) return body;
+  return "";
 }
 
 /**
- * Parse Retry-After header value
- * Supports both seconds (integer) and HTTP-date formats
+ * Parse a `Retry-After` header value: delta-seconds (decimals allowed, e.g. `"1.5"`) or an
+ * HTTP-date. A date in the past gives 0.
  *
  * @param retryAfter - The Retry-After header value
- * @returns Delay in milliseconds, or undefined if invalid
+ * @returns Delay in milliseconds, or undefined if the value is missing or invalid
  *
  * @example
  * ```typescript
  * const delay1 = parseRetryAfter('120'); // 120000 ms (120 seconds)
- * const delay2 = parseRetryAfter('Wed, 21 Oct 2015 07:28:00 GMT'); // milliseconds until that time
+ * const delay2 = parseRetryAfter('1.5'); // 1500 ms
+ * const delay3 = parseRetryAfter('Wed, 21 Oct 2015 07:28:00 GMT'); // milliseconds until that time
  * ```
  */
 export function parseRetryAfter(retryAfter: string | null | undefined): number | undefined {
-  if (!retryAfter) {
+  const value = retryAfter?.trim();
+  if (!value) {
     return undefined;
   }
 
-  // Try parsing as seconds
-  const seconds = parseInt(retryAfter, 10);
-  if (!isNaN(seconds)) {
-    return seconds * 1000;
+  if (/^\d+(\.\d+)?$/.test(value)) {
+    return Math.round(Number(value) * 1000);
   }
 
-  // Try parsing as HTTP-date
-  const date = new Date(retryAfter);
-  if (!isNaN(date.getTime())) {
-    const delay = date.getTime() - Date.now();
-    return Math.max(0, delay);
+  // An HTTP-date always names the day; this keeps strings like "-5" or "12abc" out of Date.parse.
+  if (/[a-z]/i.test(value)) {
+    const date = Date.parse(value);
+    if (!Number.isNaN(date)) {
+      return Math.max(0, date - Date.now());
+    }
   }
 
   return undefined;
@@ -294,6 +252,26 @@ export function headersToObject(headers: Headers): Record<string, string> {
  */
 export function normalizeHeaderKey(key: string): string {
   return key.toLowerCase();
+}
+
+/**
+ * Return a copy of `headers` with every name lower-cased. When two names differ only in case,
+ * the one that comes later in the object wins, so spreading caller headers after defaults keeps
+ * the caller's value. `fetch` would otherwise combine `Content-Type` and `content-type` into one
+ * comma-separated value.
+ *
+ * @example
+ * ```typescript
+ * normalizeHeaders({ "Content-Type": "a", "content-type": "b" }); // { "content-type": "b" }
+ * ```
+ */
+export function normalizeHeaders(
+  headers: Record<string, string> | undefined
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!headers) return out;
+  for (const [key, value] of Object.entries(headers)) out[key.toLowerCase()] = value;
+  return out;
 }
 
 /**

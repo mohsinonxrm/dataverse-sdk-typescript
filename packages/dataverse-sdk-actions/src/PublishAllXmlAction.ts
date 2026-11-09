@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from PublishAllXml action
+ * Response from the PublishAllXml action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PublishAllXmlResponse {
-  // No content returned
-}
+export type PublishAllXmlResponse = void;
 
 /**
  * PublishAllXml action
@@ -20,13 +20,13 @@ export class PublishAllXmlAction implements Executable<PublishAllXmlResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<PublishAllXmlResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<PublishAllXmlResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

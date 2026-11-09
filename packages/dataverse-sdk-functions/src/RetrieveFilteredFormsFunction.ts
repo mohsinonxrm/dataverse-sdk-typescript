@@ -1,11 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { systemform, systemuser } from "./types/index.js";
 
 /**
- * Response from RetrieveFilteredForms function
+ * Response from the RetrieveFilteredForms function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveFilteredFormsResponse {
-  value: systemform[];
+export type RetrieveFilteredFormsResponse = Array<
+  systemform & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
+
+/**
+ * Parameters of the RetrieveFilteredForms function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveFilteredFormsFunctionParameters {
+  EntityLogicalName: string;
+  FormType: number;
+  User: systemuser;
 }
 
 /**
@@ -15,37 +29,29 @@ export interface RetrieveFilteredFormsResponse {
  * Binding parameter: entityset (Collection(mscrm.systemform))
  */
 export class RetrieveFilteredFormsFunction implements Executable<RetrieveFilteredFormsResponse> {
-  constructor(
-    public readonly entityLogicalName: string,
-    public readonly formType: number,
-    public readonly user: systemuser
-  ) {}
+  constructor(public readonly parameters: RetrieveFilteredFormsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/RetrieveFilteredForms`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/systemforms/Microsoft.Dynamics.CRM.RetrieveFilteredForms`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityLogicalName !== undefined) {
+    if (this.parameters.EntityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.entityLogicalName === "string"
-          ? `'${this.entityLogicalName}'`
-          : String(this.entityLogicalName)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.EntityLogicalName, "Edm.String"));
     }
-    if (this.formType !== undefined) {
+    if (this.parameters.FormType !== undefined) {
       aliases.push(`FormType=@p2`);
-      params.append(
-        "@p2",
-        typeof this.formType === "string" ? `'${this.formType}'` : String(this.formType)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.FormType, "Edm.Int32"));
     }
-    if (this.user !== undefined) {
+    if (this.parameters.User !== undefined) {
       aliases.push(`User=@p3`);
-      params.append("@p3", JSON.stringify(this.user));
+      params.append(
+        "@p3",
+        formatParameterAlias(this.parameters.User, "mscrm.systemuser", "EntityType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -61,7 +67,9 @@ export class RetrieveFilteredFormsFunction implements Executable<RetrieveFiltere
   }
 
   async parseResponse(response: Response): Promise<RetrieveFilteredFormsResponse> {
-    const data = await response.json();
-    return data as RetrieveFilteredFormsResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveFilteredFormsResponse }).value;
   }
 }

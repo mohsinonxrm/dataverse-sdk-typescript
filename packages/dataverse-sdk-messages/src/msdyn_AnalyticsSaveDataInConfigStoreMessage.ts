@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_AnalyticsSaveDataInConfigStore message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AnalyticsSaveDataInConfigStoreRequestParameters {
+  Key: string;
+  Value: string;
+  ConfigName?: string;
+}
 
 /**
  * msdyn_AnalyticsSaveDataInConfigStore request message
@@ -10,44 +21,34 @@ export class msdyn_AnalyticsSaveDataInConfigStoreRequest
   extends OrganizationRequest
   implements Executable<msdyn_AnalyticsSaveDataInConfigStoreResponse>
 {
-  constructor(
-    public key: string,
-    public value: string,
-    public configName: string
-  ) {
-    super("msdyn_AnalyticsSaveDataInConfigStore");
+  declare readonly Parameters: Readonly<msdyn_AnalyticsSaveDataInConfigStoreRequestParameters>;
+
+  constructor(parameters: msdyn_AnalyticsSaveDataInConfigStoreRequestParameters) {
+    super("msdyn_AnalyticsSaveDataInConfigStore", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AnalyticsSaveDataInConfigStore`;
 
-    const body: Record<string, unknown> = {
-      Key: this.key,
-      Value: this.value,
-      ConfigName: this.configName,
-    };
+    const body = requestBody({
+      Key: this.Parameters.Key,
+      Value: this.Parameters.Value,
+      ConfigName: this.Parameters.ConfigName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_AnalyticsSaveDataInConfigStoreResponse> {
+  parseResponse(_response: Response): Promise<msdyn_AnalyticsSaveDataInConfigStoreResponse> {
     // No return value (204 No Content)
-    return new msdyn_AnalyticsSaveDataInConfigStoreResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Key: this.key,
-      Value: this.value,
-      ConfigName: this.configName,
-    };
+    return Promise.resolve(new msdyn_AnalyticsSaveDataInConfigStoreResponse());
   }
 }
 
@@ -59,7 +60,7 @@ export class msdyn_AnalyticsSaveDataInConfigStoreResponse extends OrganizationRe
     super("msdyn_AnalyticsSaveDataInConfigStore");
   }
 
-  static fromResponse(_data: unknown): msdyn_AnalyticsSaveDataInConfigStoreResponse {
+  static fromResponse(_data?: unknown): msdyn_AnalyticsSaveDataInConfigStoreResponse {
     return new msdyn_AnalyticsSaveDataInConfigStoreResponse();
   }
 }

@@ -1,6 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_upsertSalesRoutingDiagnostic message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_upsertSalesRoutingDiagnosticRequestParameters {
+  Payload: string;
+  TargetObject: EntityReference | AnyEntityPayload;
+  EventType: number;
+}
 
 /**
  * msdyn_upsertSalesRoutingDiagnostic request message
@@ -11,44 +23,34 @@ export class msdyn_upsertSalesRoutingDiagnosticRequest
   extends OrganizationRequest
   implements Executable<msdyn_upsertSalesRoutingDiagnosticResponse>
 {
-  constructor(
-    public targetObject: EntityReference,
-    public payload: string,
-    public eventType: number
-  ) {
-    super("msdyn_upsertSalesRoutingDiagnostic");
+  declare readonly Parameters: Readonly<msdyn_upsertSalesRoutingDiagnosticRequestParameters>;
+
+  constructor(parameters: msdyn_upsertSalesRoutingDiagnosticRequestParameters) {
+    super("msdyn_upsertSalesRoutingDiagnostic", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_upsertSalesRoutingDiagnostic`;
 
-    const body: Record<string, unknown> = {
-      TargetObject: this.targetObject,
-      Payload: this.payload,
-      EventType: this.eventType,
-    };
+    const body = requestBody({
+      Payload: this.Parameters.Payload,
+      TargetObject: this.Parameters.TargetObject,
+      EventType: this.Parameters.EventType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_upsertSalesRoutingDiagnosticResponse> {
+  parseResponse(_response: Response): Promise<msdyn_upsertSalesRoutingDiagnosticResponse> {
     // No return value (204 No Content)
-    return new msdyn_upsertSalesRoutingDiagnosticResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TargetObject: this.targetObject,
-      Payload: this.payload,
-      EventType: this.eventType,
-    };
+    return Promise.resolve(new msdyn_upsertSalesRoutingDiagnosticResponse());
   }
 }
 
@@ -60,7 +62,7 @@ export class msdyn_upsertSalesRoutingDiagnosticResponse extends OrganizationResp
     super("msdyn_upsertSalesRoutingDiagnostic");
   }
 
-  static fromResponse(_data: unknown): msdyn_upsertSalesRoutingDiagnosticResponse {
+  static fromResponse(_data?: unknown): msdyn_upsertSalesRoutingDiagnosticResponse {
     return new msdyn_upsertSalesRoutingDiagnosticResponse();
   }
 }

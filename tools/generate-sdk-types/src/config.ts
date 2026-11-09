@@ -7,7 +7,7 @@ import { resolve } from "path";
  */
 export const SdkGeneratorConfigSchema = z.object({
   /** Dataverse environment URL */
-  dataverseUrl: z.string().url(),
+  dataverseUrl: z.url(),
 
   /** Azure AD authentication */
   authentication: z.object({
@@ -22,6 +22,16 @@ export const SdkGeneratorConfigSchema = z.object({
       .object({
         enabled: z.boolean().default(true),
         outputPath: z.string().default("../../packages/dataverse-sdk-metadata/src/types"),
+      })
+      .optional(),
+
+    /** The entity sets and primary keys of entities-runtime's `createEntityReference` (#295). */
+    references: z
+      .object({
+        enabled: z.boolean().default(true),
+        outputPath: z
+          .string()
+          .default("../../packages/dataverse-sdk-entities-runtime/src/generated"),
       })
       .optional(),
 

@@ -21,7 +21,7 @@ export class msdyn_OSGetAllOpportunityPredictionModelsRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -29,24 +29,35 @@ export class msdyn_OSGetAllOpportunityPredictionModelsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_OSGetAllOpportunityPredictionModelsResponse> {
-    const data = await response.json();
-    return msdyn_OSGetAllOpportunityPredictionModelsResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_OSGetAllOpportunityPredictionModelsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_OSGetAllOpportunityPredictionModels action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_OSGetAllOpportunityPredictionModelsResult {
+  "@odata.context"?: string;
+  Predictions: string;
+}
+
+/**
  * msdyn_OSGetAllOpportunityPredictionModels response message
+ *
+ * `result` is the value the msdyn_OSGetAllOpportunityPredictionModels action returns (see {@link msdyn_OSGetAllOpportunityPredictionModelsResult}).
  */
 export class msdyn_OSGetAllOpportunityPredictionModelsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_OSGetAllOpportunityPredictionModelsResponse) {
+  constructor(public result: msdyn_OSGetAllOpportunityPredictionModelsResult) {
     super("msdyn_OSGetAllOpportunityPredictionModels");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_OSGetAllOpportunityPredictionModelsResponse {
-    return new msdyn_OSGetAllOpportunityPredictionModelsResponse((data as any).value);
+    return new msdyn_OSGetAllOpportunityPredictionModelsResponse(
+      data as msdyn_OSGetAllOpportunityPredictionModelsResult
+    );
   }
 }

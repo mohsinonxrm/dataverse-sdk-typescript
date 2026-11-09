@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_ForecastRecalculateAll action
+ * Response from the msdyn_ForecastRecalculateAll action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ForecastRecalculateAllResponse {
-  // No content returned
-}
+export type msdyn_ForecastRecalculateAllResponse = void;
 
 /**
  * msdyn_ForecastRecalculateAll action
@@ -20,13 +20,13 @@ export class msdyn_ForecastRecalculateAllAction implements Executable<msdyn_Fore
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ForecastRecalculateAllResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_ForecastRecalculateAllResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAgents_GetAgentStatusAndGenAIConsent action
+ * Response from the msdyn_SalesAgents_GetAgentStatusAndGenAIConsent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse {
+  "@odata.context"?: string;
   ResponseJson: string;
+}
+
+/**
+ * Parameters of the msdyn_SalesAgents_GetAgentStatusAndGenAIConsent action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_GetAgentStatusAndGenAIConsentActionParameters {
+  RequestJson: string;
 }
 
 /**
@@ -13,20 +25,22 @@ export interface msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse {
  * Unbound action
  */
 export class msdyn_SalesAgents_GetAgentStatusAndGenAIConsentAction implements Executable<msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse> {
-  constructor(public readonly requestJson: string) {}
+  constructor(
+    public readonly parameters: msdyn_SalesAgents_GetAgentStatusAndGenAIConsentActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_GetAgentStatusAndGenAIConsent`;
 
-    const body: Record<string, unknown> = {
-      RequestJson: this.requestJson,
-    };
+    const body = requestBody({
+      RequestJson: this.parameters.RequestJson,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -35,7 +49,7 @@ export class msdyn_SalesAgents_GetAgentStatusAndGenAIConsentAction implements Ex
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_SalesAgents_GetAgentStatusAndGenAIConsentResponse;
   }
 }

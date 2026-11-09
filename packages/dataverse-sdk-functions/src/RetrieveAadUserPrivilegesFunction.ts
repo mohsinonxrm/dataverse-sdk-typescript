@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
- * Response from RetrieveAadUserPrivileges function
+ * Response from the RetrieveAadUserPrivileges function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveAadUserPrivilegesResponse {
+  "@odata.context"?: string;
   RolePrivileges: RolePrivilege[];
+}
+
+/**
+ * Parameters of the RetrieveAadUserPrivileges function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAadUserPrivilegesFunctionParameters {
+  DirectoryObjectId: string;
 }
 
 /**
@@ -14,7 +26,7 @@ export interface RetrieveAadUserPrivilegesResponse {
  * Unbound function
  */
 export class RetrieveAadUserPrivilegesFunction implements Executable<RetrieveAadUserPrivilegesResponse> {
-  constructor(public readonly directoryObjectId: string) {}
+  constructor(public readonly parameters: RetrieveAadUserPrivilegesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveAadUserPrivileges`;
@@ -22,14 +34,9 @@ export class RetrieveAadUserPrivilegesFunction implements Executable<RetrieveAad
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.directoryObjectId !== undefined) {
+    if (this.parameters.DirectoryObjectId !== undefined) {
       aliases.push(`DirectoryObjectId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.directoryObjectId === "string"
-          ? `'${this.directoryObjectId}'`
-          : String(this.directoryObjectId)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.DirectoryObjectId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -45,7 +52,7 @@ export class RetrieveAadUserPrivilegesFunction implements Executable<RetrieveAad
   }
 
   async parseResponse(response: Response): Promise<RetrieveAadUserPrivilegesResponse> {
-    const data = await response.json();
-    return data as RetrieveAadUserPrivilegesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveAadUserPrivilegesResponse;
   }
 }

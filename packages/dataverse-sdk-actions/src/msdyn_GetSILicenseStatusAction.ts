@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetSILicenseStatus action
+ * Response from the msdyn_GetSILicenseStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetSILicenseStatusResponse {
+  "@odata.context"?: string;
   SILicenseStatus: string;
 }
 
@@ -20,13 +23,13 @@ export class msdyn_GetSILicenseStatusAction implements Executable<msdyn_GetSILic
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSILicenseStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetSILicenseStatusResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetSILicenseStatusResponse;
   }
 }

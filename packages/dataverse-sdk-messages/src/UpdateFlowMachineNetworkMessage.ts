@@ -1,56 +1,64 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UpdateFlowMachineNetwork message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateFlowMachineNetworkRequestParameters {
+  description?: string;
+  name?: string;
+  extendedproperties?: string;
+}
 
 /**
  * UpdateFlowMachineNetwork request message
  *
  * Web API Action: UpdateFlowMachineNetwork
+ *
+ * The first argument is the id of the flowmachinenetwork record to call it on.
  */
 export class UpdateFlowMachineNetworkRequest
   extends OrganizationRequest
   implements Executable<UpdateFlowMachineNetworkResponse>
 {
+  declare readonly Parameters: Readonly<UpdateFlowMachineNetworkRequestParameters>;
+
   constructor(
     public flowmachinenetworkId: string,
-    public description: string,
-    public extendedproperties: string,
-    public name: string
+    parameters: UpdateFlowMachineNetworkRequestParameters = {}
   ) {
-    super("UpdateFlowMachineNetwork");
+    super("UpdateFlowMachineNetwork", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowmachinenetworks(${this.flowmachinenetworkId})/Microsoft.Dynamics.CRM.UpdateFlowMachineNetwork`;
+    const url = `${baseUrl}/flowmachinenetworks(${odataLiteral.guid(this.flowmachinenetworkId)})/Microsoft.Dynamics.CRM.UpdateFlowMachineNetwork`;
 
-    const body: Record<string, unknown> = {
-      description: this.description,
-      extendedproperties: this.extendedproperties,
-      name: this.name,
-    };
+    const body = requestBody({
+      description: this.Parameters.description,
+      name: this.Parameters.name,
+      extendedproperties: this.Parameters.extendedproperties,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateFlowMachineNetworkResponse> {
+  parseResponse(_response: Response): Promise<UpdateFlowMachineNetworkResponse> {
     // No return value (204 No Content)
-    return new UpdateFlowMachineNetworkResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachinenetworkId,
-      description: this.description,
-      extendedproperties: this.extendedproperties,
-      name: this.name,
-    };
+    return Promise.resolve(new UpdateFlowMachineNetworkResponse());
   }
 }
 
@@ -62,7 +70,7 @@ export class UpdateFlowMachineNetworkResponse extends OrganizationResponse {
     super("UpdateFlowMachineNetwork");
   }
 
-  static fromResponse(_data: unknown): UpdateFlowMachineNetworkResponse {
+  static fromResponse(_data?: unknown): UpdateFlowMachineNetworkResponse {
     return new UpdateFlowMachineNetworkResponse();
   }
 }

@@ -67,15 +67,15 @@ git push
 
 ### 4. Create PR
 
-- CI validates changeset is present
+- PRs into `main`, `release/*` and `support/*` must include a changeset (CI checks it; release-prep `chore/release-*` and forward-merge `merge/*` PRs are exempt). PRs to `dev` aren't checked, but add one whenever the change affects package consumers, so it isn't forgotten at release time
 - Reviewer sees what will be released
 - Merge when approved
 
-### 5. Automated Release (Maintainers Only)
+### 5. Release (Maintainers Only)
 
-- **Automatic:** "Version Packages" PR appears on main
-- **Review:** Check version bumps + CHANGELOG
-- **Merge:** Packages auto-publish to npm
+- A **release-prep PR** (`chore/release-X.Y.Z`) runs `pnpm changeset version`: it bumps all 16 packages, writes the CHANGELOGs and deletes the consumed changesets
+- After it merges, the maintainer pushes the `vX.Y.Z` tag; `release.yml` publishes to npm and creates the GitHub Release
+- See [RELEASING.md](../RELEASING.md)
 
 ---
 
@@ -167,22 +167,35 @@ pnpm changeset publish
 
 ```yaml
 check-changeset:
-  - Validates changeset exists
-  - Skips on release PRs (changeset-release/*)
+  - Validates a changeset exists on PRs into main, release/* and support/*
+  - Skips release-prep (chore/release-*) and forward-merge (merge/*) PRs
+release metadata (scripts/check-release.mjs):
+  - Every published package has one version, and each CHANGELOG's newest section is it
+API reports (pnpm api:check, scripts/check-api-changeset.mjs):
+  - Each packages/<pkg>/etc/<name>.api.md matches the build
+  - On a PR, a changed report needs an added changeset that names the package
 ```
+
+### API Reports and Changesets
+
+The committed API Extractor reports (`packages/<pkg>/etc/<name>.api.md`, all published packages
+but the generated `actions`, `functions` and `messages`) record each package's public API. If
+your change alters one:
+
+1. Run `pnpm build && pnpm api:update` and commit the updated report.
+2. Add a changeset naming that package. The report diff tells you the bump: **major** if the
+   change can break a caller (an export removed or renamed, a type narrowed or widened the wrong
+   way, a new required option), **minor** if it only adds.
+
+CI checks that a changeset names the package; whether the bump is right is checked in review.
+See [CONTRIBUTING.md](../CONTRIBUTING.md#api-reports).
 
 ### Release Automation
 
-`.github/workflows/changeset-version.yml` runs on merge to main:
-
-```yaml
-1. Detects pending changesets
-2. Runs: pnpm changeset version
-   → Bumps package.json
-   → Generates CHANGELOG.md
-3. Creates "Version Packages" PR
-4. On merge → publishes to npm
-```
+`.github/workflows/release.yml` runs when a `vX.Y.Z` tag is pushed (the release-prep PR has
+already run `pnpm changeset version`): it runs every gate, publishes the 16 packages with
+`npm publish --provenance` through trusted publishing, and creates the GitHub Release. Run by hand
+on a branch, it rehearses with `npm publish --dry-run`. See [RELEASING.md](../RELEASING.md).
 
 ---
 
@@ -213,15 +226,18 @@ batches with thousands of requests.
 
 ### Pre-release Versions
 
+Betas and release candidates come from a `release/X.Y` branch in changesets' pre mode (see [RELEASING.md](../RELEASING.md#2-betas-from-releasexy)):
+
 ```bash
-# Publish alpha version
-pnpm changeset --snapshot alpha
-# Creates: @mohsinonxrm/dataverse-sdk-core@1.0.0-alpha.20250115
+pnpm changeset pre enter beta   # once per release branch
+pnpm changeset version          # 2.1.0-beta.0, then beta.1, …; commit it in a release-prep PR
 ```
+
+Tagging the merged commit `v2.1.0-beta.0` publishes it to npm `beta`. `pnpm changeset pre exit` before the stable `pnpm changeset version`.
 
 ### Linked Packages (Always Version Together)
 
-Edit `.changeset/config.json`:
+Not used in this repository: every published package is in the `fixed` group below, so a `linked` group would have no effect. For reference, a linked group in `.changeset/config.json` looks like this:
 
 ```json
 {
@@ -230,6 +246,8 @@ Edit `.changeset/config.json`:
 ```
 
 ### Fixed Packages (Share Version Number)
+
+This repository uses one `fixed` group with every published package listed by name (see `.changeset/config.json`, #313). Add new published packages to it. Because of it, a release bumps every published package to the same version, the highest bump any pending changeset asks for: one `major` changeset for one package makes every package's next version a major. Name only the packages your change affects; their CHANGELOGs get your entry. The generic form looks like this:
 
 ```json
 {
@@ -295,7 +313,7 @@ git commit -m "chore: remove incorrect changeset"
 - Add changesets for internal build script changes
 - Manually edit package.json versions
 - Manually edit CHANGELOG.md
-- Run `changeset version` manually (CI does this)
+- Run `changeset version` in a feature PR (only release-prep PRs do, see RELEASING.md)
 
 ---
 
@@ -308,19 +326,19 @@ A: Whenever you make changes that affect package consumers (API changes, bug fix
 A: Yes! Useful if you have logically separate changes.
 
 **Q: What happens if I forget a changeset?**  
-A: CI will fail with "No changeset detected" message.
+A: On a PR into `main`, `release/*` or `support/*`, CI fails with "No changeset detected". On a PR to `dev` it doesn't, so add one yourself for any consumer-facing change.
 
 **Q: Can I edit a changeset after creating it?**  
 A: Yes - it's just a markdown file in `.changeset/`.
 
-**Q: Who merges the "Version Packages" PR?**  
-A: Maintainers only. Merging triggers npm publish.
+**Q: Who releases?**  
+A: Maintainers only: they merge the release-prep PR and push the `vX.Y.Z` tag, which publishes.
 
 **Q: How do I see what will be released?**  
 A: `pnpm changeset status` shows pending changes.
 
 **Q: Can I preview the CHANGELOG?**  
-A: Run `pnpm changeset version` locally (don't commit).
+A: Run `pnpm changeset version` locally, look at the result, then discard it (`git checkout -- .`). Don't commit it.
 
 ---
 
@@ -328,8 +346,8 @@ A: Run `pnpm changeset version` locally (don't commit).
 
 - [Changesets Docs](https://github.com/changesets/changesets)
 - [SemVer Specification](https://semver.org/)
-- [Our CI Workflows](../../.github/workflows/)
+- [Our CI Workflows](../.github/workflows/)
 
 ---
 
-**Questions?** Ask in #dev-dataverse-sdk channel.
+**Questions?** Open an issue with the **Question** template.

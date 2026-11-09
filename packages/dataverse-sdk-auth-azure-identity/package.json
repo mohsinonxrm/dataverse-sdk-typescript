@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-auth-azure-identity",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Azure Identity authentication provider for Dataverse SDK",
   "publishConfig": {
     "access": "public",
@@ -17,9 +17,10 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    }
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist"
@@ -27,9 +28,9 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
-    "test": "vitest",
+    "test": "vitest run",
     "lint": "eslint src --ext .ts",
-    "type-check": "tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "dataverse",
@@ -40,16 +41,21 @@
   ],
   "author": "Mohsin On xRM",
   "license": "AGPL-3.0-only",
-  "peerDependencies": {
-    "@azure/identity": "^4.0.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*"
   },
+  "peerDependencies": {
+    "@azure/identity": "^4.0.0"
+  },
   "devDependencies": {
-    "@azure/identity": "^4.0.0",
-    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
-    "@types/node": "^20.0.0",
-    "tsup": "^8.0.0",
-    "typescript": "^5.3.0",
-    "vitest": "^1.6.0"
+    "@azure/identity": "^4.14.1",
+    "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
+    "@types/node": "^22.20.5",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
   }
 }

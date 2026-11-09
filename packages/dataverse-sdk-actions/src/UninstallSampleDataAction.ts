@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from UninstallSampleData action
+ * Response from the UninstallSampleData action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UninstallSampleDataResponse {
-  // No content returned
-}
+export type UninstallSampleDataResponse = void;
 
 /**
  * UninstallSampleData action
@@ -20,13 +20,13 @@ export class UninstallSampleDataAction implements Executable<UninstallSampleData
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<UninstallSampleDataResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<UninstallSampleDataResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

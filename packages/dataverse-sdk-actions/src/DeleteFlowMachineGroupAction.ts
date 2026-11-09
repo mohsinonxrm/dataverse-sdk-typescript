@@ -1,36 +1,42 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from DeleteFlowMachineGroup action
+ * Response from the DeleteFlowMachineGroup action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeleteFlowMachineGroupResponse {
-  // No content returned
-}
+export type DeleteFlowMachineGroupResponse = void;
 
 /**
  * DeleteFlowMachineGroup action
  *
  * Bound action
  * Binding parameter: entity (mscrm.flowmachinegroup)
+ *
+ * The first argument is the id of the flowmachinegroup record to call it on.
  */
 export class DeleteFlowMachineGroupAction implements Executable<DeleteFlowMachineGroupResponse> {
   constructor(public readonly flowmachinegroupId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowmachinegroups(${this.flowmachinegroupId})/Microsoft.Dynamics.CRM.DeleteFlowMachineGroup`;
+    const url = `${baseUrl}/flowmachinegroups(${odataLiteral.guid(this.flowmachinegroupId)})/Microsoft.Dynamics.CRM.DeleteFlowMachineGroup`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteFlowMachineGroupResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<DeleteFlowMachineGroupResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

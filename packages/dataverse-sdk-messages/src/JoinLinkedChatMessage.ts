@@ -1,6 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the JoinLinkedChat message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface JoinLinkedChatRequestParameters {
+  TeamsChatId: string;
+  UserId: string;
+  RegardingEntity: EntityReference | AnyEntityPayload;
+}
 
 /**
  * JoinLinkedChat request message
@@ -11,44 +23,34 @@ export class JoinLinkedChatRequest
   extends OrganizationRequest
   implements Executable<JoinLinkedChatResponse>
 {
-  constructor(
-    public teamsChatId: string,
-    public userId: string,
-    public regardingEntity: EntityReference
-  ) {
-    super("JoinLinkedChat");
+  declare readonly Parameters: Readonly<JoinLinkedChatRequestParameters>;
+
+  constructor(parameters: JoinLinkedChatRequestParameters) {
+    super("JoinLinkedChat", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/JoinLinkedChat`;
 
-    const body: Record<string, unknown> = {
-      TeamsChatId: this.teamsChatId,
-      UserId: this.userId,
-      RegardingEntity: this.regardingEntity,
-    };
+    const body = requestBody({
+      TeamsChatId: this.Parameters.TeamsChatId,
+      UserId: this.Parameters.UserId,
+      RegardingEntity: this.Parameters.RegardingEntity,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<JoinLinkedChatResponse> {
+  parseResponse(_response: Response): Promise<JoinLinkedChatResponse> {
     // No return value (204 No Content)
-    return new JoinLinkedChatResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TeamsChatId: this.teamsChatId,
-      UserId: this.userId,
-      RegardingEntity: this.regardingEntity,
-    };
+    return Promise.resolve(new JoinLinkedChatResponse());
   }
 }
 
@@ -60,7 +62,7 @@ export class JoinLinkedChatResponse extends OrganizationResponse {
     super("JoinLinkedChat");
   }
 
-  static fromResponse(_data: unknown): JoinLinkedChatResponse {
+  static fromResponse(_data?: unknown): JoinLinkedChatResponse {
     return new JoinLinkedChatResponse();
   }
 }

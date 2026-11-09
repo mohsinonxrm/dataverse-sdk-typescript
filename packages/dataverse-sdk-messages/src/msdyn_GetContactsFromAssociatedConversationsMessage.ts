@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetContactsFromAssociatedConversations message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetContactsFromAssociatedConversationsRequestParameters {
+  EntityLogicalName: string;
+  RecordId: string;
+  CustomActionInputs?: string;
+}
 
 /**
  * msdyn_GetContactsFromAssociatedConversations request message
@@ -10,28 +21,26 @@ export class msdyn_GetContactsFromAssociatedConversationsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetContactsFromAssociatedConversationsResponse>
 {
-  constructor(
-    public entityLogicalName: string,
-    public recordId: string,
-    public customActionInputs: string
-  ) {
-    super("msdyn_GetContactsFromAssociatedConversations");
+  declare readonly Parameters: Readonly<msdyn_GetContactsFromAssociatedConversationsRequestParameters>;
+
+  constructor(parameters: msdyn_GetContactsFromAssociatedConversationsRequestParameters) {
+    super("msdyn_GetContactsFromAssociatedConversations", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetContactsFromAssociatedConversations`;
 
-    const body: Record<string, unknown> = {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      CustomActionInputs: this.customActionInputs,
-    };
+    const body = requestBody({
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      RecordId: this.Parameters.RecordId,
+      CustomActionInputs: this.Parameters.CustomActionInputs,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -40,28 +49,35 @@ export class msdyn_GetContactsFromAssociatedConversationsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetContactsFromAssociatedConversationsResponse> {
-    const data = await response.json();
-    return msdyn_GetContactsFromAssociatedConversationsResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityLogicalName: this.entityLogicalName,
-      RecordId: this.recordId,
-      CustomActionInputs: this.customActionInputs,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetContactsFromAssociatedConversationsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetContactsFromAssociatedConversations action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetContactsFromAssociatedConversationsResult {
+  "@odata.context"?: string;
+  CustomActionSuggestedUsers: string;
+}
+
+/**
  * msdyn_GetContactsFromAssociatedConversations response message
+ *
+ * `result` is the value the msdyn_GetContactsFromAssociatedConversations action returns (see {@link msdyn_GetContactsFromAssociatedConversationsResult}).
  */
 export class msdyn_GetContactsFromAssociatedConversationsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetContactsFromAssociatedConversationsResponse) {
+  constructor(public result: msdyn_GetContactsFromAssociatedConversationsResult) {
     super("msdyn_GetContactsFromAssociatedConversations");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetContactsFromAssociatedConversationsResponse {
-    return new msdyn_GetContactsFromAssociatedConversationsResponse((data as any).value);
+    return new msdyn_GetContactsFromAssociatedConversationsResponse(
+      data as msdyn_GetContactsFromAssociatedConversationsResult
+    );
   }
 }

@@ -1,12 +1,33 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_RecommendedEmailTemplates action
+ * Response from the msdyn_RecommendedEmailTemplates action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_RecommendedEmailTemplatesResponse {
+  "@odata.context"?: string;
+  emailTemplates: string;
   generatedEmailString: string;
   recommendedTemplate: string;
-  emailTemplates: string;
+}
+
+/**
+ * Parameters of the msdyn_RecommendedEmailTemplates action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RecommendedEmailTemplatesActionParameters {
+  emailString: string;
+  emailContextData?: string;
+  isTemplateResponse?: boolean;
+  templateFiltersInString: string;
+  multiturnPayload?: string;
+  emailId: string;
+  copilotRequestParameters: string;
+  customerIntent: string;
+  filters?: string;
+  transactionId: string;
 }
 
 /**
@@ -15,47 +36,36 @@ export interface msdyn_RecommendedEmailTemplatesResponse {
  * Unbound action
  */
 export class msdyn_RecommendedEmailTemplatesAction implements Executable<msdyn_RecommendedEmailTemplatesResponse> {
-  constructor(
-    public readonly isTemplateResponse: boolean,
-    public readonly emailContextData: string,
-    public readonly emailId: string,
-    public readonly templateFiltersInString: string,
-    public readonly filters: string,
-    public readonly customerIntent: string,
-    public readonly transactionId: string,
-    public readonly emailString: string,
-    public readonly multiturnPayload: string,
-    public readonly copilotRequestParameters: string
-  ) {}
+  constructor(public readonly parameters: msdyn_RecommendedEmailTemplatesActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RecommendedEmailTemplates`;
 
-    const body: Record<string, unknown> = {
-      isTemplateResponse: this.isTemplateResponse,
-      emailContextData: this.emailContextData,
-      emailId: this.emailId,
-      templateFiltersInString: this.templateFiltersInString,
-      filters: this.filters,
-      customerIntent: this.customerIntent,
-      transactionId: this.transactionId,
-      emailString: this.emailString,
-      multiturnPayload: this.multiturnPayload,
-      copilotRequestParameters: this.copilotRequestParameters,
-    };
+    const body = requestBody({
+      emailString: this.parameters.emailString,
+      emailContextData: this.parameters.emailContextData,
+      isTemplateResponse: this.parameters.isTemplateResponse,
+      templateFiltersInString: this.parameters.templateFiltersInString,
+      multiturnPayload: this.parameters.multiturnPayload,
+      emailId: this.parameters.emailId,
+      copilotRequestParameters: this.parameters.copilotRequestParameters,
+      customerIntent: this.parameters.customerIntent,
+      filters: this.parameters.filters,
+      transactionId: this.parameters.transactionId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_RecommendedEmailTemplatesResponse> {
-    const data = await response.json();
-    return data as msdyn_RecommendedEmailTemplatesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_RecommendedEmailTemplatesResponse;
   }
 }

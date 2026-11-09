@@ -1,4 +1,31 @@
+/**
+ * Portions of this file are adapted from dataverse-gen by Scott Durow
+ * (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, licensed under
+ * the MIT License. See THIRD_PARTY_NOTICES.md in this package for the notice.
+ */
+
 import type { DataverseGenConfig } from "./types.js";
+
+/** How many times a metadata request is tried before its error is thrown. */
+const ATTEMPTS = 5;
+
+/** Delays between tries, in ms (the last one repeats); a Retry-After header takes precedence. */
+const BACKOFF_MS = [2_000, 4_000, 8_000, 16_000];
+
+/** Waits `ms`. Replaceable in tests. */
+export type MetadataServiceSleep = (ms: number) => Promise<void>;
+
+const defaultSleep: MetadataServiceSleep = (ms) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Seconds or an HTTP date in a Retry-After header, as ms; undefined when absent or unreadable. */
+function retryAfterMs(header: string | null): number | undefined {
+  if (!header) return undefined;
+  const seconds = Number(header);
+  if (Number.isFinite(seconds)) return Math.max(0, seconds * 1000);
+  const date = Date.parse(header);
+  return Number.isNaN(date) ? undefined : Math.max(0, date - Date.now());
+}
 
 /**
  * Service for retrieving metadata from Dataverse
@@ -6,6 +33,8 @@ import type { DataverseGenConfig } from "./types.js";
 export class MetadataService {
   private baseUrl: string;
   private accessToken?: string;
+  /** Waits between retries (tests replace it). */
+  sleep: MetadataServiceSleep = defaultSleep;
 
   constructor(
     private config: DataverseGenConfig,
@@ -38,11 +67,15 @@ export class MetadataService {
       headers.Authorization = `Bearer ${this.accessToken}`;
     }
 
-    const response = await fetch(url, { headers });
+    // $metadata takes no parameters, so a 400 can't be the caller's mistake: an org whose schema
+    // is changing has answered 400 for a few seconds while it rebuilds the document. Retry it,
+    // with 429 and 5xx.
+    const response = await this.fetchWithRetry(url, { headers }, (status) => status === 400);
 
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch $metadata: ${String(response.status)} ${response.statusText}`
+        `Failed to fetch $metadata: ${String(response.status)} ${response.statusText}
+${await response.text()}`
       );
     }
 
@@ -53,12 +86,69 @@ export class MetadataService {
    * Retrieve entity metadata via RetrieveMetadataChanges for a single entity
    * Used to enrich CSDL data with detailed attribute information
    * Reference: scottdurow/dataverse-gen MetadataService.ts#L47-L79
+   *
+   * RetrieveMetadataChanges is a function, so it is called with GET and the query is passed as
+   * a parameter alias: `RetrieveMetadataChanges(Query=@q)?@q={...}`.
    */
   async getEntityMetadata(logicalName: string): Promise<RetrieveMetadataChangesResponse> {
-    const url = `${this.baseUrl}/RetrieveMetadataChanges`;
+    const query = {
+      Criteria: {
+        Conditions: [
+          {
+            PropertyName: "LogicalName",
+            ConditionOperator: "Equals",
+            Value: {
+              Value: logicalName,
+              Type: "System.String",
+            },
+          },
+        ],
+        FilterOperator: "And",
+      },
+      Properties: {
+        PropertyNames: [
+          "Attributes",
+          "SchemaName",
+          "EntitySetName",
+          "Keys",
+          "PrimaryIdAttribute",
+          "PrimaryNameAttribute",
+        ],
+      },
+      AttributeQuery: {
+        Properties: {
+          PropertyNames: [
+            "SchemaName",
+            "LogicalName",
+            "OptionSet",
+            "RequiredLevel",
+            "AttributeType",
+            "AttributeTypeName",
+            "SourceType",
+            "Targets",
+            "DisplayName",
+            "Description",
+            "AttributeOf",
+            "DateTimeBehavior",
+            "Format",
+            "MaxLength",
+            "MinValue",
+            "MaxValue",
+            "Precision",
+            "IsPrimaryId",
+            "IsPrimaryName",
+            "IsValidForRead",
+            "IsValidForCreate",
+            "IsValidForUpdate",
+            "IsValidForAdvancedFind",
+          ],
+        },
+      },
+    };
+
+    const url = `${this.baseUrl}/RetrieveMetadataChanges(Query=@q)?@q=${encodeURIComponent(JSON.stringify(query))}`;
 
     const headers: Record<string, string> = {
-      "Content-Type": "application/json",
       Accept: "application/json",
       "OData-MaxVersion": "4.0",
       "OData-Version": "4.0",
@@ -68,60 +158,8 @@ export class MetadataService {
       headers.Authorization = `Bearer ${this.accessToken}`;
     }
 
-    const body = {
-      Query: {
-        Criteria: {
-          Conditions: [
-            {
-              PropertyName: "LogicalName",
-              ConditionOperator: 0, // Equals
-              Value: {
-                Value: logicalName,
-                Type: "System.String",
-              },
-            },
-          ],
-          FilterOperator: 0, // And
-        },
-        Properties: {
-          PropertyNames: ["Attributes", "SchemaName", "EntitySetName", "Keys"],
-        },
-        AttributeQuery: {
-          Properties: {
-            PropertyNames: [
-              "SchemaName",
-              "LogicalName",
-              "OptionSet",
-              "RequiredLevel",
-              "AttributeType",
-              "AttributeTypeName",
-              "SourceType",
-              "Targets",
-              "DisplayName",
-              "Description",
-              "AttributeOf",
-              "DateTimeBehavior",
-              "Format",
-              "MaxLength",
-              "Precision",
-              "IsPrimaryId",
-              "IsPrimaryName",
-              "IsValidForRead",
-              "IsValidForCreate",
-              "IsValidForUpdate",
-              "IsValidForAdvancedFind",
-            ],
-          },
-        },
-      },
-      DeletedMetadataFilters: "Default",
-    };
-
-    const response = await fetch(url, {
-      method: "POST",
-      headers,
-      body: JSON.stringify(body),
-    });
+    // A 400 here is a query Dataverse refuses: not retried. 429, 5xx and dropped connections are.
+    const response = await this.fetchWithRetry(url, { method: "GET", headers }, () => false);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -132,6 +170,34 @@ export class MetadataService {
 
     const result = await response.json();
     return result as RetrieveMetadataChangesResponse;
+  }
+
+  /**
+   * `fetch`, tried up to {@link ATTEMPTS} times: again after a dropped connection, a 429, a 5xx,
+   * or a status `retryAlso` accepts, waiting {@link BACKOFF_MS} (or Retry-After) in between.
+   * Returns the last response; throws the last network error.
+   */
+  private async fetchWithRetry(
+    url: string,
+    init: RequestInit,
+    retryAlso: (status: number) => boolean
+  ): Promise<Response> {
+    for (let attempt = 1; ; attempt++) {
+      const delay = BACKOFF_MS[Math.min(attempt - 1, BACKOFF_MS.length - 1)] ?? 0;
+      let response: Response;
+      try {
+        response = await fetch(url, init);
+      } catch (error) {
+        if (attempt >= ATTEMPTS) throw error;
+        await this.sleep(delay);
+        continue;
+      }
+      const retryable =
+        response.status === 429 || response.status >= 500 || retryAlso(response.status);
+      if (response.ok || !retryable || attempt >= ATTEMPTS) return response;
+      await response.body?.cancel().catch(() => undefined);
+      await this.sleep(retryAfterMs(response.headers.get("retry-after")) ?? delay);
+    }
   }
 }
 
@@ -161,6 +227,10 @@ export interface EntityMetadataDetail {
   MetadataId?: string;
 }
 
+/** `RequiredLevel.Value` as the Web API sends it (the enum member name). */
+export type AttributeRequiredLevel =
+  "None" | "SystemRequired" | "ApplicationRequired" | "Recommended";
+
 /**
  * Detailed attribute metadata
  */
@@ -170,7 +240,12 @@ export interface AttributeMetadataDetail {
   AttributeType?: string;
   AttributeTypeName?: { Value?: string };
   SourceType?: number; // 0 = simple, 1 = calculated, 2 = rollup
-  RequiredLevel?: { Value?: number; CanBeChanged?: boolean; ManagedPropertyLogicalName?: string };
+  /** The Web API sends the AttributeRequiredLevel member name, not a number. */
+  RequiredLevel?: {
+    Value?: AttributeRequiredLevel;
+    CanBeChanged?: boolean;
+    ManagedPropertyLogicalName?: string;
+  };
   AttributeOf?: string; // For 'virtual' attributes that reference a base attribute
   IsPrimaryId?: boolean;
   IsPrimaryName?: boolean;
@@ -189,6 +264,9 @@ export interface AttributeMetadataDetail {
   Format?: string;
   // String-specific
   MaxLength?: number;
+  // Number-specific (Integer, BigInt, Decimal, Double, Money)
+  MinValue?: number;
+  MaxValue?: number;
   // Decimal/Money-specific
   Precision?: number;
   // Additional type-specific metadata can be added as needed

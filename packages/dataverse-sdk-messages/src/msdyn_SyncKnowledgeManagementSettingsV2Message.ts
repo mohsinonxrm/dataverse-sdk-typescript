@@ -21,20 +21,14 @@ export class msdyn_SyncKnowledgeManagementSettingsV2Request
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_SyncKnowledgeManagementSettingsV2Response> {
+  parseResponse(_response: Response): Promise<msdyn_SyncKnowledgeManagementSettingsV2Response> {
     // No return value (204 No Content)
-    return new msdyn_SyncKnowledgeManagementSettingsV2Response();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    return Promise.resolve(new msdyn_SyncKnowledgeManagementSettingsV2Response());
   }
 }
 
@@ -46,7 +40,7 @@ export class msdyn_SyncKnowledgeManagementSettingsV2Response extends Organizatio
     super("msdyn_SyncKnowledgeManagementSettingsV2");
   }
 
-  static fromResponse(_data: unknown): msdyn_SyncKnowledgeManagementSettingsV2Response {
+  static fromResponse(_data?: unknown): msdyn_SyncKnowledgeManagementSettingsV2Response {
     return new msdyn_SyncKnowledgeManagementSettingsV2Response();
   }
 }

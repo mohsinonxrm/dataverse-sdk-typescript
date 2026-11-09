@@ -13,10 +13,12 @@
  * 3. Copy .env.example to .env and configure
  */
 
+import { randomBytes } from "node:crypto";
+import { crc32, deflateSync } from "node:zlib";
 import { config } from "dotenv";
 import chalk from "chalk";
 import { ConfidentialClientApplication } from "@azure/msal-node";
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, DataverseError, odata } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
 import {
@@ -29,22 +31,52 @@ import {
   InitializeFileBlocksUploadAction,
   UploadBlockAction,
   CommitFileBlocksUploadAction,
+  createEntityReference,
 } from "@mohsinonxrm/dataverse-sdk-actions";
 
 config();
 
-// Validation
-if (
-  !process.env.AZURE_CLIENT_ID ||
-  !process.env.AZURE_TENANT_ID ||
-  !process.env.AZURE_CLIENT_SECRET ||
-  !process.env.DATAVERSE_URL
-) {
-  console.error(
-    chalk.red("Missing required environment variables. Copy .env.example to .env and configure.")
-  );
+/** The connection settings: AZURE_* (this sample's names) or DATAVERSE_* (the live CI's names). */
+function loadSettings(): {
+  clientId: string;
+  tenantId: string;
+  clientSecret: string;
+  dataverseUrl: string;
+} {
+  const setting = (...names: string[]): string | undefined =>
+    names.map((name) => process.env[name]).find(Boolean);
+  const clientId = setting("AZURE_CLIENT_ID", "DATAVERSE_CLIENT_ID");
+  const tenantId = setting("AZURE_TENANT_ID", "DATAVERSE_TENANT_ID");
+  const clientSecret = setting("AZURE_CLIENT_SECRET", "DATAVERSE_CLIENT_SECRET");
+  const dataverseUrl = setting("DATAVERSE_URL");
+
+  if (!clientId || !tenantId || !clientSecret || !dataverseUrl) {
+    console.error(
+      chalk.red("Missing required environment variables. Copy .env.example to .env and configure.")
+    );
+    console.error(
+      chalk.yellow(
+        "Needs AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_CLIENT_SECRET (or DATAVERSE_CLIENT_ID, " +
+          "DATAVERSE_TENANT_ID, DATAVERSE_CLIENT_SECRET) and DATAVERSE_URL."
+      )
+    );
+    process.exit(1);
+  }
+  return { clientId, tenantId, clientSecret, dataverseUrl };
+}
+
+const settings = loadSettings();
+
+/**
+ * Every record this run creates is named `sdk-sample-<tag> ...`, so cleanup can find them all.
+ * SAMPLE_RUN_TAG sets the tag (lowercase letters and digits); otherwise it's random.
+ */
+const runTag = process.env.SAMPLE_RUN_TAG ?? randomBytes(3).toString("hex");
+if (!/^[a-z0-9]{1,10}$/.test(runTag)) {
+  console.error(chalk.red("SAMPLE_RUN_TAG must be 1 to 10 lowercase letters or digits."));
   process.exit(1);
 }
+const runId = `sdk-sample-${runTag}`;
 
 // Track created entities for cleanup
 const createdRecords = {
@@ -53,6 +85,11 @@ const createdRecords = {
   opportunities: [] as string[],
   leads: [] as string[],
 };
+
+/** The message of a caught error (anything can be thrown). */
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 /**
  * Demo 1: WhoAmI Function (GET)
@@ -88,19 +125,19 @@ async function createMultipleDemo(client: DataverseClient): Promise<void> {
   const accounts = [
     {
       "@odata.type": "Microsoft.Dynamics.CRM.account",
-      name: "Bulk Account 1",
+      name: `${runId} Bulk Account 1`,
       accountnumber: "BULK-001",
       revenue: 100000,
     },
     {
       "@odata.type": "Microsoft.Dynamics.CRM.account",
-      name: "Bulk Account 2",
+      name: `${runId} Bulk Account 2`,
       accountnumber: "BULK-002",
       revenue: 150000,
     },
     {
       "@odata.type": "Microsoft.Dynamics.CRM.account",
-      name: "Bulk Account 3",
+      name: `${runId} Bulk Account 3`,
       accountnumber: "BULK-003",
       revenue: 200000,
     },
@@ -109,7 +146,7 @@ async function createMultipleDemo(client: DataverseClient): Promise<void> {
   console.log(`Creating ${String(accounts.length)} accounts with CreateMultiple...`);
   const startTime = Date.now();
 
-  const createMultiple = new CreateMultipleAction(accounts);
+  const createMultiple = new CreateMultipleAction("accounts", { Targets: accounts });
 
   const result = await client.execute(createMultiple);
   const duration = Date.now() - startTime;
@@ -158,7 +195,7 @@ async function updateMultipleDemo(client: DataverseClient): Promise<void> {
   console.log(`Updating ${String(updates.length)} accounts with UpdateMultiple...`);
   const startTime = Date.now();
 
-  const updateMultiple = new UpdateMultipleAction(updates);
+  const updateMultiple = new UpdateMultipleAction("accounts", { Targets: updates });
 
   await client.execute(updateMultiple);
   const duration = Date.now() - startTime;
@@ -181,17 +218,19 @@ async function updateMultipleDemo(client: DataverseClient): Promise<void> {
 async function upsertMultipleDemo(client: DataverseClient): Promise<void> {
   console.log(chalk.cyan("\n━━━ Demo 4: UpsertMultiple Action (Bulk Upsert) ━━━\n"));
 
+  // The account numbers carry the run tag, so the query below finds only this run's rows
+  const upsertNumbers = [`${runTag}-UPSERT-1`, `${runTag}-UPSERT-2`];
   const accounts = [
     {
       "@odata.type": "Microsoft.Dynamics.CRM.account",
-      accountnumber: "UPSERT-001", // Alternate key
-      name: "Upsert Account 1",
+      accountnumber: upsertNumbers[0], // Alternate key
+      name: `${runId} Upsert Account 1`,
       revenue: 300000,
     },
     {
       "@odata.type": "Microsoft.Dynamics.CRM.account",
-      accountnumber: "UPSERT-002",
-      name: "Upsert Account 2",
+      accountnumber: upsertNumbers[1],
+      name: `${runId} Upsert Account 2`,
       revenue: 350000,
     },
   ];
@@ -199,7 +238,7 @@ async function upsertMultipleDemo(client: DataverseClient): Promise<void> {
   console.log(`Upserting ${String(accounts.length)} accounts (first run - creates)...`);
   let startTime = Date.now();
 
-  const upsertMultiple1 = new UpsertMultipleAction(accounts);
+  const upsertMultiple1 = new UpsertMultipleAction("accounts", { Targets: accounts });
 
   await client.execute(upsertMultiple1);
   let duration = Date.now() - startTime;
@@ -215,7 +254,7 @@ async function upsertMultipleDemo(client: DataverseClient): Promise<void> {
 
   startTime = Date.now();
 
-  const upsertMultiple2 = new UpsertMultipleAction(accounts);
+  const upsertMultiple2 = new UpsertMultipleAction("accounts", { Targets: accounts });
 
   await client.execute(upsertMultiple2);
   duration = Date.now() - startTime;
@@ -228,7 +267,7 @@ async function upsertMultipleDemo(client: DataverseClient): Promise<void> {
   // Query to get IDs for cleanup
   const retrievedAccounts = await client
     .api("/accounts")
-    .filter(`accountnumber eq 'UPSERT-001' or accountnumber eq 'UPSERT-002'`)
+    .filter(odata.or(...upsertNumbers.map((n) => odata.eq("accountnumber", n))))
     .select("accountid")
     .get<{ value: Array<{ accountid: string }> }>();
 
@@ -272,14 +311,18 @@ async function executeWorkflowDemo(client: DataverseClient): Promise<void> {
     `Executing workflow ${chalk.dim(workflowId.substring(0, 8) + "...")} on account ${chalk.dim(targetAccount.substring(0, 8) + "...")}`
   );
 
-  const executeWorkflow = new ExecuteWorkflowAction(workflowId, targetAccount, {
-    Arguments: { Count: 0, IsReadOnly: false, Keys: [], Values: [] },
+  const executeWorkflow = new ExecuteWorkflowAction(workflowId, {
+    EntityId: targetAccount,
+    InputArguments: {
+      Arguments: { Count: 0, IsReadOnly: false, Keys: [], Values: [] },
+    },
   });
 
   const result = await client.execute(executeWorkflow);
 
   console.log(chalk.green("✓ Workflow execution initiated"));
-  console.log(`  Async Operation ID: ${chalk.yellow(result.value.asyncoperationid)}`);
+  // The asyncoperation record, or null if the Web API answered 204 No Content
+  console.log(`  Async Operation ID: ${chalk.yellow(result?.asyncoperationid ?? "")}`);
   console.log(chalk.dim("\nℹ️  Monitor workflow execution in Settings > System Jobs"));
 }
 
@@ -295,13 +338,14 @@ async function winOpportunityDemo(client: DataverseClient): Promise<void> {
 
   // Create test opportunity first
   console.log("Creating test opportunity...");
-  const opportunity = await client.api("/opportunities").post<{ opportunityid: string }>({
-    name: "Test Opportunity for Win",
+  // createAndGetId reads the new record's id from the OData-EntityId header
+  const opportunityId = await client.api("/opportunities").createAndGetId({
+    name: `${runId} Test Opportunity for Win`,
     estimatedvalue: 50000,
-    estimatedclosedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+    // A date-only column (Edm.Date): 30 days from now, yyyy-mm-dd
+    estimatedclosedate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
   });
 
-  const opportunityId = opportunity.opportunityid;
   createdRecords.opportunities.push(opportunityId);
 
   console.log(`  Created: ${chalk.dim(opportunityId.substring(0, 8) + "...")}`);
@@ -309,16 +353,18 @@ async function winOpportunityDemo(client: DataverseClient): Promise<void> {
   // Win the opportunity
   console.log("\nWinning the opportunity...");
 
-  const opportunityClose: Record<string, unknown> = {
+  const opportunityClose = {
     "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
-    subject: "Won: Test Opportunity",
+    subject: `${runId} Won: Test Opportunity`,
     "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
     actualrevenue: 52000, // Can be different from estimated
     actualend: new Date().toISOString(),
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const winOpp = new WinOpportunityAction(opportunityClose as any, "", 3); // 3 = Won status, '' = system caller
+  const winOpp = new WinOpportunityAction({
+    OpportunityClose: opportunityClose,
+    Status: 3,
+  }); // 3 = Won; Caller is left out (the calling user)
 
   await client.execute(winOpp);
 
@@ -329,18 +375,19 @@ async function winOpportunityDemo(client: DataverseClient): Promise<void> {
   // Verify state change
   const updated = await client
     .api(`/opportunities(${opportunityId})`)
-    .select("name", "statecode", "statuscode", "actualrevenue")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .get<any>();
+    .select("name", "statecode", "statuscode", "actualvalue")
+    .get<{
+      name: string;
+      statecode: number;
+      statuscode: number;
+      actualvalue: number | null;
+    }>();
 
   console.log("\nVerified state:");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   console.log(`  State Code: ${chalk.yellow(String(updated.statecode))} (Won)`);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   console.log(`  Status Code: ${chalk.yellow(String(updated.statuscode))}`);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   console.log(
-    `  Actual Revenue: ${chalk.green("$" + String(updated.actualrevenue?.toLocaleString()))}`
+    `  Actual Revenue: ${chalk.green("$" + String(updated.actualvalue?.toLocaleString()))}`
   );
 }
 
@@ -356,53 +403,45 @@ async function mergeDemo(client: DataverseClient): Promise<void> {
   // Create two test accounts
   console.log("Creating two accounts for merge...");
 
-  const account1 = await client.api("/accounts").post<{ accountid: string; name: string }>({
-    name: "Merge Target Account",
+  const targetName = `${runId} Merge Target Account`;
+  const targetId = await client.api("/accounts").createAndGetId({
+    name: targetName,
     accountnumber: "MERGE-TARGET",
     revenue: 500000,
     description: "This account will survive the merge",
   });
+  createdRecords.accounts.push(targetId);
 
-  const account2 = await client.api("/accounts").post<{ accountid: string; name: string }>({
-    name: "Merge Subordinate Account",
+  const subordinateName = `${runId} Merge Subordinate Account`;
+  const subordinateId = await client.api("/accounts").createAndGetId({
+    name: subordinateName,
     accountnumber: "MERGE-SUB",
     revenue: 300000,
     description: "This account will be merged into target",
   });
-
-  const targetId = account1.accountid;
-  const subordinateId = account2.accountid;
-
-  createdRecords.accounts.push(targetId); // Only track target (subordinate will be deleted)
+  // Merge deactivates the subordinate; it doesn't delete it, so cleanup deletes it
+  createdRecords.accounts.push(subordinateId);
 
   console.log(
-    `  Target: ${chalk.green(account1.name)} (${chalk.dim(targetId.substring(0, 8) + "...")})`
+    `  Target: ${chalk.green(targetName)} (${chalk.dim(targetId.substring(0, 8) + "...")})`
   );
   console.log(
-    `  Subordinate: ${chalk.yellow(account2.name)} (${chalk.dim(subordinateId.substring(0, 8) + "...")})`
+    `  Subordinate: ${chalk.yellow(subordinateName)} (${chalk.dim(subordinateId.substring(0, 8) + "...")})`
   );
 
   // Merge subordinate into target
   console.log("\nMerging accounts...");
 
-  const merge = new MergeAction(
-    {
-      "@odata.type": "Microsoft.Dynamics.CRM.EntityReference",
-      logicalName: "account",
-      id: targetId,
+  const merge = new MergeAction({
+    Target: createEntityReference("account", targetId),
+    Subordinate: createEntityReference("account", subordinateId),
+    // The target's new column values, as an entity payload
+    UpdateContent: {
+      "@odata.type": "Microsoft.Dynamics.CRM.account",
+      revenue: 800000,
     },
-    {
-      "@odata.type": "Microsoft.Dynamics.CRM.EntityReference",
-      logicalName: "account",
-      id: subordinateId,
-    },
-    {
-      "@odata.type": "Microsoft.Dynamics.CRM.EntityReference",
-      logicalName: "account",
-      id: targetId,
-    },
-    false
-  );
+    PerformParentingChecks: false,
+  });
 
   await client.execute(merge);
 
@@ -412,31 +451,67 @@ async function mergeDemo(client: DataverseClient): Promise<void> {
   const merged = await client
     .api(`/accounts(${targetId})`)
     .select("name", "accountnumber", "revenue", "description")
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .get<any>();
+    .get<{
+      name: string;
+      accountnumber: string | null;
+      revenue: number | null;
+      description: string | null;
+    }>();
 
   console.log("\nMerged account:");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   console.log(`  Name: ${chalk.green(merged.name)}`);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   console.log(
     `  Revenue: ${chalk.green("$" + String(merged.revenue?.toLocaleString()))} (updated)`
   );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  console.log(`  Description: ${chalk.dim(merged.description)}`);
+  console.log(`  Description: ${chalk.dim(merged.description ?? "")}`);
 
-  // Verify subordinate deleted
-  try {
-    await client.api(`/accounts(${subordinateId})`).get();
-    console.log(chalk.red("✗ Subordinate account still exists (unexpected)"));
-  } catch (error: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((error as any).statusCode === 404) {
-      console.log(chalk.green("✓ Subordinate account deleted"));
-    }
+  // Verify subordinate deactivated
+  const subordinate = await client
+    .api(`/accounts(${subordinateId})`)
+    .select("statecode")
+    .get<{ statecode: number }>();
+  if (subordinate.statecode !== 1) {
+    throw new Error(
+      `The subordinate account is still active (statecode ${String(subordinate.statecode)})`
+    );
   }
+  console.log(chalk.green("✓ Subordinate account deactivated"));
 
-  console.log(chalk.dim("\nℹ️  Merge moves all related records to target and deletes subordinate"));
+  console.log(
+    chalk.dim("\nℹ️  Merge moves all related records to target and deactivates subordinate")
+  );
+}
+
+/**
+ * A size x size RGB PNG of pseudo-random pixels. Noise doesn't compress, so the file is about
+ * size * size * 3 bytes: big enough to upload in more than one block.
+ */
+function noisePng(size: number): Buffer {
+  const rows = new Uint8Array(size * (size * 3 + 1));
+  let seed = 42;
+  for (let i = 0; i < rows.length; i++) {
+    // Each row starts with filter type 0 (none); the rest are pixel bytes
+    seed = (Math.imul(seed, 1103515245) + 12345) >>> 0;
+    rows[i] = i % (size * 3 + 1) === 0 ? 0 : seed >>> 24;
+  }
+  const chunk = (type: string, data: Uint8Array): Buffer => {
+    const out = Buffer.alloc(12 + data.length);
+    out.writeUInt32BE(data.length, 0);
+    out.write(type, 4, "ascii");
+    out.set(data, 8);
+    out.writeUInt32BE(crc32(out.subarray(4, 8 + data.length)), 8 + data.length);
+    return out;
+  };
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(size, 0);
+  header.writeUInt32BE(size, 4);
+  header.set([8, 2, 0, 0, 0], 8); // 8-bit RGB
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    chunk("IHDR", header),
+    chunk("IDAT", deflateSync(rows)),
+    chunk("IEND", new Uint8Array(0)),
+  ]);
 }
 
 /**
@@ -459,10 +534,10 @@ async function fileOperationsDemo(client: DataverseClient): Promise<void> {
 
   const targetAccount = createdRecords.accounts[0];
 
-  // Create sample file data (simulate 8MB file)
-  const fileSize = 8 * 1024 * 1024; // 8MB
-  const fileData = Buffer.alloc(fileSize, "A"); // Fill with 'A'
-  const fileName = "test-document.txt";
+  // Sample file data: an image column takes only a real image, so make a ~5 MB PNG
+  const fileData = noisePng(1300);
+  const fileSize = fileData.length;
+  const fileName = "sample-image.png";
 
   console.log(
     `Uploading file: ${chalk.cyan(fileName)} (${chalk.yellow((fileSize / 1024 / 1024).toFixed(2) + " MB")})`
@@ -471,15 +546,11 @@ async function fileOperationsDemo(client: DataverseClient): Promise<void> {
   // Step 1: Initialize upload
   console.log("\n1. Initializing file upload...");
 
-  const initialize = new InitializeFileBlocksUploadAction(
-    {
-      "@odata.type": "Microsoft.Dynamics.CRM.EntityReference",
-      logicalName: "account",
-      id: targetAccount,
-    },
-    fileName,
-    "entityimage" // Standard image column
-  );
+  const initialize = new InitializeFileBlocksUploadAction({
+    Target: createEntityReference("account", targetAccount),
+    FileName: fileName,
+    FileAttributeName: "entityimage",
+  });
 
   const initResult = await client.execute(initialize);
 
@@ -503,11 +574,11 @@ async function fileOperationsDemo(client: DataverseClient): Promise<void> {
 
     blockIds.push(blockId);
 
-    const uploadBlock = new UploadBlockAction(
-      blockId,
-      blockData.toString("base64"),
-      initResult.FileContinuationToken
-    );
+    const uploadBlock = new UploadBlockAction({
+      BlockId: blockId,
+      BlockData: blockData.toString("base64"),
+      FileContinuationToken: initResult.FileContinuationToken,
+    });
 
     await client.execute(uploadBlock);
 
@@ -520,12 +591,12 @@ async function fileOperationsDemo(client: DataverseClient): Promise<void> {
   // Step 3: Commit upload
   console.log("\n3. Committing file upload...");
 
-  const commit = new CommitFileBlocksUploadAction(
-    fileName,
-    "image/png", // mimeType
-    blockIds,
-    initResult.FileContinuationToken
-  );
+  const commit = new CommitFileBlocksUploadAction({
+    FileName: fileName,
+    MimeType: "image/png",
+    BlockList: blockIds,
+    FileContinuationToken: initResult.FileContinuationToken,
+  });
 
   await client.execute(commit);
 
@@ -536,63 +607,73 @@ async function fileOperationsDemo(client: DataverseClient): Promise<void> {
 /**
  * Cleanup - Delete all created test records
  */
-async function cleanup(client: DataverseClient): Promise<void> {
+async function cleanup(client: DataverseClient): Promise<boolean> {
   console.log(chalk.cyan("\n━━━ Cleanup ━━━\n"));
 
   let deletedCount = 0;
+  let ok = true;
 
-  // Delete opportunities (closes related opportunityclose records)
-  for (const id of createdRecords.opportunities) {
-    try {
-      await client.api(`/opportunities(${id})`).delete();
-      deletedCount++;
-      console.log(
-        `${chalk.green("✓")} Deleted opportunity ${chalk.dim(id.substring(0, 8) + "...")}`
-      );
-    } catch (error: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/restrict-template-expressions
-      const errorMessage = (error as any).message as string;
-      console.log(`${chalk.red("\u2717")} Failed to delete opportunity: ${errorMessage}`);
+  // Opportunities first (deleting one deletes its opportunityclose records), then the rest. Each
+  // set's tracked ids, then any row named with this run's id that is still there: the upserted
+  // accounts, and anything a failed demo created but didn't track.
+  const tables = [
+    {
+      set: "opportunities",
+      label: "opportunity",
+      ids: createdRecords.opportunities,
+      key: "opportunityid",
+      nameColumn: "name",
+    },
+    {
+      set: "accounts",
+      label: "account",
+      ids: createdRecords.accounts,
+      key: "accountid",
+      nameColumn: "name",
+    },
+    { set: "contacts", label: "contact", ids: createdRecords.contacts, key: "contactid" },
+    { set: "leads", label: "lead", ids: createdRecords.leads, key: "leadid" },
+  ];
+
+  for (const { set, label, ids, key, nameColumn } of tables) {
+    const toDelete = new Set(ids);
+    if (nameColumn) {
+      try {
+        const rows = await client
+          .api(`/${set}`)
+          .select(key)
+          .filter(odata.startsWith(nameColumn, runId))
+          .getAll<Record<string, string>>();
+        for (const row of rows) toDelete.add(row[key]);
+      } catch (error: unknown) {
+        ok = false;
+        console.log(
+          `${chalk.red("✗")} Failed to look for this run's ${set}: ${errorMessage(error)}`
+        );
+      }
+    }
+    for (const id of toDelete) {
+      try {
+        await client.api(`/${set}(${id})`).delete();
+        deletedCount++;
+        console.log(
+          `${chalk.green("✓")} Deleted ${label} ${chalk.dim(id.substring(0, 8) + "...")}`
+        );
+      } catch (error: unknown) {
+        // Already gone counts as deleted
+        if (error instanceof DataverseError && error.status === 404) continue;
+        ok = false;
+        console.log(`${chalk.red("✗")} Failed to delete ${label} ${id}: ${errorMessage(error)}`);
+      }
     }
   }
 
-  // Delete accounts
-  for (const id of createdRecords.accounts) {
-    try {
-      await client.api(`/accounts(${id})`).delete();
-      deletedCount++;
-      console.log(`${chalk.green("✓")} Deleted account ${chalk.dim(id.substring(0, 8) + "...")}`);
-    } catch (error: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      console.log(`${chalk.red("✗")} Failed to delete account: ${String((error as any).message)}`);
-    }
+  if (ok) {
+    console.log(chalk.green(`\n✓ Cleanup complete - deleted ${String(deletedCount)} records`));
+  } else {
+    console.log(chalk.red(`\n✗ Cleanup incomplete: delete the records named ${runId} by hand`));
   }
-
-  // Delete contacts
-  for (const id of createdRecords.contacts) {
-    try {
-      await client.api(`/contacts(${id})`).delete();
-      deletedCount++;
-      console.log(`${chalk.green("✓")} Deleted contact ${chalk.dim(id.substring(0, 8) + "...")}`);
-    } catch (error: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      console.log(`${chalk.red("✗")} Failed to delete contact: ${String((error as any).message)}`);
-    }
-  }
-
-  // Delete leads
-  for (const id of createdRecords.leads) {
-    try {
-      await client.api(`/leads(${id})`).delete();
-      deletedCount++;
-      console.log(`${chalk.green("✓")} Deleted lead ${chalk.dim(id.substring(0, 8) + "...")}`);
-    } catch (error: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      console.log(`${chalk.red("✗")} Failed to delete lead: ${String((error as any).message)}`);
-    }
-  }
-
-  console.log(chalk.green(`\n✓ Cleanup complete - deleted ${String(deletedCount)} records`));
+  return ok;
 }
 
 /**
@@ -607,25 +688,27 @@ async function main(): Promise<void> {
   // Initialize client
   const cca = new ConfidentialClientApplication({
     auth: {
-      clientId: process.env.AZURE_CLIENT_ID!,
-      authority: `https://login.microsoftonline.com/${process.env.AZURE_TENANT_ID!}`,
-      clientSecret: process.env.AZURE_CLIENT_SECRET!,
+      clientId: settings.clientId,
+      authority: `https://login.microsoftonline.com/${settings.tenantId}`,
+      clientSecret: settings.clientSecret,
     },
   });
 
   const tokenProvider = new MsalNodeTokenProvider(cca, {
     flow: "clientCredentials",
-    scopes: [`${process.env.DATAVERSE_URL!}/.default`],
+    scopes: [`${new URL(settings.dataverseUrl).origin}/.default`],
   });
 
   const client = new DataverseClient({
-    baseUrl: process.env.DATAVERSE_URL!,
+    baseUrl: settings.dataverseUrl,
     apiVersion: "v9.2",
     tokenProvider,
   });
 
-  console.log(`Connected to: ${chalk.green(process.env.DATAVERSE_URL!)}\\n`);
+  console.log(`Connected to: ${chalk.green(settings.dataverseUrl)}`);
+  console.log(chalk.dim(`Run id: ${runId} (every record this run creates is named with it)\n`));
 
+  let failed = false;
   try {
     // Run all demos
     await whoAmiFunctionDemo(client);
@@ -636,29 +719,23 @@ async function main(): Promise<void> {
     await winOpportunityDemo(client);
     await mergeDemo(client);
     await fileOperationsDemo(client);
-
-    // Cleanup
-    await cleanup(client);
-
-    console.log(chalk.green.bold("\n✓ All demos completed successfully!\n"));
   } catch (error: unknown) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    console.error(chalk.red("\n✗ Error:"), String((error as any).message));
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((error as any).response) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      console.error(chalk.dim(JSON.stringify((error as any).response, null, 2)));
+    failed = true;
+    console.error(chalk.red("\n✗ Error:"), errorMessage(error));
+    // The Web API's error body, when Dataverse answered
+    if (error instanceof DataverseError && error.raw !== undefined) {
+      console.error(chalk.dim(JSON.stringify(error.raw, null, 2)));
     }
-
-    // Attempt cleanup even on error
-    try {
-      await cleanup(client);
-    } catch (_cleanupError: unknown) {
-      console.error(chalk.red("✗ Cleanup also failed"));
-    }
-
-    process.exit(1);
+  } finally {
+    // Cleanup, also when a demo failed
+    if (!(await cleanup(client))) failed = true;
   }
+
+  if (failed) process.exit(1);
+  console.log(chalk.green.bold("\n✓ All demos completed successfully!\n"));
 }
 
-void main();
+main().catch((error: unknown) => {
+  console.error(chalk.red("Unhandled error:"), error);
+  process.exit(1);
+});

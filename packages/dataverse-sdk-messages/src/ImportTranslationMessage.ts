@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the ImportTranslation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportTranslationRequestParameters {
+  TranslationFile: string;
+  ImportJobId: string;
+}
 
 /**
  * ImportTranslation request message
@@ -10,41 +20,33 @@ export class ImportTranslationRequest
   extends OrganizationRequest
   implements Executable<ImportTranslationResponse>
 {
-  constructor(
-    public translationFile: string,
-    public importJobId: string
-  ) {
-    super("ImportTranslation");
+  declare readonly Parameters: Readonly<ImportTranslationRequestParameters>;
+
+  constructor(parameters: ImportTranslationRequestParameters) {
+    super("ImportTranslation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportTranslation`;
 
-    const body: Record<string, unknown> = {
-      TranslationFile: this.translationFile,
-      ImportJobId: this.importJobId,
-    };
+    const body = requestBody({
+      TranslationFile: this.Parameters.TranslationFile,
+      ImportJobId: this.Parameters.ImportJobId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ImportTranslationResponse> {
+  parseResponse(_response: Response): Promise<ImportTranslationResponse> {
     // No return value (204 No Content)
-    return new ImportTranslationResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TranslationFile: this.translationFile,
-      ImportJobId: this.importJobId,
-    };
+    return Promise.resolve(new ImportTranslationResponse());
   }
 }
 
@@ -56,7 +58,7 @@ export class ImportTranslationResponse extends OrganizationResponse {
     super("ImportTranslation");
   }
 
-  static fromResponse(_data: unknown): ImportTranslationResponse {
+  static fromResponse(_data?: unknown): ImportTranslationResponse {
     return new ImportTranslationResponse();
   }
 }

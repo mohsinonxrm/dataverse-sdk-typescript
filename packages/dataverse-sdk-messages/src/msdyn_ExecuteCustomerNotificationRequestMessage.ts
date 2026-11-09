@@ -21,7 +21,7 @@ export class msdyn_ExecuteCustomerNotificationRequestRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -29,24 +29,35 @@ export class msdyn_ExecuteCustomerNotificationRequestRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_ExecuteCustomerNotificationRequestResponse> {
-    const data = await response.json();
-    return msdyn_ExecuteCustomerNotificationRequestResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_ExecuteCustomerNotificationRequestResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ExecuteCustomerNotificationRequest action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ExecuteCustomerNotificationRequestResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * msdyn_ExecuteCustomerNotificationRequest response message
+ *
+ * `result` is the value the msdyn_ExecuteCustomerNotificationRequest action returns (see {@link msdyn_ExecuteCustomerNotificationRequestResult}).
  */
 export class msdyn_ExecuteCustomerNotificationRequestResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ExecuteCustomerNotificationRequestResponse) {
+  constructor(public result: msdyn_ExecuteCustomerNotificationRequestResult) {
     super("msdyn_ExecuteCustomerNotificationRequest");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ExecuteCustomerNotificationRequestResponse {
-    return new msdyn_ExecuteCustomerNotificationRequestResponse((data as any).value);
+    return new msdyn_ExecuteCustomerNotificationRequestResponse(
+      data as msdyn_ExecuteCustomerNotificationRequestResult
+    );
   }
 }

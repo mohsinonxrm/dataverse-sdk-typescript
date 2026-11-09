@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the ValidateSavedQuery message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ValidateSavedQueryRequestParameters {
+  FetchXml: string;
+  QueryType: number;
+}
 
 /**
  * ValidateSavedQuery request message
@@ -10,41 +20,34 @@ export class ValidateSavedQueryRequest
   extends OrganizationRequest
   implements Executable<ValidateSavedQueryResponse>
 {
-  constructor(
-    public fetchXml: string,
-    public queryType: number
-  ) {
-    super("ValidateSavedQuery");
+  declare readonly Parameters: Readonly<ValidateSavedQueryRequestParameters>;
+
+  constructor(parameters: ValidateSavedQueryRequestParameters) {
+    super("ValidateSavedQuery", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/ValidateSavedQuery`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/savedqueries/Microsoft.Dynamics.CRM.ValidateSavedQuery`;
 
-    const body: Record<string, unknown> = {
-      FetchXml: this.fetchXml,
-      QueryType: this.queryType,
-    };
+    const body = requestBody({
+      FetchXml: this.Parameters.FetchXml,
+      QueryType: this.Parameters.QueryType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ValidateSavedQueryResponse> {
+  parseResponse(_response: Response): Promise<ValidateSavedQueryResponse> {
     // No return value (204 No Content)
-    return new ValidateSavedQueryResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FetchXml: this.fetchXml,
-      QueryType: this.queryType,
-    };
+    return Promise.resolve(new ValidateSavedQueryResponse());
   }
 }
 
@@ -56,7 +59,7 @@ export class ValidateSavedQueryResponse extends OrganizationResponse {
     super("ValidateSavedQuery");
   }
 
-  static fromResponse(_data: unknown): ValidateSavedQueryResponse {
+  static fromResponse(_data?: unknown): ValidateSavedQueryResponse {
     return new ValidateSavedQueryResponse();
   }
 }

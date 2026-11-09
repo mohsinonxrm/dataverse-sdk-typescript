@@ -1,88 +1,110 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { campaign, transactioncurrency } from "./types/index.js";
+
+/**
+ * Parameters of the QualifyLead message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface QualifyLeadRequestParameters {
+  CreateAccount: boolean;
+  CreateContact: boolean;
+  CreateOpportunity: boolean;
+  OpportunityCurrencyId?: EntityReference | EntityPayload<transactioncurrency>;
+  OpportunityCustomerId?: EntityReference | AnyEntityPayload;
+  SourceCampaignId?: EntityReference | EntityPayload<campaign>;
+  Status: number;
+  ProcessInstanceId?: EntityReference | AnyEntityPayload;
+  LeadQualificationV2Param?: string;
+}
 
 /**
  * QualifyLead request message
  *
  * Web API Action: QualifyLead
+ *
+ * The first argument is the id of the lead record to call it on.
  */
 export class QualifyLeadRequest
   extends OrganizationRequest
   implements Executable<QualifyLeadResponse>
 {
+  declare readonly Parameters: Readonly<QualifyLeadRequestParameters>;
+
   constructor(
     public leadId: string,
-    public createAccount: boolean,
-    public createContact: boolean,
-    public createOpportunity: boolean,
-    public opportunityCurrencyId: transactioncurrency,
-    public opportunityCustomerId: EntityReference,
-    public sourceCampaignId: campaign,
-    public status: number,
-    public processInstanceId: EntityReference,
-    public leadQualificationV2Param: string
+    parameters: QualifyLeadRequestParameters
   ) {
-    super("QualifyLead");
+    super("QualifyLead", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/leads(${this.leadId})/Microsoft.Dynamics.CRM.QualifyLead`;
+    const url = `${baseUrl}/leads(${odataLiteral.guid(this.leadId)})/Microsoft.Dynamics.CRM.QualifyLead`;
 
-    const body: Record<string, unknown> = {
-      CreateAccount: this.createAccount,
-      CreateContact: this.createContact,
-      CreateOpportunity: this.createOpportunity,
-      OpportunityCurrencyId: this.opportunityCurrencyId,
-      OpportunityCustomerId: this.opportunityCustomerId,
-      SourceCampaignId: this.sourceCampaignId,
-      Status: this.status,
-      ProcessInstanceId: this.processInstanceId,
-      LeadQualificationV2Param: this.leadQualificationV2Param,
-    };
+    const body = requestBody({
+      CreateAccount: this.Parameters.CreateAccount,
+      CreateContact: this.Parameters.CreateContact,
+      CreateOpportunity: this.Parameters.CreateOpportunity,
+      OpportunityCurrencyId: this.Parameters.OpportunityCurrencyId,
+      OpportunityCustomerId: this.Parameters.OpportunityCustomerId,
+      SourceCampaignId: this.Parameters.SourceCampaignId,
+      Status: this.Parameters.Status,
+      ProcessInstanceId: this.Parameters.ProcessInstanceId,
+      LeadQualificationV2Param: this.Parameters.LeadQualificationV2Param,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<QualifyLeadResponse> {
-    const data = await response.json();
-    return QualifyLeadResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.leadId,
-      CreateAccount: this.createAccount,
-      CreateContact: this.createContact,
-      CreateOpportunity: this.createOpportunity,
-      OpportunityCurrencyId: this.opportunityCurrencyId,
-      OpportunityCustomerId: this.opportunityCustomerId,
-      SourceCampaignId: this.sourceCampaignId,
-      Status: this.status,
-      ProcessInstanceId: this.processInstanceId,
-      LeadQualificationV2Param: this.leadQualificationV2Param,
-    };
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return QualifyLeadResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return QualifyLeadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the QualifyLead action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type QualifyLeadResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * QualifyLead response message
+ *
+ * `result` is the value the QualifyLead action returns (see {@link QualifyLeadResult}).
  */
 export class QualifyLeadResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: QualifyLeadResult) {
     super("QualifyLead");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): QualifyLeadResponse {
-    return new QualifyLeadResponse((data as any).value);
+    return new QualifyLeadResponse(
+      data === undefined ? [] : (data as { value: QualifyLeadResult }).value
+    );
   }
 }

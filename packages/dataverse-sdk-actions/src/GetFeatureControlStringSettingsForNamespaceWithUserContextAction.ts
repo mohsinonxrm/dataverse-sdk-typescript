@@ -1,11 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { FeatureControlStringSettingData } from "./types/index.js";
 
 /**
- * Response from GetFeatureControlStringSettingsForNamespaceWithUserContext action
+ * Response from the GetFeatureControlStringSettingsForNamespaceWithUserContext action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetFeatureControlStringSettingsForNamespaceWithUserContextResponse {
+  "@odata.context"?: string;
   FeatureControlStringSettingCollection: FeatureControlStringSettingData[];
+}
+
+/**
+ * Parameters of the GetFeatureControlStringSettingsForNamespaceWithUserContext action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetFeatureControlStringSettingsForNamespaceWithUserContextActionParameters {
+  NamespaceName: string;
+  FeatureControlSettingNames: string[];
+  AdditionalFilterNames: string[];
+  AdditionalFilterValues: string[];
 }
 
 /**
@@ -15,27 +30,24 @@ export interface GetFeatureControlStringSettingsForNamespaceWithUserContextRespo
  */
 export class GetFeatureControlStringSettingsForNamespaceWithUserContextAction implements Executable<GetFeatureControlStringSettingsForNamespaceWithUserContextResponse> {
   constructor(
-    public readonly namespaceName: string,
-    public readonly featureControlSettingNames: string[],
-    public readonly additionalFilterNames: string[],
-    public readonly additionalFilterValues: string[]
+    public readonly parameters: GetFeatureControlStringSettingsForNamespaceWithUserContextActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetFeatureControlStringSettingsForNamespaceWithUserContext`;
 
-    const body: Record<string, unknown> = {
-      NamespaceName: this.namespaceName,
-      FeatureControlSettingNames: this.featureControlSettingNames,
-      AdditionalFilterNames: this.additionalFilterNames,
-      AdditionalFilterValues: this.additionalFilterValues,
-    };
+    const body = requestBody({
+      NamespaceName: this.parameters.NamespaceName,
+      FeatureControlSettingNames: this.parameters.FeatureControlSettingNames,
+      AdditionalFilterNames: this.parameters.AdditionalFilterNames,
+      AdditionalFilterValues: this.parameters.AdditionalFilterValues,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -44,7 +56,7 @@ export class GetFeatureControlStringSettingsForNamespaceWithUserContextAction im
   async parseResponse(
     response: Response
   ): Promise<GetFeatureControlStringSettingsForNamespaceWithUserContextResponse> {
-    const data = await response.json();
-    return data as GetFeatureControlStringSettingsForNamespaceWithUserContextResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as GetFeatureControlStringSettingsForNamespaceWithUserContextResponse;
   }
 }

@@ -1,13 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { FileSasUrlResponse } from "./types/index.js";
 
 /**
- * Response from GetFileSasUrl function
+ * Response from the GetFileSasUrl function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetFileSasUrlResponse {
+  "@odata.context"?: string;
   Result: FileSasUrlResponse;
+}
+
+/**
+ * Parameters of the GetFileSasUrl function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetFileSasUrlFunctionParameters {
+  Target: EntityReference;
+  FileAttributeName: string;
+  DataSource?: string;
 }
 
 /**
@@ -16,11 +29,7 @@ export interface GetFileSasUrlResponse {
  * Unbound function
  */
 export class GetFileSasUrlFunction implements Executable<GetFileSasUrlResponse> {
-  constructor(
-    public readonly target: EntityReference,
-    public readonly fileAttributeName: string,
-    public readonly dataSource: string
-  ) {}
+  constructor(public readonly parameters: GetFileSasUrlFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/GetFileSasUrl`;
@@ -28,30 +37,20 @@ export class GetFileSasUrlFunction implements Executable<GetFileSasUrlResponse> 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.target)}(${this.target.id})`,
-        })
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.fileAttributeName !== undefined) {
+    if (this.parameters.FileAttributeName !== undefined) {
       aliases.push(`FileAttributeName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.fileAttributeName === "string"
-          ? `'${this.fileAttributeName}'`
-          : String(this.fileAttributeName)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.FileAttributeName, "Edm.String"));
     }
-    if (this.dataSource !== undefined) {
+    if (this.parameters.DataSource !== undefined) {
       aliases.push(`DataSource=@p3`);
-      params.append(
-        "@p3",
-        typeof this.dataSource === "string" ? `'${this.dataSource}'` : String(this.dataSource)
-      );
+      params.append("@p3", formatParameterAlias(this.parameters.DataSource, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -67,7 +66,7 @@ export class GetFileSasUrlFunction implements Executable<GetFileSasUrlResponse> 
   }
 
   async parseResponse(response: Response): Promise<GetFileSasUrlResponse> {
-    const data = await response.json();
-    return data as GetFileSasUrlResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as GetFileSasUrlResponse;
   }
 }

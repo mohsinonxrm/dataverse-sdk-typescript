@@ -1,65 +1,72 @@
-import { FunctionBase } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
-
+<%# Patterned on the templates of dataverse-gen by Scott Durow (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, MIT License. See THIRD_PARTY_NOTICES.md in this package. -%>
+<%_ if (func.Parameters.length > 0) { _%>
 /**
- * Response type for <%= func.Name %> function
+ * Parameters of the <%- doc(func.Name) %> function, by their CSDL names. A parameter the CSDL
+ * declares nullable is optional, and left out of the request when it's undefined.
  */
-export interface <%= func.Name %>Response {
-<%_ if (func.ReturnType) { _%>
-  result: <%= formatType(func.ReturnType) %>;
-<%_ } else { _%>
-  // No return value
-<%_ } _%>
+export interface <%- parametersName %> {
+<%_ func.Parameters.forEach(function(param){ _%>
+  <%- propertyKey(param.Name) %><%- param.Nullable ? '?' : '' %>: <%- parameterType(param) %><%- param.Nullable ? ' | null' : '' %>;
+<%_ }) _%>
 }
 
+<%_ } _%>
+<%_ if (responseDeclaration) { _%>
+<%- responseDeclaration %>
+<%_ } _%>
 /**
- * <%= func.Name %> function
- * <%_ if (func.IsBound) { _%>Bound to: <%= func.BindingType %><%_ } else { _%>Unbound function<%_ } _%>
+ * <%- doc(func.Name) %> function
+ * <%- func.IsBound ? 'Bound to: ' + doc(func.BindingType) : 'Unbound function' %>
+<%_ if (bindingDoc) { _%>
+ *
+ * <%- bindingDoc %>
+<%_ } _%>
  */
-export class <%= func.Name %>Function extends FunctionBase<<%= func.Name %>Response> {
+export class <%- className %> extends FunctionBase<<%- responseType %>> {
+<%_ if (constructorArguments.length > 0) { _%>
   constructor(
-<%_ func.Parameters.forEach(function(param, index){ _%>
-    public <%= param.Name %>: <%= formatType(param.TypeScriptType) %><%= param.Nullable ? ' | null' : '' %><%= index < func.Parameters.length - 1 ? ',' : '' %>
+<%_ constructorArguments.forEach(function(arg){ _%>
+    <%- arg %>,
 <%_ }) _%>
   ) {
     super();
   }
 
+<%_ } _%>
   /**
    * Parameter metadata for runtime type checking
    */
   static parameterTypes = {
-<%_ func.Parameters.forEach(function(param, index){ _%>
-    <%= param.Name %>: {
-      type: '<%= param.Type %>',
-      structuralProperty: '<%= getStructuralType(param.Type) %>',
-      nullable: <%= param.Nullable || false %>
-    }<%= index < func.Parameters.length - 1 ? ',' : '' %>
+<%_ func.Parameters.forEach(function(param){ _%>
+    <%- propertyKey(param.Name) %>: {
+      type: <%- literal(param.Type) %>,
+      structuralProperty: <%- literal(getStructuralType(param.Type)) %>,
+      nullable: <%- param.Nullable ? 'true' : 'false' %>,
+    },
 <%_ }) _%>
   };
 
-  toRequestInformation(baseUrl: string) {
-    // Build parameter aliases for GET request
-    const paramAliases = new URLSearchParams();
-<%_ func.Parameters.forEach(function(param){ _%>
-    paramAliases.set('@<%= param.Name %>', String(this.<%= param.Name %>));
+  toRequestInformation(baseUrl: string): RequestInformation {
+    // Parameters travel as aliases: Name(Param=@p1)?@p1=<OData literal>; an undefined one isn't sent.
+    // Enum values inside a complex or collection parameter are sent as member names (parameterValue).
+    const aliases: string[] = [];
+    const values = new URLSearchParams();
+<%_ func.Parameters.forEach(function(param, index){ _%>
+    if (this.parameters<%- access(param.Name) %> !== undefined) {
+      aliases.push(<%- literal(param.Name + '=@p' + (index + 1)) %>);
+      values.append(<%- literal('@p' + (index + 1)) %>, formatParameterAlias(<%- bodyExpression(param) %>, <%- literal(param.Type) %>, <%- literal(parameterKind(param)) %>));
+    }
 <%_ }) _%>
-
-    const paramString = <%= func.Parameters.length > 0 ? 
-      '`(' + func.Parameters.map(p => p.Name + '=@' + p.Name).join(',') + ')`' : 
-      '""' %>;
+    const query = values.toString();
 
     return {
-      method: 'GET' as const,
-      url: `${baseUrl}/<%= func.Name %>${paramString}`,
+      method: "GET",
+      url: `${baseUrl}<%- operationPath %>(${aliases.join(",")})${query ? `?${query}` : ""}`,
       headers: {
-        Accept: 'application/json'
+        accept: "application/json",
       },
-      query: Object.fromEntries(paramAliases)
     };
   }
 
-  async parseResponse(response: Response): Promise<<%= func.Name %>Response> {
-    const data = await response.json();
-    return { result: data };
-  }
+<%- parseResponse -%>
 }

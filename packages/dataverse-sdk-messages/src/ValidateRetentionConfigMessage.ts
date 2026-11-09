@@ -1,6 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the ValidateRetentionConfig message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ValidateRetentionConfigRequestParameters {
+  Target?: EntityReference | AnyEntityPayload;
+  EntityName?: string;
+  FetchXml: string;
+  RetentionConfigId?: string;
+}
 
 /**
  * ValidateRetentionConfig request message
@@ -11,59 +24,61 @@ export class ValidateRetentionConfigRequest
   extends OrganizationRequest
   implements Executable<ValidateRetentionConfigResponse>
 {
-  constructor(
-    public target: EntityReference,
-    public entityName: string,
-    public fetchXml: string,
-    public retentionConfigId: string
-  ) {
-    super("ValidateRetentionConfig");
+  declare readonly Parameters: Readonly<ValidateRetentionConfigRequestParameters>;
+
+  constructor(parameters: ValidateRetentionConfigRequestParameters) {
+    super("ValidateRetentionConfig", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ValidateRetentionConfig`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      EntityName: this.entityName,
-      FetchXml: this.fetchXml,
-      RetentionConfigId: this.retentionConfigId,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      EntityName: this.Parameters.EntityName,
+      FetchXml: this.Parameters.FetchXml,
+      RetentionConfigId: this.Parameters.RetentionConfigId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<ValidateRetentionConfigResponse> {
-    const data = await response.json();
-    return ValidateRetentionConfigResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      EntityName: this.entityName,
-      FetchXml: this.fetchXml,
-      RetentionConfigId: this.retentionConfigId,
-    };
+    // The body is the complex value, with its @odata.context
+    return ValidateRetentionConfigResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the ValidateRetentionConfig action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface ValidateRetentionConfigResult {
+  "@odata.context"?: string;
+  ErrorMessage: string;
+  IsValidationSuccessful: boolean;
+}
+
+/**
  * ValidateRetentionConfig response message
+ *
+ * `result` is the value the ValidateRetentionConfig action returns (see {@link ValidateRetentionConfigResult}).
  */
 export class ValidateRetentionConfigResponse extends OrganizationResponse {
-  constructor(public result: ValidateRetentionConfigResponse) {
+  constructor(public result: ValidateRetentionConfigResult) {
     super("ValidateRetentionConfig");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): ValidateRetentionConfigResponse {
-    return new ValidateRetentionConfigResponse((data as any).value);
+    return new ValidateRetentionConfigResponse(data as ValidateRetentionConfigResult);
   }
 }

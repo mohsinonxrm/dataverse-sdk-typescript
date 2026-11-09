@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * LockSalesOrderPricing request message
  *
  * Web API Action: LockSalesOrderPricing
+ *
+ * The first argument is the id of the salesorder record to call it on.
  */
 export class LockSalesOrderPricingRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class LockSalesOrderPricingRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/salesorders(${this.salesorderId})/Microsoft.Dynamics.CRM.LockSalesOrderPricing`;
+    const url = `${baseUrl}/salesorders(${odataLiteral.guid(this.salesorderId)})/Microsoft.Dynamics.CRM.LockSalesOrderPricing`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<LockSalesOrderPricingResponse> {
+  parseResponse(_response: Response): Promise<LockSalesOrderPricingResponse> {
     // No return value (204 No Content)
-    return new LockSalesOrderPricingResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.salesorderId,
-    };
+    return Promise.resolve(new LockSalesOrderPricingResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class LockSalesOrderPricingResponse extends OrganizationResponse {
     super("LockSalesOrderPricing");
   }
 
-  static fromResponse(_data: unknown): LockSalesOrderPricingResponse {
+  static fromResponse(_data?: unknown): LockSalesOrderPricingResponse {
     return new LockSalesOrderPricingResponse();
   }
 }

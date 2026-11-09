@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_RunSAUpgradeScript action
+ * Response from the msdyn_RunSAUpgradeScript action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_RunSAUpgradeScriptResponse {
-  // No content returned
-}
+export type msdyn_RunSAUpgradeScriptResponse = void;
 
 /**
  * msdyn_RunSAUpgradeScript action
@@ -20,13 +20,13 @@ export class msdyn_RunSAUpgradeScriptAction implements Executable<msdyn_RunSAUpg
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_RunSAUpgradeScriptResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_RunSAUpgradeScriptResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

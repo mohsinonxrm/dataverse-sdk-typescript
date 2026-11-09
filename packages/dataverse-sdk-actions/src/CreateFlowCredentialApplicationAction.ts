@@ -1,10 +1,30 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CreateFlowCredentialApplication action
+ * Response from the CreateFlowCredentialApplication action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateFlowCredentialApplicationResponse {
+  "@odata.context"?: string;
   flowCredentialApplicationId: string;
+}
+
+/**
+ * Parameters of the CreateFlowCredentialApplication action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateFlowCredentialApplicationActionParameters {
+  description?: string;
+  certificate: string;
+  applicationId: string;
+  password?: string;
+  sharingtype?: string;
 }
 
 /**
@@ -12,41 +32,39 @@ export interface CreateFlowCredentialApplicationResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.flowmachinegroup)
+ *
+ * The first argument is the id of the flowmachinegroup record to call it on.
  */
 export class CreateFlowCredentialApplicationAction implements Executable<CreateFlowCredentialApplicationResponse> {
   constructor(
     public readonly flowmachinegroupId: string,
-    public readonly sharingtype: string,
-    public readonly password: string,
-    public readonly description: string,
-    public readonly certificate: string,
-    public readonly applicationId: string
+    public readonly parameters: CreateFlowCredentialApplicationActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowmachinegroups(${this.flowmachinegroupId})/Microsoft.Dynamics.CRM.CreateFlowCredentialApplication`;
+    const url = `${baseUrl}/flowmachinegroups(${odataLiteral.guid(this.flowmachinegroupId)})/Microsoft.Dynamics.CRM.CreateFlowCredentialApplication`;
 
-    const body: Record<string, unknown> = {
-      sharingtype: this.sharingtype,
-      password: this.password,
-      description: this.description,
-      certificate: this.certificate,
-      applicationId: this.applicationId,
-    };
+    const body = requestBody({
+      description: this.parameters.description,
+      certificate: this.parameters.certificate,
+      applicationId: this.parameters.applicationId,
+      password: this.parameters.password,
+      sharingtype: this.parameters.sharingtype,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<CreateFlowCredentialApplicationResponse> {
-    const data = await response.json();
-    return data as CreateFlowCredentialApplicationResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as CreateFlowCredentialApplicationResponse;
   }
 }

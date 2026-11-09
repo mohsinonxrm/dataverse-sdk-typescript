@@ -5,7 +5,7 @@ import type { MetadataConditionExpression } from "./MetadataConditionExpression.
  * MetadataFilterExpression complex type
  */
 export interface MetadataFilterExpression {
-  Conditions: MetadataConditionExpression[];
-  FilterOperator: LogicalOperator;
-  Filters: MetadataFilterExpression[];
+  Conditions?: MetadataConditionExpression[];
+  FilterOperator?: LogicalOperator;
+  Filters?: MetadataFilterExpression[];
 }

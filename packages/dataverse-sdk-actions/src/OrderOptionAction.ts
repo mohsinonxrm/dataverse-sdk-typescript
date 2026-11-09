@@ -1,10 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from OrderOption action
+ * Response from the OrderOption action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface OrderOptionResponse {
-  // No content returned
+export type OrderOptionResponse = void;
+
+/**
+ * Parameters of the OrderOption action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface OrderOptionActionParameters {
+  OptionSetName?: string;
+  AttributeLogicalName?: string;
+  EntityLogicalName?: string;
+  Values: number[];
+  SolutionUniqueName?: string;
 }
 
 /**
@@ -13,37 +26,31 @@ export interface OrderOptionResponse {
  * Unbound action
  */
 export class OrderOptionAction implements Executable<OrderOptionResponse> {
-  constructor(
-    public readonly optionSetName: string,
-    public readonly attributeLogicalName: string,
-    public readonly entityLogicalName: string,
-    public readonly values: number[],
-    public readonly solutionUniqueName: string
-  ) {}
+  constructor(public readonly parameters: OrderOptionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/OrderOption`;
 
-    const body: Record<string, unknown> = {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Values: this.values,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      OptionSetName: this.parameters.OptionSetName,
+      AttributeLogicalName: this.parameters.AttributeLogicalName,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      Values: this.parameters.Values,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<OrderOptionResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<OrderOptionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

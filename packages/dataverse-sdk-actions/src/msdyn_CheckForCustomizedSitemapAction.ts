@@ -1,15 +1,29 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CheckForCustomizedSitemap action
+ * Response from the msdyn_CheckForCustomizedSitemap action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckForCustomizedSitemapResponse {
+  "@odata.context"?: string;
+  Helplink: string;
   Message: string;
   ResultEntities: string;
-  ReturnStatus: number;
-  ReturnSeverity: number;
   ReturnLevel: number;
-  Helplink: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
+ * Parameters of the msdyn_CheckForCustomizedSitemap action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForCustomizedSitemapActionParameters {
+  EntityIds?: string;
+  SolutionId?: string;
+  ExcludeSolutionIds?: string;
 }
 
 /**
@@ -18,33 +32,29 @@ export interface msdyn_CheckForCustomizedSitemapResponse {
  * Unbound action
  */
 export class msdyn_CheckForCustomizedSitemapAction implements Executable<msdyn_CheckForCustomizedSitemapResponse> {
-  constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string,
-    public readonly excludeSolutionIds: string
-  ) {}
+  constructor(public readonly parameters: msdyn_CheckForCustomizedSitemapActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForCustomizedSitemap`;
 
-    const body: Record<string, unknown> = {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-      ExcludeSolutionIds: this.excludeSolutionIds,
-    };
+    const body = requestBody({
+      EntityIds: this.parameters.EntityIds,
+      SolutionId: this.parameters.SolutionId,
+      ExcludeSolutionIds: this.parameters.ExcludeSolutionIds,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForCustomizedSitemapResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForCustomizedSitemapResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CheckForCustomizedSitemapResponse;
   }
 }

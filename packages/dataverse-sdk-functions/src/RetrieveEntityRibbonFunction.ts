@@ -1,11 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { RibbonLocationFilters } from "./types/index.js";
 
 /**
- * Response from RetrieveEntityRibbon function
+ * Response from the RetrieveEntityRibbon function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveEntityRibbonResponse {
+  "@odata.context"?: string;
   CompressedEntityXml: string;
+}
+
+/**
+ * Parameters of the RetrieveEntityRibbon function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveEntityRibbonFunctionParameters {
+  EntityName: string;
+  RibbonLocationFilter: RibbonLocationFilters | keyof typeof RibbonLocationFilters;
 }
 
 /**
@@ -14,10 +27,7 @@ export interface RetrieveEntityRibbonResponse {
  * Unbound function
  */
 export class RetrieveEntityRibbonFunction implements Executable<RetrieveEntityRibbonResponse> {
-  constructor(
-    public readonly entityName: string,
-    public readonly ribbonLocationFilter: RibbonLocationFilters
-  ) {}
+  constructor(public readonly parameters: RetrieveEntityRibbonFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveEntityRibbon`;
@@ -25,20 +35,19 @@ export class RetrieveEntityRibbonFunction implements Executable<RetrieveEntityRi
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityName !== undefined) {
+    if (this.parameters.EntityName !== undefined) {
       aliases.push(`EntityName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.entityName === "string" ? `'${this.entityName}'` : String(this.entityName)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.EntityName, "Edm.String"));
     }
-    if (this.ribbonLocationFilter !== undefined) {
+    if (this.parameters.RibbonLocationFilter !== undefined) {
       aliases.push(`RibbonLocationFilter=@p2`);
       params.append(
         "@p2",
-        typeof this.ribbonLocationFilter === "string"
-          ? `'${this.ribbonLocationFilter}'`
-          : String(this.ribbonLocationFilter)
+        formatParameterAlias(
+          this.parameters.RibbonLocationFilter,
+          "mscrm.RibbonLocationFilters",
+          "EnumerationType"
+        )
       );
     }
     if (aliases.length > 0) {
@@ -55,7 +64,7 @@ export class RetrieveEntityRibbonFunction implements Executable<RetrieveEntityRi
   }
 
   async parseResponse(response: Response): Promise<RetrieveEntityRibbonResponse> {
-    const data = await response.json();
-    return data as RetrieveEntityRibbonResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveEntityRibbonResponse;
   }
 }

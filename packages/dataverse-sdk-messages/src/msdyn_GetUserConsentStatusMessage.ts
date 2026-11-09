@@ -21,30 +21,39 @@ export class msdyn_GetUserConsentStatusRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetUserConsentStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetUserConsentStatusResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetUserConsentStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetUserConsentStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetUserConsentStatusResult {
+  "@odata.context"?: string;
+  status: string;
+}
+
+/**
  * msdyn_GetUserConsentStatus response message
+ *
+ * `result` is the value the msdyn_GetUserConsentStatus action returns (see {@link msdyn_GetUserConsentStatusResult}).
  */
 export class msdyn_GetUserConsentStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetUserConsentStatusResponse) {
+  constructor(public result: msdyn_GetUserConsentStatusResult) {
     super("msdyn_GetUserConsentStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetUserConsentStatusResponse {
-    return new msdyn_GetUserConsentStatusResponse((data as any).value);
+    return new msdyn_GetUserConsentStatusResponse(data as msdyn_GetUserConsentStatusResult);
   }
 }

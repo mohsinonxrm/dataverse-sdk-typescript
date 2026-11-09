@@ -2,5 +2,5 @@
  * ScheduleTrainingResponse complex type
  */
 export interface ScheduleTrainingResponse {
-  response: string;
+  response?: string;
 }

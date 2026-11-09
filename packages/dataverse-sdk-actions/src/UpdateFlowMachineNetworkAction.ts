@@ -1,10 +1,25 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UpdateFlowMachineNetwork action
+ * Response from the UpdateFlowMachineNetwork action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpdateFlowMachineNetworkResponse {
-  // No content returned
+export type UpdateFlowMachineNetworkResponse = void;
+
+/**
+ * Parameters of the UpdateFlowMachineNetwork action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateFlowMachineNetworkActionParameters {
+  description?: string;
+  name?: string;
+  extendedproperties?: string;
 }
 
 /**
@@ -12,37 +27,37 @@ export interface UpdateFlowMachineNetworkResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.flowmachinenetwork)
+ *
+ * The first argument is the id of the flowmachinenetwork record to call it on.
  */
 export class UpdateFlowMachineNetworkAction implements Executable<UpdateFlowMachineNetworkResponse> {
   constructor(
     public readonly flowmachinenetworkId: string,
-    public readonly description: string,
-    public readonly extendedproperties: string,
-    public readonly name: string
+    public readonly parameters: UpdateFlowMachineNetworkActionParameters = {}
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowmachinenetworks(${this.flowmachinenetworkId})/Microsoft.Dynamics.CRM.UpdateFlowMachineNetwork`;
+    const url = `${baseUrl}/flowmachinenetworks(${odataLiteral.guid(this.flowmachinenetworkId)})/Microsoft.Dynamics.CRM.UpdateFlowMachineNetwork`;
 
-    const body: Record<string, unknown> = {
-      description: this.description,
-      extendedproperties: this.extendedproperties,
-      name: this.name,
-    };
+    const body = requestBody({
+      description: this.parameters.description,
+      name: this.parameters.name,
+      extendedproperties: this.parameters.extendedproperties,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateFlowMachineNetworkResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<UpdateFlowMachineNetworkResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

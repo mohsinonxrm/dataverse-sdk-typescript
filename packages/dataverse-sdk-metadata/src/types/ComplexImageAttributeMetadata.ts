@@ -5,9 +5,9 @@ import type { ComplexAttributeMetadata } from "./ComplexAttributeMetadata.js";
  * Extends: ComplexAttributeMetadata
  */
 export interface ComplexImageAttributeMetadata extends ComplexAttributeMetadata {
+  CanStoreFullImage?: boolean;
   IsPrimaryImage?: boolean;
   MaxHeight?: number;
-  MaxWidth?: number;
   MaxSizeInKB?: number;
-  CanStoreFullImage?: boolean;
+  MaxWidth?: number;
 }

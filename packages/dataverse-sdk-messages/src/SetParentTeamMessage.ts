@@ -1,54 +1,65 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { businessunit } from "./types/index.js";
+
+/**
+ * Parameters of the SetParentTeam message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetParentTeamRequestParameters {
+  BusinessUnit: EntityReference | EntityPayload<businessunit>;
+  DoNotMoveAllRecords?: boolean;
+}
 
 /**
  * SetParentTeam request message
  *
  * Web API Action: SetParentTeam
+ *
+ * The first argument is the id of the team record to call it on.
  */
 export class SetParentTeamRequest
   extends OrganizationRequest
   implements Executable<SetParentTeamResponse>
 {
+  declare readonly Parameters: Readonly<SetParentTeamRequestParameters>;
+
   constructor(
     public teamId: string,
-    public businessUnit: businessunit,
-    public doNotMoveAllRecords: boolean
+    parameters: SetParentTeamRequestParameters
   ) {
-    super("SetParentTeam");
+    super("SetParentTeam", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/teams(${this.teamId})/Microsoft.Dynamics.CRM.SetParentTeam`;
+    const url = `${baseUrl}/teams(${odataLiteral.guid(this.teamId)})/Microsoft.Dynamics.CRM.SetParentTeam`;
 
-    const body: Record<string, unknown> = {
-      BusinessUnit: this.businessUnit,
-      DoNotMoveAllRecords: this.doNotMoveAllRecords,
-    };
+    const body = requestBody({
+      BusinessUnit: this.Parameters.BusinessUnit,
+      DoNotMoveAllRecords: this.Parameters.DoNotMoveAllRecords,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<SetParentTeamResponse> {
+  parseResponse(_response: Response): Promise<SetParentTeamResponse> {
     // No return value (204 No Content)
-    return new SetParentTeamResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.teamId,
-      BusinessUnit: this.businessUnit,
-      DoNotMoveAllRecords: this.doNotMoveAllRecords,
-    };
+    return Promise.resolve(new SetParentTeamResponse());
   }
 }
 
@@ -60,7 +71,7 @@ export class SetParentTeamResponse extends OrganizationResponse {
     super("SetParentTeam");
   }
 
-  static fromResponse(_data: unknown): SetParentTeamResponse {
+  static fromResponse(_data?: unknown): SetParentTeamResponse {
     return new SetParentTeamResponse();
   }
 }

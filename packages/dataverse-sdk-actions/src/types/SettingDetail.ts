@@ -2,7 +2,7 @@
  * SettingDetail complex type
  */
 export interface SettingDetail {
-  Name: string;
-  Value: string;
-  DataType: number;
+  DataType?: number;
+  Name?: string;
+  Value?: string;
 }

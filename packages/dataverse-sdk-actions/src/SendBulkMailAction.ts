@@ -1,12 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import type { QueryBase } from "./types/index.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+import type { TypedQueryBase } from "./types/index.js";
 
 /**
- * Response from SendBulkMail action
+ * Response from the SendBulkMail action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SendBulkMailResponse {
-  // No content returned
+export type SendBulkMailResponse = void;
+
+/**
+ * Parameters of the SendBulkMail action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendBulkMailActionParameters {
+  Sender: EntityReference | AnyEntityPayload;
+  TemplateId: string;
+  RegardingType: string;
+  RegardingId: string;
+  Query?: TypedQueryBase;
 }
 
 /**
@@ -15,37 +30,31 @@ export interface SendBulkMailResponse {
  * Unbound action
  */
 export class SendBulkMailAction implements Executable<SendBulkMailResponse> {
-  constructor(
-    public readonly sender: EntityReference,
-    public readonly templateId: string,
-    public readonly regardingType: string,
-    public readonly regardingId: string,
-    public readonly query: QueryBase
-  ) {}
+  constructor(public readonly parameters: SendBulkMailActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SendBulkMail`;
 
-    const body: Record<string, unknown> = {
-      Sender: this.sender,
-      TemplateId: this.templateId,
-      RegardingType: this.regardingType,
-      RegardingId: this.regardingId,
-      Query: this.query,
-    };
+    const body = requestBody({
+      Sender: this.parameters.Sender,
+      TemplateId: this.parameters.TemplateId,
+      RegardingType: this.parameters.RegardingType,
+      RegardingId: this.parameters.RegardingId,
+      Query: enumBody(this.parameters.Query, "QueryBase"),
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<SendBulkMailResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<SendBulkMailResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

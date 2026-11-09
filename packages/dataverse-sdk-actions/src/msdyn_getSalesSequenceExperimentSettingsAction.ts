@@ -1,10 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_getSalesSequenceExperimentSettings action
+ * Response from the msdyn_getSalesSequenceExperimentSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_getSalesSequenceExperimentSettingsResponse {
+  "@odata.context"?: string;
   msdyn_experimentSettingsResponse: string;
+}
+
+/**
+ * Parameters of the msdyn_getSalesSequenceExperimentSettings action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_getSalesSequenceExperimentSettingsActionParameters {
+  msdyn_experimentKey: string;
+  msdyn_experimentVersionRecordId: string;
+  msdyn_experimentRecordId?: string;
 }
 
 /**
@@ -14,25 +28,23 @@ export interface msdyn_getSalesSequenceExperimentSettingsResponse {
  */
 export class msdyn_getSalesSequenceExperimentSettingsAction implements Executable<msdyn_getSalesSequenceExperimentSettingsResponse> {
   constructor(
-    public readonly msdyn_experimentRecordId: string,
-    public readonly msdyn_experimentKey: string,
-    public readonly msdyn_experimentVersionRecordId: string
+    public readonly parameters: msdyn_getSalesSequenceExperimentSettingsActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_getSalesSequenceExperimentSettings`;
 
-    const body: Record<string, unknown> = {
-      msdyn_experimentRecordId: this.msdyn_experimentRecordId,
-      msdyn_experimentKey: this.msdyn_experimentKey,
-      msdyn_experimentVersionRecordId: this.msdyn_experimentVersionRecordId,
-    };
+    const body = requestBody({
+      msdyn_experimentKey: this.parameters.msdyn_experimentKey,
+      msdyn_experimentVersionRecordId: this.parameters.msdyn_experimentVersionRecordId,
+      msdyn_experimentRecordId: this.parameters.msdyn_experimentRecordId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -41,7 +53,7 @@ export class msdyn_getSalesSequenceExperimentSettingsAction implements Executabl
   async parseResponse(
     response: Response
   ): Promise<msdyn_getSalesSequenceExperimentSettingsResponse> {
-    const data = await response.json();
-    return data as msdyn_getSalesSequenceExperimentSettingsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_getSalesSequenceExperimentSettingsResponse;
   }
 }

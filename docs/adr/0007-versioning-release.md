@@ -7,7 +7,7 @@
 
 ### Context
 
-The SDK is organized as a monorepo with 15+ packages (core, auth, operations, metadata, files, tooling, optional telemetry). We need clear versioning and release strategy that:
+The SDK is organized as a monorepo with 16 packages (core, auth, operations, metadata, files, tooling, optional telemetry). We need clear versioning and release strategy that:
 
 1. Balances comprehensive v1.0 scope with timely delivery
 2. Provides escape hatches for unsupported capabilities
@@ -18,7 +18,11 @@ We use Changesets for SemVer management and automated changelog generation.
 
 ### Decision
 
-#### **v1.0 Scope (Target: Q2 2026, ~10-15 weeks)**
+> **Release status (November 2026):** v1.0.0 was released on 2026-02-11. The v1.1 and v1.2+ targets below are the original plan and are out of date: the work now scheduled is in the [v1.1.0](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/1) (browser and SPA readiness, core pipeline correctness, [#5](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/5)) and [v1.2.0](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/2) (package correctness, [#6](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/6)) milestones, and features promised here that don't exist yet are collected in the roadmap issue [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100). The ✅ marks record the v1.0 plan, not verified behaviour.
+
+> **Status update (2026-11-07, 2.0.0):** the v1.1.0 and v1.2.0 work ships as **2.0.0** (milestone [v2.0.0](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/4)), a major release over the published 1.0.0, because much of it changes existing behaviour; [docs/migration-2.0.md](../migration-2.0.md) lists what to change. Since 2.0.0 every published package shares one version (a changesets `fixed` group, #313), which replaces the independent versions in the policy below. Of the later plans: stream-based file operations ([#95](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/95)) and FetchXML queries with paging ([#51](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/51), in core, not a separate package) are in 2.0.0, and the Global Discovery Service supports every cloud ([#29](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/29)). The duplicate detection package, circuit breaker and bulkhead, audit and async-operation helpers and bulk delete remain planned in [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100).
+
+#### **v1.0 Scope (released as 1.0.0 on 2026-02-11)**
 
 **Core Capabilities:**
 
@@ -45,6 +49,7 @@ We use Changesets for SemVer management and automated changelog generation.
 - `@mohsinonxrm/dataverse-sdk-core`
 - `@mohsinonxrm/dataverse-sdk-auth-msal-browser`
 - `@mohsinonxrm/dataverse-sdk-auth-msal-node`
+- `@mohsinonxrm/dataverse-sdk-auth-azure-identity`
 - `@mohsinonxrm/dataverse-sdk-batch`
 - `@mohsinonxrm/dataverse-sdk-xrm`
 - `@mohsinonxrm/dataverse-sdk-messages`
@@ -61,17 +66,25 @@ We use Changesets for SemVer management and automated changelog generation.
 **Escape Hatches (v1.0):**
 
 ```typescript
-// Generic OrganizationRequest for unsupported messages
-await org.execute(new OrganizationRequest("CustomAction", { param1: value }));
+// Generic OrganizationRequest for unsupported messages (runs as a Web API action)
+await org.execute(new OrganizationRequest("new_CustomAction", { param1: "value" }));
 
-// Raw .api() for maximum flexibility
-await client.api("/api/data/v9.2/customendpoint").header("Custom-Header", "value").post({ data });
+// Raw .api() for maximum flexibility. Relative paths resolve against the Web API root
+// (https://<org>/api/data/v9.2), so don't repeat /api/data/v9.2. Absolute URLs on the
+// client's own origin work too.
+await client.api("new_customendpoint").header("Custom-Header", "value").post({ name: "value" });
 
-// Custom middleware for specialized behaviors
-client.middleware.use(customCircuitBreakerMiddleware);
+// Custom middleware for specialized behaviors, passed when the client is created
+const customMiddleware: Middleware = {
+  name: "custom",
+  execute: (request, ctx, next) => next(request, ctx),
+};
+new DataverseClient({ baseUrl, tokenProvider, middleware: { append: [customMiddleware] } });
 ```
 
-#### **v1.1 Fast-Follow (Target: Q3 2026, ~3 months after v1.0)**
+#### **v1.1 Fast-Follow (original plan, not scheduled)**
+
+The v1.1.0 milestone has a different scope (see the release status above); the items below are tracked in [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) and, for stream-based file operations, [#95](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/95).
 
 **New Capabilities:**
 
@@ -87,7 +100,9 @@ client.middleware.use(customCircuitBreakerMiddleware);
   - Duplicate rule management
   - Detection API integration
 
-#### **v1.2+ Roadmap (Target: 2027)**
+#### **v1.2+ Roadmap (original plan, not scheduled)**
+
+The v1.2.0 milestone now covers package correctness; the items below are tracked in [#100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) and, for FetchXML, [#51](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/51).
 
 **Planned Capabilities:**
 
@@ -107,7 +122,7 @@ client.middleware.use(customCircuitBreakerMiddleware);
 
 #### **Versioning Policy**
 
-1. **Independent package versions:**
+1. **Independent package versions** (superseded in 2.0.0: all published packages share one version, #313):
    - Each package follows SemVer independently
    - Core package is most stable (major changes rare)
    - Feature packages can evolve faster
@@ -185,7 +200,7 @@ client.middleware.use(customCircuitBreakerMiddleware);
 
 ### Alternatives Considered
 
-**Lockstep versioning:** Rejected because it forces unnecessary major bumps across all packages when one changes.
+**Lockstep versioning:** Rejected because it forces unnecessary major bumps across all packages when one changes. (Adopted in 2.0.0 after all, #313: packages with the same version always work together, and one version is simpler to install and support.)
 
 **Minimal v1.0 scope:** Rejected because file operations, bulk operations, and comprehensive metadata support are essential for a complete SDK.
 

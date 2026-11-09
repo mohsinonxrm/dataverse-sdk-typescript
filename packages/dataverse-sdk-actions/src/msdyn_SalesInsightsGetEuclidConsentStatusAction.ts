@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesInsightsGetEuclidConsentStatus action
+ * Response from the msdyn_SalesInsightsGetEuclidConsentStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesInsightsGetEuclidConsentStatusResponse {
+  "@odata.context"?: string;
   IsConsentProvided: boolean;
+}
+
+/**
+ * Parameters of the msdyn_SalesInsightsGetEuclidConsentStatus action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesInsightsGetEuclidConsentStatusActionParameters {
+  PermissionLevel: string;
 }
 
 /**
@@ -13,20 +25,22 @@ export interface msdyn_SalesInsightsGetEuclidConsentStatusResponse {
  * Unbound action
  */
 export class msdyn_SalesInsightsGetEuclidConsentStatusAction implements Executable<msdyn_SalesInsightsGetEuclidConsentStatusResponse> {
-  constructor(public readonly permissionLevel: string) {}
+  constructor(
+    public readonly parameters: msdyn_SalesInsightsGetEuclidConsentStatusActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesInsightsGetEuclidConsentStatus`;
 
-    const body: Record<string, unknown> = {
-      PermissionLevel: this.permissionLevel,
-    };
+    const body = requestBody({
+      PermissionLevel: this.parameters.PermissionLevel,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -35,7 +49,7 @@ export class msdyn_SalesInsightsGetEuclidConsentStatusAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesInsightsGetEuclidConsentStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesInsightsGetEuclidConsentStatusResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_SalesInsightsGetEuclidConsentStatusResponse;
   }
 }

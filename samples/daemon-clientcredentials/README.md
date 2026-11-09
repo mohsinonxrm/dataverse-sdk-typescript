@@ -39,14 +39,11 @@ Create an app registration in [Azure Portal](https://portal.azure.com):
 4. Click **Add**
 5. **⚠️ IMPORTANT:** Copy the **Value** immediately (you cannot retrieve it later)
 
-#### Configure API Permissions
+#### API Permissions
 
-1. Go to **API permissions** → **Add a permission**
-2. Select **Dynamics CRM** (or "Common Data Service")
-3. Select **Application permissions** (not Delegated)
-4. Check **user_impersonation** (this is misleading naming - it's required for service principals)
-5. Click **Add permissions**
-6. **REQUIRED:** Click **Grant admin consent for [tenant]**
+None needed. Dynamics CRM exposes no application permissions (its only permission,
+`user_impersonation`, is delegated, for apps where a user signs in), and admin consent doesn't
+apply. App-only access comes from the application user below and its security role.
 
 ### 2. Create Application User in Dataverse
 
@@ -60,12 +57,12 @@ The app registration needs to be registered as an **Application User** in Datave
 6. **Security role:** Assign appropriate role (e.g., "System Administrator" for testing)
 7. Click **Create**
 
-### 3. Node.js 18+
+### 3. Node.js 22+
 
-Ensure you have Node.js 18 or later:
+Ensure you have Node.js 22 or later:
 
 ```bash
-node --version  # Should be v18.0.0 or higher
+node --version  # Should be v22.0.0 or higher
 ```
 
 ---
@@ -102,6 +99,12 @@ DATAVERSE_URL=https://yourorg.crm.dynamics.com
 BATCH_SIZE=100
 ```
 
+Environment variables work as well as `.env` (a value in `.env` wins). Instead of the three
+`AZURE_*` names you can set `DATAVERSE_CLIENT_ID`, `DATAVERSE_TENANT_ID` and
+`DATAVERSE_CLIENT_SECRET`, the names the repository's live tests use. That is how CI runs this
+sample against the dev org (`pnpm samples:live` from the repository root). Without these values
+the sample prints what's missing and exits with code 1.
+
 **⚠️ Security Warning:**
 
 - **Never commit** `.env` files to source control
@@ -128,6 +131,11 @@ This will:
 5. **Query** updated accounts
 6. **Demonstrate error handling** for invalid data
 7. **Cleanup** by deleting all created accounts
+
+Every account is named `sdk-sample-<tag> ...`, with a random tag per run (set
+`SAMPLE_RUN_TAG`, lowercase letters and digits, to choose it). When the run ends, also after a
+failure, the sample deletes any account of the run that is still there. It exits with code 1 if
+a step failed or an account couldn't be deleted.
 
 ### Development Mode (Auto-Reload)
 
@@ -158,11 +166,20 @@ BATCH_SIZE=500 pnpm start
 This flow authenticates as the **application itself** (not as a user):
 
 ```typescript
-const tokenProvider = new MsalNodeTokenProvider({
-  clientId: "your-client-id",
-  tenantId: "your-tenant-id",
-  clientSecret: "your-client-secret",
+import { ConfidentialClientApplication } from "@azure/msal-node";
+import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
+
+const cca = new ConfidentialClientApplication({
+  auth: {
+    clientId: env.clientId,
+    authority: `https://login.microsoftonline.com/${env.tenantId}`,
+    clientSecret: env.clientSecret,
+  },
+});
+
+const tokenProvider = new MsalNodeTokenProvider(cca, {
   flow: "clientCredentials",
+  scopes: [`${new URL(env.dataverseUrl).origin}/.default`],
 });
 ```
 
@@ -194,7 +211,7 @@ const accounts = [
   // ... up to 1000 for standard tables
 ];
 
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 const response = await client.execute(action);
 
 console.log("Created IDs:", response.Ids);
@@ -234,7 +251,7 @@ const updates = [
   // ... up to 1000 for standard tables
 ];
 
-const action = new UpdateMultipleAction("accounts", updates);
+const action = new UpdateMultipleAction("accounts", { Targets: updates });
 await client.execute(action); // Returns 204 No Content
 ```
 
@@ -253,14 +270,25 @@ await client.execute(action); // Returns 204 No Content
 
 ### 3. Query with Filtering
 
+`queryFunctions` writes Dataverse's query functions (`Today`, `LastXDays`, `In`, …), which work
+only inside `$filter`:
+
 ```typescript
+import { odata } from "@mohsinonxrm/dataverse-sdk-core";
+import { queryFunctions } from "@mohsinonxrm/dataverse-sdk-functions";
+
 const response = await client
   .api("/accounts")
-  .select(["name", "createdon", "websiteurl"])
-  .filter(`contains(name, 'Bulk Account')`)
-  .orderby("createdon desc")
+  .select("name", "createdon", "websiteurl")
+  .filter(
+    odata.and(
+      odata.contains("name", "Bulk Account"),
+      queryFunctions.today({ PropertyName: "createdon" })
+    )
+  )
+  .orderBy("createdon desc")
   .top(10)
-  .get();
+  .get<{ value: { name: string; createdon: string; websiteurl?: string }[] }>();
 
 console.log("Found:", response.value.length);
 ```
@@ -273,7 +301,7 @@ import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 const orgService = new OrganizationService(client);
 
 for (const id of accountIds) {
-  await orgService.delete("account", id);
+  await orgService.delete("accounts", id);
 }
 ```
 
@@ -299,7 +327,7 @@ for (const id of accountIds) {
 
 - Operations span **multiple entity types**
 - You need **transactions** (changesets with rollback)
-- You need **Content-ID references** ($1, $2, etc.)
+- You need **Content-ID references** (`$<id>`)
 - You have **mixed operations** (creates, updates, deletes, queries)
 - Up to 1000 operations total
 
@@ -321,7 +349,7 @@ Bulk operations are **all-or-nothing** - if one record fails, the entire operati
 
 ```typescript
 try {
-  const action = new CreateMultipleAction("accounts", accounts);
+  const action = new CreateMultipleAction("accounts", { Targets: accounts });
   const response = await client.execute(action);
   console.log("Success:", response.Ids);
 } catch (error) {
@@ -451,7 +479,7 @@ README.md               This file
 
 ```typescript
 // Add structured logging
-import { createLogger } from "winston";
+import winston, { createLogger } from "winston";
 
 const logger = createLogger({
   level: "info",
@@ -475,9 +503,12 @@ The SDK includes built-in retry logic for 429 (throttling) responses, but consid
 const client = new DataverseClient({
   baseUrl: env.dataverseUrl,
   tokenProvider,
-  retryOptions: {
-    maxRetries: 5,
-    retryDelay: 1000,
+  retry: {
+    maxRetries: 5, // default 6
+    baseDelayMs: 1000, // default 3000; doubles per retry
+    maxDelayMs: 30000, // default 30000
+    onRetry: ({ attempt, maxRetries, status, delayMs }) =>
+      console.warn(`HTTP ${status}, retry ${attempt}/${maxRetries} in ${delayMs} ms`),
   },
 });
 ```
@@ -497,33 +528,37 @@ const records = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "New Account" },
 ];
 
-const action = new UpsertMultipleAction("accounts", records);
+const action = new UpsertMultipleAction("accounts", { Targets: records });
 await client.execute(action);
 ```
 
 ### Combine with $batch for Complex Workflows
 
 ```typescript
-import { BatchClient } from "@mohsinonxrm/dataverse-sdk-batch";
+import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 
-const batchClient = new BatchClient(client);
+const batch = new BatchRequestBuilder(client);
 
-// Create parent records
-const batchBuilder = batchClient.createBatch();
-batchBuilder.beginChangeset();
-batchBuilder.addCreate("accounts", { name: "Parent 1" }, "1");
-batchBuilder.addCreate("accounts", { name: "Parent 2" }, "2");
-batchBuilder.endChangeset();
+// A change set is one transaction. A Content-ID reference ($<id>) only works inside the change
+// set that created the record, so the parent and its children go together.
+batch.beginChangeset();
+batch.addRequest("parent", "POST", "accounts", undefined, { name: "Parent 1" });
+batch.addRequest(
+  "child",
+  "POST",
+  "contacts",
+  undefined,
+  {
+    firstname: "Child",
+    lastname: "Contact",
+    "parentcustomerid_account@odata.bind": "$parent",
+  },
+  ["parent"]
+);
+batch.endChangeset();
 
-// Create child records referencing parents
-batchBuilder.beginChangeset();
-batchBuilder.addCreate("contacts", {
-  firstname: "Child",
-  "parentcustomerid@odata.bind": "$1",
-});
-batchBuilder.endChangeset();
-
-await batchClient.executeBatch(batchBuilder);
+const result = await batch.execute(); // throws DataverseBatchError if a request fails
+console.log(result.success);
 ```
 
 ---

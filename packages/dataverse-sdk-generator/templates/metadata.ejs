@@ -1,14 +1,10 @@
-import type { EntityMetadata } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
-<%_ entities.forEach(function(entity){ _%>
-import { <%= entity.Name %>Metadata } from './entities/<%= entity.Name %>.js';
-<%_ }) _%>
-
+<%# Patterned on the templates of dataverse-gen by Scott Durow (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, MIT License. See THIRD_PARTY_NOTICES.md in this package. -%>
 /**
- * Metadata cache for all generated entities
+ * Metadata cache for all generated entities, keyed by logical name
  */
-export const EntityMetadataCache: Record<string, EntityMetadata> = {
-<%_ entities.forEach(function(entity, index){ _%>
-  '<%= entity.LogicalName %>': <%= entity.Name %>Metadata<%= index < entities.length - 1 ? ',' : '' %>
+export const EntityMetadataCache: Record<string, <%- metadataType %>> = {
+<%_ entities.forEach(function(e){ _%>
+  <%- propertyKey(e.entity.LogicalName) %>: <%- e.metadataName %>,
 <%_ }) _%>
 };
 
@@ -16,15 +12,15 @@ export const EntityMetadataCache: Record<string, EntityMetadata> = {
  * Entity name mapping: SchemaName -> LogicalName
  */
 export const Entities = {
-<%_ entities.forEach(function(entity, index){ _%>
-  <%= entity.SchemaName || entity.Name %>: '<%= entity.LogicalName %>'<%= index < entities.length - 1 ? ',' : '' %>
+<%_ entities.forEach(function(e){ _%>
+  <%- propertyKey(e.entity.SchemaName || e.entity.Name) %>: <%- literal(e.entity.LogicalName) %>,
 <%_ }) _%>
 } as const;
 
 /**
  * Get entity metadata by logical name
  */
-export function getEntityMetadata(logicalName: string): EntityMetadata | undefined {
+export function getEntityMetadata(logicalName: string): <%- metadataType %> | undefined {
   return EntityMetadataCache[logicalName];
 }
 
@@ -32,15 +28,15 @@ export function getEntityMetadata(logicalName: string): EntityMetadata | undefin
  * Get entity logical name by schema name
  */
 export function getLogicalName(schemaName: string): string | undefined {
-  return Entities[schemaName as keyof typeof Entities];
+  return (Entities as Record<string, string>)[schemaName];
 }
 
 /**
  * List of all generated entities (logical names)
  */
 export const GeneratedEntities = [
-<%_ entities.forEach(function(entity, index){ _%>
-  '<%= entity.LogicalName %>'<%= index < entities.length - 1 ? ',' : '' %>
+<%_ entities.forEach(function(e){ _%>
+  <%- literal(e.entity.LogicalName) %>,
 <%_ }) _%>
 ] as const;
 
@@ -48,8 +44,8 @@ export const GeneratedEntities = [
  * List of all generated actions
  */
 export const GeneratedActions = [
-<%_ actions.forEach(function(action, index){ _%>
-  '<%= action.Name %>'<%= index < actions.length - 1 ? ',' : '' %>
+<%_ actions.forEach(function(e){ _%>
+  <%- literal(e.op.Name) %>,
 <%_ }) _%>
 ] as const;
 
@@ -57,8 +53,8 @@ export const GeneratedActions = [
  * List of all generated functions
  */
 export const GeneratedFunctions = [
-<%_ functions.forEach(function(func, index){ _%>
-  '<%= func.Name %>'<%= index < functions.length - 1 ? ',' : '' %>
+<%_ functions.forEach(function(e){ _%>
+  <%- literal(e.op.Name) %>,
 <%_ }) _%>
 ] as const;
 
@@ -66,15 +62,15 @@ export const GeneratedFunctions = [
  * Action metadata for runtime lookup
  */
 export const ActionMetadata = {
-<%_ actions.forEach(function(action, index){ _%>
-  <%= action.Name %>: {
-    name: '<%= action.Name %>',
-    isBound: <%= action.IsBound || false %>,
-    <%_ if (action.BindingType) { _%>
-    bindingType: '<%= action.BindingType %>',
+<%_ actions.forEach(function(e){ _%>
+  <%- propertyKey(e.key) %>: {
+    name: <%- literal(e.op.Name) %>,
+    isBound: <%- e.op.IsBound ? 'true' : 'false' %>,
+    <%_ if (e.op.BindingType) { _%>
+    bindingType: <%- literal(e.op.BindingType) %>,
     <%_ } _%>
-    hasReturnType: <%= !!action.ReturnType %>
-  }<%= index < actions.length - 1 ? ',' : '' %>
+    hasReturnType: <%- e.op.ReturnType ? 'true' : 'false' %>,
+  },
 <%_ }) _%>
 } as const;
 
@@ -82,14 +78,14 @@ export const ActionMetadata = {
  * Function metadata for runtime lookup
  */
 export const FunctionMetadata = {
-<%_ functions.forEach(function(func, index){ _%>
-  <%= func.Name %>: {
-    name: '<%= func.Name %>',
-    isBound: <%= func.IsBound || false %>,
-    <%_ if (func.BindingType) { _%>
-    bindingType: '<%= func.BindingType %>',
+<%_ functions.forEach(function(e){ _%>
+  <%- propertyKey(e.key) %>: {
+    name: <%- literal(e.op.Name) %>,
+    isBound: <%- e.op.IsBound ? 'true' : 'false' %>,
+    <%_ if (e.op.BindingType) { _%>
+    bindingType: <%- literal(e.op.BindingType) %>,
     <%_ } _%>
-    hasReturnType: <%= !!func.ReturnType %>
-  }<%= index < functions.length - 1 ? ',' : '' %>
+    hasReturnType: <%- e.op.ReturnType ? 'true' : 'false' %>,
+  },
 <%_ }) _%>
 } as const;

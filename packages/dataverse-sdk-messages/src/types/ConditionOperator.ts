@@ -92,4 +92,5 @@ export enum ConditionOperator {
   ContainValues = 87,
   DoesNotContainValues = 88,
   EqualRoleBusinessId = 89,
+  EqualUserAuthContext = 90,
 }

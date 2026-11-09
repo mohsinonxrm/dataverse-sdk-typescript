@@ -1,10 +1,23 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UpdateAccountCredentials action
+ * Response from the UpdateAccountCredentials action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpdateAccountCredentialsResponse {
-  // No content returned
+export type UpdateAccountCredentialsResponse = void;
+
+/**
+ * Parameters of the UpdateAccountCredentials action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateAccountCredentialsActionParameters {
+  groupCredentials: string;
 }
 
 /**
@@ -12,33 +25,35 @@ export interface UpdateAccountCredentialsResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.flowmachinegroup)
+ *
+ * The first argument is the id of the flowmachinegroup record to call it on.
  */
 export class UpdateAccountCredentialsAction implements Executable<UpdateAccountCredentialsResponse> {
   constructor(
     public readonly flowmachinegroupId: string,
-    public readonly groupCredentials: string
+    public readonly parameters: UpdateAccountCredentialsActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowmachinegroups(${this.flowmachinegroupId})/Microsoft.Dynamics.CRM.UpdateAccountCredentials`;
+    const url = `${baseUrl}/flowmachinegroups(${odataLiteral.guid(this.flowmachinegroupId)})/Microsoft.Dynamics.CRM.UpdateAccountCredentials`;
 
-    const body: Record<string, unknown> = {
-      groupCredentials: this.groupCredentials,
-    };
+    const body = requestBody({
+      groupCredentials: this.parameters.groupCredentials,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateAccountCredentialsResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<UpdateAccountCredentialsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

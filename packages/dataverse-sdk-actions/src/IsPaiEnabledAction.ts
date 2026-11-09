@@ -1,14 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from IsPaiEnabled action
+ * Response from the IsPaiEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface IsPaiEnabledResponse {
-  ispaienabled: boolean;
-  templates: string;
+  "@odata.context"?: string;
   arePreviewScenarioEnabled: boolean;
-  paigastatus: boolean;
   isdatamodelv2enabled: boolean;
+  ispaienabled: boolean;
+  paigastatus: boolean;
+  templates: string;
 }
 
 /**
@@ -24,13 +27,13 @@ export class IsPaiEnabledAction implements Executable<IsPaiEnabledResponse> {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<IsPaiEnabledResponse> {
-    const data = await response.json();
-    return data as IsPaiEnabledResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as IsPaiEnabledResponse;
   }
 }

@@ -5,8 +5,8 @@ import type { GuidCollection } from "./GuidCollection.js";
  * DeletedMetadataCollection complex type
  */
 export interface DeletedMetadataCollection {
-  Count: number;
-  IsReadOnly: boolean;
+  Count?: number;
+  IsReadOnly?: boolean;
   Keys: DeletedMetadataFilters[];
-  Values: GuidCollection[];
+  Values?: GuidCollection[];
 }

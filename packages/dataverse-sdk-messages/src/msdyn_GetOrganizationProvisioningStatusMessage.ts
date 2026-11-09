@@ -21,7 +21,7 @@ export class msdyn_GetOrganizationProvisioningStatusRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -29,24 +29,35 @@ export class msdyn_GetOrganizationProvisioningStatusRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetOrganizationProvisioningStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetOrganizationProvisioningStatusResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetOrganizationProvisioningStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetOrganizationProvisioningStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetOrganizationProvisioningStatusResult {
+  "@odata.context"?: string;
+  OrgProvisioningStatus: string;
+}
+
+/**
  * msdyn_GetOrganizationProvisioningStatus response message
+ *
+ * `result` is the value the msdyn_GetOrganizationProvisioningStatus action returns (see {@link msdyn_GetOrganizationProvisioningStatusResult}).
  */
 export class msdyn_GetOrganizationProvisioningStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetOrganizationProvisioningStatusResponse) {
+  constructor(public result: msdyn_GetOrganizationProvisioningStatusResult) {
     super("msdyn_GetOrganizationProvisioningStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetOrganizationProvisioningStatusResponse {
-    return new msdyn_GetOrganizationProvisioningStatusResponse((data as any).value);
+    return new msdyn_GetOrganizationProvisioningStatusResponse(
+      data as msdyn_GetOrganizationProvisioningStatusResult
+    );
   }
 }

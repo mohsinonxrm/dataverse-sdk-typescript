@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CreateApmEventHandler action
+ * Response from the msdyn_CreateApmEventHandler action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CreateApmEventHandlerResponse {
+  "@odata.context"?: string;
   UpdateAppModuleResponse: string;
+}
+
+/**
+ * Parameters of the msdyn_CreateApmEventHandler action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateApmEventHandlerActionParameters {
+  AppModuleId: string;
 }
 
 /**
@@ -13,27 +25,27 @@ export interface msdyn_CreateApmEventHandlerResponse {
  * Unbound action
  */
 export class msdyn_CreateApmEventHandlerAction implements Executable<msdyn_CreateApmEventHandlerResponse> {
-  constructor(public readonly appModuleId: string) {}
+  constructor(public readonly parameters: msdyn_CreateApmEventHandlerActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateApmEventHandler`;
 
-    const body: Record<string, unknown> = {
-      AppModuleId: this.appModuleId,
-    };
+    const body = requestBody({
+      AppModuleId: this.parameters.AppModuleId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateApmEventHandlerResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateApmEventHandlerResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CreateApmEventHandlerResponse;
   }
 }

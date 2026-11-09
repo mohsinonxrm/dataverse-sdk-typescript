@@ -21,7 +21,7 @@ export class msdyn_CheckIfRecordWorkstreamHasIntakeRulesRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -29,24 +29,37 @@ export class msdyn_CheckIfRecordWorkstreamHasIntakeRulesRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfRecordWorkstreamHasIntakeRules action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfRecordWorkstreamHasIntakeRulesResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfRecordWorkstreamHasIntakeRules response message
+ *
+ * `result` is the value the msdyn_CheckIfRecordWorkstreamHasIntakeRules action returns (see {@link msdyn_CheckIfRecordWorkstreamHasIntakeRulesResult}).
  */
 export class msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse) {
+  constructor(public result: msdyn_CheckIfRecordWorkstreamHasIntakeRulesResult) {
     super("msdyn_CheckIfRecordWorkstreamHasIntakeRules");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse {
-    return new msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse((data as any).value);
+    return new msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse(
+      data as msdyn_CheckIfRecordWorkstreamHasIntakeRulesResult
+    );
   }
 }

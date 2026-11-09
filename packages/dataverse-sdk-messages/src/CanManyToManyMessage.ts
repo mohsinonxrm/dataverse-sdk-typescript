@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CanManyToMany message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CanManyToManyRequestParameters {
+  EntityName: string;
+}
 
 /**
  * CanManyToMany request message
@@ -10,48 +19,57 @@ export class CanManyToManyRequest
   extends OrganizationRequest
   implements Executable<CanManyToManyResponse>
 {
-  constructor(public entityName: string) {
-    super("CanManyToMany");
+  declare readonly Parameters: Readonly<CanManyToManyRequestParameters>;
+
+  constructor(parameters: CanManyToManyRequestParameters) {
+    super("CanManyToMany", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CanManyToMany`;
 
-    const body: Record<string, unknown> = {
-      EntityName: this.entityName,
-    };
+    const body = requestBody({
+      EntityName: this.Parameters.EntityName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<CanManyToManyResponse> {
-    const data = await response.json();
-    return CanManyToManyResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EntityName: this.entityName,
-    };
+    // The body is the complex value, with its @odata.context
+    return CanManyToManyResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CanManyToMany action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CanManyToManyResult {
+  "@odata.context"?: string;
+  CanManyToMany: boolean;
+}
+
+/**
  * CanManyToMany response message
+ *
+ * `result` is the value the CanManyToMany action returns (see {@link CanManyToManyResult}).
  */
 export class CanManyToManyResponse extends OrganizationResponse {
-  constructor(public result: CanManyToManyResponse) {
+  constructor(public result: CanManyToManyResult) {
     super("CanManyToMany");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CanManyToManyResponse {
-    return new CanManyToManyResponse((data as any).value);
+    return new CanManyToManyResponse(data as CanManyToManyResult);
   }
 }

@@ -21,18 +21,14 @@ export class PublishAllXmlRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<PublishAllXmlResponse> {
+  parseResponse(_response: Response): Promise<PublishAllXmlResponse> {
     // No return value (204 No Content)
-    return new PublishAllXmlResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    return Promise.resolve(new PublishAllXmlResponse());
   }
 }
 
@@ -44,7 +40,7 @@ export class PublishAllXmlResponse extends OrganizationResponse {
     super("PublishAllXml");
   }
 
-  static fromResponse(_data: unknown): PublishAllXmlResponse {
+  static fromResponse(_data?: unknown): PublishAllXmlResponse {
     return new PublishAllXmlResponse();
   }
 }

@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_ExecutePrimaryCreatePostActions action
+ * Response from the msdyn_ExecutePrimaryCreatePostActions action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ExecutePrimaryCreatePostActionsResponse {
-  // No content returned
+export type msdyn_ExecutePrimaryCreatePostActionsResponse = void;
+
+/**
+ * Parameters of the msdyn_ExecutePrimaryCreatePostActions action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecutePrimaryCreatePostActionsActionParameters {
+  SourceEntityReference: EntityReference | AnyEntityPayload;
+  PrimaryEntityReference: EntityReference | AnyEntityPayload;
+  RuleId: string;
 }
 
 /**
@@ -14,33 +26,29 @@ export interface msdyn_ExecutePrimaryCreatePostActionsResponse {
  * Unbound action
  */
 export class msdyn_ExecutePrimaryCreatePostActionsAction implements Executable<msdyn_ExecutePrimaryCreatePostActionsResponse> {
-  constructor(
-    public readonly sourceEntityReference: EntityReference,
-    public readonly primaryEntityReference: EntityReference,
-    public readonly ruleId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_ExecutePrimaryCreatePostActionsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecutePrimaryCreatePostActions`;
 
-    const body: Record<string, unknown> = {
-      SourceEntityReference: this.sourceEntityReference,
-      PrimaryEntityReference: this.primaryEntityReference,
-      RuleId: this.ruleId,
-    };
+    const body = requestBody({
+      SourceEntityReference: this.parameters.SourceEntityReference,
+      PrimaryEntityReference: this.parameters.PrimaryEntityReference,
+      RuleId: this.parameters.RuleId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ExecutePrimaryCreatePostActionsResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_ExecutePrimaryCreatePostActionsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,10 +1,29 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from searchsuggest action
+ * Response from the searchsuggest action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface searchsuggestResponse {
+  "@odata.context"?: string;
   response: string;
+}
+
+/**
+ * Parameters of the searchsuggest action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface searchsuggestActionParameters {
+  top?: number;
+  orderby?: string;
+  options?: string;
+  search: string;
+  filter?: string;
+  propertybag?: string;
+  fuzzy?: boolean;
+  entities?: string;
 }
 
 /**
@@ -13,43 +32,34 @@ export interface searchsuggestResponse {
  * Unbound action
  */
 export class searchsuggestAction implements Executable<searchsuggestResponse> {
-  constructor(
-    public readonly entities: string,
-    public readonly top: number,
-    public readonly search: string,
-    public readonly filter: string,
-    public readonly options: string,
-    public readonly orderby: string,
-    public readonly fuzzy: boolean,
-    public readonly propertybag: string
-  ) {}
+  constructor(public readonly parameters: searchsuggestActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/searchsuggest`;
 
-    const body: Record<string, unknown> = {
-      entities: this.entities,
-      top: this.top,
-      search: this.search,
-      filter: this.filter,
-      options: this.options,
-      orderby: this.orderby,
-      fuzzy: this.fuzzy,
-      propertybag: this.propertybag,
-    };
+    const body = requestBody({
+      top: this.parameters.top,
+      orderby: this.parameters.orderby,
+      options: this.parameters.options,
+      search: this.parameters.search,
+      filter: this.parameters.filter,
+      propertybag: this.parameters.propertybag,
+      fuzzy: this.parameters.fuzzy,
+      entities: this.parameters.entities,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<searchsuggestResponse> {
-    const data = await response.json();
-    return data as searchsuggestResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as searchsuggestResponse;
   }
 }

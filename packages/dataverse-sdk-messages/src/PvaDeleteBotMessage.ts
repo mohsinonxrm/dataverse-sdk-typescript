@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * PvaDeleteBot request message
  *
  * Web API Action: PvaDeleteBot
+ *
+ * The first argument is the id of the bot record to call it on.
  */
 export class PvaDeleteBotRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class PvaDeleteBotRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/bots(${this.botId})/Microsoft.Dynamics.CRM.PvaDeleteBot`;
+    const url = `${baseUrl}/bots(${odataLiteral.guid(this.botId)})/Microsoft.Dynamics.CRM.PvaDeleteBot`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaDeleteBotResponse> {
+  parseResponse(_response: Response): Promise<PvaDeleteBotResponse> {
     // No return value (204 No Content)
-    return new PvaDeleteBotResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.botId,
-    };
+    return Promise.resolve(new PvaDeleteBotResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class PvaDeleteBotResponse extends OrganizationResponse {
     super("PvaDeleteBot");
   }
 
-  static fromResponse(_data: unknown): PvaDeleteBotResponse {
+  static fromResponse(_data?: unknown): PvaDeleteBotResponse {
     return new PvaDeleteBotResponse();
   }
 }

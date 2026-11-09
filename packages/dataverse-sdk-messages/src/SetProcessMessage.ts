@@ -1,6 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the SetProcess message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetProcessRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+  NewProcess?: EntityReference | AnyEntityPayload;
+  NewProcessInstance?: EntityReference | AnyEntityPayload;
+}
 
 /**
  * SetProcess request message
@@ -11,44 +23,34 @@ export class SetProcessRequest
   extends OrganizationRequest
   implements Executable<SetProcessResponse>
 {
-  constructor(
-    public target: EntityReference,
-    public newProcess: EntityReference,
-    public newProcessInstance: EntityReference
-  ) {
-    super("SetProcess");
+  declare readonly Parameters: Readonly<SetProcessRequestParameters>;
+
+  constructor(parameters: SetProcessRequestParameters) {
+    super("SetProcess", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SetProcess`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      NewProcess: this.newProcess,
-      NewProcessInstance: this.newProcessInstance,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+      NewProcess: this.Parameters.NewProcess,
+      NewProcessInstance: this.Parameters.NewProcessInstance,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<SetProcessResponse> {
+  parseResponse(_response: Response): Promise<SetProcessResponse> {
     // No return value (204 No Content)
-    return new SetProcessResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-      NewProcess: this.newProcess,
-      NewProcessInstance: this.newProcessInstance,
-    };
+    return Promise.resolve(new SetProcessResponse());
   }
 }
 
@@ -60,7 +62,7 @@ export class SetProcessResponse extends OrganizationResponse {
     super("SetProcess");
   }
 
-  static fromResponse(_data: unknown): SetProcessResponse {
+  static fromResponse(_data?: unknown): SetProcessResponse {
     return new SetProcessResponse();
   }
 }

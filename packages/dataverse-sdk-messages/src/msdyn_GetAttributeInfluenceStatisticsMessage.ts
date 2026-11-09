@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetAttributeInfluenceStatistics message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAttributeInfluenceStatisticsRequestParameters {
+  AttributeName: string;
+  EntityName: string;
+  PredictionName: string;
+  PredictionType: string;
+}
 
 /**
  * msdyn_GetAttributeInfluenceStatistics request message
@@ -10,59 +22,62 @@ export class msdyn_GetAttributeInfluenceStatisticsRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetAttributeInfluenceStatisticsResponse>
 {
-  constructor(
-    public attributeName: string,
-    public entityName: string,
-    public predictionName: string,
-    public predictionType: string
-  ) {
-    super("msdyn_GetAttributeInfluenceStatistics");
+  declare readonly Parameters: Readonly<msdyn_GetAttributeInfluenceStatisticsRequestParameters>;
+
+  constructor(parameters: msdyn_GetAttributeInfluenceStatisticsRequestParameters) {
+    super("msdyn_GetAttributeInfluenceStatistics", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAttributeInfluenceStatistics`;
 
-    const body: Record<string, unknown> = {
-      AttributeName: this.attributeName,
-      EntityName: this.entityName,
-      PredictionName: this.predictionName,
-      PredictionType: this.predictionType,
-    };
+    const body = requestBody({
+      AttributeName: this.Parameters.AttributeName,
+      EntityName: this.Parameters.EntityName,
+      PredictionName: this.Parameters.PredictionName,
+      PredictionType: this.Parameters.PredictionType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAttributeInfluenceStatisticsResponse> {
-    const data = await response.json();
-    return msdyn_GetAttributeInfluenceStatisticsResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AttributeName: this.attributeName,
-      EntityName: this.entityName,
-      PredictionName: this.predictionName,
-      PredictionType: this.predictionType,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetAttributeInfluenceStatisticsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAttributeInfluenceStatistics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAttributeInfluenceStatisticsResult {
+  "@odata.context"?: string;
+  Response: string;
+}
+
+/**
  * msdyn_GetAttributeInfluenceStatistics response message
+ *
+ * `result` is the value the msdyn_GetAttributeInfluenceStatistics action returns (see {@link msdyn_GetAttributeInfluenceStatisticsResult}).
  */
 export class msdyn_GetAttributeInfluenceStatisticsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAttributeInfluenceStatisticsResponse) {
+  constructor(public result: msdyn_GetAttributeInfluenceStatisticsResult) {
     super("msdyn_GetAttributeInfluenceStatistics");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAttributeInfluenceStatisticsResponse {
-    return new msdyn_GetAttributeInfluenceStatisticsResponse((data as any).value);
+    return new msdyn_GetAttributeInfluenceStatisticsResponse(
+      data as msdyn_GetAttributeInfluenceStatisticsResult
+    );
   }
 }

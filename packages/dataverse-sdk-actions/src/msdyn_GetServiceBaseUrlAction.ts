@@ -1,10 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetServiceBaseUrl action
+ * Response from the msdyn_GetServiceBaseUrl action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetServiceBaseUrlResponse {
+  "@odata.context"?: string;
   BaseUrl: string;
+}
+
+/**
+ * Parameters of the msdyn_GetServiceBaseUrl action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetServiceBaseUrlActionParameters {
+  AzureApplicationType: number;
+  OrgMigratedToCoreServices?: boolean;
 }
 
 /**
@@ -13,31 +26,28 @@ export interface msdyn_GetServiceBaseUrlResponse {
  * Unbound action
  */
 export class msdyn_GetServiceBaseUrlAction implements Executable<msdyn_GetServiceBaseUrlResponse> {
-  constructor(
-    public readonly azureApplicationType: number,
-    public readonly orgMigratedToCoreServices: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_GetServiceBaseUrlActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetServiceBaseUrl`;
 
-    const body: Record<string, unknown> = {
-      AzureApplicationType: this.azureApplicationType,
-      OrgMigratedToCoreServices: this.orgMigratedToCoreServices,
-    };
+    const body = requestBody({
+      AzureApplicationType: this.parameters.AzureApplicationType,
+      OrgMigratedToCoreServices: this.parameters.OrgMigratedToCoreServices,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetServiceBaseUrlResponse> {
-    const data = await response.json();
-    return data as msdyn_GetServiceBaseUrlResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetServiceBaseUrlResponse;
   }
 }

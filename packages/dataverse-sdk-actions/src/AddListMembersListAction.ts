@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { list } from "./types/index.js";
 
 /**
- * Response from AddListMembersList action
+ * Response from the AddListMembersList action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AddListMembersListResponse {
-  // No content returned
+export type AddListMembersListResponse = void;
+
+/**
+ * Parameters of the AddListMembersList action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddListMembersListActionParameters {
+  List: EntityReference | EntityPayload<list>;
+  Members: Record<string, unknown>[];
 }
 
 /**
@@ -14,31 +26,28 @@ export interface AddListMembersListResponse {
  * Unbound action
  */
 export class AddListMembersListAction implements Executable<AddListMembersListResponse> {
-  constructor(
-    public readonly list: list,
-    public readonly members: Record<string, unknown>[]
-  ) {}
+  constructor(public readonly parameters: AddListMembersListActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AddListMembersList`;
 
-    const body: Record<string, unknown> = {
-      List: this.list,
-      Members: this.members,
-    };
+    const body = requestBody({
+      List: this.parameters.List,
+      Members: this.parameters.Members,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<AddListMembersListResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<AddListMembersListResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

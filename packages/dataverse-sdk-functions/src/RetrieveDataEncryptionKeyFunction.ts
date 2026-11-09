@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RetrieveDataEncryptionKey function
+ * Response from the RetrieveDataEncryptionKey function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveDataEncryptionKeyResponse {
+  "@odata.context"?: string;
   EncryptionKey: string;
 }
 
@@ -26,7 +29,7 @@ export class RetrieveDataEncryptionKeyFunction implements Executable<RetrieveDat
   }
 
   async parseResponse(response: Response): Promise<RetrieveDataEncryptionKeyResponse> {
-    const data = await response.json();
-    return data as RetrieveDataEncryptionKeyResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveDataEncryptionKeyResponse;
   }
 }

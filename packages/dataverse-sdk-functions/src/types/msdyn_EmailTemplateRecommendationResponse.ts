@@ -2,8 +2,9 @@
  * msdyn_EmailTemplateRecommendationResponse complex type
  */
 export interface msdyn_EmailTemplateRecommendationResponse {
-  diagnosticInfo: string;
-  emailTemplates: string;
-  recommendedTemplate: string;
-  generatedEmailString: string;
+  citations?: string;
+  diagnosticInfo?: string;
+  emailTemplates?: string;
+  generatedEmailString?: string;
+  recommendedTemplate?: string;
 }

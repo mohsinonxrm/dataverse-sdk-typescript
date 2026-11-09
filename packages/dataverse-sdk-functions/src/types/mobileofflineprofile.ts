@@ -2,27 +2,27 @@
  * mobileofflineprofile entity type
  */
 export interface mobileofflineprofile {
-  _organizationid_value: string;
-  versionnumber: number;
-  mobileofflineprofileid: string;
-  modifiedon: string;
-  _createdonbehalfby_value: string;
-  mobileofflineprofileidunique: string;
-  overwritetime: string;
-  _modifiedby_value: string;
-  isvalidated: boolean;
-  _modifiedonbehalfby_value: string;
-  ismanaged: boolean;
-  publishedon: string;
-  processid: string;
-  solutionid: string;
-  description: string;
-  createdon: string;
-  _createdby_value: string;
-  introducedversion: string;
-  stageid: string;
-  name: string;
-  selectedentitymetadata: string;
-  traversedpath: string;
-  componentstate: number;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  componentstate?: number;
+  createdon?: string;
+  description?: string;
+  introducedversion?: string;
+  ismanaged?: boolean;
+  isvalidated?: boolean;
+  mobileofflineprofileid?: string;
+  mobileofflineprofileidunique?: string;
+  modifiedon?: string;
+  name?: string;
+  overwritetime?: string;
+  processid?: string;
+  publishedon?: string;
+  selectedentitymetadata?: string;
+  solutionid?: string;
+  stageid?: string;
+  traversedpath?: string;
+  versionnumber?: number;
 }

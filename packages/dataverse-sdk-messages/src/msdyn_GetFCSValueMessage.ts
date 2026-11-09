@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetFCSValue message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetFCSValueRequestParameters {
+  Key: string;
+  Namespace: string;
+}
 
 /**
  * msdyn_GetFCSValue request message
@@ -10,53 +20,58 @@ export class msdyn_GetFCSValueRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetFCSValueResponse>
 {
-  constructor(
-    public key: string,
-    public namespace: string
-  ) {
-    super("msdyn_GetFCSValue");
+  declare readonly Parameters: Readonly<msdyn_GetFCSValueRequestParameters>;
+
+  constructor(parameters: msdyn_GetFCSValueRequestParameters) {
+    super("msdyn_GetFCSValue", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetFCSValue`;
 
-    const body: Record<string, unknown> = {
-      Key: this.key,
-      Namespace: this.namespace,
-    };
+    const body = requestBody({
+      Key: this.Parameters.Key,
+      Namespace: this.Parameters.Namespace,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetFCSValueResponse> {
-    const data = await response.json();
-    return msdyn_GetFCSValueResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Key: this.key,
-      Namespace: this.namespace,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetFCSValueResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetFCSValue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetFCSValueResult {
+  "@odata.context"?: string;
+  Value: boolean;
+}
+
+/**
  * msdyn_GetFCSValue response message
+ *
+ * `result` is the value the msdyn_GetFCSValue action returns (see {@link msdyn_GetFCSValueResult}).
  */
 export class msdyn_GetFCSValueResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetFCSValueResponse) {
+  constructor(public result: msdyn_GetFCSValueResult) {
     super("msdyn_GetFCSValue");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetFCSValueResponse {
-    return new msdyn_GetFCSValueResponse((data as any).value);
+    return new msdyn_GetFCSValueResponse(data as msdyn_GetFCSValueResult);
   }
 }

@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      # One PR for all minor/patch dev-dependency updates.
+      dev-dependencies:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
+      # One PR for all minor/patch production-dependency updates.
+      production-dependencies:
+        dependency-type: "production"
+        update-types: ["minor", "patch"]
+    ignore:
+      # TypeScript minor upgrades — track manually
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-minor"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      # Actions are pinned by commit SHA; bump them together in one PR.
+      github-actions:
+        patterns: ["*"]

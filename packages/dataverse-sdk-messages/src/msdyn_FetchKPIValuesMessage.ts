@@ -1,6 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_FetchKPIValues message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FetchKPIValuesRequestParameters {
+  CrmRecord: EntityReference | AnyEntityPayload;
+  KPINames: string;
+  KPIType?: string;
+}
 
 /**
  * msdyn_FetchKPIValues request message
@@ -11,56 +23,61 @@ export class msdyn_FetchKPIValuesRequest
   extends OrganizationRequest
   implements Executable<msdyn_FetchKPIValuesResponse>
 {
-  constructor(
-    public crmRecord: EntityReference,
-    public kPINames: string,
-    public kPIType: string
-  ) {
-    super("msdyn_FetchKPIValues");
+  declare readonly Parameters: Readonly<msdyn_FetchKPIValuesRequestParameters>;
+
+  constructor(parameters: msdyn_FetchKPIValuesRequestParameters) {
+    super("msdyn_FetchKPIValues", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FetchKPIValues`;
 
-    const body: Record<string, unknown> = {
-      CrmRecord: this.crmRecord,
-      KPINames: this.kPINames,
-      KPIType: this.kPIType,
-    };
+    const body = requestBody({
+      CrmRecord: this.Parameters.CrmRecord,
+      KPINames: this.Parameters.KPINames,
+      KPIType: this.Parameters.KPIType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_FetchKPIValuesResponse> {
-    const data = await response.json();
-    return msdyn_FetchKPIValuesResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CrmRecord: this.crmRecord,
-      KPINames: this.kPINames,
-      KPIType: this.kPIType,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_FetchKPIValuesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_FetchKPIValues action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_FetchKPIValuesResult {
+  "@odata.context"?: string;
+  ErrorList: string;
+  KPIValues: string;
+  LastModifiedOn: string;
+}
+
+/**
  * msdyn_FetchKPIValues response message
+ *
+ * `result` is the value the msdyn_FetchKPIValues action returns (see {@link msdyn_FetchKPIValuesResult}).
  */
 export class msdyn_FetchKPIValuesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_FetchKPIValuesResponse) {
+  constructor(public result: msdyn_FetchKPIValuesResult) {
     super("msdyn_FetchKPIValues");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_FetchKPIValuesResponse {
-    return new msdyn_FetchKPIValuesResponse((data as any).value);
+    return new msdyn_FetchKPIValuesResponse(data as msdyn_FetchKPIValuesResult);
   }
 }

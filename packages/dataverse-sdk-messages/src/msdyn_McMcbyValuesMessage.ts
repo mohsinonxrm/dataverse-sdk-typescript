@@ -1,6 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_McMcbyValues message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_McMcbyValuesRequestParameters {
+  CrmRecord?: EntityReference | AnyEntityPayload;
+  KPIType?: string;
+}
 
 /**
  * msdyn_McMcbyValues request message
@@ -11,53 +22,58 @@ export class msdyn_McMcbyValuesRequest
   extends OrganizationRequest
   implements Executable<msdyn_McMcbyValuesResponse>
 {
-  constructor(
-    public crmRecord: EntityReference,
-    public kPIType: string
-  ) {
-    super("msdyn_McMcbyValues");
+  declare readonly Parameters: Readonly<msdyn_McMcbyValuesRequestParameters>;
+
+  constructor(parameters: msdyn_McMcbyValuesRequestParameters = {}) {
+    super("msdyn_McMcbyValues", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_McMcbyValues`;
 
-    const body: Record<string, unknown> = {
-      CrmRecord: this.crmRecord,
-      KPIType: this.kPIType,
-    };
+    const body = requestBody({
+      CrmRecord: this.Parameters.CrmRecord,
+      KPIType: this.Parameters.KPIType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_McMcbyValuesResponse> {
-    const data = await response.json();
-    return msdyn_McMcbyValuesResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CrmRecord: this.crmRecord,
-      KPIType: this.kPIType,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_McMcbyValuesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_McMcbyValues action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_McMcbyValuesResult {
+  "@odata.context"?: string;
+  LastModifiedOn: string;
+}
+
+/**
  * msdyn_McMcbyValues response message
+ *
+ * `result` is the value the msdyn_McMcbyValues action returns (see {@link msdyn_McMcbyValuesResult}).
  */
 export class msdyn_McMcbyValuesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_McMcbyValuesResponse) {
+  constructor(public result: msdyn_McMcbyValuesResult) {
     super("msdyn_McMcbyValues");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_McMcbyValuesResponse {
-    return new msdyn_McMcbyValuesResponse((data as any).value);
+    return new msdyn_McMcbyValuesResponse(data as msdyn_McMcbyValuesResult);
   }
 }

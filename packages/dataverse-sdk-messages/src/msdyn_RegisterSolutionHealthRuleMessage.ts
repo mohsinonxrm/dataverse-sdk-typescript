@@ -1,7 +1,25 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_solutionhealthruleset, workflow } from "./types/index.js";
+
+/**
+ * Parameters of the msdyn_RegisterSolutionHealthRule message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RegisterSolutionHealthRuleRequestParameters {
+  RuleDescription?: string;
+  OwningSolutionId?: string;
+  UniqueName?: string;
+  ResolutionAction?: EntityReference | AnyEntityPayload;
+  RuleSetId: EntityReference | EntityPayload<msdyn_solutionhealthruleset>;
+  RuleArguments?: string;
+  RuleName: string;
+  WorkflowReference: EntityReference | EntityPayload<workflow>;
+  ResolutionMessage?: string;
+}
 
 /**
  * msdyn_RegisterSolutionHealthRule request message
@@ -12,74 +30,67 @@ export class msdyn_RegisterSolutionHealthRuleRequest
   extends OrganizationRequest
   implements Executable<msdyn_RegisterSolutionHealthRuleResponse>
 {
-  constructor(
-    public ruleDescription: string,
-    public owningSolutionId: string,
-    public uniqueName: string,
-    public resolutionAction: EntityReference,
-    public ruleSetId: msdyn_solutionhealthruleset,
-    public ruleArguments: string,
-    public ruleName: string,
-    public workflowReference: workflow,
-    public resolutionMessage: string
-  ) {
-    super("msdyn_RegisterSolutionHealthRule");
+  declare readonly Parameters: Readonly<msdyn_RegisterSolutionHealthRuleRequestParameters>;
+
+  constructor(parameters: msdyn_RegisterSolutionHealthRuleRequestParameters) {
+    super("msdyn_RegisterSolutionHealthRule", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RegisterSolutionHealthRule`;
 
-    const body: Record<string, unknown> = {
-      RuleDescription: this.ruleDescription,
-      OwningSolutionId: this.owningSolutionId,
-      UniqueName: this.uniqueName,
-      ResolutionAction: this.resolutionAction,
-      RuleSetId: this.ruleSetId,
-      RuleArguments: this.ruleArguments,
-      RuleName: this.ruleName,
-      WorkflowReference: this.workflowReference,
-      ResolutionMessage: this.resolutionMessage,
-    };
+    const body = requestBody({
+      RuleDescription: this.Parameters.RuleDescription,
+      OwningSolutionId: this.Parameters.OwningSolutionId,
+      UniqueName: this.Parameters.UniqueName,
+      ResolutionAction: this.Parameters.ResolutionAction,
+      RuleSetId: this.Parameters.RuleSetId,
+      RuleArguments: this.Parameters.RuleArguments,
+      RuleName: this.Parameters.RuleName,
+      WorkflowReference: this.Parameters.WorkflowReference,
+      ResolutionMessage: this.Parameters.ResolutionMessage,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_RegisterSolutionHealthRuleResponse> {
-    const data = await response.json();
-    return msdyn_RegisterSolutionHealthRuleResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RuleDescription: this.ruleDescription,
-      OwningSolutionId: this.owningSolutionId,
-      UniqueName: this.uniqueName,
-      ResolutionAction: this.resolutionAction,
-      RuleSetId: this.ruleSetId,
-      RuleArguments: this.ruleArguments,
-      RuleName: this.ruleName,
-      WorkflowReference: this.workflowReference,
-      ResolutionMessage: this.resolutionMessage,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_RegisterSolutionHealthRuleResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RegisterSolutionHealthRule action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RegisterSolutionHealthRuleResult {
+  "@odata.context"?: string;
+  RuleId: string;
+}
+
+/**
  * msdyn_RegisterSolutionHealthRule response message
+ *
+ * `result` is the value the msdyn_RegisterSolutionHealthRule action returns (see {@link msdyn_RegisterSolutionHealthRuleResult}).
  */
 export class msdyn_RegisterSolutionHealthRuleResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RegisterSolutionHealthRuleResponse) {
+  constructor(public result: msdyn_RegisterSolutionHealthRuleResult) {
     super("msdyn_RegisterSolutionHealthRule");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RegisterSolutionHealthRuleResponse {
-    return new msdyn_RegisterSolutionHealthRuleResponse((data as any).value);
+    return new msdyn_RegisterSolutionHealthRuleResponse(
+      data as msdyn_RegisterSolutionHealthRuleResult
+    );
   }
 }

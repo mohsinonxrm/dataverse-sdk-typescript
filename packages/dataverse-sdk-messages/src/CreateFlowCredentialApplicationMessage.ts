@@ -1,74 +1,95 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CreateFlowCredentialApplication message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateFlowCredentialApplicationRequestParameters {
+  description?: string;
+  certificate: string;
+  applicationId: string;
+  password?: string;
+  sharingtype?: string;
+}
 
 /**
  * CreateFlowCredentialApplication request message
  *
  * Web API Action: CreateFlowCredentialApplication
+ *
+ * The first argument is the id of the flowmachinegroup record to call it on.
  */
 export class CreateFlowCredentialApplicationRequest
   extends OrganizationRequest
   implements Executable<CreateFlowCredentialApplicationResponse>
 {
+  declare readonly Parameters: Readonly<CreateFlowCredentialApplicationRequestParameters>;
+
   constructor(
     public flowmachinegroupId: string,
-    public sharingtype: string,
-    public password: string,
-    public description: string,
-    public certificate: string,
-    public applicationId: string
+    parameters: CreateFlowCredentialApplicationRequestParameters
   ) {
-    super("CreateFlowCredentialApplication");
+    super("CreateFlowCredentialApplication", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowmachinegroups(${this.flowmachinegroupId})/Microsoft.Dynamics.CRM.CreateFlowCredentialApplication`;
+    const url = `${baseUrl}/flowmachinegroups(${odataLiteral.guid(this.flowmachinegroupId)})/Microsoft.Dynamics.CRM.CreateFlowCredentialApplication`;
 
-    const body: Record<string, unknown> = {
-      sharingtype: this.sharingtype,
-      password: this.password,
-      description: this.description,
-      certificate: this.certificate,
-      applicationId: this.applicationId,
-    };
+    const body = requestBody({
+      description: this.Parameters.description,
+      certificate: this.Parameters.certificate,
+      applicationId: this.Parameters.applicationId,
+      password: this.Parameters.password,
+      sharingtype: this.Parameters.sharingtype,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<CreateFlowCredentialApplicationResponse> {
-    const data = await response.json();
-    return CreateFlowCredentialApplicationResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachinegroupId,
-      sharingtype: this.sharingtype,
-      password: this.password,
-      description: this.description,
-      certificate: this.certificate,
-      applicationId: this.applicationId,
-    };
+    // The body is the complex value, with its @odata.context
+    return CreateFlowCredentialApplicationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateFlowCredentialApplication action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateFlowCredentialApplicationResult {
+  "@odata.context"?: string;
+  flowCredentialApplicationId: string;
+}
+
+/**
  * CreateFlowCredentialApplication response message
+ *
+ * `result` is the value the CreateFlowCredentialApplication action returns (see {@link CreateFlowCredentialApplicationResult}).
  */
 export class CreateFlowCredentialApplicationResponse extends OrganizationResponse {
-  constructor(public result: CreateFlowCredentialApplicationResponse) {
+  constructor(public result: CreateFlowCredentialApplicationResult) {
     super("CreateFlowCredentialApplication");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateFlowCredentialApplicationResponse {
-    return new CreateFlowCredentialApplicationResponse((data as any).value);
+    return new CreateFlowCredentialApplicationResponse(
+      data as CreateFlowCredentialApplicationResult
+    );
   }
 }

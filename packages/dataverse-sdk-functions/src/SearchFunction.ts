@@ -1,11 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { AppointmentRequest, SearchResults } from "./types/index.js";
 
 /**
- * Response from Search function
+ * Response from the Search function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface SearchResponse {
+  "@odata.context"?: string;
   SearchResults: SearchResults;
+}
+
+/**
+ * Parameters of the Search function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SearchFunctionParameters {
+  AppointmentRequest?: AppointmentRequest;
 }
 
 /**
@@ -14,7 +27,7 @@ export interface SearchResponse {
  * Unbound function
  */
 export class SearchFunction implements Executable<SearchResponse> {
-  constructor(public readonly appointmentRequest: AppointmentRequest) {}
+  constructor(public readonly parameters: SearchFunctionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/Search`;
@@ -22,9 +35,16 @@ export class SearchFunction implements Executable<SearchResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.appointmentRequest !== undefined) {
+    if (this.parameters.AppointmentRequest !== undefined) {
       aliases.push(`AppointmentRequest=@p1`);
-      params.append("@p1", JSON.stringify(this.appointmentRequest));
+      params.append(
+        "@p1",
+        formatParameterAlias(
+          enumBody(this.parameters.AppointmentRequest, "AppointmentRequest"),
+          "mscrm.AppointmentRequest",
+          "ComplexType"
+        )
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +60,7 @@ export class SearchFunction implements Executable<SearchResponse> {
   }
 
   async parseResponse(response: Response): Promise<SearchResponse> {
-    const data = await response.json();
-    return data as SearchResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as SearchResponse;
   }
 }

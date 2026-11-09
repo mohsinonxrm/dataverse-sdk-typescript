@@ -21,18 +21,14 @@ export class msdyn_CheckDVCopilotStatusRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CheckDVCopilotStatusResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CheckDVCopilotStatusResponse> {
     // No return value (204 No Content)
-    return new msdyn_CheckDVCopilotStatusResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    return Promise.resolve(new msdyn_CheckDVCopilotStatusResponse());
   }
 }
 
@@ -44,7 +40,7 @@ export class msdyn_CheckDVCopilotStatusResponse extends OrganizationResponse {
     super("msdyn_CheckDVCopilotStatus");
   }
 
-  static fromResponse(_data: unknown): msdyn_CheckDVCopilotStatusResponse {
+  static fromResponse(_data?: unknown): msdyn_CheckDVCopilotStatusResponse {
     return new msdyn_CheckDVCopilotStatusResponse();
   }
 }

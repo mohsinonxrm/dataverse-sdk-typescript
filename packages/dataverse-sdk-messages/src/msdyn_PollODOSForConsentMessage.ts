@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_PollODOSForConsent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_PollODOSForConsentRequestParameters {
+  InputData: string;
+}
 
 /**
  * msdyn_PollODOSForConsent request message
@@ -10,36 +19,32 @@ export class msdyn_PollODOSForConsentRequest
   extends OrganizationRequest
   implements Executable<msdyn_PollODOSForConsentResponse>
 {
-  constructor(public inputData: string) {
-    super("msdyn_PollODOSForConsent");
+  declare readonly Parameters: Readonly<msdyn_PollODOSForConsentRequestParameters>;
+
+  constructor(parameters: msdyn_PollODOSForConsentRequestParameters) {
+    super("msdyn_PollODOSForConsent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_PollODOSForConsent`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.Parameters.InputData,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_PollODOSForConsentResponse> {
+  parseResponse(_response: Response): Promise<msdyn_PollODOSForConsentResponse> {
     // No return value (204 No Content)
-    return new msdyn_PollODOSForConsentResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
+    return Promise.resolve(new msdyn_PollODOSForConsentResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class msdyn_PollODOSForConsentResponse extends OrganizationResponse {
     super("msdyn_PollODOSForConsent");
   }
 
-  static fromResponse(_data: unknown): msdyn_PollODOSForConsentResponse {
+  static fromResponse(_data?: unknown): msdyn_PollODOSForConsentResponse {
     return new msdyn_PollODOSForConsentResponse();
   }
 }

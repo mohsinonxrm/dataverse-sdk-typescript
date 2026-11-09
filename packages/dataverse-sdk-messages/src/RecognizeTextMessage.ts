@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the RecognizeText message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RecognizeTextRequestParameters {
+  modelId?: string;
+  base64encoded: string;
+  source?: string;
+}
 
 /**
  * RecognizeText request message
@@ -10,56 +21,59 @@ export class RecognizeTextRequest
   extends OrganizationRequest
   implements Executable<RecognizeTextResponse>
 {
-  constructor(
-    public modelId: string,
-    public base64encoded: string,
-    public source: string
-  ) {
-    super("RecognizeText");
+  declare readonly Parameters: Readonly<RecognizeTextRequestParameters>;
+
+  constructor(parameters: RecognizeTextRequestParameters) {
+    super("RecognizeText", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RecognizeText`;
 
-    const body: Record<string, unknown> = {
-      modelId: this.modelId,
-      base64encoded: this.base64encoded,
-      source: this.source,
-    };
+    const body = requestBody({
+      modelId: this.Parameters.modelId,
+      base64encoded: this.Parameters.base64encoded,
+      source: this.Parameters.source,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<RecognizeTextResponse> {
-    const data = await response.json();
-    return RecognizeTextResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      modelId: this.modelId,
-      base64encoded: this.base64encoded,
-      source: this.source,
-    };
+    // The body is the complex value, with its @odata.context
+    return RecognizeTextResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RecognizeText action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RecognizeTextResult {
+  "@odata.context"?: string;
+  countOfPages: number;
+}
+
+/**
  * RecognizeText response message
+ *
+ * `result` is the value the RecognizeText action returns (see {@link RecognizeTextResult}).
  */
 export class RecognizeTextResponse extends OrganizationResponse {
-  constructor(public result: RecognizeTextResponse) {
+  constructor(public result: RecognizeTextResult) {
     super("RecognizeText");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RecognizeTextResponse {
-    return new RecognizeTextResponse((data as any).value);
+    return new RecognizeTextResponse(data as RecognizeTextResult);
   }
 }

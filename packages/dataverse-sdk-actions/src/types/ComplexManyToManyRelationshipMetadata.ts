@@ -7,23 +7,23 @@ import type { SecurityTypes } from "./SecurityTypes.js";
  * ComplexManyToManyRelationshipMetadata complex type
  */
 export interface ComplexManyToManyRelationshipMetadata {
-  Entity1AssociatedMenuConfiguration: AssociatedMenuConfiguration;
-  Entity2AssociatedMenuConfiguration: AssociatedMenuConfiguration;
-  Entity1LogicalName: string;
-  Entity2LogicalName: string;
-  IntersectEntityName: string;
-  Entity1IntersectAttribute: string;
-  Entity2IntersectAttribute: string;
-  Entity1NavigationPropertyName: string;
-  Entity2NavigationPropertyName: string;
-  IsCustomRelationship: boolean;
-  IsCustomizable: BooleanManagedProperty;
-  IsValidForAdvancedFind: boolean;
-  SchemaName: string;
-  SecurityTypes: SecurityTypes;
-  IsManaged: boolean;
-  RelationshipType: RelationshipType;
-  IntroducedVersion: string;
-  MetadataId: string;
-  HasChanged: boolean;
+  Entity1AssociatedMenuConfiguration?: AssociatedMenuConfiguration;
+  Entity1IntersectAttribute?: string;
+  Entity1LogicalName?: string;
+  Entity1NavigationPropertyName?: string;
+  Entity2AssociatedMenuConfiguration?: AssociatedMenuConfiguration;
+  Entity2IntersectAttribute?: string;
+  Entity2LogicalName?: string;
+  Entity2NavigationPropertyName?: string;
+  HasChanged?: boolean;
+  IntersectEntityName?: string;
+  IntroducedVersion?: string;
+  IsCustomRelationship?: boolean;
+  IsCustomizable?: BooleanManagedProperty;
+  IsManaged?: boolean;
+  IsValidForAdvancedFind?: boolean;
+  MetadataId?: string;
+  RelationshipType?: RelationshipType;
+  SchemaName?: string;
+  SecurityTypes?: SecurityTypes;
 }

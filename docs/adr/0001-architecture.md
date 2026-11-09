@@ -7,7 +7,7 @@
 
 ### Context
 
-We are building a TypeScript SDK for Microsoft Dataverse (Online only) that is usable in both Node and browsers with **ESM-only** distribution and **Node 18+** baseline (native `fetch`). We need a resilient and scalable HTTP client that follows a **Graph SDK–like architecture** with middleware policies (retry, throttling awareness, concurrency control, circuit breaker/bulkhead optional), and exposes two developer entry points: a fluent HTTP/OData front door and a C#-familiar OrganizationService-style front door.
+We are building a TypeScript SDK for Microsoft Dataverse (Online only) that is usable in both Node and browsers with **ESM-only** distribution and **Node 22+** baseline (native `fetch`; originally Node 18+, raised when Node 18 and 20 reached end of life). We need a resilient and scalable HTTP client that follows a **Graph SDK–like architecture** with middleware policies (retry, throttling awareness, concurrency control, circuit breaker/bulkhead optional), and exposes two developer entry points: a fluent HTTP/OData front door and a C#-familiar OrganizationService-style front door.
 
 Dataverse publishes a recommended **degree of parallelism** via the `x-ms-dop-hint` response header and recommends using it rather than guessing a fixed concurrency level. Service protection limits include concurrency enforcement and return specific errors when exceeded, so the SDK must include throttling/resiliency guidance and controls.
 
@@ -17,7 +17,7 @@ Dataverse supports `$batch` operations with **up to 1000** individual requests p
 
 1.  **Monorepo + packages:** Use a monorepo (pnpm workspaces + changesets) publishing packages under `@mohsinonxrm/dataverse-sdk-*`.
 2.  **Core client:** Implement `@mohsinonxrm/dataverse-sdk-core` as the smallest stable layer providing:
-    - Fetch-based request adapter (Node 18+ + browsers).
+    - Fetch-based request adapter (Node 22+ and browsers).
     - Middleware pipeline (Graph-style): auth adapter, OData headers, retry, concurrency limiter, telemetry/logging, optional circuit breaker/bulkhead.
     - Fluent request builder `client.api(path)` supporting full OData query options (select/filter/expand/orderby/top/skip/count/search/apply), Prefer header helpers, paging helpers (single page by default).
 3.  **Two front doors:**
@@ -31,8 +31,15 @@ Dataverse supports `$batch` operations with **up to 1000** individual requests p
     - Retry transient failures: `429` and `>=502`, honoring `Retry-After` and using exponential backoff with jitter.
     - Adaptive global concurrency using `x-ms-dop-hint` when present; otherwise conservative defaults; user override allowed but bounded.
 6.  **Batching:** Provide `$batch` + changeset support in `@mohsinonxrm/dataverse-sdk-batch` with:
-    - default shallow batch size (10) and auto-splitting,
+    - auto-splitting into several `$batch` requests of at most `batchSize` (default 1000) without splitting a change set,
     - hard cap at 1000 per Dataverse limit, and change set support.
+    - (Updated for 2.0.0: the default was planned as 10 but never used; the default is now the Dataverse limit.)
+
+### Status update (2026-11-07, 2.0.0)
+
+- **Circuit breaker and bulkhead are opt-in middleware** (#343). The `circuitBreaker` and `bulkhead` client options were never read and were removed before 2.0.0 (#285); `CircuitBreakerMiddleware` and `BulkheadMiddleware` replace them, added through the client's `middleware` option, next to `AdaptiveThrottlingMiddleware` (#309) and `ChaosMiddleware` (#308).
+- **One main path in the docs (#311).** Both front doors stay, but the docs no longer present them as equals: `client.api()` and the typed operations (the actions and functions packages, and the classes and typed client `dataverse-gen` writes) are the documented main path, and `OrganizationService` with the messages is the compatibility layer for developers coming from the .NET SDK, with a mapping from each .NET call to the main path (`docs/mapping/message-to-webapi.md`). This answers the "Cons" below: the docs say which one to use.
+- **Retries (decision 5).** A `429` is retried for every method. A `502`, `503` or `504` is retried only for idempotent requests (GET, HEAD, OPTIONS, PUT, DELETE, and PATCH with `If-Match`), because the request may already have been applied (#12). `retry.retryNonIdempotent` restores the old behaviour. A `Retry-After` longer than `retry.maxRetryAfterMs` (30 s by default) is returned to the caller instead of waited out (#17).
 
 ### Consequences
 

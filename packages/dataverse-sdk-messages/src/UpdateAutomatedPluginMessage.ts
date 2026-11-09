@@ -1,5 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UpdateAutomatedPlugin message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateAutomatedPluginRequestParameters {
+  SolutionUniqueName?: string;
+  Expression?: string;
+  FxExpressionUniqueName: string;
+  Stage?: number;
+  EntityLogicalName?: string;
+  Context?: string;
+  MessageName?: string;
+  Name?: string;
+}
 
 /**
  * UpdateAutomatedPlugin request message
@@ -10,59 +26,39 @@ export class UpdateAutomatedPluginRequest
   extends OrganizationRequest
   implements Executable<UpdateAutomatedPluginResponse>
 {
-  constructor(
-    public expression: string,
-    public solutionUniqueName: string,
-    public entityLogicalName: string,
-    public context: string,
-    public name: string,
-    public stage: number,
-    public fxExpressionUniqueName: string,
-    public messageName: string
-  ) {
-    super("UpdateAutomatedPlugin");
+  declare readonly Parameters: Readonly<UpdateAutomatedPluginRequestParameters>;
+
+  constructor(parameters: UpdateAutomatedPluginRequestParameters) {
+    super("UpdateAutomatedPlugin", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateAutomatedPlugin`;
 
-    const body: Record<string, unknown> = {
-      Expression: this.expression,
-      SolutionUniqueName: this.solutionUniqueName,
-      EntityLogicalName: this.entityLogicalName,
-      Context: this.context,
-      Name: this.name,
-      Stage: this.stage,
-      FxExpressionUniqueName: this.fxExpressionUniqueName,
-      MessageName: this.messageName,
-    };
+    const body = requestBody({
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      Expression: this.Parameters.Expression,
+      FxExpressionUniqueName: this.Parameters.FxExpressionUniqueName,
+      Stage: this.Parameters.Stage,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Context: this.Parameters.Context,
+      MessageName: this.Parameters.MessageName,
+      Name: this.Parameters.Name,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateAutomatedPluginResponse> {
+  parseResponse(_response: Response): Promise<UpdateAutomatedPluginResponse> {
     // No return value (204 No Content)
-    return new UpdateAutomatedPluginResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Expression: this.expression,
-      SolutionUniqueName: this.solutionUniqueName,
-      EntityLogicalName: this.entityLogicalName,
-      Context: this.context,
-      Name: this.name,
-      Stage: this.stage,
-      FxExpressionUniqueName: this.fxExpressionUniqueName,
-      MessageName: this.messageName,
-    };
+    return Promise.resolve(new UpdateAutomatedPluginResponse());
   }
 }
 
@@ -74,7 +70,7 @@ export class UpdateAutomatedPluginResponse extends OrganizationResponse {
     super("UpdateAutomatedPlugin");
   }
 
-  static fromResponse(_data: unknown): UpdateAutomatedPluginResponse {
+  static fromResponse(_data?: unknown): UpdateAutomatedPluginResponse {
     return new UpdateAutomatedPluginResponse();
   }
 }

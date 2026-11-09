@@ -1,11 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ConditionXmlConversion action
+ * Response from the msdyn_ConditionXmlConversion action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ConditionXmlConversionResponse {
-  OutputString: string;
+  "@odata.context"?: string;
   Exception: string;
+  OutputString: string;
+}
+
+/**
+ * Parameters of the msdyn_ConditionXmlConversion action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ConditionXmlConversionActionParameters {
+  InputType: string;
+  OutputType: string;
+  InputString: string;
+  EntityName: string;
+  EnableUnderNotUnderSupport?: boolean;
 }
 
 /**
@@ -14,37 +30,31 @@ export interface msdyn_ConditionXmlConversionResponse {
  * Unbound action
  */
 export class msdyn_ConditionXmlConversionAction implements Executable<msdyn_ConditionXmlConversionResponse> {
-  constructor(
-    public readonly inputType: string,
-    public readonly outputType: string,
-    public readonly inputString: string,
-    public readonly entityName: string,
-    public readonly enableUnderNotUnderSupport: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_ConditionXmlConversionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ConditionXmlConversion`;
 
-    const body: Record<string, unknown> = {
-      InputType: this.inputType,
-      OutputType: this.outputType,
-      InputString: this.inputString,
-      EntityName: this.entityName,
-      EnableUnderNotUnderSupport: this.enableUnderNotUnderSupport,
-    };
+    const body = requestBody({
+      InputType: this.parameters.InputType,
+      OutputType: this.parameters.OutputType,
+      InputString: this.parameters.InputString,
+      EntityName: this.parameters.EntityName,
+      EnableUnderNotUnderSupport: this.parameters.EnableUnderNotUnderSupport,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_ConditionXmlConversionResponse> {
-    const data = await response.json();
-    return data as msdyn_ConditionXmlConversionResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_ConditionXmlConversionResponse;
   }
 }

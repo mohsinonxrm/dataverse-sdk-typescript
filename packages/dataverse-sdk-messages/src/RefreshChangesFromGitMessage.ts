@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the RefreshChangesFromGit message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RefreshChangesFromGitRequestParameters {
+  SolutionUniqueName: string;
+  LastRefreshTime?: string;
+}
 
 /**
  * RefreshChangesFromGit request message
@@ -10,36 +20,33 @@ export class RefreshChangesFromGitRequest
   extends OrganizationRequest
   implements Executable<RefreshChangesFromGitResponse>
 {
-  constructor(public solutionUniqueName: string) {
-    super("RefreshChangesFromGit");
+  declare readonly Parameters: Readonly<RefreshChangesFromGitRequestParameters>;
+
+  constructor(parameters: RefreshChangesFromGitRequestParameters) {
+    super("RefreshChangesFromGit", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RefreshChangesFromGit`;
 
-    const body: Record<string, unknown> = {
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      LastRefreshTime: this.Parameters.LastRefreshTime,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<RefreshChangesFromGitResponse> {
+  parseResponse(_response: Response): Promise<RefreshChangesFromGitResponse> {
     // No return value (204 No Content)
-    return new RefreshChangesFromGitResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    return Promise.resolve(new RefreshChangesFromGitResponse());
   }
 }
 
@@ -51,7 +58,7 @@ export class RefreshChangesFromGitResponse extends OrganizationResponse {
     super("RefreshChangesFromGit");
   }
 
-  static fromResponse(_data: unknown): RefreshChangesFromGitResponse {
+  static fromResponse(_data?: unknown): RefreshChangesFromGitResponse {
     return new RefreshChangesFromGitResponse();
   }
 }

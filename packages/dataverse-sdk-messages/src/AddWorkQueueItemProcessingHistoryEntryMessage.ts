@@ -1,51 +1,62 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the AddWorkQueueItemProcessingHistoryEntry message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddWorkQueueItemProcessingHistoryEntryRequestParameters {
+  item: EntityReference | AnyEntityPayload;
+}
 
 /**
  * AddWorkQueueItemProcessingHistoryEntry request message
  *
  * Web API Action: AddWorkQueueItemProcessingHistoryEntry
+ *
+ * The first argument is the id of the workqueueitem record to call it on.
  */
 export class AddWorkQueueItemProcessingHistoryEntryRequest
   extends OrganizationRequest
   implements Executable<AddWorkQueueItemProcessingHistoryEntryResponse>
 {
+  declare readonly Parameters: Readonly<AddWorkQueueItemProcessingHistoryEntryRequestParameters>;
+
   constructor(
     public workqueueitemId: string,
-    public item: EntityReference
+    parameters: AddWorkQueueItemProcessingHistoryEntryRequestParameters
   ) {
-    super("AddWorkQueueItemProcessingHistoryEntry");
+    super("AddWorkQueueItemProcessingHistoryEntry", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/workqueueitems(${this.workqueueitemId})/Microsoft.Dynamics.CRM.AddWorkQueueItemProcessingHistoryEntry`;
+    const url = `${baseUrl}/workqueueitems(${odataLiteral.guid(this.workqueueitemId)})/Microsoft.Dynamics.CRM.AddWorkQueueItemProcessingHistoryEntry`;
 
-    const body: Record<string, unknown> = {
-      item: this.item,
-    };
+    const body = requestBody({
+      item: this.Parameters.item,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<AddWorkQueueItemProcessingHistoryEntryResponse> {
+  parseResponse(_response: Response): Promise<AddWorkQueueItemProcessingHistoryEntryResponse> {
     // No return value (204 No Content)
-    return new AddWorkQueueItemProcessingHistoryEntryResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workqueueitemId,
-      item: this.item,
-    };
+    return Promise.resolve(new AddWorkQueueItemProcessingHistoryEntryResponse());
   }
 }
 
@@ -57,7 +68,7 @@ export class AddWorkQueueItemProcessingHistoryEntryResponse extends Organization
     super("AddWorkQueueItemProcessingHistoryEntry");
   }
 
-  static fromResponse(_data: unknown): AddWorkQueueItemProcessingHistoryEntryResponse {
+  static fromResponse(_data?: unknown): AddWorkQueueItemProcessingHistoryEntryResponse {
     return new AddWorkQueueItemProcessingHistoryEntryResponse();
   }
 }

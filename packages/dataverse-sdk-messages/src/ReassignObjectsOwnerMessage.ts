@@ -1,6 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the ReassignObjectsOwner message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ReassignObjectsOwnerRequestParameters {
+  FromPrincipal: EntityReference | AnyEntityPayload;
+  ToPrincipal: EntityReference | AnyEntityPayload;
+  objectType?: number;
+}
 
 /**
  * ReassignObjectsOwner request message
@@ -11,44 +23,34 @@ export class ReassignObjectsOwnerRequest
   extends OrganizationRequest
   implements Executable<ReassignObjectsOwnerResponse>
 {
-  constructor(
-    public fromPrincipal: EntityReference,
-    public toPrincipal: EntityReference,
-    public objectType: number
-  ) {
-    super("ReassignObjectsOwner");
+  declare readonly Parameters: Readonly<ReassignObjectsOwnerRequestParameters>;
+
+  constructor(parameters: ReassignObjectsOwnerRequestParameters) {
+    super("ReassignObjectsOwner", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ReassignObjectsOwner`;
 
-    const body: Record<string, unknown> = {
-      FromPrincipal: this.fromPrincipal,
-      ToPrincipal: this.toPrincipal,
-      objectType: this.objectType,
-    };
+    const body = requestBody({
+      FromPrincipal: this.Parameters.FromPrincipal,
+      ToPrincipal: this.Parameters.ToPrincipal,
+      objectType: this.Parameters.objectType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ReassignObjectsOwnerResponse> {
+  parseResponse(_response: Response): Promise<ReassignObjectsOwnerResponse> {
     // No return value (204 No Content)
-    return new ReassignObjectsOwnerResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FromPrincipal: this.fromPrincipal,
-      ToPrincipal: this.toPrincipal,
-      objectType: this.objectType,
-    };
+    return Promise.resolve(new ReassignObjectsOwnerResponse());
   }
 }
 
@@ -60,7 +62,7 @@ export class ReassignObjectsOwnerResponse extends OrganizationResponse {
     super("ReassignObjectsOwner");
   }
 
-  static fromResponse(_data: unknown): ReassignObjectsOwnerResponse {
+  static fromResponse(_data?: unknown): ReassignObjectsOwnerResponse {
     return new ReassignObjectsOwnerResponse();
   }
 }

@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_FixSLARelationshipsOnTargetEntities message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_FixSLARelationshipsOnTargetEntitiesRequestParameters {
+  SLAEnabledEnitiesToProcess: string;
+}
 
 /**
  * msdyn_FixSLARelationshipsOnTargetEntities request message
@@ -10,38 +19,32 @@ export class msdyn_FixSLARelationshipsOnTargetEntitiesRequest
   extends OrganizationRequest
   implements Executable<msdyn_FixSLARelationshipsOnTargetEntitiesResponse>
 {
-  constructor(public sLAEnabledEnitiesToProcess: string) {
-    super("msdyn_FixSLARelationshipsOnTargetEntities");
+  declare readonly Parameters: Readonly<msdyn_FixSLARelationshipsOnTargetEntitiesRequestParameters>;
+
+  constructor(parameters: msdyn_FixSLARelationshipsOnTargetEntitiesRequestParameters) {
+    super("msdyn_FixSLARelationshipsOnTargetEntities", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_FixSLARelationshipsOnTargetEntities`;
 
-    const body: Record<string, unknown> = {
-      SLAEnabledEnitiesToProcess: this.sLAEnabledEnitiesToProcess,
-    };
+    const body = requestBody({
+      SLAEnabledEnitiesToProcess: this.Parameters.SLAEnabledEnitiesToProcess,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_FixSLARelationshipsOnTargetEntitiesResponse> {
+  parseResponse(_response: Response): Promise<msdyn_FixSLARelationshipsOnTargetEntitiesResponse> {
     // No return value (204 No Content)
-    return new msdyn_FixSLARelationshipsOnTargetEntitiesResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SLAEnabledEnitiesToProcess: this.sLAEnabledEnitiesToProcess,
-    };
+    return Promise.resolve(new msdyn_FixSLARelationshipsOnTargetEntitiesResponse());
   }
 }
 
@@ -53,7 +56,7 @@ export class msdyn_FixSLARelationshipsOnTargetEntitiesResponse extends Organizat
     super("msdyn_FixSLARelationshipsOnTargetEntities");
   }
 
-  static fromResponse(_data: unknown): msdyn_FixSLARelationshipsOnTargetEntitiesResponse {
+  static fromResponse(_data?: unknown): msdyn_FixSLARelationshipsOnTargetEntitiesResponse {
     return new msdyn_FixSLARelationshipsOnTargetEntitiesResponse();
   }
 }

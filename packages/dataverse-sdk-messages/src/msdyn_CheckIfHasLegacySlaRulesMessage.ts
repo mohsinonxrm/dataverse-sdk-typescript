@@ -21,30 +21,41 @@ export class msdyn_CheckIfHasLegacySlaRulesRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfHasLegacySlaRulesResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfHasLegacySlaRulesResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_CheckIfHasLegacySlaRulesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfHasLegacySlaRules action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfHasLegacySlaRulesResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfHasLegacySlaRules response message
+ *
+ * `result` is the value the msdyn_CheckIfHasLegacySlaRules action returns (see {@link msdyn_CheckIfHasLegacySlaRulesResult}).
  */
 export class msdyn_CheckIfHasLegacySlaRulesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfHasLegacySlaRulesResponse) {
+  constructor(public result: msdyn_CheckIfHasLegacySlaRulesResult) {
     super("msdyn_CheckIfHasLegacySlaRules");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfHasLegacySlaRulesResponse {
-    return new msdyn_CheckIfHasLegacySlaRulesResponse((data as any).value);
+    return new msdyn_CheckIfHasLegacySlaRulesResponse(data as msdyn_CheckIfHasLegacySlaRulesResult);
   }
 }

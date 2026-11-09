@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_CheckIfQueueInRTQHasValidAssignmentRuleset action
+ * Response from the msdyn_CheckIfQueueInRTQHasValidAssignmentRuleset action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse {
+  "@odata.context"?: string;
   Message: string;
   ResultEntities: string;
   ReturnStatus: number;
@@ -22,7 +25,7 @@ export class msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetAction implements E
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -30,7 +33,7 @@ export class msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetAction implements E
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CheckIfQueueInRTQHasValidAssignmentRulesetResponse;
   }
 }

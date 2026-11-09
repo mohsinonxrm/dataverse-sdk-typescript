@@ -1,11 +1,35 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { QueryExpression, activityparty } from "./types/index.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
+import type { BulkDeleteOptions, QueryExpression, activityparty } from "./types/index.js";
 
 /**
- * Response from BulkDelete action
+ * Response from the BulkDelete action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface BulkDeleteResponse {
+  "@odata.context"?: string;
   JobId: string;
+}
+
+/**
+ * Parameters of the BulkDelete action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface BulkDeleteActionParameters {
+  QuerySet?: QueryExpression[];
+  JobName: string;
+  SendEmailNotification: boolean;
+  ToRecipients: (EntityReference | EntityPayload<activityparty>)[];
+  CCRecipients: (EntityReference | EntityPayload<activityparty>)[];
+  RecurrencePattern: string;
+  StartDateTime: string;
+  SourceImportId?: string;
+  RunNow?: boolean;
+  Options?: BulkDeleteOptions;
 }
 
 /**
@@ -14,45 +38,36 @@ export interface BulkDeleteResponse {
  * Unbound action
  */
 export class BulkDeleteAction implements Executable<BulkDeleteResponse> {
-  constructor(
-    public readonly querySet: QueryExpression[],
-    public readonly jobName: string,
-    public readonly sendEmailNotification: boolean,
-    public readonly toRecipients: activityparty[],
-    public readonly cCRecipients: activityparty[],
-    public readonly recurrencePattern: string,
-    public readonly startDateTime: string,
-    public readonly sourceImportId: string,
-    public readonly runNow: boolean
-  ) {}
+  constructor(public readonly parameters: BulkDeleteActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BulkDelete`;
 
-    const body: Record<string, unknown> = {
-      QuerySet: this.querySet,
-      JobName: this.jobName,
-      SendEmailNotification: this.sendEmailNotification,
-      ToRecipients: this.toRecipients,
-      CCRecipients: this.cCRecipients,
-      RecurrencePattern: this.recurrencePattern,
-      StartDateTime: this.startDateTime,
-      SourceImportId: this.sourceImportId,
-      RunNow: this.runNow,
-    };
+    const body = requestBody({
+      QuerySet: enumBody(this.parameters.QuerySet, "QueryExpression"),
+      JobName: this.parameters.JobName,
+      SendEmailNotification: this.parameters.SendEmailNotification,
+      ToRecipients: this.parameters.ToRecipients,
+      CCRecipients: this.parameters.CCRecipients,
+      RecurrencePattern: this.parameters.RecurrencePattern,
+      StartDateTime: this.parameters.StartDateTime,
+      SourceImportId: this.parameters.SourceImportId,
+      RunNow: this.parameters.RunNow,
+      Options: this.parameters.Options,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<BulkDeleteResponse> {
-    const data = await response.json();
-    return data as BulkDeleteResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as BulkDeleteResponse;
   }
 }

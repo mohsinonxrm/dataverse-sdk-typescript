@@ -1,11 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_cesinvoke action
+ * Response from the msdyn_cesinvoke action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_cesinvokeResponse {
+  "@odata.context"?: string;
   CESResult: string;
   IsSuccess: string;
+}
+
+/**
+ * Parameters of the msdyn_cesinvoke action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_cesinvokeActionParameters {
+  CallType?: string;
+  EventName?: string;
+  SurveyName?: string;
 }
 
 /**
@@ -14,33 +28,29 @@ export interface msdyn_cesinvokeResponse {
  * Unbound action
  */
 export class msdyn_cesinvokeAction implements Executable<msdyn_cesinvokeResponse> {
-  constructor(
-    public readonly callType: string,
-    public readonly eventName: string,
-    public readonly surveyName: string
-  ) {}
+  constructor(public readonly parameters: msdyn_cesinvokeActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_cesinvoke`;
 
-    const body: Record<string, unknown> = {
-      CallType: this.callType,
-      EventName: this.eventName,
-      SurveyName: this.surveyName,
-    };
+    const body = requestBody({
+      CallType: this.parameters.CallType,
+      EventName: this.parameters.EventName,
+      SurveyName: this.parameters.SurveyName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_cesinvokeResponse> {
-    const data = await response.json();
-    return data as msdyn_cesinvokeResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_cesinvokeResponse;
   }
 }

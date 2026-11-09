@@ -1,11 +1,30 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from FormPredict action
+ * Response from the FormPredict action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface FormPredictResponse {
-  value: EntityReference;
+export type FormPredictResponse = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
+ * Parameters of the FormPredict action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface FormPredictActionParameters {
+  requestedFields: string[];
+  predictorFields: string[];
+  recordValues: string;
+  clientPartnerSource?: string;
+  context?: string;
+  entityName: string;
 }
 
 /**
@@ -14,39 +33,34 @@ export interface FormPredictResponse {
  * Unbound action
  */
 export class FormPredictAction implements Executable<FormPredictResponse> {
-  constructor(
-    public readonly entityName: string,
-    public readonly predictorFields: string[],
-    public readonly context: string,
-    public readonly requestedFields: string[],
-    public readonly recordValues: string,
-    public readonly clientPartnerSource: string
-  ) {}
+  constructor(public readonly parameters: FormPredictActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/FormPredict`;
 
-    const body: Record<string, unknown> = {
-      entityName: this.entityName,
-      predictorFields: this.predictorFields,
-      context: this.context,
-      requestedFields: this.requestedFields,
-      recordValues: this.recordValues,
-      clientPartnerSource: this.clientPartnerSource,
-    };
+    const body = requestBody({
+      requestedFields: this.parameters.requestedFields,
+      predictorFields: this.parameters.predictorFields,
+      recordValues: this.parameters.recordValues,
+      clientPartnerSource: this.parameters.clientPartnerSource,
+      context: this.parameters.context,
+      entityName: this.parameters.entityName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<FormPredictResponse> {
-    const data = await response.json();
-    return data as FormPredictResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
+    return (await response.json()) as FormPredictResponse;
   }
 }

@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrieveMaskedAttributesForEntity function
+ * Response from the RetrieveMaskedAttributesForEntity function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveMaskedAttributesForEntityResponse {
+  "@odata.context"?: string;
   AttributeLogicalNames: string[];
+}
+
+/**
+ * Parameters of the RetrieveMaskedAttributesForEntity function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveMaskedAttributesForEntityFunctionParameters {
+  EntityLogicalName: string;
 }
 
 /**
@@ -13,7 +25,7 @@ export interface RetrieveMaskedAttributesForEntityResponse {
  * Unbound function
  */
 export class RetrieveMaskedAttributesForEntityFunction implements Executable<RetrieveMaskedAttributesForEntityResponse> {
-  constructor(public readonly entityLogicalName: string) {}
+  constructor(public readonly parameters: RetrieveMaskedAttributesForEntityFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveMaskedAttributesForEntity`;
@@ -21,14 +33,9 @@ export class RetrieveMaskedAttributesForEntityFunction implements Executable<Ret
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityLogicalName !== undefined) {
+    if (this.parameters.EntityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.entityLogicalName === "string"
-          ? `'${this.entityLogicalName}'`
-          : String(this.entityLogicalName)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.EntityLogicalName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -44,7 +51,7 @@ export class RetrieveMaskedAttributesForEntityFunction implements Executable<Ret
   }
 
   async parseResponse(response: Response): Promise<RetrieveMaskedAttributesForEntityResponse> {
-    const data = await response.json();
-    return data as RetrieveMaskedAttributesForEntityResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveMaskedAttributesForEntityResponse;
   }
 }

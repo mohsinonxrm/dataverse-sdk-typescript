@@ -2,9 +2,12 @@ import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-
 import type { AuditPartitionDetail } from "./types/index.js";
 
 /**
- * Response from RetrieveAuditPartitionList function
+ * Response from the RetrieveAuditPartitionList function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveAuditPartitionListResponse {
+  "@odata.context"?: string;
   AuditPartitionDetailCollection: AuditPartitionDetail[];
 }
 
@@ -27,7 +30,7 @@ export class RetrieveAuditPartitionListFunction implements Executable<RetrieveAu
   }
 
   async parseResponse(response: Response): Promise<RetrieveAuditPartitionListResponse> {
-    const data = await response.json();
-    return data as RetrieveAuditPartitionListResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveAuditPartitionListResponse;
   }
 }

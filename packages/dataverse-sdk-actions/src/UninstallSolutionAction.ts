@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UninstallSolution action
+ * Response from the UninstallSolution action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UninstallSolutionResponse {
-  // No content returned
+export type UninstallSolutionResponse = void;
+
+/**
+ * Parameters of the UninstallSolution action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UninstallSolutionActionParameters {
+  SolutionUniqueName: string;
 }
 
 /**
@@ -13,27 +22,27 @@ export interface UninstallSolutionResponse {
  * Unbound action
  */
 export class UninstallSolutionAction implements Executable<UninstallSolutionResponse> {
-  constructor(public readonly solutionUniqueName: string) {}
+  constructor(public readonly parameters: UninstallSolutionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UninstallSolution`;
 
-    const body: Record<string, unknown> = {
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UninstallSolutionResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<UninstallSolutionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

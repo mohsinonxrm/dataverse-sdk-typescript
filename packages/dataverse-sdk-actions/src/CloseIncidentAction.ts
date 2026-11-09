@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { incidentresolution } from "./types/index.js";
 
 /**
- * Response from CloseIncident action
+ * Response from the CloseIncident action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CloseIncidentResponse {
-  // No content returned
+export type CloseIncidentResponse = void;
+
+/**
+ * Parameters of the CloseIncident action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CloseIncidentActionParameters {
+  IncidentResolution: EntityReference | EntityPayload<incidentresolution>;
+  Status: number;
 }
 
 /**
@@ -14,31 +26,28 @@ export interface CloseIncidentResponse {
  * Unbound action
  */
 export class CloseIncidentAction implements Executable<CloseIncidentResponse> {
-  constructor(
-    public readonly incidentResolution: incidentresolution,
-    public readonly status: number
-  ) {}
+  constructor(public readonly parameters: CloseIncidentActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CloseIncident`;
 
-    const body: Record<string, unknown> = {
-      IncidentResolution: this.incidentResolution,
-      Status: this.status,
-    };
+    const body = requestBody({
+      IncidentResolution: this.parameters.IncidentResolution,
+      Status: this.parameters.Status,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<CloseIncidentResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<CloseIncidentResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

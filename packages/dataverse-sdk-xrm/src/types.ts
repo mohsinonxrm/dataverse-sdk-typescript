@@ -3,29 +3,87 @@
  */
 
 /**
- * Represents a reference to an entity record
+ * A record as the Web API returns it: its columns, and annotations such as
+ * `_parentaccountid_value@OData.Community.Display.V1.FormattedValue`, by name.
+ *
+ * `retrieve()`, `retrieveMultiple()`, and `create()`/`update()` with `returnRepresentation`
+ * resolve this type unless you pass your own, e.g. `service.retrieve<Account>(…)`. Each column
+ * is `unknown`, so narrow it (or pass a type) before using it.
+ *
+ * @example
+ * ```typescript
+ * const account = await service.retrieve('accounts', id, { select: ['name'] });
+ * const name = typeof account.name === 'string' ? account.name : '';
+ * await service.update('accounts', id, { name: 'New name' }, { etag: account['@odata.etag'] });
+ * ```
  */
-export interface EntityReference {
+export interface EntityRecord {
+  /** The record's version, for optimistic concurrency (`UpdateOptions.etag`, `DeleteOptions.etag`). */
+  "@odata.etag"?: string;
+  /** The metadata URL of the response. */
+  "@odata.context"?: string;
+  /** A column or an annotation. */
+  [property: string]: unknown;
+}
+
+/**
+ * Options every OrganizationService method takes.
+ */
+export interface OperationOptions {
   /**
-   * The logical name of the entity (e.g., 'account', 'contact')
+   * Cancels the operation: the request in flight (and any request the operation has not sent
+   * yet) is aborted, and the call rejects with the core `DataverseAbortError`, whose `name` is
+   * `"AbortError"`. A signal that is already aborted rejects without sending anything.
    */
-  logicalName: string;
+  signal?: AbortSignal;
+}
+
+/**
+ * Options for the OrganizationService constructor
+ */
+export interface OrganizationServiceOptions {
+  /**
+   * Entity set names by logical name, e.g. `{ new_widget: "new_widgets" }`. These are used
+   * without a metadata lookup; other logical names are looked up once and cached.
+   */
+  entitySetNames?: Record<string, string>;
+}
+
+/**
+ * One navigation property to expand, with its nested query options. Becomes
+ * `navigationProperty($select=…;$filter=…;$orderby=…;$top=…)` in `$expand`.
+ */
+export interface ExpandOption {
+  /**
+   * Navigation property name (e.g. 'primarycontactid', 'contact_customer_accounts')
+   */
+  navigationProperty: string;
 
   /**
-   * The GUID identifier of the record
+   * Specific fields to select from the expanded entity
    */
-  id: string;
+  select?: string[];
 
   /**
-   * Optional name/display value of the referenced entity
+   * Filter for the expanded entity (collection-valued navigation properties only)
    */
-  name?: string;
+  filter?: string;
+
+  /**
+   * OrderBy for the expanded entity (collection-valued navigation properties only)
+   */
+  orderBy?: string;
+
+  /**
+   * Top for the expanded entity (collection-valued navigation properties only)
+   */
+  top?: number;
 }
 
 /**
  * Options for create operations
  */
-export interface CreateOptions {
+export interface CreateOptions extends OperationOptions {
   /**
    * Return the created entity in the response
    * Sets Prefer: return=representation header
@@ -38,8 +96,15 @@ export interface CreateOptions {
   select?: string[];
 
   /**
-   * Suppress duplicate detection rules
-   * Sets MSCRM.SuppressDuplicateDetection header
+   * Run duplicate detection rules for this request: sends `MSCRM.SuppressDuplicateDetection: false`,
+   * and a duplicate rejects with `DataverseDuplicateError` (412). The Web API skips duplicate
+   * detection by default, so leave this off to skip it.
+   */
+  detectDuplicates?: boolean;
+
+  /**
+   * The Web API skips duplicate detection by default, so `true` (or leaving it out) changes
+   * nothing. `false` runs duplicate detection, the same as `detectDuplicates: true`.
    */
   suppressDuplicateDetection?: boolean;
 
@@ -58,43 +123,17 @@ export interface CreateOptions {
 /**
  * Options for retrieve operations
  */
-export interface RetrieveOptions {
+export interface RetrieveOptions extends OperationOptions {
   /**
    * Specific columns/attributes to retrieve
    */
   select?: string[];
 
   /**
-   * Related entities to expand
+   * Related entities to expand: a raw `$expand` value, or a list of {@link ExpandOption}s that
+   * are combined into one `$expand`
    */
-  expand?:
-    | string
-    | Array<{
-        /**
-         * Navigation property name
-         */
-        navigationProperty: string;
-
-        /**
-         * Specific fields to select from the expanded entity
-         */
-        select?: string[];
-
-        /**
-         * Filter for the expanded entity
-         */
-        filter?: string;
-
-        /**
-         * OrderBy for the expanded entity
-         */
-        orderBy?: string;
-
-        /**
-         * Top for the expanded entity
-         */
-        top?: number;
-      }>;
+  expand?: string | ExpandOption[];
 
   /**
    * User ID to impersonate for this operation
@@ -111,10 +150,10 @@ export interface RetrieveOptions {
 /**
  * Options for update operations
  */
-export interface UpdateOptions {
+export interface UpdateOptions extends OperationOptions {
   /**
-   * ETag value for optimistic concurrency
-   * Sets If-Match header
+   * ETag value for optimistic concurrency, sent as `If-Match`. Without it, `If-Match: *` is sent,
+   * so the update fails with 404 instead of creating a missing record.
    */
   etag?: string;
 
@@ -130,8 +169,15 @@ export interface UpdateOptions {
   select?: string[];
 
   /**
-   * Suppress duplicate detection rules
-   * Sets MSCRM.SuppressDuplicateDetection header
+   * Run duplicate detection rules for this request: sends `MSCRM.SuppressDuplicateDetection: false`,
+   * and a duplicate rejects with `DataverseDuplicateError` (412). The Web API skips duplicate
+   * detection by default, so leave this off to skip it.
+   */
+  detectDuplicates?: boolean;
+
+  /**
+   * The Web API skips duplicate detection by default, so `true` (or leaving it out) changes
+   * nothing. `false` runs duplicate detection, the same as `detectDuplicates: true`.
    */
   suppressDuplicateDetection?: boolean;
 
@@ -150,7 +196,7 @@ export interface UpdateOptions {
 /**
  * Options for delete operations
  */
-export interface DeleteOptions {
+export interface DeleteOptions extends OperationOptions {
   /**
    * ETag value for optimistic concurrency
    * Sets If-Match header
@@ -172,7 +218,7 @@ export interface DeleteOptions {
 /**
  * Options for associate operations
  */
-export interface AssociateOptions {
+export interface AssociateOptions extends OperationOptions {
   /**
    * User ID to impersonate for this operation
    * Sets MSCRMCallerID header
@@ -188,7 +234,7 @@ export interface AssociateOptions {
 /**
  * Options for disassociate operations
  */
-export interface DisassociateOptions {
+export interface DisassociateOptions extends OperationOptions {
   /**
    * User ID to impersonate for this operation
    * Sets MSCRMCallerID header
@@ -204,7 +250,7 @@ export interface DisassociateOptions {
 /**
  * Options for retrieveMultiple operations
  */
-export interface RetrieveMultipleOptions {
+export interface RetrieveMultipleOptions extends OperationOptions {
   /**
    * Specific columns/attributes to retrieve
    */
@@ -226,9 +272,10 @@ export interface RetrieveMultipleOptions {
   top?: number;
 
   /**
-   * Number of records to skip (for paging)
+   * Records per page (`Prefer: odata.maxpagesize`, at most 5,000). Dataverse has no `$skip`:
+   * page with the result's `@odata.nextLink` instead, passing the same `maxPageSize`.
    */
-  skip?: number;
+  maxPageSize?: number;
 
   /**
    * Include count of total matching records
@@ -236,17 +283,10 @@ export interface RetrieveMultipleOptions {
   count?: boolean;
 
   /**
-   * Related entities to expand
+   * Related entities to expand: a raw `$expand` value, or a list of {@link ExpandOption}s that
+   * are combined into one `$expand`
    */
-  expand?:
-    | string
-    | Array<{
-        navigationProperty: string;
-        select?: string[];
-        filter?: string;
-        orderBy?: string;
-        top?: number;
-      }>;
+  expand?: string | ExpandOption[];
 
   /**
    * User ID to impersonate for this operation
@@ -261,10 +301,10 @@ export interface RetrieveMultipleOptions {
 }
 
 /**
- * Result from retrieveMultiple operation
+ * Result from retrieveMultiple operation. `T` is the record type: {@link EntityRecord} unless
+ * you pass your own.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface RetrieveMultipleResult<T = any> {
+export interface RetrieveMultipleResult<T = EntityRecord> {
   /**
    * Array of retrieved entities
    */

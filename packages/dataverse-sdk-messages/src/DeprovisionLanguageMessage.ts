@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the DeprovisionLanguage message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeprovisionLanguageRequestParameters {
+  Language: number;
+  CleanupLanguageRows?: boolean;
+}
 
 /**
  * DeprovisionLanguage request message
@@ -10,41 +20,33 @@ export class DeprovisionLanguageRequest
   extends OrganizationRequest
   implements Executable<DeprovisionLanguageResponse>
 {
-  constructor(
-    public language: number,
-    public cleanupLanguageRows: boolean
-  ) {
-    super("DeprovisionLanguage");
+  declare readonly Parameters: Readonly<DeprovisionLanguageRequestParameters>;
+
+  constructor(parameters: DeprovisionLanguageRequestParameters) {
+    super("DeprovisionLanguage", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeprovisionLanguage`;
 
-    const body: Record<string, unknown> = {
-      Language: this.language,
-      CleanupLanguageRows: this.cleanupLanguageRows,
-    };
+    const body = requestBody({
+      Language: this.Parameters.Language,
+      CleanupLanguageRows: this.Parameters.CleanupLanguageRows,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<DeprovisionLanguageResponse> {
+  parseResponse(_response: Response): Promise<DeprovisionLanguageResponse> {
     // No return value (204 No Content)
-    return new DeprovisionLanguageResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Language: this.language,
-      CleanupLanguageRows: this.cleanupLanguageRows,
-    };
+    return Promise.resolve(new DeprovisionLanguageResponse());
   }
 }
 
@@ -56,7 +58,7 @@ export class DeprovisionLanguageResponse extends OrganizationResponse {
     super("DeprovisionLanguage");
   }
 
-  static fromResponse(_data: unknown): DeprovisionLanguageResponse {
+  static fromResponse(_data?: unknown): DeprovisionLanguageResponse {
     return new DeprovisionLanguageResponse();
   }
 }

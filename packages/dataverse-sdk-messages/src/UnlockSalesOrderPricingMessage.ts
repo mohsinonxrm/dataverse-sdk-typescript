@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UnlockSalesOrderPricing message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UnlockSalesOrderPricingRequestParameters {
+  SalesOrderId: string;
+}
 
 /**
  * UnlockSalesOrderPricing request message
@@ -10,36 +19,32 @@ export class UnlockSalesOrderPricingRequest
   extends OrganizationRequest
   implements Executable<UnlockSalesOrderPricingResponse>
 {
-  constructor(public salesOrderId: string) {
-    super("UnlockSalesOrderPricing");
+  declare readonly Parameters: Readonly<UnlockSalesOrderPricingRequestParameters>;
+
+  constructor(parameters: UnlockSalesOrderPricingRequestParameters) {
+    super("UnlockSalesOrderPricing", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UnlockSalesOrderPricing`;
 
-    const body: Record<string, unknown> = {
-      SalesOrderId: this.salesOrderId,
-    };
+    const body = requestBody({
+      SalesOrderId: this.Parameters.SalesOrderId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UnlockSalesOrderPricingResponse> {
+  parseResponse(_response: Response): Promise<UnlockSalesOrderPricingResponse> {
     // No return value (204 No Content)
-    return new UnlockSalesOrderPricingResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SalesOrderId: this.salesOrderId,
-    };
+    return Promise.resolve(new UnlockSalesOrderPricingResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class UnlockSalesOrderPricingResponse extends OrganizationResponse {
     super("UnlockSalesOrderPricing");
   }
 
-  static fromResponse(_data: unknown): UnlockSalesOrderPricingResponse {
+  static fromResponse(_data?: unknown): UnlockSalesOrderPricingResponse {
     return new UnlockSalesOrderPricingResponse();
   }
 }

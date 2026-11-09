@@ -21,30 +21,45 @@ export class msdyn_CheckIfCSFormsFromUnmanagedLayerRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfCSFormsFromUnmanagedLayerResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfCSFormsFromUnmanagedLayerResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_CheckIfCSFormsFromUnmanagedLayerResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfCSFormsFromUnmanagedLayer action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfCSFormsFromUnmanagedLayerResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfCSFormsFromUnmanagedLayer response message
+ *
+ * `result` is the value the msdyn_CheckIfCSFormsFromUnmanagedLayer action returns (see {@link msdyn_CheckIfCSFormsFromUnmanagedLayerResult}).
  */
 export class msdyn_CheckIfCSFormsFromUnmanagedLayerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfCSFormsFromUnmanagedLayerResponse) {
+  constructor(public result: msdyn_CheckIfCSFormsFromUnmanagedLayerResult) {
     super("msdyn_CheckIfCSFormsFromUnmanagedLayer");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfCSFormsFromUnmanagedLayerResponse {
-    return new msdyn_CheckIfCSFormsFromUnmanagedLayerResponse((data as any).value);
+    return new msdyn_CheckIfCSFormsFromUnmanagedLayerResponse(
+      data as msdyn_CheckIfCSFormsFromUnmanagedLayerResult
+    );
   }
 }

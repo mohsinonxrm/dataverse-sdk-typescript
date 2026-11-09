@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * PvaDeleteBotComponentCollection request message
  *
  * Web API Action: PvaDeleteBotComponentCollection
+ *
+ * The first argument is the id of the botcomponentcollection record to call it on.
  */
 export class PvaDeleteBotComponentCollectionRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class PvaDeleteBotComponentCollectionRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/botcomponentcollections(${this.botcomponentcollectionId})/Microsoft.Dynamics.CRM.PvaDeleteBotComponentCollection`;
+    const url = `${baseUrl}/botcomponentcollections(${odataLiteral.guid(this.botcomponentcollectionId)})/Microsoft.Dynamics.CRM.PvaDeleteBotComponentCollection`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaDeleteBotComponentCollectionResponse> {
+  parseResponse(_response: Response): Promise<PvaDeleteBotComponentCollectionResponse> {
     // No return value (204 No Content)
-    return new PvaDeleteBotComponentCollectionResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.botcomponentcollectionId,
-    };
+    return Promise.resolve(new PvaDeleteBotComponentCollectionResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class PvaDeleteBotComponentCollectionResponse extends OrganizationRespons
     super("PvaDeleteBotComponentCollection");
   }
 
-  static fromResponse(_data: unknown): PvaDeleteBotComponentCollectionResponse {
+  static fromResponse(_data?: unknown): PvaDeleteBotComponentCollectionResponse {
     return new PvaDeleteBotComponentCollectionResponse();
   }
 }

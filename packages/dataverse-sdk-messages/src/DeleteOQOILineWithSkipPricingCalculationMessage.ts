@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the DeleteOQOILineWithSkipPricingCalculation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteOQOILineWithSkipPricingCalculationRequestParameters {
+  entityLogicalName: string;
+  entityId: string;
+}
 
 /**
  * DeleteOQOILineWithSkipPricingCalculation request message
@@ -10,43 +20,33 @@ export class DeleteOQOILineWithSkipPricingCalculationRequest
   extends OrganizationRequest
   implements Executable<DeleteOQOILineWithSkipPricingCalculationResponse>
 {
-  constructor(
-    public entityLogicalName: string,
-    public entityId: string
-  ) {
-    super("DeleteOQOILineWithSkipPricingCalculation");
+  declare readonly Parameters: Readonly<DeleteOQOILineWithSkipPricingCalculationRequestParameters>;
+
+  constructor(parameters: DeleteOQOILineWithSkipPricingCalculationRequestParameters) {
+    super("DeleteOQOILineWithSkipPricingCalculation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeleteOQOILineWithSkipPricingCalculation`;
 
-    const body: Record<string, unknown> = {
-      entityLogicalName: this.entityLogicalName,
-      entityId: this.entityId,
-    };
+    const body = requestBody({
+      entityLogicalName: this.Parameters.entityLogicalName,
+      entityId: this.Parameters.entityId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<DeleteOQOILineWithSkipPricingCalculationResponse> {
+  parseResponse(_response: Response): Promise<DeleteOQOILineWithSkipPricingCalculationResponse> {
     // No return value (204 No Content)
-    return new DeleteOQOILineWithSkipPricingCalculationResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entityLogicalName: this.entityLogicalName,
-      entityId: this.entityId,
-    };
+    return Promise.resolve(new DeleteOQOILineWithSkipPricingCalculationResponse());
   }
 }
 
@@ -58,7 +58,7 @@ export class DeleteOQOILineWithSkipPricingCalculationResponse extends Organizati
     super("DeleteOQOILineWithSkipPricingCalculation");
   }
 
-  static fromResponse(_data: unknown): DeleteOQOILineWithSkipPricingCalculationResponse {
+  static fromResponse(_data?: unknown): DeleteOQOILineWithSkipPricingCalculationResponse {
     return new DeleteOQOILineWithSkipPricingCalculationResponse();
   }
 }

@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the DiscoverFabricAISkills message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DiscoverFabricAISkillsRequestParameters {
+  fabricEnvironment?: string;
+  workspaceId: string;
+}
 
 /**
  * DiscoverFabricAISkills request message
@@ -10,53 +20,58 @@ export class DiscoverFabricAISkillsRequest
   extends OrganizationRequest
   implements Executable<DiscoverFabricAISkillsResponse>
 {
-  constructor(
-    public workspaceId: string,
-    public fabricEnvironment: string
-  ) {
-    super("DiscoverFabricAISkills");
+  declare readonly Parameters: Readonly<DiscoverFabricAISkillsRequestParameters>;
+
+  constructor(parameters: DiscoverFabricAISkillsRequestParameters) {
+    super("DiscoverFabricAISkills", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DiscoverFabricAISkills`;
 
-    const body: Record<string, unknown> = {
-      workspaceId: this.workspaceId,
-      fabricEnvironment: this.fabricEnvironment,
-    };
+    const body = requestBody({
+      fabricEnvironment: this.Parameters.fabricEnvironment,
+      workspaceId: this.Parameters.workspaceId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<DiscoverFabricAISkillsResponse> {
-    const data = await response.json();
-    return DiscoverFabricAISkillsResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      workspaceId: this.workspaceId,
-      fabricEnvironment: this.fabricEnvironment,
-    };
+    // The body is the complex value, with its @odata.context
+    return DiscoverFabricAISkillsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the DiscoverFabricAISkills action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface DiscoverFabricAISkillsResult {
+  "@odata.context"?: string;
+  fabricAISkills: string;
+}
+
+/**
  * DiscoverFabricAISkills response message
+ *
+ * `result` is the value the DiscoverFabricAISkills action returns (see {@link DiscoverFabricAISkillsResult}).
  */
 export class DiscoverFabricAISkillsResponse extends OrganizationResponse {
-  constructor(public result: DiscoverFabricAISkillsResponse) {
+  constructor(public result: DiscoverFabricAISkillsResult) {
     super("DiscoverFabricAISkills");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): DiscoverFabricAISkillsResponse {
-    return new DiscoverFabricAISkillsResponse((data as any).value);
+    return new DiscoverFabricAISkillsResponse(data as DiscoverFabricAISkillsResult);
   }
 }

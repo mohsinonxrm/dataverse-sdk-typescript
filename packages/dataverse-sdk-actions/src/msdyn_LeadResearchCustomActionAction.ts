@@ -1,13 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_LeadResearchCustomAction action
+ * Response from the msdyn_LeadResearchCustomAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_LeadResearchCustomActionResponse {
-  ResearchResponse: string;
-  IsSuccess: boolean;
-  StatusCode: number;
+  "@odata.context"?: string;
   ErrorMessage: string;
+  IsSuccess: boolean;
+  ResearchResponse: string;
+  StatusCode: number;
+}
+
+/**
+ * Parameters of the msdyn_LeadResearchCustomAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_LeadResearchCustomActionActionParameters {
+  ResearchRequest?: string;
 }
 
 /**
@@ -16,27 +28,27 @@ export interface msdyn_LeadResearchCustomActionResponse {
  * Unbound action
  */
 export class msdyn_LeadResearchCustomActionAction implements Executable<msdyn_LeadResearchCustomActionResponse> {
-  constructor(public readonly researchRequest: string) {}
+  constructor(public readonly parameters: msdyn_LeadResearchCustomActionActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_LeadResearchCustomAction`;
 
-    const body: Record<string, unknown> = {
-      ResearchRequest: this.researchRequest,
-    };
+    const body = requestBody({
+      ResearchRequest: this.parameters.ResearchRequest,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_LeadResearchCustomActionResponse> {
-    const data = await response.json();
-    return data as msdyn_LeadResearchCustomActionResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_LeadResearchCustomActionResponse;
   }
 }

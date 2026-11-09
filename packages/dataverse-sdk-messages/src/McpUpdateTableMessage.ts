@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the McpUpdateTable message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface McpUpdateTableRequestParameters {
+  description?: string;
+  newDisplayName?: string;
+  item: string;
+  tablename: string;
+}
 
 /**
  * McpUpdateTable request message
@@ -10,59 +22,61 @@ export class McpUpdateTableRequest
   extends OrganizationRequest
   implements Executable<McpUpdateTableResponse>
 {
-  constructor(
-    public newDisplayName: string,
-    public tablename: string,
-    public item: string,
-    public description: string
-  ) {
-    super("McpUpdateTable");
+  declare readonly Parameters: Readonly<McpUpdateTableRequestParameters>;
+
+  constructor(parameters: McpUpdateTableRequestParameters) {
+    super("McpUpdateTable", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/McpUpdateTable`;
 
-    const body: Record<string, unknown> = {
-      newDisplayName: this.newDisplayName,
-      tablename: this.tablename,
-      item: this.item,
-      description: this.description,
-    };
+    const body = requestBody({
+      description: this.Parameters.description,
+      newDisplayName: this.Parameters.newDisplayName,
+      item: this.Parameters.item,
+      tablename: this.Parameters.tablename,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<McpUpdateTableResponse> {
-    const data = await response.json();
-    return McpUpdateTableResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      newDisplayName: this.newDisplayName,
-      tablename: this.tablename,
-      item: this.item,
-      description: this.description,
-    };
+    // The body is the complex value, with its @odata.context
+    return McpUpdateTableResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the McpUpdateTable action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface McpUpdateTableResult {
+  "@odata.context"?: string;
+  successMessage: string;
+  usage: string;
+}
+
+/**
  * McpUpdateTable response message
+ *
+ * `result` is the value the McpUpdateTable action returns (see {@link McpUpdateTableResult}).
  */
 export class McpUpdateTableResponse extends OrganizationResponse {
-  constructor(public result: McpUpdateTableResponse) {
+  constructor(public result: McpUpdateTableResult) {
     super("McpUpdateTable");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): McpUpdateTableResponse {
-    return new McpUpdateTableResponse((data as any).value);
+    return new McpUpdateTableResponse(data as McpUpdateTableResult);
   }
 }

@@ -1,9 +1,16 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from GetHeaderColumnsImportFile function
+ * Response from the GetHeaderColumnsImportFile function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetHeaderColumnsImportFileResponse {
+  "@odata.context"?: string;
   Columns: string[];
 }
 
@@ -12,13 +19,15 @@ export interface GetHeaderColumnsImportFileResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.importfile)
+ *
+ * The first argument is the id of the importfile record to call it on.
  */
 export class GetHeaderColumnsImportFileFunction implements Executable<GetHeaderColumnsImportFileResponse> {
   constructor(public readonly importfileId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/importfiles(${this.importfileId})/Microsoft.Dynamics.CRM.GetHeaderColumnsImportFile`;
+    let url = `${baseUrl}/importfiles(${odataLiteral.guid(this.importfileId)})/Microsoft.Dynamics.CRM.GetHeaderColumnsImportFile`;
 
     return {
       method: "GET",
@@ -30,7 +39,7 @@ export class GetHeaderColumnsImportFileFunction implements Executable<GetHeaderC
   }
 
   async parseResponse(response: Response): Promise<GetHeaderColumnsImportFileResponse> {
-    const data = await response.json();
-    return data as GetHeaderColumnsImportFileResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as GetHeaderColumnsImportFileResponse;
   }
 }

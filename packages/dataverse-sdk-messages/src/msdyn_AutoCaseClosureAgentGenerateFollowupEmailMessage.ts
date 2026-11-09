@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_AutoCaseClosureAgentGenerateFollowupEmail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutoCaseClosureAgentGenerateFollowupEmailRequestParameters {
+  Payload: string;
+}
 
 /**
  * msdyn_AutoCaseClosureAgentGenerateFollowupEmail request message
@@ -10,38 +19,34 @@ export class msdyn_AutoCaseClosureAgentGenerateFollowupEmailRequest
   extends OrganizationRequest
   implements Executable<msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse>
 {
-  constructor(public payload: string) {
-    super("msdyn_AutoCaseClosureAgentGenerateFollowupEmail");
+  declare readonly Parameters: Readonly<msdyn_AutoCaseClosureAgentGenerateFollowupEmailRequestParameters>;
+
+  constructor(parameters: msdyn_AutoCaseClosureAgentGenerateFollowupEmailRequestParameters) {
+    super("msdyn_AutoCaseClosureAgentGenerateFollowupEmail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutoCaseClosureAgentGenerateFollowupEmail`;
 
-    const body: Record<string, unknown> = {
-      Payload: this.payload,
-    };
+    const body = requestBody({
+      Payload: this.Parameters.Payload,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse> {
     // No return value (204 No Content)
-    return new msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Payload: this.payload,
-    };
+    return Promise.resolve(new msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse());
   }
 }
 
@@ -53,7 +58,7 @@ export class msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse extends Org
     super("msdyn_AutoCaseClosureAgentGenerateFollowupEmail");
   }
 
-  static fromResponse(_data: unknown): msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse {
+  static fromResponse(_data?: unknown): msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse {
     return new msdyn_AutoCaseClosureAgentGenerateFollowupEmailResponse();
   }
 }

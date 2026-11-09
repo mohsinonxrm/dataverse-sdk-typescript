@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the RemoveCertificateCredential message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveCertificateCredentialRequestParameters {
+  entityId: string;
+  certificateCredentialId?: string;
+  entityLogicalName: string;
+}
 
 /**
  * RemoveCertificateCredential request message
@@ -10,44 +21,34 @@ export class RemoveCertificateCredentialRequest
   extends OrganizationRequest
   implements Executable<RemoveCertificateCredentialResponse>
 {
-  constructor(
-    public certificateCredentialId: string,
-    public entityId: string,
-    public entityLogicalName: string
-  ) {
-    super("RemoveCertificateCredential");
+  declare readonly Parameters: Readonly<RemoveCertificateCredentialRequestParameters>;
+
+  constructor(parameters: RemoveCertificateCredentialRequestParameters) {
+    super("RemoveCertificateCredential", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RemoveCertificateCredential`;
 
-    const body: Record<string, unknown> = {
-      certificateCredentialId: this.certificateCredentialId,
-      entityId: this.entityId,
-      entityLogicalName: this.entityLogicalName,
-    };
+    const body = requestBody({
+      entityId: this.Parameters.entityId,
+      certificateCredentialId: this.Parameters.certificateCredentialId,
+      entityLogicalName: this.Parameters.entityLogicalName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveCertificateCredentialResponse> {
+  parseResponse(_response: Response): Promise<RemoveCertificateCredentialResponse> {
     // No return value (204 No Content)
-    return new RemoveCertificateCredentialResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      certificateCredentialId: this.certificateCredentialId,
-      entityId: this.entityId,
-      entityLogicalName: this.entityLogicalName,
-    };
+    return Promise.resolve(new RemoveCertificateCredentialResponse());
   }
 }
 
@@ -59,7 +60,7 @@ export class RemoveCertificateCredentialResponse extends OrganizationResponse {
     super("RemoveCertificateCredential");
   }
 
-  static fromResponse(_data: unknown): RemoveCertificateCredentialResponse {
+  static fromResponse(_data?: unknown): RemoveCertificateCredentialResponse {
     return new RemoveCertificateCredentialResponse();
   }
 }

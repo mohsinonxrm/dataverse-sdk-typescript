@@ -1,215 +1,204 @@
 /**
  * @fileoverview Utilities for parsing multipart/mixed batch responses
+ *
+ * Parsing is case-insensitive for header names and media types, accepts quoted boundaries,
+ * CRLF or LF line endings and trailing whitespace on boundary lines, and never trims bodies.
  */
 
-import type { BatchResponseStep } from "./types.js";
+import type { BatchResponsePart } from "./types.js";
 
 /**
- * Extracts boundary from Content-Type header
+ * Extracts the boundary parameter from a Content-Type header value.
  *
  * @param contentType - The Content-Type header value
- * @returns The boundary string or null if not found
+ * @returns The boundary (unquoted) or null if not found
  */
 export function extractBoundary(contentType: string): string | null {
-  const match = /boundary=([^;]+)/.exec(contentType);
-  return match ? match[1].trim() : null;
+  const quoted = /(?:^|;)\s*boundary\s*=\s*"([^"]*)"/i.exec(contentType);
+  if (quoted) return quoted[1] === "" ? null : quoted[1];
+  const bare = /(?:^|;)\s*boundary\s*=\s*([^;\s"]+)/i.exec(contentType);
+  return bare ? bare[1] : null;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /**
- * Splits multipart content by boundary
+ * Splits multipart content into its body parts.
+ *
+ * A delimiter is a line holding `--boundary` (or `--boundary--` for the last one), optionally
+ * followed by spaces or tabs. The line break before a delimiter belongs to the delimiter, so it
+ * is not part of the preceding part. The preamble and the epilogue are dropped.
  *
  * @param content - The multipart content
  * @param boundary - The boundary string
- * @returns Array of parts (excluding preamble/epilogue)
+ * @returns The parts, each exactly as it appears between two delimiters
  */
 export function splitMultipart(content: string, boundary: string): string[] {
+  const delimiter = new RegExp(
+    `(?:^|\\r?\\n)--${escapeRegExp(boundary)}(--)?[ \\t]*(?=\\r?\\n|$)`,
+    "g"
+  );
   const parts: string[] = [];
-  const boundaryMarker = `--${boundary}`;
-  const endMarker = `--${boundary}--`;
-
-  const lines = content.split("\r\n");
-  let currentPart: string[] = [];
-  let inPart = false;
-
-  for (const line of lines) {
-    if (line === boundaryMarker) {
-      if (inPart && currentPart.length > 0) {
-        parts.push(currentPart.join("\r\n"));
-        currentPart = [];
-      }
-      inPart = true;
-    } else if (line === endMarker) {
-      if (currentPart.length > 0) {
-        parts.push(currentPart.join("\r\n"));
-      }
-      break;
-    } else if (inPart) {
-      currentPart.push(line);
-    }
+  let start = -1;
+  for (const match of content.matchAll(delimiter)) {
+    if (start >= 0) parts.push(content.slice(start, match.index));
+    if (match[1] === "--") return parts;
+    // The part starts after the line break that ends the delimiter line.
+    const end = match.index + match[0].length;
+    start = content.startsWith("\r\n", end)
+      ? end + 2
+      : content.startsWith("\n", end)
+        ? end + 1
+        : end;
   }
-
+  // No closing delimiter: keep what was read (a truncated response still yields its parts).
+  if (start >= 0 && start < content.length) parts.push(content.slice(start));
   return parts;
 }
 
 /**
- * Parses headers from a response part
- *
- * @param headerLines - Array of header lines
- * @returns Map of header name to value
+ * Splits an entity (headers, blank line, body) at the first blank line.
+ * A block with no blank line is all headers.
  */
-function parseHeaders(headerLines: string[]): Record<string, string> {
-  const headers: Record<string, string> = {};
-
-  for (const line of headerLines) {
-    const colonIndex = line.indexOf(":");
-    if (colonIndex > 0) {
-      const name = line.substring(0, colonIndex).trim();
-      const value = line.substring(colonIndex + 1).trim();
-      headers[name] = value;
-    }
+function splitHeaderBlock(text: string): { headers: Record<string, string>; body: string } {
+  const blank = /\r?\n\r?\n/.exec(text);
+  // A part may start with the blank line itself (no headers).
+  const leading = /^\r?\n/.exec(text);
+  let headerText: string;
+  let body: string;
+  if (leading) {
+    headerText = "";
+    body = text.slice(leading[0].length);
+  } else if (blank) {
+    headerText = text.slice(0, blank.index);
+    body = text.slice(blank.index + blank[0].length);
+  } else {
+    headerText = text.replace(/\r?\n$/, "");
+    body = "";
   }
-
-  return headers;
+  return { headers: parseHeaders(headerText), body };
 }
 
 /**
- * Parses an HTTP response from a batch part
- *
- * @param part - The response part content
- * @returns Parsed response step
+ * Parses header lines into a record with lower-cased names. Repeated names are joined with `, `.
  */
-function parseResponsePart(part: string): Omit<BatchResponseStep, "id"> {
-  const lines = part.split("\r\n");
-
-  // Find where HTTP response starts (after part headers)
-  let httpStartIndex = 0;
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith("HTTP/")) {
-      httpStartIndex = i;
-      break;
-    }
+function parseHeaders(headerText: string): Record<string, string> {
+  const headers: Record<string, string> = {};
+  if (headerText === "") return headers;
+  for (const line of headerText.split(/\r?\n/)) {
+    const colon = line.indexOf(":");
+    if (colon <= 0) continue;
+    const name = line.slice(0, colon).trim().toLowerCase();
+    const value = line.slice(colon + 1).trim();
+    headers[name] = name in headers ? `${headers[name] ?? ""}, ${value}` : value;
   }
+  return headers;
+}
 
-  // Parse HTTP status line
-  const statusLine = lines[httpStartIndex];
-  const statusMatch = /HTTP\/[\d.]+\s+(\d+)\s*(.*)/.exec(statusLine);
+function mediaType(contentType: string | undefined): string {
+  return (contentType ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
+}
+
+function isJsonContentType(contentType: string | undefined): boolean {
+  const type = mediaType(contentType);
+  return type === "application/json" || type.endsWith("+json");
+}
+
+/**
+ * Parses the embedded HTTP response of an `application/http` part.
+ */
+function parseHttpResponse(
+  text: string
+): Pick<BatchResponsePart, "status" | "statusText" | "headers" | "body" | "bodyText"> {
+  const lineEnd = /\r?\n/.exec(text);
+  const statusLine = lineEnd ? text.slice(0, lineEnd.index) : text;
+  // One unambiguous match: the reason phrase starts after a single space or tab (it is trimmed
+  // below), so the pattern stays linear on long runs of whitespace.
+  const statusMatch = /^HTTP\/\d+(?:\.\d+)?[ \t]+(\d{3})(?:[ \t](.*))?$/i.exec(statusLine.trim());
   if (!statusMatch) {
-    throw new Error(`Invalid HTTP status line: ${statusLine}`);
+    throw new Error(`Invalid HTTP status line in batch response part: ${statusLine}`);
   }
+  const rest = lineEnd ? text.slice(lineEnd.index + lineEnd[0].length) : "";
+  const { headers, body: bodyText } = splitHeaderBlock(rest);
 
-  const status = parseInt(statusMatch[1], 10);
-  const statusText = statusMatch[2] || "";
-
-  // Parse response headers
-  let headerEndIndex = httpStartIndex + 1;
-  const headerLines: string[] = [];
-  for (let i = httpStartIndex + 1; i < lines.length; i++) {
-    if (lines[i] === "") {
-      headerEndIndex = i;
-      break;
-    }
-    headerLines.push(lines[i]);
-  }
-
-  const headers = parseHeaders(headerLines);
-
-  // Parse body (everything after empty line)
-  const bodyLines = lines.slice(headerEndIndex + 1);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let body: any;
-
-  if (bodyLines.length > 0) {
-    const bodyText = bodyLines.join("\r\n").trim();
-    if (bodyText) {
-      // Try to parse as JSON
-      const contentType = headers["Content-Type"] || headers["content-type"] || "";
-      if (contentType.includes("application/json")) {
-        try {
-          body = JSON.parse(bodyText);
-        } catch {
-          body = bodyText;
-        }
-      } else {
-        body = bodyText;
+  let body: unknown;
+  if (bodyText !== "") {
+    body = bodyText;
+    if (isJsonContentType(headers["content-type"])) {
+      try {
+        body = JSON.parse(bodyText);
+      } catch {
+        // Not valid JSON after all: keep the text.
       }
     }
   }
 
   return {
-    status,
-    statusText,
+    status: Number(statusMatch[1]),
+    // The reason phrase is optional (group 2 is then undefined at runtime).
+    statusText: statusMatch[2] ? statusMatch[2].trim() : "",
     headers,
     body,
+    bodyText,
   };
 }
 
 /**
- * Extracts Content-ID from part headers
- *
- * @param part - The part content
- * @returns Content-ID or null
+ * Decodes one `application/http` part (with its MIME headers).
  */
-function extractContentId(part: string): string | null {
-  const lines = part.split("\r\n");
-  for (const line of lines) {
-    if (line.toLowerCase().startsWith("content-id:")) {
-      return line.substring(11).trim();
-    }
-  }
-  return null;
+function decodeOperation(
+  mimeHeaders: Record<string, string>,
+  content: string,
+  batchIndex: number,
+  inChangeset: boolean
+): BatchResponsePart {
+  return {
+    ...("content-id" in mimeHeaders ? { contentId: mimeHeaders["content-id"] } : {}),
+    batchIndex,
+    inChangeset,
+    ...parseHttpResponse(content),
+  };
 }
 
 /**
- * Parses a batch response body
+ * Parses a batch response body into one entry per operation response, in the order received.
+ *
+ * Responses inside a change set are flattened in place and keep their `Content-ID`. Responses
+ * outside a change set have none (Dataverse does not echo it), so they are matched to requests
+ * by position: see {@link BatchResponsePart.batchIndex}.
  *
  * @param responseBody - The raw batch response body
  * @param contentType - The Content-Type header from the response
- * @returns Map of request ID to response
+ * @returns Every operation response, in order
  */
 export function decodeBatchResponse(
   responseBody: string,
   contentType: string
-): Map<string, BatchResponseStep> {
+): BatchResponsePart[] {
   const boundary = extractBoundary(contentType);
   if (!boundary) {
     throw new Error("No boundary found in Content-Type header");
   }
 
+  const responses: BatchResponsePart[] = [];
   const parts = splitMultipart(responseBody, boundary);
-  const responses = new Map<string, BatchResponseStep>();
-
-  for (const part of parts) {
-    // Check if this part is a changeset (multipart/mixed)
-    if (part.includes("Content-Type: multipart/mixed")) {
-      // Extract changeset boundary
-      const changesetContentType = /Content-Type: multipart\/mixed; boundary=([^\r\n]+)/.exec(part);
-      if (changesetContentType) {
-        const changesetBoundary = changesetContentType[1].trim();
-        const changesetParts = splitMultipart(part, changesetBoundary);
-
-        for (const changesetPart of changesetParts) {
-          const contentId = extractContentId(changesetPart);
-          if (contentId) {
-            const response = parseResponsePart(changesetPart);
-            responses.set(contentId, {
-              id: contentId,
-              ...response,
-            });
-          }
-        }
+  parts.forEach((part, batchIndex) => {
+    const { headers, body } = splitHeaderBlock(part);
+    const type = mediaType(headers["content-type"]);
+    if (type === "multipart/mixed") {
+      const changesetBoundary = extractBoundary(headers["content-type"] ?? "");
+      if (!changesetBoundary) {
+        throw new Error("No boundary found in a change set part of the batch response");
       }
-    } else if (part.includes("HTTP/")) {
-      // Individual response (not in changeset)
-      const contentId = extractContentId(part);
-      if (contentId) {
-        const response = parseResponsePart(part);
-        responses.set(contentId, {
-          id: contentId,
-          ...response,
-        });
+      for (const inner of splitMultipart(body, changesetBoundary)) {
+        const op = splitHeaderBlock(inner);
+        responses.push(decodeOperation(op.headers, op.body, batchIndex, true));
       }
+    } else {
+      responses.push(decodeOperation(headers, body, batchIndex, false));
     }
-  }
-
+  });
   return responses;
 }

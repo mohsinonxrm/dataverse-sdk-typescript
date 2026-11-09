@@ -1,12 +1,28 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from BeginMachineImageProvisioning action
+ * Response from the BeginMachineImageProvisioning action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface BeginMachineImageProvisioningResponse {
-  flowMachineImageVersionId: string;
+  "@odata.context"?: string;
   flowMachineImageId: string;
+  flowMachineImageVersionId: string;
+}
+
+/**
+ * Parameters of the BeginMachineImageProvisioning action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface BeginMachineImageProvisioningActionParameters {
+  sharedImageGalleryDestination: EntityReference | AnyEntityPayload;
+  vmImageDescription?: string;
+  vmImageName: string;
+  machineImageSource: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -15,35 +31,30 @@ export interface BeginMachineImageProvisioningResponse {
  * Unbound action
  */
 export class BeginMachineImageProvisioningAction implements Executable<BeginMachineImageProvisioningResponse> {
-  constructor(
-    public readonly vmImageDescription: string,
-    public readonly vmImageName: string,
-    public readonly sharedImageGalleryDestination: EntityReference,
-    public readonly machineImageSource: EntityReference
-  ) {}
+  constructor(public readonly parameters: BeginMachineImageProvisioningActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/BeginMachineImageProvisioning`;
 
-    const body: Record<string, unknown> = {
-      vmImageDescription: this.vmImageDescription,
-      vmImageName: this.vmImageName,
-      sharedImageGalleryDestination: this.sharedImageGalleryDestination,
-      machineImageSource: this.machineImageSource,
-    };
+    const body = requestBody({
+      sharedImageGalleryDestination: this.parameters.sharedImageGalleryDestination,
+      vmImageDescription: this.parameters.vmImageDescription,
+      vmImageName: this.parameters.vmImageName,
+      machineImageSource: this.parameters.machineImageSource,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<BeginMachineImageProvisioningResponse> {
-    const data = await response.json();
-    return data as BeginMachineImageProvisioningResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as BeginMachineImageProvisioningResponse;
   }
 }

@@ -1,36 +1,42 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_StartCaseFollowupMonitoring action
+ * Response from the msdyn_StartCaseFollowupMonitoring action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_StartCaseFollowupMonitoringResponse {
-  // No content returned
-}
+export type msdyn_StartCaseFollowupMonitoringResponse = void;
 
 /**
  * msdyn_StartCaseFollowupMonitoring action
  *
  * Bound action
  * Binding parameter: entity (mscrm.incident)
+ *
+ * The first argument is the id of the incident record to call it on.
  */
 export class msdyn_StartCaseFollowupMonitoringAction implements Executable<msdyn_StartCaseFollowupMonitoringResponse> {
   constructor(public readonly incidentId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/incidents(${this.incidentId})/Microsoft.Dynamics.CRM.msdyn_StartCaseFollowupMonitoring`;
+    const url = `${baseUrl}/incidents(${odataLiteral.guid(this.incidentId)})/Microsoft.Dynamics.CRM.msdyn_StartCaseFollowupMonitoring`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_StartCaseFollowupMonitoringResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_StartCaseFollowupMonitoringResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

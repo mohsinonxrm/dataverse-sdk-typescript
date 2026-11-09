@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_OSGetAllOpportunityPredictionModels action
+ * Response from the msdyn_OSGetAllOpportunityPredictionModels action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_OSGetAllOpportunityPredictionModelsResponse {
+  "@odata.context"?: string;
   Predictions: string;
 }
 
@@ -20,7 +23,7 @@ export class msdyn_OSGetAllOpportunityPredictionModelsAction implements Executab
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -28,7 +31,7 @@ export class msdyn_OSGetAllOpportunityPredictionModelsAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdyn_OSGetAllOpportunityPredictionModelsResponse> {
-    const data = await response.json();
-    return data as msdyn_OSGetAllOpportunityPredictionModelsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_OSGetAllOpportunityPredictionModelsResponse;
   }
 }

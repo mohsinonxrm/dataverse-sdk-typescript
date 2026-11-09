@@ -1,11 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunityclose } from "./types/index.js";
 
 /**
- * Response from WinOpportunity action
+ * Response from the WinOpportunity action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface WinOpportunityResponse {
-  // No content returned
+export type WinOpportunityResponse = void;
+
+/**
+ * Parameters of the WinOpportunity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface WinOpportunityActionParameters {
+  OpportunityClose: EntityReference | EntityPayload<opportunityclose>;
+  Caller?: string;
+  Status: number;
 }
 
 /**
@@ -14,33 +27,29 @@ export interface WinOpportunityResponse {
  * Unbound action
  */
 export class WinOpportunityAction implements Executable<WinOpportunityResponse> {
-  constructor(
-    public readonly opportunityClose: opportunityclose,
-    public readonly caller: string,
-    public readonly status: number
-  ) {}
+  constructor(public readonly parameters: WinOpportunityActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/WinOpportunity`;
 
-    const body: Record<string, unknown> = {
-      OpportunityClose: this.opportunityClose,
-      Caller: this.caller,
-      Status: this.status,
-    };
+    const body = requestBody({
+      OpportunityClose: this.parameters.OpportunityClose,
+      Caller: this.parameters.Caller,
+      Status: this.parameters.Status,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<WinOpportunityResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<WinOpportunityResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

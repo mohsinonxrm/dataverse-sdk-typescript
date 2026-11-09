@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_SalesAgents_ProvideConsentAndM365SetupAPI action
+ * Response from the msdyn_SalesAgents_ProvideConsentAndM365SetupAPI action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse {
+  "@odata.context"?: string;
   msdyn_ConnectionName: string;
   msdyn_NextScheduleRun: number;
 }
@@ -21,7 +24,7 @@ export class msdyn_SalesAgents_ProvideConsentAndM365SetupAPIAction implements Ex
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -29,7 +32,7 @@ export class msdyn_SalesAgents_ProvideConsentAndM365SetupAPIAction implements Ex
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_SalesAgents_ProvideConsentAndM365SetupAPIResponse;
   }
 }

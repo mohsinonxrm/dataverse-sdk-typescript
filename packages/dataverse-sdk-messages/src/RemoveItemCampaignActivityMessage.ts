@@ -1,51 +1,63 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { campaignactivityitem } from "./types/index.js";
+
+/**
+ * Parameters of the RemoveItemCampaignActivity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveItemCampaignActivityRequestParameters {
+  CampaignActivityItem: EntityReference | EntityPayload<campaignactivityitem>;
+}
 
 /**
  * RemoveItemCampaignActivity request message
  *
  * Web API Action: RemoveItemCampaignActivity
+ *
+ * The first argument is the id of the campaignactivity record to call it on.
  */
 export class RemoveItemCampaignActivityRequest
   extends OrganizationRequest
   implements Executable<RemoveItemCampaignActivityResponse>
 {
+  declare readonly Parameters: Readonly<RemoveItemCampaignActivityRequestParameters>;
+
   constructor(
     public campaignactivityId: string,
-    public campaignActivityItem: campaignactivityitem
+    parameters: RemoveItemCampaignActivityRequestParameters
   ) {
-    super("RemoveItemCampaignActivity");
+    super("RemoveItemCampaignActivity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/campaignactivitys(${this.campaignactivityId})/Microsoft.Dynamics.CRM.RemoveItemCampaignActivity`;
+    const url = `${baseUrl}/campaignactivities(${odataLiteral.guid(this.campaignactivityId)})/Microsoft.Dynamics.CRM.RemoveItemCampaignActivity`;
 
-    const body: Record<string, unknown> = {
-      CampaignActivityItem: this.campaignActivityItem,
-    };
+    const body = requestBody({
+      CampaignActivityItem: this.Parameters.CampaignActivityItem,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveItemCampaignActivityResponse> {
+  parseResponse(_response: Response): Promise<RemoveItemCampaignActivityResponse> {
     // No return value (204 No Content)
-    return new RemoveItemCampaignActivityResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.campaignactivityId,
-      CampaignActivityItem: this.campaignActivityItem,
-    };
+    return Promise.resolve(new RemoveItemCampaignActivityResponse());
   }
 }
 
@@ -57,7 +69,7 @@ export class RemoveItemCampaignActivityResponse extends OrganizationResponse {
     super("RemoveItemCampaignActivity");
   }
 
-  static fromResponse(_data: unknown): RemoveItemCampaignActivityResponse {
+  static fromResponse(_data?: unknown): RemoveItemCampaignActivityResponse {
     return new RemoveItemCampaignActivityResponse();
   }
 }

@@ -1,0 +1,33 @@
+{
+  "name": "@mohsinonxrm/dataverse-sdk-browser-tests",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Browser smoke tests: the SDK's browser packages bundled with Vite and run in Chromium under a strict Content-Security-Policy. Not published.",
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test:browser": "vitest run --config vitest.config.ts",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.typecheck.json"
+  },
+  "dependencies": {
+    "@azure/msal-browser": "^3.30.0",
+    "@mohsinonxrm/dataverse-sdk-appinsights": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-auth-msal-browser": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-batch": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-discovery": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-files": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-metadata": "workspace:*"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.5",
+    "playwright": "1.63.0",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.5",
+    "vitest": "^4.1.11"
+  }
+}

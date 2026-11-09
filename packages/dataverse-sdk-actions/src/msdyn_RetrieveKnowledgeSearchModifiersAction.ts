@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_RetrieveKnowledgeSearchModifiers action
+ * Response from the msdyn_RetrieveKnowledgeSearchModifiers action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_RetrieveKnowledgeSearchModifiersResponse {
+  "@odata.context"?: string;
   Result: string;
+}
+
+/**
+ * Parameters of the msdyn_RetrieveKnowledgeSearchModifiers action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveKnowledgeSearchModifiersActionParameters {
+  RuntimeMode?: string;
 }
 
 /**
@@ -13,27 +25,29 @@ export interface msdyn_RetrieveKnowledgeSearchModifiersResponse {
  * Unbound action
  */
 export class msdyn_RetrieveKnowledgeSearchModifiersAction implements Executable<msdyn_RetrieveKnowledgeSearchModifiersResponse> {
-  constructor(public readonly runtimeMode: string) {}
+  constructor(
+    public readonly parameters: msdyn_RetrieveKnowledgeSearchModifiersActionParameters = {}
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveKnowledgeSearchModifiers`;
 
-    const body: Record<string, unknown> = {
-      RuntimeMode: this.runtimeMode,
-    };
+    const body = requestBody({
+      RuntimeMode: this.parameters.RuntimeMode,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveKnowledgeSearchModifiersResponse> {
-    const data = await response.json();
-    return data as msdyn_RetrieveKnowledgeSearchModifiersResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_RetrieveKnowledgeSearchModifiersResponse;
   }
 }

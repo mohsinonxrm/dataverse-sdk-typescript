@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAcceleratorMailNotificationToAdmin action
+ * Response from the msdyn_SalesAcceleratorMailNotificationToAdmin action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SalesAcceleratorMailNotificationToAdminResponse {
-  // No content returned
+export type msdyn_SalesAcceleratorMailNotificationToAdminResponse = void;
+
+/**
+ * Parameters of the msdyn_SalesAcceleratorMailNotificationToAdmin action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAcceleratorMailNotificationToAdminActionParameters {
+  InputData?: string;
 }
 
 /**
@@ -13,29 +22,31 @@ export interface msdyn_SalesAcceleratorMailNotificationToAdminResponse {
  * Unbound action
  */
 export class msdyn_SalesAcceleratorMailNotificationToAdminAction implements Executable<msdyn_SalesAcceleratorMailNotificationToAdminResponse> {
-  constructor(public readonly inputData: string) {}
+  constructor(
+    public readonly parameters: msdyn_SalesAcceleratorMailNotificationToAdminActionParameters = {}
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAcceleratorMailNotificationToAdmin`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.parameters.InputData,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAcceleratorMailNotificationToAdminResponse> {
-    // No return value (204 No Content)
-    return {};
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

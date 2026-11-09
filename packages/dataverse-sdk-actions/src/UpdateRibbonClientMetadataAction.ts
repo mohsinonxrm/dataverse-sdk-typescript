@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from UpdateRibbonClientMetadata action
+ * Response from the UpdateRibbonClientMetadata action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpdateRibbonClientMetadataResponse {
-  // No content returned
-}
+export type UpdateRibbonClientMetadataResponse = void;
 
 /**
  * UpdateRibbonClientMetadata action
@@ -20,13 +20,13 @@ export class UpdateRibbonClientMetadataAction implements Executable<UpdateRibbon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateRibbonClientMetadataResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<UpdateRibbonClientMetadataResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,12 +1,29 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrieveMembersBulkOperation function
+ * Response from the RetrieveMembersBulkOperation function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveMembersBulkOperationResponse {
-  value: EntityReference[];
+export type RetrieveMembersBulkOperationResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
+ * Parameters of the RetrieveMembersBulkOperation function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveMembersBulkOperationFunctionParameters {
+  BulkOperationSource: number;
+  EntitySource: number;
 }
 
 /**
@@ -14,36 +31,29 @@ export interface RetrieveMembersBulkOperationResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.bulkoperation)
+ *
+ * The first argument is the id of the bulkoperation record to call it on.
  */
 export class RetrieveMembersBulkOperationFunction implements Executable<RetrieveMembersBulkOperationResponse> {
   constructor(
     public readonly bulkoperationId: string,
-    public readonly bulkOperationSource: number,
-    public readonly entitySource: number
+    public readonly parameters: RetrieveMembersBulkOperationFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/bulkoperations(${this.bulkoperationId})/Microsoft.Dynamics.CRM.RetrieveMembersBulkOperation`;
+    let url = `${baseUrl}/bulkoperations(${odataLiteral.guid(this.bulkoperationId)})/Microsoft.Dynamics.CRM.RetrieveMembersBulkOperation`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.bulkOperationSource !== undefined) {
+    if (this.parameters.BulkOperationSource !== undefined) {
       aliases.push(`BulkOperationSource=@p1`);
-      params.append(
-        "@p1",
-        typeof this.bulkOperationSource === "string"
-          ? `'${this.bulkOperationSource}'`
-          : String(this.bulkOperationSource)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.BulkOperationSource, "Edm.Int32"));
     }
-    if (this.entitySource !== undefined) {
+    if (this.parameters.EntitySource !== undefined) {
       aliases.push(`EntitySource=@p2`);
-      params.append(
-        "@p2",
-        typeof this.entitySource === "string" ? `'${this.entitySource}'` : String(this.entitySource)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.EntitySource, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -59,7 +69,9 @@ export class RetrieveMembersBulkOperationFunction implements Executable<Retrieve
   }
 
   async parseResponse(response: Response): Promise<RetrieveMembersBulkOperationResponse> {
-    const data = await response.json();
-    return data as RetrieveMembersBulkOperationResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveMembersBulkOperationResponse }).value;
   }
 }

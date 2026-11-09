@@ -1,11 +1,29 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CreateEntity action
+ * Response from the msdyn_CreateEntity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CreateEntityResponse {
-  SampleDataIngestionErrors: string;
+  "@odata.context"?: string;
   EntityId: string;
+  SampleDataIngestionErrors: string;
+}
+
+/**
+ * Parameters of the msdyn_CreateEntity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateEntityActionParameters {
+  PreviewData?: string;
+  IsToExistingTable?: boolean;
+  UseUserSettings?: boolean;
+  ConnectionInfo?: string;
+  EntityDefinition: string;
+  SampleData?: string;
+  FileInfo?: string;
 }
 
 /**
@@ -14,41 +32,33 @@ export interface msdyn_CreateEntityResponse {
  * Unbound action
  */
 export class msdyn_CreateEntityAction implements Executable<msdyn_CreateEntityResponse> {
-  constructor(
-    public readonly useUserSettings: boolean,
-    public readonly connectionInfo: string,
-    public readonly fileInfo: string,
-    public readonly previewData: string,
-    public readonly isToExistingTable: boolean,
-    public readonly sampleData: string,
-    public readonly entityDefinition: string
-  ) {}
+  constructor(public readonly parameters: msdyn_CreateEntityActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateEntity`;
 
-    const body: Record<string, unknown> = {
-      UseUserSettings: this.useUserSettings,
-      ConnectionInfo: this.connectionInfo,
-      FileInfo: this.fileInfo,
-      PreviewData: this.previewData,
-      IsToExistingTable: this.isToExistingTable,
-      SampleData: this.sampleData,
-      EntityDefinition: this.entityDefinition,
-    };
+    const body = requestBody({
+      PreviewData: this.parameters.PreviewData,
+      IsToExistingTable: this.parameters.IsToExistingTable,
+      UseUserSettings: this.parameters.UseUserSettings,
+      ConnectionInfo: this.parameters.ConnectionInfo,
+      EntityDefinition: this.parameters.EntityDefinition,
+      SampleData: this.parameters.SampleData,
+      FileInfo: this.parameters.FileInfo,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateEntityResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateEntityResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CreateEntityResponse;
   }
 }

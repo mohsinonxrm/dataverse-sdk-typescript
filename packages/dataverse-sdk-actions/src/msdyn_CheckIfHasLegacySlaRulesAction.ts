@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_CheckIfHasLegacySlaRules action
+ * Response from the msdyn_CheckIfHasLegacySlaRules action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckIfHasLegacySlaRulesResponse {
+  "@odata.context"?: string;
   Message: string;
   ResultEntities: string;
   ReturnStatus: number;
@@ -22,13 +25,13 @@ export class msdyn_CheckIfHasLegacySlaRulesAction implements Executable<msdyn_Ch
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfHasLegacySlaRulesResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfHasLegacySlaRulesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CheckIfHasLegacySlaRulesResponse;
   }
 }

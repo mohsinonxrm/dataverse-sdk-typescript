@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from RemoveAppComponents action
+ * Response from the RemoveAppComponents action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RemoveAppComponentsResponse {
-  // No content returned
+export type RemoveAppComponentsResponse = void;
+
+/**
+ * Parameters of the RemoveAppComponents action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveAppComponentsActionParameters {
+  AppId: string;
+  Components: Record<string, unknown>[];
 }
 
 /**
@@ -13,31 +23,28 @@ export interface RemoveAppComponentsResponse {
  * Unbound action
  */
 export class RemoveAppComponentsAction implements Executable<RemoveAppComponentsResponse> {
-  constructor(
-    public readonly appId: string,
-    public readonly components: Record<string, unknown>[]
-  ) {}
+  constructor(public readonly parameters: RemoveAppComponentsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RemoveAppComponents`;
 
-    const body: Record<string, unknown> = {
-      AppId: this.appId,
-      Components: this.components,
-    };
+    const body = requestBody({
+      AppId: this.parameters.AppId,
+      Components: this.parameters.Components,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveAppComponentsResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<RemoveAppComponentsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

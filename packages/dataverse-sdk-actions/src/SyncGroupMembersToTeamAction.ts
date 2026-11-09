@@ -1,36 +1,42 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from SyncGroupMembersToTeam action
+ * Response from the SyncGroupMembersToTeam action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SyncGroupMembersToTeamResponse {
-  // No content returned
-}
+export type SyncGroupMembersToTeamResponse = void;
 
 /**
  * SyncGroupMembersToTeam action
  *
  * Bound action
  * Binding parameter: entity (mscrm.team)
+ *
+ * The first argument is the id of the team record to call it on.
  */
 export class SyncGroupMembersToTeamAction implements Executable<SyncGroupMembersToTeamResponse> {
   constructor(public readonly teamId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/teams(${this.teamId})/Microsoft.Dynamics.CRM.SyncGroupMembersToTeam`;
+    const url = `${baseUrl}/teams(${odataLiteral.guid(this.teamId)})/Microsoft.Dynamics.CRM.SyncGroupMembersToTeam`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<SyncGroupMembersToTeamResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<SyncGroupMembersToTeamResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

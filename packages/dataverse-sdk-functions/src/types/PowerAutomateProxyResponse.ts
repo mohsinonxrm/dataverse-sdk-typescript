@@ -2,7 +2,7 @@
  * PowerAutomateProxyResponse complex type
  */
 export interface PowerAutomateProxyResponse {
-  HttpStatusCode: number;
-  ResponseHeaders: string;
-  ResponseBody: string;
+  HttpStatusCode?: number;
+  ResponseBody?: string;
+  ResponseHeaders?: string;
 }

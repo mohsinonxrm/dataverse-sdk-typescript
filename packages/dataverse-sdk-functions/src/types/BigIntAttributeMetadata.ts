@@ -1,7 +1,9 @@
+import type { AttributeMetadata } from "./AttributeMetadata.js";
+
 /**
  * BigIntAttributeMetadata entity type
  */
-export interface BigIntAttributeMetadata {
-  MaxValue: number;
-  MinValue: number;
+export interface BigIntAttributeMetadata extends AttributeMetadata {
+  MaxValue?: number;
+  MinValue?: number;
 }

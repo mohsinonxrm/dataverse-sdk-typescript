@@ -1,51 +1,66 @@
 import { DataverseODataError } from "./DataverseODataError.js";
 import { DataverseThrottleError } from "./DataverseThrottleError.js";
+import type { DataverseInnerError } from "./DataverseError.js";
+import { parseRetryAfter } from "../utils/HeaderUtils.js";
+import { headersToRecord, requestIdFrom, responseCorrelationId } from "./responseDetails.js";
 
+/**
+ * The typed error for a failed response: `DataverseThrottleError` for 429, otherwise
+ * `DataverseODataError`. Both carry `status`, `code`, `message`, `headers`, `body` (parsed JSON
+ * or text), `innerError`, `requestId` and, for responses from `DataverseClient.send()`,
+ * `correlationId`.
+ */
 export async function parseODataError(res: Response, rawText?: string): Promise<Error> {
   const status = res.status;
-  const requestId = res.headers.get("x-ms-request-id") ?? res.headers.get("req-id") ?? undefined;
-
-  const retryAfter = res.headers.get("retry-after");
-  const retryAfterMs = retryAfter ? parseRetryAfterMs(retryAfter) : undefined;
+  const requestId = requestIdFrom(res.headers);
+  const correlationId = responseCorrelationId(res);
+  const headers = headersToRecord(res.headers);
+  const retryAfterMs = parseRetryAfter(res.headers.get("retry-after"));
 
   const bodyText = rawText ?? (await safeReadText(res));
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const parsed = safeJson(bodyText);
+  const error = isRecord(parsed) && isRecord(parsed.error) ? parsed.error : undefined;
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-condition
   const message =
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    parsed?.error?.message ?? parsed?.message ?? `HTTP ${String(status)}`;
+    stringOrUndefined(error?.message) ??
+    (isRecord(parsed) ? stringOrUndefined(parsed.message) : undefined) ??
+    `HTTP ${String(status)}`;
+  const code =
+    stringOrUndefined(error?.code) ??
+    (isRecord(parsed) ? stringOrUndefined(parsed.code) : undefined);
+  const innerError = isRecord(error?.innererror)
+    ? (error.innererror as DataverseInnerError)
+    : undefined;
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-  const code = parsed?.error?.code ?? parsed?.code;
-
+  const init = {
+    status,
+    code,
+    requestId,
+    correlationId,
+    headers,
+    innerError,
+    raw: parsed ?? bodyText,
+  };
   if (status === 429) {
-    return new DataverseThrottleError(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      message,
-      {
-        status,
-        code,
-        requestId,
-
-        raw: parsed ?? bodyText,
-        retryAfterMs,
-      }
-    );
+    return new DataverseThrottleError(message, { ...init, retryAfterMs });
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-  return new DataverseODataError(message, { status, code, requestId, raw: parsed ?? bodyText });
+  return new DataverseODataError(message, init);
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function safeJson(text: string): any {
+function safeJson(text: string): unknown {
   try {
-    return JSON.parse(text);
+    return JSON.parse(text) as unknown;
   } catch {
     return undefined;
   }
+}
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+
+function stringOrUndefined(v: unknown): string | undefined {
+  return typeof v === "string" ? v : undefined;
 }
 
 async function safeReadText(res: Response): Promise<string> {
@@ -54,19 +69,4 @@ async function safeReadText(res: Response): Promise<string> {
   } catch {
     return "";
   }
-}
-
-function parseRetryAfterMs(value: string): number | undefined {
-  const s = value.trim();
-  const seconds = Number(s);
-  if (!Number.isNaN(seconds) && Number.isFinite(seconds)) {
-    return Math.max(0, seconds * 1000);
-  }
-  // HTTP-date
-  const date = Date.parse(s);
-  if (!Number.isNaN(date)) {
-    const diff = date - Date.now();
-    return diff > 0 ? diff : 0;
-  }
-  return undefined;
 }

@@ -1,11 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from _MoveRoutingRuleItemAt action
+ * Response from the _MoveRoutingRuleItemAt action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface _MoveRoutingRuleItemAtResponse {
-  // No content returned
+export type _MoveRoutingRuleItemAtResponse = void;
+
+/**
+ * Parameters of the _MoveRoutingRuleItemAt action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _MoveRoutingRuleItemAtActionParameters {
+  RoutingRuleSetId: EntityReference | AnyEntityPayload;
+  RoutingRuleItemIdToMove: EntityReference | AnyEntityPayload;
+  TargetRoutingRuleItemId: EntityReference | AnyEntityPayload;
+  IsBefore: boolean;
+  Options?: string;
 }
 
 /**
@@ -14,37 +28,31 @@ export interface _MoveRoutingRuleItemAtResponse {
  * Unbound action
  */
 export class _MoveRoutingRuleItemAtAction implements Executable<_MoveRoutingRuleItemAtResponse> {
-  constructor(
-    public readonly routingRuleSetId: EntityReference,
-    public readonly routingRuleItemIdToMove: EntityReference,
-    public readonly targetRoutingRuleItemId: EntityReference,
-    public readonly isBefore: boolean,
-    public readonly options: string
-  ) {}
+  constructor(public readonly parameters: _MoveRoutingRuleItemAtActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_MoveRoutingRuleItemAt`;
 
-    const body: Record<string, unknown> = {
-      RoutingRuleSetId: this.routingRuleSetId,
-      RoutingRuleItemIdToMove: this.routingRuleItemIdToMove,
-      TargetRoutingRuleItemId: this.targetRoutingRuleItemId,
-      IsBefore: this.isBefore,
-      Options: this.options,
-    };
+    const body = requestBody({
+      RoutingRuleSetId: this.parameters.RoutingRuleSetId,
+      RoutingRuleItemIdToMove: this.parameters.RoutingRuleItemIdToMove,
+      TargetRoutingRuleItemId: this.parameters.TargetRoutingRuleItemId,
+      IsBefore: this.parameters.IsBefore,
+      Options: this.parameters.Options,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<_MoveRoutingRuleItemAtResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<_MoveRoutingRuleItemAtResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,13 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAdaptiveCardResponse action
+ * Response from the msdyn_SalesAdaptiveCardResponse action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesAdaptiveCardResponseResponse {
+  "@odata.context"?: string;
   msdyn_additionalDetails: string;
   msdyn_summary: string;
-  msdyn_version: string;
   msdyn_summary_raw: string;
+  msdyn_version: string;
+}
+
+/**
+ * Parameters of the msdyn_SalesAdaptiveCardResponse action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAdaptiveCardResponseActionParameters {
+  msdyn_scenario: number;
+  msdyn_id?: string;
+  msdyn_query?: string;
 }
 
 /**
@@ -16,33 +30,29 @@ export interface msdyn_SalesAdaptiveCardResponseResponse {
  * Unbound action
  */
 export class msdyn_SalesAdaptiveCardResponseAction implements Executable<msdyn_SalesAdaptiveCardResponseResponse> {
-  constructor(
-    public readonly msdyn_query: string,
-    public readonly msdyn_id: string,
-    public readonly msdyn_scenario: number
-  ) {}
+  constructor(public readonly parameters: msdyn_SalesAdaptiveCardResponseActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAdaptiveCardResponse`;
 
-    const body: Record<string, unknown> = {
-      msdyn_query: this.msdyn_query,
-      msdyn_id: this.msdyn_id,
-      msdyn_scenario: this.msdyn_scenario,
-    };
+    const body = requestBody({
+      msdyn_scenario: this.parameters.msdyn_scenario,
+      msdyn_id: this.parameters.msdyn_id,
+      msdyn_query: this.parameters.msdyn_query,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAdaptiveCardResponseResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAdaptiveCardResponseResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_SalesAdaptiveCardResponseResponse;
   }
 }

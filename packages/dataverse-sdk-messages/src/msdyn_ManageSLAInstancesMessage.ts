@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_ManageSLAInstances message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ManageSLAInstancesRequestParameters {
+  SLAId: string;
+  RegardingId: string;
+  EntityLogicalName: string;
+  Recalculate?: number;
+}
 
 /**
  * msdyn_ManageSLAInstances request message
@@ -10,47 +22,35 @@ export class msdyn_ManageSLAInstancesRequest
   extends OrganizationRequest
   implements Executable<msdyn_ManageSLAInstancesResponse>
 {
-  constructor(
-    public sLAId: string,
-    public regardingId: string,
-    public entityLogicalName: string,
-    public recalculate: number
-  ) {
-    super("msdyn_ManageSLAInstances");
+  declare readonly Parameters: Readonly<msdyn_ManageSLAInstancesRequestParameters>;
+
+  constructor(parameters: msdyn_ManageSLAInstancesRequestParameters) {
+    super("msdyn_ManageSLAInstances", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ManageSLAInstances`;
 
-    const body: Record<string, unknown> = {
-      SLAId: this.sLAId,
-      RegardingId: this.regardingId,
-      EntityLogicalName: this.entityLogicalName,
-      Recalculate: this.recalculate,
-    };
+    const body = requestBody({
+      SLAId: this.Parameters.SLAId,
+      RegardingId: this.Parameters.RegardingId,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Recalculate: this.Parameters.Recalculate,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ManageSLAInstancesResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ManageSLAInstancesResponse> {
     // No return value (204 No Content)
-    return new msdyn_ManageSLAInstancesResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SLAId: this.sLAId,
-      RegardingId: this.regardingId,
-      EntityLogicalName: this.entityLogicalName,
-      Recalculate: this.recalculate,
-    };
+    return Promise.resolve(new msdyn_ManageSLAInstancesResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_ManageSLAInstancesResponse extends OrganizationResponse {
     super("msdyn_ManageSLAInstances");
   }
 
-  static fromResponse(_data: unknown): msdyn_ManageSLAInstancesResponse {
+  static fromResponse(_data?: unknown): msdyn_ManageSLAInstancesResponse {
     return new msdyn_ManageSLAInstancesResponse();
   }
 }

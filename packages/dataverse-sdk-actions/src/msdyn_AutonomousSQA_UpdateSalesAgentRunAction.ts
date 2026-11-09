@@ -1,10 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AutonomousSQA_UpdateSalesAgentRun action
+ * Response from the msdyn_AutonomousSQA_UpdateSalesAgentRun action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_AutonomousSQA_UpdateSalesAgentRunResponse {
-  // No content returned
+export type msdyn_AutonomousSQA_UpdateSalesAgentRunResponse = void;
+
+/**
+ * Parameters of the msdyn_AutonomousSQA_UpdateSalesAgentRun action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutonomousSQA_UpdateSalesAgentRunActionParameters {
+  msdyn_IsSalesAgentRunComplete?: boolean;
+  msdyn_HasAgentRunStarted?: boolean;
+  msdyn_RetryAfterDate?: string;
+  msdyn_SalesAgentRun?: string;
+  msdyn_HasAgentRunFailed?: boolean;
+  msdyn_TrackingId?: string;
+  msdyn_IsAgentThrottled?: boolean;
+  msdyn_IsNonRetryableError?: boolean;
+  msdyn_SalesMacroAgentType?: number;
 }
 
 /**
@@ -14,46 +31,36 @@ export interface msdyn_AutonomousSQA_UpdateSalesAgentRunResponse {
  */
 export class msdyn_AutonomousSQA_UpdateSalesAgentRunAction implements Executable<msdyn_AutonomousSQA_UpdateSalesAgentRunResponse> {
   constructor(
-    public readonly msdyn_IsNonRetryableError: boolean,
-    public readonly msdyn_IsSalesAgentRunComplete: boolean,
-    public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_HasAgentRunFailed: boolean,
-    public readonly msdyn_IsAgentThrottled: boolean,
-    public readonly msdyn_RetryAfterDate: string,
-    public readonly msdyn_HasAgentRunStarted: boolean,
-    public readonly msdyn_SalesMacroAgentType: number
+    public readonly parameters: msdyn_AutonomousSQA_UpdateSalesAgentRunActionParameters = {}
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutonomousSQA_UpdateSalesAgentRun`;
 
-    const body: Record<string, unknown> = {
-      msdyn_IsNonRetryableError: this.msdyn_IsNonRetryableError,
-      msdyn_IsSalesAgentRunComplete: this.msdyn_IsSalesAgentRunComplete,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_HasAgentRunFailed: this.msdyn_HasAgentRunFailed,
-      msdyn_IsAgentThrottled: this.msdyn_IsAgentThrottled,
-      msdyn_RetryAfterDate: this.msdyn_RetryAfterDate,
-      msdyn_HasAgentRunStarted: this.msdyn_HasAgentRunStarted,
-      msdyn_SalesMacroAgentType: this.msdyn_SalesMacroAgentType,
-    };
+    const body = requestBody({
+      msdyn_IsSalesAgentRunComplete: this.parameters.msdyn_IsSalesAgentRunComplete,
+      msdyn_HasAgentRunStarted: this.parameters.msdyn_HasAgentRunStarted,
+      msdyn_RetryAfterDate: this.parameters.msdyn_RetryAfterDate,
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+      msdyn_HasAgentRunFailed: this.parameters.msdyn_HasAgentRunFailed,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_IsAgentThrottled: this.parameters.msdyn_IsAgentThrottled,
+      msdyn_IsNonRetryableError: this.parameters.msdyn_IsNonRetryableError,
+      msdyn_SalesMacroAgentType: this.parameters.msdyn_SalesMacroAgentType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_AutonomousSQA_UpdateSalesAgentRunResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_AutonomousSQA_UpdateSalesAgentRunResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -2,6 +2,6 @@
  * ExportSolutionAsyncResponse complex type
  */
 export interface ExportSolutionAsyncResponse {
-  AsyncOperationId: string;
-  ExportJobId: string;
+  AsyncOperationId?: string;
+  ExportJobId?: string;
 }

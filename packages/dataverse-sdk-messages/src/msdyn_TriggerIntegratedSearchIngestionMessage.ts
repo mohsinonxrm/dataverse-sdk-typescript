@@ -21,30 +21,41 @@ export class msdyn_TriggerIntegratedSearchIngestionRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_TriggerIntegratedSearchIngestionResponse> {
-    const data = await response.json();
-    return msdyn_TriggerIntegratedSearchIngestionResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_TriggerIntegratedSearchIngestionResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_TriggerIntegratedSearchIngestion action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_TriggerIntegratedSearchIngestionResult {
+  "@odata.context"?: string;
+  msdyn_IntegratedSearchIngestionResponse: string;
+}
+
+/**
  * msdyn_TriggerIntegratedSearchIngestion response message
+ *
+ * `result` is the value the msdyn_TriggerIntegratedSearchIngestion action returns (see {@link msdyn_TriggerIntegratedSearchIngestionResult}).
  */
 export class msdyn_TriggerIntegratedSearchIngestionResponse extends OrganizationResponse {
-  constructor(public result: msdyn_TriggerIntegratedSearchIngestionResponse) {
+  constructor(public result: msdyn_TriggerIntegratedSearchIngestionResult) {
     super("msdyn_TriggerIntegratedSearchIngestion");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_TriggerIntegratedSearchIngestionResponse {
-    return new msdyn_TriggerIntegratedSearchIngestionResponse((data as any).value);
+    return new msdyn_TriggerIntegratedSearchIngestionResponse(
+      data as msdyn_TriggerIntegratedSearchIngestionResult
+    );
   }
 }

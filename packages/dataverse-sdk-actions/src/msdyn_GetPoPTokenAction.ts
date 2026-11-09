@@ -1,10 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetPoPToken action
+ * Response from the msdyn_GetPoPToken action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetPoPTokenResponse {
+  "@odata.context"?: string;
   popToken: string;
+}
+
+/**
+ * Parameters of the msdyn_GetPoPToken action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetPoPTokenActionParameters {
+  scope: string;
+  audience: string;
+  aadObjectId: string;
+  httpMethod: string;
+  secureString: string;
 }
 
 /**
@@ -13,37 +29,31 @@ export interface msdyn_GetPoPTokenResponse {
  * Unbound action
  */
 export class msdyn_GetPoPTokenAction implements Executable<msdyn_GetPoPTokenResponse> {
-  constructor(
-    public readonly scope: string,
-    public readonly audience: string,
-    public readonly aadObjectId: string,
-    public readonly httpMethod: string,
-    public readonly secureString: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetPoPTokenActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetPoPToken`;
 
-    const body: Record<string, unknown> = {
-      scope: this.scope,
-      audience: this.audience,
-      aadObjectId: this.aadObjectId,
-      httpMethod: this.httpMethod,
-      secureString: this.secureString,
-    };
+    const body = requestBody({
+      scope: this.parameters.scope,
+      audience: this.parameters.audience,
+      aadObjectId: this.parameters.aadObjectId,
+      httpMethod: this.parameters.httpMethod,
+      secureString: this.parameters.secureString,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPoPTokenResponse> {
-    const data = await response.json();
-    return data as msdyn_GetPoPTokenResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetPoPTokenResponse;
   }
 }

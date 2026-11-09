@@ -6,18 +6,18 @@ import type { Label } from "./Label.js";
  * ComplexEntityKeyMetadata complex type
  */
 export interface ComplexEntityKeyMetadata {
-  DisplayName: Label;
-  LogicalName: string;
-  SchemaName: string;
-  EntityLogicalName: string;
-  KeyAttributes: string[];
-  IsCustomizable: BooleanManagedProperty;
-  IsManaged: boolean;
-  IntroducedVersion: string;
-  EntityKeyIndexStatus: EntityKeyIndexStatus;
-  IsSynchronous: boolean;
-  IsExportKey: boolean;
-  IsSecondaryKey: boolean;
-  MetadataId: string;
-  HasChanged: boolean;
+  DisplayName?: Label;
+  EntityKeyIndexStatus?: EntityKeyIndexStatus;
+  EntityLogicalName?: string;
+  HasChanged?: boolean;
+  IntroducedVersion?: string;
+  IsCustomizable?: BooleanManagedProperty;
+  IsExportKey?: boolean;
+  IsManaged?: boolean;
+  IsSecondaryKey?: boolean;
+  IsSynchronous?: boolean;
+  KeyAttributes?: string[];
+  LogicalName?: string;
+  MetadataId?: string;
+  SchemaName?: string;
 }

@@ -3,6 +3,8 @@
  * Allows fluent API: client.api('/accounts').options({ retry: {...}, concurrency: {...} })
  */
 
+import type { RetryOptions } from "../abstractions/options.js";
+
 /**
  * Base interface for middleware-specific options
  * This is intentionally empty to act as a marker interface
@@ -14,51 +16,11 @@ export interface MiddlewareOptions {
 }
 
 /**
- * Retry middleware options for per-request overrides
- */
-export interface RetryOptions extends MiddlewareOptions {
-  /**
-   * Maximum number of retry attempts
-   * @default 3
-   */
-  maxRetries?: number;
-
-  /**
-   * Delay between retries in milliseconds
-   * @default 1000
-   */
-  delay?: number;
-
-  /**
-   * Whether to use exponential backoff
-   * @default true
-   */
-  useExponentialBackoff?: boolean;
-
-  /**
-   * HTTP status codes that should trigger a retry
-   * @default [429, 503, 504]
-   */
-  retryableStatusCodes?: number[];
-
-  /**
-   * Custom function to determine if a request should be retried
-   */
-  shouldRetry?: (statusCode: number, error?: Error) => boolean;
-}
-
-/**
- * Concurrency middleware options for per-request overrides
+ * Per-request concurrency options. The limit itself is the client's (`DataverseClientOptions.concurrency`).
  */
 export interface ConcurrencyOptions extends MiddlewareOptions {
   /**
-   * Maximum number of concurrent requests
-   * If not specified, uses client-level default
-   */
-  maxConcurrent?: number;
-
-  /**
-   * Whether to bypass concurrency limiting for this request
+   * Send this request without waiting for a concurrency slot, and without taking one.
    * @default false
    */
   bypass?: boolean;
@@ -103,7 +65,7 @@ export interface LoggingOptions extends MiddlewareOptions {
  * @example
  * ```typescript
  * const options = new RequestOptions([
- *   { type: 'retry', maxRetries: 5, delay: 2000 },
+ *   { type: 'retry', maxRetries: 5, baseDelayMs: 2000 },
  *   { type: 'concurrency', bypass: true }
  * ]);
  *
@@ -111,10 +73,29 @@ export interface LoggingOptions extends MiddlewareOptions {
  * const retryOpts = requestOptions.get('retry');
  * ```
  */
+/** Option types of the built-in middleware, keyed by their `type`. */
+export interface BuiltInMiddlewareOptions {
+  retry: RetryOptions;
+  concurrency: ConcurrencyOptions;
+  telemetry: TelemetryOptions;
+  logging: LoggingOptions;
+}
+
+/**
+ * One entry passed to the `RequestOptions` constructor: the built-in middleware types are
+ * checked, and any other `type` (for custom middleware) takes arbitrary fields.
+ */
+export type MiddlewareOptionEntry =
+  | ({ type: "retry" } & RetryOptions)
+  | ({ type: "concurrency" } & ConcurrencyOptions)
+  | ({ type: "telemetry" } & TelemetryOptions)
+  | ({ type: "logging" } & LoggingOptions)
+  | ({ type: string } & Record<string, unknown>);
+
 export class RequestOptions {
   private optionsMap: Map<string, MiddlewareOptions> = new Map<string, MiddlewareOptions>();
 
-  constructor(options?: Array<{ type: string } & MiddlewareOptions>) {
+  constructor(options?: MiddlewareOptionEntry[]) {
     if (options) {
       for (const option of options) {
         const { type, ...rest } = option;
@@ -128,6 +109,10 @@ export class RequestOptions {
    * @param middlewareType - The middleware type ('retry', 'concurrency', 'telemetry', 'logging')
    * @returns The middleware options or undefined if not set
    */
+  get<K extends keyof BuiltInMiddlewareOptions>(
+    middlewareType: K
+  ): BuiltInMiddlewareOptions[K] | undefined;
+  get(middlewareType: string): MiddlewareOptions | undefined;
   get(middlewareType: string): MiddlewareOptions | undefined {
     return this.optionsMap.get(middlewareType);
   }

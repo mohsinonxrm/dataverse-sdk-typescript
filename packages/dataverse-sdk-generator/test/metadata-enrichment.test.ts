@@ -30,7 +30,7 @@ describe("Metadata Enrichment", () => {
       // Setup mock to return empty EntityMetadata array
       vi.mocked(mockMetadataService.getEntityMetadata).mockResolvedValue({
         EntityMetadata: [],
-      } as any);
+      });
 
       // Call generate which triggers enrichment
       await expect(model.generate()).rejects.toThrow(
@@ -51,7 +51,7 @@ describe("Metadata Enrichment", () => {
             Keys: [],
           },
         ],
-      } as any);
+      });
 
       await model.generate();
 
@@ -69,29 +69,50 @@ describe("Metadata Enrichment", () => {
             SchemaName: "Account",
             EntitySetName: "accounts",
             Attributes: [
+              // The Web API sends the member name, as seen live (#325).
               {
                 LogicalName: "name",
                 SchemaName: "Name",
-                RequiredLevel: { Value: 2 }, // ApplicationRequired
+                RequiredLevel: { Value: "ApplicationRequired" },
               },
               {
                 LogicalName: "revenue",
                 SchemaName: "Revenue",
-                RequiredLevel: { Value: 0 }, // None
+                RequiredLevel: { Value: "None" },
+              },
+              {
+                LogicalName: "accountid",
+                SchemaName: "AccountId",
+                RequiredLevel: { Value: "SystemRequired" },
+              },
+              {
+                LogicalName: "telephone1",
+                SchemaName: "Telephone1",
+                RequiredLevel: { Value: "Recommended" },
               },
             ],
             Keys: [],
           },
         ],
-      } as any);
+      });
 
       await model.generate();
 
       const nameAttr = model.EntityTypes[0].Properties.find((p) => p.LogicalName === "name");
       const revenueAttr = model.EntityTypes[0].Properties.find((p) => p.LogicalName === "revenue");
 
+      const idAttr = model.EntityTypes[0].Properties.find((p) => p.LogicalName === "accountid");
+      const phoneAttr = model.EntityTypes[0].Properties.find((p) => p.LogicalName === "telephone1");
+
       expect(nameAttr?.IsRequired).toBe(true);
+      expect(nameAttr?.RequiredLevel).toBe("ApplicationRequired");
       expect(revenueAttr?.IsRequired).toBe(false);
+      expect(revenueAttr?.RequiredLevel).toBeUndefined();
+      // System-required columns are filled in by Dataverse, so they aren't business-required.
+      expect(idAttr?.IsRequired).toBe(false);
+      expect(idAttr?.RequiredLevel).toBe("SystemRequired");
+      expect(phoneAttr?.IsRequired).toBe(false);
+      expect(phoneAttr?.RequiredLevel).toBe("Recommended");
     });
 
     it("should detect calculated and rollup fields via SourceType", async () => {
@@ -118,7 +139,7 @@ describe("Metadata Enrichment", () => {
             Keys: [],
           },
         ],
-      } as any);
+      });
 
       await model.generate();
 
@@ -155,7 +176,7 @@ describe("Metadata Enrichment", () => {
             Keys: [],
           },
         ],
-      } as any);
+      });
 
       await model.generate();
 
@@ -187,7 +208,7 @@ describe("Metadata Enrichment", () => {
             ],
           },
         ],
-      } as any);
+      });
 
       await model.generate();
 

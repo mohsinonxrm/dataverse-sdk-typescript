@@ -2,11 +2,11 @@
  * Component complex type
  */
 export interface Component {
-  DisplayName: string;
-  SchemaName: string;
-  ComponentType: number;
-  ComponentSubType: number;
-  ComponentId: string;
-  ParentEntityId: string;
-  ParentEntityName: string;
+  ComponentId?: string;
+  ComponentSubType?: number;
+  ComponentType?: number;
+  DisplayName?: string;
+  ParentEntityId?: string;
+  ParentEntityName?: string;
+  SchemaName?: string;
 }

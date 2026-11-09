@@ -1,6 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_SetExecutionConfigProperty message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_SetExecutionConfigPropertyRequestParameters {
+  msdyn_salesagentprofileid: EntityReference | AnyEntityPayload;
+  msdyn_config_key: string;
+  msdyn_config_value: string;
+}
 
 /**
  * msdyn_SalesAgents_SetExecutionConfigProperty request message
@@ -11,46 +23,36 @@ export class msdyn_SalesAgents_SetExecutionConfigPropertyRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_SetExecutionConfigPropertyResponse>
 {
-  constructor(
-    public msdyn_salesagentprofileid: EntityReference,
-    public msdyn_config_key: string,
-    public msdyn_config_value: string
-  ) {
-    super("msdyn_SalesAgents_SetExecutionConfigProperty");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_SetExecutionConfigPropertyRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_SetExecutionConfigPropertyRequestParameters) {
+    super("msdyn_SalesAgents_SetExecutionConfigProperty", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_SetExecutionConfigProperty`;
 
-    const body: Record<string, unknown> = {
-      msdyn_salesagentprofileid: this.msdyn_salesagentprofileid,
-      msdyn_config_key: this.msdyn_config_key,
-      msdyn_config_value: this.msdyn_config_value,
-    };
+    const body = requestBody({
+      msdyn_salesagentprofileid: this.Parameters.msdyn_salesagentprofileid,
+      msdyn_config_key: this.Parameters.msdyn_config_key,
+      msdyn_config_value: this.Parameters.msdyn_config_value,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAgents_SetExecutionConfigPropertyResponse> {
     // No return value (204 No Content)
-    return new msdyn_SalesAgents_SetExecutionConfigPropertyResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_salesagentprofileid: this.msdyn_salesagentprofileid,
-      msdyn_config_key: this.msdyn_config_key,
-      msdyn_config_value: this.msdyn_config_value,
-    };
+    return Promise.resolve(new msdyn_SalesAgents_SetExecutionConfigPropertyResponse());
   }
 }
 
@@ -62,7 +64,7 @@ export class msdyn_SalesAgents_SetExecutionConfigPropertyResponse extends Organi
     super("msdyn_SalesAgents_SetExecutionConfigProperty");
   }
 
-  static fromResponse(_data: unknown): msdyn_SalesAgents_SetExecutionConfigPropertyResponse {
+  static fromResponse(_data?: unknown): msdyn_SalesAgents_SetExecutionConfigPropertyResponse {
     return new msdyn_SalesAgents_SetExecutionConfigPropertyResponse();
   }
 }

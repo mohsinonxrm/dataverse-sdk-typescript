@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_SalesAgents_IsTenantAdmin action
+ * Response from the msdyn_SalesAgents_IsTenantAdmin action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesAgents_IsTenantAdminResponse {
+  "@odata.context"?: string;
   IsTenantAdmin: boolean;
 }
 
@@ -20,13 +23,13 @@ export class msdyn_SalesAgents_IsTenantAdminAction implements Executable<msdyn_S
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_IsTenantAdminResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_IsTenantAdminResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_SalesAgents_IsTenantAdminResponse;
   }
 }

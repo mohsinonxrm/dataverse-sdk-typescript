@@ -1,6 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the CompoundUpdateDuplicateDetectionRule message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CompoundUpdateDuplicateDetectionRuleRequestParameters {
+  Entity: EntityReference | AnyEntityPayload;
+  ChildEntities: Record<string, unknown>[];
+}
 
 /**
  * CompoundUpdateDuplicateDetectionRule request message
@@ -11,41 +22,33 @@ export class CompoundUpdateDuplicateDetectionRuleRequest
   extends OrganizationRequest
   implements Executable<CompoundUpdateDuplicateDetectionRuleResponse>
 {
-  constructor(
-    public entity: EntityReference,
-    public childEntities: Record<string, unknown>[]
-  ) {
-    super("CompoundUpdateDuplicateDetectionRule");
+  declare readonly Parameters: Readonly<CompoundUpdateDuplicateDetectionRuleRequestParameters>;
+
+  constructor(parameters: CompoundUpdateDuplicateDetectionRuleRequestParameters) {
+    super("CompoundUpdateDuplicateDetectionRule", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CompoundUpdateDuplicateDetectionRule`;
 
-    const body: Record<string, unknown> = {
-      Entity: this.entity,
-      ChildEntities: this.childEntities,
-    };
+    const body = requestBody({
+      Entity: this.Parameters.Entity,
+      ChildEntities: this.Parameters.ChildEntities,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<CompoundUpdateDuplicateDetectionRuleResponse> {
+  parseResponse(_response: Response): Promise<CompoundUpdateDuplicateDetectionRuleResponse> {
     // No return value (204 No Content)
-    return new CompoundUpdateDuplicateDetectionRuleResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Entity: this.entity,
-      ChildEntities: this.childEntities,
-    };
+    return Promise.resolve(new CompoundUpdateDuplicateDetectionRuleResponse());
   }
 }
 
@@ -57,7 +60,7 @@ export class CompoundUpdateDuplicateDetectionRuleResponse extends OrganizationRe
     super("CompoundUpdateDuplicateDetectionRule");
   }
 
-  static fromResponse(_data: unknown): CompoundUpdateDuplicateDetectionRuleResponse {
+  static fromResponse(_data?: unknown): CompoundUpdateDuplicateDetectionRuleResponse {
     return new CompoundUpdateDuplicateDetectionRuleResponse();
   }
 }

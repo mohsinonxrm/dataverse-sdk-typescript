@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_MigrateFeaturesToCoreService message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_MigrateFeaturesToCoreServiceRequestParameters {
+  InputData: string;
+}
 
 /**
  * msdyn_MigrateFeaturesToCoreService request message
@@ -10,36 +19,32 @@ export class msdyn_MigrateFeaturesToCoreServiceRequest
   extends OrganizationRequest
   implements Executable<msdyn_MigrateFeaturesToCoreServiceResponse>
 {
-  constructor(public inputData: string) {
-    super("msdyn_MigrateFeaturesToCoreService");
+  declare readonly Parameters: Readonly<msdyn_MigrateFeaturesToCoreServiceRequestParameters>;
+
+  constructor(parameters: msdyn_MigrateFeaturesToCoreServiceRequestParameters) {
+    super("msdyn_MigrateFeaturesToCoreService", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_MigrateFeaturesToCoreService`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.Parameters.InputData,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_MigrateFeaturesToCoreServiceResponse> {
+  parseResponse(_response: Response): Promise<msdyn_MigrateFeaturesToCoreServiceResponse> {
     // No return value (204 No Content)
-    return new msdyn_MigrateFeaturesToCoreServiceResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
+    return Promise.resolve(new msdyn_MigrateFeaturesToCoreServiceResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class msdyn_MigrateFeaturesToCoreServiceResponse extends OrganizationResp
     super("msdyn_MigrateFeaturesToCoreService");
   }
 
-  static fromResponse(_data: unknown): msdyn_MigrateFeaturesToCoreServiceResponse {
+  static fromResponse(_data?: unknown): msdyn_MigrateFeaturesToCoreServiceResponse {
     return new msdyn_MigrateFeaturesToCoreServiceResponse();
   }
 }

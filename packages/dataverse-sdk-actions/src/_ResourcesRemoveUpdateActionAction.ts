@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from _ResourcesRemoveUpdateAction action
+ * Response from the _ResourcesRemoveUpdateAction action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface _ResourcesRemoveUpdateActionResponse {
-  // No content returned
+export type _ResourcesRemoveUpdateActionResponse = void;
+
+/**
+ * Parameters of the _ResourcesRemoveUpdateAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _ResourcesRemoveUpdateActionActionParameters {
+  ResourcesToBeRemoved?: string;
+  ResourceGroupId?: string;
 }
 
 /**
@@ -13,31 +23,28 @@ export interface _ResourcesRemoveUpdateActionResponse {
  * Unbound action
  */
 export class _ResourcesRemoveUpdateActionAction implements Executable<_ResourcesRemoveUpdateActionResponse> {
-  constructor(
-    public readonly resourcesToBeRemoved: string,
-    public readonly resourceGroupId: string
-  ) {}
+  constructor(public readonly parameters: _ResourcesRemoveUpdateActionActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_ResourcesRemoveUpdateAction`;
 
-    const body: Record<string, unknown> = {
-      ResourcesToBeRemoved: this.resourcesToBeRemoved,
-      ResourceGroupId: this.resourceGroupId,
-    };
+    const body = requestBody({
+      ResourcesToBeRemoved: this.parameters.ResourcesToBeRemoved,
+      ResourceGroupId: this.parameters.ResourceGroupId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<_ResourcesRemoveUpdateActionResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<_ResourcesRemoveUpdateActionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

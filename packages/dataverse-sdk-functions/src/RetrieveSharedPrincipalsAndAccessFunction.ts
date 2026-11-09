@@ -1,13 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { PrincipalAccess } from "./types/index.js";
 
 /**
- * Response from RetrieveSharedPrincipalsAndAccess function
+ * Response from the RetrieveSharedPrincipalsAndAccess function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveSharedPrincipalsAndAccessResponse {
+  "@odata.context"?: string;
   PrincipalAccesses: PrincipalAccess[];
+}
+
+/**
+ * Parameters of the RetrieveSharedPrincipalsAndAccess function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveSharedPrincipalsAndAccessFunctionParameters {
+  Target: EntityReference;
 }
 
 /**
@@ -16,7 +27,7 @@ export interface RetrieveSharedPrincipalsAndAccessResponse {
  * Unbound function
  */
 export class RetrieveSharedPrincipalsAndAccessFunction implements Executable<RetrieveSharedPrincipalsAndAccessResponse> {
-  constructor(public readonly target: EntityReference) {}
+  constructor(public readonly parameters: RetrieveSharedPrincipalsAndAccessFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveSharedPrincipalsAndAccess`;
@@ -24,13 +35,11 @@ export class RetrieveSharedPrincipalsAndAccessFunction implements Executable<Ret
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.target)}(${this.target.id})`,
-        })
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
       );
     }
     if (aliases.length > 0) {
@@ -47,7 +56,7 @@ export class RetrieveSharedPrincipalsAndAccessFunction implements Executable<Ret
   }
 
   async parseResponse(response: Response): Promise<RetrieveSharedPrincipalsAndAccessResponse> {
-    const data = await response.json();
-    return data as RetrieveSharedPrincipalsAndAccessResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveSharedPrincipalsAndAccessResponse;
   }
 }

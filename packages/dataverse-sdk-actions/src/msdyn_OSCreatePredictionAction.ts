@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_OSCreatePrediction action
+ * Response from the msdyn_OSCreatePrediction action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_OSCreatePredictionResponse {
-  // No content returned
+export type msdyn_OSCreatePredictionResponse = void;
+
+/**
+ * Parameters of the msdyn_OSCreatePrediction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_OSCreatePredictionActionParameters {
+  ModelState?: string;
 }
 
 /**
@@ -13,27 +22,27 @@ export interface msdyn_OSCreatePredictionResponse {
  * Unbound action
  */
 export class msdyn_OSCreatePredictionAction implements Executable<msdyn_OSCreatePredictionResponse> {
-  constructor(public readonly modelState: string) {}
+  constructor(public readonly parameters: msdyn_OSCreatePredictionActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OSCreatePrediction`;
 
-    const body: Record<string, unknown> = {
-      ModelState: this.modelState,
-    };
+    const body = requestBody({
+      ModelState: this.parameters.ModelState,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OSCreatePredictionResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_OSCreatePredictionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

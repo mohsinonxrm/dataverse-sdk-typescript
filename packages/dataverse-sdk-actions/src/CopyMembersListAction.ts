@@ -1,11 +1,26 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { list } from "./types/index.js";
 
 /**
- * Response from CopyMembersList action
+ * Response from the CopyMembersList action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CopyMembersListResponse {
-  // No content returned
+export type CopyMembersListResponse = void;
+
+/**
+ * Parameters of the CopyMembersList action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CopyMembersListActionParameters {
+  TargetList: EntityReference | EntityPayload<list>;
 }
 
 /**
@@ -13,33 +28,35 @@ export interface CopyMembersListResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.list)
+ *
+ * The first argument is the id of the list record to call it on.
  */
 export class CopyMembersListAction implements Executable<CopyMembersListResponse> {
   constructor(
     public readonly listId: string,
-    public readonly targetList: list
+    public readonly parameters: CopyMembersListActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/lists(${this.listId})/Microsoft.Dynamics.CRM.CopyMembersList`;
+    const url = `${baseUrl}/lists(${odataLiteral.guid(this.listId)})/Microsoft.Dynamics.CRM.CopyMembersList`;
 
-    const body: Record<string, unknown> = {
-      TargetList: this.targetList,
-    };
+    const body = requestBody({
+      TargetList: this.parameters.TargetList,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<CopyMembersListResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<CopyMembersListResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

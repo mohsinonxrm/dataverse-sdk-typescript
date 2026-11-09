@@ -2,11 +2,11 @@
  * GetHostedRpaCapacityResponse complex type
  */
 export interface GetHostedRpaCapacityResponse {
-  failedToGetCapacity: boolean;
-  isPayGo: boolean;
-  hostedMachineGroupsBotCount: number;
-  hostedMachineCount: number;
-  hostedGroupCount: number;
-  totalEnvironmentAddOns: number;
-  availableCapacity: number;
+  availableCapacity?: number;
+  failedToGetCapacity?: boolean;
+  hostedGroupCount?: number;
+  hostedMachineCount?: number;
+  hostedMachineGroupsBotCount?: number;
+  isPayGo?: boolean;
+  totalEnvironmentAddOns?: number;
 }

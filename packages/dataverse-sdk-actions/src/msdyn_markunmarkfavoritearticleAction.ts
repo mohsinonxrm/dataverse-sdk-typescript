@@ -1,10 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_markunmarkfavoritearticle action
+ * Response from the msdyn_markunmarkfavoritearticle action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_markunmarkfavoritearticleResponse {
+  "@odata.context"?: string;
   msdyn_response: string;
+}
+
+/**
+ * Parameters of the msdyn_markunmarkfavoritearticle action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_markunmarkfavoritearticleActionParameters {
+  msdyn_knowledgearticleid: string;
+  msdyn_actionname: string;
+  msdyn_userid: string;
 }
 
 /**
@@ -13,33 +27,29 @@ export interface msdyn_markunmarkfavoritearticleResponse {
  * Unbound action
  */
 export class msdyn_markunmarkfavoritearticleAction implements Executable<msdyn_markunmarkfavoritearticleResponse> {
-  constructor(
-    public readonly msdyn_knowledgearticleid: string,
-    public readonly msdyn_userid: string,
-    public readonly msdyn_actionname: string
-  ) {}
+  constructor(public readonly parameters: msdyn_markunmarkfavoritearticleActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_markunmarkfavoritearticle`;
 
-    const body: Record<string, unknown> = {
-      msdyn_knowledgearticleid: this.msdyn_knowledgearticleid,
-      msdyn_userid: this.msdyn_userid,
-      msdyn_actionname: this.msdyn_actionname,
-    };
+    const body = requestBody({
+      msdyn_knowledgearticleid: this.parameters.msdyn_knowledgearticleid,
+      msdyn_actionname: this.parameters.msdyn_actionname,
+      msdyn_userid: this.parameters.msdyn_userid,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_markunmarkfavoritearticleResponse> {
-    const data = await response.json();
-    return data as msdyn_markunmarkfavoritearticleResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_markunmarkfavoritearticleResponse;
   }
 }

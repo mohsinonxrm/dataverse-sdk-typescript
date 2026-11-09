@@ -1,11 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { SettingDetail } from "./types/index.js";
 
 /**
- * Response from RetrieveSetting function
+ * Response from the RetrieveSetting function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveSettingResponse {
+  "@odata.context"?: string;
   SettingDetail: SettingDetail;
+}
+
+/**
+ * Parameters of the RetrieveSetting function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveSettingFunctionParameters {
+  AppUniqueName?: string;
+  SettingName: string;
 }
 
 /**
@@ -14,10 +27,7 @@ export interface RetrieveSettingResponse {
  * Unbound function
  */
 export class RetrieveSettingFunction implements Executable<RetrieveSettingResponse> {
-  constructor(
-    public readonly appUniqueName: string,
-    public readonly settingName: string
-  ) {}
+  constructor(public readonly parameters: RetrieveSettingFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveSetting`;
@@ -25,21 +35,13 @@ export class RetrieveSettingFunction implements Executable<RetrieveSettingRespon
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.appUniqueName !== undefined) {
+    if (this.parameters.AppUniqueName !== undefined) {
       aliases.push(`AppUniqueName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.appUniqueName === "string"
-          ? `'${this.appUniqueName}'`
-          : String(this.appUniqueName)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.AppUniqueName, "Edm.String"));
     }
-    if (this.settingName !== undefined) {
+    if (this.parameters.SettingName !== undefined) {
       aliases.push(`SettingName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.settingName === "string" ? `'${this.settingName}'` : String(this.settingName)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.SettingName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -55,7 +57,7 @@ export class RetrieveSettingFunction implements Executable<RetrieveSettingRespon
   }
 
   async parseResponse(response: Response): Promise<RetrieveSettingResponse> {
-    const data = await response.json();
-    return data as RetrieveSettingResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveSettingResponse;
   }
 }

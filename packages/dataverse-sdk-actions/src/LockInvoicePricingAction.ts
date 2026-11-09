@@ -1,36 +1,42 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from LockInvoicePricing action
+ * Response from the LockInvoicePricing action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface LockInvoicePricingResponse {
-  // No content returned
-}
+export type LockInvoicePricingResponse = void;
 
 /**
  * LockInvoicePricing action
  *
  * Bound action
  * Binding parameter: entity (mscrm.invoice)
+ *
+ * The first argument is the id of the invoice record to call it on.
  */
 export class LockInvoicePricingAction implements Executable<LockInvoicePricingResponse> {
   constructor(public readonly invoiceId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/invoices(${this.invoiceId})/Microsoft.Dynamics.CRM.LockInvoicePricing`;
+    const url = `${baseUrl}/invoices(${odataLiteral.guid(this.invoiceId)})/Microsoft.Dynamics.CRM.LockInvoicePricing`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<LockInvoicePricingResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<LockInvoicePricingResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

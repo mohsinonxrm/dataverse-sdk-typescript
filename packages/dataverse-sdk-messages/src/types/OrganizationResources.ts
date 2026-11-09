@@ -2,14 +2,14 @@
  * OrganizationResources complex type
  */
 export interface OrganizationResources {
-  CurrentNumberOfActiveUsers: number;
-  MaxNumberOfActiveUsers: number;
-  CurrentNumberOfNonInteractiveUsers: number;
-  MaxNumberOfNonInteractiveUsers: number;
-  CurrentNumberOfCustomEntities: number;
-  MaxNumberOfCustomEntities: number;
-  CurrentNumberOfPublishedWorkflows: number;
-  MaxNumberOfPublishedWorkflows: number;
-  CurrentStorage: number;
-  MaxStorage: number;
+  CurrentNumberOfActiveUsers?: number;
+  CurrentNumberOfCustomEntities?: number;
+  CurrentNumberOfNonInteractiveUsers?: number;
+  CurrentNumberOfPublishedWorkflows?: number;
+  CurrentStorage?: number;
+  MaxNumberOfActiveUsers?: number;
+  MaxNumberOfCustomEntities?: number;
+  MaxNumberOfNonInteractiveUsers?: number;
+  MaxNumberOfPublishedWorkflows?: number;
+  MaxStorage?: number;
 }

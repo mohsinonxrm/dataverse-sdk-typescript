@@ -1,27 +1,35 @@
 name: CI
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [main, dev, "release/**", "support/**"]
   push:
-    branches: [main, dev]
+    branches: [main, dev, "release/**", "support/**"]
+  # Run by hand on any branch, e.g. to get the checks onto a PR whose pushes didn't start CI
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   check-changeset:
     name: Check for Changeset
     runs-on: ubuntu-latest
-    # Only require changeset for PRs to main (not for dev branch PRs)
+    # PRs into the release branches (main, release/X.Y, support/X.Y) are hotfixes and need a
+    # changeset; release-prep PRs (chore/release-*) consume the changesets and forward merges
+    # (merge/*) carry existing ones, so they're skipped (RELEASING.md).
     if: >
-      github.event_name == 'pull_request' && 
-      github.base_ref == 'main' &&
-      !startsWith(github.head_ref, 'changeset-release/')
+      github.event_name == 'pull_request' &&
+      (github.base_ref == 'main' || startsWith(github.base_ref, 'release/') || startsWith(github.base_ref, 'support/')) &&
+      !startsWith(github.head_ref, 'chore/release-') &&
+      !startsWith(github.head_ref, 'merge/')
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 18
+          node-version: 24
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - name: Check for changeset
@@ -31,17 +39,118 @@ jobs:
             exit 1
           }
 
-  build-test-lint:
+  build-test-lint-matrix:
+    name: build-test-lint (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24, 26]
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: 18
+          # On a PR the checkout is GitHub's merge commit; its first parent (HEAD^1) is the base
+          # branch, which the API report changeset check compares against
+          fetch-depth: 2
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+      - name: Audit dependencies (high and critical)
+        if: matrix.node == 22
+        run: pnpm audit --audit-level=high
       - run: pnpm format:check
+        if: matrix.node == 22
+      # Every published package has one version and a CHANGELOG section for it (#365)
+      - name: Release metadata
+        if: matrix.node == 22
+        run: |
+          node --test scripts/check-release.test.mjs
+          node scripts/check-release.mjs
       - run: pnpm build
+      # The actions, functions and messages packages and their docs must be exactly what the
+      # generator makes from the committed $metadata snapshot (#293). It reads only the
+      # snapshot: no org, no credentials.
+      - name: Generated packages match the $metadata snapshot
+        if: matrix.node == 22
+        run: |
+          pnpm --filter generate-sdk-types regen > /dev/null
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain | head -50
+            git diff --stat | tail -5
+            echo "::error::Run 'pnpm --filter generate-sdk-types regen' and commit the result."
+            exit 1
+          fi
+      - run: pnpm typecheck
+      # Each published package's public API is in a committed API Extractor report,
+      # packages/<pkg>/etc/<name>.api.md (all but the three generated packages, which the regen
+      # check above covers). A report that differs from the build fails here (#306).
+      - name: API reports match the build
+        if: matrix.node == 22
+        run: pnpm api:check
+      # A PR that changes an API report adds a changeset naming that package; review checks the
+      # bump. Release-prep PRs and merges between the long-lived branches carry or consume
+      # changesets that already exist, so they're skipped, as in check-changeset.
+      - name: Changed API reports have a changeset
+        if: >
+          matrix.node == 22 && github.event_name == 'pull_request' &&
+          !startsWith(github.head_ref, 'chore/release-') && !startsWith(github.head_ref, 'merge/') &&
+          !startsWith(github.head_ref, 'release/') && !startsWith(github.head_ref, 'support/') &&
+          github.head_ref != 'main' && github.head_ref != 'dev'
+        run: node scripts/check-api-changeset.mjs HEAD^1
+      # One operation must tree-shake out of the ~1,500 in actions/functions/messages, and the
+      # main entry points stay within their gzipped budgets (#307, scripts/bundle-budgets.json)
+      - name: Bundle-size budget
+        if: matrix.node == 22
+        run: pnpm check:size
       - run: pnpm lint
+        if: matrix.node == 22
       - run: pnpm test
+
+  browser-tests:
+    name: browser-tests (Chromium)
+    runs-on: ubuntu-latest
+    # A normal run takes a few minutes. Without a limit, a stalled Chromium install (seen once in
+    # "Install Chromium for Playwright") holds the required check for GitHub's 6-hour default.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Install Chromium for Playwright
+        run: pnpm --filter @mohsinonxrm/dataverse-sdk-browser-tests exec playwright install --with-deps chromium
+      - run: pnpm test:browser
+      # The SPA sample's Playwright smoke tests (demo mode, no org needed). Both steps are
+      # skipped while the sample has no test:e2e script. The sample pins its own Playwright
+      # version, so it installs its own Chromium build.
+      - name: Install Chromium for the SPA sample
+        run: |
+          if grep -q '"test:e2e"' samples/spa-fluentui-v9/package.json; then
+            pnpm --filter spa-fluentui-v9-sample exec playwright install --with-deps chromium
+          fi
+      - name: SPA sample e2e tests
+        run: pnpm --filter spa-fluentui-v9-sample --if-present test:e2e
+
+  # Branch protection requires a check named exactly "build-test-lint". This job reports it,
+  # and passes only if every Node version in the matrix and the browser tests passed, so the
+  # required check doesn't change when the jobs do.
+  build-test-lint:
+    name: build-test-lint
+    runs-on: ubuntu-latest
+    needs: [build-test-lint-matrix, browser-tests]
+    if: always()
+    steps:
+      - name: All Node versions and the browser tests passed
+        env:
+          MATRIX: ${{ needs.build-test-lint-matrix.result }}
+          BROWSER: ${{ needs.browser-tests.result }}
+        run: |
+          echo "Node matrix: $MATRIX, browser tests: $BROWSER"
+          test "$MATRIX" = "success" && test "$BROWSER" = "success"

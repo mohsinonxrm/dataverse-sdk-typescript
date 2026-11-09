@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { EndpointAccessType, OrganizationDetail } from "./types/index.js";
 
 /**
- * Response from RetrieveCurrentOrganization function
+ * Response from the RetrieveCurrentOrganization function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveCurrentOrganizationResponse {
+  "@odata.context"?: string;
   Detail: OrganizationDetail;
+}
+
+/**
+ * Parameters of the RetrieveCurrentOrganization function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveCurrentOrganizationFunctionParameters {
+  AccessType: EndpointAccessType | keyof typeof EndpointAccessType;
 }
 
 /**
@@ -14,7 +26,7 @@ export interface RetrieveCurrentOrganizationResponse {
  * Unbound function
  */
 export class RetrieveCurrentOrganizationFunction implements Executable<RetrieveCurrentOrganizationResponse> {
-  constructor(public readonly accessType: EndpointAccessType) {}
+  constructor(public readonly parameters: RetrieveCurrentOrganizationFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveCurrentOrganization`;
@@ -22,11 +34,15 @@ export class RetrieveCurrentOrganizationFunction implements Executable<RetrieveC
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.accessType !== undefined) {
+    if (this.parameters.AccessType !== undefined) {
       aliases.push(`AccessType=@p1`);
       params.append(
         "@p1",
-        typeof this.accessType === "string" ? `'${this.accessType}'` : String(this.accessType)
+        formatParameterAlias(
+          this.parameters.AccessType,
+          "mscrm.EndpointAccessType",
+          "EnumerationType"
+        )
       );
     }
     if (aliases.length > 0) {
@@ -43,7 +59,7 @@ export class RetrieveCurrentOrganizationFunction implements Executable<RetrieveC
   }
 
   async parseResponse(response: Response): Promise<RetrieveCurrentOrganizationResponse> {
-    const data = await response.json();
-    return data as RetrieveCurrentOrganizationResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveCurrentOrganizationResponse;
   }
 }

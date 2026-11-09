@@ -1,13 +1,33 @@
-import type { RequestAdapter, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  DataverseInvalidRequestError,
+  DataverseODataError,
+  type DataverseClient,
+  type RequestAdapter,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import {
   InitializeFileBlocksUploadAction,
   UploadBlockAction,
   CommitFileBlocksUploadAction,
+  InitializeFileBlocksDownloadAction,
+  DownloadBlockAction,
 } from "@mohsinonxrm/dataverse-sdk-actions";
-import type { FileUploadOptions, FileDownloadOptions } from "./types.js";
+import { blockRetryOptions, checkChunkSize, sendChecked } from "./requests.js";
+import type { FileUploadOptions, FileDownloadOptions, UploadProgress } from "./types.js";
+import { fileTarget } from "./target.js";
+import {
+  allBytes,
+  base64ToBytes,
+  bytesToBase64,
+  chunksOf,
+  isBlob,
+  isReadableStream,
+  knownSize,
+  type FileSource,
+} from "./chunks.js";
 
 /**
- * Default chunk size for file uploads (4MB).
+ * Default chunk size for file uploads and downloads (4MB).
  */
 const DEFAULT_CHUNK_SIZE = 4 * 1024 * 1024;
 
@@ -20,19 +40,50 @@ function normalizeGuid(guid: string): string {
   return guid.replace(/[{}]/g, "").toLowerCase();
 }
 
+/** `getBaseUrl()` of a `DataverseClient`, or of any adapter that has one. */
+function baseUrlOf(adapter: RequestAdapter): string | undefined {
+  const candidate = adapter as Partial<Pick<DataverseClient, "getBaseUrl">>;
+  return typeof candidate.getBaseUrl === "function" ? candidate.getBaseUrl() : undefined;
+}
+
 /**
- * Client for file and image column operations using Dataverse Web API actions.
+ * `url` with the file name as the `x-ms-file-name` query parameter, percent-encoded as UTF-8.
+ * The `x-ms-file-name` header carries only ASCII: `fetch` throws on a name like `合同.pdf`, and
+ * Dataverse garbles one like `résumé.pdf`. The query parameter takes any name (#362).
+ */
+function withFileName(url: string, fileName: string): string {
+  return `${url}${url.includes("?") ? "&" : "?"}x-ms-file-name=${encodeURIComponent(fileName)}`;
+}
+
+/**
+ * Dataverse's `0x80090017` (`UploadingAndDownloadingInMultipleChunksNotSupported`): the file is
+ * stored where it can't be read in parts (on-premises, or an environment with a self-managed key).
+ */
+function isChunkingNotSupported(error: unknown): boolean {
+  return error instanceof DataverseODataError && error.code?.toLowerCase() === "0x80090017";
+}
+
+/** Remove trailing `/` characters in linear time. */
+function trimTrailingSlashes(value: string): string {
+  let end = value.length;
+  while (end > 0 && value.charCodeAt(end - 1) === 47) end--;
+  return value.slice(0, end);
+}
+
+/**
+ * Client for file and image column operations using the Dataverse Web API.
  *
- * Supports chunked upload/download for large files using:
- * - InitializeFileBlocksUpload
- * - UploadBlock
- * - CommitFileBlocksUpload
+ * Uploads: the `InitializeFileBlocksUpload` / `UploadBlock` / `CommitFileBlocksUpload` actions
+ * (default), a chunked `PATCH` with `Content-Range`, or a single `PATCH`. Downloads: one `GET`,
+ * `Range` requests, or `InitializeFileBlocksDownload` / `DownloadBlock`; `downloadStream()`
+ * returns a `ReadableStream`. Every call takes an `AbortSignal`.
  *
  * @example
  * ```typescript
  * import { FileColumnClient } from "@mohsinonxrm/dataverse-sdk-files";
  *
- * const fileClient = new FileColumnClient(client.requestAdapter);
+ * // Requests go through client.send(): auth, retry, logging and telemetry apply.
+ * const fileClient = new FileColumnClient(client);
  *
  * // Upload file with progress tracking
  * await fileClient.upload(
@@ -40,6 +91,7 @@ function normalizeGuid(guid: string): string {
  *   accountId,
  *   "new_logo",
  *   logoFile,
+ *   "logo.png",
  *   {
  *     chunkSize: 4 * 1024 * 1024,
  *     onProgress: (progress) => {
@@ -53,97 +105,290 @@ function normalizeGuid(guid: string): string {
  * ```
  */
 export class FileColumnClient {
-  constructor(
-    private readonly adapter: RequestAdapter,
-    private readonly baseUrl = ""
-  ) {}
+  private readonly adapter: RequestAdapter;
+  private readonly baseUrl: string;
+
+  /**
+   * Use a `DataverseClient`. Every request goes through `client.send()`, so the client's auth,
+   * retry, logging and telemetry apply, and URLs are built on `client.getBaseUrl()`.
+   *
+   * @param client - The client to send requests with.
+   */
+  constructor(client: DataverseClient);
+  /**
+   * Use any request adapter: a `DataverseClient`, or your own object with `send(request)`.
+   *
+   * @param adapter - Sends each request.
+   * @param baseUrl - The Web API root, e.g. `https://contoso.crm.dynamics.com/api/data/v9.2`
+   *   (`client.getBaseUrl()`). Optional when the adapter has a `getBaseUrl()` method.
+   * @throws DataverseInvalidRequestError (name `MissingParameter`) when there is no base URL.
+   */
+  constructor(adapter: RequestAdapter, baseUrl?: string);
+  constructor(adapter: RequestAdapter, baseUrl?: string) {
+    const root = baseUrl ?? baseUrlOf(adapter);
+    if (!root) {
+      const error = new DataverseInvalidRequestError(
+        "FileColumnClient needs the Web API root: pass a DataverseClient, or an adapter and a " +
+          "base URL such as client.getBaseUrl()"
+      );
+      error.name = "MissingParameter";
+      throw error;
+    }
+    this.adapter = adapter;
+    this.baseUrl = trimTrailingSlashes(root);
+  }
 
   /**
    * Upload a file to a file or image column.
    *
-   * Automatically chunks files larger than the specified chunk size.
+   * The file is read one chunk at a time (a `Blob` by slices, a `ReadableStream` as it arrives),
+   * never all at once, except with `method: "single"`.
    *
-   * @param entitySetName - The entity set name (e.g., "accounts")
+   * @param entitySetName - The entity set name (e.g., "accounts"). The `"actions"` route looks up
+   *   the table's logical name and primary key first (one `EntityDefinitions` request, cached).
    * @param recordId - The record ID (GUID)
    * @param columnName - The logical name of the file/image column
-   * @param file - The file data (Blob in browser, Buffer in Node)
+   * @param file - The file data: a `Blob` (or `File`), an `ArrayBuffer`, a typed-array view such
+   *   as `Uint8Array` (a Node.js `Buffer` is a `Uint8Array`), or a `ReadableStream<Uint8Array>`
    * @param fileName - The name of the file being uploaded
-   * @param options - Upload options (chunk size, progress callback)
+   * @param options - Upload options (route, chunk size, progress callback, abort signal)
+   * @throws DataverseODataError (with `status` and `code`) when any step fails; nothing after the
+   *   failed request is sent. DataverseInvalidRequestError for a `chunkSize` above 4 MB, or a
+   *   stream without `size` on `"patch-chunked"`.
    */
   async upload(
     entitySetName: string,
     recordId: string,
     columnName: string,
-    file: Blob | Buffer,
+    file: FileSource,
     fileName: string,
     options?: FileUploadOptions
   ): Promise<void> {
-    const chunkSize = options?.chunkSize ?? DEFAULT_CHUNK_SIZE;
+    const requestedChunk =
+      options?.chunkSize === undefined ? undefined : checkChunkSize(options.chunkSize);
+    if (!(
+      file instanceof ArrayBuffer ||
+      ArrayBuffer.isView(file) ||
+      isBlob(file) ||
+      isReadableStream(file)
+    )) {
+      throw new TypeError(
+        "file must be a Blob, an ArrayBuffer, a typed array such as Uint8Array, or a ReadableStream"
+      );
+    }
+    const method = options?.method ?? "auto";
+    const size = knownSize(file) ?? options?.size;
+    const columnUrl = `${this.baseUrl}/${entitySetName}(${normalizeGuid(recordId)})/${columnName}`;
 
-    // Get file size and convert to Uint8Array
-    const fileData = await this.fileToUint8Array(file);
-    const totalSize = fileData.byteLength;
+    // Dataverse stores an empty file only through the actions route, as an empty block list: a
+    // PATCH with no body is refused (400, 0x80060888) and so is an empty chunk (416), checked
+    // against a live org (#383). So a 0-byte file takes that route whatever `method` says.
+    if (size === 0) {
+      await this.uploadActions(
+        entitySetName,
+        recordId,
+        columnName,
+        file,
+        fileName,
+        size,
+        requestedChunk ?? DEFAULT_CHUNK_SIZE,
+        options
+      );
+    } else if (method === "single") {
+      await this.uploadSingle(columnUrl, file, fileName, options);
+    } else if (method === "patch-chunked") {
+      if (size === undefined) {
+        throw DataverseInvalidRequestError.invalidParameter(
+          "size",
+          'is required to upload a ReadableStream with method "patch-chunked"'
+        );
+      }
+      await this.uploadPatchChunked(columnUrl, file, fileName, size, options);
+    } else {
+      await this.uploadActions(
+        entitySetName,
+        recordId,
+        columnName,
+        file,
+        fileName,
+        size,
+        requestedChunk ?? DEFAULT_CHUNK_SIZE,
+        options
+      );
+    }
+  }
 
-    // Calculate chunks
-    const totalChunks = Math.ceil(totalSize / chunkSize);
+  /** `InitializeFileBlocksUpload` + `UploadBlock` per chunk + `CommitFileBlocksUpload`. */
+  private async uploadActions(
+    entitySetName: string,
+    recordId: string,
+    columnName: string,
+    file: FileSource,
+    fileName: string,
+    size: number | undefined,
+    chunkSize: number,
+    options: FileUploadOptions | undefined
+  ): Promise<void> {
+    const signal = options?.signal;
     const blockIds: string[] = [];
 
     // Step 1: Initialize upload session
-    const initAction = new InitializeFileBlocksUploadAction(
-      {
-        "@odata.type": "Microsoft.Dynamics.CRM.EntityReference",
-        logicalName: entitySetName,
-        id: normalizeGuid(recordId),
-      },
-      fileName,
-      columnName
-    );
+    const initAction = new InitializeFileBlocksUploadAction({
+      Target: await fileTarget(this.adapter, this.baseUrl, entitySetName, normalizeGuid(recordId)),
+      FileName: fileName,
+      FileAttributeName: columnName,
+    });
     const initRequest = initAction.toRequestInformation(this.baseUrl);
-    const initResponse = await this.adapter.send(initRequest);
+    const initResponse = await sendChecked(this.adapter, initRequest, signal);
     const { FileContinuationToken } = await initAction.parseResponse(initResponse);
 
     // Step 2: Upload blocks (chunks)
-    for (let i = 0; i < totalChunks; i++) {
-      const start = i * chunkSize;
-      const end = Math.min(start + chunkSize, totalSize);
-      const chunk = fileData.slice(start, end);
-
+    let uploaded = 0;
+    let index = 0;
+    for await (const { bytes, last } of chunksOf(file, chunkSize)) {
       // Generate block ID (base64-encoded sequential number)
-      const blockId = this.generateBlockId(i);
+      const blockId = this.generateBlockId(index);
       blockIds.push(blockId);
 
-      // Encode chunk as base64
-      const blockData = this.arrayBufferToBase64(chunk.buffer);
+      const uploadAction = new UploadBlockAction({
+        BlockId: blockId,
+        BlockData: bytesToBase64(bytes),
+        FileContinuationToken,
+      });
+      const uploadRequest = {
+        ...uploadAction.toRequestInformation(this.baseUrl),
+        middlewareOptions: blockRetryOptions(),
+      };
+      await sendChecked(this.adapter, uploadRequest, signal);
 
-      // Upload block
-      const uploadAction = new UploadBlockAction(blockId, blockData, FileContinuationToken);
-      const uploadRequest = uploadAction.toRequestInformation(this.baseUrl);
-      await this.adapter.send(uploadRequest);
-
-      // Report progress
-      if (options?.onProgress) {
-        const uploaded = end;
-        const percentage = Math.round((uploaded / totalSize) * 100);
-        options.onProgress({
-          uploaded,
-          total: totalSize,
-          percentage,
-          chunkIndex: i,
-          totalChunks,
-        });
-      }
+      uploaded += bytes.byteLength;
+      options?.onProgress?.(progressOf(uploaded, size, last, index, chunkSize));
+      index++;
     }
 
+    // An empty file has no blocks: committing an empty block list stores it (#383).
     // Step 3: Commit upload
-    const mimeType = (file as Blob).type || "application/octet-stream";
-    const commitAction = new CommitFileBlocksUploadAction(
-      fileName,
-      mimeType,
-      blockIds,
-      FileContinuationToken
-    );
+    const mimeType =
+      options?.mimeType ?? ((isBlob(file) && file.type) || "application/octet-stream");
+    const commitAction = new CommitFileBlocksUploadAction({
+      FileName: fileName,
+      MimeType: mimeType,
+      BlockList: blockIds,
+      FileContinuationToken,
+    });
     const commitRequest = commitAction.toRequestInformation(this.baseUrl);
-    await this.adapter.send(commitRequest);
+    await sendChecked(this.adapter, commitRequest, signal);
+  }
+
+  /**
+   * `PATCH` with `x-ms-transfer-mode: chunked` returns the upload `Location` and the chunk size
+   * (`x-ms-chunk-size`); each chunk is then a `PATCH` to that `Location` with `Content-Range`.
+   */
+  private async uploadPatchChunked(
+    columnUrl: string,
+    file: FileSource,
+    fileName: string,
+    size: number,
+    options: FileUploadOptions | undefined
+  ): Promise<void> {
+    const signal = options?.signal;
+    const start = await sendChecked(
+      this.adapter,
+      {
+        method: "PATCH",
+        url: withFileName(columnUrl, fileName),
+        headers: { "x-ms-transfer-mode": "chunked" },
+      },
+      signal
+    );
+    const location = start.headers.get("location");
+    if (!location) {
+      throw new DataverseInvalidRequestError(
+        "Dataverse returned no Location header for the chunked upload. In a browser it must be " +
+          'exposed by CORS; use method "actions" there.'
+      );
+    }
+    const serverChunk = Number(start.headers.get("x-ms-chunk-size"));
+    const serverChunkSize =
+      Number.isInteger(serverChunk) && serverChunk > 0 ? serverChunk : DEFAULT_CHUNK_SIZE;
+    // Dataverse rejects any chunk (but the last) that is not exactly x-ms-chunk-size long.
+    const chunkSize = serverChunkSize;
+
+    // Each chunk names the file too. Dataverse's Location repeats the start request's
+    // x-ms-file-name, and a second one is rejected (0x80060888), so add it only when missing.
+    const chunkUrl = /[?&]x-ms-file-name=/i.test(location)
+      ? location
+      : withFileName(location, fileName);
+
+    let offset = 0;
+    let index = 0;
+    const totalChunks = Math.ceil(size / chunkSize);
+    for await (const { bytes } of chunksOf(file, chunkSize)) {
+      const end = offset + bytes.byteLength;
+      if (end > size) {
+        throw DataverseInvalidRequestError.invalidParameter(
+          "size",
+          "is smaller than the data in the stream"
+        );
+      }
+      await sendChecked(
+        this.adapter,
+        {
+          method: "PATCH",
+          url: chunkUrl,
+          headers: {
+            "content-type": "application/octet-stream",
+            "content-range": `bytes ${String(offset)}-${String(end - 1)}/${String(size)}`,
+          },
+          body: bytes,
+          middlewareOptions: blockRetryOptions(),
+        },
+        signal
+      );
+      offset = end;
+      options?.onProgress?.({
+        uploaded: offset,
+        total: size,
+        percentage: Math.round((offset / size) * 100),
+        chunkIndex: index,
+        totalChunks,
+      });
+      index++;
+    }
+    if (offset !== size) {
+      throw DataverseInvalidRequestError.invalidParameter(
+        "size",
+        `is ${String(size)} but the stream had ${String(offset)} bytes`
+      );
+    }
+  }
+
+  /** One `PATCH` with the whole file as the body. */
+  private async uploadSingle(
+    columnUrl: string,
+    file: FileSource,
+    fileName: string,
+    options: FileUploadOptions | undefined
+  ): Promise<void> {
+    const signal = options?.signal;
+    const bytes = await allBytes(file);
+    await sendChecked(
+      this.adapter,
+      {
+        method: "PATCH",
+        url: withFileName(columnUrl, fileName),
+        headers: { "content-type": "application/octet-stream" },
+        body: bytes,
+      },
+      signal
+    );
+    options?.onProgress?.({
+      uploaded: bytes.byteLength,
+      total: bytes.byteLength,
+      percentage: 100,
+      chunkIndex: 0,
+      totalChunks: 1,
+    });
   }
 
   /**
@@ -152,118 +397,310 @@ export class FileColumnClient {
    * @param entitySetName - The entity set name (e.g., "accounts")
    * @param recordId - The record ID (GUID)
    * @param columnName - The logical name of the file/image column
-   * @param options - Download options
-   * @returns The file data (Blob in browser, Buffer in Node)
+   * @param options - Download options (route, chunk size, progress, image size, abort signal)
+   * @returns The file data as a `Blob` (in Node.js too; `Buffer.from(await blob.arrayBuffer())`
+   *   gives a `Buffer`)
    */
   async download(
     entitySetName: string,
     recordId: string,
     columnName: string,
-    _options?: FileDownloadOptions
-  ): Promise<Blob | Buffer> {
-    const normalizedId = recordId.replace(/[{}]/g, "").toLowerCase();
+    options?: FileDownloadOptions
+  ): Promise<Blob> {
+    const method = options?.method ?? "auto";
+    if (method === "auto" || method === "single") {
+      const response = await sendChecked(
+        this.adapter,
+        this.getRequest(entitySetName, recordId, columnName, options),
+        options?.signal,
+        options?.timeout
+      );
+      const blob = await response.blob();
+      options?.onProgress?.({
+        downloaded: blob.size,
+        total: blob.size,
+        percentage: 100,
+        chunkIndex: 0,
+        totalChunks: 1,
+      });
+      return blob;
+    }
+    const parts: Uint8Array[] = [];
+    let type: string | undefined;
+    for await (const part of this.downloadParts(
+      entitySetName,
+      recordId,
+      columnName,
+      method,
+      options
+    )) {
+      parts.push(part.bytes);
+      type ??= part.contentType;
+    }
+    return new Blob(parts as BlobPart[], type ? { type } : {});
+  }
 
-    // Construct download URL
-    const url = `${this.baseUrl}/${entitySetName}(${normalizedId})/${columnName}/$value`;
-
-    const request: RequestInformation = {
-      method: "GET",
-      url,
-      headers: {
-        Accept: "application/octet-stream",
+  /**
+   * Download a file as a `ReadableStream`, so it is never held in memory whole. By default it
+   * reads the file with `Range` requests (`method: "range"`); `"single"` streams one response
+   * body, `"actions"` uses `DownloadBlock`. Requests are made as the stream is read.
+   *
+   * The first request is made before this resolves, so a missing file rejects here with the
+   * parsed error. Cancelling the stream (or aborting `options.signal`) stops further requests.
+   *
+   * @returns The file's bytes as a stream of `Uint8Array`.
+   */
+  async downloadStream(
+    entitySetName: string,
+    recordId: string,
+    columnName: string,
+    options?: FileDownloadOptions
+  ): Promise<ReadableStream<Uint8Array>> {
+    const method = options?.method ?? "auto";
+    if (method === "single") {
+      const response = await sendChecked(
+        this.adapter,
+        this.getRequest(entitySetName, recordId, columnName, options),
+        options?.signal,
+        options?.timeout
+      );
+      return response.body ?? new Blob([await response.arrayBuffer()]).stream();
+    }
+    const parts = this.downloadParts(
+      entitySetName,
+      recordId,
+      columnName,
+      method === "auto" ? "range" : method,
+      options
+    );
+    let pending: IteratorResult<{ bytes: Uint8Array }> | undefined;
+    try {
+      pending = await parts.next();
+    } catch (error) {
+      await parts.return(undefined);
+      throw error;
+    }
+    return new ReadableStream<Uint8Array>({
+      async pull(controller) {
+        const step = pending ?? (await parts.next());
+        pending = undefined;
+        if (step.done) controller.close();
+        else controller.enqueue(step.value.bytes);
       },
+      async cancel() {
+        await parts.return(undefined);
+      },
+    });
+  }
+
+  /** The `GET .../$value` request (`?size=full` for the full-size image). */
+  private getRequest(
+    entitySetName: string,
+    recordId: string,
+    columnName: string,
+    options: FileDownloadOptions | undefined,
+    headers: Record<string, string> = {}
+  ): RequestInformation {
+    const size = options?.imageSize === "full" ? "?size=full" : "";
+    return {
+      method: "GET",
+      url: `${this.baseUrl}/${entitySetName}(${normalizeGuid(recordId)})/${columnName}/$value${size}`,
+      // A column with no file is a 404 DataverseODataError (code 0x80040217).
+      headers: { Accept: "application/octet-stream", ...headers },
+    };
+  }
+
+  /** The file in chunks, by `Range` requests or `DownloadBlock`, reporting progress. */
+  private async *downloadParts(
+    entitySetName: string,
+    recordId: string,
+    columnName: string,
+    method: "range" | "actions",
+    options: FileDownloadOptions | undefined
+  ): AsyncGenerator<{ bytes: Uint8Array; contentType?: string }> {
+    const signal = options?.signal;
+    const chunkSize = checkChunkSize(options?.chunkSize ?? DEFAULT_CHUNK_SIZE);
+    // The bytes read per request: the whole file when Dataverse can't read it in parts.
+    let blockSize = chunkSize;
+    let offset = 0;
+    let index = 0;
+    let total: number | undefined;
+    let token = "";
+
+    const report = (length: number): void => {
+      offset += length;
+      options?.onProgress?.({
+        downloaded: offset,
+        total: total ?? 0,
+        percentage: total ? Math.round((offset / total) * 100) : 0,
+        chunkIndex: index,
+        totalChunks: total ? Math.ceil(total / blockSize) : 0,
+      });
+      index++;
     };
 
-    const response = await this.adapter.send(request);
-
-    if (!response.ok) {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      throw new Error(`Failed to download file: ${response.statusText}`);
+    if (method === "actions") {
+      if (options?.imageSize === "full") {
+        throw DataverseInvalidRequestError.invalidParameter(
+          "imageSize",
+          'is not available with method "actions"'
+        );
+      }
+      const init = new InitializeFileBlocksDownloadAction({
+        Target: await fileTarget(
+          this.adapter,
+          this.baseUrl,
+          entitySetName,
+          normalizeGuid(recordId)
+        ),
+        FileAttributeName: columnName,
+        DataSource: "",
+      });
+      const initBody = await init.parseResponse(
+        await sendChecked(
+          this.adapter,
+          init.toRequestInformation(this.baseUrl),
+          signal,
+          options?.timeout
+        )
+      );
+      total = initBody.FileSizeInBytes;
+      token = initBody.FileContinuationToken;
+      // IsChunkingSupported false: a partial DownloadBlock fails with 0x80090017, so read the
+      // whole file as one block (#362). A response without the flag is read in chunks as before.
+      const chunking = initBody.IsChunkingSupported as boolean | undefined;
+      if (chunking === false) blockSize = Math.max(total, 1);
     }
 
-    // Return appropriate type based on environment
-    if (typeof Blob !== "undefined") {
-      return await response.blob();
-    } else {
-      // Node.js environment
-      const arrayBuffer = await response.arrayBuffer();
-      return Buffer.from(arrayBuffer);
+    for (;;) {
+      if (total !== undefined && offset >= total) return;
+      if (method === "actions") {
+        const action = new DownloadBlockAction({
+          Offset: offset,
+          BlockLength: blockSize,
+          FileContinuationToken: token,
+        });
+        const res = await sendChecked(
+          this.adapter,
+          { ...action.toRequestInformation(this.baseUrl), middlewareOptions: blockRetryOptions() },
+          signal,
+          options?.timeout
+        );
+        const { Data } = await action.parseResponse(res);
+        const bytes = base64ToBytes(Data);
+        if (bytes.byteLength === 0) return;
+        yield { bytes };
+        report(bytes.byteLength);
+        continue;
+      }
+
+      let res: Response;
+      try {
+        res = await sendChecked(
+          this.adapter,
+          this.getRequest(entitySetName, recordId, columnName, options, {
+            Range: `bytes=${String(offset)}-${String(offset + chunkSize - 1)}`,
+          }),
+          signal,
+          options?.timeout
+        );
+      } catch (error) {
+        if (!isChunkingNotSupported(error)) throw error;
+        // The file can't be read in parts (#362): one GET for all of it, less what was yielded.
+        const whole = await sendChecked(
+          this.adapter,
+          this.getRequest(entitySetName, recordId, columnName, options),
+          signal,
+          options?.timeout
+        );
+        const type = whole.headers.get("content-type") ?? undefined;
+        const rest = new Uint8Array(await whole.arrayBuffer()).subarray(offset);
+        total = offset + rest.byteLength;
+        blockSize = Math.max(total, 1);
+        yield { bytes: rest, ...(type ? { contentType: type } : {}) };
+        report(rest.byteLength);
+        return;
+      }
+      const contentType = res.headers.get("content-type") ?? undefined;
+      const bytes = new Uint8Array(await res.arrayBuffer());
+      const part = { bytes, ...(contentType ? { contentType } : {}) };
+      if (res.status !== 206) {
+        // Range ignored: this is the whole file.
+        total = bytes.byteLength;
+        yield part;
+        report(bytes.byteLength);
+        return;
+      }
+      total ??= fileSizeOf(res);
+      yield part;
+      report(bytes.byteLength);
+      if (bytes.byteLength === 0 || (total === undefined && bytes.byteLength < chunkSize)) return;
     }
   }
 
   /**
-   * Delete a file from a file or image column.
+   * Delete a file from a file or image column, with `DELETE /{entitySet}({id})/{column}`.
+   * Deleting from a column that has no file succeeds.
    *
    * @param entitySetName - The entity set name (e.g., "accounts")
    * @param recordId - The record ID (GUID)
    * @param columnName - The logical name of the file/image column
+   * @param options - `signal` cancels the request
+   * @throws DataverseODataError (with `status` and `code`) when Dataverse rejects the request.
    */
-  async delete(entitySetName: string, recordId: string, columnName: string): Promise<void> {
-    const normalizedId = recordId.replace(/[{}]/g, "").toLowerCase();
-
+  async delete(
+    entitySetName: string,
+    recordId: string,
+    columnName: string,
+    options?: { signal?: AbortSignal }
+  ): Promise<void> {
+    // PATCH { column: null } returns 204 but leaves the file in place; DELETE removes it.
     const request: RequestInformation = {
-      method: "PATCH",
-      url: `${this.baseUrl}/${entitySetName}(${normalizedId})`,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: {
-        [columnName]: null,
-      },
+      method: "DELETE",
+      url: `${this.baseUrl}/${entitySetName}(${normalizeGuid(recordId)})/${columnName}`,
+      headers: {},
     };
 
-    await this.adapter.send(request);
+    await sendChecked(this.adapter, request, options?.signal);
   }
 
   /**
    * Generate a base64-encoded block ID from a sequential number.
    */
   private generateBlockId(index: number): string {
-    const blockIdStr = index.toString().padStart(8, "0");
-    return this.stringToBase64(blockIdStr);
+    return btoa(index.toString().padStart(8, "0"));
   }
+}
 
-  /**
-   * Convert string to base64 (works in both browser and Node).
-   */
-  private stringToBase64(str: string): string {
-    if (typeof btoa !== "undefined") {
-      // Browser
-      return btoa(str);
-    } else {
-      // Node.js
-      return Buffer.from(str, "utf-8").toString("base64");
-    }
-  }
+/** Total file size from `x-ms-file-size`, else from `Content-Range: bytes a-b/total`. */
+function fileSizeOf(res: Response): number | undefined {
+  const header = res.headers.get("x-ms-file-size");
+  if (header !== null && Number.isInteger(Number(header))) return Number(header);
+  const match = /\/(\d+)\s*$/.exec(res.headers.get("content-range") ?? "");
+  return match?.[1] ? Number(match[1]) : undefined;
+}
 
-  /**
-   * Convert ArrayBuffer to base64 string.
-   */
-  private arrayBufferToBase64(buffer: ArrayBuffer): string {
-    if (typeof btoa !== "undefined") {
-      // Browser
-      const bytes = new Uint8Array(buffer);
-      let binary = "";
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-      return btoa(binary);
-    } else {
-      // Node.js
-      return Buffer.from(buffer).toString("base64");
-    }
+function progressOf(
+  uploaded: number,
+  size: number | undefined,
+  last: boolean,
+  index: number,
+  chunkSize: number
+): UploadProgress {
+  if (size === undefined) {
+    return {
+      uploaded,
+      total: uploaded,
+      percentage: last ? 100 : 0,
+      chunkIndex: index,
+      totalChunks: index + 1,
+    };
   }
-
-  /**
-   * Convert Blob or Buffer to Uint8Array.
-   */
-  private async fileToUint8Array(file: Blob | Buffer): Promise<Uint8Array> {
-    if (Buffer.isBuffer(file)) {
-      return new Uint8Array(file);
-    } else {
-      // Blob
-      const arrayBuffer = await file.arrayBuffer();
-      return new Uint8Array(arrayBuffer);
-    }
-  }
+  return {
+    uploaded,
+    total: size,
+    percentage: Math.round((uploaded / size) * 100),
+    chunkIndex: index,
+    totalChunks: Math.ceil(size / chunkSize),
+  };
 }

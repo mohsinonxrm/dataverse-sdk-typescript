@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the ApplyRoutingRule message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ApplyRoutingRuleRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * ApplyRoutingRule request message
@@ -11,36 +21,32 @@ export class ApplyRoutingRuleRequest
   extends OrganizationRequest
   implements Executable<ApplyRoutingRuleResponse>
 {
-  constructor(public target: EntityReference) {
-    super("ApplyRoutingRule");
+  declare readonly Parameters: Readonly<ApplyRoutingRuleRequestParameters>;
+
+  constructor(parameters: ApplyRoutingRuleRequestParameters) {
+    super("ApplyRoutingRule", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ApplyRoutingRule`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ApplyRoutingRuleResponse> {
+  parseResponse(_response: Response): Promise<ApplyRoutingRuleResponse> {
     // No return value (204 No Content)
-    return new ApplyRoutingRuleResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
+    return Promise.resolve(new ApplyRoutingRuleResponse());
   }
 }
 
@@ -52,7 +58,7 @@ export class ApplyRoutingRuleResponse extends OrganizationResponse {
     super("ApplyRoutingRule");
   }
 
-  static fromResponse(_data: unknown): ApplyRoutingRuleResponse {
+  static fromResponse(_data?: unknown): ApplyRoutingRuleResponse {
     return new ApplyRoutingRuleResponse();
   }
 }

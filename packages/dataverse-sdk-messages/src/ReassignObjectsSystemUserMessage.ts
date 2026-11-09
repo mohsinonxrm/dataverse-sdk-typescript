@@ -1,54 +1,64 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the ReassignObjectsSystemUser message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ReassignObjectsSystemUserRequestParameters {
+  ReassignPrincipal: EntityReference | AnyEntityPayload;
+  objectType?: number;
+}
 
 /**
  * ReassignObjectsSystemUser request message
  *
  * Web API Action: ReassignObjectsSystemUser
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class ReassignObjectsSystemUserRequest
   extends OrganizationRequest
   implements Executable<ReassignObjectsSystemUserResponse>
 {
+  declare readonly Parameters: Readonly<ReassignObjectsSystemUserRequestParameters>;
+
   constructor(
     public systemuserId: string,
-    public reassignPrincipal: EntityReference,
-    public objectType: number
+    parameters: ReassignObjectsSystemUserRequestParameters
   ) {
-    super("ReassignObjectsSystemUser");
+    super("ReassignObjectsSystemUser", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/systemusers(${this.systemuserId})/Microsoft.Dynamics.CRM.ReassignObjectsSystemUser`;
+    const url = `${baseUrl}/systemusers(${odataLiteral.guid(this.systemuserId)})/Microsoft.Dynamics.CRM.ReassignObjectsSystemUser`;
 
-    const body: Record<string, unknown> = {
-      ReassignPrincipal: this.reassignPrincipal,
-      objectType: this.objectType,
-    };
+    const body = requestBody({
+      ReassignPrincipal: this.Parameters.ReassignPrincipal,
+      objectType: this.Parameters.objectType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ReassignObjectsSystemUserResponse> {
+  parseResponse(_response: Response): Promise<ReassignObjectsSystemUserResponse> {
     // No return value (204 No Content)
-    return new ReassignObjectsSystemUserResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.systemuserId,
-      ReassignPrincipal: this.reassignPrincipal,
-      objectType: this.objectType,
-    };
+    return Promise.resolve(new ReassignObjectsSystemUserResponse());
   }
 }
 
@@ -60,7 +70,7 @@ export class ReassignObjectsSystemUserResponse extends OrganizationResponse {
     super("ReassignObjectsSystemUser");
   }
 
-  static fromResponse(_data: unknown): ReassignObjectsSystemUserResponse {
+  static fromResponse(_data?: unknown): ReassignObjectsSystemUserResponse {
     return new ReassignObjectsSystemUserResponse();
   }
 }

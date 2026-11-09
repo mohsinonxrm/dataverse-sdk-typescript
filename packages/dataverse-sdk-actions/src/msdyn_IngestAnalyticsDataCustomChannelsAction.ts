@@ -1,10 +1,21 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_IngestAnalyticsDataCustomChannels action
+ * Response from the msdyn_IngestAnalyticsDataCustomChannels action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_IngestAnalyticsDataCustomChannelsResponse {
-  // No content returned
+export type msdyn_IngestAnalyticsDataCustomChannelsResponse = void;
+
+/**
+ * Parameters of the msdyn_IngestAnalyticsDataCustomChannels action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_IngestAnalyticsDataCustomChannelsActionParameters {
+  msdyn_eventname: string;
+  msdyn_sequencestepid?: string;
+  msdyn_linkedactivityid?: string;
 }
 
 /**
@@ -14,34 +25,30 @@ export interface msdyn_IngestAnalyticsDataCustomChannelsResponse {
  */
 export class msdyn_IngestAnalyticsDataCustomChannelsAction implements Executable<msdyn_IngestAnalyticsDataCustomChannelsResponse> {
   constructor(
-    public readonly msdyn_linkedactivityid: string,
-    public readonly msdyn_eventname: string,
-    public readonly msdyn_sequencestepid: string
+    public readonly parameters: msdyn_IngestAnalyticsDataCustomChannelsActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_IngestAnalyticsDataCustomChannels`;
 
-    const body: Record<string, unknown> = {
-      msdyn_linkedactivityid: this.msdyn_linkedactivityid,
-      msdyn_eventname: this.msdyn_eventname,
-      msdyn_sequencestepid: this.msdyn_sequencestepid,
-    };
+    const body = requestBody({
+      msdyn_eventname: this.parameters.msdyn_eventname,
+      msdyn_sequencestepid: this.parameters.msdyn_sequencestepid,
+      msdyn_linkedactivityid: this.parameters.msdyn_linkedactivityid,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_IngestAnalyticsDataCustomChannelsResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_IngestAnalyticsDataCustomChannelsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

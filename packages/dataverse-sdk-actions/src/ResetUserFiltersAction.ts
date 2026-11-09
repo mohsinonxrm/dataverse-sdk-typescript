@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ResetUserFilters action
+ * Response from the ResetUserFilters action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ResetUserFiltersResponse {
-  // No content returned
+export type ResetUserFiltersResponse = void;
+
+/**
+ * Parameters of the ResetUserFilters action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ResetUserFiltersActionParameters {
+  QueryType: number;
 }
 
 /**
@@ -13,27 +22,27 @@ export interface ResetUserFiltersResponse {
  * Unbound action
  */
 export class ResetUserFiltersAction implements Executable<ResetUserFiltersResponse> {
-  constructor(public readonly queryType: number) {}
+  constructor(public readonly parameters: ResetUserFiltersActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ResetUserFilters`;
 
-    const body: Record<string, unknown> = {
-      QueryType: this.queryType,
-    };
+    const body = requestBody({
+      QueryType: this.parameters.QueryType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ResetUserFiltersResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<ResetUserFiltersResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

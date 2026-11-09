@@ -21,30 +21,39 @@ export class msdyn_GetAuditStateRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAuditStateResponse> {
-    const data = await response.json();
-    return msdyn_GetAuditStateResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetAuditStateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetAuditState action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetAuditStateResult {
+  "@odata.context"?: string;
+  msdyn_output: string;
+}
+
+/**
  * msdyn_GetAuditState response message
+ *
+ * `result` is the value the msdyn_GetAuditState action returns (see {@link msdyn_GetAuditStateResult}).
  */
 export class msdyn_GetAuditStateResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetAuditStateResponse) {
+  constructor(public result: msdyn_GetAuditStateResult) {
     super("msdyn_GetAuditState");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetAuditStateResponse {
-    return new msdyn_GetAuditStateResponse((data as any).value);
+    return new msdyn_GetAuditStateResponse(data as msdyn_GetAuditStateResult);
   }
 }

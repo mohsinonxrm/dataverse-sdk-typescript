@@ -128,10 +128,24 @@ function parseEntityTypes(entityTypeElements: any[], namespace: string): CsdlEnt
       name: et["@_Name"],
       namespace,
       baseType: et["@_BaseType"],
+      abstract: et["@_Abstract"] === true || et["@_Abstract"] === "true",
+      key: parseKey(et.Key),
       properties,
       navigationProperties,
     };
   });
+}
+
+/**
+ * Parse an EntityType's `<Key><PropertyRef Name="..."/></Key>`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseKey(keyElement: any): string[] {
+  if (!keyElement) return [];
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const refs: unknown = keyElement.PropertyRef;
+  const list = Array.isArray(refs) ? refs : refs ? [refs] : [];
+  return list.map((r) => String((r as Record<string, unknown>)["@_Name"]));
 }
 
 /**
@@ -150,7 +164,12 @@ function parseComplexTypes(complexTypeElements: any[], namespace: string): CsdlC
       name: ct["@_Name"],
       namespace,
       baseType: ct["@_BaseType"],
+      abstract: ct["@_Abstract"] === true || ct["@_Abstract"] === "true",
       properties,
+      // Entity-valued members (#231), such as PrincipalAccess.Principal
+      navigationProperties: ct.NavigationProperty
+        ? parseNavigationProperties(ct.NavigationProperty)
+        : [],
     };
   });
 }
@@ -170,6 +189,7 @@ function parseEnumTypes(enumTypeElements: any[], namespace: string): CsdlEnumTyp
     return {
       name: et["@_Name"],
       namespace,
+      isFlags: et["@_IsFlags"] === true || et["@_IsFlags"] === "true",
       members,
     };
   });
@@ -262,6 +282,7 @@ function parseNavigationProperties(navPropElements: any[]): CsdlNavigationProper
     type: nav["@_Type"],
     partner: nav["@_Partner"],
     containsTarget: nav["@_ContainsTarget"],
+    nullable: nav["@_Nullable"],
   }));
 }
 

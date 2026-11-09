@@ -1,4 +1,6 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type {
   ComplexEntityMetadata,
   DeletedMetadataCollection,
@@ -7,12 +9,27 @@ import type {
 } from "./types/index.js";
 
 /**
- * Response from RetrieveMetadataChanges function
+ * Response from the RetrieveMetadataChanges function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveMetadataChangesResponse {
-  ServerVersionStamp: string;
+  "@odata.context"?: string;
   DeletedMetadata: DeletedMetadataCollection;
   EntityMetadata: ComplexEntityMetadata[];
+  ServerVersionStamp: string;
+}
+
+/**
+ * Parameters of the RetrieveMetadataChanges function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveMetadataChangesFunctionParameters {
+  Query?: EntityQueryExpression;
+  DeletedMetadataFilters?: DeletedMetadataFilters | keyof typeof DeletedMetadataFilters;
+  ClientVersionStamp?: string;
+  AppModuleId?: string;
+  RetrieveAllSettings?: boolean;
 }
 
 /**
@@ -21,13 +38,7 @@ export interface RetrieveMetadataChangesResponse {
  * Unbound function
  */
 export class RetrieveMetadataChangesFunction implements Executable<RetrieveMetadataChangesResponse> {
-  constructor(
-    public readonly query: EntityQueryExpression,
-    public readonly deletedMetadataFilters: DeletedMetadataFilters,
-    public readonly clientVersionStamp: string,
-    public readonly appModuleId: string,
-    public readonly retrieveAllSettings: boolean
-  ) {}
+  constructor(public readonly parameters: RetrieveMetadataChangesFunctionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveMetadataChanges`;
@@ -35,42 +46,41 @@ export class RetrieveMetadataChangesFunction implements Executable<RetrieveMetad
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.query !== undefined) {
+    if (this.parameters.Query !== undefined) {
       aliases.push(`Query=@p1`);
-      params.append("@p1", JSON.stringify(this.query));
+      params.append(
+        "@p1",
+        formatParameterAlias(
+          enumBody(this.parameters.Query, "EntityQueryExpression"),
+          "mscrm.EntityQueryExpression",
+          "ComplexType"
+        )
+      );
     }
-    if (this.deletedMetadataFilters !== undefined) {
+    if (this.parameters.DeletedMetadataFilters !== undefined) {
       aliases.push(`DeletedMetadataFilters=@p2`);
       params.append(
         "@p2",
-        typeof this.deletedMetadataFilters === "string"
-          ? `'${this.deletedMetadataFilters}'`
-          : String(this.deletedMetadataFilters)
+        formatParameterAlias(
+          this.parameters.DeletedMetadataFilters,
+          "mscrm.DeletedMetadataFilters",
+          "EnumerationType"
+        )
       );
     }
-    if (this.clientVersionStamp !== undefined) {
+    if (this.parameters.ClientVersionStamp !== undefined) {
       aliases.push(`ClientVersionStamp=@p3`);
-      params.append(
-        "@p3",
-        typeof this.clientVersionStamp === "string"
-          ? `'${this.clientVersionStamp}'`
-          : String(this.clientVersionStamp)
-      );
+      params.append("@p3", formatParameterAlias(this.parameters.ClientVersionStamp, "Edm.String"));
     }
-    if (this.appModuleId !== undefined) {
+    if (this.parameters.AppModuleId !== undefined) {
       aliases.push(`AppModuleId=@p4`);
-      params.append(
-        "@p4",
-        typeof this.appModuleId === "string" ? `'${this.appModuleId}'` : String(this.appModuleId)
-      );
+      params.append("@p4", formatParameterAlias(this.parameters.AppModuleId, "Edm.Guid"));
     }
-    if (this.retrieveAllSettings !== undefined) {
+    if (this.parameters.RetrieveAllSettings !== undefined) {
       aliases.push(`RetrieveAllSettings=@p5`);
       params.append(
         "@p5",
-        typeof this.retrieveAllSettings === "string"
-          ? `'${this.retrieveAllSettings}'`
-          : String(this.retrieveAllSettings)
+        formatParameterAlias(this.parameters.RetrieveAllSettings, "Edm.Boolean")
       );
     }
     if (aliases.length > 0) {
@@ -87,7 +97,7 @@ export class RetrieveMetadataChangesFunction implements Executable<RetrieveMetad
   }
 
   async parseResponse(response: Response): Promise<RetrieveMetadataChangesResponse> {
-    const data = await response.json();
-    return data as RetrieveMetadataChangesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveMetadataChangesResponse;
   }
 }

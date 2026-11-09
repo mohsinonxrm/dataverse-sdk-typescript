@@ -1,12 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { AccessRights } from "./types/index.js";
 
 /**
- * Response from GenerateSharedLink action
+ * Response from the GenerateSharedLink action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GenerateSharedLinkResponse {
+  "@odata.context"?: string;
   Response: string;
+}
+
+/**
+ * Parameters of the GenerateSharedLink action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GenerateSharedLinkActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  SharedRights: AccessRights;
 }
 
 /**
@@ -15,31 +30,28 @@ export interface GenerateSharedLinkResponse {
  * Unbound action
  */
 export class GenerateSharedLinkAction implements Executable<GenerateSharedLinkResponse> {
-  constructor(
-    public readonly target: EntityReference,
-    public readonly sharedRights: AccessRights
-  ) {}
+  constructor(public readonly parameters: GenerateSharedLinkActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GenerateSharedLink`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      SharedRights: this.sharedRights,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      SharedRights: enumBody(this.parameters.SharedRights, "AccessRights"),
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<GenerateSharedLinkResponse> {
-    const data = await response.json();
-    return data as GenerateSharedLinkResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as GenerateSharedLinkResponse;
   }
 }

@@ -1,6 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the CancelSalesOrder message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CancelSalesOrderRequestParameters {
+  OrderClose: EntityReference | AnyEntityPayload;
+  Status: number;
+}
 
 /**
  * CancelSalesOrder request message
@@ -11,41 +22,33 @@ export class CancelSalesOrderRequest
   extends OrganizationRequest
   implements Executable<CancelSalesOrderResponse>
 {
-  constructor(
-    public orderClose: EntityReference,
-    public status: number
-  ) {
-    super("CancelSalesOrder");
+  declare readonly Parameters: Readonly<CancelSalesOrderRequestParameters>;
+
+  constructor(parameters: CancelSalesOrderRequestParameters) {
+    super("CancelSalesOrder", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CancelSalesOrder`;
 
-    const body: Record<string, unknown> = {
-      OrderClose: this.orderClose,
-      Status: this.status,
-    };
+    const body = requestBody({
+      OrderClose: this.Parameters.OrderClose,
+      Status: this.Parameters.Status,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<CancelSalesOrderResponse> {
+  parseResponse(_response: Response): Promise<CancelSalesOrderResponse> {
     // No return value (204 No Content)
-    return new CancelSalesOrderResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OrderClose: this.orderClose,
-      Status: this.status,
-    };
+    return Promise.resolve(new CancelSalesOrderResponse());
   }
 }
 
@@ -57,7 +60,7 @@ export class CancelSalesOrderResponse extends OrganizationResponse {
     super("CancelSalesOrder");
   }
 
-  static fromResponse(_data: unknown): CancelSalesOrderResponse {
+  static fromResponse(_data?: unknown): CancelSalesOrderResponse {
     return new CancelSalesOrderResponse();
   }
 }

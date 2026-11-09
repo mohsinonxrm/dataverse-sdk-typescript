@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_ExecuteCustomerNotificationRequest action
+ * Response from the msdyn_ExecuteCustomerNotificationRequest action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ExecuteCustomerNotificationRequestResponse {
+  "@odata.context"?: string;
   Response: string;
 }
 
@@ -20,7 +23,7 @@ export class msdyn_ExecuteCustomerNotificationRequestAction implements Executabl
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -28,7 +31,7 @@ export class msdyn_ExecuteCustomerNotificationRequestAction implements Executabl
   async parseResponse(
     response: Response
   ): Promise<msdyn_ExecuteCustomerNotificationRequestResponse> {
-    const data = await response.json();
-    return data as msdyn_ExecuteCustomerNotificationRequestResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_ExecuteCustomerNotificationRequestResponse;
   }
 }

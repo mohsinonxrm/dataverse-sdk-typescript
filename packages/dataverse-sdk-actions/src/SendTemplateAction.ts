@@ -1,11 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from SendTemplate action
+ * Response from the SendTemplate action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SendTemplateResponse {
-  // No content returned
+export type SendTemplateResponse = void;
+
+/**
+ * Parameters of the SendTemplate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendTemplateActionParameters {
+  TemplateId: string;
+  Sender: EntityReference | AnyEntityPayload;
+  Recipients: Record<string, unknown>[];
+  Regarding: EntityReference | AnyEntityPayload;
+  DeliveryPriorityCode?: number;
 }
 
 /**
@@ -14,37 +28,31 @@ export interface SendTemplateResponse {
  * Unbound action
  */
 export class SendTemplateAction implements Executable<SendTemplateResponse> {
-  constructor(
-    public readonly templateId: string,
-    public readonly sender: EntityReference,
-    public readonly recipients: Record<string, unknown>[],
-    public readonly regarding: EntityReference,
-    public readonly deliveryPriorityCode: number
-  ) {}
+  constructor(public readonly parameters: SendTemplateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SendTemplate`;
 
-    const body: Record<string, unknown> = {
-      TemplateId: this.templateId,
-      Sender: this.sender,
-      Recipients: this.recipients,
-      Regarding: this.regarding,
-      DeliveryPriorityCode: this.deliveryPriorityCode,
-    };
+    const body = requestBody({
+      TemplateId: this.parameters.TemplateId,
+      Sender: this.parameters.Sender,
+      Recipients: this.parameters.Recipients,
+      Regarding: this.parameters.Regarding,
+      DeliveryPriorityCode: this.parameters.DeliveryPriorityCode,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<SendTemplateResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<SendTemplateResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

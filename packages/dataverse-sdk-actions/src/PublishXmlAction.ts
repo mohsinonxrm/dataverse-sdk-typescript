@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from PublishXml action
+ * Response from the PublishXml action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PublishXmlResponse {
-  // No content returned
+export type PublishXmlResponse = void;
+
+/**
+ * Parameters of the PublishXml action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PublishXmlActionParameters {
+  ParameterXml: string;
 }
 
 /**
@@ -13,27 +22,27 @@ export interface PublishXmlResponse {
  * Unbound action
  */
 export class PublishXmlAction implements Executable<PublishXmlResponse> {
-  constructor(public readonly parameterXml: string) {}
+  constructor(public readonly parameters: PublishXmlActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/PublishXml`;
 
-    const body: Record<string, unknown> = {
-      ParameterXml: this.parameterXml,
-    };
+    const body = requestBody({
+      ParameterXml: this.parameters.ParameterXml,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<PublishXmlResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<PublishXmlResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

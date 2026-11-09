@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RefreshRpaLicensingCapacity action
+ * Response from the RefreshRpaLicensingCapacity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RefreshRpaLicensingCapacityResponse {
+  "@odata.context"?: string;
   response: string;
 }
 
@@ -20,13 +23,13 @@ export class RefreshRpaLicensingCapacityAction implements Executable<RefreshRpaL
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<RefreshRpaLicensingCapacityResponse> {
-    const data = await response.json();
-    return data as RefreshRpaLicensingCapacityResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RefreshRpaLicensingCapacityResponse;
   }
 }

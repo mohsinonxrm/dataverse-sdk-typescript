@@ -2,5 +2,6 @@
  * McpCreateTableResponse complex type
  */
 export interface McpCreateTableResponse {
-  successMessage: string;
+  successMessage?: string;
+  usage?: string;
 }

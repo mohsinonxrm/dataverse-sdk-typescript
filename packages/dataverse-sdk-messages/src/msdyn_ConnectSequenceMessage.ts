@@ -1,5 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_ConnectSequence message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ConnectSequenceRequestParameters {
+  RegardingEntityId: string;
+  RegardingEntityName: string;
+  SequenceId: string;
+  SegmentId?: string;
+  Source?: string;
+  WaitTime?: number;
+  AdvancedToOtherSequenceTargetStepId?: string;
+  OwnerEntityId?: string;
+  OwnerEntityName?: string;
+}
 
 /**
  * msdyn_ConnectSequence request message
@@ -10,74 +27,65 @@ export class msdyn_ConnectSequenceRequest
   extends OrganizationRequest
   implements Executable<msdyn_ConnectSequenceResponse>
 {
-  constructor(
-    public regardingEntityId: string,
-    public regardingEntityName: string,
-    public sequenceId: string,
-    public segmentId: string,
-    public source: string,
-    public waitTime: number,
-    public advancedToOtherSequenceTargetStepId: string,
-    public ownerEntityId: string,
-    public ownerEntityName: string
-  ) {
-    super("msdyn_ConnectSequence");
+  declare readonly Parameters: Readonly<msdyn_ConnectSequenceRequestParameters>;
+
+  constructor(parameters: msdyn_ConnectSequenceRequestParameters) {
+    super("msdyn_ConnectSequence", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ConnectSequence`;
 
-    const body: Record<string, unknown> = {
-      RegardingEntityId: this.regardingEntityId,
-      RegardingEntityName: this.regardingEntityName,
-      SequenceId: this.sequenceId,
-      SegmentId: this.segmentId,
-      Source: this.source,
-      WaitTime: this.waitTime,
-      AdvancedToOtherSequenceTargetStepId: this.advancedToOtherSequenceTargetStepId,
-      OwnerEntityId: this.ownerEntityId,
-      OwnerEntityName: this.ownerEntityName,
-    };
+    const body = requestBody({
+      RegardingEntityId: this.Parameters.RegardingEntityId,
+      RegardingEntityName: this.Parameters.RegardingEntityName,
+      SequenceId: this.Parameters.SequenceId,
+      SegmentId: this.Parameters.SegmentId,
+      Source: this.Parameters.Source,
+      WaitTime: this.Parameters.WaitTime,
+      AdvancedToOtherSequenceTargetStepId: this.Parameters.AdvancedToOtherSequenceTargetStepId,
+      OwnerEntityId: this.Parameters.OwnerEntityId,
+      OwnerEntityName: this.Parameters.OwnerEntityName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_ConnectSequenceResponse> {
-    const data = await response.json();
-    return msdyn_ConnectSequenceResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RegardingEntityId: this.regardingEntityId,
-      RegardingEntityName: this.regardingEntityName,
-      SequenceId: this.sequenceId,
-      SegmentId: this.segmentId,
-      Source: this.source,
-      WaitTime: this.waitTime,
-      AdvancedToOtherSequenceTargetStepId: this.advancedToOtherSequenceTargetStepId,
-      OwnerEntityId: this.ownerEntityId,
-      OwnerEntityName: this.ownerEntityName,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_ConnectSequenceResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_ConnectSequence action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_ConnectSequenceResult {
+  "@odata.context"?: string;
+  SequenceTargetId: string;
+}
+
+/**
  * msdyn_ConnectSequence response message
+ *
+ * `result` is the value the msdyn_ConnectSequence action returns (see {@link msdyn_ConnectSequenceResult}).
  */
 export class msdyn_ConnectSequenceResponse extends OrganizationResponse {
-  constructor(public result: msdyn_ConnectSequenceResponse) {
+  constructor(public result: msdyn_ConnectSequenceResult) {
     super("msdyn_ConnectSequence");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_ConnectSequenceResponse {
-    return new msdyn_ConnectSequenceResponse((data as any).value);
+    return new msdyn_ConnectSequenceResponse(data as msdyn_ConnectSequenceResult);
   }
 }

@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from GetValidManyToMany function
+ * Response from the GetValidManyToMany function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetValidManyToManyResponse {
+  "@odata.context"?: string;
   EntityNames: string[];
 }
 
@@ -26,7 +29,7 @@ export class GetValidManyToManyFunction implements Executable<GetValidManyToMany
   }
 
   async parseResponse(response: Response): Promise<GetValidManyToManyResponse> {
-    const data = await response.json();
-    return data as GetValidManyToManyResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as GetValidManyToManyResponse;
   }
 }

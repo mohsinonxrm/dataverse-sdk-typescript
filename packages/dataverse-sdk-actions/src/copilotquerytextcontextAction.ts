@@ -1,10 +1,30 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from copilotquerytextcontext action
+ * Response from the copilotquerytextcontext action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface copilotquerytextcontextResponse {
+  "@odata.context"?: string;
   response: string;
+}
+
+/**
+ * Parameters of the copilotquerytextcontext action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface copilotquerytextcontextActionParameters {
+  searchMode?: string;
+  skip?: number;
+  searchType?: string;
+  entityParameters?: string;
+  top?: number;
+  orderBy?: string;
+  options?: string;
+  searchText: string;
+  totalResultCount?: boolean;
 }
 
 /**
@@ -13,45 +33,35 @@ export interface copilotquerytextcontextResponse {
  * Unbound action
  */
 export class copilotquerytextcontextAction implements Executable<copilotquerytextcontextResponse> {
-  constructor(
-    public readonly totalResultCount: boolean,
-    public readonly orderBy: string,
-    public readonly searchMode: string,
-    public readonly entityParameters: string,
-    public readonly skip: number,
-    public readonly top: number,
-    public readonly options: string,
-    public readonly searchType: string,
-    public readonly searchText: string
-  ) {}
+  constructor(public readonly parameters: copilotquerytextcontextActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/copilotquerytextcontext`;
 
-    const body: Record<string, unknown> = {
-      totalResultCount: this.totalResultCount,
-      orderBy: this.orderBy,
-      searchMode: this.searchMode,
-      entityParameters: this.entityParameters,
-      skip: this.skip,
-      top: this.top,
-      options: this.options,
-      searchType: this.searchType,
-      searchText: this.searchText,
-    };
+    const body = requestBody({
+      searchMode: this.parameters.searchMode,
+      skip: this.parameters.skip,
+      searchType: this.parameters.searchType,
+      entityParameters: this.parameters.entityParameters,
+      top: this.parameters.top,
+      orderBy: this.parameters.orderBy,
+      options: this.parameters.options,
+      searchText: this.parameters.searchText,
+      totalResultCount: this.parameters.totalResultCount,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<copilotquerytextcontextResponse> {
-    const data = await response.json();
-    return data as copilotquerytextcontextResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as copilotquerytextcontextResponse;
   }
 }

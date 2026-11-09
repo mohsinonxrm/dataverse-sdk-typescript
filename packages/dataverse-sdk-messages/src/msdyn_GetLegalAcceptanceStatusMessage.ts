@@ -21,30 +21,39 @@ export class msdyn_GetLegalAcceptanceStatusRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetLegalAcceptanceStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetLegalAcceptanceStatusResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetLegalAcceptanceStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetLegalAcceptanceStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetLegalAcceptanceStatusResult {
+  "@odata.context"?: string;
+  Status: boolean;
+}
+
+/**
  * msdyn_GetLegalAcceptanceStatus response message
+ *
+ * `result` is the value the msdyn_GetLegalAcceptanceStatus action returns (see {@link msdyn_GetLegalAcceptanceStatusResult}).
  */
 export class msdyn_GetLegalAcceptanceStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetLegalAcceptanceStatusResponse) {
+  constructor(public result: msdyn_GetLegalAcceptanceStatusResult) {
     super("msdyn_GetLegalAcceptanceStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetLegalAcceptanceStatusResponse {
-    return new msdyn_GetLegalAcceptanceStatusResponse((data as any).value);
+    return new msdyn_GetLegalAcceptanceStatusResponse(data as msdyn_GetLegalAcceptanceStatusResult);
   }
 }

@@ -1,7 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
-import type { QueryBase } from "./types/index.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+import type { TypedQueryBase } from "./types/index.js";
+
+/**
+ * Parameters of the SendBulkMail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendBulkMailRequestParameters {
+  Sender: EntityReference | AnyEntityPayload;
+  TemplateId: string;
+  RegardingType: string;
+  RegardingId: string;
+  Query?: TypedQueryBase;
+}
 
 /**
  * SendBulkMail request message
@@ -12,50 +27,36 @@ export class SendBulkMailRequest
   extends OrganizationRequest
   implements Executable<SendBulkMailResponse>
 {
-  constructor(
-    public sender: EntityReference,
-    public templateId: string,
-    public regardingType: string,
-    public regardingId: string,
-    public query: QueryBase
-  ) {
-    super("SendBulkMail");
+  declare readonly Parameters: Readonly<SendBulkMailRequestParameters>;
+
+  constructor(parameters: SendBulkMailRequestParameters) {
+    super("SendBulkMail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SendBulkMail`;
 
-    const body: Record<string, unknown> = {
-      Sender: this.sender,
-      TemplateId: this.templateId,
-      RegardingType: this.regardingType,
-      RegardingId: this.regardingId,
-      Query: this.query,
-    };
+    const body = requestBody({
+      Sender: this.Parameters.Sender,
+      TemplateId: this.Parameters.TemplateId,
+      RegardingType: this.Parameters.RegardingType,
+      RegardingId: this.Parameters.RegardingId,
+      Query: enumBody(this.Parameters.Query, "QueryBase"),
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<SendBulkMailResponse> {
+  parseResponse(_response: Response): Promise<SendBulkMailResponse> {
     // No return value (204 No Content)
-    return new SendBulkMailResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Sender: this.sender,
-      TemplateId: this.templateId,
-      RegardingType: this.regardingType,
-      RegardingId: this.regardingId,
-      Query: this.query,
-    };
+    return Promise.resolve(new SendBulkMailResponse());
   }
 }
 
@@ -67,7 +68,7 @@ export class SendBulkMailResponse extends OrganizationResponse {
     super("SendBulkMail");
   }
 
-  static fromResponse(_data: unknown): SendBulkMailResponse {
+  static fromResponse(_data?: unknown): SendBulkMailResponse {
     return new SendBulkMailResponse();
   }
 }

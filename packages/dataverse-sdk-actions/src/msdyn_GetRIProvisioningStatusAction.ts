@@ -1,14 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetRIProvisioningStatus action
+ * Response from the msdyn_GetRIProvisioningStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetRIProvisioningStatusResponse {
+  "@odata.context"?: string;
   DCIHubPlanType: string;
   EEProvisioningStatus: number;
-  RIProvisioningStatus: number;
   RIErrorStatusCode: string;
   RIErrorStatusMessage: string;
+  RIProvisioningStatus: number;
 }
 
 /**
@@ -24,13 +27,13 @@ export class msdyn_GetRIProvisioningStatusAction implements Executable<msdyn_Get
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRIProvisioningStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetRIProvisioningStatusResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetRIProvisioningStatusResponse;
   }
 }

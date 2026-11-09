@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the SetBusinessEquipment message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetBusinessEquipmentRequestParameters {
+  EquipmentId: string;
+  BusinessUnitId: string;
+}
 
 /**
  * SetBusinessEquipment request message
@@ -10,41 +20,33 @@ export class SetBusinessEquipmentRequest
   extends OrganizationRequest
   implements Executable<SetBusinessEquipmentResponse>
 {
-  constructor(
-    public equipmentId: string,
-    public businessUnitId: string
-  ) {
-    super("SetBusinessEquipment");
+  declare readonly Parameters: Readonly<SetBusinessEquipmentRequestParameters>;
+
+  constructor(parameters: SetBusinessEquipmentRequestParameters) {
+    super("SetBusinessEquipment", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SetBusinessEquipment`;
 
-    const body: Record<string, unknown> = {
-      EquipmentId: this.equipmentId,
-      BusinessUnitId: this.businessUnitId,
-    };
+    const body = requestBody({
+      EquipmentId: this.Parameters.EquipmentId,
+      BusinessUnitId: this.Parameters.BusinessUnitId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<SetBusinessEquipmentResponse> {
+  parseResponse(_response: Response): Promise<SetBusinessEquipmentResponse> {
     // No return value (204 No Content)
-    return new SetBusinessEquipmentResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      EquipmentId: this.equipmentId,
-      BusinessUnitId: this.businessUnitId,
-    };
+    return Promise.resolve(new SetBusinessEquipmentResponse());
   }
 }
 
@@ -56,7 +58,7 @@ export class SetBusinessEquipmentResponse extends OrganizationResponse {
     super("SetBusinessEquipment");
   }
 
-  static fromResponse(_data: unknown): SetBusinessEquipmentResponse {
+  static fromResponse(_data?: unknown): SetBusinessEquipmentResponse {
     return new SetBusinessEquipmentResponse();
   }
 }

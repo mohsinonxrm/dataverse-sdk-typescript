@@ -1,36 +1,42 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from CancelDesktopFlowRun action
+ * Response from the CancelDesktopFlowRun action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CancelDesktopFlowRunResponse {
-  // No content returned
-}
+export type CancelDesktopFlowRunResponse = void;
 
 /**
  * CancelDesktopFlowRun action
  *
  * Bound action
  * Binding parameter: entity (mscrm.flowsession)
+ *
+ * The first argument is the id of the flowsession record to call it on.
  */
 export class CancelDesktopFlowRunAction implements Executable<CancelDesktopFlowRunResponse> {
   constructor(public readonly flowsessionId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowsessions(${this.flowsessionId})/Microsoft.Dynamics.CRM.CancelDesktopFlowRun`;
+    const url = `${baseUrl}/flowsessions(${odataLiteral.guid(this.flowsessionId)})/Microsoft.Dynamics.CRM.CancelDesktopFlowRun`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<CancelDesktopFlowRunResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<CancelDesktopFlowRunResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

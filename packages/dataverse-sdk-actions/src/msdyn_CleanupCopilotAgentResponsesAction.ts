@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CleanupCopilotAgentResponses action
+ * Response from the msdyn_CleanupCopilotAgentResponses action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_CleanupCopilotAgentResponsesResponse {
-  // No content returned
+export type msdyn_CleanupCopilotAgentResponsesResponse = void;
+
+/**
+ * Parameters of the msdyn_CleanupCopilotAgentResponses action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CleanupCopilotAgentResponsesActionParameters {
+  ConversationId?: string;
+  UntilMarker?: string;
 }
 
 /**
@@ -14,30 +24,29 @@ export interface msdyn_CleanupCopilotAgentResponsesResponse {
  */
 export class msdyn_CleanupCopilotAgentResponsesAction implements Executable<msdyn_CleanupCopilotAgentResponsesResponse> {
   constructor(
-    public readonly untilMarker: string,
-    public readonly conversationId: string
+    public readonly parameters: msdyn_CleanupCopilotAgentResponsesActionParameters = {}
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CleanupCopilotAgentResponses`;
 
-    const body: Record<string, unknown> = {
-      UntilMarker: this.untilMarker,
-      ConversationId: this.conversationId,
-    };
+    const body = requestBody({
+      ConversationId: this.parameters.ConversationId,
+      UntilMarker: this.parameters.UntilMarker,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CleanupCopilotAgentResponsesResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_CleanupCopilotAgentResponsesResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

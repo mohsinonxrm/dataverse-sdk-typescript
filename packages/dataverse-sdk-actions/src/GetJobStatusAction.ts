@@ -1,10 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from GetJobStatus action
+ * Response from the GetJobStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetJobStatusResponse {
+  "@odata.context"?: string;
   response: string;
+}
+
+/**
+ * Parameters of the GetJobStatus action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetJobStatusActionParameters {
+  istrain: boolean;
+  correlationid?: string;
+  aimodelid?: string;
 }
 
 /**
@@ -13,33 +27,29 @@ export interface GetJobStatusResponse {
  * Unbound action
  */
 export class GetJobStatusAction implements Executable<GetJobStatusResponse> {
-  constructor(
-    public readonly istrain: boolean,
-    public readonly correlationid: string,
-    public readonly aimodelid: string
-  ) {}
+  constructor(public readonly parameters: GetJobStatusActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GetJobStatus`;
 
-    const body: Record<string, unknown> = {
-      istrain: this.istrain,
-      correlationid: this.correlationid,
-      aimodelid: this.aimodelid,
-    };
+    const body = requestBody({
+      istrain: this.parameters.istrain,
+      correlationid: this.parameters.correlationid,
+      aimodelid: this.parameters.aimodelid,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<GetJobStatusResponse> {
-    const data = await response.json();
-    return data as GetJobStatusResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as GetJobStatusResponse;
   }
 }

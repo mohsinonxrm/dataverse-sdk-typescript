@@ -21,30 +21,39 @@ export class msdyn_MarketingMetadataUpdateRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_MarketingMetadataUpdateResponse> {
-    const data = await response.json();
-    return msdyn_MarketingMetadataUpdateResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_MarketingMetadataUpdateResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_MarketingMetadataUpdate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_MarketingMetadataUpdateResult {
+  "@odata.context"?: string;
+  resultCode: number;
+}
+
+/**
  * msdyn_MarketingMetadataUpdate response message
+ *
+ * `result` is the value the msdyn_MarketingMetadataUpdate action returns (see {@link msdyn_MarketingMetadataUpdateResult}).
  */
 export class msdyn_MarketingMetadataUpdateResponse extends OrganizationResponse {
-  constructor(public result: msdyn_MarketingMetadataUpdateResponse) {
+  constructor(public result: msdyn_MarketingMetadataUpdateResult) {
     super("msdyn_MarketingMetadataUpdate");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_MarketingMetadataUpdateResponse {
-    return new msdyn_MarketingMetadataUpdateResponse((data as any).value);
+    return new msdyn_MarketingMetadataUpdateResponse(data as msdyn_MarketingMetadataUpdateResult);
   }
 }

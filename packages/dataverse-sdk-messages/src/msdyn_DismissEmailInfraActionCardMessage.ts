@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_DismissEmailInfraActionCard message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DismissEmailInfraActionCardRequestParameters {
+  ActionCardId: string;
+  MessageId: string;
+  CardType: number;
+}
 
 /**
  * msdyn_DismissEmailInfraActionCard request message
@@ -10,56 +21,62 @@ export class msdyn_DismissEmailInfraActionCardRequest
   extends OrganizationRequest
   implements Executable<msdyn_DismissEmailInfraActionCardResponse>
 {
-  constructor(
-    public actionCardId: string,
-    public messageId: string,
-    public cardType: number
-  ) {
-    super("msdyn_DismissEmailInfraActionCard");
+  declare readonly Parameters: Readonly<msdyn_DismissEmailInfraActionCardRequestParameters>;
+
+  constructor(parameters: msdyn_DismissEmailInfraActionCardRequestParameters) {
+    super("msdyn_DismissEmailInfraActionCard", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DismissEmailInfraActionCard`;
 
-    const body: Record<string, unknown> = {
-      ActionCardId: this.actionCardId,
-      MessageId: this.messageId,
-      CardType: this.cardType,
-    };
+    const body = requestBody({
+      ActionCardId: this.Parameters.ActionCardId,
+      MessageId: this.Parameters.MessageId,
+      CardType: this.Parameters.CardType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_DismissEmailInfraActionCardResponse> {
-    const data = await response.json();
-    return msdyn_DismissEmailInfraActionCardResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ActionCardId: this.actionCardId,
-      MessageId: this.messageId,
-      CardType: this.cardType,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_DismissEmailInfraActionCardResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_DismissEmailInfraActionCard action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_DismissEmailInfraActionCardResult {
+  "@odata.context"?: string;
+  Error: string;
+  Result: boolean;
+}
+
+/**
  * msdyn_DismissEmailInfraActionCard response message
+ *
+ * `result` is the value the msdyn_DismissEmailInfraActionCard action returns (see {@link msdyn_DismissEmailInfraActionCardResult}).
  */
 export class msdyn_DismissEmailInfraActionCardResponse extends OrganizationResponse {
-  constructor(public result: msdyn_DismissEmailInfraActionCardResponse) {
+  constructor(public result: msdyn_DismissEmailInfraActionCardResult) {
     super("msdyn_DismissEmailInfraActionCard");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_DismissEmailInfraActionCardResponse {
-    return new msdyn_DismissEmailInfraActionCardResponse((data as any).value);
+    return new msdyn_DismissEmailInfraActionCardResponse(
+      data as msdyn_DismissEmailInfraActionCardResult
+    );
   }
 }

@@ -21,30 +21,43 @@ export class IsPaiEnabledRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<IsPaiEnabledResponse> {
-    const data = await response.json();
-    return IsPaiEnabledResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return IsPaiEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the IsPaiEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface IsPaiEnabledResult {
+  "@odata.context"?: string;
+  arePreviewScenarioEnabled: boolean;
+  isdatamodelv2enabled: boolean;
+  ispaienabled: boolean;
+  paigastatus: boolean;
+  templates: string;
+}
+
+/**
  * IsPaiEnabled response message
+ *
+ * `result` is the value the IsPaiEnabled action returns (see {@link IsPaiEnabledResult}).
  */
 export class IsPaiEnabledResponse extends OrganizationResponse {
-  constructor(public result: IsPaiEnabledResponse) {
+  constructor(public result: IsPaiEnabledResult) {
     super("IsPaiEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): IsPaiEnabledResponse {
-    return new IsPaiEnabledResponse((data as any).value);
+    return new IsPaiEnabledResponse(data as IsPaiEnabledResult);
   }
 }

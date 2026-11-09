@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * SyncGroupMembersToTeam request message
  *
  * Web API Action: SyncGroupMembersToTeam
+ *
+ * The first argument is the id of the team record to call it on.
  */
 export class SyncGroupMembersToTeamRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class SyncGroupMembersToTeamRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/teams(${this.teamId})/Microsoft.Dynamics.CRM.SyncGroupMembersToTeam`;
+    const url = `${baseUrl}/teams(${odataLiteral.guid(this.teamId)})/Microsoft.Dynamics.CRM.SyncGroupMembersToTeam`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<SyncGroupMembersToTeamResponse> {
+  parseResponse(_response: Response): Promise<SyncGroupMembersToTeamResponse> {
     // No return value (204 No Content)
-    return new SyncGroupMembersToTeamResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.teamId,
-    };
+    return Promise.resolve(new SyncGroupMembersToTeamResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class SyncGroupMembersToTeamResponse extends OrganizationResponse {
     super("SyncGroupMembersToTeam");
   }
 
-  static fromResponse(_data: unknown): SyncGroupMembersToTeamResponse {
+  static fromResponse(_data?: unknown): SyncGroupMembersToTeamResponse {
     return new SyncGroupMembersToTeamResponse();
   }
 }

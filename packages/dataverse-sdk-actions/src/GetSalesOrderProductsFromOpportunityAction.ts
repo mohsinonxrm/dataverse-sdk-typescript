@@ -1,11 +1,26 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunity } from "./types/index.js";
 
 /**
- * Response from GetSalesOrderProductsFromOpportunity action
+ * Response from the GetSalesOrderProductsFromOpportunity action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface GetSalesOrderProductsFromOpportunityResponse {
-  // No content returned
+export type GetSalesOrderProductsFromOpportunityResponse = void;
+
+/**
+ * Parameters of the GetSalesOrderProductsFromOpportunity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetSalesOrderProductsFromOpportunityActionParameters {
+  Opportunity: EntityReference | EntityPayload<opportunity>;
 }
 
 /**
@@ -13,33 +28,35 @@ export interface GetSalesOrderProductsFromOpportunityResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.salesorder)
+ *
+ * The first argument is the id of the salesorder record to call it on.
  */
 export class GetSalesOrderProductsFromOpportunityAction implements Executable<GetSalesOrderProductsFromOpportunityResponse> {
   constructor(
     public readonly salesorderId: string,
-    public readonly opportunity: opportunity
+    public readonly parameters: GetSalesOrderProductsFromOpportunityActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/salesorders(${this.salesorderId})/Microsoft.Dynamics.CRM.GetSalesOrderProductsFromOpportunity`;
+    const url = `${baseUrl}/salesorders(${odataLiteral.guid(this.salesorderId)})/Microsoft.Dynamics.CRM.GetSalesOrderProductsFromOpportunity`;
 
-    const body: Record<string, unknown> = {
-      Opportunity: this.opportunity,
-    };
+    const body = requestBody({
+      Opportunity: this.parameters.Opportunity,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<GetSalesOrderProductsFromOpportunityResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<GetSalesOrderProductsFromOpportunityResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

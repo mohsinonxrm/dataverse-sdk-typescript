@@ -1,11 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { recurringappointmentmaster } from "./types/index.js";
 
 /**
- * Response from DeleteOpenInstances action
+ * Response from the DeleteOpenInstances action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeleteOpenInstancesResponse {
-  // No content returned
+export type DeleteOpenInstancesResponse = void;
+
+/**
+ * Parameters of the DeleteOpenInstances action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteOpenInstancesActionParameters {
+  Target: EntityReference | EntityPayload<recurringappointmentmaster>;
+  SeriesEndDate: string;
+  StateOfPastInstances: number;
 }
 
 /**
@@ -14,33 +27,29 @@ export interface DeleteOpenInstancesResponse {
  * Unbound action
  */
 export class DeleteOpenInstancesAction implements Executable<DeleteOpenInstancesResponse> {
-  constructor(
-    public readonly target: recurringappointmentmaster,
-    public readonly seriesEndDate: string,
-    public readonly stateOfPastInstances: number
-  ) {}
+  constructor(public readonly parameters: DeleteOpenInstancesActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeleteOpenInstances`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      SeriesEndDate: this.seriesEndDate,
-      StateOfPastInstances: this.stateOfPastInstances,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      SeriesEndDate: this.parameters.SeriesEndDate,
+      StateOfPastInstances: this.parameters.StateOfPastInstances,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteOpenInstancesResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<DeleteOpenInstancesResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

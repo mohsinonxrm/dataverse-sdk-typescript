@@ -21,7 +21,7 @@ export class msdyn_CheckIfSalesFormsFromUnmanagedLayerRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -29,24 +29,39 @@ export class msdyn_CheckIfSalesFormsFromUnmanagedLayerRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfSalesFormsFromUnmanagedLayer action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfSalesFormsFromUnmanagedLayerResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfSalesFormsFromUnmanagedLayer response message
+ *
+ * `result` is the value the msdyn_CheckIfSalesFormsFromUnmanagedLayer action returns (see {@link msdyn_CheckIfSalesFormsFromUnmanagedLayerResult}).
  */
 export class msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse) {
+  constructor(public result: msdyn_CheckIfSalesFormsFromUnmanagedLayerResult) {
     super("msdyn_CheckIfSalesFormsFromUnmanagedLayer");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse {
-    return new msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse((data as any).value);
+    return new msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse(
+      data as msdyn_CheckIfSalesFormsFromUnmanagedLayerResult
+    );
   }
 }

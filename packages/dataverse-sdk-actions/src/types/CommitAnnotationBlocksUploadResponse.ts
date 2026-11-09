@@ -2,6 +2,6 @@
  * CommitAnnotationBlocksUploadResponse complex type
  */
 export interface CommitAnnotationBlocksUploadResponse {
-  AnnotationId: string;
-  FileSizeInBytes: number;
+  AnnotationId?: string;
+  FileSizeInBytes?: number;
 }

@@ -1,10 +1,21 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from RemoveCertificateCredential action
+ * Response from the RemoveCertificateCredential action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RemoveCertificateCredentialResponse {
-  // No content returned
+export type RemoveCertificateCredentialResponse = void;
+
+/**
+ * Parameters of the RemoveCertificateCredential action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveCertificateCredentialActionParameters {
+  entityId: string;
+  certificateCredentialId?: string;
+  entityLogicalName: string;
 }
 
 /**
@@ -13,33 +24,29 @@ export interface RemoveCertificateCredentialResponse {
  * Unbound action
  */
 export class RemoveCertificateCredentialAction implements Executable<RemoveCertificateCredentialResponse> {
-  constructor(
-    public readonly certificateCredentialId: string,
-    public readonly entityId: string,
-    public readonly entityLogicalName: string
-  ) {}
+  constructor(public readonly parameters: RemoveCertificateCredentialActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RemoveCertificateCredential`;
 
-    const body: Record<string, unknown> = {
-      certificateCredentialId: this.certificateCredentialId,
-      entityId: this.entityId,
-      entityLogicalName: this.entityLogicalName,
-    };
+    const body = requestBody({
+      entityId: this.parameters.entityId,
+      certificateCredentialId: this.parameters.certificateCredentialId,
+      entityLogicalName: this.parameters.entityLogicalName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveCertificateCredentialResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<RemoveCertificateCredentialResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

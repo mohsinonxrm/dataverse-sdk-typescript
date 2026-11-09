@@ -21,7 +21,7 @@ export class msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -29,24 +29,40 @@ export class msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfActivityMonitorHasErrorLastSevenDays action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfActivityMonitorHasErrorLastSevenDays response message
+ *
+ * `result` is the value the msdyn_CheckIfActivityMonitorHasErrorLastSevenDays action returns (see {@link msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResult}).
  */
 export class msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse) {
+  constructor(public result: msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResult) {
     super("msdyn_CheckIfActivityMonitorHasErrorLastSevenDays");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse {
-    return new msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse((data as any).value);
+    return new msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse(
+      data as msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResult
+    );
   }
 }

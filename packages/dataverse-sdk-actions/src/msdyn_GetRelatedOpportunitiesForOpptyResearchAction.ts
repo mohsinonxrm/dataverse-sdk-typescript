@@ -1,9 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetRelatedOpportunitiesForOpptyResearch action
+ * Response from the msdyn_GetRelatedOpportunitiesForOpptyResearch action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
-export interface msdyn_GetRelatedOpportunitiesForOpptyResearchResponse {}
+export interface msdyn_GetRelatedOpportunitiesForOpptyResearchResponse {
+  "@odata.context"?: string;
+}
+
+/**
+ * Parameters of the msdyn_GetRelatedOpportunitiesForOpptyResearch action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetRelatedOpportunitiesForOpptyResearchActionParameters {
+  msdyn_OpportunityId: string;
+  msdyn_TopCount: number;
+}
 
 /**
  * msdyn_GetRelatedOpportunitiesForOpptyResearch action
@@ -12,23 +26,22 @@ export interface msdyn_GetRelatedOpportunitiesForOpptyResearchResponse {}
  */
 export class msdyn_GetRelatedOpportunitiesForOpptyResearchAction implements Executable<msdyn_GetRelatedOpportunitiesForOpptyResearchResponse> {
   constructor(
-    public readonly msdyn_TopCount: number,
-    public readonly msdyn_OpportunityId: string
+    public readonly parameters: msdyn_GetRelatedOpportunitiesForOpptyResearchActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetRelatedOpportunitiesForOpptyResearch`;
 
-    const body: Record<string, unknown> = {
-      msdyn_TopCount: this.msdyn_TopCount,
-      msdyn_OpportunityId: this.msdyn_OpportunityId,
-    };
+    const body = requestBody({
+      msdyn_OpportunityId: this.parameters.msdyn_OpportunityId,
+      msdyn_TopCount: this.parameters.msdyn_TopCount,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -37,7 +50,7 @@ export class msdyn_GetRelatedOpportunitiesForOpptyResearchAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetRelatedOpportunitiesForOpptyResearchResponse> {
-    const data = await response.json();
-    return data as msdyn_GetRelatedOpportunitiesForOpptyResearchResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetRelatedOpportunitiesForOpptyResearchResponse;
   }
 }

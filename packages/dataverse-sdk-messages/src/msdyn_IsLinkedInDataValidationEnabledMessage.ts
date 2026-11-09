@@ -21,30 +21,41 @@ export class msdyn_IsLinkedInDataValidationEnabledRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsLinkedInDataValidationEnabledResponse> {
-    const data = await response.json();
-    return msdyn_IsLinkedInDataValidationEnabledResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_IsLinkedInDataValidationEnabledResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_IsLinkedInDataValidationEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_IsLinkedInDataValidationEnabledResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_IsLinkedInDataValidationEnabled response message
+ *
+ * `result` is the value the msdyn_IsLinkedInDataValidationEnabled action returns (see {@link msdyn_IsLinkedInDataValidationEnabledResult}).
  */
 export class msdyn_IsLinkedInDataValidationEnabledResponse extends OrganizationResponse {
-  constructor(public result: msdyn_IsLinkedInDataValidationEnabledResponse) {
+  constructor(public result: msdyn_IsLinkedInDataValidationEnabledResult) {
     super("msdyn_IsLinkedInDataValidationEnabled");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_IsLinkedInDataValidationEnabledResponse {
-    return new msdyn_IsLinkedInDataValidationEnabledResponse((data as any).value);
+    return new msdyn_IsLinkedInDataValidationEnabledResponse(
+      data as msdyn_IsLinkedInDataValidationEnabledResult
+    );
   }
 }

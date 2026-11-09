@@ -1,9 +1,16 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from ClearWorkQueue action
+ * Response from the ClearWorkQueue action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ClearWorkQueueResponse {
+  "@odata.context"?: string;
   isDeletionGoingAsync: boolean;
 }
 
@@ -12,25 +19,27 @@ export interface ClearWorkQueueResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.workqueue)
+ *
+ * The first argument is the id of the workqueue record to call it on.
  */
 export class ClearWorkQueueAction implements Executable<ClearWorkQueueResponse> {
   constructor(public readonly workqueueId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/workqueues(${this.workqueueId})/Microsoft.Dynamics.CRM.ClearWorkQueue`;
+    const url = `${baseUrl}/workqueues(${odataLiteral.guid(this.workqueueId)})/Microsoft.Dynamics.CRM.ClearWorkQueue`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<ClearWorkQueueResponse> {
-    const data = await response.json();
-    return data as ClearWorkQueueResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as ClearWorkQueueResponse;
   }
 }

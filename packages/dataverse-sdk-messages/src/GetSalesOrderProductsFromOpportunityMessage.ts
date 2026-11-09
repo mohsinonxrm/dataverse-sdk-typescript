@@ -1,51 +1,63 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunity } from "./types/index.js";
+
+/**
+ * Parameters of the GetSalesOrderProductsFromOpportunity message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetSalesOrderProductsFromOpportunityRequestParameters {
+  Opportunity: EntityReference | EntityPayload<opportunity>;
+}
 
 /**
  * GetSalesOrderProductsFromOpportunity request message
  *
  * Web API Action: GetSalesOrderProductsFromOpportunity
+ *
+ * The first argument is the id of the salesorder record to call it on.
  */
 export class GetSalesOrderProductsFromOpportunityRequest
   extends OrganizationRequest
   implements Executable<GetSalesOrderProductsFromOpportunityResponse>
 {
+  declare readonly Parameters: Readonly<GetSalesOrderProductsFromOpportunityRequestParameters>;
+
   constructor(
     public salesorderId: string,
-    public opportunity: opportunity
+    parameters: GetSalesOrderProductsFromOpportunityRequestParameters
   ) {
-    super("GetSalesOrderProductsFromOpportunity");
+    super("GetSalesOrderProductsFromOpportunity", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/salesorders(${this.salesorderId})/Microsoft.Dynamics.CRM.GetSalesOrderProductsFromOpportunity`;
+    const url = `${baseUrl}/salesorders(${odataLiteral.guid(this.salesorderId)})/Microsoft.Dynamics.CRM.GetSalesOrderProductsFromOpportunity`;
 
-    const body: Record<string, unknown> = {
-      Opportunity: this.opportunity,
-    };
+    const body = requestBody({
+      Opportunity: this.Parameters.Opportunity,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<GetSalesOrderProductsFromOpportunityResponse> {
+  parseResponse(_response: Response): Promise<GetSalesOrderProductsFromOpportunityResponse> {
     // No return value (204 No Content)
-    return new GetSalesOrderProductsFromOpportunityResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.salesorderId,
-      Opportunity: this.opportunity,
-    };
+    return Promise.resolve(new GetSalesOrderProductsFromOpportunityResponse());
   }
 }
 
@@ -57,7 +69,7 @@ export class GetSalesOrderProductsFromOpportunityResponse extends OrganizationRe
     super("GetSalesOrderProductsFromOpportunity");
   }
 
-  static fromResponse(_data: unknown): GetSalesOrderProductsFromOpportunityResponse {
+  static fromResponse(_data?: unknown): GetSalesOrderProductsFromOpportunityResponse {
     return new GetSalesOrderProductsFromOpportunityResponse();
   }
 }

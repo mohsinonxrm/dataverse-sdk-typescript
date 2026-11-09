@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_CheckIfRecordWorkstreamHasIntakeRules action
+ * Response from the msdyn_CheckIfRecordWorkstreamHasIntakeRules action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse {
+  "@odata.context"?: string;
   Message: string;
   ResultEntities: string;
   ReturnStatus: number;
@@ -22,7 +25,7 @@ export class msdyn_CheckIfRecordWorkstreamHasIntakeRulesAction implements Execut
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -30,7 +33,7 @@ export class msdyn_CheckIfRecordWorkstreamHasIntakeRulesAction implements Execut
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CheckIfRecordWorkstreamHasIntakeRulesResponse;
   }
 }

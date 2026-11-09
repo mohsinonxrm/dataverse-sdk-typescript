@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_executeemailsentimentbot message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_executeemailsentimentbotRequestParameters {
+  environmentId: string;
+  emailId: string;
+}
 
 /**
  * msdyn_executeemailsentimentbot request message
@@ -10,53 +20,58 @@ export class msdyn_executeemailsentimentbotRequest
   extends OrganizationRequest
   implements Executable<msdyn_executeemailsentimentbotResponse>
 {
-  constructor(
-    public environmentId: string,
-    public emailId: string
-  ) {
-    super("msdyn_executeemailsentimentbot");
+  declare readonly Parameters: Readonly<msdyn_executeemailsentimentbotRequestParameters>;
+
+  constructor(parameters: msdyn_executeemailsentimentbotRequestParameters) {
+    super("msdyn_executeemailsentimentbot", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_executeemailsentimentbot`;
 
-    const body: Record<string, unknown> = {
-      environmentId: this.environmentId,
-      emailId: this.emailId,
-    };
+    const body = requestBody({
+      environmentId: this.Parameters.environmentId,
+      emailId: this.Parameters.emailId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_executeemailsentimentbotResponse> {
-    const data = await response.json();
-    return msdyn_executeemailsentimentbotResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      environmentId: this.environmentId,
-      emailId: this.emailId,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_executeemailsentimentbotResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_executeemailsentimentbot action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_executeemailsentimentbotResult {
+  "@odata.context"?: string;
+  emailSentimentResponse: string;
+}
+
+/**
  * msdyn_executeemailsentimentbot response message
+ *
+ * `result` is the value the msdyn_executeemailsentimentbot action returns (see {@link msdyn_executeemailsentimentbotResult}).
  */
 export class msdyn_executeemailsentimentbotResponse extends OrganizationResponse {
-  constructor(public result: msdyn_executeemailsentimentbotResponse) {
+  constructor(public result: msdyn_executeemailsentimentbotResult) {
     super("msdyn_executeemailsentimentbot");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_executeemailsentimentbotResponse {
-    return new msdyn_executeemailsentimentbotResponse((data as any).value);
+    return new msdyn_executeemailsentimentbotResponse(data as msdyn_executeemailsentimentbotResult);
   }
 }

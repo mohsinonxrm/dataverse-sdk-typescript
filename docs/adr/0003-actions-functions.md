@@ -27,6 +27,12 @@ We must avoid a design where callers specify operation type with error-prone fla
 4.  **Initial scope:** Start with a minimal “common operations” set to validate architecture, docs, and samples; expand toward full coverage before v1 release if desired.
 5.  **Capability-based docs:** Maintain “supported actions/functions” lists and show how to call unsupported operations using raw `client.api(...)` until typed wrappers are added.
 
+### Status update (2026-11-07, 2.0.0)
+
+- **Scope (decision 4).** 1.0.0 shipped every action and function of the org it was generated from. In 2.0.0 the packages are generated from a committed `$metadata` snapshot (#293) and hold the operations of the platform, Sales and Customer Service (#304); `docs/mapping/supported-actions.md` and `supported-functions.md` list them. For another app's operations, or your own custom APIs, generate classes with `dataverse-gen` (`@mohsinonxrm/dataverse-sdk-generator`).
+- **Constructors.** Each operation takes one object with its parameters by name; a bound operation takes its record id or entity set first (#96). An operation bound to several tables has one class per binding (#75, #286).
+- **Responses (decision 3).** `client.execute()` resolves the value the operation returns, not the OData envelope (#300).
+
 ### Consequences
 
 - **Pros:** Strongly typed, safe invocation; no `isFunction` mistakes; clear client-side story for web/node developers; consistent with Dataverse definition of actions/functions and their invocation rules.

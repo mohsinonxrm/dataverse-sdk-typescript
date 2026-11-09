@@ -3,44 +3,8 @@
  * Each error has a .name property for searchability and debugging
  */
 
-/**
- * Base error class for all Dataverse SDK errors
- */
-export class DataverseError extends Error {
-  /**
-   * HTTP status code if applicable
-   */
-  public statusCode?: number;
-
-  /**
-   * Request ID for tracking
-   */
-  public requestId?: string;
-
-  /**
-   * Timestamp when error occurred
-   */
-  public date: Date;
-
-  /**
-   * Original response body if available
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public body?: any;
-
-  /**
-   * Response headers if available
-   */
-  public headers?: Headers;
-
-  constructor(message?: string, baseError?: Error) {
-    super(message ?? baseError?.message);
-    Object.setPrototypeOf(this, DataverseError.prototype);
-    this.name = "DataverseError";
-    this.date = new Date();
-    this.stack = baseError?.stack ?? this.stack;
-  }
-}
+import { DataverseError } from "./DataverseError.js";
+import { headersToRecord, requestIdFrom } from "./responseDetails.js";
 
 /**
  * Authentication/authorization errors
@@ -85,7 +49,7 @@ export class DataverseAuthenticationError extends DataverseError {
   static unauthorized(message?: string): DataverseAuthenticationError {
     const error = new DataverseAuthenticationError(message ?? "Unauthorized access");
     error.name = "Unauthorized";
-    error.statusCode = 401;
+    error.status = 401;
     return error;
   }
 
@@ -95,7 +59,7 @@ export class DataverseAuthenticationError extends DataverseError {
   static forbidden(message?: string): DataverseAuthenticationError {
     const error = new DataverseAuthenticationError(message ?? "Access forbidden");
     error.name = "Forbidden";
-    error.statusCode = 403;
+    error.status = 403;
     return error;
   }
 }
@@ -156,6 +120,16 @@ export class DataverseInvalidRequestError extends DataverseError {
   }
 
   /**
+   * Create error for a request whose URL may not receive the bearer token
+   * (another origin, or a URL carrying user info).
+   */
+  static tokenOriginRefused(reason: string): DataverseInvalidRequestError {
+    const error = new DataverseInvalidRequestError(`Request refused: ${reason}`);
+    error.name = "TokenOriginRefused";
+    return error;
+  }
+
+  /**
    * Create error for serialization failures
    */
   static serializationFailed(details?: string): DataverseInvalidRequestError {
@@ -174,39 +148,38 @@ export class DataverseInvalidRequestError extends DataverseError {
  * @example
  * ```typescript
  * const error = DataverseServiceError.fromResponse(response, body);
- * error.statusCode; // 400
+ * error.status; // 400
  * error.code; // 'InvalidRequest'
  * ```
  */
 export class DataverseServiceError extends DataverseError {
-  /**
-   * Error code from service (e.g., 'InvalidRequest', 'RecordNotFound')
-   */
-  public code?: string;
-
   constructor(statusCode: number, message?: string, baseError?: Error) {
     super(message, baseError);
     Object.setPrototypeOf(this, DataverseServiceError.prototype);
     this.name = "DataverseServiceError";
-    this.statusCode = statusCode;
+    this.status = statusCode;
   }
 
   /**
-   * Create error from HTTP response
+   * Create error from HTTP response.
+   *
+   * @param response - The HTTP response
+   * @param body - The response body, if you have already read it (parsed JSON or text). Without
+   *   it, the body is read from `response`. An OData error body (`{ error: { code, message } }`)
+   *   sets `code` and `message`; any other value is only kept as `body`.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  static async fromResponse(response: Response, body?: any): Promise<DataverseServiceError> {
+  static async fromResponse(response: Response, body?: unknown): Promise<DataverseServiceError> {
     const statusCode = response.status;
-    const requestId = response.headers.get("request-id");
+    const requestId = requestIdFrom(response.headers);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     let errorBody = body;
     if (!errorBody && response.body) {
+      // Read the text once, so a body that isn't JSON is still kept (as the text).
+      const text = await response.text();
       try {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        errorBody = await response.json();
+        errorBody = JSON.parse(text) as unknown;
       } catch {
-        errorBody = await response.text();
+        errorBody = text;
       }
     }
 
@@ -214,20 +187,18 @@ export class DataverseServiceError extends DataverseError {
     let code: string | undefined;
 
     // Parse OData error format
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if (errorBody && typeof errorBody === "object" && errorBody.error) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
-      code = errorBody.error.code;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      message = errorBody.error.message ?? message;
+    const odataError = isRecord(errorBody) ? errorBody.error : undefined;
+    if (isRecord(odataError)) {
+      if (typeof odataError.code === "string") code = odataError.code;
+      if (typeof odataError.message === "string") message = odataError.message;
     }
 
     const error = new DataverseServiceError(statusCode, message);
     error.code = code;
 
-    error.requestId = requestId ?? undefined;
+    error.requestId = requestId;
     error.body = errorBody;
-    error.headers = response.headers;
+    error.headers = headersToRecord(response.headers);
 
     // Set specific error names based on status code
     if (statusCode === 400) {
@@ -303,20 +274,28 @@ export class DataverseNetworkError extends DataverseError {
   /**
    * Create error for network failure
    */
-  static connectionFailed(details?: string): DataverseNetworkError {
+  static connectionFailed(details?: string, cause?: unknown): DataverseNetworkError {
     const error = new DataverseNetworkError(
       `Network connection failed${details ? ": " + details : ""}`
     );
     error.name = "ConnectionFailed";
+    if (cause !== undefined) error.cause = cause;
     return error;
   }
 
   /**
-   * Create error for request timeout
+   * Create error for request timeout: the client's `timeoutMs` or `attemptTimeoutMs` passed
+   * (pass it as `timeoutMs`), or the caller's signal timed out (`AbortSignal.timeout()`; pass its
+   * `TimeoutError` as `cause`).
    */
-  static timeout(timeoutMs: number): DataverseNetworkError {
-    const error = new DataverseNetworkError(`Request timed out after ${String(timeoutMs)}ms`);
+  static timeout(timeoutMs?: number, cause?: unknown): DataverseNetworkError {
+    const error = new DataverseNetworkError(
+      timeoutMs === undefined
+        ? "Request timed out"
+        : `Request timed out after ${String(timeoutMs)}ms`
+    );
     error.name = "RequestTimeout";
+    if (cause !== undefined) error.cause = cause;
     return error;
   }
 
@@ -331,31 +310,19 @@ export class DataverseNetworkError extends DataverseError {
 }
 
 /**
- * Batch operation errors
- * Thrown when batch request fails or contains sub-request errors
+ * The request was cancelled through its `AbortSignal`. Its `name` is `"AbortError"`, like the
+ * `DOMException` fetch throws, so existing `err.name === "AbortError"` checks keep working; the
+ * original error is `cause`.
  */
-export class DataverseBatchError extends DataverseError {
-  /**
-   * Individual errors for each sub-request in the batch
-   */
-  public subErrors: Array<{ index: number; error: Error }> = [];
-
-  constructor(message?: string, subErrors?: Array<{ index: number; error: Error }>) {
-    super(message);
-    Object.setPrototypeOf(this, DataverseBatchError.prototype);
-    this.name = "DataverseBatchError";
-    this.subErrors = subErrors ?? [];
+export class DataverseAbortError extends DataverseError {
+  constructor(message?: string, cause?: unknown) {
+    super(message ?? "The request was aborted", cause !== undefined ? { cause } : undefined);
+    Object.setPrototypeOf(this, DataverseAbortError.prototype);
+    this.name = "AbortError";
   }
+}
 
-  /**
-   * Create error with partial failures
-   */
-  static partialFailure(subErrors: Array<{ index: number; error: Error }>): DataverseBatchError {
-    const error = new DataverseBatchError(
-      `Batch completed with ${String(subErrors.length)} error(s)`,
-      subErrors
-    );
-    error.name = "BatchPartialFailure";
-    return error;
-  }
+/** A plain object (not null, not an array). */
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

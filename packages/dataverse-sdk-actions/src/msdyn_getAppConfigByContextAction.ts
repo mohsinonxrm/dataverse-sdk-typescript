@@ -1,11 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_getAppConfigByContext action
+ * Response from the msdyn_getAppConfigByContext action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_getAppConfigByContextResponse {
-  AppConfigurations: string;
+  "@odata.context"?: string;
   AppConfigurationAssignment: string;
+  AppConfigurations: string;
+}
+
+/**
+ * Parameters of the msdyn_getAppConfigByContext action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_getAppConfigByContextActionParameters {
+  AppUniqueName: string;
+  UserId?: string;
+  Roles?: string;
+  FormFactor?: number;
 }
 
 /**
@@ -14,35 +29,30 @@ export interface msdyn_getAppConfigByContextResponse {
  * Unbound action
  */
 export class msdyn_getAppConfigByContextAction implements Executable<msdyn_getAppConfigByContextResponse> {
-  constructor(
-    public readonly appUniqueName: string,
-    public readonly userId: string,
-    public readonly roles: string,
-    public readonly formFactor: number
-  ) {}
+  constructor(public readonly parameters: msdyn_getAppConfigByContextActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_getAppConfigByContext`;
 
-    const body: Record<string, unknown> = {
-      AppUniqueName: this.appUniqueName,
-      UserId: this.userId,
-      Roles: this.roles,
-      FormFactor: this.formFactor,
-    };
+    const body = requestBody({
+      AppUniqueName: this.parameters.AppUniqueName,
+      UserId: this.parameters.UserId,
+      Roles: this.parameters.Roles,
+      FormFactor: this.parameters.FormFactor,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_getAppConfigByContextResponse> {
-    const data = await response.json();
-    return data as msdyn_getAppConfigByContextResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_getAppConfigByContextResponse;
   }
 }

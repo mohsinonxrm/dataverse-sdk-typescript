@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * msdyn_GetSuggestedActionsForLead request message
  *
  * Web API Action: msdyn_GetSuggestedActionsForLead
+ *
+ * The first argument is the id of the lead record to call it on.
  */
 export class msdyn_GetSuggestedActionsForLeadRequest
   extends OrganizationRequest
@@ -16,38 +22,47 @@ export class msdyn_GetSuggestedActionsForLeadRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/leads(${this.leadId})/Microsoft.Dynamics.CRM.msdyn_GetSuggestedActionsForLead`;
+    const url = `${baseUrl}/leads(${odataLiteral.guid(this.leadId)})/Microsoft.Dynamics.CRM.msdyn_GetSuggestedActionsForLead`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSuggestedActionsForLeadResponse> {
-    const data = await response.json();
-    return msdyn_GetSuggestedActionsForLeadResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.leadId,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetSuggestedActionsForLeadResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetSuggestedActionsForLead action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSuggestedActionsForLeadResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_GetSuggestedActionsForLead response message
+ *
+ * `result` is the value the msdyn_GetSuggestedActionsForLead action returns (see {@link msdyn_GetSuggestedActionsForLeadResult}).
  */
 export class msdyn_GetSuggestedActionsForLeadResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSuggestedActionsForLeadResponse) {
+  constructor(public result: msdyn_GetSuggestedActionsForLeadResult) {
     super("msdyn_GetSuggestedActionsForLead");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSuggestedActionsForLeadResponse {
-    return new msdyn_GetSuggestedActionsForLeadResponse((data as any).value);
+    return new msdyn_GetSuggestedActionsForLeadResponse(
+      data as msdyn_GetSuggestedActionsForLeadResult
+    );
   }
 }

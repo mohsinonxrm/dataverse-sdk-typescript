@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_StartRIProvisioning action
+ * Response from the msdyn_StartRIProvisioning action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_StartRIProvisioningResponse {
-  // No content returned
+export type msdyn_StartRIProvisioningResponse = void;
+
+/**
+ * Parameters of the msdyn_StartRIProvisioning action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_StartRIProvisioningActionParameters {
+  HubName?: string;
+  PrimaryKey?: string;
 }
 
 /**
@@ -13,31 +23,28 @@ export interface msdyn_StartRIProvisioningResponse {
  * Unbound action
  */
 export class msdyn_StartRIProvisioningAction implements Executable<msdyn_StartRIProvisioningResponse> {
-  constructor(
-    public readonly hubName: string,
-    public readonly primaryKey: string
-  ) {}
+  constructor(public readonly parameters: msdyn_StartRIProvisioningActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_StartRIProvisioning`;
 
-    const body: Record<string, unknown> = {
-      HubName: this.hubName,
-      PrimaryKey: this.primaryKey,
-    };
+    const body = requestBody({
+      HubName: this.parameters.HubName,
+      PrimaryKey: this.parameters.PrimaryKey,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_StartRIProvisioningResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_StartRIProvisioningResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

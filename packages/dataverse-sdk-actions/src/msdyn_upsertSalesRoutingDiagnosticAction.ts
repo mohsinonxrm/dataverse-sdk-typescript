@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_upsertSalesRoutingDiagnostic action
+ * Response from the msdyn_upsertSalesRoutingDiagnostic action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_upsertSalesRoutingDiagnosticResponse {
-  // No content returned
+export type msdyn_upsertSalesRoutingDiagnosticResponse = void;
+
+/**
+ * Parameters of the msdyn_upsertSalesRoutingDiagnostic action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_upsertSalesRoutingDiagnosticActionParameters {
+  Payload: string;
+  TargetObject: EntityReference | AnyEntityPayload;
+  EventType: number;
 }
 
 /**
@@ -14,33 +26,29 @@ export interface msdyn_upsertSalesRoutingDiagnosticResponse {
  * Unbound action
  */
 export class msdyn_upsertSalesRoutingDiagnosticAction implements Executable<msdyn_upsertSalesRoutingDiagnosticResponse> {
-  constructor(
-    public readonly targetObject: EntityReference,
-    public readonly payload: string,
-    public readonly eventType: number
-  ) {}
+  constructor(public readonly parameters: msdyn_upsertSalesRoutingDiagnosticActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_upsertSalesRoutingDiagnostic`;
 
-    const body: Record<string, unknown> = {
-      TargetObject: this.targetObject,
-      Payload: this.payload,
-      EventType: this.eventType,
-    };
+    const body = requestBody({
+      Payload: this.parameters.Payload,
+      TargetObject: this.parameters.TargetObject,
+      EventType: this.parameters.EventType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_upsertSalesRoutingDiagnosticResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_upsertSalesRoutingDiagnosticResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

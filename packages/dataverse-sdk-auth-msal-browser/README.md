@@ -18,10 +18,11 @@
 pnpm add @mohsinonxrm/dataverse-sdk-auth-msal-browser @mohsinonxrm/dataverse-sdk-core @azure/msal-browser
 ```
 
-**Peer dependencies:**
+**Peer dependency:** `@azure/msal-browser` `^3.30.0 || ^4.0.0 || ^5.0.0`. Install it yourself (as above); this package does not bring its own copy. The provider uses the `PublicClientApplication` your app creates, so the app, `@azure/msal-react` and this provider share one MSAL copy and one token cache.
 
-- `@azure/msal-browser` (^3.0.0)
-- `@mohsinonxrm/dataverse-sdk-core` (workspace dependency)
+Errors are classified by MSAL's `name` and `errorCode`, never by `instanceof`, so "interaction required" from any of those MSAL majors starts the interactive flow. The same check is exported as `isInteractionRequiredError(error)` for app code. A silent call whose hidden iframe times out (`monitor_window_timeout`: the refresh token has expired and the browser blocks third-party cookies, or Entra ID is throttling) also starts the interactive flow, as Microsoft recommends. MSAL 3 and 4 report it as `errorCode` `monitor_window_timeout`, MSAL 5 as `errorCode` `timed_out` with `subError` `monitor_window_timeout`.
+
+For the SPA app registration, CORS, Content-Security-Policy and browser limits, see [docs/browser.md](../../docs/browser.md).
 
 ## Quick Start
 
@@ -45,7 +46,6 @@ const msalConfig = {
   },
   cache: {
     cacheLocation: "sessionStorage", // 'sessionStorage' or 'localStorage'
-    storeAuthStateInCookie: false, // Set to true for IE11/Edge legacy
   },
 };
 
@@ -66,7 +66,11 @@ const client = new DataverseClient({
 });
 
 // Step 5: Use the client - first call triggers popup login automatically
-const accounts = await client.api("/accounts").select("name", "accountnumber").top(10).get();
+const accounts = await client
+  .api("/accounts")
+  .select("name", "accountnumber")
+  .top(10)
+  .get<{ value: { name: string; accountnumber?: string }[] }>();
 
 console.log(`Retrieved ${accounts.value.length} accounts`);
 ```
@@ -74,11 +78,15 @@ console.log(`Retrieved ${accounts.value.length} accounts`);
 **How it works:**
 
 1. First API call triggers `getToken()`
-2. Provider attempts silent token acquisition
-3. If no cached token, popup window opens for login
-4. User authenticates in popup
+2. With no signed-in account, the popup opens right away. Otherwise the provider tries silent acquisition first
+3. If MSAL says interaction is required (`interaction_required`, `consent_required`, `login_required`, `no_account_error`, ...), the popup opens, with the signed-in account and `loginHint`, so the user is not asked to pick an account again
+4. User authenticates in popup; the account it returns becomes MSAL's active account
 5. Token cached for future requests
 6. Subsequent calls use cached token (automatic refresh)
+
+Concurrent calls that need interaction share **one** popup: MSAL allows one interaction at a time. A call for other scopes waits for the running popup, then tries silently before prompting.
+
+> Browsers block popups that don't come from a user gesture. A popup opened from a background request can be blocked; see [Popup blocked by browser](#popup-blocked-by-browser).
 
 ### 2. Redirect Flow
 
@@ -176,9 +184,50 @@ const client = new DataverseClient({
 });
 
 // All API calls use silent token acquisition (no popup after initial login)
-const whoami = await client.api("/WhoAmI").get();
+const whoami = await client.api("/WhoAmI").get<{ UserId: string }>();
 console.log(`User ID: ${whoami.UserId}`);
 ```
+
+### 4. SPA Helpers
+
+Helpers for the setup code every SPA repeats. They don't depend on React or any UI framework.
+
+```typescript
+import { PublicClientApplication } from "@azure/msal-browser";
+import {
+  authorityFor,
+  createMsalBrowserProvider,
+  initializeMsal,
+  scopesForEnvironment,
+} from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+
+const environmentUrl = "https://contoso.crm.dynamics.com";
+
+const pca = new PublicClientApplication({
+  auth: {
+    clientId: "your-client-id",
+    authority: authorityFor("public", "contoso.onmicrosoft.com"),
+    redirectUri: window.location.origin,
+  },
+});
+
+// initialize() + handleRedirectPromise() + active account, on every page load
+await initializeMsal(pca);
+
+const tokenProvider = createMsalBrowserProvider(pca, { environmentUrl });
+const client = new DataverseClient({ baseUrl: environmentUrl, tokenProvider });
+
+// For a login button:
+await pca.loginPopup({ scopes: scopesForEnvironment(environmentUrl) });
+```
+
+| Helper                                          | Returns                                                                                                                                                                                   |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `initializeMsal(pca)`                           | Runs `initialize()` and `handleRedirectPromise()`, and returns the redirect result or `null`. It makes the result's account active, or the only cached account when no account is active. |
+| `scopesForEnvironment(url, kind?)`              | `["https://<host>/user_impersonation"]` (default) or `["https://<host>/.default"]`. Throws for a non-`https` URL.                                                                         |
+| `authorityFor(cloud, tenant = "organizations")` | `https://<host>/<tenant>` for `public` (`login.microsoftonline.com`), `usgov` / `usgovdod` (`login.microsoftonline.us`) or `china` (`login.partner.microsoftonline.cn`).                  |
+| `createMsalBrowserProvider(pca, options)`       | A `MsalBrowserTokenProvider`. It takes the same options, plus `environmentUrl` / `scopeKind` in place of `scopes`.                                                                        |
 
 ## React Integration
 
@@ -186,12 +235,22 @@ console.log(`User ID: ${whoami.UserId}`);
 
 The `@azure/msal-react` library provides React-specific hooks and components for MSAL authentication.
 
-```typescript
-import React from 'react';
-import { MsalProvider, useMsal, AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react';
-import { PublicClientApplication } from '@azure/msal-browser';
-import { MsalBrowserTokenProvider } from '@mohsinonxrm/dataverse-sdk-auth-msal-browser';
-import { DataverseClient } from '@mohsinonxrm/dataverse-sdk-core';
+```tsx
+import React from "react";
+import {
+  MsalProvider,
+  useMsal,
+  AuthenticatedTemplate,
+  UnauthenticatedTemplate,
+} from "@azure/msal-react";
+import { PublicClientApplication } from "@azure/msal-browser";
+import { MsalBrowserTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+
+interface Account {
+  accountid: string;
+  name: string;
+}
 
 // MSAL configuration
 const msalConfig = {
@@ -201,7 +260,7 @@ const msalConfig = {
     redirectUri: window.location.origin,
   },
   cache: {
-    cacheLocation: 'sessionStorage',
+    cacheLocation: "sessionStorage",
   },
 };
 
@@ -227,7 +286,7 @@ function LoginButton() {
   const { instance } = useMsal();
 
   const handleLogin = () => {
-    instance.loginPopup({
+    void instance.loginPopup({
       scopes: [process.env.REACT_APP_DATAVERSE_SCOPE!],
     });
   };
@@ -237,9 +296,10 @@ function LoginButton() {
 
 // Component using Dataverse client
 function DataverseApp() {
+  // `accounts` here are the signed-in MSAL accounts; the Dataverse records are `records`
   const { instance, accounts } = useMsal();
   const [client, setClient] = React.useState<DataverseClient | null>(null);
-  const [accounts, setAccounts] = React.useState([]);
+  const [records, setRecords] = React.useState<Account[]>([]);
 
   React.useEffect(() => {
     if (accounts.length > 0) {
@@ -247,7 +307,7 @@ function DataverseApp() {
       const tokenProvider = new MsalBrowserTokenProvider(instance, {
         scopes: [process.env.REACT_APP_DATAVERSE_SCOPE!],
         account: accounts[0],
-        interactionType: 'popup',
+        interactionType: "popup",
       });
 
       const dataverseClient = new DataverseClient({
@@ -263,11 +323,12 @@ function DataverseApp() {
     if (!client) return;
 
     // Fetch accounts from Dataverse
-    client.api('/accounts')
-      .select('name', 'accountnumber')
+    client
+      .api("/accounts")
+      .select("accountid", "name")
       .top(10)
-      .get()
-      .then(result => setAccounts(result.value))
+      .get<{ value: Account[] }>()
+      .then((result) => setRecords(result.value))
       .catch(console.error);
   }, [client]);
 
@@ -279,7 +340,7 @@ function DataverseApp() {
     <div>
       <h1>Dataverse Accounts</h1>
       <ul>
-        {accounts.map(acc => (
+        {records.map((acc) => (
           <li key={acc.accountid}>{acc.name}</li>
         ))}
       </ul>
@@ -292,11 +353,11 @@ function DataverseApp() {
 
 Create a reusable hook for the Dataverse client.
 
-```typescript
-import { useMsal } from '@azure/msal-react';
-import { DataverseClient } from '@mohsinonxrm/dataverse-sdk-core';
-import { MsalBrowserTokenProvider } from '@mohsinonxrm/dataverse-sdk-auth-msal-browser';
-import { useMemo } from 'react';
+```tsx
+import React, { useMemo } from "react";
+import { useMsal } from "@azure/msal-react";
+import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { MsalBrowserTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
 
 export function useDataverseClient(): DataverseClient | null {
   const { instance, accounts } = useMsal();
@@ -309,7 +370,7 @@ export function useDataverseClient(): DataverseClient | null {
     const tokenProvider = new MsalBrowserTokenProvider(instance, {
       scopes: [process.env.REACT_APP_DATAVERSE_SCOPE!],
       account: accounts[0],
-      interactionType: 'popup',
+      interactionType: "popup",
     });
 
     return new DataverseClient({
@@ -322,16 +383,17 @@ export function useDataverseClient(): DataverseClient | null {
 // Usage in component
 function AccountList() {
   const client = useDataverseClient();
-  const [accounts, setAccounts] = React.useState([]);
+  const [records, setRecords] = React.useState<{ accountid: string; name: string }[]>([]);
 
   React.useEffect(() => {
     if (!client) return;
 
-    client.api('/accounts')
-      .select('name', 'accountnumber')
+    client
+      .api("/accounts")
+      .select("accountid", "name")
       .top(10)
-      .get()
-      .then(result => setAccounts(result.value))
+      .get<{ value: { accountid: string; name: string }[] }>()
+      .then((result) => setRecords(result.value))
       .catch(console.error);
   }, [client]);
 
@@ -341,48 +403,13 @@ function AccountList() {
 
   return (
     <div>
-      {accounts.map(acc => (
+      {records.map((acc) => (
         <div key={acc.accountid}>{acc.name}</div>
       ))}
     </div>
   );
 }
 ```
-
-      account: accounts[0],
-      interactionType: 'popup',
-    });
-
-    return new DataverseClient({
-      baseUrl: process.env.REACT_APP_DATAVERSE_URL!,
-      tokenProvider,
-    });
-
-}, [instance, accounts]);
-}
-
-// Usage in component
-function AccountList() {
-const client = useDataverseClient();
-const [accounts, setAccounts] = React.useState([]);
-
-React.useEffect(() => {
-if (!client) return;
-
-    client.api('/accounts').top(10).get()
-      .then(setAccounts)
-      .catch(console.error);
-
-}, [client]);
-
-if (!client) {
-return <div>Not authenticated</div>;
-}
-
-return <div>{/_ Render accounts _/}</div>;
-}
-
-````
 
 ## Account Management
 
@@ -395,14 +422,14 @@ const pca = new PublicClientApplication(msalConfig);
 await pca.initialize();
 
 const tokenProvider = new MsalBrowserTokenProvider(pca, {
-  scopes: ['https://your-org.crm.dynamics.com/.default'],
+  scopes: ["https://your-org.crm.dynamics.com/.default"],
 });
 
 // Get all cached accounts
 const accounts = tokenProvider.getAccounts();
 console.log(`Found ${accounts.length} cached account(s)`);
 
-accounts.forEach(account => {
+accounts.forEach((account) => {
   console.log(`- ${account.username} (${account.name})`);
 });
 
@@ -417,15 +444,33 @@ const activeAccount = tokenProvider.getActiveAccount();
 if (activeAccount) {
   console.log(`Active account: ${activeAccount.username}`);
 } else {
-  console.log('No active account set');
+  console.log("No active account set");
 }
 
-// Use specific account for token provider
+// The account is resolved on every request: MSAL's active account wins, so after
+// setActiveAccount(), the next request uses the new account.
+// To pin a provider to one account whatever the active account is, pass a function:
 const specificTokenProvider = new MsalBrowserTokenProvider(pca, {
-  scopes: ['https://your-org.crm.dynamics.com/.default'],
-  account: accounts[0], // Use first account explicitly
+  scopes: ["https://your-org.crm.dynamics.com/.default"],
+  account: () => accounts[0], // called on every request
 });
-````
+```
+
+**Account resolution, on every `getToken()` call:**
+
+1. `account` function, if given and it returns an account
+2. MSAL's active account (`pca.setActiveAccount()` / `tokenProvider.setActiveAccount()`)
+3. `account` `AccountInfo`, if given
+4. The first cached account
+5. None: sign in interactively
+
+### Guest users and other tenants
+
+Pass `tenantId` to get a token from a specific tenant, for example a guest account whose home tenant isn't the Dataverse organization's tenant. It becomes the request's `authority`, on the host of your MSAL configuration's authority (for example `https://login.microsoftonline.com/<tenantId>`). When the configuration uses `azureCloudOptions`, the request gets `azureCloudOptions` for that tenant too, because MSAL then ignores a request's `authority` without them.
+
+```typescript
+const token = await tokenProvider.getToken(undefined, { tenantId: "<dataverse-tenant-id>" });
+```
 
 ### Sign Out
 
@@ -478,6 +523,8 @@ Implements `AccessTokenProvider` interface from `@mohsinonxrm/dataverse-sdk-core
 
 #### Constructor
 
+<!-- no-check -->
+
 ```typescript
 constructor(
   publicClientApplication: IPublicClientApplication,
@@ -506,10 +553,10 @@ Acquires access token using silent flow first, falls back to interactive (popup/
 const token = await tokenProvider.getToken();
 
 // Override scopes for this request
-const token = await tokenProvider.getToken(["https://org2.crm.dynamics.com/.default"]);
+const org2Token = await tokenProvider.getToken(["https://org2.crm.dynamics.com/.default"]);
 
 // With additional options
-const token = await tokenProvider.getToken(undefined, {
+const stepUpToken = await tokenProvider.getToken(undefined, {
   claims: '{"access_token":{"acrs":{"essential":true,"values":["c1"]}}}',
   correlationId: crypto.randomUUID(),
 });
@@ -561,23 +608,27 @@ await tokenProvider.signOut(accounts[0]);
 
 #### `MsalBrowserTokenProviderOptions`
 
+<!-- no-check -->
+
 ```typescript
 interface MsalBrowserTokenProviderOptions {
   scopes: string[]; // Required
-  account?: AccountInfo; // Optional
+  account?: AccountInfo | (() => AccountInfo | null | undefined); // Optional
   interactionType?: "popup" | "redirect"; // Default: 'popup'
+  fallbackToRedirect?: boolean; // Default: false
   claims?: string; // Optional
   correlationId?: string; // Optional
 }
 ```
 
-| Property          | Type                    | Required | Default       | Description                               |
-| ----------------- | ----------------------- | -------- | ------------- | ----------------------------------------- |
-| `scopes`          | `string[]`              | ✅ Yes   | -             | OAuth scopes for Dataverse access         |
-| `account`         | `AccountInfo`           | ❌ No    | First account | Specific account for silent auth          |
-| `interactionType` | `'popup' \| 'redirect'` | ❌ No    | `'popup'`     | How to handle interactive auth            |
-| `claims`          | `string`                | ❌ No    | -             | JSON string for Conditional Access claims |
-| `correlationId`   | `string`                | ❌ No    | -             | Correlation ID for tracing                |
+| Property             | Type                                       | Required | Default                    | Description                                |
+| -------------------- | ------------------------------------------ | -------- | -------------------------- | ------------------------------------------ |
+| `scopes`             | `string[]`                                 | ✅ Yes   | -                          | OAuth scopes for Dataverse access          |
+| `account`            | `AccountInfo \| () => AccountInfo \| null` | ❌ No    | Active account, then first | Account to use; see account resolution     |
+| `interactionType`    | `'popup' \| 'redirect'`                    | ❌ No    | `'popup'`                  | How to handle interactive auth             |
+| `fallbackToRedirect` | `boolean`                                  | ❌ No    | `false`                    | Redirect when the browser blocks the popup |
+| `claims`             | `string`                                   | ❌ No    | -                          | JSON claims; see Conditional Access below  |
+| `correlationId`      | `string`                                   | ❌ No    | -                          | Correlation ID for tracing                 |
 
 ### Common Scopes
 
@@ -594,6 +645,8 @@ interface MsalBrowserTokenProviderOptions {
 
 Handle Conditional Access policies that require additional claims or step-up authentication.
 
+MSAL skips its token cache for a silent request with `claims`, so the `claims` option is sent only when the request goes to Entra ID anyway: the interactive flow, the first silent call for each account, scope set and tenant, and a forced refresh. Later silent calls get the token from MSAL's cache instead of calling Entra ID on every Dataverse request. A claims challenge passed to `getToken` (`{ claims }`) is always sent.
+
 ```typescript
 // Scenario: Dataverse protected by Conditional Access requiring device compliance
 const tokenProvider = new MsalBrowserTokenProvider(pca, {
@@ -608,19 +661,19 @@ const tokenProvider = new MsalBrowserTokenProvider(pca, {
   }),
 });
 
-// Or pass claims at token acquisition time (dynamic claims challenge)
+// Dynamic claims challenges: after a 401, the SDK client gets a new token and resends the
+// request once. In a browser, Dataverse doesn't expose `WWW-Authenticate` to scripts (it isn't a
+// CORS-exposed header), so the claims of a challenge can't be read there and the SDK asks the
+// provider for a fresh token (`forceRefresh`, passed on to MSAL's `acquireTokenSilent`). In Node.js, the claims are passed to `getToken`
+// automatically. To handle a challenge yourself, read it from the error:
+import { parseClaimsChallenge, DataverseODataError } from "@mohsinonxrm/dataverse-sdk-core";
+
 try {
   await client.api("/accounts").get();
 } catch (error) {
-  // If Dataverse returns 401 with claims challenge
-  if (error.status === 401 && error.headers["www-authenticate"]) {
-    const claimsChallenge = parseClaimsFromHeader(error.headers["www-authenticate"]);
-
-    const token = await tokenProvider.getToken(undefined, {
-      claims: claimsChallenge,
-    });
-
-    // Retry request with new token
+  if (error instanceof DataverseODataError && error.status === 401) {
+    const claims = parseClaimsChallenge(error.headers?.["www-authenticate"]);
+    if (claims) await tokenProvider.getToken(undefined, { claims });
   }
 }
 ```
@@ -671,20 +724,29 @@ const client2 = new DataverseClient({
 
 ## Error Handling
 
+Token failures reject with `MsalBrowserAuthenticationError`, a `DataverseAuthenticationError` that keeps what MSAL said:
+
+| Property        | Example                                  | Meaning                                        |
+| --------------- | ---------------------------------------- | ---------------------------------------------- |
+| `name`          | `TokenAcquisitionFailed`, `PopupBlocked` | Kind of failure                                |
+| `code`          | `consent_required`, `popup_blocked`      | Stable code: `popup_blocked`, else MSAL's code |
+| `errorCode`     | `consent_required`, `user_cancelled`     | MSAL `errorCode`                               |
+| `subError`      | `consent_required`, `basic_action`       | MSAL `subError`                                |
+| `errorNo`       | `65001`                                  | Entra ID error number (`AADSTS65001`)          |
+| `correlationId` | `…`                                      | MSAL correlation id, for support               |
+| `cause`         | the MSAL error                           | The original error                             |
+
 ```typescript
 import { DataverseAuthenticationError } from "@mohsinonxrm/dataverse-sdk-core";
+import { MsalBrowserAuthenticationError } from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
 
 try {
-  const client = new DataverseClient({
-    baseUrl: "https://your-org.crm.dynamics.com",
-    tokenProvider,
-  });
-
   const accounts = await client.api("/accounts").get();
 } catch (error) {
-  if (error instanceof DataverseAuthenticationError) {
+  if (error instanceof MsalBrowserAuthenticationError && error.errorNo === "65001") {
+    alert("An administrator must consent to this app for your organization.");
+  } else if (error instanceof DataverseAuthenticationError) {
     console.error("Authentication failed:", error.message);
-    // Handle auth error (e.g., show login button)
   } else {
     console.error("API call failed:", error);
   }
@@ -705,10 +767,12 @@ try {
 ### Session Storage (Recommended)
 
 ```typescript
-const msalConfig = {
+import type { Configuration } from "@azure/msal-browser";
+
+const msalConfig: Configuration = {
+  auth: { clientId: "your-client-id" },
   cache: {
     cacheLocation: "sessionStorage", // Tokens cleared on tab close
-    storeAuthStateInCookie: false,
   },
 };
 ```
@@ -716,24 +780,19 @@ const msalConfig = {
 ### Local Storage (Persistent)
 
 ```typescript
-const msalConfig = {
+import type { Configuration } from "@azure/msal-browser";
+
+const msalConfig: Configuration = {
+  auth: { clientId: "your-client-id" },
   cache: {
     cacheLocation: "localStorage", // Tokens persist across browser sessions
-    storeAuthStateInCookie: false,
   },
 };
 ```
 
-### Cookies (IE 11 Support)
-
-```typescript
-const msalConfig = {
-  cache: {
-    cacheLocation: "localStorage",
-    storeAuthStateInCookie: true, // For IE 11 and Edge Legacy
-  },
-};
-```
+MSAL's `storeAuthStateInCookie` option was for Internet Explorer 11 and Edge Legacy, which MSAL
+Browser 3 and later don't support: MSAL 4 deprecates the option and MSAL 5 removes it, so leave it
+out.
 
 ## Security Best Practices
 
@@ -752,16 +811,33 @@ const msalConfig = {
 
 **Problem**: Login popup is blocked
 
+When the browser blocks the popup (MSAL `popup_window_error` or `empty_window_error`), `getToken()` rejects with `MsalBrowserAuthenticationError` (`name: "PopupBlocked"`, `code: "popup_blocked"`, the MSAL error as `cause`). It is also a `DataverseAuthenticationError`.
+
 **Solution**:
 
-- Ensure login is triggered by user action (button click)
+- Ensure login is triggered by user action (button click), for example by catching `popup_blocked` and showing a "Sign in" button that calls `getToken()` again
+- Or fall back to a redirect automatically
 - Or switch to redirect flow
 
 ```typescript
+import {
+  MsalBrowserAuthenticationError,
+  MsalBrowserTokenProvider,
+} from "@mohsinonxrm/dataverse-sdk-auth-msal-browser";
+
 const tokenProvider = new MsalBrowserTokenProvider(pca, {
   scopes: ["https://org.crm.dynamics.com/.default"],
-  interactionType: "redirect", // Use redirect instead
+  fallbackToRedirect: true, // popup first, redirect if the popup is blocked
 });
+
+try {
+  await client.api("/accounts").get();
+} catch (error) {
+  if (error instanceof MsalBrowserAuthenticationError && error.code === "popup_blocked") {
+    // Show a "Sign in" button; its click handler calls tokenProvider.getToken()
+    document.querySelector<HTMLButtonElement>("#sign-in")!.hidden = false;
+  }
+}
 ```
 
 ### "Interaction required" errors
@@ -774,24 +850,34 @@ const tokenProvider = new MsalBrowserTokenProvider(pca, {
 
 **Problem**: `No 'Access-Control-Allow-Origin' header`
 
-**Solution**: Dataverse automatically allows CORS from your app's redirect URI origin. Ensure:
+**Solution**: Dataverse accepts cross-origin Web API calls that carry a bearer token, from any
+origin, so a CORS error usually means the request never got a valid answer. Check that:
 
-1. Redirect URI is correctly registered
-2. Requests originate from that URI
-3. Origin header is sent by browser
+1. The `baseUrl` is the environment's URL (a typo or another host has no CORS policy)
+2. Headers you add yourself (`defaultHeaders`, `.header()`) are allowed by Dataverse's preflight;
+   the SDK's own diagnostic headers are, and `diagnosticHeaders: false` turns them off
+3. A gateway or proxy in front of Dataverse passes the preflight (`OPTIONS`) through
+
+See [CORS](../../docs/browser.md#3-cors) in the browser guide.
 
 ### Token expiration
 
 **Problem**: API calls fail after some time
 
-**Solution**: Token refresh is automatic. If seeing errors:
+**Solution**: MSAL renews tokens before they expire, and after a 401 the SDK client calls
+`getToken(scopes, { forceRefresh: true })` and resends the request once. This provider passes
+`forceRefresh` on to MSAL's `acquireTokenSilent` ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167)),
+so that retry gets a new token. To skip MSAL's cache yourself at another time, call MSAL directly:
 
 ```typescript
-// Force new token
-const newToken = await tokenProvider.getToken(
-  ["https://org.crm.dynamics.com/.default"],
-  { forceRefresh: true } // Note: Not supported by default, handle manually
-);
+// Force a new token from Entra ID, skipping MSAL's cache
+const account = pca.getActiveAccount() ?? pca.getAllAccounts()[0];
+const result = await pca.acquireTokenSilent({
+  scopes: ["https://org.crm.dynamics.com/.default"],
+  account,
+  forceRefresh: true,
+});
+// Later getToken() calls get the new token from the cache
 ```
 
 ## Related Packages

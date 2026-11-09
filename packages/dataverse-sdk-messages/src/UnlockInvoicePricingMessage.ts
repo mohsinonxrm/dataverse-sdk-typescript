@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UnlockInvoicePricing message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UnlockInvoicePricingRequestParameters {
+  InvoiceId: string;
+}
 
 /**
  * UnlockInvoicePricing request message
@@ -10,36 +19,32 @@ export class UnlockInvoicePricingRequest
   extends OrganizationRequest
   implements Executable<UnlockInvoicePricingResponse>
 {
-  constructor(public invoiceId: string) {
-    super("UnlockInvoicePricing");
+  declare readonly Parameters: Readonly<UnlockInvoicePricingRequestParameters>;
+
+  constructor(parameters: UnlockInvoicePricingRequestParameters) {
+    super("UnlockInvoicePricing", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UnlockInvoicePricing`;
 
-    const body: Record<string, unknown> = {
-      InvoiceId: this.invoiceId,
-    };
+    const body = requestBody({
+      InvoiceId: this.Parameters.InvoiceId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UnlockInvoicePricingResponse> {
+  parseResponse(_response: Response): Promise<UnlockInvoicePricingResponse> {
     // No return value (204 No Content)
-    return new UnlockInvoicePricingResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InvoiceId: this.invoiceId,
-    };
+    return Promise.resolve(new UnlockInvoicePricingResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class UnlockInvoicePricingResponse extends OrganizationResponse {
     super("UnlockInvoicePricing");
   }
 
-  static fromResponse(_data: unknown): UnlockInvoicePricingResponse {
+  static fromResponse(_data?: unknown): UnlockInvoicePricingResponse {
     return new UnlockInvoicePricingResponse();
   }
 }

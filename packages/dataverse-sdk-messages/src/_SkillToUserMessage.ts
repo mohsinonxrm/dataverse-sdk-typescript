@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the _SkillToUser message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _SkillToUserRequestParameters {
+  UpdatedBRC?: Record<string, unknown>[];
+  DeletedBRC?: Record<string, unknown>[];
+}
 
 /**
  * _SkillToUser request message
@@ -10,41 +20,33 @@ export class _SkillToUserRequest
   extends OrganizationRequest
   implements Executable<_SkillToUserResponse>
 {
-  constructor(
-    public updatedBRC: Record<string, unknown>[],
-    public deletedBRC: Record<string, unknown>[]
-  ) {
-    super("_SkillToUser");
+  declare readonly Parameters: Readonly<_SkillToUserRequestParameters>;
+
+  constructor(parameters: _SkillToUserRequestParameters = {}) {
+    super("_SkillToUser", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_SkillToUser`;
 
-    const body: Record<string, unknown> = {
-      UpdatedBRC: this.updatedBRC,
-      DeletedBRC: this.deletedBRC,
-    };
+    const body = requestBody({
+      UpdatedBRC: this.Parameters.UpdatedBRC,
+      DeletedBRC: this.Parameters.DeletedBRC,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<_SkillToUserResponse> {
+  parseResponse(_response: Response): Promise<_SkillToUserResponse> {
     // No return value (204 No Content)
-    return new _SkillToUserResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      UpdatedBRC: this.updatedBRC,
-      DeletedBRC: this.deletedBRC,
-    };
+    return Promise.resolve(new _SkillToUserResponse());
   }
 }
 
@@ -56,7 +58,7 @@ export class _SkillToUserResponse extends OrganizationResponse {
     super("_SkillToUser");
   }
 
-  static fromResponse(_data: unknown): _SkillToUserResponse {
+  static fromResponse(_data?: unknown): _SkillToUserResponse {
     return new _SkillToUserResponse();
   }
 }

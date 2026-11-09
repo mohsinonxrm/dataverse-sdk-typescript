@@ -1,11 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_RetrieveCadenceSuggestions action
+ * Response from the msdyn_RetrieveCadenceSuggestions action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_RetrieveCadenceSuggestionsResponse {
+  "@odata.context"?: string;
   Suggestions: string;
+}
+
+/**
+ * Parameters of the msdyn_RetrieveCadenceSuggestions action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveCadenceSuggestionsActionParameters {
+  EntityReference: EntityReference | AnyEntityPayload;
+  ActivityType: number;
+  LinkedActivityId?: string;
+  StepType: number;
 }
 
 /**
@@ -14,35 +30,30 @@ export interface msdyn_RetrieveCadenceSuggestionsResponse {
  * Unbound action
  */
 export class msdyn_RetrieveCadenceSuggestionsAction implements Executable<msdyn_RetrieveCadenceSuggestionsResponse> {
-  constructor(
-    public readonly entityReference: EntityReference,
-    public readonly activityType: number,
-    public readonly linkedActivityId: string,
-    public readonly stepType: number
-  ) {}
+  constructor(public readonly parameters: msdyn_RetrieveCadenceSuggestionsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveCadenceSuggestions`;
 
-    const body: Record<string, unknown> = {
-      EntityReference: this.entityReference,
-      ActivityType: this.activityType,
-      LinkedActivityId: this.linkedActivityId,
-      StepType: this.stepType,
-    };
+    const body = requestBody({
+      EntityReference: this.parameters.EntityReference,
+      ActivityType: this.parameters.ActivityType,
+      LinkedActivityId: this.parameters.LinkedActivityId,
+      StepType: this.parameters.StepType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveCadenceSuggestionsResponse> {
-    const data = await response.json();
-    return data as msdyn_RetrieveCadenceSuggestionsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_RetrieveCadenceSuggestionsResponse;
   }
 }

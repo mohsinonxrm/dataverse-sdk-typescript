@@ -2,5 +2,5 @@
  * ClearWorkQueueResponse complex type
  */
 export interface ClearWorkQueueResponse {
-  isDeletionGoingAsync: boolean;
+  isDeletionGoingAsync?: boolean;
 }

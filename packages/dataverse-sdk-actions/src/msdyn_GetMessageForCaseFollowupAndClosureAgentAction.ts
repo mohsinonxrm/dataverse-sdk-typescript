@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetMessageForCaseFollowupAndClosureAgent action
+ * Response from the msdyn_GetMessageForCaseFollowupAndClosureAgent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetMessageForCaseFollowupAndClosureAgentResponse {
+  "@odata.context"?: string;
   msdyn_response: string;
+}
+
+/**
+ * Parameters of the msdyn_GetMessageForCaseFollowupAndClosureAgent action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetMessageForCaseFollowupAndClosureAgentActionParameters {
+  msdyn_payload: string;
 }
 
 /**
@@ -13,20 +25,22 @@ export interface msdyn_GetMessageForCaseFollowupAndClosureAgentResponse {
  * Unbound action
  */
 export class msdyn_GetMessageForCaseFollowupAndClosureAgentAction implements Executable<msdyn_GetMessageForCaseFollowupAndClosureAgentResponse> {
-  constructor(public readonly msdyn_payload: string) {}
+  constructor(
+    public readonly parameters: msdyn_GetMessageForCaseFollowupAndClosureAgentActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetMessageForCaseFollowupAndClosureAgent`;
 
-    const body: Record<string, unknown> = {
-      msdyn_payload: this.msdyn_payload,
-    };
+    const body = requestBody({
+      msdyn_payload: this.parameters.msdyn_payload,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -35,7 +49,7 @@ export class msdyn_GetMessageForCaseFollowupAndClosureAgentAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetMessageForCaseFollowupAndClosureAgentResponse> {
-    const data = await response.json();
-    return data as msdyn_GetMessageForCaseFollowupAndClosureAgentResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetMessageForCaseFollowupAndClosureAgentResponse;
   }
 }

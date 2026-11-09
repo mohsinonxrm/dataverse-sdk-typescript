@@ -1,10 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_recurringsegmentaction action
+ * Response from the msdyn_recurringsegmentaction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_recurringsegmentactionResponse {
+  "@odata.context"?: string;
   result: string;
+}
+
+/**
+ * Parameters of the msdyn_recurringsegmentaction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_recurringsegmentactionActionParameters {
+  payload: string;
+  operationType: string;
+  segmentId: string;
 }
 
 /**
@@ -13,33 +27,29 @@ export interface msdyn_recurringsegmentactionResponse {
  * Unbound action
  */
 export class msdyn_recurringsegmentactionAction implements Executable<msdyn_recurringsegmentactionResponse> {
-  constructor(
-    public readonly payload: string,
-    public readonly operationType: string,
-    public readonly segmentId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_recurringsegmentactionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_recurringsegmentaction`;
 
-    const body: Record<string, unknown> = {
-      payload: this.payload,
-      operationType: this.operationType,
-      segmentId: this.segmentId,
-    };
+    const body = requestBody({
+      payload: this.parameters.payload,
+      operationType: this.parameters.operationType,
+      segmentId: this.parameters.segmentId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_recurringsegmentactionResponse> {
-    const data = await response.json();
-    return data as msdyn_recurringsegmentactionResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_recurringsegmentactionResponse;
   }
 }

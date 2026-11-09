@@ -1,11 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetEntityListForCustomAction action
+ * Response from the msdyn_GetEntityListForCustomAction action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface msdyn_GetEntityListForCustomActionResponse {
-  value: EntityReference[];
+export type msdyn_GetEntityListForCustomActionResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
+ * Parameters of the msdyn_GetEntityListForCustomAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetEntityListForCustomActionActionParameters {
+  workflowId: string;
+  correlationId: string;
 }
 
 /**
@@ -14,31 +28,30 @@ export interface msdyn_GetEntityListForCustomActionResponse {
  * Unbound action
  */
 export class msdyn_GetEntityListForCustomActionAction implements Executable<msdyn_GetEntityListForCustomActionResponse> {
-  constructor(
-    public readonly workflowId: string,
-    public readonly correlationId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetEntityListForCustomActionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetEntityListForCustomAction`;
 
-    const body: Record<string, unknown> = {
-      workflowId: this.workflowId,
-      correlationId: this.correlationId,
-    };
+    const body = requestBody({
+      workflowId: this.parameters.workflowId,
+      correlationId: this.parameters.correlationId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetEntityListForCustomActionResponse> {
-    const data = await response.json();
-    return data as msdyn_GetEntityListForCustomActionResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: msdyn_GetEntityListForCustomActionResponse }).value;
   }
 }

@@ -1,12 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload, EntityPayload } from "./types/EntityPayload.js";
 import type { queueitem } from "./types/index.js";
 
 /**
- * Response from RouteTo action
+ * Response from the RouteTo action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RouteToResponse {
-  // No content returned
+export type RouteToResponse = void;
+
+/**
+ * Parameters of the RouteTo action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RouteToActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  QueueItem?: EntityReference | EntityPayload<queueitem>;
 }
 
 /**
@@ -15,31 +26,28 @@ export interface RouteToResponse {
  * Unbound action
  */
 export class RouteToAction implements Executable<RouteToResponse> {
-  constructor(
-    public readonly target: EntityReference,
-    public readonly queueItem: queueitem
-  ) {}
+  constructor(public readonly parameters: RouteToActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RouteTo`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      QueueItem: this.queueItem,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      QueueItem: this.parameters.QueueItem,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<RouteToResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<RouteToResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

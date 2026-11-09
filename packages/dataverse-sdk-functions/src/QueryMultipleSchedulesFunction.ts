@@ -1,11 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { enumBody } from "./internal/enumBody.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { TimeCode, TimeInfoCollection, resource } from "./types/index.js";
 
 /**
- * Response from QueryMultipleSchedules function
+ * Response from the QueryMultipleSchedules function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface QueryMultipleSchedulesResponse {
+  "@odata.context"?: string;
   TimeInfos: TimeInfoCollection[];
+}
+
+/**
+ * Parameters of the QueryMultipleSchedules function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface QueryMultipleSchedulesFunctionParameters {
+  Resource: resource[];
+  Start: string | Date;
+  End: string | Date;
+  TimeCodes: TimeCode[];
 }
 
 /**
@@ -14,12 +30,7 @@ export interface QueryMultipleSchedulesResponse {
  * Unbound function
  */
 export class QueryMultipleSchedulesFunction implements Executable<QueryMultipleSchedulesResponse> {
-  constructor(
-    public readonly resource: resource[],
-    public readonly start: string,
-    public readonly end: string,
-    public readonly timeCodes: TimeCode[]
-  ) {}
+  constructor(public readonly parameters: QueryMultipleSchedulesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/QueryMultipleSchedules`;
@@ -27,21 +38,31 @@ export class QueryMultipleSchedulesFunction implements Executable<QueryMultipleS
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.resource !== undefined) {
+    if (this.parameters.Resource !== undefined) {
       aliases.push(`Resource=@p1`);
-      params.append("@p1", JSON.stringify(this.resource));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Resource, "Collection(mscrm.resource)", "Collection")
+      );
     }
-    if (this.start !== undefined) {
+    if (this.parameters.Start !== undefined) {
       aliases.push(`Start=@p2`);
-      params.append("@p2", typeof this.start === "string" ? `'${this.start}'` : String(this.start));
+      params.append("@p2", formatParameterAlias(this.parameters.Start, "Edm.DateTimeOffset"));
     }
-    if (this.end !== undefined) {
+    if (this.parameters.End !== undefined) {
       aliases.push(`End=@p3`);
-      params.append("@p3", typeof this.end === "string" ? `'${this.end}'` : String(this.end));
+      params.append("@p3", formatParameterAlias(this.parameters.End, "Edm.DateTimeOffset"));
     }
-    if (this.timeCodes !== undefined) {
+    if (this.parameters.TimeCodes !== undefined) {
       aliases.push(`TimeCodes=@p4`);
-      params.append("@p4", JSON.stringify(this.timeCodes));
+      params.append(
+        "@p4",
+        formatParameterAlias(
+          enumBody(this.parameters.TimeCodes, "TimeCode"),
+          "Collection(mscrm.TimeCode)",
+          "Collection"
+        )
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -57,7 +78,7 @@ export class QueryMultipleSchedulesFunction implements Executable<QueryMultipleS
   }
 
   async parseResponse(response: Response): Promise<QueryMultipleSchedulesResponse> {
-    const data = await response.json();
-    return data as QueryMultipleSchedulesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as QueryMultipleSchedulesResponse;
   }
 }

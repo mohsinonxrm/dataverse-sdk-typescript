@@ -1,4 +1,10 @@
 /**
+ * Portions of this file are adapted from dataverse-gen by Scott Durow
+ * (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, licensed under
+ * the MIT License. See THIRD_PARTY_NOTICES.md in this package for the notice.
+ */
+
+/**
  * Configuration for the Dataverse code generator.
  */
 export interface DataverseGenConfig {
@@ -46,32 +52,99 @@ export interface DataverseGenConfig {
      * Example: ".generated" → "Account.generated.ts"
      */
     fileSuffix?: string;
+
+    /**
+     * Regenerate only the tables whose metadata changed (default: `false`). A stamp file in the
+     * output folder (`.dataverse-gen-stamp.json`) records a hash of each table and of the
+     * settings; a table whose hash is unchanged keeps its files as they are. A change of
+     * options, templates, generator version or of the set of generated types regenerates every
+     * table. Files the previous run wrote that this one doesn't are removed. Metadata is still
+     * read in full.
+     */
+    incremental?: boolean;
   };
 
   /**
-   * MSAL authentication configuration for metadata retrieval
+   * A directory of custom EJS templates (default: none). A template there (`entity.ejs`,
+   * `enum.ejs`, …) is used instead of the built-in one of the same name; the others stay built-in.
+   * `dataverse-gen eject` copies the built-in templates into a directory to start from. A relative
+   * path is resolved against the working directory.
    */
-  auth?: {
-    /**
-     * Azure AD tenant ID
-     */
-    tenantId: string;
+  templates?: string;
 
-    /**
-     * Azure AD client/app ID
-     */
-    clientId: string;
+  /**
+   * Type operation responses exactly as `$metadata` declares them (default: `false`; the CLI's
+   * `--strict-nulls` turns it on).
+   *
+   * Every complex type an operation returns, directly or nested in another complex type, also
+   * gets an `<Name>Output` interface: every property is present, and is `T | null` unless the CSDL
+   * declares it `Nullable="false"` (then it's `T`). `<Class>Response` and the nested properties
+   * use it. A primitive or complex return the CSDL leaves nullable is `T | null`, and so are the
+   * items of a nullable collection return of primitives, enums or complex types.
+   *
+   * Parameters don't change: they keep the `<Name>` interfaces, whose properties are optional, so
+   * a caller sends only what it sets. Entity returns are `Record | null` either way.
+   */
+  strictNulls?: boolean;
 
-    /**
-     * Authentication flow: "deviceCode" | "clientSecret" | "interactive"
-     */
-    flow: "deviceCode" | "clientSecret" | "interactive";
+  /**
+   * Generate typed form contexts for model-driven form scripts (default: `false`): a
+   * `forms/<Entity>Form.ts` per table with `<Entity>Attributes`, `<Entity>Controls` and
+   * `<Entity>FormContext`, whose `getAttribute()` and `getControl()` take a column's logical name
+   * and return its `Xrm.Attributes` / `Xrm.Controls` type. The files use the global `Xrm`
+   * namespace of `@types/xrm`, which the app then needs.
+   */
+  formContext?: boolean;
 
-    /**
-     * Client secret (required for clientSecret flow)
-     */
-    clientSecret?: string;
-  };
+  /**
+   * Generate typed request builders per entity set (default: `false`, #312): `client.ts` with
+   * `createTypedClient(client)`, which returns one `EntitySetClient` per generated table, keyed by
+   * entity set name: `typed.accounts.byId(id).get({ select: ["name"] })`, `.list()`,
+   * `.create()`, `.byId(id).update()`, `.byId(id).delete()`, typed by the table's interface, its
+   * create and update types, and a union of its column names (`AccountColumn`).
+   */
+  typedClient?: boolean;
+
+  /**
+   * MSAL authentication for metadata retrieval (used by `dataverse-gen generate`).
+   * `--token` on the command line takes precedence.
+   */
+  auth?: DataverseGenAuthConfig;
+}
+
+/**
+ * How `dataverse-gen` signs in to read metadata. Values left out are read from the
+ * `DATAVERSE_TENANT_ID`, `DATAVERSE_CLIENT_ID` and `DATAVERSE_CLIENT_SECRET` environment
+ * variables, so the config file can be committed without them.
+ */
+export interface DataverseGenAuthConfig {
+  /**
+   * Authentication flow:
+   * - `"deviceCode"`: sign in as a user with a code shown in the terminal (public client app);
+   * - `"clientCredentials"` (or `"clientSecret"`): an app registration with a client secret,
+   *   added to the org as an application user.
+   *
+   * `"interactive"` is not supported; use `"deviceCode"`.
+   */
+  flow: "deviceCode" | "clientCredentials" | "clientSecret" | "interactive";
+
+  /** Microsoft Entra tenant ID (default: `DATAVERSE_TENANT_ID`) */
+  tenantId?: string;
+
+  /** App registration (client) ID (default: `DATAVERSE_CLIENT_ID`) */
+  clientId?: string;
+
+  /**
+   * Client secret, for client credentials (default: `DATAVERSE_CLIENT_SECRET`). Prefer the
+   * environment variable to keep the secret out of the config file.
+   */
+  clientSecret?: string;
+
+  /**
+   * Authority URL (default: `https://login.microsoftonline.com/<tenantId>`). Set it for a
+   * sovereign cloud, e.g. `https://login.microsoftonline.us/<tenantId>`.
+   */
+  authority?: string;
 }
 
 /**
@@ -87,6 +160,7 @@ export const DEFAULT_CONFIG: Partial<DataverseGenConfig> = {
     generateIndex: true,
     fileSuffix: "",
   },
+  strictNulls: false,
 };
 
 /**
@@ -155,6 +229,9 @@ export interface PropertyType {
   /** Dataverse/OData type */
   Type: string;
 
+  /** Dataverse attribute type from RetrieveMetadataChanges (e.g. "Lookup", "Picklist") */
+  AttributeType?: string;
+
   /** TypeScript type */
   TypeScriptType: TypeScriptType;
 
@@ -164,8 +241,20 @@ export interface PropertyType {
   /** Is this read-only? */
   IsReadOnly?: boolean;
 
-  /** Is this required? (ApplicationRequired) */
+  /**
+   * The column can be set in a create (`IsValidForCreate` from RetrieveMetadataChanges). Unset
+   * for a property with no column of its own, such as a lookup's `_<name>_value`.
+   */
+  IsValidForCreate?: boolean;
+
+  /** The column can be set in an update (`IsValidForUpdate` from RetrieveMetadataChanges). */
+  IsValidForUpdate?: boolean;
+
+  /** Business-required: a caller must supply a value (`RequiredLevel` is ApplicationRequired). */
   IsRequired?: boolean;
+
+  /** The column's `RequiredLevel` when it isn't None: SystemRequired, ApplicationRequired or Recommended. */
+  RequiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
 
   /** Is this the primary key? */
   IsPrimaryKey?: boolean;
@@ -185,6 +274,18 @@ export interface PropertyType {
   /** Is this a multi-select option set? */
   IsMultiSelect?: boolean;
 
+  /** Most characters a text column holds (`MaxLength`). */
+  MaxLength?: number;
+
+  /** Smallest value a number column takes (`MinValue`). */
+  MinValue?: number;
+
+  /** Largest value a number column takes (`MaxValue`). */
+  MaxValue?: number;
+
+  /** The values of a choice or choices column's options, in order. */
+  OptionValues?: number[];
+
   /** Source type: 0=simple, 1=calculated, 2=rollup */
   SourceType?: number;
 
@@ -199,6 +300,12 @@ export interface PropertyType {
 
   /** Date/time format */
   Format?: string;
+
+  /**
+   * A complex type's navigation property (`PrincipalAccess.Principal`, #361): an entity, or a
+   * collection of them, set with a reference or a record.
+   */
+  IsNavigation?: boolean;
 }
 
 /**
@@ -234,6 +341,30 @@ export interface NavigationPropertyType {
 
   /** TypeScript type (used in templates) */
   Type?: string;
+
+  /**
+   * The lookup property the CSDL constrains this navigation property with (`_primarycontactid_value`),
+   * from its `ReferentialConstraint`.
+   */
+  ReferentialProperty?: string;
+
+  /**
+   * For the navigation property a lookup column is written through (`primarycontactid`,
+   * `contoso_ParentAccountId`, the consolidated `customerid`): the lookup's logical name.
+   */
+  LookupAttribute?: string;
+
+  /** The tables {@link LookupAttribute} can point to (its `Targets`), e.g. `["systemuser", "team"]`. */
+  LookupTargets?: string[];
+
+  /** The lookup can be set in a create (`IsValidForCreate` of {@link LookupAttribute}). */
+  IsValidForCreate?: boolean;
+
+  /** The lookup can be set in an update (`IsValidForUpdate` of {@link LookupAttribute}). */
+  IsValidForUpdate?: boolean;
+
+  /** The lookup's `RequiredLevel` when it isn't None. */
+  RequiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
 }
 
 /**
@@ -248,6 +379,9 @@ export interface EnumType {
 
   /** Is this a global option set? */
   IsGlobal: boolean;
+
+  /** A CSDL enum with `IsFlags="true"`: a value can combine members (`ReadAccess, WriteAccess`). */
+  IsFlags?: boolean;
 }
 
 /**
@@ -274,11 +408,26 @@ export interface ActionType {
   /** Binding parameter type (if bound) */
   BindingType?: string;
 
+  /** Entity type the operation is bound to, without the namespace (e.g. "account") */
+  BindingEntity?: string;
+
+  /** Bound to the entity collection (`Collection(mscrm.account)`) rather than to one record */
+  IsCollectionBound?: boolean;
+
+  /** Entity set of the binding entity type, when it has one (e.g. "accounts") */
+  BindingEntitySetName?: string;
+
   /** Parameters */
   Parameters: ParameterType[];
 
   /** Return type */
   ReturnType?: TypeScriptType;
+
+  /**
+   * Whether the CSDL leaves the return nullable (no `Nullable="false"` on `ReturnType`). For a
+   * collection it applies to the items. Only `strictNulls` reads it.
+   */
+  ReturnTypeNullable?: boolean;
 }
 
 /**
@@ -294,11 +443,26 @@ export interface FunctionType {
   /** Binding parameter type (if bound) */
   BindingType?: string;
 
+  /** Entity type the operation is bound to, without the namespace (e.g. "account") */
+  BindingEntity?: string;
+
+  /** Bound to the entity collection (`Collection(mscrm.account)`) rather than to one record */
+  IsCollectionBound?: boolean;
+
+  /** Entity set of the binding entity type, when it has one (e.g. "accounts") */
+  BindingEntitySetName?: string;
+
   /** Parameters */
   Parameters: ParameterType[];
 
   /** Return type */
   ReturnType?: TypeScriptType;
+
+  /**
+   * Whether the CSDL leaves the return nullable (no `Nullable="false"` on `ReturnType`). For a
+   * collection it applies to the items. Only `strictNulls` reads it.
+   */
+  ReturnTypeNullable?: boolean;
 
   /** Is composable? */
   IsComposable?: boolean;
@@ -328,6 +492,9 @@ export interface ComplexType {
   /** Type name */
   Name: string;
 
+  /** Base complex type name, if this type derives from another one */
+  BaseType?: string;
+
   /** Properties */
   Properties: PropertyType[];
 }
@@ -338,6 +505,12 @@ export interface ComplexType {
 export interface TypeScriptType {
   /** Type name in TypeScript */
   name: string;
+
+  /**
+   * Name of the referenced entity, complex or enum type in the Dataverse schema (without the
+   * namespace), when this is not a primitive type. The generator resolves it to an import.
+   */
+  reference?: string;
 
   /** Import path (if external type) */
   importPath?: string;

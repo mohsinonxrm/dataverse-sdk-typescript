@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetSalesAccelerationConfigurationStatus action
+ * Response from the msdyn_GetSalesAccelerationConfigurationStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetSalesAccelerationConfigurationStatusResponse {
+  "@odata.context"?: string;
   IsEnabledForOrganization: boolean;
   IsEnabledForUser: boolean;
   SettingsInstance: string;
@@ -22,7 +25,7 @@ export class msdyn_GetSalesAccelerationConfigurationStatusAction implements Exec
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -30,7 +33,7 @@ export class msdyn_GetSalesAccelerationConfigurationStatusAction implements Exec
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetSalesAccelerationConfigurationStatusResponse> {
-    const data = await response.json();
-    return data as msdyn_GetSalesAccelerationConfigurationStatusResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetSalesAccelerationConfigurationStatusResponse;
   }
 }

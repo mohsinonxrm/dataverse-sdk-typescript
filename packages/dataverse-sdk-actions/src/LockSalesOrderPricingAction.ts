@@ -1,36 +1,42 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from LockSalesOrderPricing action
+ * Response from the LockSalesOrderPricing action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface LockSalesOrderPricingResponse {
-  // No content returned
-}
+export type LockSalesOrderPricingResponse = void;
 
 /**
  * LockSalesOrderPricing action
  *
  * Bound action
  * Binding parameter: entity (mscrm.salesorder)
+ *
+ * The first argument is the id of the salesorder record to call it on.
  */
 export class LockSalesOrderPricingAction implements Executable<LockSalesOrderPricingResponse> {
   constructor(public readonly salesorderId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/salesorders(${this.salesorderId})/Microsoft.Dynamics.CRM.LockSalesOrderPricing`;
+    const url = `${baseUrl}/salesorders(${odataLiteral.guid(this.salesorderId)})/Microsoft.Dynamics.CRM.LockSalesOrderPricing`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<LockSalesOrderPricingResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<LockSalesOrderPricingResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

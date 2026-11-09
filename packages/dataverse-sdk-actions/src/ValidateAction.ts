@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { ValidationResult, activitypointer } from "./types/index.js";
+import { requestBody } from "./internal/requestBody.js";
+import type { TypedActivitypointer, ValidationResult } from "./types/index.js";
 
 /**
- * Response from Validate action
+ * Response from the Validate action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ValidateResponse {
+  "@odata.context"?: string;
   Result: ValidationResult[];
+}
+
+/**
+ * Parameters of the Validate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ValidateActionParameters {
+  Activities: TypedActivitypointer[];
 }
 
 /**
@@ -14,27 +26,27 @@ export interface ValidateResponse {
  * Unbound action
  */
 export class ValidateAction implements Executable<ValidateResponse> {
-  constructor(public readonly activities: activitypointer[]) {}
+  constructor(public readonly parameters: ValidateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/Validate`;
 
-    const body: Record<string, unknown> = {
-      Activities: this.activities,
-    };
+    const body = requestBody({
+      Activities: this.parameters.Activities,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<ValidateResponse> {
-    const data = await response.json();
-    return data as ValidateResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as ValidateResponse;
   }
 }

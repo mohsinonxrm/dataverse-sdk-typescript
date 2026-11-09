@@ -1,11 +1,14 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_IsMSTeamsUserSyncFeatureEnabled action
+ * Response from the msdyn_IsMSTeamsUserSyncFeatureEnabled action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_IsMSTeamsUserSyncFeatureEnabledResponse {
-  IsEnabled: boolean;
+  "@odata.context"?: string;
   DisabledReason: string;
+  IsEnabled: boolean;
 }
 
 /**
@@ -21,13 +24,13 @@ export class msdyn_IsMSTeamsUserSyncFeatureEnabledAction implements Executable<m
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_IsMSTeamsUserSyncFeatureEnabledResponse> {
-    const data = await response.json();
-    return data as msdyn_IsMSTeamsUserSyncFeatureEnabledResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_IsMSTeamsUserSyncFeatureEnabledResponse;
   }
 }

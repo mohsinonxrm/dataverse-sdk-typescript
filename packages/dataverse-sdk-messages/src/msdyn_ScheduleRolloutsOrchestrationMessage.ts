@@ -21,18 +21,14 @@ export class msdyn_ScheduleRolloutsOrchestrationRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ScheduleRolloutsOrchestrationResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ScheduleRolloutsOrchestrationResponse> {
     // No return value (204 No Content)
-    return new msdyn_ScheduleRolloutsOrchestrationResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    return Promise.resolve(new msdyn_ScheduleRolloutsOrchestrationResponse());
   }
 }
 
@@ -44,7 +40,7 @@ export class msdyn_ScheduleRolloutsOrchestrationResponse extends OrganizationRes
     super("msdyn_ScheduleRolloutsOrchestration");
   }
 
-  static fromResponse(_data: unknown): msdyn_ScheduleRolloutsOrchestrationResponse {
+  static fromResponse(_data?: unknown): msdyn_ScheduleRolloutsOrchestrationResponse {
     return new msdyn_ScheduleRolloutsOrchestrationResponse();
   }
 }

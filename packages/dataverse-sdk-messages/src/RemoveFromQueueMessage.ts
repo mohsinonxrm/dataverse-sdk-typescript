@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * RemoveFromQueue request message
  *
  * Web API Action: RemoveFromQueue
+ *
+ * The first argument is the id of the queueitem record to call it on.
  */
 export class RemoveFromQueueRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class RemoveFromQueueRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/queueitems(${this.queueitemId})/Microsoft.Dynamics.CRM.RemoveFromQueue`;
+    const url = `${baseUrl}/queueitems(${odataLiteral.guid(this.queueitemId)})/Microsoft.Dynamics.CRM.RemoveFromQueue`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveFromQueueResponse> {
+  parseResponse(_response: Response): Promise<RemoveFromQueueResponse> {
     // No return value (204 No Content)
-    return new RemoveFromQueueResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.queueitemId,
-    };
+    return Promise.resolve(new RemoveFromQueueResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class RemoveFromQueueResponse extends OrganizationResponse {
     super("RemoveFromQueue");
   }
 
-  static fromResponse(_data: unknown): RemoveFromQueueResponse {
+  static fromResponse(_data?: unknown): RemoveFromQueueResponse {
     return new RemoveFromQueueResponse();
   }
 }

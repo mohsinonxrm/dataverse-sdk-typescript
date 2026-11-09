@@ -1,5 +1,16 @@
 # Dataverse SDK TypeScript - v1.0 Implementation Review
 
+> [!WARNING]
+> **Historical snapshot, superseded.** This review describes 1.0 and was written before the 1.0.0 release (January–February 2026). It is kept unchanged as a record; the current release is 2.0.0. Its readiness and coverage claims ("production ready", "no blockers", "435/435 tests", "100% coverage", phase percentages, package and sample counts) are **not accurate** and should not be relied on: later reviews found the defects and missing features tracked in the issues. Some architecture docs it cites don't exist.
+>
+> For the current state, see:
+>
+> - the closed [v1.1.0](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/1) (browser and SPA readiness, core pipeline correctness; [#5](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/5)) and [v1.2.0](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/2) (package correctness; [#6](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/6)) milestones, whose fixes ship in 2.0.0 ([v2.0.0 milestone](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestone/4), [migration-2.0.md](./migration-2.0.md));
+> - the [roadmap issue #100](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/100) for promised features that don't exist yet;
+> - [v1-api-surface.md](./v1-api-surface.md) for what each package exports today.
+>
+> The `spa-fluentui-v9` sample was later rebuilt for 2.0.0: the "skeleton only" and "SPA sample not fully implemented" remarks below are out of date. It no longer uses `@azure/msal-react`; it has a demo mode, lazy-loaded scenario pages for every SDK area, and Playwright smoke tests that run in CI. See [docs/samples/README.md](./samples/README.md).
+
 > **Review Date**: January 29, 2026  
 > **Reviewer**: Automated Analysis  
 > **Scope**: Complete ADR compliance, phase completion, and gap analysis

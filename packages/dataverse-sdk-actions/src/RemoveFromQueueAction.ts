@@ -1,36 +1,42 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RemoveFromQueue action
+ * Response from the RemoveFromQueue action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RemoveFromQueueResponse {
-  // No content returned
-}
+export type RemoveFromQueueResponse = void;
 
 /**
  * RemoveFromQueue action
  *
  * Bound action
  * Binding parameter: entity (mscrm.queueitem)
+ *
+ * The first argument is the id of the queueitem record to call it on.
  */
 export class RemoveFromQueueAction implements Executable<RemoveFromQueueResponse> {
   constructor(public readonly queueitemId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/queueitems(${this.queueitemId})/Microsoft.Dynamics.CRM.RemoveFromQueue`;
+    const url = `${baseUrl}/queueitems(${odataLiteral.guid(this.queueitemId)})/Microsoft.Dynamics.CRM.RemoveFromQueue`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveFromQueueResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<RemoveFromQueueResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

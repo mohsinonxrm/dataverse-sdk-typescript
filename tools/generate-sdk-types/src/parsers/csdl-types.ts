@@ -22,6 +22,10 @@ export interface CsdlEntityType {
   name: string;
   namespace: string;
   baseType?: string;
+  /** `Abstract="true"`: the type has no instances of its own, only derived types do. */
+  abstract?: boolean;
+  /** The `Key` property names (empty when the type inherits its key). */
+  key?: string[];
   properties: CsdlProperty[];
   navigationProperties: CsdlNavigationProperty[];
 }
@@ -30,12 +34,23 @@ export interface CsdlComplexType {
   name: string;
   namespace: string;
   baseType?: string;
+  /** `Abstract="true"`: the type has no instances of its own, only derived types do. */
+  abstract?: boolean;
   properties: CsdlProperty[];
+  /**
+   * Entity-valued members, such as `PrincipalAccess.Principal` (#231). In a request body they are
+   * entities: a reference or a payload.
+   */
+  navigationProperties: CsdlNavigationProperty[];
 }
 
 export interface CsdlProperty {
   name: string;
   type: string;
+  /**
+   * The CSDL `Nullable` facet as written; `undefined` when absent. CSDL's default is nullable, so
+   * only `false` makes a property required.
+   */
   nullable?: boolean;
   maxLength?: number;
   precision?: number;
@@ -47,11 +62,15 @@ export interface CsdlNavigationProperty {
   type: string;
   partner?: string;
   containsTarget?: boolean;
+  /** The CSDL `Nullable` facet as written; `undefined` when absent (nullable). */
+  nullable?: boolean;
 }
 
 export interface CsdlEnumType {
   name: string;
   namespace: string;
+  /** `IsFlags="true"`: values combine members, written `"A, B"` in JSON (#232). */
+  isFlags?: boolean;
   members: CsdlEnumMember[];
 }
 

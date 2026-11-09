@@ -1,11 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { dependency } from "./types/index.js";
 
 /**
- * Response from RetrieveDependentComponents function
+ * Response from the RetrieveDependentComponents function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveDependentComponentsResponse {
-  value: dependency[];
+export type RetrieveDependentComponentsResponse = Array<
+  dependency & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
+
+/**
+ * Parameters of the RetrieveDependentComponents function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveDependentComponentsFunctionParameters {
+  ObjectId: string;
+  ComponentType: number;
 }
 
 /**
@@ -14,10 +27,7 @@ export interface RetrieveDependentComponentsResponse {
  * Unbound function
  */
 export class RetrieveDependentComponentsFunction implements Executable<RetrieveDependentComponentsResponse> {
-  constructor(
-    public readonly objectId: string,
-    public readonly componentType: number
-  ) {}
+  constructor(public readonly parameters: RetrieveDependentComponentsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveDependentComponents`;
@@ -25,21 +35,13 @@ export class RetrieveDependentComponentsFunction implements Executable<RetrieveD
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.objectId !== undefined) {
+    if (this.parameters.ObjectId !== undefined) {
       aliases.push(`ObjectId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.objectId === "string" ? `'${this.objectId}'` : String(this.objectId)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.ObjectId, "Edm.Guid"));
     }
-    if (this.componentType !== undefined) {
+    if (this.parameters.ComponentType !== undefined) {
       aliases.push(`ComponentType=@p2`);
-      params.append(
-        "@p2",
-        typeof this.componentType === "string"
-          ? `'${this.componentType}'`
-          : String(this.componentType)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.ComponentType, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -55,7 +57,9 @@ export class RetrieveDependentComponentsFunction implements Executable<RetrieveD
   }
 
   async parseResponse(response: Response): Promise<RetrieveDependentComponentsResponse> {
-    const data = await response.json();
-    return data as RetrieveDependentComponentsResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveDependentComponentsResponse }).value;
   }
 }

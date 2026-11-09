@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_updatesequencetargetstepdata action
+ * Response from the msdyn_updatesequencetargetstepdata action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_updatesequencetargetstepdataResponse {
-  // No content returned
+export type msdyn_updatesequencetargetstepdataResponse = void;
+
+/**
+ * Parameters of the msdyn_updatesequencetargetstepdata action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_updatesequencetargetstepdataActionParameters {
+  msdyn_linkedactivityid?: string;
+  msdyn_sequencetargetstepid: string;
 }
 
 /**
@@ -13,31 +23,28 @@ export interface msdyn_updatesequencetargetstepdataResponse {
  * Unbound action
  */
 export class msdyn_updatesequencetargetstepdataAction implements Executable<msdyn_updatesequencetargetstepdataResponse> {
-  constructor(
-    public readonly msdyn_sequencetargetstepid: string,
-    public readonly msdyn_linkedactivityid: string
-  ) {}
+  constructor(public readonly parameters: msdyn_updatesequencetargetstepdataActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_updatesequencetargetstepdata`;
 
-    const body: Record<string, unknown> = {
-      msdyn_sequencetargetstepid: this.msdyn_sequencetargetstepid,
-      msdyn_linkedactivityid: this.msdyn_linkedactivityid,
-    };
+    const body = requestBody({
+      msdyn_linkedactivityid: this.parameters.msdyn_linkedactivityid,
+      msdyn_sequencetargetstepid: this.parameters.msdyn_sequencetargetstepid,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_updatesequencetargetstepdataResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_updatesequencetargetstepdataResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -2,8 +2,8 @@
  * AuditPartitionDetail complex type
  */
 export interface AuditPartitionDetail {
-  PartitionNumber: number;
-  StartDate: string;
-  EndDate: string;
-  Size: number;
+  EndDate?: string;
+  PartitionNumber?: number;
+  Size?: number;
+  StartDate?: string;
 }

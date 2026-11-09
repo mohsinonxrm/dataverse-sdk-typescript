@@ -1,11 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetKAObjectFromTemplate action
+ * Response from the msdyn_GetKAObjectFromTemplate action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface msdyn_GetKAObjectFromTemplateResponse {
-  value: EntityReference;
+export type msdyn_GetKAObjectFromTemplateResponse = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
+ * Parameters of the msdyn_GetKAObjectFromTemplate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetKAObjectFromTemplateActionParameters {
+  TemplateId: string;
 }
 
 /**
@@ -14,27 +28,29 @@ export interface msdyn_GetKAObjectFromTemplateResponse {
  * Unbound action
  */
 export class msdyn_GetKAObjectFromTemplateAction implements Executable<msdyn_GetKAObjectFromTemplateResponse> {
-  constructor(public readonly templateId: string) {}
+  constructor(public readonly parameters: msdyn_GetKAObjectFromTemplateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetKAObjectFromTemplate`;
 
-    const body: Record<string, unknown> = {
-      TemplateId: this.templateId,
-    };
+    const body = requestBody({
+      TemplateId: this.parameters.TemplateId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetKAObjectFromTemplateResponse> {
-    const data = await response.json();
-    return data as msdyn_GetKAObjectFromTemplateResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
+    return (await response.json()) as msdyn_GetKAObjectFromTemplateResponse;
   }
 }

@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_ResolveSolutionHealthRuleFailure message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ResolveSolutionHealthRuleFailureRequestParameters {
+  AnalysisResult?: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_ResolveSolutionHealthRuleFailure request message
@@ -11,36 +21,32 @@ export class msdyn_ResolveSolutionHealthRuleFailureRequest
   extends OrganizationRequest
   implements Executable<msdyn_ResolveSolutionHealthRuleFailureResponse>
 {
-  constructor(public analysisResult: EntityReference) {
-    super("msdyn_ResolveSolutionHealthRuleFailure");
+  declare readonly Parameters: Readonly<msdyn_ResolveSolutionHealthRuleFailureRequestParameters>;
+
+  constructor(parameters: msdyn_ResolveSolutionHealthRuleFailureRequestParameters = {}) {
+    super("msdyn_ResolveSolutionHealthRuleFailure", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ResolveSolutionHealthRuleFailure`;
 
-    const body: Record<string, unknown> = {
-      AnalysisResult: this.analysisResult,
-    };
+    const body = requestBody({
+      AnalysisResult: this.Parameters.AnalysisResult,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ResolveSolutionHealthRuleFailureResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ResolveSolutionHealthRuleFailureResponse> {
     // No return value (204 No Content)
-    return new msdyn_ResolveSolutionHealthRuleFailureResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      AnalysisResult: this.analysisResult,
-    };
+    return Promise.resolve(new msdyn_ResolveSolutionHealthRuleFailureResponse());
   }
 }
 
@@ -52,7 +58,7 @@ export class msdyn_ResolveSolutionHealthRuleFailureResponse extends Organization
     super("msdyn_ResolveSolutionHealthRuleFailure");
   }
 
-  static fromResponse(_data: unknown): msdyn_ResolveSolutionHealthRuleFailureResponse {
+  static fromResponse(_data?: unknown): msdyn_ResolveSolutionHealthRuleFailureResponse {
     return new msdyn_ResolveSolutionHealthRuleFailureResponse();
   }
 }

@@ -1,13 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { Label } from "./types/index.js";
 
 /**
- * Response from RetrieveLocLabels function
+ * Response from the RetrieveLocLabels function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveLocLabelsResponse {
+  "@odata.context"?: string;
   Label: Label;
+}
+
+/**
+ * Parameters of the RetrieveLocLabels function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveLocLabelsFunctionParameters {
+  EntityMoniker: EntityReference;
+  AttributeName: string;
+  IncludeUnpublished: boolean;
 }
 
 /**
@@ -16,11 +29,7 @@ export interface RetrieveLocLabelsResponse {
  * Unbound function
  */
 export class RetrieveLocLabelsFunction implements Executable<RetrieveLocLabelsResponse> {
-  constructor(
-    public readonly entityMoniker: EntityReference,
-    public readonly attributeName: string,
-    public readonly includeUnpublished: boolean
-  ) {}
+  constructor(public readonly parameters: RetrieveLocLabelsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveLocLabels`;
@@ -28,32 +37,20 @@ export class RetrieveLocLabelsFunction implements Executable<RetrieveLocLabelsRe
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityMoniker !== undefined) {
+    if (this.parameters.EntityMoniker !== undefined) {
       aliases.push(`EntityMoniker=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.entityMoniker)}(${this.entityMoniker.id})`,
-        })
+        formatParameterAlias(this.parameters.EntityMoniker, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.attributeName !== undefined) {
+    if (this.parameters.AttributeName !== undefined) {
       aliases.push(`AttributeName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.attributeName === "string"
-          ? `'${this.attributeName}'`
-          : String(this.attributeName)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.AttributeName, "Edm.String"));
     }
-    if (this.includeUnpublished !== undefined) {
+    if (this.parameters.IncludeUnpublished !== undefined) {
       aliases.push(`IncludeUnpublished=@p3`);
-      params.append(
-        "@p3",
-        typeof this.includeUnpublished === "string"
-          ? `'${this.includeUnpublished}'`
-          : String(this.includeUnpublished)
-      );
+      params.append("@p3", formatParameterAlias(this.parameters.IncludeUnpublished, "Edm.Boolean"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -69,7 +66,7 @@ export class RetrieveLocLabelsFunction implements Executable<RetrieveLocLabelsRe
   }
 
   async parseResponse(response: Response): Promise<RetrieveLocLabelsResponse> {
-    const data = await response.json();
-    return data as RetrieveLocLabelsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveLocLabelsResponse;
   }
 }

@@ -1,6 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_CreateAutonomousEmailWrapper message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateAutonomousEmailWrapperRequestParameters {
+  SourceContextEntity?: EntityReference | AnyEntityPayload;
+  Entity: EntityReference | AnyEntityPayload;
+  NextSuggestion: string;
+  SenderEntity?: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_CreateAutonomousEmailWrapper request message
@@ -11,59 +24,62 @@ export class msdyn_CreateAutonomousEmailWrapperRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateAutonomousEmailWrapperResponse>
 {
-  constructor(
-    public senderEntity: EntityReference,
-    public entity: EntityReference,
-    public nextSuggestion: string,
-    public sourceContextEntity: EntityReference
-  ) {
-    super("msdyn_CreateAutonomousEmailWrapper");
+  declare readonly Parameters: Readonly<msdyn_CreateAutonomousEmailWrapperRequestParameters>;
+
+  constructor(parameters: msdyn_CreateAutonomousEmailWrapperRequestParameters) {
+    super("msdyn_CreateAutonomousEmailWrapper", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateAutonomousEmailWrapper`;
 
-    const body: Record<string, unknown> = {
-      SenderEntity: this.senderEntity,
-      Entity: this.entity,
-      NextSuggestion: this.nextSuggestion,
-      SourceContextEntity: this.sourceContextEntity,
-    };
+    const body = requestBody({
+      SourceContextEntity: this.Parameters.SourceContextEntity,
+      Entity: this.Parameters.Entity,
+      NextSuggestion: this.Parameters.NextSuggestion,
+      SenderEntity: this.Parameters.SenderEntity,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateAutonomousEmailWrapperResponse> {
-    const data = await response.json();
-    return msdyn_CreateAutonomousEmailWrapperResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SenderEntity: this.senderEntity,
-      Entity: this.entity,
-      NextSuggestion: this.nextSuggestion,
-      SourceContextEntity: this.sourceContextEntity,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_CreateAutonomousEmailWrapperResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CreateAutonomousEmailWrapper action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CreateAutonomousEmailWrapperResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_CreateAutonomousEmailWrapper response message
+ *
+ * `result` is the value the msdyn_CreateAutonomousEmailWrapper action returns (see {@link msdyn_CreateAutonomousEmailWrapperResult}).
  */
 export class msdyn_CreateAutonomousEmailWrapperResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CreateAutonomousEmailWrapperResponse) {
+  constructor(public result: msdyn_CreateAutonomousEmailWrapperResult) {
     super("msdyn_CreateAutonomousEmailWrapper");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CreateAutonomousEmailWrapperResponse {
-    return new msdyn_CreateAutonomousEmailWrapperResponse((data as any).value);
+    return new msdyn_CreateAutonomousEmailWrapperResponse(
+      data as msdyn_CreateAutonomousEmailWrapperResult
+    );
   }
 }

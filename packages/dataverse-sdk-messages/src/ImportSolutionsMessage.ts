@@ -1,5 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the ImportSolutions message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportSolutionsRequestParameters {
+  OverwriteUnmanagedCustomizations: boolean;
+  PublishWorkflows: boolean;
+  CustomizationFiles: string;
+  ImportJobId: string;
+  ConvertToManaged?: boolean;
+  SkipProductUpdateDependencies?: boolean;
+  HoldingSolution?: boolean;
+}
 
 /**
  * ImportSolutions request message
@@ -10,56 +25,38 @@ export class ImportSolutionsRequest
   extends OrganizationRequest
   implements Executable<ImportSolutionsResponse>
 {
-  constructor(
-    public overwriteUnmanagedCustomizations: boolean,
-    public publishWorkflows: boolean,
-    public customizationFiles: string,
-    public importJobId: string,
-    public convertToManaged: boolean,
-    public skipProductUpdateDependencies: boolean,
-    public holdingSolution: boolean
-  ) {
-    super("ImportSolutions");
+  declare readonly Parameters: Readonly<ImportSolutionsRequestParameters>;
+
+  constructor(parameters: ImportSolutionsRequestParameters) {
+    super("ImportSolutions", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportSolutions`;
 
-    const body: Record<string, unknown> = {
-      OverwriteUnmanagedCustomizations: this.overwriteUnmanagedCustomizations,
-      PublishWorkflows: this.publishWorkflows,
-      CustomizationFiles: this.customizationFiles,
-      ImportJobId: this.importJobId,
-      ConvertToManaged: this.convertToManaged,
-      SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
-      HoldingSolution: this.holdingSolution,
-    };
+    const body = requestBody({
+      OverwriteUnmanagedCustomizations: this.Parameters.OverwriteUnmanagedCustomizations,
+      PublishWorkflows: this.Parameters.PublishWorkflows,
+      CustomizationFiles: this.Parameters.CustomizationFiles,
+      ImportJobId: this.Parameters.ImportJobId,
+      ConvertToManaged: this.Parameters.ConvertToManaged,
+      SkipProductUpdateDependencies: this.Parameters.SkipProductUpdateDependencies,
+      HoldingSolution: this.Parameters.HoldingSolution,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ImportSolutionsResponse> {
+  parseResponse(_response: Response): Promise<ImportSolutionsResponse> {
     // No return value (204 No Content)
-    return new ImportSolutionsResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OverwriteUnmanagedCustomizations: this.overwriteUnmanagedCustomizations,
-      PublishWorkflows: this.publishWorkflows,
-      CustomizationFiles: this.customizationFiles,
-      ImportJobId: this.importJobId,
-      ConvertToManaged: this.convertToManaged,
-      SkipProductUpdateDependencies: this.skipProductUpdateDependencies,
-      HoldingSolution: this.holdingSolution,
-    };
+    return Promise.resolve(new ImportSolutionsResponse());
   }
 }
 
@@ -71,7 +68,7 @@ export class ImportSolutionsResponse extends OrganizationResponse {
     super("ImportSolutions");
   }
 
-  static fromResponse(_data: unknown): ImportSolutionsResponse {
+  static fromResponse(_data?: unknown): ImportSolutionsResponse {
     return new ImportSolutionsResponse();
   }
 }

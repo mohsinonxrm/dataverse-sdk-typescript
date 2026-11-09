@@ -21,30 +21,41 @@ export class msdyn_RetrievePlatformCopilotSettingsRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrievePlatformCopilotSettingsResponse> {
-    const data = await response.json();
-    return msdyn_RetrievePlatformCopilotSettingsResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_RetrievePlatformCopilotSettingsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_RetrievePlatformCopilotSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_RetrievePlatformCopilotSettingsResult {
+  "@odata.context"?: string;
+  Result: string;
+}
+
+/**
  * msdyn_RetrievePlatformCopilotSettings response message
+ *
+ * `result` is the value the msdyn_RetrievePlatformCopilotSettings action returns (see {@link msdyn_RetrievePlatformCopilotSettingsResult}).
  */
 export class msdyn_RetrievePlatformCopilotSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_RetrievePlatformCopilotSettingsResponse) {
+  constructor(public result: msdyn_RetrievePlatformCopilotSettingsResult) {
     super("msdyn_RetrievePlatformCopilotSettings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_RetrievePlatformCopilotSettingsResponse {
-    return new msdyn_RetrievePlatformCopilotSettingsResponse((data as any).value);
+    return new msdyn_RetrievePlatformCopilotSettingsResponse(
+      data as msdyn_RetrievePlatformCopilotSettingsResult
+    );
   }
 }

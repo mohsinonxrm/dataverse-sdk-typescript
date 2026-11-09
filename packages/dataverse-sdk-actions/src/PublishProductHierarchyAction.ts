@@ -1,36 +1,42 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from PublishProductHierarchy action
+ * Response from the PublishProductHierarchy action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PublishProductHierarchyResponse {
-  // No content returned
-}
+export type PublishProductHierarchyResponse = void;
 
 /**
  * PublishProductHierarchy action
  *
  * Bound action
  * Binding parameter: entity (mscrm.product)
+ *
+ * The first argument is the id of the product record to call it on.
  */
 export class PublishProductHierarchyAction implements Executable<PublishProductHierarchyResponse> {
   constructor(public readonly productId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/products(${this.productId})/Microsoft.Dynamics.CRM.PublishProductHierarchy`;
+    const url = `${baseUrl}/products(${odataLiteral.guid(this.productId)})/Microsoft.Dynamics.CRM.PublishProductHierarchy`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<PublishProductHierarchyResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<PublishProductHierarchyResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

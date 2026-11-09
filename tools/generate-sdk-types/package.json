@@ -12,24 +12,30 @@
   "scripts": {
     "build": "tsup",
     "generate": "node dist/cli.js",
+    "docs": "node dist/docs-cli.js",
+    "regen": "tsup && node dist/regen-cli.js",
+    "snapshot": "tsup && node dist/cli.js --save-csdl metadata/dataverse-metadata.xml --save-solutions metadata/operation-solutions.json --csdl-only",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "typecheck": "tsc -p tsconfig.typecheck.json",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@azure/identity": "^4.5.0",
-    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@azure/identity": "^4.14.1",
     "@mohsinonxrm/dataverse-sdk-auth-azure-identity": "workspace:*",
-    "commander": "^13.0.0",
-    "dotenv": "^16.5.1",
-    "ejs": "^4.0.0",
-    "fast-xml-parser": "^5.0.0",
-    "zod": "^3.24.3"
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "commander": "^13.1.0",
+    "dotenv": "^16.6.1",
+    "ejs": "^4.0.1",
+    "fast-xml-parser": "^5.12.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@mohsinonxrm/dataverse-sdk-batch": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-entities-runtime": "workspace:*",
     "@types/ejs": "^3.1.5",
-    "@types/node": "^22.10.7",
+    "@types/node": "^22.20.5",
+    "prettier": "^3.9.10",
     "tsup": "^8.5.1",
-    "typescript": "^5.7.3"
+    "typescript": "^5.9.3"
   }
 }

@@ -4,5 +4,5 @@ import type { DependencyMetadataCollection } from "./DependencyMetadataCollectio
  * RetrieveMissingDependenciesWithMetadataResponse complex type
  */
 export interface RetrieveMissingDependenciesWithMetadataResponse {
-  DependencyMetadataCollection: DependencyMetadataCollection;
+  DependencyMetadataCollection?: DependencyMetadataCollection;
 }

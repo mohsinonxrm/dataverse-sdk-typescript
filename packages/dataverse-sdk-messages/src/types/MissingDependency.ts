@@ -4,19 +4,19 @@ import type { MissingPackage } from "./MissingPackage.js";
  * MissingDependency complex type
  */
 export interface MissingDependency {
-  RequiredComponentSchemaName: string;
-  RequiredComponentDisplayName: string;
-  RequiredComponentParentSchemaName: string;
-  RequiredComponentParentDisplayName: string;
-  RequiredComponentId: string;
-  RequiredSolutionName: string;
-  RequiredComponentType: string;
-  DependentComponentSchemaName: string;
-  DependentComponentDisplayName: string;
-  DependentComponentParentSchemaName: string;
-  DependentComponentParentDisplayName: string;
-  DependentComponentType: string;
-  DependentComponentId: string;
-  MissingPackages: MissingPackage[];
-  CanResolveMissingDependency: boolean;
+  CanResolveMissingDependency?: boolean;
+  DependentComponentDisplayName?: string;
+  DependentComponentId?: string;
+  DependentComponentParentDisplayName?: string;
+  DependentComponentParentSchemaName?: string;
+  DependentComponentSchemaName?: string;
+  DependentComponentType?: string;
+  MissingPackages?: MissingPackage[];
+  RequiredComponentDisplayName?: string;
+  RequiredComponentId?: string;
+  RequiredComponentParentDisplayName?: string;
+  RequiredComponentParentSchemaName?: string;
+  RequiredComponentSchemaName?: string;
+  RequiredComponentType?: string;
+  RequiredSolutionName?: string;
 }

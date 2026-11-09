@@ -2,7 +2,7 @@
  * ServicePlan complex type
  */
 export interface ServicePlan {
-  Name: string;
-  DisplayName: string;
-  ServicePlanId: string;
+  DisplayName?: string;
+  Name?: string;
+  ServicePlanId?: string;
 }

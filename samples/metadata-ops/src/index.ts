@@ -7,12 +7,17 @@
  *
  * Note: This sample uses METADATA TYPES from @mohsinonxrm/dataverse-sdk-metadata,
  * NOT business entity types (which would be generated per-org using the generator).
+ *
+ * Everything the sample creates is named with this run's tag and deleted at the end, also when a
+ * demo fails. New metadata takes a while to reach all of the org's servers, so a read or write
+ * right after a create is retried for up to two minutes (`eventually()`).
  */
 
+import { randomBytes } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import chalk from "chalk";
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, DataverseODataError } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import {
@@ -20,14 +25,15 @@ import {
   StringFormat as _StringFormat,
   OptionSetType,
   AttributeRequiredLevel,
+  OwnershipTypes,
 } from "@mohsinonxrm/dataverse-sdk-metadata";
 import type {
   EntityMetadataCreate,
   EntityMetadata,
-  ComplexStringAttributeMetadata,
-  ComplexIntegerAttributeMetadata,
-  OneToManyRelationshipMetadata,
-  ComplexOptionSetMetadata,
+  OneToManyRelationshipMetadataCreate,
+  StringAttributeMetadataCreate,
+  IntegerAttributeMetadataCreate,
+  OptionSetMetadataCreate,
 } from "@mohsinonxrm/dataverse-sdk-metadata";
 
 // Load environment variables
@@ -60,37 +66,128 @@ function loadEnv(): Config {
     }
   }
 
-  const clientId = env.AZURE_CLIENT_ID || process.env.AZURE_CLIENT_ID;
-  const tenantId = env.AZURE_TENANT_ID || process.env.AZURE_TENANT_ID;
-  const clientSecret = env.AZURE_CLIENT_SECRET || process.env.AZURE_CLIENT_SECRET;
-  const dataverseUrl = env.DATAVERSE_URL || process.env.DATAVERSE_URL;
+  // AZURE_* (this sample's names) or DATAVERSE_* (the names the repository's live CI uses)
+  const setting = (...names: string[]): string | undefined =>
+    names.map((name) => env[name] || process.env[name]).find(Boolean);
+  const clientId = setting("AZURE_CLIENT_ID", "DATAVERSE_CLIENT_ID");
+  const tenantId = setting("AZURE_TENANT_ID", "DATAVERSE_TENANT_ID");
+  const clientSecret = setting("AZURE_CLIENT_SECRET", "DATAVERSE_CLIENT_SECRET");
+  const dataverseUrl = setting("DATAVERSE_URL");
 
   if (!clientId || !tenantId || !clientSecret || !dataverseUrl) {
     console.error(chalk.red("❌ Missing required environment variables!"));
-    console.error(chalk.yellow("Please create a .env file with:"));
+    console.error(chalk.yellow("Create a .env file (or set environment variables) with:"));
     console.error(chalk.yellow("  AZURE_CLIENT_ID=your-app-registration-id"));
     console.error(chalk.yellow("  AZURE_TENANT_ID=your-tenant-id"));
     console.error(chalk.yellow("  AZURE_CLIENT_SECRET=your-client-secret"));
     console.error(chalk.yellow("  DATAVERSE_URL=https://yourorg.crm.dynamics.com"));
+    console.error(
+      chalk.yellow(
+        "DATAVERSE_CLIENT_ID, DATAVERSE_TENANT_ID and DATAVERSE_CLIENT_SECRET also work."
+      )
+    );
     process.exit(1);
   }
 
-  return {
-    clientId,
-    tenantId,
-    clientSecret,
-    dataverseUrl,
-    schemaPrefix: env.SCHEMA_PREFIX || "sample",
-  };
+  const schemaPrefix = setting("SCHEMA_PREFIX") ?? "sample";
+  if (!/^[a-z][a-z0-9]{1,7}$/.test(schemaPrefix)) {
+    console.error(
+      chalk.red(
+        "❌ SCHEMA_PREFIX must be 2 to 8 lowercase letters or digits, starting with a letter."
+      )
+    );
+    process.exit(1);
+  }
+
+  return { clientId, tenantId, clientSecret, dataverseUrl, schemaPrefix };
 }
 
-// Track created metadata for cleanup
-const createdMetadata = {
-  entities: [] as string[],
-  attributes: [] as string[],
-  relationships: [] as string[],
-  globalOptionSets: [] as string[],
+/**
+ * Every table, relationship and global choice this run creates carries the run's tag in its
+ * name, and its display name starts with `sdk-sample-<tag>`. SAMPLE_RUN_TAG sets the tag
+ * (lowercase letters and digits); otherwise it's random.
+ */
+const runTag = process.env.SAMPLE_RUN_TAG ?? randomBytes(3).toString("hex");
+if (!/^[a-z0-9]{1,10}$/.test(runTag)) {
+  console.error(chalk.red("❌ SAMPLE_RUN_TAG must be 1 to 10 lowercase letters or digits."));
+  process.exit(1);
+}
+const runId = `sdk-sample-${runTag}`;
+
+/** The names of what this run creates (logical names: lowercase schema names). */
+const names = {
+  project: `${env.schemaPrefix}_project${runTag}`,
+  milestone: `${env.schemaPrefix}_milestone${runTag}`,
+  relationship: `${env.schemaPrefix}_project${runTag}_milestones`,
+  projectType: `${env.schemaPrefix}_projecttype${runTag}`,
 };
+
+/** A display label in English, with this run's id in front. */
+function label(text: string) {
+  return { LocalizedLabels: [{ Label: `${runId} ${text}`, LanguageCode: 1033 }] };
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Retry `fn` until it resolves, for up to `ms`: new metadata reaches the org's servers over
+ * several seconds, so a request right after a create can reach a server that doesn't know it yet.
+ * An error that `retryIf` rejects is thrown at once.
+ */
+async function eventually<T>(
+  fn: () => Promise<T>,
+  ms = 120_000,
+  retryIf: (err: unknown) => boolean = () => true
+): Promise<T> {
+  const deadline = Date.now() + ms;
+  for (;;) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (Date.now() > deadline || !retryIf(err)) throw err;
+      console.log(chalk.gray("  … the org isn't ready yet, retrying in 5 seconds"));
+      await sleep(5_000);
+    }
+  }
+}
+
+/**
+ * Dataverse refused the request (400 or 404), so nothing was created and it is safe to send it
+ * again. Any other error (a timeout, a 5xx) is thrown, because the component may exist.
+ */
+const refused = (err: unknown): boolean =>
+  err instanceof DataverseODataError && (err.status === 400 || err.status === 404);
+
+/**
+ * DELETE `apiPath`, retrying for up to four minutes. Only a 204, or several 404s in a row, count
+ * as gone: right after a create, a server whose cache is behind answers 404 for a component that
+ * still exists.
+ */
+async function remove(client: DataverseClient, apiPath: string): Promise<boolean> {
+  let notFound = 0;
+  for (let attempt = 1; attempt <= 24; attempt++) {
+    try {
+      await client.api(apiPath).delete<undefined>();
+      return true;
+    } catch (err) {
+      notFound = err instanceof DataverseODataError && err.status === 404 ? notFound + 1 : 0;
+      if (notFound >= 3) return true;
+      if (attempt === 24) console.error(chalk.red(`  ❌ DELETE ${apiPath} failed:`), err);
+    }
+    await sleep(10_000);
+  }
+  return false;
+}
+
+// Track created metadata for cleanup, by MetadataId
+const createdMetadata = {
+  /** Tables, in the order they were created */
+  entities: [] as Array<{ logicalName: string; metadataId: string }>,
+  relationships: [] as Array<{ schemaName: string; metadataId: string }>,
+  globalOptionSets: [] as Array<{ name: string; metadataId: string }>,
+};
+/** Names of what Demo 6 deleted, so cleanup doesn't look for them */
+const deletedByDemo = new Set<string>();
 
 /**
  * Demo 1A: Create entity using HTTP-first approach (client.api())
@@ -103,13 +200,10 @@ async function demo1A_CreateEntityHttpFirst(
   console.log(chalk.gray("Using client.api() directly with typed payloads..."));
 
   const entityDefinition: EntityMetadataCreate = {
-    SchemaName: `${schemaPrefix}_project`,
-    DisplayName: {
-      LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }],
-    },
-    DisplayCollectionName: {
-      LocalizedLabels: [{ Label: "Projects", LanguageCode: 1033 }],
-    },
+    "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+    SchemaName: names.project,
+    DisplayName: label("Project"),
+    DisplayCollectionName: label("Projects"),
     Description: {
       LocalizedLabels: [
         {
@@ -118,60 +212,44 @@ async function demo1A_CreateEntityHttpFirst(
         },
       ],
     },
-    OwnershipType: 1, // UserOwned
+    OwnershipType: OwnershipTypes.UserOwned,
+    IsActivity: false,
     HasActivities: true,
     HasNotes: true,
+    // The primary name column is created with the table, first in Attributes
+    Attributes: [
+      {
+        "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+        SchemaName: `${schemaPrefix}_Name`,
+        DisplayName: {
+          LocalizedLabels: [{ Label: "Project Name", LanguageCode: 1033 }],
+        },
+        RequiredLevel: { Value: AttributeRequiredLevel.None },
+        MaxLength: 100,
+        IsPrimaryName: true,
+      },
+    ],
   };
 
   const startTime = Date.now();
 
-  // Direct HTTP POST to /EntityDefinitions
-  // Add @odata.type at runtime for Web API
-  const response = await client
+  // Direct HTTP POST to /EntityDefinitions; createAndGetId reads the new MetadataId from the
+  // OData-EntityId response header
+  const metadataId = await client
     .api("/EntityDefinitions")
     .header("Content-Type", "application/json")
-    .preferRaw("return=representation")
-    .post<EntityMetadata>({
-      "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-      ...entityDefinition,
-    });
+    .createAndGetId(entityDefinition);
+  createdMetadata.entities.push({ logicalName: names.project, metadataId });
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-  const metadataId = response.MetadataId;
 
   console.log(chalk.green(`✓ Entity created in ${duration}s (HTTP POST)`));
-  // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
   console.log(chalk.gray(`  Metadata ID: ${metadataId}`));
-  console.log(chalk.gray(`  Schema Name: ${schemaPrefix}_project`));
-  console.log(chalk.gray(`  Logical Name: ${schemaPrefix}_project`));
+  console.log(chalk.gray(`  Schema Name: ${names.project}`));
+  console.log(chalk.gray(`  Logical Name: ${names.project}`));
   console.log(chalk.cyan("  ℹ️  Approach: Direct Web API call using client.api()"));
 
-  createdMetadata.entities.push(`${schemaPrefix}_project`);
-
-  // Now add primary name attribute (required for custom entities)
-  console.log(chalk.gray("\nAdding primary name column..."));
-
-  const primaryNameAttr: ComplexStringAttributeMetadata = {
-    SchemaName: `${schemaPrefix}_Name`,
-    DisplayName: {
-      LocalizedLabels: [{ Label: "Project Name", LanguageCode: 1033 }],
-    },
-    RequiredLevel: { Value: AttributeRequiredLevel.None },
-    MaxLength: 100,
-  };
-
-  await client
-    .api(`/EntityDefinitions(LogicalName='${schemaPrefix}_project')/Attributes`)
-    .header("Content-Type", "application/json")
-    .post({
-      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-      ...primaryNameAttr,
-      IsPrimaryName: true,
-    });
-
-  console.log(chalk.green("  ✓ Primary name column added"));
-
-  return `${schemaPrefix}_project`;
+  return names.project;
 }
 
 /**
@@ -185,13 +263,9 @@ async function demo1B_CreateEntityMetadataClient(
   console.log(chalk.gray("Using MetadataClient typed methods..."));
 
   const entityDefinition: EntityMetadataCreate = {
-    SchemaName: `${schemaPrefix}_milestone`,
-    DisplayName: {
-      LocalizedLabels: [{ Label: "Milestone", LanguageCode: 1033 }],
-    },
-    DisplayCollectionName: {
-      LocalizedLabels: [{ Label: "Milestones", LanguageCode: 1033 }],
-    },
+    SchemaName: names.milestone,
+    DisplayName: label("Milestone"),
+    DisplayCollectionName: label("Milestones"),
     Description: {
       LocalizedLabels: [
         {
@@ -200,9 +274,23 @@ async function demo1B_CreateEntityMetadataClient(
         },
       ],
     },
-    OwnershipType: 1,
+    OwnershipType: OwnershipTypes.UserOwned,
+    IsActivity: false,
     HasActivities: false,
     HasNotes: false,
+    // The primary name column is created with the table, first in Attributes
+    Attributes: [
+      {
+        "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+        SchemaName: `${schemaPrefix}_Name`,
+        DisplayName: {
+          LocalizedLabels: [{ Label: "Milestone Name", LanguageCode: 1033 }],
+        },
+        RequiredLevel: { Value: AttributeRequiredLevel.None },
+        MaxLength: 100,
+        IsPrimaryName: true,
+      },
+    ],
   };
 
   const startTime = Date.now();
@@ -211,41 +299,18 @@ async function demo1B_CreateEntityMetadataClient(
   const metadataId = await metadataClient.createEntityDefinition({
     "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
     ...entityDefinition,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  });
+  createdMetadata.entities.push({ logicalName: names.milestone, metadataId });
 
   const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
   console.log(chalk.green(`✓ Entity created in ${duration}s (MetadataClient)`));
   console.log(chalk.gray(`  Metadata ID: ${metadataId}`));
-  console.log(chalk.gray(`  Schema Name: ${schemaPrefix}_milestone`));
-  console.log(chalk.gray(`  Logical Name: ${schemaPrefix}_milestone`));
+  console.log(chalk.gray(`  Schema Name: ${names.milestone}`));
+  console.log(chalk.gray(`  Logical Name: ${names.milestone}`));
   console.log(chalk.cyan("  ℹ️  Approach: Typed MetadataClient wrapper method"));
 
-  createdMetadata.entities.push(`${schemaPrefix}_milestone`);
-
-  // Add primary name attribute
-  console.log(chalk.gray("\nAdding primary name column..."));
-
-  const primaryNameAttr: ComplexStringAttributeMetadata = {
-    SchemaName: `${schemaPrefix}_Name`,
-    DisplayName: {
-      LocalizedLabels: [{ Label: "Milestone Name", LanguageCode: 1033 }],
-    },
-    RequiredLevel: { Value: AttributeRequiredLevel.None },
-    MaxLength: 100,
-  };
-
-  await metadataClient.createAttributeDefinition(`${schemaPrefix}_milestone`, {
-    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-    ...primaryNameAttr,
-    IsPrimaryName: true,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
-
-  console.log(chalk.green("  ✓ Primary name column added"));
-
-  return `${schemaPrefix}_milestone`;
+  return names.milestone;
 }
 
 /**
@@ -259,7 +324,8 @@ async function demo2A_AddAttributeHttpFirst(
   console.log(chalk.bold.blue("\n════ Demo 2A: Add Attribute (HTTP-First) ════\n"));
   console.log(chalk.gray("Adding description column via client.api()..."));
 
-  const attributeDefinition: ComplexStringAttributeMetadata = {
+  const attributeDefinition: StringAttributeMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
     SchemaName: `${schemaPrefix}_Description`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Description", LanguageCode: 1033 }],
@@ -272,17 +338,19 @@ async function demo2A_AddAttributeHttpFirst(
     FormatName: { Value: "Text" },
   };
 
-  // Direct HTTP POST to entity's Attributes collection
-  await client
-    .api(`/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes`)
-    .header("Content-Type", "application/json")
-    .post({
-      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-      ...attributeDefinition,
-    });
+  // Direct HTTP POST to entity's Attributes collection (retried while the new table is unknown)
+  await eventually(
+    () =>
+      client
+        .api(`/EntityDefinitions(LogicalName='${entityLogicalName}')/Attributes`)
+        .header("Content-Type", "application/json")
+        .post(attributeDefinition),
+    120_000,
+    refused
+  );
 
   console.log(chalk.green("✓ Attribute created (HTTP POST)"));
-  console.log(chalk.gray(`  Logical Name: ${schemaPrefix.toLowerCase()}_description`));
+  console.log(chalk.gray(`  Logical Name: ${schemaPrefix}_description`));
   console.log(chalk.gray("  Type: Multi-line text (TextArea)"));
   console.log(chalk.cyan("  ℹ️  Approach: POST to /EntityDefinitions(...)/Attributes"));
 }
@@ -298,7 +366,8 @@ async function demo2B_AddAttributeMetadataClient(
   console.log(chalk.bold.blue("\n════ Demo 2B: Add Attribute (MetadataClient) ════\n"));
   console.log(chalk.gray("Adding priority column via MetadataClient..."));
 
-  const attributeDefinition: ComplexIntegerAttributeMetadata = {
+  const attributeDefinition: IntegerAttributeMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.IntegerAttributeMetadata",
     SchemaName: `${schemaPrefix}_Priority`,
     DisplayName: {
       LocalizedLabels: [{ Label: "Priority", LanguageCode: 1033 }],
@@ -308,14 +377,14 @@ async function demo2B_AddAttributeMetadataClient(
     MaxValue: 10,
   };
 
-  await metadataClient.createAttributeDefinition(entityLogicalName, {
-    "@odata.type": "Microsoft.Dynamics.CRM.IntegerAttributeMetadata",
-    ...attributeDefinition,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  await eventually(
+    () => metadataClient.createAttributeDefinition(entityLogicalName, attributeDefinition),
+    120_000,
+    refused
+  );
 
   console.log(chalk.green("✓ Attribute created (MetadataClient)"));
-  console.log(chalk.gray(`  Logical Name: ${schemaPrefix.toLowerCase()}_priority`));
+  console.log(chalk.gray(`  Logical Name: ${schemaPrefix}_priority`));
   console.log(chalk.gray("  Type: Integer (1-10)"));
   console.log(chalk.cyan("  ℹ️  Approach: MetadataClient.createAttributeDefinition()"));
 }
@@ -331,21 +400,23 @@ async function demo3A_QueryMetadataHttpFirst(
   console.log(chalk.gray("Querying entity with expanded attributes via client.api()..."));
 
   // Direct HTTP GET with OData query options
-  const entity = await client
-    .api(`/EntityDefinitions(LogicalName='${entityLogicalName}')`)
-    .select("LogicalName", "DisplayName", "SchemaName", "OwnershipType")
-    .expand("Attributes($select=LogicalName,AttributeType,DisplayName)")
-    .get<EntityMetadata>();
+  const entity = await eventually(() =>
+    client
+      .api(`/EntityDefinitions(LogicalName='${entityLogicalName}')`)
+      .select("LogicalName", "DisplayName", "SchemaName", "OwnershipType")
+      .expand("Attributes($select=LogicalName,AttributeType,DisplayName)")
+      .get<EntityMetadata>()
+  );
 
   console.log(chalk.green("✓ Metadata retrieved (HTTP GET)"));
   console.log(chalk.gray(`  Logical Name: ${entity.LogicalName ?? ""}`));
   console.log(
     chalk.gray(`  Display Name: ${entity.DisplayName?.LocalizedLabels?.[0]?.Label ?? ""}`)
   );
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   console.log(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-    chalk.gray(`  Ownership: ${entity.OwnershipType === 1 ? "User-Owned" : "Organization-Owned"}`)
+    chalk.gray(
+      `  Ownership: ${entity.OwnershipType === OwnershipTypes.UserOwned ? "User-Owned" : "Organization-Owned"}`
+    )
   );
   console.log(chalk.gray(`  Attributes: ${String(entity.Attributes?.length ?? 0)}`));
   console.log(chalk.cyan("  ℹ️  Approach: GET with $select and $expand query options"));
@@ -361,20 +432,22 @@ async function demo3B_QueryMetadataWithClient(
   console.log(chalk.bold.blue("\n════ Demo 3B: Query Metadata (MetadataClient) ════\n"));
   console.log(chalk.gray("Querying entity via MetadataClient..."));
 
-  const entity = await metadataClient.getEntityDefinition(entityLogicalName, {
-    select: ["LogicalName", "DisplayName", "SchemaName", "OwnershipType"],
-    expand: "Attributes($select=LogicalName,AttributeType,DisplayName)",
-  });
+  const entity = await eventually(() =>
+    metadataClient.getEntityDefinition(entityLogicalName, {
+      select: ["LogicalName", "DisplayName", "SchemaName", "OwnershipType"],
+      expand: "Attributes($select=LogicalName,AttributeType,DisplayName)",
+    })
+  );
 
   console.log(chalk.green("✓ Metadata retrieved (MetadataClient)"));
   console.log(chalk.gray(`  Logical Name: ${entity.LogicalName ?? ""}`));
   console.log(
     chalk.gray(`  Display Name: ${entity.DisplayName?.LocalizedLabels?.[0]?.Label ?? ""}`)
   );
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
   console.log(
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-comparison
-    chalk.gray(`  Ownership: ${entity.OwnershipType === 1 ? "User-Owned" : "Organization-Owned"}`)
+    chalk.gray(
+      `  Ownership: ${entity.OwnershipType === OwnershipTypes.UserOwned ? "User-Owned" : "Organization-Owned"}`
+    )
   );
   console.log(chalk.gray(`  Attributes: ${String(entity.Attributes?.length ?? 0)}`));
   console.log(chalk.cyan("  ℹ️  Approach: MetadataClient.getEntityDefinition()"));
@@ -393,9 +466,7 @@ async function demo3B_QueryMetadataWithClient(
       // Show first 5
       const displayName = attr.DisplayName?.LocalizedLabels?.[0]?.Label ?? attr.LogicalName ?? "";
       console.log(
-        chalk.gray(
-          `    • ${attr.LogicalName ?? ""} (${String(attr.AttributeType ?? "")}) - ${displayName}`
-        )
+        chalk.gray(`    • ${attr.LogicalName ?? ""} (${attr.AttributeType ?? ""}) - ${displayName}`)
       );
     }
   }
@@ -413,56 +484,54 @@ async function demo4_CreateRelationshipHttpFirst(
   console.log(chalk.bold.blue("\n════ Demo 4: Create 1:N Relationship (HTTP-First) ════\n"));
   console.log(chalk.gray("Creating project-to-milestones relationship via client.api()..."));
 
-  const relationship: OneToManyRelationshipMetadata = {
-    SchemaName: `${schemaPrefix}_project_milestones`,
+  const relationship: OneToManyRelationshipMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+    SchemaName: names.relationship,
     ReferencedEntity: projectEntity,
-    ReferencedAttribute: `${schemaPrefix}_projectid`,
+    // The project table's primary key: its logical name + "id"
+    ReferencedAttribute: `${projectEntity}id`,
     ReferencingEntity: milestoneEntity,
+    Lookup: {
+      "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
+      SchemaName: `${schemaPrefix}_ProjectId`,
+      DisplayName: {
+        LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }],
+      },
+      RequiredLevel: { Value: AttributeRequiredLevel.ApplicationRequired },
+    },
   };
 
-  // Direct HTTP POST to RelationshipDefinitions
-  // Add @odata.type and Lookup at runtime
-  const _response = await client
-    .api("/RelationshipDefinitions")
-    .header("Content-Type", "application/json")
-    .preferRaw("return=representation")
-    .post({
-      "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
-      ...relationship,
-      Lookup: {
-        "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
-        SchemaName: `${schemaPrefix}_ProjectId`,
-        DisplayName: {
-          LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }],
-        },
-        RequiredLevel: { Value: AttributeRequiredLevel.ApplicationRequired },
-      },
-    });
+  // Direct HTTP POST to RelationshipDefinitions (retried while either new table is unknown)
+  const metadataId = await eventually(
+    () =>
+      client
+        .api("/RelationshipDefinitions")
+        .header("Content-Type", "application/json")
+        .createAndGetId(relationship),
+    120_000,
+    refused
+  );
+  createdMetadata.relationships.push({ schemaName: names.relationship, metadataId });
 
   console.log(chalk.green("✓ 1:N relationship created (HTTP POST)"));
-  console.log(chalk.gray(`  Schema Name: ${schemaPrefix}_project_milestones`));
+  console.log(chalk.gray(`  Metadata ID: ${metadataId}`));
+  console.log(chalk.gray(`  Schema Name: ${names.relationship}`));
   console.log(chalk.gray(`  ${projectEntity} (1) → (N) ${milestoneEntity}`));
   console.log(chalk.gray(`  Lookup column: ${schemaPrefix}_ProjectId on ${milestoneEntity}`));
   console.log(chalk.cyan("  ℹ️  Approach: POST to /RelationshipDefinitions"));
-
-  createdMetadata.relationships.push(`${schemaPrefix}_project_milestones`);
 }
 
 /**
  * Demo 5: Create global option set
  */
-async function demo5_CreateGlobalChoice(
-  metadataClient: MetadataClient,
-  schemaPrefix: string
-): Promise<void> {
+async function demo5_CreateGlobalChoice(metadataClient: MetadataClient): Promise<void> {
   console.log(chalk.bold.blue("\n════ Demo 5: Create Global Choice (MetadataClient) ════\n"));
   console.log(chalk.gray("Creating project type global choice..."));
 
-  const optionSet: ComplexOptionSetMetadata = {
-    Name: `${schemaPrefix}_projecttype`,
-    DisplayName: {
-      LocalizedLabels: [{ Label: "Project Type", LanguageCode: 1033 }],
-    },
+  const optionSet: OptionSetMetadataCreate = {
+    "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
+    Name: names.projectType,
+    DisplayName: label("Project Type"),
     Description: {
       LocalizedLabels: [{ Label: "Global choice for categorizing projects", LanguageCode: 1033 }],
     },
@@ -484,19 +553,14 @@ async function demo5_CreateGlobalChoice(
     ],
   };
 
-  const metadataId = await metadataClient.createGlobalOptionSet({
-    "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
-    ...optionSet,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  const metadataId = await metadataClient.createGlobalOptionSet(optionSet);
+  createdMetadata.globalOptionSets.push({ name: names.projectType, metadataId });
 
   console.log(chalk.green("✓ Global choice created"));
   console.log(chalk.gray(`  Metadata ID: ${metadataId}`));
-  console.log(chalk.gray(`  Name: ${schemaPrefix}_projecttype`));
+  console.log(chalk.gray(`  Name: ${names.projectType}`));
   console.log(chalk.gray("  Options: 3 (Internal, External, Research)"));
   console.log(chalk.cyan("  ℹ️  Approach: MetadataClient.createGlobalOptionSet()"));
-
-  createdMetadata.globalOptionSets.push(`${schemaPrefix}_projecttype`);
 }
 
 /**
@@ -507,75 +571,107 @@ async function demo6_DeleteMetadataHttpFirst(
   entityLogicalName: string
 ): Promise<void> {
   console.log(chalk.bold.blue("\n════ Demo 6: Delete Metadata (HTTP-First) ════\n"));
+
+  // The relationship first (deletion order matters), then the table
+  for (const relationship of [...createdMetadata.relationships]) {
+    console.log(
+      chalk.gray(`Deleting relationship '${relationship.schemaName}' via client.api()...`)
+    );
+    if (!(await remove(client, `/RelationshipDefinitions(${relationship.metadataId})`))) {
+      throw new Error(`Could not delete the relationship ${relationship.schemaName}`);
+    }
+    createdMetadata.relationships.splice(createdMetadata.relationships.indexOf(relationship), 1);
+    deletedByDemo.add(relationship.schemaName);
+    console.log(chalk.green("✓ Relationship deleted (HTTP DELETE)"));
+  }
+
   console.log(chalk.gray(`Deleting entity '${entityLogicalName}' via client.api()...`));
 
-  // Direct HTTP DELETE
-  await client.api(`/EntityDefinitions(LogicalName='${entityLogicalName}')`).delete();
+  // Direct HTTP DELETE (retried while the org's servers catch up with the new table)
+  if (!(await remove(client, `/EntityDefinitions(LogicalName='${entityLogicalName}')`))) {
+    throw new Error(`Could not delete the entity ${entityLogicalName}`);
+  }
 
   console.log(chalk.green("✓ Entity deleted (HTTP DELETE)"));
   console.log(chalk.cyan("  ℹ️  Approach: DELETE to /EntityDefinitions(...)"));
 
   // Remove from tracking
-  const index = createdMetadata.entities.indexOf(entityLogicalName);
+  const index = createdMetadata.entities.findIndex((e) => e.logicalName === entityLogicalName);
   if (index > -1) {
     createdMetadata.entities.splice(index, 1);
   }
+  deletedByDemo.add(entityLogicalName);
 }
 
 /**
- * Cleanup: Delete remaining metadata
+ * Cleanup: Delete remaining metadata, by MetadataId: relationships, then entities (the newest
+ * first), then global choices. Returns false if anything couldn't be deleted.
  */
-async function cleanup(metadataClient: MetadataClient): Promise<void> {
+async function cleanup(client: DataverseClient): Promise<boolean> {
   console.log(chalk.bold.yellow("\n════ Cleanup: Deleting Created Metadata ════\n"));
+  const failures: string[] = [];
+
+  // A create that failed on the client's side (a timeout, say) may still have created its
+  // component: look up, by name, anything of this run that isn't tracked and wasn't deleted
+  const lookUp = async (apiPath: string): Promise<string | undefined> => {
+    try {
+      const found = await client.api(apiPath).select("MetadataId").get<{ MetadataId?: string }>();
+      return found.MetadataId;
+    } catch {
+      return undefined; // not there (or not visible yet)
+    }
+  };
+  if (!createdMetadata.relationships.some((r) => r.schemaName === names.relationship)) {
+    if (!deletedByDemo.has(names.relationship)) {
+      const id = await lookUp(`/RelationshipDefinitions(SchemaName='${names.relationship}')`);
+      if (id)
+        createdMetadata.relationships.push({ schemaName: names.relationship, metadataId: id });
+    }
+  }
+  for (const logicalName of [names.project, names.milestone]) {
+    if (createdMetadata.entities.some((e) => e.logicalName === logicalName)) continue;
+    if (deletedByDemo.has(logicalName)) continue;
+    const id = await lookUp(`/EntityDefinitions(LogicalName='${logicalName}')`);
+    if (id) createdMetadata.entities.push({ logicalName, metadataId: id });
+  }
+  if (!createdMetadata.globalOptionSets.some((o) => o.name === names.projectType)) {
+    const id = await lookUp(`/GlobalOptionSetDefinitions(Name='${names.projectType}')`);
+    if (id) createdMetadata.globalOptionSets.push({ name: names.projectType, metadataId: id });
+  }
 
   // Delete relationships first
-  if (createdMetadata.relationships.length > 0) {
-    console.log(
-      chalk.gray(`Deleting ${String(createdMetadata.relationships.length)} relationships...`)
-    );
-    for (const relName of createdMetadata.relationships) {
-      try {
-        // Get relationship by schema name to retrieve MetadataId, then delete
-        const relationship = await metadataClient.getRelationshipBySchemaName(relName);
-        if (relationship.MetadataId) {
-          await metadataClient.deleteRelationship(relationship.MetadataId);
-          console.log(chalk.green(`  ✓ Deleted relationship: ${relName}`));
-        }
-      } catch (_error) {
-        console.log(chalk.yellow(`  ⚠️  Could not delete relationship: ${relName}`));
-      }
+  for (const { schemaName, metadataId } of createdMetadata.relationships) {
+    if (await remove(client, `/RelationshipDefinitions(${metadataId})`)) {
+      console.log(chalk.green(`  ✓ Deleted relationship: ${schemaName}`));
+    } else {
+      failures.push(`relationship ${schemaName}`);
     }
   }
 
-  // Delete entities
-  if (createdMetadata.entities.length > 0) {
-    console.log(chalk.gray(`\nDeleting ${String(createdMetadata.entities.length)} entities...`));
-    for (const entityName of createdMetadata.entities) {
-      try {
-        await metadataClient.deleteEntityDefinition(entityName);
-        console.log(chalk.green(`  ✓ Deleted entity: ${entityName}`));
-      } catch (_error) {
-        console.log(chalk.yellow(`  ⚠️  Could not delete entity: ${entityName}`));
-      }
+  // Delete entities (deleting a table deletes its columns)
+  for (const { logicalName, metadataId } of [...createdMetadata.entities].reverse()) {
+    if (await remove(client, `/EntityDefinitions(${metadataId})`)) {
+      console.log(chalk.green(`  ✓ Deleted entity: ${logicalName}`));
+    } else {
+      failures.push(`entity ${logicalName}`);
     }
   }
 
   // Delete global option sets
-  if (createdMetadata.globalOptionSets.length > 0) {
-    console.log(
-      chalk.gray(`\nDeleting ${String(createdMetadata.globalOptionSets.length)} global choices...`)
-    );
-    for (const optionSetName of createdMetadata.globalOptionSets) {
-      try {
-        await metadataClient.deleteGlobalOptionSet(optionSetName);
-        console.log(chalk.green(`  ✓ Deleted global choice: ${optionSetName}`));
-      } catch (_error) {
-        console.log(chalk.yellow(`  ⚠️  Could not delete global choice: ${optionSetName}`));
-      }
+  for (const { name, metadataId } of createdMetadata.globalOptionSets) {
+    if (await remove(client, `/GlobalOptionSetDefinitions(${metadataId})`)) {
+      console.log(chalk.green(`  ✓ Deleted global choice: ${name}`));
+    } else {
+      failures.push(`global choice ${name}`);
     }
   }
 
+  if (failures.length > 0) {
+    console.error(chalk.red(`\n❌ Could not delete: ${failures.join(", ")}. Delete them by hand.`));
+    return false;
+  }
   console.log(chalk.bold.green("\n✓ Cleanup completed"));
+  return true;
 }
 
 /**
@@ -609,12 +705,13 @@ async function main() {
   const cca = new ConfidentialClientApplication(msalConfig);
   const tokenProvider = new MsalNodeTokenProvider(cca, {
     flow: "clientCredentials",
-    scopes: [`${env.dataverseUrl}/.default`],
+    scopes: [`${new URL(env.dataverseUrl).origin}/.default`],
   });
 
   console.log(chalk.green("✓ Authenticated"));
   console.log(chalk.gray(`  Environment: ${env.dataverseUrl}`));
-  console.log(chalk.gray(`  Schema Prefix: ${env.schemaPrefix}\n`));
+  console.log(chalk.gray(`  Schema Prefix: ${env.schemaPrefix}`));
+  console.log(chalk.gray(`  Run id: ${runId} (names end with ${runTag})\n`));
 
   // Create clients
   const client = new DataverseClient({
@@ -624,6 +721,7 @@ async function main() {
 
   const metadataClient = new MetadataClient(client);
 
+  let failed = false;
   try {
     console.log(
       chalk.bold.yellow("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
@@ -657,7 +755,7 @@ async function main() {
     );
 
     // Demo 5: Create global choice
-    await demo5_CreateGlobalChoice(metadataClient, env.schemaPrefix);
+    await demo5_CreateGlobalChoice(metadataClient);
 
     // Demo 6: Delete one entity using HTTP-first
     await demo6_DeleteMetadataHttpFirst(client, milestoneEntity);
@@ -698,16 +796,8 @@ async function main() {
     console.log(chalk.gray("  @mohsinonxrm/dataverse-sdk-metadata (EntityMetadata, etc.)"));
     console.log(chalk.gray("  These are NOT business entity types (which would be generated).\n"));
 
-    // Cleanup
-    console.log(chalk.yellow("⚠️  Cleanup will delete remaining created metadata."));
-    console.log(chalk.gray("Waiting 2 seconds before cleanup...\n"));
-
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    await cleanup(metadataClient);
-
     console.log(
-      chalk.bold.cyan("\n╔══════════════════════════════════════════════════════════════════╗")
+      chalk.bold.cyan("╔══════════════════════════════════════════════════════════════════╗")
     );
     console.log(
       chalk.bold.cyan("║   OPERATIONS DEMONSTRATED                                        ║")
@@ -720,18 +810,18 @@ async function main() {
     console.log(chalk.gray("✓ Metadata queries (HTTP-first & MetadataClient)"));
     console.log(chalk.gray("✓ Relationship creation (1:N via HTTP-first)"));
     console.log(chalk.gray("✓ Global choice creation (via MetadataClient)"));
-    console.log(chalk.gray("✓ Metadata deletion (HTTP-first & MetadataClient)"));
+    console.log(chalk.gray("✓ Metadata deletion (HTTP-first; cleanup deletes the rest)"));
     console.log(chalk.gray("✓ All using METADATA TYPES (not business entity types)\n"));
   } catch (error: unknown) {
+    failed = true;
     console.error(chalk.bold.red("\n❌ Demo failed:"), error);
-    console.log(chalk.yellow("\nAttempting cleanup of created metadata..."));
-    try {
-      await cleanup(metadataClient);
-    } catch (cleanupError: unknown) {
-      console.error(chalk.red("Cleanup also failed:"), cleanupError);
-    }
-    process.exit(1);
+  } finally {
+    // Cleanup, also when a demo failed: everything still tracked, by MetadataId
+    console.log(chalk.yellow("⚠️  Cleanup will delete remaining created metadata."));
+    if (!(await cleanup(client))) failed = true;
   }
+
+  if (failed) process.exit(1);
 }
 
 // Run the application

@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from ExportFieldTranslation function
+ * Response from the ExportFieldTranslation function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ExportFieldTranslationResponse {
+  "@odata.context"?: string;
   ExportTranslationFile: string;
 }
 
@@ -26,7 +29,7 @@ export class ExportFieldTranslationFunction implements Executable<ExportFieldTra
   }
 
   async parseResponse(response: Response): Promise<ExportFieldTranslationResponse> {
-    const data = await response.json();
-    return data as ExportFieldTranslationResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as ExportFieldTranslationResponse;
   }
 }

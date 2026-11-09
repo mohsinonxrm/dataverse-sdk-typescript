@@ -1,6 +1,23 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the CreateAndSendNewEmail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateAndSendNewEmailRequestParameters {
+  Subject?: string;
+  Body?: string;
+  From?: string;
+  To?: string;
+  Cc?: string;
+  Bcc?: string;
+  Regarding?: EntityReference | AnyEntityPayload;
+  Importance?: number;
+}
 
 /**
  * CreateAndSendNewEmail request message
@@ -11,71 +28,64 @@ export class CreateAndSendNewEmailRequest
   extends OrganizationRequest
   implements Executable<CreateAndSendNewEmailResponse>
 {
-  constructor(
-    public subject: string,
-    public body: string,
-    public from: string,
-    public to: string,
-    public cc: string,
-    public bcc: string,
-    public regarding: EntityReference,
-    public importance: number
-  ) {
-    super("CreateAndSendNewEmail");
+  declare readonly Parameters: Readonly<CreateAndSendNewEmailRequestParameters>;
+
+  constructor(parameters: CreateAndSendNewEmailRequestParameters = {}) {
+    super("CreateAndSendNewEmail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateAndSendNewEmail`;
 
-    const body: Record<string, unknown> = {
-      Subject: this.subject,
-      Body: this.body,
-      From: this.from,
-      To: this.to,
-      Cc: this.cc,
-      Bcc: this.bcc,
-      Regarding: this.regarding,
-      Importance: this.importance,
-    };
+    const body = requestBody({
+      Subject: this.Parameters.Subject,
+      Body: this.Parameters.Body,
+      From: this.Parameters.From,
+      To: this.Parameters.To,
+      Cc: this.Parameters.Cc,
+      Bcc: this.Parameters.Bcc,
+      Regarding: this.Parameters.Regarding,
+      Importance: this.Parameters.Importance,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<CreateAndSendNewEmailResponse> {
-    const data = await response.json();
-    return CreateAndSendNewEmailResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Subject: this.subject,
-      Body: this.body,
-      From: this.from,
-      To: this.to,
-      Cc: this.cc,
-      Bcc: this.bcc,
-      Regarding: this.regarding,
-      Importance: this.importance,
-    };
+    // The body is the complex value, with its @odata.context
+    return CreateAndSendNewEmailResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CreateAndSendNewEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CreateAndSendNewEmailResult {
+  "@odata.context"?: string;
+  EmailId: string;
+}
+
+/**
  * CreateAndSendNewEmail response message
+ *
+ * `result` is the value the CreateAndSendNewEmail action returns (see {@link CreateAndSendNewEmailResult}).
  */
 export class CreateAndSendNewEmailResponse extends OrganizationResponse {
-  constructor(public result: CreateAndSendNewEmailResponse) {
+  constructor(public result: CreateAndSendNewEmailResult) {
     super("CreateAndSendNewEmail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CreateAndSendNewEmailResponse {
-    return new CreateAndSendNewEmailResponse((data as any).value);
+    return new CreateAndSendNewEmailResponse(data as CreateAndSendNewEmailResult);
   }
 }

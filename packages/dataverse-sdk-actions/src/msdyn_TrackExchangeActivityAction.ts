@@ -1,11 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_TrackExchangeActivity action
+ * Response from the msdyn_TrackExchangeActivity action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_TrackExchangeActivityResponse {
+  "@odata.context"?: string;
   ExchangeResponse: string;
+}
+
+/**
+ * Parameters of the msdyn_TrackExchangeActivity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TrackExchangeActivityActionParameters {
+  ExchangeItemId?: string;
+  Regarding?: EntityReference | AnyEntityPayload;
+  EntitySetName?: string;
 }
 
 /**
@@ -14,33 +29,29 @@ export interface msdyn_TrackExchangeActivityResponse {
  * Unbound action
  */
 export class msdyn_TrackExchangeActivityAction implements Executable<msdyn_TrackExchangeActivityResponse> {
-  constructor(
-    public readonly exchangeItemId: string,
-    public readonly regarding: EntityReference,
-    public readonly entitySetName: string
-  ) {}
+  constructor(public readonly parameters: msdyn_TrackExchangeActivityActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_TrackExchangeActivity`;
 
-    const body: Record<string, unknown> = {
-      ExchangeItemId: this.exchangeItemId,
-      Regarding: this.regarding,
-      EntitySetName: this.entitySetName,
-    };
+    const body = requestBody({
+      ExchangeItemId: this.parameters.ExchangeItemId,
+      Regarding: this.parameters.Regarding,
+      EntitySetName: this.parameters.EntitySetName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_TrackExchangeActivityResponse> {
-    const data = await response.json();
-    return data as msdyn_TrackExchangeActivityResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_TrackExchangeActivityResponse;
   }
 }

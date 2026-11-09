@@ -4,68 +4,50 @@ import type {
   CsdlParameter as _CsdlParameter,
 } from "../parsers/csdl-types.js";
 import { resolve, join } from "path";
-import {
-  csdlTypeToTs,
-  csdlTypeToTsWithExpansion,
-  toPascalCase as _toPascalCase,
-  toCamelCase,
-  getEntitySetName,
-  isCollectionType,
-  extractEntityTypeName,
-} from "../utils/typescript-writer.js";
+import { compareStrings } from "../parsers/canonical.js";
+import { toPascalCase as _toPascalCase } from "../utils/typescript-writer.js";
 import {
   writeTypeScriptFile,
   generateIndexFile as _generateIndexFile,
   purgeDirectory,
 } from "../utils/file-writer.js";
+import { operationReturn, parseResponseMethod } from "../utils/operation-return.js";
+import { ENTITY_REFERENCE_EXPORT, ENTITY_REFERENCE_IMPORT } from "../utils/entity-reference.js";
+import { ENTITY_PAYLOAD_MODULE, ENTITY_PAYLOAD_SOURCE } from "../utils/entity-payload.js";
+import { operationNames } from "../utils/overloads.js";
+import {
+  exportedEnumNames,
+  exportedTypeNames,
+  rootTypeExports,
+} from "./complex-types-generator.js";
+import { coreImport, isRecordBound } from "../utils/binding.js";
+import { ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
+import {
+  functionSignature,
+  functionUrlStatements,
+  ODATA_LITERAL_MODULE,
+  ODATA_LITERAL_SOURCE,
+} from "../utils/function-request.js";
+import {
+  bindingDoc,
+  parametersArgument,
+  parametersInterface,
+  parametersInterfaceName,
+} from "../utils/operation-parameters.js";
+import {
+  QUERY_FUNCTIONS_MODULE,
+  isQueryFunction,
+  queryFunctionsSource,
+} from "./query-functions-generator.js";
 
-/**
- * Map Complex* types to their non-Complex EntityType equivalents.
- * Per Microsoft Web API documentation, use EntityMetadata (not ComplexEntityMetadata) for requests/responses.
- * EXCEPTION: ComplexLookupAttributeMetadata for customer lookup columns (per Microsoft docs).
- */
-function mapComplexTypeToEntityType(typeName: string): string {
-  // EXCEPTION: These Complex* types must remain as-is for customer relationship operations
-  if (
-    typeName === "ComplexLookupAttributeMetadata" ||
-    typeName === "ComplexOneToManyRelationshipMetadata"
-  ) {
-    return typeName;
-  }
-
-  // Map Complex* metadata types to non-Complex versions
-  const complexToEntityMap: Record<string, string> = {
-    ComplexEntityMetadata: "EntityMetadata",
-    ComplexAttributeMetadata: "AttributeMetadata",
-    ComplexBigIntAttributeMetadata: "BigIntAttributeMetadata",
-    ComplexBooleanAttributeMetadata: "BooleanAttributeMetadata",
-    ComplexDateTimeAttributeMetadata: "DateTimeAttributeMetadata",
-    ComplexDecimalAttributeMetadata: "DecimalAttributeMetadata",
-    ComplexDoubleAttributeMetadata: "DoubleAttributeMetadata",
-    ComplexIntegerAttributeMetadata: "IntegerAttributeMetadata",
-    ComplexLookupAttributeMetadata: "LookupAttributeMetadata",
-    ComplexMemoAttributeMetadata: "MemoAttributeMetadata",
-    ComplexMoneyAttributeMetadata: "MoneyAttributeMetadata",
-    ComplexStringAttributeMetadata: "StringAttributeMetadata",
-    ComplexFileAttributeMetadata: "FileAttributeMetadata",
-    ComplexImageAttributeMetadata: "ImageAttributeMetadata",
-    ComplexEnumAttributeMetadata: "EnumAttributeMetadata",
-    ComplexPicklistAttributeMetadata: "PicklistAttributeMetadata",
-    ComplexManagedPropertyAttributeMetadata: "ManagedPropertyAttributeMetadata",
-    ComplexUniqueIdentifierAttributeMetadata: "UniqueIdentifierAttributeMetadata",
-    ComplexOneToManyRelationshipMetadata: "OneToManyRelationshipMetadata",
-    ComplexManyToManyRelationshipMetadata: "ManyToManyRelationshipMetadata",
-    ComplexOptionSetMetadata: "OptionSetMetadata",
-    ComplexBooleanOptionSetMetadata: "BooleanOptionSetMetadata",
-  };
-
-  return complexToEntityMap[typeName] || typeName;
-}
+export { ODATA_LITERAL_MODULE, ODATA_LITERAL_SOURCE };
 
 /**
  * Generate typed Web API functions.
  *
- * Generates TypeScript classes for all functions (bound and unbound).
+ * Generates TypeScript classes for all functions (bound and unbound), except the query functions
+ * (`LastXDays`, …): Dataverse runs those only inside `$filter`, so they become the
+ * `queryFunctions` helpers instead (#342).
  *
  * @param csdl - Parsed CSDL schema
  * @param outputPath - Output directory path
@@ -80,13 +62,17 @@ export async function generateFunctions(
 ): Promise<void> {
   const absolutePath = resolve(outputPath);
 
-  // Filter to Microsoft.Dynamics.CRM functions
-  const functions = csdl.functions.filter((f) => f.namespace === "Microsoft.Dynamics.CRM");
+  // Filter to Microsoft.Dynamics.CRM functions. The query functions answer 404 when called, so
+  // they get no class: they are $filter expressions in queryFunctions (#342).
+  const crmFunctions = csdl.functions.filter((f) => f.namespace === "Microsoft.Dynamics.CRM");
+  const functions = crmFunctions.filter((f) => !isQueryFunction(f));
+  const queryFunctions = crmFunctions.filter(isQueryFunction);
 
   if (dryRun) {
     console.log(`  [DRY RUN] Would write to: ${absolutePath}`);
     console.log(`  [DRY RUN] Files: One .ts file per function (alphabetical)`);
     console.log(`  [DRY RUN] Count: ${String(functions.length)} functions`);
+    console.log(`  [DRY RUN] Query functions: ${String(queryFunctions.length)} $filter helpers`);
     if (purge) {
       console.log(`  [DRY RUN] Would purge directory first`);
     }
@@ -100,114 +86,91 @@ export async function generateFunctions(
     console.log(`  ✅ Directory purged`);
   }
 
-  // Ensure EntityReference.ts exists in types folder
-  await ensureEntityReferenceType(absolutePath);
+  // The entity payload types: navigation properties of complex types use them (#231).
+  // EntityReference comes from entities-runtime (#295).
+  await writeTypeScriptFile(
+    join(absolutePath, "types", `${ENTITY_PAYLOAD_MODULE}.ts`),
+    ENTITY_PAYLOAD_SOURCE
+  );
+
+  // Runtime helper the generated functions use to format parameter-alias literals
+  await writeTypeScriptFile(join(absolutePath, `${ODATA_LITERAL_MODULE}.ts`), ODATA_LITERAL_SOURCE);
+  // Enum values in JSON parameters are sent as member names (#358)
+  await writeTypeScriptFile(
+    join(absolutePath, "internal", `${ENUM_BODY_MODULE}.ts`),
+    enumBodySource(csdl, "functions")
+  );
 
   const generatedFiles: string[] = [];
 
-  // Generate one file per function
+  // One file per function; overloads with different bindings each get their own (#75)
+  const stems = operationNames(functions);
   for (const func of functions) {
-    const content = generateFunctionClass(csdl, func);
-    const filename = `${func.name}Function.ts`;
+    const stem = stems.get(func) ?? func.name;
+    const content = generateFunctionClass(csdl, func, stem);
+    const filename = `${stem}Function.ts`;
     await writeTypeScriptFile(join(absolutePath, filename), content);
-    generatedFiles.push(`${func.name}Function`);
+    generatedFiles.push(`${stem}Function`);
     console.log(`  ✅ Generated ${filename}`);
   }
 
+  // The query functions, as $filter expression helpers (#342)
+  if (queryFunctions.length > 0) {
+    await writeTypeScriptFile(
+      join(absolutePath, `${QUERY_FUNCTIONS_MODULE}.ts`),
+      queryFunctionsSource(queryFunctions)
+    );
+    console.log(`  ✅ Generated ${QUERY_FUNCTIONS_MODULE}.ts`);
+  }
+
   // Generate index.ts
-  const indexContent = generateFunctionsIndex(functions);
+  const indexContent = generateFunctionsIndex(
+    functions,
+    stems,
+    exportedEnumNames(csdl),
+    exportedTypeNames(csdl),
+    queryFunctions.length > 0
+  );
   await writeTypeScriptFile(join(absolutePath, "index.ts"), indexContent);
   console.log(`  ✅ Generated index.ts`);
 
   console.log(`  Total: ${String(functions.length)} function files`);
+  console.log(`  Query functions: ${String(queryFunctions.length)} $filter helpers`);
 }
 
 /**
  * Generate TypeScript class for a function.
  */
-function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction): string {
-  const className = `${func.name}Function`;
-  const responseInterfaceName = `${func.name}Response`;
-
-  // System entities that are filtered out and should be treated as 'any'
-  const systemEntities = ["crmbaseentity", "principal", "crmmodelbaseentity", "expando"];
+function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func.name): string {
+  const className = `${stem}Function`;
+  const responseInterfaceName = `${stem}Response`;
 
   // Collect all complex type and entity type references used in this file
   const complexTypesUsed = new Set<string>();
 
-  // Check return type
-  if (func.returnType) {
-    const normalizedReturnType = func.returnType.replace("mscrm.", "Microsoft.Dynamics.CRM.");
-    const complexType = csdl.complexTypes.find(
-      (ct) => `${ct.namespace}.${ct.name}` === normalizedReturnType
-    );
+  // Return type: the value execute() resolves (#300)
+  const ret = operationReturn(
+    csdl,
+    func.returnType,
+    responseInterfaceName,
+    `${func.name} function`,
+    [],
+    func.name
+  );
+  for (const t of ret.imports) complexTypesUsed.add(t);
 
-    if (complexType) {
-      // Collect types from complex type properties
-      for (const prop of complexType.properties) {
-        const typeName = csdlTypeToTsWithExpansion(prop.type, csdl);
-        // Extract base type name (remove[] suffix if array)
-        const baseType = typeName.replace("[]", "");
-        // If it's not a primitive type, add it
-        if (!["string", "number", "boolean", "any", "unknown"].includes(baseType)) {
-          complexTypesUsed.add(baseType);
-        }
-      }
-    } else {
-      // Return type might be an entity type or other type not expanded
-      const tsType = csdlTypeToTs(func.returnType);
-      const baseType = tsType.replace("[]", "");
-      if (
-        !["string", "number", "boolean", "any", "unknown"].includes(baseType) &&
-        !systemEntities.includes(baseType.toLowerCase())
-      ) {
-        // Map Complex* types to non-Complex EntityType versions
-        const mappedType = mapComplexTypeToEntityType(baseType);
-        complexTypesUsed.add(mappedType);
-      }
-    }
-  }
+  // The constructor arguments: the record or entity set a bound function runs on (in the URL),
+  // then one object with the CSDL parameters (#96)
+  const signature = functionSignature(csdl, func, (table) => `${table}Id`);
+  for (const t of signature.typeImports) complexTypesUsed.add(t);
 
-  // Check parameters
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  for (const param of func.parameters || []) {
-    const typeName = csdlTypeToTs(param.type);
-    const baseType = typeName.replace("[]", "");
-    if (
-      !["string", "number", "boolean", "any", "unknown"].includes(baseType) &&
-      baseType !== "EntityReference" &&
-      !systemEntities.includes(baseType.toLowerCase())
-    ) {
-      // Map Complex* types to non-Complex EntityType versions
-      const mappedType = mapComplexTypeToEntityType(baseType);
-      complexTypesUsed.add(mappedType);
-    }
-  }
-
-  let code = `import type { Executable, RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';\n`;
-
-  // Check if EntityReference is needed (from return type or parameters)
-  let needsEntityReference = false;
-
-  // Check return type for EntityReference
-  if (func.returnType) {
-    const tsType = csdlTypeToTs(func.returnType, false);
-    const baseType = tsType.replace("[]", "");
-    if (baseType === "EntityReference") {
-      needsEntityReference = true;
-    }
-  }
-
-  // Check parameters for EntityReference (single entity references, not Collections)
-  if (!needsEntityReference) {
-    needsEntityReference = func.parameters.some(
-      (p) => !isCollectionType(p.type) && csdlTypeToTs(p.type, false) === "EntityReference"
-    );
-  }
+  const core = coreImport(isRecordBound(func));
+  let code = core;
+  // EntityReference is needed by the return type's declaration or by a parameter
+  const needsEntityReference = ret.needsEntityReference || signature.needsEntityReference;
 
   if (needsEntityReference) {
-    code += `import type { EntityReference } from './types/EntityReference.js';\n`;
-    code += `import { getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
+    code += ENTITY_REFERENCE_IMPORT;
   }
 
   // Import complex types from types folder (excluding EntityReference)
@@ -221,8 +184,19 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction): string {
   code += `\n`;
 
   // Generate response interface
-  code += generateResponseInterface(csdl, func, responseInterfaceName);
+  code += ret.declaration;
   code += `\n`;
+
+  const constructorParams = signature.args;
+  const bindingParams = constructorParams.filter((p) => p.isBinding);
+  const aliasParams = constructorParams
+    .filter((p) => !p.isBinding)
+    .map((p) => ({ name: p.tsName, type: p.type, optional: p.optional === true }));
+  const parametersName = parametersInterfaceName(className);
+  if (aliasParams.length > 0) {
+    code += parametersInterface(parametersName, `${func.name} function`, aliasParams);
+    code += `\n`;
+  }
 
   // Generate function class
   code += `/**\n`;
@@ -232,178 +206,27 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction): string {
   if (func.bindingParameter) {
     code += ` * Binding parameter: ${func.bindingParameter.name || "unnamed"} (${func.bindingParameter.type})\n`;
   }
+  code += bindingDoc(bindingParams[0]?.name, func.bindingParameter?.type);
   code += ` */\n`;
   code += `export class ${className} implements Executable<${responseInterfaceName}> {\n`;
 
-  // Generate constructor parameters
-  // For bound functions, the binding parameter becomes entityId: string (just the GUID)
-  // All other parameters stay as-is
-  const constructorParams: Array<{
-    name: string;
-    type: string;
-    tsName: string;
-    isBinding: boolean;
-  }> = [];
-
-  // Check if binding parameter is a Collection type
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  const isCollectionBound =
-    func.isBound && func.bindingParameter && isCollectionType(func.bindingParameter.type);
-
-  if (func.isBound && func.bindingParameter && !isCollectionBound) {
-    // Single-entity bound: First parameter is the entity ID
-    const entityTypeName = extractEntityTypeName(func.bindingParameter.type);
-    constructorParams.push({
-      name: `${entityTypeName}Id`,
-      type: "string",
-      tsName: func.bindingParameter.name,
-      isBinding: true,
-    });
-  }
-
-  // Add all non-binding parameters
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  for (const param of func.parameters || []) {
-    if (!param.name) continue; // Skip unnamed parameters
-
-    // Skip binding parameter (it's already handled above as entityId)
-    if (param.name === func.bindingParameter?.name && !isCollectionBound) {
-      continue;
-    }
-
-    constructorParams.push({
-      name: toCamelCase(param.name),
-      type: csdlTypeToTs(param.type, true),
-      tsName: param.name,
-      isBinding: false,
-    });
-  }
-
-  if (constructorParams.length > 0) {
+  const ctorArgs = [
+    ...bindingParams.map((p) => `public readonly ${p.name}: ${p.type}`),
+    ...(aliasParams.length > 0
+      ? [parametersArgument("public readonly", parametersName, aliasParams)]
+      : []),
+  ];
+  if (ctorArgs.length > 0) {
     code += `  constructor(\n`;
-    for (const param of constructorParams) {
-      code += `    public readonly ${param.name}: ${param.type},\n`;
-    }
+    for (const arg of ctorArgs) code += `    ${arg},\n`;
     code += `  ) {}\n\n`;
   }
 
   // Generate toRequestInformation method
   code += `  toRequestInformation(baseUrl: string): RequestInformation {\n`;
 
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (func.isBound && func.bindingParameter && !isCollectionBound) {
-    // Single-entity bound function - construct URL with entity ID
-    const bindingParam = constructorParams.find((p) => p.isBinding);
-    if (!bindingParam) {
-      throw new Error(`Bound function ${func.name} missing binding parameter`);
-    }
-
-    code += `    // Bound function\n`;
-
-    // Get entity set name from binding parameter type
-    const entitySetName = getEntitySetName(func.bindingParameter.type, csdl.entitySetMap);
-
-    if (entitySetName) {
-      code += `    let url = \`\${baseUrl}/${entitySetName}(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${func.name}\`;\n\n`;
-    } else {
-      // Fallback: extract entity type name from binding parameter type
-      const entityTypeName = extractEntityTypeName(func.bindingParameter.type);
-      code += `    // WARNING: Entity set not found in metadata, using entity type name as fallback\n`;
-      code += `    let url = \`\${baseUrl}/${entityTypeName}s(\${this.${bindingParam.name}})/Microsoft.Dynamics.CRM.${func.name}\`;\n\n`;
-    }
-
-    // Add query parameters for non-binding parameters using parameter aliases
-    const queryParams = constructorParams.filter((p) => !p.isBinding);
-    if (queryParams.length > 0) {
-      code += `    // Build query parameters using parameter aliases\n`;
-      code += `    const params = new URLSearchParams();\n`;
-      code += `    const aliases: string[] = [];\n`;
-      let aliasIndex = 1;
-      for (const param of queryParams) {
-        const alias = `@p${String(aliasIndex++)}`;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        const paramDef = func.parameters?.find((p) => p.name === param.tsName);
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        const paramType = paramDef?.type ?? "";
-
-        // Determine parameter type category
-        const isEntityRef =
-          paramType === "mscrm.crmbaseentity" ||
-          csdlTypeToTs(paramType, false) === "EntityReference";
-        const isPrimitive = paramType.startsWith("Edm.");
-        const isEnum = csdl.enumTypes.some(
-          (et) => `${et.namespace}.${et.name}` === paramType || `mscrm.${et.name}` === paramType
-        );
-        const isComplexType = !isPrimitive && !isEnum && !isEntityRef && paramType.includes(".");
-
-        code += `    if (this.${param.name} !== undefined) {\n`;
-        if (isEntityRef) {
-          // EntityReference needs special @odata.id handling using helper function
-          code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', JSON.stringify({ '@odata.id': \`\${getEntitySetNameFromReference(this.${param.name})}(\${this.${param.name}.id})\` }));\n`;
-        } else if (isComplexType) {
-          // Complex types need JSON serialization
-          code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', JSON.stringify(this.${param.name}));\n`;
-        } else {
-          // Primitives, enums, and other types
-          code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', typeof this.${param.name} === 'string' ? \`'\${this.${param.name}}'\` : String(this.${param.name}));\n`;
-        }
-        code += `    }\n`;
-      }
-      code += `    if (aliases.length > 0) {\n`;
-      code += `      url += \`(\${aliases.join(',')})?\${params.toString()}\`;\n`;
-      code += `    }\n\n`;
-    }
-  } else {
-    // Unbound function
-    code += `    let url = \`\${baseUrl}/${func.name}\`;\n\n`;
-
-    // Add query parameters using parameter aliases
-    if (constructorParams.length > 0) {
-      code += `    // Build query parameters using parameter aliases\n`;
-      code += `    const params = new URLSearchParams();\n`;
-      code += `    const aliases: string[] = [];\n`;
-      let aliasIndex = 1;
-      for (const param of constructorParams) {
-        const alias = `@p${String(aliasIndex++)}`;
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        const paramDef = func.parameters?.find((p) => p.name === param.tsName);
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        const paramType = paramDef?.type ?? "";
-
-        // Determine parameter type category
-        const isEntityRef =
-          paramType === "mscrm.crmbaseentity" ||
-          csdlTypeToTs(paramType, false) === "EntityReference";
-        const isPrimitive = paramType.startsWith("Edm.");
-        const isEnum = csdl.enumTypes.some(
-          (et) => `${et.namespace}.${et.name}` === paramType || `mscrm.${et.name}` === paramType
-        );
-        const isComplexType = !isPrimitive && !isEnum && !isEntityRef && paramType.includes(".");
-
-        code += `    if (this.${param.name} !== undefined) {\n`;
-        if (isEntityRef) {
-          // EntityReference needs special @odata.id handling using helper function
-          code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', JSON.stringify({ '@odata.id': \`\${getEntitySetNameFromReference(this.${param.name})}(\${this.${param.name}.id})\` }));\n`;
-        } else if (isComplexType) {
-          // Complex types need JSON serialization
-          code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', JSON.stringify(this.${param.name}));\n`;
-        } else {
-          // Primitives, enums, and other types
-          code += `      aliases.push(\`${param.tsName}=${alias}\`);\n`;
-          code += `      params.append('${alias}', typeof this.${param.name} === 'string' ? \`'\${this.${param.name}}'\` : String(this.${param.name}));\n`;
-        }
-        code += `    }\n`;
-      }
-      code += `    if (aliases.length > 0) {\n`;
-      code += `      url += \`(\${aliases.join(',')})?\${params.toString()}\`;\n`;
-      code += `    }\n\n`;
-    }
-  }
+  const url = functionUrlStatements(csdl, func, constructorParams, "this.parameters", "functions");
+  code += url.code;
 
   code += `    return {\n`;
   code += `      method: 'GET',\n`;
@@ -415,54 +238,17 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction): string {
   code += `  }\n\n`;
 
   // Generate parseResponse method
-  code += `  async parseResponse(response: Response): Promise<${responseInterfaceName}> {\n`;
-  code += `    const data = await response.json();\n`;
-  code += `    return data as ${responseInterfaceName};\n`;
-  code += `  }\n`;
+  code += parseResponseMethod(ret, responseInterfaceName);
 
   code += `}\n`;
 
-  return code;
-}
-
-/**
- * Generate response interface.
- */
-function generateResponseInterface(
-  csdl: CsdlSchema,
-  func: CsdlFunction,
-  interfaceName: string
-): string {
-  let code = `/**\n`;
-  code += ` * Response from ${func.name} function\n`;
-  code += ` */\n`;
-  code += `export interface ${interfaceName} {\n`;
-
-  if (func.returnType) {
-    // Check if return type is a complex type
-    // Handle both namespace formats: mscrm.TypeName and Microsoft.Dynamics.CRM.TypeName
-    const normalizedReturnType = func.returnType.replace("mscrm.", "Microsoft.Dynamics.CRM.");
-    const complexType = csdl.complexTypes.find(
-      (ct) => `${ct.namespace}.${ct.name}` === normalizedReturnType
-    );
-
-    if (complexType) {
-      // Expand complex type properties
-      for (const prop of complexType.properties) {
-        const tsType = csdlTypeToTsWithExpansion(prop.type, csdl);
-        const optional = prop.nullable ? "?" : "";
-        code += `  ${prop.name}${optional}: ${tsType};\n`;
-      }
-    } else {
-      // Primitive or collection type
-      const tsType = csdlTypeToTs(func.returnType);
-      code += `  value: ${tsType};\n`;
-    }
-  } else {
-    code += `  // No value property (returns primitive or collection)\n`;
+  if (url.usesAliasLiteral) {
+    code =
+      core +
+      (url.usesEnumBody ? `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n` : "") +
+      `import { formatParameterAlias } from './${ODATA_LITERAL_MODULE}.js';\n` +
+      code.slice(core.length);
   }
-
-  code += `}\n`;
 
   return code;
 }
@@ -470,130 +256,49 @@ function generateResponseInterface(
 /**
  * Generate index.ts with all exports.
  */
-function generateFunctionsIndex(functions: CsdlFunction[]): string {
-  const sorted = functions.sort((a, b) => a.name.localeCompare(b.name));
-
+function generateFunctionsIndex(
+  operations: CsdlFunction[],
+  stems: Map<CsdlFunction, string>,
+  enumNames: string[],
+  typeNames: string[],
+  hasQueryFunctions = false
+): string {
   let code = `/**\n`;
   code += ` * @mohsinonxrm/dataverse-sdk-functions\n`;
   code += ` *\n`;
   code += ` * Auto-generated typed Web API functions.\n`;
   code += ` */\n\n`;
 
-  // Deduplicate by function name
-  const seen = new Set<string>();
-  for (const func of sorted) {
-    if (!seen.has(func.name)) {
-      code += `export { ${func.name}Function, type ${func.name}Response } from './${func.name}Function.js';\n`;
-      seen.add(func.name);
-    }
+  // One export per class: overloads have their own (#75), and a name with no unbound overload
+  // has no plain-name export (#286)
+  const entries = operations
+    .map((op) => ({
+      stem: stems.get(op) ?? op.name,
+      hasParameters: op.parameters.some((p) => p.name),
+    }))
+    .sort((a, b) => compareStrings(a.stem, b.stem));
+  for (const { stem, hasParameters } of entries) {
+    // The parameters interface of the constructor (#96)
+    const parameters = hasParameters ? `, type ${parametersInterfaceName(`${stem}Function`)}` : "";
+    code += `export { ${stem}Function${parameters}, type ${stem}Response } from './${stem}Function.js';\n`;
   }
 
-  // Export EntityReference type
-  code += `\nexport { type EntityReference, createEntityReference, getEntitySetNameFromReference } from './types/EntityReference.js';\n`;
+  // The query functions are $filter expressions, not classes (#342)
+  if (hasQueryFunctions) {
+    code += `\nexport { queryFunctions } from './${QUERY_FUNCTIONS_MODULE}.js';\n`;
+  }
+
+  // The SDK's one EntityReference (#295), re-exported from entities-runtime
+  code += `\n${ENTITY_REFERENCE_EXPORT}`;
+  code += `export type { AnyEntityPayload, EntityPayload } from './types/${ENTITY_PAYLOAD_MODULE}.js';\n`;
+
+  // Enum parameters take these values (EntityFilters.Entity | EntityFilters.Attributes) (#67)
+  if (enumNames.length > 0) {
+    code += `\nexport { ${enumNames.join(", ")} } from './types/index.js';\n`;
+  }
+
+  const responses = new Set(entries.map(({ stem }) => `${stem}Response`));
+  code += rootTypeExports(typeNames, code, responses);
 
   return code;
-}
-
-/**
- * Ensure EntityReference.ts exists in the types folder.
- * This type is used by many functions for entity references.
- */
-async function ensureEntityReferenceType(outputPath: string): Promise<void> {
-  const { mkdir } = await import("fs/promises");
-  const typesFolder = join(outputPath, "types");
-  const entityRefPath = join(typesFolder, "EntityReference.ts");
-
-  // Create types folder if it doesn't exist
-  await mkdir(typesFolder, { recursive: true });
-
-  const entityRefContent = `/**
- * Entity reference type for Dataverse Web API.
- * Used in bound functions and entity lookups.
- */
-export interface EntityReference {
-  "@odata.type": string;
-  id: string;
-  logicalName?: string;
-  name?: string;
-}
-
-/**
- * Convert entity logical name to entity set name (pluralization).
- * Handles common Dataverse entity pluralization rules.
- */
-function getEntitySetName(entityLogicalName: string): string {
-  // Common irregular plurals in Dataverse
-  const irregularPlurals: Record<string, string> = {
-    opportunity: "opportunities",
-    territory: "territories",
-    currency: "currencies",
-    activity: "activities",
-    businessunit: "businessunits",
-    systemuser: "systemusers",
-    usersettingscollection: "usersettingscollection",
-    principalobjectaccess: "principalobjectaccessset",
-  };
-
-  const lowerName = entityLogicalName.toLowerCase();
-
-  // Check for irregular plurals
-  if (irregularPlurals[lowerName]) {
-    return irregularPlurals[lowerName];
-  }
-
-  // Handle entities ending in 'y' (e.g., opportunity -> opportunities)
-  if (lowerName.endsWith("y") && lowerName.length > 1 && !"aeiou".includes(lowerName[lowerName.length - 2])) {
-    return lowerName.slice(0, -1) + "ies";
-  }
-
-  // Handle entities ending in 's', 'x', 'z', 'ch', 'sh' (add 'es')
-  if (lowerName.endsWith("s") || lowerName.endsWith("x") || lowerName.endsWith("z") || lowerName.endsWith("ch") || lowerName.endsWith("sh")) {
-    return lowerName + "es";
-  }
-
-  // Default: add 's'
-  return lowerName + "s";
-}
-
-/**
- * Create an EntityReference object.
- *
- * @param entityType - Logical entity name (e.g., "account", "contact")
- * @param id - Entity GUID
- * @param name - Optional entity name
- * @returns EntityReference object
- *
- * @example
- * const ref = createEntityReference("account", "abc-123", "Contoso");
- */
-export function createEntityReference(
-  entityType: string,
-  id: string,
-  name?: string
-): EntityReference {
-  return {
-    "@odata.type": \`Microsoft.Dynamics.CRM.\${entityType}\`,
-    id,
-    logicalName: entityType,
-    ...(name && { name }),
-  };
-}
-
-/**
- * Get the entity set name for an EntityReference.
- * Uses smart pluralization logic.
- *
- * @param entityRef - The EntityReference object
- * @returns The entity set name (e.g., "accounts", "opportunities")
- *
- * @example
- * const ref = createEntityReference("account", "abc-123");
- * const entitySet = getEntitySetNameFromReference(ref); // "accounts"
- */
-export function getEntitySetNameFromReference(entityRef: EntityReference): string {
-  return getEntitySetName(entityRef.logicalName || "");
-}
-`;
-
-  await writeTypeScriptFile(entityRefPath, entityRefContent);
 }

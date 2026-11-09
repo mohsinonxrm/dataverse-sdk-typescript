@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-functions",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Typed Web API functions for Dataverse (GET operations without side effects)",
   "publishConfig": {
     "access": "public",
@@ -24,12 +24,16 @@
   "type": "module",
   "author": "Mohsin On xRM",
   "license": "AGPL-3.0-only",
+  "engines": {
+    "node": ">=22"
+  },
   "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -38,18 +42,21 @@
   ],
   "scripts": {
     "build": "tsup",
-    "test": "vitest",
+    "test": "vitest run && pnpm run test:types",
+    "test:types": "tsd --files test/types.test-d.ts --files test/return-shapes.test-d.ts --files test/root-types.test-d.ts --files test/query-functions.test-d.ts",
     "lint": "eslint .",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.typecheck.json",
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@mohsinonxrm/dataverse-sdk-core": "workspace:*"
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-entities-runtime": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "tsup": "^8.0.0",
-    "vitest": "^1.6.0",
-    "eslint": "^9.0.0"
+    "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
+    "eslint": "^9.39.5",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
   }
 }

@@ -1,10 +1,21 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ImportAnalyticsReport action
+ * Response from the msdyn_ImportAnalyticsReport action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ImportAnalyticsReportResponse {
-  // No content returned
+export type msdyn_ImportAnalyticsReportResponse = void;
+
+/**
+ * Parameters of the msdyn_ImportAnalyticsReport action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ImportAnalyticsReportActionParameters {
+  msdyn_AnalyticsFeatureId: string;
+  msdyn_OverwriteDraft?: boolean;
+  msdyn_AnalyticsReportContent: string;
 }
 
 /**
@@ -13,33 +24,29 @@ export interface msdyn_ImportAnalyticsReportResponse {
  * Unbound action
  */
 export class msdyn_ImportAnalyticsReportAction implements Executable<msdyn_ImportAnalyticsReportResponse> {
-  constructor(
-    public readonly msdyn_OverwriteDraft: boolean,
-    public readonly msdyn_AnalyticsReportContent: string,
-    public readonly msdyn_AnalyticsFeatureId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_ImportAnalyticsReportActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ImportAnalyticsReport`;
 
-    const body: Record<string, unknown> = {
-      msdyn_OverwriteDraft: this.msdyn_OverwriteDraft,
-      msdyn_AnalyticsReportContent: this.msdyn_AnalyticsReportContent,
-      msdyn_AnalyticsFeatureId: this.msdyn_AnalyticsFeatureId,
-    };
+    const body = requestBody({
+      msdyn_AnalyticsFeatureId: this.parameters.msdyn_AnalyticsFeatureId,
+      msdyn_OverwriteDraft: this.parameters.msdyn_OverwriteDraft,
+      msdyn_AnalyticsReportContent: this.parameters.msdyn_AnalyticsReportContent,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ImportAnalyticsReportResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_ImportAnalyticsReportResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

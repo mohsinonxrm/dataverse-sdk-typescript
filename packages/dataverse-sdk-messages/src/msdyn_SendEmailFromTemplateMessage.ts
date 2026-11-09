@@ -1,6 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_SendEmailFromTemplate message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SendEmailFromTemplateRequestParameters {
+  From: EntityReference | AnyEntityPayload;
+  To: Record<string, unknown>[];
+  Cc?: Record<string, unknown>[];
+  Bcc?: Record<string, unknown>[];
+  Regarding: EntityReference | AnyEntityPayload;
+  Template: EntityReference | AnyEntityPayload;
+}
 
 /**
  * msdyn_SendEmailFromTemplate request message
@@ -11,53 +26,37 @@ export class msdyn_SendEmailFromTemplateRequest
   extends OrganizationRequest
   implements Executable<msdyn_SendEmailFromTemplateResponse>
 {
-  constructor(
-    public from: EntityReference,
-    public to: Record<string, unknown>[],
-    public cc: Record<string, unknown>[],
-    public bcc: Record<string, unknown>[],
-    public regarding: EntityReference,
-    public template: EntityReference
-  ) {
-    super("msdyn_SendEmailFromTemplate");
+  declare readonly Parameters: Readonly<msdyn_SendEmailFromTemplateRequestParameters>;
+
+  constructor(parameters: msdyn_SendEmailFromTemplateRequestParameters) {
+    super("msdyn_SendEmailFromTemplate", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SendEmailFromTemplate`;
 
-    const body: Record<string, unknown> = {
-      From: this.from,
-      To: this.to,
-      Cc: this.cc,
-      Bcc: this.bcc,
-      Regarding: this.regarding,
-      Template: this.template,
-    };
+    const body = requestBody({
+      From: this.Parameters.From,
+      To: this.Parameters.To,
+      Cc: this.Parameters.Cc,
+      Bcc: this.Parameters.Bcc,
+      Regarding: this.Parameters.Regarding,
+      Template: this.Parameters.Template,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SendEmailFromTemplateResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SendEmailFromTemplateResponse> {
     // No return value (204 No Content)
-    return new msdyn_SendEmailFromTemplateResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      From: this.from,
-      To: this.to,
-      Cc: this.cc,
-      Bcc: this.bcc,
-      Regarding: this.regarding,
-      Template: this.template,
-    };
+    return Promise.resolve(new msdyn_SendEmailFromTemplateResponse());
   }
 }
 
@@ -69,7 +68,7 @@ export class msdyn_SendEmailFromTemplateResponse extends OrganizationResponse {
     super("msdyn_SendEmailFromTemplate");
   }
 
-  static fromResponse(_data: unknown): msdyn_SendEmailFromTemplateResponse {
+  static fromResponse(_data?: unknown): msdyn_SendEmailFromTemplateResponse {
     return new msdyn_SendEmailFromTemplateResponse();
   }
 }

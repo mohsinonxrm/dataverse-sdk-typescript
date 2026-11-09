@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_assignentity action
+ * Response from the msdyn_assignentity action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_assignentityResponse {
-  // No content returned
+export type msdyn_assignentityResponse = void;
+
+/**
+ * Parameters of the msdyn_assignentity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_assignentityActionParameters {
+  RegardingEntityId: string;
+  RegardingEntityName: string;
+  SegmentId: string;
+  CorrelationId?: string;
 }
 
 /**
@@ -13,35 +25,30 @@ export interface msdyn_assignentityResponse {
  * Unbound action
  */
 export class msdyn_assignentityAction implements Executable<msdyn_assignentityResponse> {
-  constructor(
-    public readonly regardingEntityId: string,
-    public readonly regardingEntityName: string,
-    public readonly segmentId: string,
-    public readonly correlationId: string
-  ) {}
+  constructor(public readonly parameters: msdyn_assignentityActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_assignentity`;
 
-    const body: Record<string, unknown> = {
-      RegardingEntityId: this.regardingEntityId,
-      RegardingEntityName: this.regardingEntityName,
-      SegmentId: this.segmentId,
-      CorrelationId: this.correlationId,
-    };
+    const body = requestBody({
+      RegardingEntityId: this.parameters.RegardingEntityId,
+      RegardingEntityName: this.parameters.RegardingEntityName,
+      SegmentId: this.parameters.SegmentId,
+      CorrelationId: this.parameters.CorrelationId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_assignentityResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_assignentityResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -2,15 +2,35 @@
 
 Typed Web API actions for Dataverse. Actions are operations with side effects that execute via HTTP POST.
 
+These classes are part of the SDK's main path: build one and run it with `client.execute()`
+(`@mohsinonxrm/dataverse-sdk-core`), which resolves the action's typed result. For code ported
+from the .NET SDK, `@mohsinonxrm/dataverse-sdk-messages` has a `<Name>Request` with the .NET name
+for each action; it sends the same request.
+
 ## Features
 
-- ✅ **1,356 typed actions** - Complete CSDL-generated coverage of all Dataverse Web API actions
+- ✅ **<!-- count:actions -->1,072<!-- /count --> typed actions** - The Web API actions of the platform, Sales and Customer Service, generated from `$metadata`
 - ✅ **Business operations** - ExecuteWorkflow, WinOpportunity, Merge, and hundreds more
 - ✅ **Bulk operations** - CreateMultiple, UpdateMultiple, UpsertMultiple, DeleteMultiple
 - ✅ **File operations** - Chunked upload/download with InitializeFileBlocksUpload, UploadBlock, CommitFileBlocksUpload
 - ✅ **Solution operations** - Import, export, publish with ExportSolution, ImportSolution, PublishXml
-- ✅ **Service-specific operations** - Sales, Customer Service, Field Service, Marketing modules
+- ✅ **Sales and Customer Service** - Opportunities, quotes, orders, invoices, leads, campaigns and marketing lists; cases, knowledge, SLAs and entitlements
 - ✅ **Type-safe** - Full TypeScript typing for request and response
+
+## What this package covers
+
+The actions of the **platform** (Dataverse and the Power Platform solutions every environment
+has) and of the two core Dynamics 365 apps of a plain trial, **Sales** and **Customer Service**.
+They are chosen by the solution each action comes from, not by what the org the SDK was generated
+from has installed: the [solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt)
+lists every solution and whether its operations are in.
+
+Not in the package: the actions of Contact Center (Omnichannel, unified routing, voice,
+`CCaaS_*`), Field Service, Project Operations, Universal Resource Scheduling, Customer Insights -
+Journeys (`msdynmkt_*`), Customer Voice, Connected Customer Service (IoT), Power Pages and Process
+Mining, and your own custom APIs and custom process actions. Generate those from your org with
+`dataverse-gen`: see
+[Generate the rest with dataverse-gen](../../docs/getting-started.md#generate-the-rest-with-dataverse-gen).
 
 ## Installation
 
@@ -36,146 +56,149 @@ const accounts = Array.from({ length: 100 }, (_, i) => ({
   creditlimit: 50000,
 }));
 
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 const response = await client.execute(action);
 console.log("Created IDs:", response.Ids); // Array of 100 GUIDs
 ```
 
 ## Business Actions
 
+A constructor takes one object with the action's parameters, by their `$metadata` names, typed
+as `<Class>Parameters` (`ExecuteWorkflowActionParameters`). A bound action takes the record id
+first. Run an action with `client.execute(action)`.
+
 ### ExecuteWorkflow
 
-Starts a workflow for a specific entity record.
+Starts an on-demand workflow for a record.
 
 **Maps to:** `POST /workflows({id})/Microsoft.Dynamics.CRM.ExecuteWorkflow` (bound action)
-
-**Example:**
 
 ```typescript
 import { ExecuteWorkflowAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
-const action = new ExecuteWorkflowAction(
-  "workflow-guid", // WorkflowId
-  "account-guid" // EntityId (record to execute workflow on)
-);
-
-const response = await client.execute(action);
-console.log("Async Operation ID:", response.Id);
+const job = await client.execute(new ExecuteWorkflowAction(workflowId, { EntityId: accountId }));
+console.log("Async Operation ID:", job?.asyncoperationid); // null if the Web API answered 204
 ```
 
 ### WinOpportunity
 
-Marks an opportunity as won.
+Closes an opportunity as won.
 
 **Maps to:** `POST /WinOpportunity` (unbound action)
-
-**Example:**
 
 ```typescript
 import { WinOpportunityAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
-const opportunityClose = {
-  "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
-  subject: "Won - Contoso Deal",
-  "opportunityid@odata.bind": "/opportunities(opportunity-guid)",
-  actualrevenue: 100000,
-};
+await client.execute(
+  new WinOpportunityAction({
+    OpportunityClose: {
+      "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+      subject: "Won - Contoso Deal",
+      "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
+      actualrevenue: 100000,
+    },
+    Status: 3,
+  })
+);
+```
 
-const action = new WinOpportunityAction(opportunityClose, 3); // Status: 3 (Won)
-await client.execute(action);
+## Return Values
+
+`client.execute()` resolves the value the action returns, not the OData envelope around it.
+Each class's `<Name>Response` type is exactly that value (#300), and the message of the same name
+has the same value as its `result`:
+
+| Return type in `$metadata`                       | Web API response                                          | Value                                                       |
+| ------------------------------------------------ | --------------------------------------------------------- | ----------------------------------------------------------- |
+| none                                             | `204 No Content`                                          | `undefined` (`<Name>Response` is `void`)                    |
+| primitive or enum (`Edm.Boolean`, …)             | `{ "@odata.context", "value": … }`                        | the value (an enum is its member name)                      |
+| collection (`Collection(mscrm.role)`, …)         | `{ "@odata.context", "value": [ … ] }`, or 204 when unset | the array, each record with `@odata.etag`; `[]` for a 204   |
+| complex type (`mscrm.WhoAmIResponse`)            | the properties, with `@odata.context`                     | the body, with `@odata.context`                             |
+| entity (`mscrm.asyncoperation`, `crmbaseentity`) | the record, with its annotations, or 204 when unset       | the record (`@odata.etag`, `@odata.type`); `null` for a 204 |
+
+Dataverse answers `204 No Content` for an entity or entity-collection output that wasn't set,
+although `$metadata` declares the return `Nullable="false"`, so an entity return is
+`<Entity> | null`. `@odata.type` says which table a `crmbaseentity` record is.
+
+```typescript
+import { InstantiateTemplateAction, PublishAllXmlAction } from "@mohsinonxrm/dataverse-sdk-actions";
+
+await client.execute(new PublishAllXmlAction()); // undefined
+
+const emails = await client.execute(
+  new InstantiateTemplateAction({
+    TemplateId: templateId,
+    ObjectType: "account",
+    ObjectId: accountId,
+  })
+);
+console.log(emails.length, emails[0]?.subject); // email records, not { value }
 ```
 
 ## Action Categories
 
-The SDK includes **1,356 typed actions** organized into the following categories:
+The package has <!-- count:actions -->1,072<!-- /count --> typed actions: the platform's, and the Sales and
+Customer Service ones, among them `msdyn_*` actions of the Sales and Customer Service solutions
+(see [What this package covers](#what-this-package-covers)). This list is generated from the package source (`pnpm --filter generate-sdk-types docs`);
+[supported-actions.md](../../docs/mapping/supported-actions.md) has more. There is no `Assign` or
+`SetState` action: assign by updating `ownerid@odata.bind`, and change state by updating
+`statecode` and `statuscode`.
 
-### Platform Actions (Core Operations)
+<!-- operations:actions
+CreateMultiple: Create records of one table in one request.
+UpdateMultiple: Update records of one table in one request.
+UpsertMultiple: Create or update records of one table in one request.
+DeleteMultiple: Delete elastic-table records in one request.
+ExecuteWorkflow: Run an on-demand workflow on a record.
+Merge: Merge two records (account, contact, lead or incident).
+ExportSolution: Export a solution.
+ImportSolution: Import a solution.
+PublishXml: Publish the named customizations.
+PublishAllXml: Publish all customizations.
+WinOpportunity: Close an opportunity as won.
+LoseOpportunity: Close an opportunity as lost.
+GenerateQuoteFromOpportunity: Create a quote from an opportunity.
+GenerateSalesOrderFromOpportunity: Create an order from an opportunity.
+ConvertQuoteToSalesOrder: Create an order from a quote.
+ConvertSalesOrderToInvoice: Create an invoice from an order.
+CalculatePrice: Recalculate a quote, order or invoice.
+CloseIncident: Resolve a case.
+QualifyLead: Qualify a lead into an account, contact and opportunity.
+InitializeFileBlocksUpload: Start a chunked upload to a file column.
+UploadBlock: Upload one block.
+CommitFileBlocksUpload: Commit the blocks as the file.
+InitializeFileBlocksDownload: Start a chunked download.
+DownloadBlock: Download one block.
+ExportToExcel: Export a view as an .xlsx file.
+-->
 
-**Entity Operations:**
+- `new CreateMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.CreateMultiple`): Create records of one table in one request.
+- `new UpdateMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpdateMultiple`): Update records of one table in one request.
+- `new UpsertMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.UpsertMultiple`): Create or update records of one table in one request.
+- `new DeleteMultipleAction(entitySetName, { Targets })` (`POST /{entitySetName}/Microsoft.Dynamics.CRM.DeleteMultiple`): Delete elastic-table records in one request.
+- `new ExecuteWorkflowAction(workflowId, { EntityId, InputArguments? })` (`POST /workflows({workflowId})/Microsoft.Dynamics.CRM.ExecuteWorkflow`): Run an on-demand workflow on a record.
+- `new MergeAction({ Target, Subordinate, UpdateContent?, PerformParentingChecks })` (`POST /Merge`): Merge two records (account, contact, lead or incident).
+- `new ExportSolutionAction({ SolutionName, Managed, TargetVersion?, ExportAutoNumberingSettings?, ExportCalendarSettings?, ExportCustomizationSettings?, ExportEmailTrackingSettings?, ExportGeneralSettings?, ExportMarketingSettings?, ExportOutlookSynchronizationSettings?, ExportRelationshipRoles?, ExportIsvConfig?, ExportSales?, ExportExternalApplications?, ExportComponentsParams? })` (`POST /ExportSolution`): Export a solution.
+- `new ImportSolutionAction({ OverwriteUnmanagedCustomizations, PublishWorkflows, CustomizationFile, ImportJobId, ConvertToManaged?, SkipProductUpdateDependencies?, HoldingSolution?, SkipQueueRibbonJob?, LayerDesiredOrder?, AsyncRibbonProcessing?, ComponentParameters?, IsTemplateMode?, TemplateSuffix?, SolutionParameters?, TemplateDisplayNamePrefix?, StageAndUpgrade?, SchemaUpdatesOnly? })` (`POST /ImportSolution`): Import a solution.
+- `new PublishXmlAction({ ParameterXml })` (`POST /PublishXml`): Publish the named customizations.
+- `new PublishAllXmlAction()` (`POST /PublishAllXml`): Publish all customizations.
+- `new WinOpportunityAction({ OpportunityClose, Caller?, Status })` (`POST /WinOpportunity`): Close an opportunity as won.
+- `new LoseOpportunityAction({ Caller?, OpportunityClose, Status })` (`POST /LoseOpportunity`): Close an opportunity as lost.
+- `new GenerateQuoteFromOpportunityAction({ OpportunityId, ColumnSet?, ProcessInstanceId? })` (`POST /GenerateQuoteFromOpportunity`): Create a quote from an opportunity.
+- `new GenerateSalesOrderFromOpportunityAction({ OpportunityId, ColumnSet? })` (`POST /GenerateSalesOrderFromOpportunity`): Create an order from an opportunity.
+- `new ConvertQuoteToSalesOrderAction({ QuoteId, ColumnSet?, QuoteCloseDate?, QuoteCloseStatus?, QuoteCloseSubject?, QuoteCloseDescription?, ProcessInstanceId? })` (`POST /ConvertQuoteToSalesOrder`): Create an order from a quote.
+- `new ConvertSalesOrderToInvoiceAction({ SalesOrderId, ColumnSet?, ProcessInstanceId? })` (`POST /ConvertSalesOrderToInvoice`): Create an invoice from an order.
+- `new CalculatePriceAction({ Target, ParentId? })` (`POST /CalculatePrice`): Recalculate a quote, order or invoice.
+- `new CloseIncidentAction({ IncidentResolution, Status })` (`POST /CloseIncident`): Resolve a case.
+- `new QualifyLeadAction(leadId, { CreateAccount, CreateContact, CreateOpportunity, OpportunityCurrencyId?, OpportunityCustomerId?, SourceCampaignId?, Status, ProcessInstanceId?, LeadQualificationV2Param? })` (`POST /leads({leadId})/Microsoft.Dynamics.CRM.QualifyLead`): Qualify a lead into an account, contact and opportunity.
+- `new InitializeFileBlocksUploadAction({ Target, FileName, FileAttributeName })` (`POST /InitializeFileBlocksUpload`): Start a chunked upload to a file column.
+- `new UploadBlockAction({ BlockId, BlockData, FileContinuationToken })` (`POST /UploadBlock`): Upload one block.
+- `new CommitFileBlocksUploadAction({ FileName, MimeType, BlockList, FileContinuationToken })` (`POST /CommitFileBlocksUpload`): Commit the blocks as the file.
+- `new InitializeFileBlocksDownloadAction({ Target, FileAttributeName, DataSource? })` (`POST /InitializeFileBlocksDownload`): Start a chunked download.
+- `new DownloadBlockAction({ Offset, BlockLength, FileContinuationToken })` (`POST /DownloadBlock`): Download one block.
+- `new ExportToExcelAction({ View, FetchXml, LayoutXml, QueryApi, QueryParameters })` (`POST /ExportToExcel`): Export a view as an .xlsx file.
 
-- `CreateMultipleAction` - Bulk create records
-- `UpdateMultipleAction` - Bulk update records
-- `UpsertMultipleAction` - Bulk upsert records
-- `DeleteMultipleAction` - Bulk delete records (elastic tables only)
-
-**Business Logic:**
-
-- `ExecuteWorkflowAction` - Execute workflow on a record
-- `MergeAction` - Merge two records (account, contact, lead, incident)
-- `AssignAction` - Assign record to user/team
-- `SetStateAction` - Set state and status
-
-**Solution Management:**
-
-- `ExportSolutionAction` - Export solution
-- `ImportSolutionAction` - Import solution
-- `PublishXmlAction` - Publish metadata changes
-- `PublishAllXmlAction` - Publish all metadata changes
-
-### Sales Module Actions (CRM)
-
-**Opportunity Management:**
-
-- `WinOpportunityAction` - Close opportunity as won
-- `LoseOpportunityAction` - Close opportunity as lost
-- `GenerateQuoteFromOpportunityAction` - Create quote from opportunity
-- `GenerateSalesOrderFromOpportunityAction` - Create sales order from opportunity
-- `GenerateInvoiceFromOpportunityAction` - Create invoice from opportunity
-
-**Quote & Order Processing:**
-
-- `ConvertQuoteToSalesOrderAction` - Convert quote to sales order
-- `ConvertSalesOrderToInvoiceAction` - Convert sales order to invoice
-- `CalculatePriceAction` - Calculate product pricing
-
-### Customer Service Module Actions
-
-**Case Management:**
-
-- `CloseIncidentAction` - Close case
-- `ApplyRoutingRuleAction` - Apply routing rules
-
-**Knowledge Base:**
-
-- `FullTextSearchKnowledgeArticleAction` - Search knowledge articles
-- `CreateKnowledgeArticleVersionAction` - Create article version
-
-### Field Service Module Actions (msdyn\_\*)
-
-**Resource Scheduling:**
-
-- `msdyn_BookRequirementGroupAction` - Book requirement group
-- `msdyn_SearchResourceAvailabilityAction` - Find available resources
-- `msdyn_CancelBookingsAction` - Cancel bookings
-
-**Work Order Management:**
-
-- `msdyn_CreateWorkOrderAction` - Create work order
-- `msdyn_CascadeCrewBookingsAction` - Cascade crew bookings
-
-### Marketing Module Actions (msdynmkt\_\*)
-
-**Campaign & Consent:**
-
-- `msdynmkt_checkconsentAction` - Check consent status
-- `msdynmkt_consentsubmissionAction` - Submit consent
-
-### File & Image Operations
-
-**Chunked Upload:**
-
-- `InitializeFileBlocksUploadAction` - Start upload session
-- `UploadBlockAction` - Upload chunk
-- `CommitFileBlocksUploadAction` - Finalize upload
-
-**Chunked Download:**
-
-- `InitializeFileBlocksDownloadAction` - Start download session
-- `DownloadBlockAction` - Download chunk
-
-### Complete Action Reference
-
-For a complete list of all 1,356 actions with descriptions and examples, see [docs/mapping/supported-actions.md](../../docs/mapping/supported-actions.md).
+<!-- /operations -->
 
 ### Merge
 
@@ -187,17 +210,131 @@ Merges two entity records (subordinate into target).
 **Example:**
 
 ```typescript
-import { MergeAction } from "@mohsinonxrm/dataverse-sdk-actions";
+import { MergeAction, createEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
 
-const action = new MergeAction(
-  { logicalName: "account", id: "target-account-guid" }, // Keep this record
-  "subordinate-account-guid", // Merge & deactivate this
-  { name: "Merged Company Name" }, // Update target with these values
-  false // PerformParentingChecks
-);
+const action = new MergeAction({
+  Target: createEntityReference("account", "target-account-guid"),
+  Subordinate: createEntityReference("account", "subordinate-account-guid"),
+  UpdateContent: { "@odata.type": "Microsoft.Dynamics.CRM.account", description: "Merged" },
+  PerformParentingChecks: false,
+});
 
 await client.execute(action);
 ```
+
+### Entity References
+
+Entity-typed parameters (`Target`, `Subordinate`, `EntityMoniker`, …) take an `EntityReference`.
+Create one with `createEntityReference(logicalName, id)`. In a request body it is the Web API shape,
+`@odata.type` plus the table's primary key:
+
+```typescript
+JSON.stringify(createEntityReference("account", id)); // {"@odata.type":"Microsoft.Dynamics.CRM.account","accountid":"<id>"}
+JSON.stringify(createEntityReference("email", id)); // {"@odata.type":"Microsoft.Dynamics.CRM.email","activityid":"<id>"}
+```
+
+`EntityReference`, `createEntityReference`, `getEntitySetNameFromReference` and
+`WebApiEntityReference` are the SDK's one set, defined in
+`@mohsinonxrm/dataverse-sdk-entities-runtime` and re-exported here (and by the functions,
+messages and xrm packages), so a reference from any of them works with any of them.
+
+The primary keys and entity sets come from the `$metadata` snapshot the SDK is generated from.
+For a table it doesn't know (a custom table created later), pass them:
+`createEntityReference("new_project", id, { primaryIdAttribute: "new_projectid", entitySetName: "new_projects" })`.
+
+`logicalName`, `id` and `entitySetName` are on the reference but not enumerable, so they aren't
+sent. Only `createEntityReference` makes an `EntityReference`: a hand-written
+`{ "@odata.type", logicalName, id }` doesn't type-check, because it would send `logicalName` and
+`id`, which the Web API rejects. To write the reference by hand, use the JSON shape,
+`WebApiEntityReference`:
+
+```typescript
+import type { WebApiEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
+
+const target: WebApiEntityReference = {
+  "@odata.type": "Microsoft.Dynamics.CRM.account",
+  accountid: id,
+};
+```
+
+### Entity Payloads
+
+An entity-typed parameter also takes the record itself, with column values: in a request body the
+Web API reads it as an entity, and a reference is the same shape with only the primary key.
+
+- A parameter of one table (`WinOpportunity`'s `OpportunityClose`) is
+  `EntityReference | EntityPayload<opportunityclose>`: any of its columns, `@odata.type`, and lookups
+  set with `<navigation property>@odata.bind`.
+- A parameter of any table (`crmbaseentity`, such as `Merge`'s `UpdateContent`) is
+  `EntityReference | AnyEntityPayload`, and `@odata.type` names the table.
+
+```typescript
+await client.execute(
+  new WinOpportunityAction({
+    OpportunityClose: {
+      "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+      subject: "Won",
+      "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
+    },
+    Status: 3,
+  })
+);
+```
+
+Parameters that `$metadata` marks `Nullable="false"` are required; the others are optional
+(`new ExecuteWorkflowAction(workflowId, { EntityId })` leaves out `InputArguments`). A parameter
+that is left out or `undefined` isn't sent in the request body.
+
+### Enum Values
+
+The Web API reads an enum value in a request body only as a string: a member name, or for a flags
+enum a list such as `"ReadAccess, WriteAccess"`. It rejects a number with 400. The generated enums
+are numeric, so you can combine flags with `|`, and the actions send member names. This applies to
+enum parameters and to enums inside complex-type parameters (`PrincipalAccess.AccessMask`, the
+operators of a `QueryExpression`):
+
+```typescript
+import {
+  ConditionOperator,
+  LogicalOperator,
+  QueryExpressionToFetchXmlAction,
+} from "@mohsinonxrm/dataverse-sdk-actions";
+
+const { FetchXml } = await client.execute(
+  new QueryExpressionToFetchXmlAction({
+    Query: {
+      "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+      EntityName: "account",
+      Criteria: {
+        FilterOperator: LogicalOperator.Or, // sent as "Or"
+        Conditions: [{ AttributeName: "name", Operator: ConditionOperator.NotNull }], // "NotNull"
+      },
+    },
+  })
+);
+```
+
+A flags value such as `AccessRights.ReadAccess | AccessRights.WriteAccess` is sent as
+`"ReadAccess, WriteAccess"`. An entity member of a complex type, such as
+`PrincipalAccess.Principal`, takes a reference or a payload, like an entity-typed parameter:
+
+```typescript
+import { AccessRights, GrantAccessAction } from "@mohsinonxrm/dataverse-sdk-actions";
+import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+
+await client.execute(
+  new GrantAccessAction({
+    Target: createEntityReference("account", accountId),
+    PrincipalAccess: {
+      Principal: createEntityReference("team", teamId),
+      AccessMask: AccessRights.ReadAccess | AccessRights.WriteAccess, // "ReadAccess, WriteAccess"
+    },
+  })
+);
+```
+
+A member name passed as a string is sent as it is. The enums are
+exported from the package root, as in the functions package.
 
 ## Bulk Operations
 
@@ -226,7 +363,7 @@ See `@mohsinonxrm/dataverse-sdk-batch` for $batch support.
 
 Creates multiple records in a single request.
 
-**Maps to:** `POST /CreateMultiple` (unbound action)
+**Maps to:** `POST /{entitySet}/Microsoft.Dynamics.CRM.CreateMultiple` (collection-bound action; the entity set is the first argument)
 
 **Example:**
 
@@ -238,22 +375,20 @@ const accounts = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Fabrikam", creditlimit: 75000 },
 ];
 
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 const response = await client.execute(action);
 console.log("Created IDs:", response.Ids); // ['id1', 'id2']
 ```
 
-**With Optimistic Concurrency:**
-
-```typescript
-const action = new CreateMultipleAction("accounts", accounts, "IfRowVersionMatches");
-```
+The constructor takes only the entity set and the targets. For optimistic concurrency on updates,
+use `UpdateMultipleAction` with each target's `@odata.etag`, or single-record updates with
+`If-Match`.
 
 ### UpdateMultiple
 
 Updates multiple records in a single request.
 
-**Maps to:** `POST /UpdateMultiple` (unbound action)
+**Maps to:** `POST /{entitySet}/Microsoft.Dynamics.CRM.UpdateMultiple` (collection-bound action)
 
 **Example:**
 
@@ -265,7 +400,7 @@ const updates = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id2", creditlimit: 125000 },
 ];
 
-const action = new UpdateMultipleAction("accounts", updates);
+const action = new UpdateMultipleAction("accounts", { Targets: updates });
 await client.execute(action); // 204 No Content
 ```
 
@@ -273,7 +408,7 @@ await client.execute(action); // 204 No Content
 
 Creates or updates multiple records in a single request.
 
-**Maps to:** `POST /UpsertMultiple` (unbound action)
+**Maps to:** `POST /{entitySet}/Microsoft.Dynamics.CRM.UpsertMultiple` (collection-bound action)
 
 **Example:**
 
@@ -285,7 +420,7 @@ const records = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "New Account" }, // Will be created
 ];
 
-const action = new UpsertMultipleAction("accounts", records);
+const action = new UpsertMultipleAction("accounts", { Targets: records });
 await client.execute(action); // 204 No Content
 ```
 
@@ -295,105 +430,157 @@ Deletes multiple records in a single request.
 
 **⚠️ IMPORTANT:** Only supported for **elastic tables**, not standard tables.
 
-**Maps to:** `POST /DeleteMultiple` (unbound action)
+**Maps to:** `POST /{entitySet}/Microsoft.Dynamics.CRM.DeleteMultiple` (collection-bound action)
 
 **Example:**
 
 ```typescript
 import { DeleteMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
 
+// contoso_sensordata is an elastic table; each target is a reference to a record
 const targets = [
-  { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id1" },
-  { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "id2" },
+  { "@odata.type": "Microsoft.Dynamics.CRM.contoso_sensordata", contoso_sensordataid: "id1" },
+  { "@odata.type": "Microsoft.Dynamics.CRM.contoso_sensordata", contoso_sensordataid: "id2" },
 ];
 
-const action = new DeleteMultipleAction("accounts", targets);
+const action = new DeleteMultipleAction("contoso_sensordatas", { Targets: targets });
 await client.execute(action); // Only works for elastic tables
 ```
 
-### @odata.type Requirement
+### @odata.type on targets
 
-All bulk operations **require** `@odata.type` annotation on all targets:
+Give every target its `@odata.type`, as the Web API bulk samples do. The SDK doesn't check it: the
+targets are sent as given, so a target without it gets Dataverse's error, not a client-side one.
 
 ```typescript
-// ✅ Correct
 const account = {
   "@odata.type": "Microsoft.Dynamics.CRM.account",
   name: "Contoso",
 };
-
-// ❌ Will throw error
-const account = {
-  name: "Contoso", // Missing @odata.type
-};
 ```
+
+### Parameters Declared with a Base Type
+
+Some parameters are declared with a base type, for example `QueryExpressionToFetchXml(Query: QueryBase)`.
+The value must be one of the derived types, and `@odata.type` says which one: without it Dataverse
+answers 400. These parameters are typed as a `Typed<Base>` union (here `TypedQueryBase`), so the
+compiler requires the `@odata.type`:
+
+```typescript
+import { QueryExpressionToFetchXmlAction } from "@mohsinonxrm/dataverse-sdk-actions";
+
+const { FetchXml } = await client.execute(
+  new QueryExpressionToFetchXmlAction({
+    Query: {
+      "@odata.type": "Microsoft.Dynamics.CRM.QueryExpression",
+      EntityName: "account",
+      ColumnSet: { Columns: ["name"] },
+    },
+  })
+);
+```
+
+Complex-type properties are optional unless the CSDL marks them `Nullable="false"`, so you only set
+the ones you need.
 
 ## File Operations
 
-Actions for chunked file/image column upload. See `@mohsinonxrm/dataverse-sdk-files` for higher-level FileColumnClient.
+Actions for a chunked upload to a file or image column. They are **unbound**: the record is the
+`Target` parameter, not the route. `@mohsinonxrm/dataverse-sdk-files` wraps them.
 
-### InitializeFileBlocksUpload
+<!-- operations:actions
+InitializeFileBlocksUpload: Start the upload; returns `{ FileContinuationToken }`.
+UploadBlock: Upload one block (`BlockId` and `BlockData` are base64).
+CommitFileBlocksUpload: Commit the blocks, in order, as the file.
+-->
 
-Initializes a chunked file upload session.
+- `new InitializeFileBlocksUploadAction({ Target, FileName, FileAttributeName })` (`POST /InitializeFileBlocksUpload`): Start the upload; returns `{ FileContinuationToken }`.
+- `new UploadBlockAction({ BlockId, BlockData, FileContinuationToken })` (`POST /UploadBlock`): Upload one block (`BlockId` and `BlockData` are base64).
+- `new CommitFileBlocksUploadAction({ FileName, MimeType, BlockList, FileContinuationToken })` (`POST /CommitFileBlocksUpload`): Commit the blocks, in order, as the file.
 
-**Maps to:** `POST /{entitySetName}({id})/Microsoft.Dynamics.CRM.InitializeFileBlocksUpload` (bound action)
-
-**Example:**
+<!-- /operations -->
 
 ```typescript
-import { InitializeFileBlocksUploadAction } from "@mohsinonxrm/dataverse-sdk-actions";
+import { readFile } from "node:fs/promises";
+import {
+  CommitFileBlocksUploadAction,
+  InitializeFileBlocksUploadAction,
+  UploadBlockAction,
+  createEntityReference,
+} from "@mohsinonxrm/dataverse-sdk-actions";
 
-const action = new InitializeFileBlocksUploadAction(
-  "accounts", // entitySetName
-  "account-guid", // recordId
-  "new_logo", // fileAttributeName
-  "logo.png" // fileName
+const bytes = await readFile("logo.png"); // one block holds up to 4 MB
+
+const { FileContinuationToken } = await client.execute(
+  new InitializeFileBlocksUploadAction({
+    Target: createEntityReference("account", accountId),
+    FileName: "logo.png",
+    FileAttributeName: "new_logo",
+  })
 );
 
-const response = await client.execute(action);
-const uploadToken = response.FileContinuationToken;
-```
-
-### UploadBlock
-
-Uploads a single block (chunk) of a file.
-
-**Maps to:** `POST /UploadBlock` (unbound action)
-
-**Example:**
-
-```typescript
-import { UploadBlockAction } from "@mohsinonxrm/dataverse-sdk-actions";
-
-const blockId = btoa("0"); // Base64-encoded block ID
-const blockData = btoa(chunkData); // Base64-encoded chunk data
-
-const action = new UploadBlockAction(uploadToken, blockId, blockData);
-await client.execute(action);
-```
-
-### CommitFileBlocksUpload
-
-Finalizes a chunked file upload.
-
-**Maps to:** `POST /{entitySetName}({id})/Microsoft.Dynamics.CRM.CommitFileBlocksUpload` (bound action)
-
-**Example:**
-
-```typescript
-import { CommitFileBlocksUploadAction } from "@mohsinonxrm/dataverse-sdk-actions";
-
-const action = new CommitFileBlocksUploadAction(
-  "accounts",
-  "account-guid",
-  "new_logo",
-  ["AAAAAA==", "AQAAAA==", "AgAAAA=="], // blockList in order
-  uploadToken,
-  "logo.png",
-  "image/png" // Optional MIME type
+const blockId = btoa("000000");
+await client.execute(
+  new UploadBlockAction({
+    BlockId: blockId,
+    BlockData: bytes.toString("base64"),
+    FileContinuationToken: FileContinuationToken,
+  })
 );
 
-await client.execute(action);
+await client.execute(
+  new CommitFileBlocksUploadAction({
+    FileName: "logo.png",
+    MimeType: "image/png",
+    BlockList: [blockId],
+    FileContinuationToken: FileContinuationToken,
+  })
+);
+```
+
+## Overloads (one class per binding)
+
+When `$metadata` declares an operation several times with different bindings, each binding has its
+own class: `<Name>_<table>Action`, with `_collection` for a collection binding. An unbound
+overload keeps the plain name. A name with no unbound overload has no plain-name class, so you
+pick the binding: there is `AddItemCampaign_listAction` and `AddItemCampaign_campaignAction`, but
+no `AddItemCampaign` class without a table.
+
+```typescript
+import {
+  AddItemCampaign_listAction,
+  createEntityReference,
+} from "@mohsinonxrm/dataverse-sdk-actions";
+
+// POST /lists(<listId>)/Microsoft.Dynamics.CRM.AddItemCampaign
+await client.execute(
+  new AddItemCampaign_listAction(listId, {
+    Campaign: createEntityReference("campaign", campaignId),
+  })
+);
+```
+
+## Export to Excel
+
+`ExportToExcel` isn't in `$metadata`, but Dataverse runs it; the generator adds it from a
+supplemental definition. All five parameters are required. `ExcelFile` is the .xlsx file, base64.
+
+```typescript
+import { ExportToExcelAction, createEntityReference } from "@mohsinonxrm/dataverse-sdk-actions";
+
+// The view's query and layout (a savedquery's fetchxml and layoutxml columns)
+const fetchXml = `<fetch><entity name="account"><attribute name="name" /></entity></fetch>`;
+const layoutXml = `<grid name="resultset" object="1" jump="name" select="1" icon="1" preview="1"><row name="result" id="accountid"><cell name="name" width="300" /></row></grid>`;
+
+const { ExcelFile } = await client.execute(
+  new ExportToExcelAction({
+    View: createEntityReference("savedquery", viewId),
+    FetchXml: fetchXml,
+    LayoutXml: layoutXml,
+    QueryApi: "",
+    QueryParameters: { Arguments: { Count: 0, IsReadOnly: true, Keys: [], Values: [] } },
+  })
+);
 ```
 
 ## Architecture
@@ -416,11 +603,11 @@ await client.execute(action);
 
 ```typescript
 // 1. Create action instance
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 
 // 2. Action converts to RequestInformation
 const requestInfo = action.toRequestInformation(baseUrl);
-// => { method: 'POST', url: '.../ CreateMultiple', body: {...} }
+// => { method: "POST", url: ".../accounts/Microsoft.Dynamics.CRM.CreateMultiple", body: {...} }
 
 // 3. Client executes the request
 const response = await client.execute(action);
@@ -429,7 +616,15 @@ const response = await client.execute(action);
 // Returns typed response (e.g., CreateMultipleResponse)
 ```
 
-## Extending with Custom Actions
+## Custom APIs and Other Apps' Actions
+
+Your own custom APIs and custom process actions, and the actions of the apps this package leaves
+out (Contact Center, Field Service, Customer Insights - Journeys, …), aren't here. Generate typed
+classes for them from your org's `$metadata` with `dataverse-gen`: they implement the same
+`Executable` interface, so `client.execute()` runs them like the classes in this package. See
+[Generate the rest with dataverse-gen](../../docs/getting-started.md#generate-the-rest-with-dataverse-gen).
+
+To write one by hand instead, implement `Executable`:
 
 ```typescript
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
@@ -445,7 +640,7 @@ class CustomAction implements Executable<CustomActionResponse> {
     return {
       method: "POST",
       url: `${baseUrl}/CustomAction`,
-      headers: { "Content-Type": "application/json" },
+      headers: { "content-type": "application/json" },
       body: { Param: this.param },
     };
   }

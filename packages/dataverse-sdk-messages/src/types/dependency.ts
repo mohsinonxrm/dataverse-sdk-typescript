@@ -2,18 +2,18 @@
  * dependency entity type
  */
 export interface dependency {
-  requiredcomponentobjectid: string;
-  versionnumber: number;
-  requiredcomponentparentid: string;
-  dependentcomponentbasesolutionid: string;
-  dependentcomponenttype: number;
-  dependencyid: string;
-  dependentcomponentparentid: string;
-  _requiredcomponentnodeid_value: string;
-  requiredcomponentintroducedversion: number;
-  requiredcomponenttype: number;
-  requiredcomponentbasesolutionid: string;
-  dependencytype: number;
-  dependentcomponentobjectid: string;
-  _dependentcomponentnodeid_value: string;
+  _dependentcomponentnodeid_value?: string;
+  _requiredcomponentnodeid_value?: string;
+  dependencyid?: string;
+  dependencytype?: number;
+  dependentcomponentbasesolutionid?: string;
+  dependentcomponentobjectid?: string;
+  dependentcomponentparentid?: string;
+  dependentcomponenttype?: number;
+  requiredcomponentbasesolutionid?: string;
+  requiredcomponentintroducedversion?: number;
+  requiredcomponentobjectid?: string;
+  requiredcomponentparentid?: string;
+  requiredcomponenttype?: number;
+  versionnumber?: number;
 }

@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SalesAgents_GetMicroAgentActivationDetails message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_GetMicroAgentActivationDetailsRequestParameters {
+  RequestJson: string;
+}
 
 /**
  * msdyn_SalesAgents_GetMicroAgentActivationDetails request message
@@ -10,22 +19,24 @@ export class msdyn_SalesAgents_GetMicroAgentActivationDetailsRequest
   extends OrganizationRequest
   implements Executable<msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse>
 {
-  constructor(public requestJson: string) {
-    super("msdyn_SalesAgents_GetMicroAgentActivationDetails");
+  declare readonly Parameters: Readonly<msdyn_SalesAgents_GetMicroAgentActivationDetailsRequestParameters>;
+
+  constructor(parameters: msdyn_SalesAgents_GetMicroAgentActivationDetailsRequestParameters) {
+    super("msdyn_SalesAgents_GetMicroAgentActivationDetails", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_GetMicroAgentActivationDetails`;
 
-    const body: Record<string, unknown> = {
-      RequestJson: this.requestJson,
-    };
+    const body = requestBody({
+      RequestJson: this.Parameters.RequestJson,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -34,26 +45,37 @@ export class msdyn_SalesAgents_GetMicroAgentActivationDetailsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequestJson: this.requestJson,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_GetMicroAgentActivationDetails action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_GetMicroAgentActivationDetailsResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_SalesAgents_GetMicroAgentActivationDetails response message
+ *
+ * `result` is the value the msdyn_SalesAgents_GetMicroAgentActivationDetails action returns (see {@link msdyn_SalesAgents_GetMicroAgentActivationDetailsResult}).
  */
 export class msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse) {
+  constructor(public result: msdyn_SalesAgents_GetMicroAgentActivationDetailsResult) {
     super("msdyn_SalesAgents_GetMicroAgentActivationDetails");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse {
-    return new msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse((data as any).value);
+    return new msdyn_SalesAgents_GetMicroAgentActivationDetailsResponse(
+      data as msdyn_SalesAgents_GetMicroAgentActivationDetailsResult
+    );
   }
 }

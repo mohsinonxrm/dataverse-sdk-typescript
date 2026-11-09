@@ -1,11 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
- * Response from RetrieveAadUserSetOfPrivilegesByIds function
+ * Response from the RetrieveAadUserSetOfPrivilegesByIds function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveAadUserSetOfPrivilegesByIdsResponse {
+  "@odata.context"?: string;
   RolePrivileges: RolePrivilege[];
+}
+
+/**
+ * Parameters of the RetrieveAadUserSetOfPrivilegesByIds function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAadUserSetOfPrivilegesByIdsFunctionParameters {
+  DirectoryObjectId: string;
+  PrivilegeIds: string[];
 }
 
 /**
@@ -14,10 +27,7 @@ export interface RetrieveAadUserSetOfPrivilegesByIdsResponse {
  * Unbound function
  */
 export class RetrieveAadUserSetOfPrivilegesByIdsFunction implements Executable<RetrieveAadUserSetOfPrivilegesByIdsResponse> {
-  constructor(
-    public readonly directoryObjectId: string,
-    public readonly privilegeIds: string[]
-  ) {}
+  constructor(public readonly parameters: RetrieveAadUserSetOfPrivilegesByIdsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveAadUserSetOfPrivilegesByIds`;
@@ -25,18 +35,16 @@ export class RetrieveAadUserSetOfPrivilegesByIdsFunction implements Executable<R
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.directoryObjectId !== undefined) {
+    if (this.parameters.DirectoryObjectId !== undefined) {
       aliases.push(`DirectoryObjectId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.directoryObjectId === "string"
-          ? `'${this.directoryObjectId}'`
-          : String(this.directoryObjectId)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.DirectoryObjectId, "Edm.Guid"));
     }
-    if (this.privilegeIds !== undefined) {
+    if (this.parameters.PrivilegeIds !== undefined) {
       aliases.push(`PrivilegeIds=@p2`);
-      params.append("@p2", JSON.stringify(this.privilegeIds));
+      params.append(
+        "@p2",
+        formatParameterAlias(this.parameters.PrivilegeIds, "Collection(Edm.Guid)", "Collection")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -52,7 +60,7 @@ export class RetrieveAadUserSetOfPrivilegesByIdsFunction implements Executable<R
   }
 
   async parseResponse(response: Response): Promise<RetrieveAadUserSetOfPrivilegesByIdsResponse> {
-    const data = await response.json();
-    return data as RetrieveAadUserSetOfPrivilegesByIdsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveAadUserSetOfPrivilegesByIdsResponse;
   }
 }

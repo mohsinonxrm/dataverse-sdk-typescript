@@ -1,11 +1,29 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from CreateKnowledgeArticleTranslation action
+ * Response from the CreateKnowledgeArticleTranslation action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface CreateKnowledgeArticleTranslationResponse {
-  value: EntityReference;
+export type CreateKnowledgeArticleTranslationResponse = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
+ * Parameters of the CreateKnowledgeArticleTranslation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateKnowledgeArticleTranslationActionParameters {
+  Source: EntityReference | AnyEntityPayload;
+  Language: EntityReference | AnyEntityPayload;
+  IsMajor?: boolean;
 }
 
 /**
@@ -14,33 +32,31 @@ export interface CreateKnowledgeArticleTranslationResponse {
  * Unbound action
  */
 export class CreateKnowledgeArticleTranslationAction implements Executable<CreateKnowledgeArticleTranslationResponse> {
-  constructor(
-    public readonly source: EntityReference,
-    public readonly language: EntityReference,
-    public readonly isMajor: boolean
-  ) {}
+  constructor(public readonly parameters: CreateKnowledgeArticleTranslationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateKnowledgeArticleTranslation`;
 
-    const body: Record<string, unknown> = {
-      Source: this.source,
-      Language: this.language,
-      IsMajor: this.isMajor,
-    };
+    const body = requestBody({
+      Source: this.parameters.Source,
+      Language: this.parameters.Language,
+      IsMajor: this.parameters.IsMajor,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<CreateKnowledgeArticleTranslationResponse> {
-    const data = await response.json();
-    return data as CreateKnowledgeArticleTranslationResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
+    return (await response.json()) as CreateKnowledgeArticleTranslationResponse;
   }
 }

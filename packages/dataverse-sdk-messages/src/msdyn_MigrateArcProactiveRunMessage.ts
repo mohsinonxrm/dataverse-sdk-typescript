@@ -21,30 +21,40 @@ export class msdyn_MigrateArcProactiveRunRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_MigrateArcProactiveRunResponse> {
-    const data = await response.json();
-    return msdyn_MigrateArcProactiveRunResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_MigrateArcProactiveRunResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_MigrateArcProactiveRun action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_MigrateArcProactiveRunResult {
+  "@odata.context"?: string;
+  Exception: string;
+  OutputString: string;
+}
+
+/**
  * msdyn_MigrateArcProactiveRun response message
+ *
+ * `result` is the value the msdyn_MigrateArcProactiveRun action returns (see {@link msdyn_MigrateArcProactiveRunResult}).
  */
 export class msdyn_MigrateArcProactiveRunResponse extends OrganizationResponse {
-  constructor(public result: msdyn_MigrateArcProactiveRunResponse) {
+  constructor(public result: msdyn_MigrateArcProactiveRunResult) {
     super("msdyn_MigrateArcProactiveRun");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_MigrateArcProactiveRunResponse {
-    return new msdyn_MigrateArcProactiveRunResponse((data as any).value);
+    return new msdyn_MigrateArcProactiveRunResponse(data as msdyn_MigrateArcProactiveRunResult);
   }
 }

@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the ApplyRecordCreationAndUpdateRule message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ApplyRecordCreationAndUpdateRuleRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * ApplyRecordCreationAndUpdateRule request message
@@ -11,36 +21,32 @@ export class ApplyRecordCreationAndUpdateRuleRequest
   extends OrganizationRequest
   implements Executable<ApplyRecordCreationAndUpdateRuleResponse>
 {
-  constructor(public target: EntityReference) {
-    super("ApplyRecordCreationAndUpdateRule");
+  declare readonly Parameters: Readonly<ApplyRecordCreationAndUpdateRuleRequestParameters>;
+
+  constructor(parameters: ApplyRecordCreationAndUpdateRuleRequestParameters) {
+    super("ApplyRecordCreationAndUpdateRule", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ApplyRecordCreationAndUpdateRule`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ApplyRecordCreationAndUpdateRuleResponse> {
+  parseResponse(_response: Response): Promise<ApplyRecordCreationAndUpdateRuleResponse> {
     // No return value (204 No Content)
-    return new ApplyRecordCreationAndUpdateRuleResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
+    return Promise.resolve(new ApplyRecordCreationAndUpdateRuleResponse());
   }
 }
 
@@ -52,7 +58,7 @@ export class ApplyRecordCreationAndUpdateRuleResponse extends OrganizationRespon
     super("ApplyRecordCreationAndUpdateRule");
   }
 
-  static fromResponse(_data: unknown): ApplyRecordCreationAndUpdateRuleResponse {
+  static fromResponse(_data?: unknown): ApplyRecordCreationAndUpdateRuleResponse {
     return new ApplyRecordCreationAndUpdateRuleResponse();
   }
 }

@@ -1,16 +1,28 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_RetrieveActivityAnalyticsConfiguration action
+ * Response from the msdyn_RetrieveActivityAnalyticsConfiguration action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_RetrieveActivityAnalyticsConfigurationResponse {
-  RaProvisioningStatus: number;
-  EmailEngagementEnabled: boolean;
-  MarsStatus: number;
+  "@odata.context"?: string;
   DCIHubUrl: string;
-  OrgTypeSuffix: string;
-  LinkedInStatus: number;
+  EmailEngagementEnabled: boolean;
   HealthFeatureStatus: number;
+  LinkedInStatus: number;
+  MarsStatus: number;
+  OrgTypeSuffix: string;
+  RaProvisioningStatus: number;
+}
+
+/**
+ * Parameters of the msdyn_RetrieveActivityAnalyticsConfiguration action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveActivityAnalyticsConfigurationActionParameters {
+  SIParameters?: string;
 }
 
 /**
@@ -19,20 +31,22 @@ export interface msdyn_RetrieveActivityAnalyticsConfigurationResponse {
  * Unbound action
  */
 export class msdyn_RetrieveActivityAnalyticsConfigurationAction implements Executable<msdyn_RetrieveActivityAnalyticsConfigurationResponse> {
-  constructor(public readonly sIParameters: string) {}
+  constructor(
+    public readonly parameters: msdyn_RetrieveActivityAnalyticsConfigurationActionParameters = {}
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveActivityAnalyticsConfiguration`;
 
-    const body: Record<string, unknown> = {
-      SIParameters: this.sIParameters,
-    };
+    const body = requestBody({
+      SIParameters: this.parameters.SIParameters,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -41,7 +55,7 @@ export class msdyn_RetrieveActivityAnalyticsConfigurationAction implements Execu
   async parseResponse(
     response: Response
   ): Promise<msdyn_RetrieveActivityAnalyticsConfigurationResponse> {
-    const data = await response.json();
-    return data as msdyn_RetrieveActivityAnalyticsConfigurationResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_RetrieveActivityAnalyticsConfigurationResponse;
   }
 }

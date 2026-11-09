@@ -1,11 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from CreateRpaBox action
+ * Response from the CreateRpaBox action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateRpaBoxResponse {
+  "@odata.context"?: string;
   flowMachineId: string;
+}
+
+/**
+ * Parameters of the CreateRpaBox action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateRpaBoxActionParameters {
+  machineDescription?: string;
+  machineNetworkId?: EntityReference | AnyEntityPayload;
+  machineName: string;
+  machineImageVersionId: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -14,35 +30,30 @@ export interface CreateRpaBoxResponse {
  * Unbound action
  */
 export class CreateRpaBoxAction implements Executable<CreateRpaBoxResponse> {
-  constructor(
-    public readonly machineDescription: string,
-    public readonly machineNetworkId: EntityReference,
-    public readonly machineName: string,
-    public readonly machineImageVersionId: EntityReference
-  ) {}
+  constructor(public readonly parameters: CreateRpaBoxActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateRpaBox`;
 
-    const body: Record<string, unknown> = {
-      machineDescription: this.machineDescription,
-      machineNetworkId: this.machineNetworkId,
-      machineName: this.machineName,
-      machineImageVersionId: this.machineImageVersionId,
-    };
+    const body = requestBody({
+      machineDescription: this.parameters.machineDescription,
+      machineNetworkId: this.parameters.machineNetworkId,
+      machineName: this.parameters.machineName,
+      machineImageVersionId: this.parameters.machineImageVersionId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<CreateRpaBoxResponse> {
-    const data = await response.json();
-    return data as CreateRpaBoxResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as CreateRpaBoxResponse;
   }
 }

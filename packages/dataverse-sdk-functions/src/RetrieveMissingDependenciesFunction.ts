@@ -1,12 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrieveMissingDependencies function
+ * Response from the RetrieveMissingDependencies function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveMissingDependenciesResponse {
-  value: EntityReference[];
+export type RetrieveMissingDependenciesResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
+ * Parameters of the RetrieveMissingDependencies function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveMissingDependenciesFunctionParameters {
+  SolutionUniqueName: string;
 }
 
 /**
@@ -15,7 +27,7 @@ export interface RetrieveMissingDependenciesResponse {
  * Unbound function
  */
 export class RetrieveMissingDependenciesFunction implements Executable<RetrieveMissingDependenciesResponse> {
-  constructor(public readonly solutionUniqueName: string) {}
+  constructor(public readonly parameters: RetrieveMissingDependenciesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveMissingDependencies`;
@@ -23,14 +35,9 @@ export class RetrieveMissingDependenciesFunction implements Executable<RetrieveM
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.solutionUniqueName !== undefined) {
+    if (this.parameters.SolutionUniqueName !== undefined) {
       aliases.push(`SolutionUniqueName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.solutionUniqueName === "string"
-          ? `'${this.solutionUniqueName}'`
-          : String(this.solutionUniqueName)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.SolutionUniqueName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -46,7 +53,9 @@ export class RetrieveMissingDependenciesFunction implements Executable<RetrieveM
   }
 
   async parseResponse(response: Response): Promise<RetrieveMissingDependenciesResponse> {
-    const data = await response.json();
-    return data as RetrieveMissingDependenciesResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveMissingDependenciesResponse }).value;
   }
 }

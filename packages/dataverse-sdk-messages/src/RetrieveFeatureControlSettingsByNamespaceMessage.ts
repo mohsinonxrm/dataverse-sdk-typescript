@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+import type { FeatureControlSettingData } from "./types/index.js";
+
+/**
+ * Parameters of the RetrieveFeatureControlSettingsByNamespace message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveFeatureControlSettingsByNamespaceRequestParameters {
+  NamespaceName: string;
+}
 
 /**
  * RetrieveFeatureControlSettingsByNamespace request message
@@ -10,22 +20,24 @@ export class RetrieveFeatureControlSettingsByNamespaceRequest
   extends OrganizationRequest
   implements Executable<RetrieveFeatureControlSettingsByNamespaceResponse>
 {
-  constructor(public namespaceName: string) {
-    super("RetrieveFeatureControlSettingsByNamespace");
+  declare readonly Parameters: Readonly<RetrieveFeatureControlSettingsByNamespaceRequestParameters>;
+
+  constructor(parameters: RetrieveFeatureControlSettingsByNamespaceRequestParameters) {
+    super("RetrieveFeatureControlSettingsByNamespace", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RetrieveFeatureControlSettingsByNamespace`;
 
-    const body: Record<string, unknown> = {
-      NamespaceName: this.namespaceName,
-    };
+    const body = requestBody({
+      NamespaceName: this.Parameters.NamespaceName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -34,26 +46,35 @@ export class RetrieveFeatureControlSettingsByNamespaceRequest
   async parseResponse(
     response: Response
   ): Promise<RetrieveFeatureControlSettingsByNamespaceResponse> {
-    const data = await response.json();
-    return RetrieveFeatureControlSettingsByNamespaceResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      NamespaceName: this.namespaceName,
-    };
+    // The body is the complex value, with its @odata.context
+    return RetrieveFeatureControlSettingsByNamespaceResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the RetrieveFeatureControlSettingsByNamespace action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface RetrieveFeatureControlSettingsByNamespaceResult {
+  "@odata.context"?: string;
+  FeatureControlSettingCollection: FeatureControlSettingData[];
+}
+
+/**
  * RetrieveFeatureControlSettingsByNamespace response message
+ *
+ * `result` is the value the RetrieveFeatureControlSettingsByNamespace action returns (see {@link RetrieveFeatureControlSettingsByNamespaceResult}).
  */
 export class RetrieveFeatureControlSettingsByNamespaceResponse extends OrganizationResponse {
-  constructor(public result: RetrieveFeatureControlSettingsByNamespaceResponse) {
+  constructor(public result: RetrieveFeatureControlSettingsByNamespaceResult) {
     super("RetrieveFeatureControlSettingsByNamespace");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): RetrieveFeatureControlSettingsByNamespaceResponse {
-    return new RetrieveFeatureControlSettingsByNamespaceResponse((data as any).value);
+    return new RetrieveFeatureControlSettingsByNamespaceResponse(
+      data as RetrieveFeatureControlSettingsByNamespaceResult
+    );
   }
 }

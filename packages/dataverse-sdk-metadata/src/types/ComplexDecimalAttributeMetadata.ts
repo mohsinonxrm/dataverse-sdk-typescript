@@ -6,10 +6,10 @@ import type { ImeMode } from "./ImeMode.js";
  * Extends: ComplexAttributeMetadata
  */
 export interface ComplexDecimalAttributeMetadata extends ComplexAttributeMetadata {
+  FormulaDefinition?: string;
+  ImeMode?: ImeMode;
   MaxValue?: number;
   MinValue?: number;
   Precision?: number;
-  ImeMode?: ImeMode;
-  FormulaDefinition?: string;
   SourceTypeMask?: number;
 }

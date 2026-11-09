@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from GetSearchInformation function
+ * Response from the GetSearchInformation function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetSearchInformationResponse {
+  "@odata.context"?: string;
   CanAllowLeadingWildCardSearch: string;
   CanSupportedByRelevanceSearch: string;
+}
+
+/**
+ * Parameters of the GetSearchInformation function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetSearchInformationFunctionParameters {
+  Fetchxml: string;
 }
 
 /**
@@ -14,7 +26,7 @@ export interface GetSearchInformationResponse {
  * Unbound function
  */
 export class GetSearchInformationFunction implements Executable<GetSearchInformationResponse> {
-  constructor(public readonly fetchxml: string) {}
+  constructor(public readonly parameters: GetSearchInformationFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/GetSearchInformation`;
@@ -22,12 +34,9 @@ export class GetSearchInformationFunction implements Executable<GetSearchInforma
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.fetchxml !== undefined) {
+    if (this.parameters.Fetchxml !== undefined) {
       aliases.push(`Fetchxml=@p1`);
-      params.append(
-        "@p1",
-        typeof this.fetchxml === "string" ? `'${this.fetchxml}'` : String(this.fetchxml)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.Fetchxml, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -43,7 +52,7 @@ export class GetSearchInformationFunction implements Executable<GetSearchInforma
   }
 
   async parseResponse(response: Response): Promise<GetSearchInformationResponse> {
-    const data = await response.json();
-    return data as GetSearchInformationResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as GetSearchInformationResponse;
   }
 }

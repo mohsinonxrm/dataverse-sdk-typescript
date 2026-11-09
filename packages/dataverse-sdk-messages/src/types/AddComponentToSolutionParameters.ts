@@ -2,9 +2,9 @@
  * AddComponentToSolutionParameters complex type
  */
 export interface AddComponentToSolutionParameters {
-  AddRequiredComponents: boolean;
-  IncludeChildComponents: boolean;
-  IncludeEntityMetadata: boolean;
-  Id: string;
-  LogicalName: string;
+  AddRequiredComponents?: boolean;
+  Id?: string;
+  IncludeChildComponents?: boolean;
+  IncludeEntityMetadata?: boolean;
+  LogicalName?: string;
 }

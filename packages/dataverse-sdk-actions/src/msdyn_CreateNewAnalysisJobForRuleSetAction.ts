@@ -1,11 +1,31 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_analysisjob, msdyn_solutionhealthruleset } from "./types/index.js";
 
 /**
- * Response from msdyn_CreateNewAnalysisJobForRuleSet action
+ * Response from the msdyn_CreateNewAnalysisJobForRuleSet action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface msdyn_CreateNewAnalysisJobForRuleSetResponse {
-  value: msdyn_analysisjob;
+export type msdyn_CreateNewAnalysisJobForRuleSetResponse =
+  | (msdyn_analysisjob & {
+      "@odata.context"?: string;
+      "@odata.etag"?: string;
+      "@odata.type"?: string;
+    })
+  | null;
+
+/**
+ * Parameters of the msdyn_CreateNewAnalysisJobForRuleSet action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateNewAnalysisJobForRuleSetActionParameters {
+  SolutionHealthRuleSet: EntityReference | EntityPayload<msdyn_solutionhealthruleset>;
+  TriggerType?: string;
+  InAppNotificationEnabled?: boolean;
 }
 
 /**
@@ -14,33 +34,31 @@ export interface msdyn_CreateNewAnalysisJobForRuleSetResponse {
  * Unbound action
  */
 export class msdyn_CreateNewAnalysisJobForRuleSetAction implements Executable<msdyn_CreateNewAnalysisJobForRuleSetResponse> {
-  constructor(
-    public readonly solutionHealthRuleSet: msdyn_solutionhealthruleset,
-    public readonly triggerType: string,
-    public readonly inAppNotificationEnabled: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_CreateNewAnalysisJobForRuleSetActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateNewAnalysisJobForRuleSet`;
 
-    const body: Record<string, unknown> = {
-      SolutionHealthRuleSet: this.solutionHealthRuleSet,
-      TriggerType: this.triggerType,
-      InAppNotificationEnabled: this.inAppNotificationEnabled,
-    };
+    const body = requestBody({
+      SolutionHealthRuleSet: this.parameters.SolutionHealthRuleSet,
+      TriggerType: this.parameters.TriggerType,
+      InAppNotificationEnabled: this.parameters.InAppNotificationEnabled,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateNewAnalysisJobForRuleSetResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateNewAnalysisJobForRuleSetResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
+    return (await response.json()) as msdyn_CreateNewAnalysisJobForRuleSetResponse;
   }
 }

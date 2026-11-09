@@ -1,12 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { PreferredSolutionDetails } from "./types/index.js";
 
 /**
- * Response from PreferredSolutionUsedBy function
+ * Response from the PreferredSolutionUsedBy function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PreferredSolutionUsedByResponse {
+  "@odata.context"?: string;
   NumberOfAssociatedUsers: number;
   PreferredSolutionDetails: PreferredSolutionDetails;
+}
+
+/**
+ * Parameters of the PreferredSolutionUsedBy function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PreferredSolutionUsedByFunctionParameters {
+  SolutionId: string;
 }
 
 /**
@@ -15,7 +27,7 @@ export interface PreferredSolutionUsedByResponse {
  * Unbound function
  */
 export class PreferredSolutionUsedByFunction implements Executable<PreferredSolutionUsedByResponse> {
-  constructor(public readonly solutionId: string) {}
+  constructor(public readonly parameters: PreferredSolutionUsedByFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/PreferredSolutionUsedBy`;
@@ -23,12 +35,9 @@ export class PreferredSolutionUsedByFunction implements Executable<PreferredSolu
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.solutionId !== undefined) {
+    if (this.parameters.SolutionId !== undefined) {
       aliases.push(`SolutionId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.solutionId === "string" ? `'${this.solutionId}'` : String(this.solutionId)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.SolutionId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -44,7 +53,7 @@ export class PreferredSolutionUsedByFunction implements Executable<PreferredSolu
   }
 
   async parseResponse(response: Response): Promise<PreferredSolutionUsedByResponse> {
-    const data = await response.json();
-    return data as PreferredSolutionUsedByResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as PreferredSolutionUsedByResponse;
   }
 }

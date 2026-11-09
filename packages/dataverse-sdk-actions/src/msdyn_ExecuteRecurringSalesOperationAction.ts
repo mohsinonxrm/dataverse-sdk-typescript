@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ExecuteRecurringSalesOperation action
+ * Response from the msdyn_ExecuteRecurringSalesOperation action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ExecuteRecurringSalesOperationResponse {
-  // No content returned
+export type msdyn_ExecuteRecurringSalesOperationResponse = void;
+
+/**
+ * Parameters of the msdyn_ExecuteRecurringSalesOperation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecuteRecurringSalesOperationActionParameters {
+  InputData?: string;
+  IsRSAV2Entity?: boolean;
+  CustomActionName: string;
+  TriggerName: string;
 }
 
 /**
@@ -13,35 +25,30 @@ export interface msdyn_ExecuteRecurringSalesOperationResponse {
  * Unbound action
  */
 export class msdyn_ExecuteRecurringSalesOperationAction implements Executable<msdyn_ExecuteRecurringSalesOperationResponse> {
-  constructor(
-    public readonly inputData: string,
-    public readonly isRSAV2Entity: boolean,
-    public readonly customActionName: string,
-    public readonly triggerName: string
-  ) {}
+  constructor(public readonly parameters: msdyn_ExecuteRecurringSalesOperationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecuteRecurringSalesOperation`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-      IsRSAV2Entity: this.isRSAV2Entity,
-      CustomActionName: this.customActionName,
-      TriggerName: this.triggerName,
-    };
+    const body = requestBody({
+      InputData: this.parameters.InputData,
+      IsRSAV2Entity: this.parameters.IsRSAV2Entity,
+      CustomActionName: this.parameters.CustomActionName,
+      TriggerName: this.parameters.TriggerName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ExecuteRecurringSalesOperationResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_ExecuteRecurringSalesOperationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

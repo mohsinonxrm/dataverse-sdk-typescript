@@ -1,54 +1,65 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
+
+/**
+ * Parameters of the PickFromQueue message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PickFromQueueRequestParameters {
+  SystemUser: EntityReference | EntityPayload<systemuser>;
+  RemoveQueueItem: boolean;
+}
 
 /**
  * PickFromQueue request message
  *
  * Web API Action: PickFromQueue
+ *
+ * The first argument is the id of the queueitem record to call it on.
  */
 export class PickFromQueueRequest
   extends OrganizationRequest
   implements Executable<PickFromQueueResponse>
 {
+  declare readonly Parameters: Readonly<PickFromQueueRequestParameters>;
+
   constructor(
     public queueitemId: string,
-    public systemUser: systemuser,
-    public removeQueueItem: boolean
+    parameters: PickFromQueueRequestParameters
   ) {
-    super("PickFromQueue");
+    super("PickFromQueue", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/queueitems(${this.queueitemId})/Microsoft.Dynamics.CRM.PickFromQueue`;
+    const url = `${baseUrl}/queueitems(${odataLiteral.guid(this.queueitemId)})/Microsoft.Dynamics.CRM.PickFromQueue`;
 
-    const body: Record<string, unknown> = {
-      SystemUser: this.systemUser,
-      RemoveQueueItem: this.removeQueueItem,
-    };
+    const body = requestBody({
+      SystemUser: this.Parameters.SystemUser,
+      RemoveQueueItem: this.Parameters.RemoveQueueItem,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<PickFromQueueResponse> {
+  parseResponse(_response: Response): Promise<PickFromQueueResponse> {
     // No return value (204 No Content)
-    return new PickFromQueueResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.queueitemId,
-      SystemUser: this.systemUser,
-      RemoveQueueItem: this.removeQueueItem,
-    };
+    return Promise.resolve(new PickFromQueueResponse());
   }
 }
 
@@ -60,7 +71,7 @@ export class PickFromQueueResponse extends OrganizationResponse {
     super("PickFromQueue");
   }
 
-  static fromResponse(_data: unknown): PickFromQueueResponse {
+  static fromResponse(_data?: unknown): PickFromQueueResponse {
     return new PickFromQueueResponse();
   }
 }

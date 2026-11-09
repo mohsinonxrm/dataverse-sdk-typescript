@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from _ValidateAndAllocateBusinessCardReaderCurrency action
+ * Response from the _ValidateAndAllocateBusinessCardReaderCurrency action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface _ValidateAndAllocateBusinessCardReaderCurrencyResponse {
+  "@odata.context"?: string;
   Response: string;
 }
 
@@ -20,7 +23,7 @@ export class _ValidateAndAllocateBusinessCardReaderCurrencyAction implements Exe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -28,7 +31,7 @@ export class _ValidateAndAllocateBusinessCardReaderCurrencyAction implements Exe
   async parseResponse(
     response: Response
   ): Promise<_ValidateAndAllocateBusinessCardReaderCurrencyResponse> {
-    const data = await response.json();
-    return data as _ValidateAndAllocateBusinessCardReaderCurrencyResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as _ValidateAndAllocateBusinessCardReaderCurrencyResponse;
   }
 }

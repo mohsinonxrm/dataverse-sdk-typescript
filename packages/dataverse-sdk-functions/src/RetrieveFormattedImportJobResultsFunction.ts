@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrieveFormattedImportJobResults function
+ * Response from the RetrieveFormattedImportJobResults function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveFormattedImportJobResultsResponse {
+  "@odata.context"?: string;
   FormattedResults: string;
+}
+
+/**
+ * Parameters of the RetrieveFormattedImportJobResults function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveFormattedImportJobResultsFunctionParameters {
+  ImportJobId: string;
 }
 
 /**
@@ -13,7 +25,7 @@ export interface RetrieveFormattedImportJobResultsResponse {
  * Unbound function
  */
 export class RetrieveFormattedImportJobResultsFunction implements Executable<RetrieveFormattedImportJobResultsResponse> {
-  constructor(public readonly importJobId: string) {}
+  constructor(public readonly parameters: RetrieveFormattedImportJobResultsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveFormattedImportJobResults`;
@@ -21,12 +33,9 @@ export class RetrieveFormattedImportJobResultsFunction implements Executable<Ret
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.importJobId !== undefined) {
+    if (this.parameters.ImportJobId !== undefined) {
       aliases.push(`ImportJobId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.importJobId === "string" ? `'${this.importJobId}'` : String(this.importJobId)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.ImportJobId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -42,7 +51,7 @@ export class RetrieveFormattedImportJobResultsFunction implements Executable<Ret
   }
 
   async parseResponse(response: Response): Promise<RetrieveFormattedImportJobResultsResponse> {
-    const data = await response.json();
-    return data as RetrieveFormattedImportJobResultsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveFormattedImportJobResultsResponse;
   }
 }

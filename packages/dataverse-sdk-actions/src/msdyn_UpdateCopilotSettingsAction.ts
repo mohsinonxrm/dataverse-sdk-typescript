@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_UpdateCopilotSettings action
+ * Response from the msdyn_UpdateCopilotSettings action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_UpdateCopilotSettingsResponse {
-  // No content returned
+export type msdyn_UpdateCopilotSettingsResponse = void;
+
+/**
+ * Parameters of the msdyn_UpdateCopilotSettings action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdateCopilotSettingsActionParameters {
+  msdyn_input: string;
 }
 
 /**
@@ -13,27 +22,27 @@ export interface msdyn_UpdateCopilotSettingsResponse {
  * Unbound action
  */
 export class msdyn_UpdateCopilotSettingsAction implements Executable<msdyn_UpdateCopilotSettingsResponse> {
-  constructor(public readonly msdyn_input: string) {}
+  constructor(public readonly parameters: msdyn_UpdateCopilotSettingsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UpdateCopilotSettings`;
 
-    const body: Record<string, unknown> = {
-      msdyn_input: this.msdyn_input,
-    };
+    const body = requestBody({
+      msdyn_input: this.parameters.msdyn_input,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdateCopilotSettingsResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_UpdateCopilotSettingsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

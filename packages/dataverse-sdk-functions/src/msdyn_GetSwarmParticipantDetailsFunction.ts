@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from msdyn_GetSwarmParticipantDetails function
+ * Response from the msdyn_GetSwarmParticipantDetails function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetSwarmParticipantDetailsResponse {
+  "@odata.context"?: string;
   msdyn_PersonaObject: string;
+}
+
+/**
+ * Parameters of the msdyn_GetSwarmParticipantDetails function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetSwarmParticipantDetailsFunctionParameters {
+  msdyn_SwarmParticipantId: string;
 }
 
 /**
@@ -13,7 +25,7 @@ export interface msdyn_GetSwarmParticipantDetailsResponse {
  * Unbound function
  */
 export class msdyn_GetSwarmParticipantDetailsFunction implements Executable<msdyn_GetSwarmParticipantDetailsResponse> {
-  constructor(public readonly msdyn_SwarmParticipantId: string) {}
+  constructor(public readonly parameters: msdyn_GetSwarmParticipantDetailsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/msdyn_GetSwarmParticipantDetails`;
@@ -21,13 +33,11 @@ export class msdyn_GetSwarmParticipantDetailsFunction implements Executable<msdy
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.msdyn_SwarmParticipantId !== undefined) {
+    if (this.parameters.msdyn_SwarmParticipantId !== undefined) {
       aliases.push(`msdyn_SwarmParticipantId=@p1`);
       params.append(
         "@p1",
-        typeof this.msdyn_SwarmParticipantId === "string"
-          ? `'${this.msdyn_SwarmParticipantId}'`
-          : String(this.msdyn_SwarmParticipantId)
+        formatParameterAlias(this.parameters.msdyn_SwarmParticipantId, "Edm.String")
       );
     }
     if (aliases.length > 0) {
@@ -44,7 +54,7 @@ export class msdyn_GetSwarmParticipantDetailsFunction implements Executable<msdy
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetSwarmParticipantDetailsResponse> {
-    const data = await response.json();
-    return data as msdyn_GetSwarmParticipantDetailsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetSwarmParticipantDetailsResponse;
   }
 }

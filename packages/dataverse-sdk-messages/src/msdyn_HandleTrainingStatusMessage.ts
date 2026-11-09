@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_HandleTrainingStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_HandleTrainingStatusRequestParameters {
+  CurentModel: string;
+  PreviousModel?: string;
+  PredictionScheduledOperation?: string;
+  TrainingResult: string;
+}
 
 /**
  * msdyn_HandleTrainingStatus request message
@@ -10,47 +22,35 @@ export class msdyn_HandleTrainingStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_HandleTrainingStatusResponse>
 {
-  constructor(
-    public curentModel: string,
-    public previousModel: string,
-    public predictionScheduledOperation: string,
-    public trainingResult: string
-  ) {
-    super("msdyn_HandleTrainingStatus");
+  declare readonly Parameters: Readonly<msdyn_HandleTrainingStatusRequestParameters>;
+
+  constructor(parameters: msdyn_HandleTrainingStatusRequestParameters) {
+    super("msdyn_HandleTrainingStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_HandleTrainingStatus`;
 
-    const body: Record<string, unknown> = {
-      CurentModel: this.curentModel,
-      PreviousModel: this.previousModel,
-      PredictionScheduledOperation: this.predictionScheduledOperation,
-      TrainingResult: this.trainingResult,
-    };
+    const body = requestBody({
+      CurentModel: this.Parameters.CurentModel,
+      PreviousModel: this.Parameters.PreviousModel,
+      PredictionScheduledOperation: this.Parameters.PredictionScheduledOperation,
+      TrainingResult: this.Parameters.TrainingResult,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_HandleTrainingStatusResponse> {
+  parseResponse(_response: Response): Promise<msdyn_HandleTrainingStatusResponse> {
     // No return value (204 No Content)
-    return new msdyn_HandleTrainingStatusResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CurentModel: this.curentModel,
-      PreviousModel: this.previousModel,
-      PredictionScheduledOperation: this.predictionScheduledOperation,
-      TrainingResult: this.trainingResult,
-    };
+    return Promise.resolve(new msdyn_HandleTrainingStatusResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_HandleTrainingStatusResponse extends OrganizationResponse {
     super("msdyn_HandleTrainingStatus");
   }
 
-  static fromResponse(_data: unknown): msdyn_HandleTrainingStatusResponse {
+  static fromResponse(_data?: unknown): msdyn_HandleTrainingStatusResponse {
     return new msdyn_HandleTrainingStatusResponse();
   }
 }

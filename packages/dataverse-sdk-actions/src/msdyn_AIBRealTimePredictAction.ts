@@ -1,10 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AIBRealTimePredict action
+ * Response from the msdyn_AIBRealTimePredict action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_AIBRealTimePredictResponse {
+  "@odata.context"?: string;
   Suggestions: string;
+}
+
+/**
+ * Parameters of the msdyn_AIBRealTimePredict action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AIBRealTimePredictActionParameters {
+  SuggestionType: string;
+  Filters: string;
+  Context: string;
+  SuggestionFor: string;
+  Version: string;
 }
 
 /**
@@ -13,37 +29,31 @@ export interface msdyn_AIBRealTimePredictResponse {
  * Unbound action
  */
 export class msdyn_AIBRealTimePredictAction implements Executable<msdyn_AIBRealTimePredictResponse> {
-  constructor(
-    public readonly filters: string,
-    public readonly suggestionFor: string,
-    public readonly context: string,
-    public readonly version: string,
-    public readonly suggestionType: string
-  ) {}
+  constructor(public readonly parameters: msdyn_AIBRealTimePredictActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AIBRealTimePredict`;
 
-    const body: Record<string, unknown> = {
-      Filters: this.filters,
-      SuggestionFor: this.suggestionFor,
-      Context: this.context,
-      Version: this.version,
-      SuggestionType: this.suggestionType,
-    };
+    const body = requestBody({
+      SuggestionType: this.parameters.SuggestionType,
+      Filters: this.parameters.Filters,
+      Context: this.parameters.Context,
+      SuggestionFor: this.parameters.SuggestionFor,
+      Version: this.parameters.Version,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_AIBRealTimePredictResponse> {
-    const data = await response.json();
-    return data as msdyn_AIBRealTimePredictResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_AIBRealTimePredictResponse;
   }
 }

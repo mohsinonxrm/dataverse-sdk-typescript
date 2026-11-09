@@ -1,15 +1,29 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CheckForCustomizedOptionSet action
+ * Response from the msdyn_CheckForCustomizedOptionSet action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckForCustomizedOptionSetResponse {
+  "@odata.context"?: string;
+  HelpLink: string;
   Message: string;
   ResultEntities: string;
-  ReturnStatus: number;
-  ReturnSeverity: number;
   ReturnLevel: number;
-  HelpLink: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
+ * Parameters of the msdyn_CheckForCustomizedOptionSet action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckForCustomizedOptionSetActionParameters {
+  EntityIds?: string;
+  SolutionId?: string;
+  ExcludeSolutionIds?: string;
 }
 
 /**
@@ -18,33 +32,29 @@ export interface msdyn_CheckForCustomizedOptionSetResponse {
  * Unbound action
  */
 export class msdyn_CheckForCustomizedOptionSetAction implements Executable<msdyn_CheckForCustomizedOptionSetResponse> {
-  constructor(
-    public readonly entityIds: string,
-    public readonly solutionId: string,
-    public readonly excludeSolutionIds: string
-  ) {}
+  constructor(public readonly parameters: msdyn_CheckForCustomizedOptionSetActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckForCustomizedOptionSet`;
 
-    const body: Record<string, unknown> = {
-      EntityIds: this.entityIds,
-      SolutionId: this.solutionId,
-      ExcludeSolutionIds: this.excludeSolutionIds,
-    };
+    const body = requestBody({
+      EntityIds: this.parameters.EntityIds,
+      SolutionId: this.parameters.SolutionId,
+      ExcludeSolutionIds: this.parameters.ExcludeSolutionIds,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckForCustomizedOptionSetResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckForCustomizedOptionSetResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CheckForCustomizedOptionSetResponse;
   }
 }

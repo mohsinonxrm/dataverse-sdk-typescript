@@ -1,11 +1,26 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { savedquery } from "./types/index.js";
 
 /**
- * Response from InstantiateFilters action
+ * Response from the InstantiateFilters action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface InstantiateFiltersResponse {
-  // No content returned
+export type InstantiateFiltersResponse = void;
+
+/**
+ * Parameters of the InstantiateFilters action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InstantiateFiltersActionParameters {
+  TemplateCollection: (EntityReference | EntityPayload<savedquery>)[];
 }
 
 /**
@@ -13,33 +28,35 @@ export interface InstantiateFiltersResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.systemuser)
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class InstantiateFiltersAction implements Executable<InstantiateFiltersResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly templateCollection: savedquery[]
+    public readonly parameters: InstantiateFiltersActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/systemusers(${this.systemuserId})/Microsoft.Dynamics.CRM.InstantiateFilters`;
+    const url = `${baseUrl}/systemusers(${odataLiteral.guid(this.systemuserId)})/Microsoft.Dynamics.CRM.InstantiateFilters`;
 
-    const body: Record<string, unknown> = {
-      TemplateCollection: this.templateCollection,
-    };
+    const body = requestBody({
+      TemplateCollection: this.parameters.TemplateCollection,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<InstantiateFiltersResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<InstantiateFiltersResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

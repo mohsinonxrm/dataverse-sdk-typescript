@@ -1,11 +1,29 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from Dequeue action
+ * Response from the Dequeue action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface DequeueResponse {
-  value: EntityReference;
+export type DequeueResponse = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
+ * Parameters of the Dequeue action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DequeueActionParameters {
+  request?: string;
 }
 
 /**
@@ -13,33 +31,37 @@ export interface DequeueResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.workqueue)
+ *
+ * The first argument is the id of the workqueue record to call it on.
  */
 export class DequeueAction implements Executable<DequeueResponse> {
   constructor(
     public readonly workqueueId: string,
-    public readonly request: string
+    public readonly parameters: DequeueActionParameters = {}
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/workqueues(${this.workqueueId})/Microsoft.Dynamics.CRM.Dequeue`;
+    const url = `${baseUrl}/workqueues(${odataLiteral.guid(this.workqueueId)})/Microsoft.Dynamics.CRM.Dequeue`;
 
-    const body: Record<string, unknown> = {
-      request: this.request,
-    };
+    const body = requestBody({
+      request: this.parameters.request,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<DequeueResponse> {
-    const data = await response.json();
-    return data as DequeueResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
+    return (await response.json()) as DequeueResponse;
   }
 }

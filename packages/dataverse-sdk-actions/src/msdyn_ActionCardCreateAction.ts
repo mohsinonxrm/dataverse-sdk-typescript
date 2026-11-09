@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ActionCardCreate action
+ * Response from the msdyn_ActionCardCreate action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ActionCardCreateResponse {
-  // No content returned
+export type msdyn_ActionCardCreateResponse = void;
+
+/**
+ * Parameters of the msdyn_ActionCardCreate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ActionCardCreateActionParameters {
+  actionCardCreateParams: string;
 }
 
 /**
@@ -13,27 +22,27 @@ export interface msdyn_ActionCardCreateResponse {
  * Unbound action
  */
 export class msdyn_ActionCardCreateAction implements Executable<msdyn_ActionCardCreateResponse> {
-  constructor(public readonly actionCardCreateParams: string) {}
+  constructor(public readonly parameters: msdyn_ActionCardCreateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ActionCardCreate`;
 
-    const body: Record<string, unknown> = {
-      actionCardCreateParams: this.actionCardCreateParams,
-    };
+    const body = requestBody({
+      actionCardCreateParams: this.parameters.actionCardCreateParams,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ActionCardCreateResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_ActionCardCreateResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

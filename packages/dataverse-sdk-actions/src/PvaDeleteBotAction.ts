@@ -1,36 +1,42 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from PvaDeleteBot action
+ * Response from the PvaDeleteBot action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PvaDeleteBotResponse {
-  // No content returned
-}
+export type PvaDeleteBotResponse = void;
 
 /**
  * PvaDeleteBot action
  *
  * Bound action
  * Binding parameter: entity (mscrm.bot)
+ *
+ * The first argument is the id of the bot record to call it on.
  */
 export class PvaDeleteBotAction implements Executable<PvaDeleteBotResponse> {
   constructor(public readonly botId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/bots(${this.botId})/Microsoft.Dynamics.CRM.PvaDeleteBot`;
+    const url = `${baseUrl}/bots(${odataLiteral.guid(this.botId)})/Microsoft.Dynamics.CRM.PvaDeleteBot`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaDeleteBotResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<PvaDeleteBotResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

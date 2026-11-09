@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_reassignmentbatch action
+ * Response from the msdyn_reassignmentbatch action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_reassignmentbatchResponse {
-  // No content returned
+export type msdyn_reassignmentbatchResponse = void;
+
+/**
+ * Parameters of the msdyn_reassignmentbatch action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_reassignmentbatchActionParameters {
+  InputData: string;
 }
 
 /**
@@ -13,27 +22,27 @@ export interface msdyn_reassignmentbatchResponse {
  * Unbound action
  */
 export class msdyn_reassignmentbatchAction implements Executable<msdyn_reassignmentbatchResponse> {
-  constructor(public readonly inputData: string) {}
+  constructor(public readonly parameters: msdyn_reassignmentbatchActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_reassignmentbatch`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.parameters.InputData,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_reassignmentbatchResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_reassignmentbatchResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

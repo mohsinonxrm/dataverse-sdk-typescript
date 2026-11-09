@@ -1,9 +1,16 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from DownloadReportDefinition function
+ * Response from the DownloadReportDefinition function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface DownloadReportDefinitionResponse {
+  "@odata.context"?: string;
   BodyText: string;
 }
 
@@ -12,13 +19,15 @@ export interface DownloadReportDefinitionResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.report)
+ *
+ * The first argument is the id of the report record to call it on.
  */
 export class DownloadReportDefinitionFunction implements Executable<DownloadReportDefinitionResponse> {
   constructor(public readonly reportId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/reports(${this.reportId})/Microsoft.Dynamics.CRM.DownloadReportDefinition`;
+    let url = `${baseUrl}/reports(${odataLiteral.guid(this.reportId)})/Microsoft.Dynamics.CRM.DownloadReportDefinition`;
 
     return {
       method: "GET",
@@ -30,7 +39,7 @@ export class DownloadReportDefinitionFunction implements Executable<DownloadRepo
   }
 
   async parseResponse(response: Response): Promise<DownloadReportDefinitionResponse> {
-    const data = await response.json();
-    return data as DownloadReportDefinitionResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as DownloadReportDefinitionResponse;
   }
 }

@@ -2,6 +2,6 @@
  * GetRunMapResponse complex type
  */
 export interface GetRunMapResponse {
-  continuationToken: string;
-  runMap: string;
+  continuationToken?: string;
+  runMap?: string;
 }

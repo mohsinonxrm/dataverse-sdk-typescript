@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * PublishProductHierarchy request message
  *
  * Web API Action: PublishProductHierarchy
+ *
+ * The first argument is the id of the product record to call it on.
  */
 export class PublishProductHierarchyRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class PublishProductHierarchyRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/products(${this.productId})/Microsoft.Dynamics.CRM.PublishProductHierarchy`;
+    const url = `${baseUrl}/products(${odataLiteral.guid(this.productId)})/Microsoft.Dynamics.CRM.PublishProductHierarchy`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<PublishProductHierarchyResponse> {
+  parseResponse(_response: Response): Promise<PublishProductHierarchyResponse> {
     // No return value (204 No Content)
-    return new PublishProductHierarchyResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.productId,
-    };
+    return Promise.resolve(new PublishProductHierarchyResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class PublishProductHierarchyResponse extends OrganizationResponse {
     super("PublishProductHierarchy");
   }
 
-  static fromResponse(_data: unknown): PublishProductHierarchyResponse {
+  static fromResponse(_data?: unknown): PublishProductHierarchyResponse {
     return new PublishProductHierarchyResponse();
   }
 }

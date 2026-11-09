@@ -1,5 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the DeleteOptionValue message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteOptionValueRequestParameters {
+  OptionSetName?: string;
+  AttributeLogicalName?: string;
+  EntityLogicalName?: string;
+  Value: number;
+  SolutionUniqueName?: string;
+}
 
 /**
  * DeleteOptionValue request message
@@ -10,50 +23,36 @@ export class DeleteOptionValueRequest
   extends OrganizationRequest
   implements Executable<DeleteOptionValueResponse>
 {
-  constructor(
-    public optionSetName: string,
-    public attributeLogicalName: string,
-    public entityLogicalName: string,
-    public value: number,
-    public solutionUniqueName: string
-  ) {
-    super("DeleteOptionValue");
+  declare readonly Parameters: Readonly<DeleteOptionValueRequestParameters>;
+
+  constructor(parameters: DeleteOptionValueRequestParameters) {
+    super("DeleteOptionValue", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeleteOptionValue`;
 
-    const body: Record<string, unknown> = {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Value: this.value,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      OptionSetName: this.Parameters.OptionSetName,
+      AttributeLogicalName: this.Parameters.AttributeLogicalName,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Value: this.Parameters.Value,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteOptionValueResponse> {
+  parseResponse(_response: Response): Promise<DeleteOptionValueResponse> {
     // No return value (204 No Content)
-    return new DeleteOptionValueResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Value: this.value,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    return Promise.resolve(new DeleteOptionValueResponse());
   }
 }
 
@@ -65,7 +64,7 @@ export class DeleteOptionValueResponse extends OrganizationResponse {
     super("DeleteOptionValue");
   }
 
-  static fromResponse(_data: unknown): DeleteOptionValueResponse {
+  static fromResponse(_data?: unknown): DeleteOptionValueResponse {
     return new DeleteOptionValueResponse();
   }
 }

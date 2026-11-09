@@ -1,10 +1,28 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetPromoContentFromIris action
+ * Response from the msdyn_GetPromoContentFromIris action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetPromoContentFromIrisResponse {
+  "@odata.context"?: string;
   msdyn_promoContent: string;
+}
+
+/**
+ * Parameters of the msdyn_GetPromoContentFromIris action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetPromoContentFromIrisActionParameters {
+  msdyn_country?: string;
+  msdyn_placementId?: number;
+  msdyn_pageName?: string;
+  msdyn_locale?: string;
+  msdyn_pageType?: string;
+  msdyn_isAdmin?: boolean;
+  msdyn_irisUrl?: string;
 }
 
 /**
@@ -13,41 +31,33 @@ export interface msdyn_GetPromoContentFromIrisResponse {
  * Unbound action
  */
 export class msdyn_GetPromoContentFromIrisAction implements Executable<msdyn_GetPromoContentFromIrisResponse> {
-  constructor(
-    public readonly msdyn_country: string,
-    public readonly msdyn_placementId: number,
-    public readonly msdyn_irisUrl: string,
-    public readonly msdyn_pageType: string,
-    public readonly msdyn_isAdmin: boolean,
-    public readonly msdyn_pageName: string,
-    public readonly msdyn_locale: string
-  ) {}
+  constructor(public readonly parameters: msdyn_GetPromoContentFromIrisActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetPromoContentFromIris`;
 
-    const body: Record<string, unknown> = {
-      msdyn_country: this.msdyn_country,
-      msdyn_placementId: this.msdyn_placementId,
-      msdyn_irisUrl: this.msdyn_irisUrl,
-      msdyn_pageType: this.msdyn_pageType,
-      msdyn_isAdmin: this.msdyn_isAdmin,
-      msdyn_pageName: this.msdyn_pageName,
-      msdyn_locale: this.msdyn_locale,
-    };
+    const body = requestBody({
+      msdyn_country: this.parameters.msdyn_country,
+      msdyn_placementId: this.parameters.msdyn_placementId,
+      msdyn_pageName: this.parameters.msdyn_pageName,
+      msdyn_locale: this.parameters.msdyn_locale,
+      msdyn_pageType: this.parameters.msdyn_pageType,
+      msdyn_isAdmin: this.parameters.msdyn_isAdmin,
+      msdyn_irisUrl: this.parameters.msdyn_irisUrl,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPromoContentFromIrisResponse> {
-    const data = await response.json();
-    return data as msdyn_GetPromoContentFromIrisResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetPromoContentFromIrisResponse;
   }
 }

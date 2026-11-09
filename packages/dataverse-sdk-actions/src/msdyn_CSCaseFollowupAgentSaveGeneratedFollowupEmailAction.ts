@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail action
+ * Response from the msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse {
+  "@odata.context"?: string;
   msdyn_response: string;
+}
+
+/**
+ * Parameters of the msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailActionParameters {
+  msdyn_payload: string;
 }
 
 /**
@@ -13,20 +25,22 @@ export interface msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse {
  * Unbound action
  */
 export class msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailAction implements Executable<msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse> {
-  constructor(public readonly msdyn_payload: string) {}
+  constructor(
+    public readonly parameters: msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail`;
 
-    const body: Record<string, unknown> = {
-      msdyn_payload: this.msdyn_payload,
-    };
+    const body = requestBody({
+      msdyn_payload: this.parameters.msdyn_payload,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -35,7 +49,7 @@ export class msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailAction implement
   async parseResponse(
     response: Response
   ): Promise<msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse> {
-    const data = await response.json();
-    return data as msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse;
   }
 }

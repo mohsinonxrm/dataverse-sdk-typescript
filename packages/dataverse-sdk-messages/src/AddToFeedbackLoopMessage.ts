@@ -1,57 +1,68 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the AddToFeedbackLoop message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddToFeedbackLoopRequestParameters {
+  predictionInput: EntityReference | AnyEntityPayload;
+  source?: string;
+  inputName?: string;
+  predictionOutput?: string;
+}
 
 /**
  * AddToFeedbackLoop request message
  *
  * Web API Action: AddToFeedbackLoop
+ *
+ * The first argument is the id of the msdyn_aimodel record to call it on.
  */
 export class AddToFeedbackLoopRequest
   extends OrganizationRequest
   implements Executable<AddToFeedbackLoopResponse>
 {
+  declare readonly Parameters: Readonly<AddToFeedbackLoopRequestParameters>;
+
   constructor(
     public msdyn_aimodelId: string,
-    public inputName: string,
-    public predictionOutput: string,
-    public predictionInput: EntityReference
+    parameters: AddToFeedbackLoopRequestParameters
   ) {
-    super("AddToFeedbackLoop");
+    super("AddToFeedbackLoop", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/msdyn_aimodels(${this.msdyn_aimodelId})/Microsoft.Dynamics.CRM.AddToFeedbackLoop`;
+    const url = `${baseUrl}/msdyn_aimodels(${odataLiteral.guid(this.msdyn_aimodelId)})/Microsoft.Dynamics.CRM.AddToFeedbackLoop`;
 
-    const body: Record<string, unknown> = {
-      inputName: this.inputName,
-      predictionOutput: this.predictionOutput,
-      predictionInput: this.predictionInput,
-    };
+    const body = requestBody({
+      predictionInput: this.Parameters.predictionInput,
+      source: this.Parameters.source,
+      inputName: this.Parameters.inputName,
+      predictionOutput: this.Parameters.predictionOutput,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<AddToFeedbackLoopResponse> {
+  parseResponse(_response: Response): Promise<AddToFeedbackLoopResponse> {
     // No return value (204 No Content)
-    return new AddToFeedbackLoopResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.msdyn_aimodelId,
-      inputName: this.inputName,
-      predictionOutput: this.predictionOutput,
-      predictionInput: this.predictionInput,
-    };
+    return Promise.resolve(new AddToFeedbackLoopResponse());
   }
 }
 
@@ -63,7 +74,7 @@ export class AddToFeedbackLoopResponse extends OrganizationResponse {
     super("AddToFeedbackLoop");
   }
 
-  static fromResponse(_data: unknown): AddToFeedbackLoopResponse {
+  static fromResponse(_data?: unknown): AddToFeedbackLoopResponse {
     return new AddToFeedbackLoopResponse();
   }
 }

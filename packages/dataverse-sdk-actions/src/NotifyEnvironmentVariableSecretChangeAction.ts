@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from NotifyEnvironmentVariableSecretChange action
+ * Response from the NotifyEnvironmentVariableSecretChange action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface NotifyEnvironmentVariableSecretChangeResponse {
-  // No content returned
+export type NotifyEnvironmentVariableSecretChangeResponse = void;
+
+/**
+ * Parameters of the NotifyEnvironmentVariableSecretChange action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface NotifyEnvironmentVariableSecretChangeActionParameters {
+  KeyVaultUrl: string;
+  SecretName: string;
 }
 
 /**
@@ -13,31 +23,28 @@ export interface NotifyEnvironmentVariableSecretChangeResponse {
  * Unbound action
  */
 export class NotifyEnvironmentVariableSecretChangeAction implements Executable<NotifyEnvironmentVariableSecretChangeResponse> {
-  constructor(
-    public readonly keyVaultUrl: string,
-    public readonly secretName: string
-  ) {}
+  constructor(public readonly parameters: NotifyEnvironmentVariableSecretChangeActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/NotifyEnvironmentVariableSecretChange`;
 
-    const body: Record<string, unknown> = {
-      KeyVaultUrl: this.keyVaultUrl,
-      SecretName: this.secretName,
-    };
+    const body = requestBody({
+      KeyVaultUrl: this.parameters.KeyVaultUrl,
+      SecretName: this.parameters.SecretName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<NotifyEnvironmentVariableSecretChangeResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<NotifyEnvironmentVariableSecretChangeResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

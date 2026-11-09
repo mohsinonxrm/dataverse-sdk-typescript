@@ -1,13 +1,33 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { post } from "./types/index.js";
 
 /**
- * Response from RetrieveRecordWall function
+ * Response from the RetrieveRecordWall function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveRecordWallResponse {
-  value: post[];
+export type RetrieveRecordWallResponse = Array<
+  post & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
+
+/**
+ * Parameters of the RetrieveRecordWall function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveRecordWallFunctionParameters {
+  Entity: EntityReference;
+  PageNumber: number;
+  PageSize: number;
+  CommentsPerPost: number;
+  StartDate?: string | Date;
+  EndDate?: string | Date;
+  Type?: number;
+  Source?: number;
+  SortDirection?: boolean;
+  Keyword?: string;
 }
 
 /**
@@ -17,97 +37,57 @@ export interface RetrieveRecordWallResponse {
  * Binding parameter: entityset (Collection(mscrm.post))
  */
 export class RetrieveRecordWallFunction implements Executable<RetrieveRecordWallResponse> {
-  constructor(
-    public readonly entity: EntityReference,
-    public readonly pageNumber: number,
-    public readonly pageSize: number,
-    public readonly commentsPerPost: number,
-    public readonly startDate: string,
-    public readonly endDate: string,
-    public readonly type: number,
-    public readonly source: number,
-    public readonly sortDirection: boolean,
-    public readonly keyword: string
-  ) {}
+  constructor(public readonly parameters: RetrieveRecordWallFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/RetrieveRecordWall`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/posts/Microsoft.Dynamics.CRM.RetrieveRecordWall`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entity !== undefined) {
+    if (this.parameters.Entity !== undefined) {
       aliases.push(`Entity=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.entity)}(${this.entity.id})`,
-        })
+        formatParameterAlias(this.parameters.Entity, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.pageNumber !== undefined) {
+    if (this.parameters.PageNumber !== undefined) {
       aliases.push(`PageNumber=@p2`);
-      params.append(
-        "@p2",
-        typeof this.pageNumber === "string" ? `'${this.pageNumber}'` : String(this.pageNumber)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.PageNumber, "Edm.Int32"));
     }
-    if (this.pageSize !== undefined) {
+    if (this.parameters.PageSize !== undefined) {
       aliases.push(`PageSize=@p3`);
-      params.append(
-        "@p3",
-        typeof this.pageSize === "string" ? `'${this.pageSize}'` : String(this.pageSize)
-      );
+      params.append("@p3", formatParameterAlias(this.parameters.PageSize, "Edm.Int32"));
     }
-    if (this.commentsPerPost !== undefined) {
+    if (this.parameters.CommentsPerPost !== undefined) {
       aliases.push(`CommentsPerPost=@p4`);
-      params.append(
-        "@p4",
-        typeof this.commentsPerPost === "string"
-          ? `'${this.commentsPerPost}'`
-          : String(this.commentsPerPost)
-      );
+      params.append("@p4", formatParameterAlias(this.parameters.CommentsPerPost, "Edm.Int32"));
     }
-    if (this.startDate !== undefined) {
+    if (this.parameters.StartDate !== undefined) {
       aliases.push(`StartDate=@p5`);
-      params.append(
-        "@p5",
-        typeof this.startDate === "string" ? `'${this.startDate}'` : String(this.startDate)
-      );
+      params.append("@p5", formatParameterAlias(this.parameters.StartDate, "Edm.DateTimeOffset"));
     }
-    if (this.endDate !== undefined) {
+    if (this.parameters.EndDate !== undefined) {
       aliases.push(`EndDate=@p6`);
-      params.append(
-        "@p6",
-        typeof this.endDate === "string" ? `'${this.endDate}'` : String(this.endDate)
-      );
+      params.append("@p6", formatParameterAlias(this.parameters.EndDate, "Edm.DateTimeOffset"));
     }
-    if (this.type !== undefined) {
+    if (this.parameters.Type !== undefined) {
       aliases.push(`Type=@p7`);
-      params.append("@p7", typeof this.type === "string" ? `'${this.type}'` : String(this.type));
+      params.append("@p7", formatParameterAlias(this.parameters.Type, "Edm.Int32"));
     }
-    if (this.source !== undefined) {
+    if (this.parameters.Source !== undefined) {
       aliases.push(`Source=@p8`);
-      params.append(
-        "@p8",
-        typeof this.source === "string" ? `'${this.source}'` : String(this.source)
-      );
+      params.append("@p8", formatParameterAlias(this.parameters.Source, "Edm.Int32"));
     }
-    if (this.sortDirection !== undefined) {
+    if (this.parameters.SortDirection !== undefined) {
       aliases.push(`SortDirection=@p9`);
-      params.append(
-        "@p9",
-        typeof this.sortDirection === "string"
-          ? `'${this.sortDirection}'`
-          : String(this.sortDirection)
-      );
+      params.append("@p9", formatParameterAlias(this.parameters.SortDirection, "Edm.Boolean"));
     }
-    if (this.keyword !== undefined) {
+    if (this.parameters.Keyword !== undefined) {
       aliases.push(`Keyword=@p10`);
-      params.append(
-        "@p10",
-        typeof this.keyword === "string" ? `'${this.keyword}'` : String(this.keyword)
-      );
+      params.append("@p10", formatParameterAlias(this.parameters.Keyword, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -123,7 +103,9 @@ export class RetrieveRecordWallFunction implements Executable<RetrieveRecordWall
   }
 
   async parseResponse(response: Response): Promise<RetrieveRecordWallResponse> {
-    const data = await response.json();
-    return data as RetrieveRecordWallResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveRecordWallResponse }).value;
   }
 }

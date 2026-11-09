@@ -2,8 +2,8 @@
  * QuestionAnalyticsResponse complex type
  */
 export interface QuestionAnalyticsResponse {
-  value: string;
-  pagingCookie: string;
-  moreRecords: boolean;
-  page: number;
+  moreRecords?: boolean;
+  page?: number;
+  pagingCookie?: string;
+  value?: string;
 }

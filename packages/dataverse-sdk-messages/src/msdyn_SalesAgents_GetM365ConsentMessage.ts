@@ -21,30 +21,43 @@ export class msdyn_SalesAgents_GetM365ConsentRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesAgents_GetM365ConsentResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_GetM365ConsentResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_SalesAgents_GetM365ConsentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_GetM365Consent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_GetM365ConsentResult {
+  "@odata.context"?: string;
+  msdyn_IsTeamsConsentGranted: boolean;
+  msdyn_IsTenantConsentGranted: boolean;
+  msdyn_SellerConsentStatus: string;
+}
+
+/**
  * msdyn_SalesAgents_GetM365Consent response message
+ *
+ * `result` is the value the msdyn_SalesAgents_GetM365Consent action returns (see {@link msdyn_SalesAgents_GetM365ConsentResult}).
  */
 export class msdyn_SalesAgents_GetM365ConsentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetM365ConsentResponse) {
+  constructor(public result: msdyn_SalesAgents_GetM365ConsentResult) {
     super("msdyn_SalesAgents_GetM365Consent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_GetM365ConsentResponse {
-    return new msdyn_SalesAgents_GetM365ConsentResponse((data as any).value);
+    return new msdyn_SalesAgents_GetM365ConsentResponse(
+      data as msdyn_SalesAgents_GetM365ConsentResult
+    );
   }
 }

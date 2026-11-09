@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the CardCreateClone message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CardCreateCloneRequestParameters {
+  CardId: string;
+  CardName: string;
+}
 
 /**
  * CardCreateClone request message
@@ -10,53 +20,58 @@ export class CardCreateCloneRequest
   extends OrganizationRequest
   implements Executable<CardCreateCloneResponse>
 {
-  constructor(
-    public cardId: string,
-    public cardName: string
-  ) {
-    super("CardCreateClone");
+  declare readonly Parameters: Readonly<CardCreateCloneRequestParameters>;
+
+  constructor(parameters: CardCreateCloneRequestParameters) {
+    super("CardCreateClone", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CardCreateClone`;
 
-    const body: Record<string, unknown> = {
-      CardId: this.cardId,
-      CardName: this.cardName,
-    };
+    const body = requestBody({
+      CardId: this.Parameters.CardId,
+      CardName: this.Parameters.CardName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<CardCreateCloneResponse> {
-    const data = await response.json();
-    return CardCreateCloneResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      CardId: this.cardId,
-      CardName: this.cardName,
-    };
+    // The body is the complex value, with its @odata.context
+    return CardCreateCloneResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the CardCreateClone action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface CardCreateCloneResult {
+  "@odata.context"?: string;
+  CardIdClone: string;
+}
+
+/**
  * CardCreateClone response message
+ *
+ * `result` is the value the CardCreateClone action returns (see {@link CardCreateCloneResult}).
  */
 export class CardCreateCloneResponse extends OrganizationResponse {
-  constructor(public result: CardCreateCloneResponse) {
+  constructor(public result: CardCreateCloneResult) {
     super("CardCreateClone");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): CardCreateCloneResponse {
-    return new CardCreateCloneResponse((data as any).value);
+    return new CardCreateCloneResponse(data as CardCreateCloneResult);
   }
 }

@@ -1,5 +1,18 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_StartODOSProvisioning message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_StartODOSProvisioningRequestParameters {
+  Entities: string;
+  FeatureName: string;
+  FeatureDisplayName: string;
+  Roles: string;
+  Primitives: string;
+}
 
 /**
  * msdyn_StartODOSProvisioning request message
@@ -10,50 +23,36 @@ export class msdyn_StartODOSProvisioningRequest
   extends OrganizationRequest
   implements Executable<msdyn_StartODOSProvisioningResponse>
 {
-  constructor(
-    public entities: string,
-    public featureName: string,
-    public featureDisplayName: string,
-    public roles: string,
-    public primitives: string
-  ) {
-    super("msdyn_StartODOSProvisioning");
+  declare readonly Parameters: Readonly<msdyn_StartODOSProvisioningRequestParameters>;
+
+  constructor(parameters: msdyn_StartODOSProvisioningRequestParameters) {
+    super("msdyn_StartODOSProvisioning", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_StartODOSProvisioning`;
 
-    const body: Record<string, unknown> = {
-      Entities: this.entities,
-      FeatureName: this.featureName,
-      FeatureDisplayName: this.featureDisplayName,
-      Roles: this.roles,
-      Primitives: this.primitives,
-    };
+    const body = requestBody({
+      Entities: this.Parameters.Entities,
+      FeatureName: this.Parameters.FeatureName,
+      FeatureDisplayName: this.Parameters.FeatureDisplayName,
+      Roles: this.Parameters.Roles,
+      Primitives: this.Parameters.Primitives,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_StartODOSProvisioningResponse> {
+  parseResponse(_response: Response): Promise<msdyn_StartODOSProvisioningResponse> {
     // No return value (204 No Content)
-    return new msdyn_StartODOSProvisioningResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Entities: this.entities,
-      FeatureName: this.featureName,
-      FeatureDisplayName: this.featureDisplayName,
-      Roles: this.roles,
-      Primitives: this.primitives,
-    };
+    return Promise.resolve(new msdyn_StartODOSProvisioningResponse());
   }
 }
 
@@ -65,7 +64,7 @@ export class msdyn_StartODOSProvisioningResponse extends OrganizationResponse {
     super("msdyn_StartODOSProvisioning");
   }
 
-  static fromResponse(_data: unknown): msdyn_StartODOSProvisioningResponse {
+  static fromResponse(_data?: unknown): msdyn_StartODOSProvisioningResponse {
     return new msdyn_StartODOSProvisioningResponse();
   }
 }

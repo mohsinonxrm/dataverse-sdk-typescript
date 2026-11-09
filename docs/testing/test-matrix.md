@@ -1,19 +1,22 @@
-# Test Matrix (v1)
+# Test Matrix
+
+What each package's tests check. Live checks are in
+[integration-tests](../../packages/dataverse-sdk-integration-tests/README.md), one file per area.
 
 ## dataverse-sdk-core
 
-Unit:
+Unit and contract:
 
 - builds URLs for relative and absolute paths
-- query options serialization
+- query options serialization (`encodeURIComponent` encoding)
 - Prefer header composition
-  Contract:
-- retries on 429, >=502; honor Retry-After
-- concurrency limiter adapts to x-ms-dop-hint when present
+- retries on 429 for every method, on 502/503/504 for idempotent requests; honors Retry-After
+  up to `maxRetryAfterMs`
+- concurrency limiter adapts to `x-ms-dop-hint` when present
 
 Acceptance:
 
-- 95%+ unit coverage on core modules
+- coverage gate: 85% statements, functions and lines, 80% branches
 - deterministic retry timing tests (mocked clock)
 
 ## dataverse-sdk-batch
@@ -25,52 +28,36 @@ Contract:
 - auto-split >1000 requests into multiple batches
 - change set atomic grouping preserved
 
-Acceptance:
-
-- can execute 10-op batch + 2 changesets in contract tests
-- split behavior verified
-
-## dataverse-sdk-actions
+## dataverse-sdk-actions, -functions, -messages
 
 Unit:
 
-- correct POST method and endpoint composition
-  Integration:
-- ExecuteWorkflow works when enabled in test env
+- POST (actions, messages) or GET with parameter aliases (functions), and the route of bound,
+  collection-bound and unbound operations
+- parameters objects, entity references and payloads, enum bodies
+- return values: the value itself, never the OData envelope (#300)
 
-Acceptance:
+Type tests (`tsd`): constructors and `<Name>Response` types.
 
-- all minimal v1 actions have unit coverage
-
-## dataverse-sdk-functions
-
-Unit:
-
-- correct GET method and alias parameter behavior
-  Integration:
-- WhoAmI works when enabled in test env
+Integration: the generated operations against a live org.
 
 ## dataverse-sdk-metadata
 
-Type tests:
+Type tests (`tsd`):
 
-- invalid write payloads don’t compile
-  Unit:
-- builders return correct discriminated types
-  Integration:
-- create/update attribute patterns match doc and succeed
-- RetrieveMetadataChanges typed call succeeds
-
-## dataverse-sdk-messages
+- invalid write payloads don't compile
 
 Unit:
 
-- message mapping to action/function/CRUD is correct
-- generic OrganizationRequest passes parameters through correctly
+- create, update and retrieve requests, ids from `OData-EntityId`
+
+Integration:
+
+- entity definitions, `retrieveMetadataChanges`, `canBeReferenced`
 
 ## dataverse-sdk-discovery
 
 Unit:
 
-- parses discovery payload and returns normalized org URLs
-  Docs reference global discovery purpose and commercial endpoint.
+- parses the Global Discovery Service v2.0 payload, in every cloud (Commercial, GCC, GCC High,
+  DoD, China), with the token scope of that cloud

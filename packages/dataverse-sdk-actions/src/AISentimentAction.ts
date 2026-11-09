@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AISentiment action
+ * Response from the AISentiment action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface AISentimentResponse {
+  "@odata.context"?: string;
   AnalyzedSentiment: string;
+}
+
+/**
+ * Parameters of the AISentiment action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AISentimentActionParameters {
+  Text: string;
 }
 
 /**
@@ -13,27 +25,27 @@ export interface AISentimentResponse {
  * Unbound action
  */
 export class AISentimentAction implements Executable<AISentimentResponse> {
-  constructor(public readonly text: string) {}
+  constructor(public readonly parameters: AISentimentActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AISentiment`;
 
-    const body: Record<string, unknown> = {
-      Text: this.text,
-    };
+    const body = requestBody({
+      Text: this.parameters.Text,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<AISentimentResponse> {
-    const data = await response.json();
-    return data as AISentimentResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as AISentimentResponse;
   }
 }

@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DeleteOQOILineWithSkipPricingCalculation action
+ * Response from the DeleteOQOILineWithSkipPricingCalculation action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeleteOQOILineWithSkipPricingCalculationResponse {
-  // No content returned
+export type DeleteOQOILineWithSkipPricingCalculationResponse = void;
+
+/**
+ * Parameters of the DeleteOQOILineWithSkipPricingCalculation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteOQOILineWithSkipPricingCalculationActionParameters {
+  entityLogicalName: string;
+  entityId: string;
 }
 
 /**
@@ -14,32 +24,29 @@ export interface DeleteOQOILineWithSkipPricingCalculationResponse {
  */
 export class DeleteOQOILineWithSkipPricingCalculationAction implements Executable<DeleteOQOILineWithSkipPricingCalculationResponse> {
   constructor(
-    public readonly entityLogicalName: string,
-    public readonly entityId: string
+    public readonly parameters: DeleteOQOILineWithSkipPricingCalculationActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeleteOQOILineWithSkipPricingCalculation`;
 
-    const body: Record<string, unknown> = {
-      entityLogicalName: this.entityLogicalName,
-      entityId: this.entityId,
-    };
+    const body = requestBody({
+      entityLogicalName: this.parameters.entityLogicalName,
+      entityId: this.parameters.entityId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<DeleteOQOILineWithSkipPricingCalculationResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<DeleteOQOILineWithSkipPricingCalculationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

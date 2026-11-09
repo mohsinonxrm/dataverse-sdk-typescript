@@ -1,6 +1,28 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the msdyn_EmailTemplateRecommendation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_EmailTemplateRecommendationRequestParameters {
+  Headers?: number;
+  customerIntent: string;
+  filters?: string;
+  transactionId: string;
+  multiturnPayload?: string;
+  templateId?: string;
+  emailContextData?: string;
+  templateFiltersInString: string;
+  entityReference?: EntityReference | AnyEntityPayload;
+  emailString: string;
+  isTemplateResponse?: boolean;
+  copilotRequestParameters: string;
+  emailId: string;
+}
 
 /**
  * msdyn_EmailTemplateRecommendation request message
@@ -11,83 +33,75 @@ export class msdyn_EmailTemplateRecommendationRequest
   extends OrganizationRequest
   implements Executable<msdyn_EmailTemplateRecommendationResponse>
 {
-  constructor(
-    public headers: number,
-    public customerIntent: string,
-    public filters: string,
-    public templateFiltersInString: string,
-    public emailString: string,
-    public isTemplateResponse: boolean,
-    public transactionId: string,
-    public multiturnPayload: string,
-    public emailContextData: string,
-    public copilotRequestParameters: string,
-    public emailId: string,
-    public entityReference: EntityReference
-  ) {
-    super("msdyn_EmailTemplateRecommendation");
+  declare readonly Parameters: Readonly<msdyn_EmailTemplateRecommendationRequestParameters>;
+
+  constructor(parameters: msdyn_EmailTemplateRecommendationRequestParameters) {
+    super("msdyn_EmailTemplateRecommendation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_EmailTemplateRecommendation`;
 
-    const body: Record<string, unknown> = {
-      Headers: this.headers,
-      customerIntent: this.customerIntent,
-      filters: this.filters,
-      templateFiltersInString: this.templateFiltersInString,
-      emailString: this.emailString,
-      isTemplateResponse: this.isTemplateResponse,
-      transactionId: this.transactionId,
-      multiturnPayload: this.multiturnPayload,
-      emailContextData: this.emailContextData,
-      copilotRequestParameters: this.copilotRequestParameters,
-      emailId: this.emailId,
-      entityReference: this.entityReference,
-    };
+    const body = requestBody({
+      Headers: this.Parameters.Headers,
+      customerIntent: this.Parameters.customerIntent,
+      filters: this.Parameters.filters,
+      transactionId: this.Parameters.transactionId,
+      multiturnPayload: this.Parameters.multiturnPayload,
+      templateId: this.Parameters.templateId,
+      emailContextData: this.Parameters.emailContextData,
+      templateFiltersInString: this.Parameters.templateFiltersInString,
+      entityReference: this.Parameters.entityReference,
+      emailString: this.Parameters.emailString,
+      isTemplateResponse: this.Parameters.isTemplateResponse,
+      copilotRequestParameters: this.Parameters.copilotRequestParameters,
+      emailId: this.Parameters.emailId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_EmailTemplateRecommendationResponse> {
-    const data = await response.json();
-    return msdyn_EmailTemplateRecommendationResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Headers: this.headers,
-      customerIntent: this.customerIntent,
-      filters: this.filters,
-      templateFiltersInString: this.templateFiltersInString,
-      emailString: this.emailString,
-      isTemplateResponse: this.isTemplateResponse,
-      transactionId: this.transactionId,
-      multiturnPayload: this.multiturnPayload,
-      emailContextData: this.emailContextData,
-      copilotRequestParameters: this.copilotRequestParameters,
-      emailId: this.emailId,
-      entityReference: this.entityReference,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_EmailTemplateRecommendationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_EmailTemplateRecommendation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_EmailTemplateRecommendationResult {
+  "@odata.context"?: string;
+  citations: string;
+  diagnosticInfo: string;
+  emailTemplates: string;
+  generatedEmailString: string;
+  recommendedTemplate: string;
+}
+
+/**
  * msdyn_EmailTemplateRecommendation response message
+ *
+ * `result` is the value the msdyn_EmailTemplateRecommendation action returns (see {@link msdyn_EmailTemplateRecommendationResult}).
  */
 export class msdyn_EmailTemplateRecommendationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_EmailTemplateRecommendationResponse) {
+  constructor(public result: msdyn_EmailTemplateRecommendationResult) {
     super("msdyn_EmailTemplateRecommendation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_EmailTemplateRecommendationResponse {
-    return new msdyn_EmailTemplateRecommendationResponse((data as any).value);
+    return new msdyn_EmailTemplateRecommendationResponse(
+      data as msdyn_EmailTemplateRecommendationResult
+    );
   }
 }

@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from _SyncKnowledgeManagementSettings action
+ * Response from the _SyncKnowledgeManagementSettings action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface _SyncKnowledgeManagementSettingsResponse {
-  // No content returned
-}
+export type _SyncKnowledgeManagementSettingsResponse = void;
 
 /**
  * _SyncKnowledgeManagementSettings action
@@ -20,13 +20,13 @@ export class _SyncKnowledgeManagementSettingsAction implements Executable<_SyncK
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<_SyncKnowledgeManagementSettingsResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<_SyncKnowledgeManagementSettingsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

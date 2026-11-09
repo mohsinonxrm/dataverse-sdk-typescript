@@ -1,11 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ExportSolutionFromGit action
+ * Response from the ExportSolutionFromGit action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ExportSolutionFromGitResponse {
-  SolutionZip: string;
+  "@odata.context"?: string;
   CommitId: string;
+  SolutionZip: string;
+}
+
+/**
+ * Parameters of the ExportSolutionFromGit action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ExportSolutionFromGitActionParameters {
+  SolutionName: string;
+  Managed: boolean;
+  ReleaseBranch: string;
+  IsLiteExport?: boolean;
 }
 
 /**
@@ -14,35 +29,30 @@ export interface ExportSolutionFromGitResponse {
  * Unbound action
  */
 export class ExportSolutionFromGitAction implements Executable<ExportSolutionFromGitResponse> {
-  constructor(
-    public readonly solutionName: string,
-    public readonly managed: boolean,
-    public readonly releaseBranch: string,
-    public readonly isLiteExport: boolean
-  ) {}
+  constructor(public readonly parameters: ExportSolutionFromGitActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ExportSolutionFromGit`;
 
-    const body: Record<string, unknown> = {
-      SolutionName: this.solutionName,
-      Managed: this.managed,
-      ReleaseBranch: this.releaseBranch,
-      IsLiteExport: this.isLiteExport,
-    };
+    const body = requestBody({
+      SolutionName: this.parameters.SolutionName,
+      Managed: this.parameters.Managed,
+      ReleaseBranch: this.parameters.ReleaseBranch,
+      IsLiteExport: this.parameters.IsLiteExport,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<ExportSolutionFromGitResponse> {
-    const data = await response.json();
-    return data as ExportSolutionFromGitResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as ExportSolutionFromGitResponse;
   }
 }

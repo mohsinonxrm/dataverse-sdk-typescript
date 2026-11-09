@@ -1,38 +1,44 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from AddRequiredUIElementCollectionComponentsToSolutions action
+ * Response from the AddRequiredUIElementCollectionComponentsToSolutions action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AddRequiredUIElementCollectionComponentsToSolutionsResponse {
-  // No content returned
-}
+export type AddRequiredUIElementCollectionComponentsToSolutionsResponse = void;
 
 /**
  * AddRequiredUIElementCollectionComponentsToSolutions action
  *
  * Bound action
  * Binding parameter: entity (mscrm.desktopflowmodule)
+ *
+ * The first argument is the id of the desktopflowmodule record to call it on.
  */
 export class AddRequiredUIElementCollectionComponentsToSolutionsAction implements Executable<AddRequiredUIElementCollectionComponentsToSolutionsResponse> {
   constructor(public readonly desktopflowmoduleId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/desktopflowmodules(${this.desktopflowmoduleId})/Microsoft.Dynamics.CRM.AddRequiredUIElementCollectionComponentsToSolutions`;
+    const url = `${baseUrl}/desktopflowmodules(${odataLiteral.guid(this.desktopflowmoduleId)})/Microsoft.Dynamics.CRM.AddRequiredUIElementCollectionComponentsToSolutions`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<AddRequiredUIElementCollectionComponentsToSolutionsResponse> {
-    // No return value (204 No Content)
-    return {};
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

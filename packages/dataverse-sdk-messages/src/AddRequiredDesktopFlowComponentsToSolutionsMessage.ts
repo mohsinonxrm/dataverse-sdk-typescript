@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * AddRequiredDesktopFlowComponentsToSolutions request message
  *
  * Web API Action: AddRequiredDesktopFlowComponentsToSolutions
+ *
+ * The first argument is the id of the workflow record to call it on.
  */
 export class AddRequiredDesktopFlowComponentsToSolutionsRequest
   extends OrganizationRequest
@@ -16,28 +22,20 @@ export class AddRequiredDesktopFlowComponentsToSolutionsRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/workflows(${this.workflowId})/Microsoft.Dynamics.CRM.AddRequiredDesktopFlowComponentsToSolutions`;
+    const url = `${baseUrl}/workflows(${odataLiteral.guid(this.workflowId)})/Microsoft.Dynamics.CRM.AddRequiredDesktopFlowComponentsToSolutions`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<AddRequiredDesktopFlowComponentsToSolutionsResponse> {
+  parseResponse(_response: Response): Promise<AddRequiredDesktopFlowComponentsToSolutionsResponse> {
     // No return value (204 No Content)
-    return new AddRequiredDesktopFlowComponentsToSolutionsResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.workflowId,
-    };
+    return Promise.resolve(new AddRequiredDesktopFlowComponentsToSolutionsResponse());
   }
 }
 
@@ -49,7 +47,7 @@ export class AddRequiredDesktopFlowComponentsToSolutionsResponse extends Organiz
     super("AddRequiredDesktopFlowComponentsToSolutions");
   }
 
-  static fromResponse(_data: unknown): AddRequiredDesktopFlowComponentsToSolutionsResponse {
+  static fromResponse(_data?: unknown): AddRequiredDesktopFlowComponentsToSolutionsResponse {
     return new AddRequiredDesktopFlowComponentsToSolutionsResponse();
   }
 }

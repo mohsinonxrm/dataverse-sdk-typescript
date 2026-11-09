@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * LeaveGroup request message
  *
  * Web API Action: LeaveGroup
+ *
+ * The first argument is the id of the flowmachine record to call it on.
  */
 export class LeaveGroupRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class LeaveGroupRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowmachines(${this.flowmachineId})/Microsoft.Dynamics.CRM.LeaveGroup`;
+    const url = `${baseUrl}/flowmachines(${odataLiteral.guid(this.flowmachineId)})/Microsoft.Dynamics.CRM.LeaveGroup`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<LeaveGroupResponse> {
+  parseResponse(_response: Response): Promise<LeaveGroupResponse> {
     // No return value (204 No Content)
-    return new LeaveGroupResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachineId,
-    };
+    return Promise.resolve(new LeaveGroupResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class LeaveGroupResponse extends OrganizationResponse {
     super("LeaveGroup");
   }
 
-  static fromResponse(_data: unknown): LeaveGroupResponse {
+  static fromResponse(_data?: unknown): LeaveGroupResponse {
     return new LeaveGroupResponse();
   }
 }

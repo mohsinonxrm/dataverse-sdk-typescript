@@ -1,11 +1,26 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { campaignitem } from "./types/index.js";
 
 /**
- * Response from RemoveItemCampaign action
+ * Response from the RemoveItemCampaign action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RemoveItemCampaignResponse {
-  // No content returned
+export type RemoveItemCampaignResponse = void;
+
+/**
+ * Parameters of the RemoveItemCampaign action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveItemCampaignActionParameters {
+  CampaignItem: EntityReference | EntityPayload<campaignitem>;
 }
 
 /**
@@ -13,33 +28,35 @@ export interface RemoveItemCampaignResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.campaign)
+ *
+ * The first argument is the id of the campaign record to call it on.
  */
 export class RemoveItemCampaignAction implements Executable<RemoveItemCampaignResponse> {
   constructor(
     public readonly campaignId: string,
-    public readonly campaignItem: campaignitem
+    public readonly parameters: RemoveItemCampaignActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/campaigns(${this.campaignId})/Microsoft.Dynamics.CRM.RemoveItemCampaign`;
+    const url = `${baseUrl}/campaigns(${odataLiteral.guid(this.campaignId)})/Microsoft.Dynamics.CRM.RemoveItemCampaign`;
 
-    const body: Record<string, unknown> = {
-      CampaignItem: this.campaignItem,
-    };
+    const body = requestBody({
+      CampaignItem: this.parameters.CampaignItem,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveItemCampaignResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<RemoveItemCampaignResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

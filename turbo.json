@@ -11,9 +11,11 @@
       "outputs": []
     },
     "lint": {
+      "dependsOn": ["^build"],
       "outputs": []
     },
     "typecheck": {
+      "dependsOn": ["^build"],
       "outputs": []
     },
     "clean": {
@@ -21,6 +23,11 @@
     },
     "generate:metadata-types": {
       "outputs": ["src/generated/**"]
+    },
+    "test:integration": {
+      "dependsOn": ["^build"],
+      "outputs": [],
+      "cache": false
     }
   }
 }

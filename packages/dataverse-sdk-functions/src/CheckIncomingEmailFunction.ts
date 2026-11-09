@@ -1,12 +1,30 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { email } from "./types/index.js";
 
 /**
- * Response from CheckIncomingEmail function
+ * Response from the CheckIncomingEmail function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CheckIncomingEmailResponse {
-  ShouldDeliver: boolean;
+  "@odata.context"?: string;
   ReasonCode: number;
+  ShouldDeliver: boolean;
+}
+
+/**
+ * Parameters of the CheckIncomingEmail function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CheckIncomingEmailFunctionParameters {
+  MessageId: string;
+  Subject?: string;
+  From: string;
+  To: string;
+  Cc: string;
+  Bcc: string;
+  ExtraProperties?: email;
 }
 
 /**
@@ -15,15 +33,7 @@ export interface CheckIncomingEmailResponse {
  * Unbound function
  */
 export class CheckIncomingEmailFunction implements Executable<CheckIncomingEmailResponse> {
-  constructor(
-    public readonly messageId: string,
-    public readonly subject: string,
-    public readonly from: string,
-    public readonly to: string,
-    public readonly cc: string,
-    public readonly bcc: string,
-    public readonly extraProperties: email
-  ) {}
+  constructor(public readonly parameters: CheckIncomingEmailFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/CheckIncomingEmail`;
@@ -31,39 +41,36 @@ export class CheckIncomingEmailFunction implements Executable<CheckIncomingEmail
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.messageId !== undefined) {
+    if (this.parameters.MessageId !== undefined) {
       aliases.push(`MessageId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.messageId === "string" ? `'${this.messageId}'` : String(this.messageId)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.MessageId, "Edm.String"));
     }
-    if (this.subject !== undefined) {
+    if (this.parameters.Subject !== undefined) {
       aliases.push(`Subject=@p2`);
-      params.append(
-        "@p2",
-        typeof this.subject === "string" ? `'${this.subject}'` : String(this.subject)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.Subject, "Edm.String"));
     }
-    if (this.from !== undefined) {
+    if (this.parameters.From !== undefined) {
       aliases.push(`From=@p3`);
-      params.append("@p3", typeof this.from === "string" ? `'${this.from}'` : String(this.from));
+      params.append("@p3", formatParameterAlias(this.parameters.From, "Edm.String"));
     }
-    if (this.to !== undefined) {
+    if (this.parameters.To !== undefined) {
       aliases.push(`To=@p4`);
-      params.append("@p4", typeof this.to === "string" ? `'${this.to}'` : String(this.to));
+      params.append("@p4", formatParameterAlias(this.parameters.To, "Edm.String"));
     }
-    if (this.cc !== undefined) {
+    if (this.parameters.Cc !== undefined) {
       aliases.push(`Cc=@p5`);
-      params.append("@p5", typeof this.cc === "string" ? `'${this.cc}'` : String(this.cc));
+      params.append("@p5", formatParameterAlias(this.parameters.Cc, "Edm.String"));
     }
-    if (this.bcc !== undefined) {
+    if (this.parameters.Bcc !== undefined) {
       aliases.push(`Bcc=@p6`);
-      params.append("@p6", typeof this.bcc === "string" ? `'${this.bcc}'` : String(this.bcc));
+      params.append("@p6", formatParameterAlias(this.parameters.Bcc, "Edm.String"));
     }
-    if (this.extraProperties !== undefined) {
+    if (this.parameters.ExtraProperties !== undefined) {
       aliases.push(`ExtraProperties=@p7`);
-      params.append("@p7", JSON.stringify(this.extraProperties));
+      params.append(
+        "@p7",
+        formatParameterAlias(this.parameters.ExtraProperties, "mscrm.email", "EntityType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -79,7 +86,7 @@ export class CheckIncomingEmailFunction implements Executable<CheckIncomingEmail
   }
 
   async parseResponse(response: Response): Promise<CheckIncomingEmailResponse> {
-    const data = await response.json();
-    return data as CheckIncomingEmailResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as CheckIncomingEmailResponse;
   }
 }

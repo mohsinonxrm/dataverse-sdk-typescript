@@ -1,11 +1,31 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AIModelPublish action
+ * Response from the AIModelPublish action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface AIModelPublishResponse {
-  value: EntityReference;
+export type AIModelPublishResponse = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
+ * Parameters of the AIModelPublish action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AIModelPublishActionParameters {
+  TemplateId: string;
+  Source?: string;
+  RunConfiguration: string;
+  ModelId: string;
+  CustomConfiguration: string;
+  RunConfigurationId: string;
+  ModelName: string;
 }
 
 /**
@@ -14,41 +34,35 @@ export interface AIModelPublishResponse {
  * Unbound action
  */
 export class AIModelPublishAction implements Executable<AIModelPublishResponse> {
-  constructor(
-    public readonly modelId: string,
-    public readonly modelName: string,
-    public readonly source: string,
-    public readonly runConfigurationId: string,
-    public readonly templateId: string,
-    public readonly runConfiguration: string,
-    public readonly customConfiguration: string
-  ) {}
+  constructor(public readonly parameters: AIModelPublishActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AIModelPublish`;
 
-    const body: Record<string, unknown> = {
-      ModelId: this.modelId,
-      ModelName: this.modelName,
-      Source: this.source,
-      RunConfigurationId: this.runConfigurationId,
-      TemplateId: this.templateId,
-      RunConfiguration: this.runConfiguration,
-      CustomConfiguration: this.customConfiguration,
-    };
+    const body = requestBody({
+      TemplateId: this.parameters.TemplateId,
+      Source: this.parameters.Source,
+      RunConfiguration: this.parameters.RunConfiguration,
+      ModelId: this.parameters.ModelId,
+      CustomConfiguration: this.parameters.CustomConfiguration,
+      RunConfigurationId: this.parameters.RunConfigurationId,
+      ModelName: this.parameters.ModelName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<AIModelPublishResponse> {
-    const data = await response.json();
-    return data as AIModelPublishResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
+    return (await response.json()) as AIModelPublishResponse;
   }
 }

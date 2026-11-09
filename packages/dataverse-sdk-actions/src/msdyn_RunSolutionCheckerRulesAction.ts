@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_RunSolutionCheckerRules action
+ * Response from the msdyn_RunSolutionCheckerRules action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_RunSolutionCheckerRulesResponse {
-  // No content returned
+export type msdyn_RunSolutionCheckerRulesResponse = void;
+
+/**
+ * Parameters of the msdyn_RunSolutionCheckerRules action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RunSolutionCheckerRulesActionParameters {
+  AnalysisComponentId?: string;
+  InAppNotificationEnabled?: boolean;
 }
 
 /**
@@ -13,31 +23,28 @@ export interface msdyn_RunSolutionCheckerRulesResponse {
  * Unbound action
  */
 export class msdyn_RunSolutionCheckerRulesAction implements Executable<msdyn_RunSolutionCheckerRulesResponse> {
-  constructor(
-    public readonly analysisComponentId: string,
-    public readonly inAppNotificationEnabled: boolean
-  ) {}
+  constructor(public readonly parameters: msdyn_RunSolutionCheckerRulesActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RunSolutionCheckerRules`;
 
-    const body: Record<string, unknown> = {
-      AnalysisComponentId: this.analysisComponentId,
-      InAppNotificationEnabled: this.inAppNotificationEnabled,
-    };
+    const body = requestBody({
+      AnalysisComponentId: this.parameters.AnalysisComponentId,
+      InAppNotificationEnabled: this.parameters.InAppNotificationEnabled,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_RunSolutionCheckerRulesResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_RunSolutionCheckerRulesResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

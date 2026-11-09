@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ImportCardTypeSchema action
+ * Response from the ImportCardTypeSchema action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ImportCardTypeSchemaResponse {
+  "@odata.context"?: string;
   GUID: string;
+}
+
+/**
+ * Parameters of the ImportCardTypeSchema action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportCardTypeSchemaActionParameters {
+  ImportCardTypeSchema: string;
 }
 
 /**
@@ -13,27 +25,27 @@ export interface ImportCardTypeSchemaResponse {
  * Unbound action
  */
 export class ImportCardTypeSchemaAction implements Executable<ImportCardTypeSchemaResponse> {
-  constructor(public readonly importCardTypeSchema: string) {}
+  constructor(public readonly parameters: ImportCardTypeSchemaActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportCardTypeSchema`;
 
-    const body: Record<string, unknown> = {
-      ImportCardTypeSchema: this.importCardTypeSchema,
-    };
+    const body = requestBody({
+      ImportCardTypeSchema: this.parameters.ImportCardTypeSchema,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<ImportCardTypeSchemaResponse> {
-    const data = await response.json();
-    return data as ImportCardTypeSchemaResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as ImportCardTypeSchemaResponse;
   }
 }

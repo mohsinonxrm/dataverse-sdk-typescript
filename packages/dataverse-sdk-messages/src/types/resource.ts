@@ -2,22 +2,22 @@
  * resource entity type
  */
 export interface resource {
-  isdisabled: boolean;
-  objecttypecode: string;
-  timezoneruleversionnumber: number;
-  calendarid: string;
-  importsequencenumber: number;
-  resourceid: string;
-  displayinserviceviews: boolean;
-  versionnumber: number;
-  _organizationid_value: string;
-  _siteid_value: string;
-  name: string;
-  entityimage_timestamp: number;
-  entityimage: string;
-  utcconversiontimezonecode: number;
-  _businessunitid_value: string;
-  overriddencreatedon: string;
-  entityimage_url: string;
-  entityimageid: string;
+  _businessunitid_value?: string;
+  _organizationid_value?: string;
+  _siteid_value?: string;
+  calendarid?: string;
+  displayinserviceviews?: boolean;
+  entityimage?: string;
+  entityimage_timestamp?: number;
+  entityimage_url?: string;
+  entityimageid?: string;
+  importsequencenumber?: number;
+  isdisabled?: boolean;
+  name?: string;
+  objecttypecode?: string;
+  overriddencreatedon?: string;
+  resourceid?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
+  versionnumber?: number;
 }

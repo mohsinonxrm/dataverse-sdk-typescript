@@ -1,12 +1,36 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PropagationOwnershipOptions } from "./types/index.js";
 
 /**
- * Response from CreateActivitiesList action
+ * Response from the CreateActivitiesList action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateActivitiesListResponse {
+  "@odata.context"?: string;
   BulkOperationId: string;
+}
+
+/**
+ * Parameters of the CreateActivitiesList action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateActivitiesListActionParameters {
+  ListId: string;
+  FriendlyName: string;
+  Activity: EntityReference | AnyEntityPayload;
+  TemplateId: string;
+  Propagate: boolean;
+  OwnershipOptions: PropagationOwnershipOptions;
+  Owner: EntityReference | AnyEntityPayload;
+  sendEmail: boolean;
+  PostWorkflowEvent: boolean;
+  QueueId?: string;
+  ExtendedActivityParameters?: string;
 }
 
 /**
@@ -15,47 +39,37 @@ export interface CreateActivitiesListResponse {
  * Unbound action
  */
 export class CreateActivitiesListAction implements Executable<CreateActivitiesListResponse> {
-  constructor(
-    public readonly listId: string,
-    public readonly friendlyName: string,
-    public readonly activity: EntityReference,
-    public readonly templateId: string,
-    public readonly propagate: boolean,
-    public readonly ownershipOptions: PropagationOwnershipOptions,
-    public readonly owner: EntityReference,
-    public readonly sendEmail: boolean,
-    public readonly postWorkflowEvent: boolean,
-    public readonly queueId: string
-  ) {}
+  constructor(public readonly parameters: CreateActivitiesListActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateActivitiesList`;
 
-    const body: Record<string, unknown> = {
-      ListId: this.listId,
-      FriendlyName: this.friendlyName,
-      Activity: this.activity,
-      TemplateId: this.templateId,
-      Propagate: this.propagate,
-      OwnershipOptions: this.ownershipOptions,
-      Owner: this.owner,
-      sendEmail: this.sendEmail,
-      PostWorkflowEvent: this.postWorkflowEvent,
-      QueueId: this.queueId,
-    };
+    const body = requestBody({
+      ListId: this.parameters.ListId,
+      FriendlyName: this.parameters.FriendlyName,
+      Activity: this.parameters.Activity,
+      TemplateId: this.parameters.TemplateId,
+      Propagate: this.parameters.Propagate,
+      OwnershipOptions: enumBody(this.parameters.OwnershipOptions, "PropagationOwnershipOptions"),
+      Owner: this.parameters.Owner,
+      sendEmail: this.parameters.sendEmail,
+      PostWorkflowEvent: this.parameters.PostWorkflowEvent,
+      QueueId: this.parameters.QueueId,
+      ExtendedActivityParameters: this.parameters.ExtendedActivityParameters,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<CreateActivitiesListResponse> {
-    const data = await response.json();
-    return data as CreateActivitiesListResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as CreateActivitiesListResponse;
   }
 }

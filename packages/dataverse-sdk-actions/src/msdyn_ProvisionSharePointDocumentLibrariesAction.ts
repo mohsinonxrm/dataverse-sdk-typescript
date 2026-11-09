@@ -1,11 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ProvisionSharePointDocumentLibraries action
+ * Response from the msdyn_ProvisionSharePointDocumentLibraries action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ProvisionSharePointDocumentLibrariesResponse {
-  ProvisioningSummary: string;
+  "@odata.context"?: string;
   ProvisioningResult: string;
+  ProvisioningSummary: string;
+}
+
+/**
+ * Parameters of the msdyn_ProvisionSharePointDocumentLibraries action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ProvisionSharePointDocumentLibrariesActionParameters {
+  SharePointSiteURL?: string;
+  FolderStructureEntityValue?: number;
 }
 
 /**
@@ -15,23 +28,22 @@ export interface msdyn_ProvisionSharePointDocumentLibrariesResponse {
  */
 export class msdyn_ProvisionSharePointDocumentLibrariesAction implements Executable<msdyn_ProvisionSharePointDocumentLibrariesResponse> {
   constructor(
-    public readonly sharePointSiteURL: string,
-    public readonly folderStructureEntityValue: number
+    public readonly parameters: msdyn_ProvisionSharePointDocumentLibrariesActionParameters = {}
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ProvisionSharePointDocumentLibraries`;
 
-    const body: Record<string, unknown> = {
-      SharePointSiteURL: this.sharePointSiteURL,
-      FolderStructureEntityValue: this.folderStructureEntityValue,
-    };
+    const body = requestBody({
+      SharePointSiteURL: this.parameters.SharePointSiteURL,
+      FolderStructureEntityValue: this.parameters.FolderStructureEntityValue,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -40,7 +52,7 @@ export class msdyn_ProvisionSharePointDocumentLibrariesAction implements Executa
   async parseResponse(
     response: Response
   ): Promise<msdyn_ProvisionSharePointDocumentLibrariesResponse> {
-    const data = await response.json();
-    return data as msdyn_ProvisionSharePointDocumentLibrariesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_ProvisionSharePointDocumentLibrariesResponse;
   }
 }

@@ -21,30 +21,41 @@ export class msdyn_CheckIfHasLegacyArcRulesRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CheckIfHasLegacyArcRulesResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfHasLegacyArcRulesResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_CheckIfHasLegacyArcRulesResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfHasLegacyArcRules action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfHasLegacyArcRulesResult {
+  "@odata.context"?: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfHasLegacyArcRules response message
+ *
+ * `result` is the value the msdyn_CheckIfHasLegacyArcRules action returns (see {@link msdyn_CheckIfHasLegacyArcRulesResult}).
  */
 export class msdyn_CheckIfHasLegacyArcRulesResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfHasLegacyArcRulesResponse) {
+  constructor(public result: msdyn_CheckIfHasLegacyArcRulesResult) {
     super("msdyn_CheckIfHasLegacyArcRules");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfHasLegacyArcRulesResponse {
-    return new msdyn_CheckIfHasLegacyArcRulesResponse((data as any).value);
+    return new msdyn_CheckIfHasLegacyArcRulesResponse(data as msdyn_CheckIfHasLegacyArcRulesResult);
   }
 }

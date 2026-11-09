@@ -1,10 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DeleteOptionValue action
+ * Response from the DeleteOptionValue action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeleteOptionValueResponse {
-  // No content returned
+export type DeleteOptionValueResponse = void;
+
+/**
+ * Parameters of the DeleteOptionValue action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteOptionValueActionParameters {
+  OptionSetName?: string;
+  AttributeLogicalName?: string;
+  EntityLogicalName?: string;
+  Value: number;
+  SolutionUniqueName?: string;
 }
 
 /**
@@ -13,37 +26,31 @@ export interface DeleteOptionValueResponse {
  * Unbound action
  */
 export class DeleteOptionValueAction implements Executable<DeleteOptionValueResponse> {
-  constructor(
-    public readonly optionSetName: string,
-    public readonly attributeLogicalName: string,
-    public readonly entityLogicalName: string,
-    public readonly value: number,
-    public readonly solutionUniqueName: string
-  ) {}
+  constructor(public readonly parameters: DeleteOptionValueActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeleteOptionValue`;
 
-    const body: Record<string, unknown> = {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Value: this.value,
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      OptionSetName: this.parameters.OptionSetName,
+      AttributeLogicalName: this.parameters.AttributeLogicalName,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      Value: this.parameters.Value,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteOptionValueResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<DeleteOptionValueResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

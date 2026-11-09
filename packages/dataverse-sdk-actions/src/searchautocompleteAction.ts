@@ -1,10 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from searchautocomplete action
+ * Response from the searchautocomplete action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface searchautocompleteResponse {
+  "@odata.context"?: string;
   response: string;
+}
+
+/**
+ * Parameters of the searchautocomplete action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface searchautocompleteActionParameters {
+  fuzzy?: boolean;
+  options?: string;
+  search: string;
+  entities?: string;
+  propertybag?: string;
+  filter?: string;
 }
 
 /**
@@ -13,39 +30,32 @@ export interface searchautocompleteResponse {
  * Unbound action
  */
 export class searchautocompleteAction implements Executable<searchautocompleteResponse> {
-  constructor(
-    public readonly propertybag: string,
-    public readonly filter: string,
-    public readonly fuzzy: boolean,
-    public readonly options: string,
-    public readonly search: string,
-    public readonly entities: string
-  ) {}
+  constructor(public readonly parameters: searchautocompleteActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/searchautocomplete`;
 
-    const body: Record<string, unknown> = {
-      propertybag: this.propertybag,
-      filter: this.filter,
-      fuzzy: this.fuzzy,
-      options: this.options,
-      search: this.search,
-      entities: this.entities,
-    };
+    const body = requestBody({
+      fuzzy: this.parameters.fuzzy,
+      options: this.parameters.options,
+      search: this.parameters.search,
+      entities: this.parameters.entities,
+      propertybag: this.parameters.propertybag,
+      filter: this.parameters.filter,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<searchautocompleteResponse> {
-    const data = await response.json();
-    return data as searchautocompleteResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as searchautocompleteResponse;
   }
 }

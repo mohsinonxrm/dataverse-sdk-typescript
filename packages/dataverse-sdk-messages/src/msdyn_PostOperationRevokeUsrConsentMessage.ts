@@ -21,18 +21,14 @@ export class msdyn_PostOperationRevokeUsrConsentRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_PostOperationRevokeUsrConsentResponse> {
+  parseResponse(_response: Response): Promise<msdyn_PostOperationRevokeUsrConsentResponse> {
     // No return value (204 No Content)
-    return new msdyn_PostOperationRevokeUsrConsentResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    return Promise.resolve(new msdyn_PostOperationRevokeUsrConsentResponse());
   }
 }
 
@@ -44,7 +40,7 @@ export class msdyn_PostOperationRevokeUsrConsentResponse extends OrganizationRes
     super("msdyn_PostOperationRevokeUsrConsent");
   }
 
-  static fromResponse(_data: unknown): msdyn_PostOperationRevokeUsrConsentResponse {
+  static fromResponse(_data?: unknown): msdyn_PostOperationRevokeUsrConsentResponse {
     return new msdyn_PostOperationRevokeUsrConsentResponse();
   }
 }

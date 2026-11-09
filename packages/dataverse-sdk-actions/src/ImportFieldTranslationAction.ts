@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { importjob } from "./types/index.js";
 
 /**
- * Response from ImportFieldTranslation action
+ * Response from the ImportFieldTranslation action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface ImportFieldTranslationResponse {
-  value: importjob;
+export type ImportFieldTranslationResponse =
+  | (importjob & { "@odata.context"?: string; "@odata.etag"?: string; "@odata.type"?: string })
+  | null;
+
+/**
+ * Parameters of the ImportFieldTranslation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportFieldTranslationActionParameters {
+  TranslationFile: string;
 }
 
 /**
@@ -14,27 +26,29 @@ export interface ImportFieldTranslationResponse {
  * Unbound action
  */
 export class ImportFieldTranslationAction implements Executable<ImportFieldTranslationResponse> {
-  constructor(public readonly translationFile: string) {}
+  constructor(public readonly parameters: ImportFieldTranslationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportFieldTranslation`;
 
-    const body: Record<string, unknown> = {
-      TranslationFile: this.translationFile,
-    };
+    const body = requestBody({
+      TranslationFile: this.parameters.TranslationFile,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<ImportFieldTranslationResponse> {
-    const data = await response.json();
-    return data as ImportFieldTranslationResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
+    return (await response.json()) as ImportFieldTranslationResponse;
   }
 }

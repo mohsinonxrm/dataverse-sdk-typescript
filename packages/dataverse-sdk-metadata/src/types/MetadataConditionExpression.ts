@@ -5,7 +5,7 @@ import type { Object } from "./Object.js";
  * MetadataConditionExpression
  */
 export interface MetadataConditionExpression {
-  PropertyName?: string;
   ConditionOperator?: MetadataConditionOperator;
+  PropertyName?: string;
   Value?: Object;
 }

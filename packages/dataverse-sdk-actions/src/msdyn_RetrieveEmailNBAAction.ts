@@ -1,10 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_RetrieveEmailNBA action
+ * Response from the msdyn_RetrieveEmailNBA action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_RetrieveEmailNBAResponse {
+  "@odata.context"?: string;
   msdyn_result: string;
+}
+
+/**
+ * Parameters of the msdyn_RetrieveEmailNBA action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_RetrieveEmailNBAActionParameters {
+  msdyn_RegardingLogicalName: string;
+  msdyn_RegardingEntityIds: string;
 }
 
 /**
@@ -13,31 +26,28 @@ export interface msdyn_RetrieveEmailNBAResponse {
  * Unbound action
  */
 export class msdyn_RetrieveEmailNBAAction implements Executable<msdyn_RetrieveEmailNBAResponse> {
-  constructor(
-    public readonly msdyn_RegardingEntityIds: string,
-    public readonly msdyn_RegardingLogicalName: string
-  ) {}
+  constructor(public readonly parameters: msdyn_RetrieveEmailNBAActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_RetrieveEmailNBA`;
 
-    const body: Record<string, unknown> = {
-      msdyn_RegardingEntityIds: this.msdyn_RegardingEntityIds,
-      msdyn_RegardingLogicalName: this.msdyn_RegardingLogicalName,
-    };
+    const body = requestBody({
+      msdyn_RegardingLogicalName: this.parameters.msdyn_RegardingLogicalName,
+      msdyn_RegardingEntityIds: this.parameters.msdyn_RegardingEntityIds,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_RetrieveEmailNBAResponse> {
-    const data = await response.json();
-    return data as msdyn_RetrieveEmailNBAResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_RetrieveEmailNBAResponse;
   }
 }

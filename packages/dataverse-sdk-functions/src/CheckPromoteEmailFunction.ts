@@ -1,11 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from CheckPromoteEmail function
+ * Response from the CheckPromoteEmail function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CheckPromoteEmailResponse {
-  ShouldPromote: boolean;
+  "@odata.context"?: string;
   ReasonCode: number;
+  ShouldPromote: boolean;
+}
+
+/**
+ * Parameters of the CheckPromoteEmail function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CheckPromoteEmailFunctionParameters {
+  MessageId: string;
+  Subject?: string;
+  DirectionCode?: number;
 }
 
 /**
@@ -14,11 +28,7 @@ export interface CheckPromoteEmailResponse {
  * Unbound function
  */
 export class CheckPromoteEmailFunction implements Executable<CheckPromoteEmailResponse> {
-  constructor(
-    public readonly messageId: string,
-    public readonly subject: string,
-    public readonly directionCode: number
-  ) {}
+  constructor(public readonly parameters: CheckPromoteEmailFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/CheckPromoteEmail`;
@@ -26,28 +36,17 @@ export class CheckPromoteEmailFunction implements Executable<CheckPromoteEmailRe
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.messageId !== undefined) {
+    if (this.parameters.MessageId !== undefined) {
       aliases.push(`MessageId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.messageId === "string" ? `'${this.messageId}'` : String(this.messageId)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.MessageId, "Edm.String"));
     }
-    if (this.subject !== undefined) {
+    if (this.parameters.Subject !== undefined) {
       aliases.push(`Subject=@p2`);
-      params.append(
-        "@p2",
-        typeof this.subject === "string" ? `'${this.subject}'` : String(this.subject)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.Subject, "Edm.String"));
     }
-    if (this.directionCode !== undefined) {
+    if (this.parameters.DirectionCode !== undefined) {
       aliases.push(`DirectionCode=@p3`);
-      params.append(
-        "@p3",
-        typeof this.directionCode === "string"
-          ? `'${this.directionCode}'`
-          : String(this.directionCode)
-      );
+      params.append("@p3", formatParameterAlias(this.parameters.DirectionCode, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -63,7 +62,7 @@ export class CheckPromoteEmailFunction implements Executable<CheckPromoteEmailRe
   }
 
   async parseResponse(response: Response): Promise<CheckPromoteEmailResponse> {
-    const data = await response.json();
-    return data as CheckPromoteEmailResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as CheckPromoteEmailResponse;
   }
 }

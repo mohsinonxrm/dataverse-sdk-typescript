@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from SendFax action
+ * Response from the SendFax action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SendFaxResponse {
-  // No content returned
+export type SendFaxResponse = void;
+
+/**
+ * Parameters of the SendFax action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SendFaxActionParameters {
+  FaxId: string;
+  IssueSend: boolean;
 }
 
 /**
@@ -13,31 +23,28 @@ export interface SendFaxResponse {
  * Unbound action
  */
 export class SendFaxAction implements Executable<SendFaxResponse> {
-  constructor(
-    public readonly faxId: string,
-    public readonly issueSend: boolean
-  ) {}
+  constructor(public readonly parameters: SendFaxActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/SendFax`;
 
-    const body: Record<string, unknown> = {
-      FaxId: this.faxId,
-      IssueSend: this.issueSend,
-    };
+    const body = requestBody({
+      FaxId: this.parameters.FaxId,
+      IssueSend: this.parameters.IssueSend,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<SendFaxResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<SendFaxResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

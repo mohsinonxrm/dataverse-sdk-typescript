@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetAnalyticsReportToken action
+ * Response from the msdyn_GetAnalyticsReportToken action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetAnalyticsReportTokenResponse {
-  Token: string;
+  "@odata.context"?: string;
   Expiration: string;
+  Token: string;
+}
+
+/**
+ * Parameters of the msdyn_GetAnalyticsReportToken action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetAnalyticsReportTokenActionParameters {
+  AnalyticsRecordId: string;
 }
 
 /**
@@ -14,27 +26,27 @@ export interface msdyn_GetAnalyticsReportTokenResponse {
  * Unbound action
  */
 export class msdyn_GetAnalyticsReportTokenAction implements Executable<msdyn_GetAnalyticsReportTokenResponse> {
-  constructor(public readonly analyticsRecordId: string) {}
+  constructor(public readonly parameters: msdyn_GetAnalyticsReportTokenActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetAnalyticsReportToken`;
 
-    const body: Record<string, unknown> = {
-      AnalyticsRecordId: this.analyticsRecordId,
-    };
+    const body = requestBody({
+      AnalyticsRecordId: this.parameters.AnalyticsRecordId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetAnalyticsReportTokenResponse> {
-    const data = await response.json();
-    return data as msdyn_GetAnalyticsReportTokenResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetAnalyticsReportTokenResponse;
   }
 }

@@ -1,5 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetExtractsFromContent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetExtractsFromContentRequestParameters {
+  msdyn_extractOperationInputParams?: string;
+  msdyn_userQuery?: string;
+  msdyn_keywords?: string;
+  msdyn_source?: string;
+  msdyn_top?: number;
+  msdyn_activityId?: string;
+}
 
 /**
  * msdyn_GetExtractsFromContent request message
@@ -10,65 +24,63 @@ export class msdyn_GetExtractsFromContentRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetExtractsFromContentResponse>
 {
-  constructor(
-    public msdyn_activityId: string,
-    public msdyn_userQuery: string,
-    public msdyn_source: string,
-    public msdyn_top: number,
-    public msdyn_extractOperationInputParams: string,
-    public msdyn_keywords: string
-  ) {
-    super("msdyn_GetExtractsFromContent");
+  declare readonly Parameters: Readonly<msdyn_GetExtractsFromContentRequestParameters>;
+
+  constructor(parameters: msdyn_GetExtractsFromContentRequestParameters = {}) {
+    super("msdyn_GetExtractsFromContent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetExtractsFromContent`;
 
-    const body: Record<string, unknown> = {
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_userQuery: this.msdyn_userQuery,
-      msdyn_source: this.msdyn_source,
-      msdyn_top: this.msdyn_top,
-      msdyn_extractOperationInputParams: this.msdyn_extractOperationInputParams,
-      msdyn_keywords: this.msdyn_keywords,
-    };
+    const body = requestBody({
+      msdyn_extractOperationInputParams: this.Parameters.msdyn_extractOperationInputParams,
+      msdyn_userQuery: this.Parameters.msdyn_userQuery,
+      msdyn_keywords: this.Parameters.msdyn_keywords,
+      msdyn_source: this.Parameters.msdyn_source,
+      msdyn_top: this.Parameters.msdyn_top,
+      msdyn_activityId: this.Parameters.msdyn_activityId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetExtractsFromContentResponse> {
-    const data = await response.json();
-    return msdyn_GetExtractsFromContentResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_userQuery: this.msdyn_userQuery,
-      msdyn_source: this.msdyn_source,
-      msdyn_top: this.msdyn_top,
-      msdyn_extractOperationInputParams: this.msdyn_extractOperationInputParams,
-      msdyn_keywords: this.msdyn_keywords,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetExtractsFromContentResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetExtractsFromContent action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetExtractsFromContentResult {
+  "@odata.context"?: string;
+  msdyn_documents: string;
+  msdyn_mdlDetails: string;
+}
+
+/**
  * msdyn_GetExtractsFromContent response message
+ *
+ * `result` is the value the msdyn_GetExtractsFromContent action returns (see {@link msdyn_GetExtractsFromContentResult}).
  */
 export class msdyn_GetExtractsFromContentResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetExtractsFromContentResponse) {
+  constructor(public result: msdyn_GetExtractsFromContentResult) {
     super("msdyn_GetExtractsFromContent");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetExtractsFromContentResponse {
-    return new msdyn_GetExtractsFromContentResponse((data as any).value);
+    return new msdyn_GetExtractsFromContentResponse(data as msdyn_GetExtractsFromContentResult);
   }
 }

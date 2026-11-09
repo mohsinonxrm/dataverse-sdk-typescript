@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_ActionCardCreate message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ActionCardCreateRequestParameters {
+  actionCardCreateParams: string;
+}
 
 /**
  * msdyn_ActionCardCreate request message
@@ -10,36 +19,32 @@ export class msdyn_ActionCardCreateRequest
   extends OrganizationRequest
   implements Executable<msdyn_ActionCardCreateResponse>
 {
-  constructor(public actionCardCreateParams: string) {
-    super("msdyn_ActionCardCreate");
+  declare readonly Parameters: Readonly<msdyn_ActionCardCreateRequestParameters>;
+
+  constructor(parameters: msdyn_ActionCardCreateRequestParameters) {
+    super("msdyn_ActionCardCreate", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ActionCardCreate`;
 
-    const body: Record<string, unknown> = {
-      actionCardCreateParams: this.actionCardCreateParams,
-    };
+    const body = requestBody({
+      actionCardCreateParams: this.Parameters.actionCardCreateParams,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ActionCardCreateResponse> {
+  parseResponse(_response: Response): Promise<msdyn_ActionCardCreateResponse> {
     // No return value (204 No Content)
-    return new msdyn_ActionCardCreateResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      actionCardCreateParams: this.actionCardCreateParams,
-    };
+    return Promise.resolve(new msdyn_ActionCardCreateResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class msdyn_ActionCardCreateResponse extends OrganizationResponse {
     super("msdyn_ActionCardCreate");
   }
 
-  static fromResponse(_data: unknown): msdyn_ActionCardCreateResponse {
+  static fromResponse(_data?: unknown): msdyn_ActionCardCreateResponse {
     return new msdyn_ActionCardCreateResponse();
   }
 }

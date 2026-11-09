@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * LockInvoicePricing request message
  *
  * Web API Action: LockInvoicePricing
+ *
+ * The first argument is the id of the invoice record to call it on.
  */
 export class LockInvoicePricingRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class LockInvoicePricingRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/invoices(${this.invoiceId})/Microsoft.Dynamics.CRM.LockInvoicePricing`;
+    const url = `${baseUrl}/invoices(${odataLiteral.guid(this.invoiceId)})/Microsoft.Dynamics.CRM.LockInvoicePricing`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<LockInvoicePricingResponse> {
+  parseResponse(_response: Response): Promise<LockInvoicePricingResponse> {
     // No return value (204 No Content)
-    return new LockInvoicePricingResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.invoiceId,
-    };
+    return Promise.resolve(new LockInvoicePricingResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class LockInvoicePricingResponse extends OrganizationResponse {
     super("LockInvoicePricing");
   }
 
-  static fromResponse(_data: unknown): LockInvoicePricingResponse {
+  static fromResponse(_data?: unknown): LockInvoicePricingResponse {
     return new LockInvoicePricingResponse();
   }
 }

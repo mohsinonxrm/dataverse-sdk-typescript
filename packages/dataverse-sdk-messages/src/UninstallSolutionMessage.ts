@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UninstallSolution message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UninstallSolutionRequestParameters {
+  SolutionUniqueName: string;
+}
 
 /**
  * UninstallSolution request message
@@ -10,36 +19,32 @@ export class UninstallSolutionRequest
   extends OrganizationRequest
   implements Executable<UninstallSolutionResponse>
 {
-  constructor(public solutionUniqueName: string) {
-    super("UninstallSolution");
+  declare readonly Parameters: Readonly<UninstallSolutionRequestParameters>;
+
+  constructor(parameters: UninstallSolutionRequestParameters) {
+    super("UninstallSolution", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UninstallSolution`;
 
-    const body: Record<string, unknown> = {
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    const body = requestBody({
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UninstallSolutionResponse> {
+  parseResponse(_response: Response): Promise<UninstallSolutionResponse> {
     // No return value (204 No Content)
-    return new UninstallSolutionResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionUniqueName: this.solutionUniqueName,
-    };
+    return Promise.resolve(new UninstallSolutionResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class UninstallSolutionResponse extends OrganizationResponse {
     super("UninstallSolution");
   }
 
-  static fromResponse(_data: unknown): UninstallSolutionResponse {
+  static fromResponse(_data?: unknown): UninstallSolutionResponse {
     return new UninstallSolutionResponse();
   }
 }

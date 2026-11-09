@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the AddCertificateCredential message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddCertificateCredentialRequestParameters {
+  thumbprint: string;
+  entityId: string;
+  entityLogicalName: string;
+}
 
 /**
  * AddCertificateCredential request message
@@ -10,44 +21,34 @@ export class AddCertificateCredentialRequest
   extends OrganizationRequest
   implements Executable<AddCertificateCredentialResponse>
 {
-  constructor(
-    public entityLogicalName: string,
-    public entityId: string,
-    public thumbprint: string
-  ) {
-    super("AddCertificateCredential");
+  declare readonly Parameters: Readonly<AddCertificateCredentialRequestParameters>;
+
+  constructor(parameters: AddCertificateCredentialRequestParameters) {
+    super("AddCertificateCredential", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AddCertificateCredential`;
 
-    const body: Record<string, unknown> = {
-      entityLogicalName: this.entityLogicalName,
-      entityId: this.entityId,
-      thumbprint: this.thumbprint,
-    };
+    const body = requestBody({
+      thumbprint: this.Parameters.thumbprint,
+      entityId: this.Parameters.entityId,
+      entityLogicalName: this.Parameters.entityLogicalName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<AddCertificateCredentialResponse> {
+  parseResponse(_response: Response): Promise<AddCertificateCredentialResponse> {
     // No return value (204 No Content)
-    return new AddCertificateCredentialResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entityLogicalName: this.entityLogicalName,
-      entityId: this.entityId,
-      thumbprint: this.thumbprint,
-    };
+    return Promise.resolve(new AddCertificateCredentialResponse());
   }
 }
 
@@ -59,7 +60,7 @@ export class AddCertificateCredentialResponse extends OrganizationResponse {
     super("AddCertificateCredential");
   }
 
-  static fromResponse(_data: unknown): AddCertificateCredentialResponse {
+  static fromResponse(_data?: unknown): AddCertificateCredentialResponse {
     return new AddCertificateCredentialResponse();
   }
 }

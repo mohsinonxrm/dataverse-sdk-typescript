@@ -1,11 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_SendRecordEventUpdate action
+ * Response from the msdyn_SendRecordEventUpdate action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SendRecordEventUpdateResponse {
-  // No content returned
+export type msdyn_SendRecordEventUpdateResponse = void;
+
+/**
+ * Parameters of the msdyn_SendRecordEventUpdate action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SendRecordEventUpdateActionParameters {
+  msdyn_AttributeDisplayValues?: string[];
+  msdyn_RegardingActivity?: EntityReference | AnyEntityPayload;
+  msdyn_EventType: string;
+  msdyn_AttributeNames?: string[];
+  msdyn_RegardingRecord: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -14,37 +28,31 @@ export interface msdyn_SendRecordEventUpdateResponse {
  * Unbound action
  */
 export class msdyn_SendRecordEventUpdateAction implements Executable<msdyn_SendRecordEventUpdateResponse> {
-  constructor(
-    public readonly msdyn_EventType: string,
-    public readonly msdyn_RegardingRecord: EntityReference,
-    public readonly msdyn_AttributeDisplayValues: string[],
-    public readonly msdyn_AttributeNames: string[],
-    public readonly msdyn_RegardingActivity: EntityReference
-  ) {}
+  constructor(public readonly parameters: msdyn_SendRecordEventUpdateActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SendRecordEventUpdate`;
 
-    const body: Record<string, unknown> = {
-      msdyn_EventType: this.msdyn_EventType,
-      msdyn_RegardingRecord: this.msdyn_RegardingRecord,
-      msdyn_AttributeDisplayValues: this.msdyn_AttributeDisplayValues,
-      msdyn_AttributeNames: this.msdyn_AttributeNames,
-      msdyn_RegardingActivity: this.msdyn_RegardingActivity,
-    };
+    const body = requestBody({
+      msdyn_AttributeDisplayValues: this.parameters.msdyn_AttributeDisplayValues,
+      msdyn_RegardingActivity: this.parameters.msdyn_RegardingActivity,
+      msdyn_EventType: this.parameters.msdyn_EventType,
+      msdyn_AttributeNames: this.parameters.msdyn_AttributeNames,
+      msdyn_RegardingRecord: this.parameters.msdyn_RegardingRecord,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SendRecordEventUpdateResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_SendRecordEventUpdateResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

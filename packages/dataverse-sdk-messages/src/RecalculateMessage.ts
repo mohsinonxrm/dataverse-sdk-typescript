@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * Recalculate request message
  *
  * Web API Action: Recalculate
+ *
+ * The first argument is the id of the goal record to call it on.
  */
 export class RecalculateRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class RecalculateRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/goals(${this.goalId})/Microsoft.Dynamics.CRM.Recalculate`;
+    const url = `${baseUrl}/goals(${odataLiteral.guid(this.goalId)})/Microsoft.Dynamics.CRM.Recalculate`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<RecalculateResponse> {
+  parseResponse(_response: Response): Promise<RecalculateResponse> {
     // No return value (204 No Content)
-    return new RecalculateResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.goalId,
-    };
+    return Promise.resolve(new RecalculateResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class RecalculateResponse extends OrganizationResponse {
     super("Recalculate");
   }
 
-  static fromResponse(_data: unknown): RecalculateResponse {
+  static fromResponse(_data?: unknown): RecalculateResponse {
     return new RecalculateResponse();
   }
 }

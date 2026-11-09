@@ -1,23 +1,25 @@
+import type { activitypointer } from "./activitypointer.js";
+
 /**
  * campaignresponse entity type
  */
-export interface campaignresponse {
-  firstname: string;
-  yomicompanyname: string;
-  yomifirstname: string;
-  emailaddress: string;
-  responsecode: number;
-  yomilastname: string;
-  importsequencenumber: number;
-  receivedon: string;
-  category: string;
-  companyname: string;
-  telephone: string;
-  _originatingactivityid_value: string;
-  fax: string;
-  lastname: string;
-  promotioncodename: string;
-  channeltypecode: number;
-  overriddencreatedon: string;
-  subcategory: string;
+export interface campaignresponse extends activitypointer {
+  _originatingactivityid_value?: string;
+  category?: string;
+  channeltypecode?: number;
+  companyname?: string;
+  emailaddress?: string;
+  fax?: string;
+  firstname?: string;
+  importsequencenumber?: number;
+  lastname?: string;
+  overriddencreatedon?: string;
+  promotioncodename?: string;
+  receivedon?: string;
+  responsecode?: number;
+  subcategory?: string;
+  telephone?: string;
+  yomicompanyname?: string;
+  yomifirstname?: string;
+  yomilastname?: string;
 }

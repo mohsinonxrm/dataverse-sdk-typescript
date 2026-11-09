@@ -1,13 +1,28 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { PagingInfo } from "./types/index.js";
 
 /**
- * Response from RetrieveDuplicates function
+ * Response from the RetrieveDuplicates function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RetrieveDuplicatesResponse {
-  value: EntityReference[];
+export type RetrieveDuplicatesResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
+ * Parameters of the RetrieveDuplicates function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveDuplicatesFunctionParameters {
+  BusinessEntity: EntityReference;
+  MatchingEntityName: string;
+  PagingInfo?: PagingInfo;
 }
 
 /**
@@ -16,11 +31,7 @@ export interface RetrieveDuplicatesResponse {
  * Unbound function
  */
 export class RetrieveDuplicatesFunction implements Executable<RetrieveDuplicatesResponse> {
-  constructor(
-    public readonly businessEntity: EntityReference,
-    public readonly matchingEntityName: string,
-    public readonly pagingInfo: PagingInfo
-  ) {}
+  constructor(public readonly parameters: RetrieveDuplicatesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveDuplicates`;
@@ -28,27 +39,23 @@ export class RetrieveDuplicatesFunction implements Executable<RetrieveDuplicates
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.businessEntity !== undefined) {
+    if (this.parameters.BusinessEntity !== undefined) {
       aliases.push(`BusinessEntity=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.businessEntity)}(${this.businessEntity.id})`,
-        })
+        formatParameterAlias(this.parameters.BusinessEntity, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.matchingEntityName !== undefined) {
+    if (this.parameters.MatchingEntityName !== undefined) {
       aliases.push(`MatchingEntityName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.matchingEntityName === "string"
-          ? `'${this.matchingEntityName}'`
-          : String(this.matchingEntityName)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.MatchingEntityName, "Edm.String"));
     }
-    if (this.pagingInfo !== undefined) {
+    if (this.parameters.PagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p3`);
-      params.append("@p3", JSON.stringify(this.pagingInfo));
+      params.append(
+        "@p3",
+        formatParameterAlias(this.parameters.PagingInfo, "mscrm.PagingInfo", "ComplexType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -64,7 +71,9 @@ export class RetrieveDuplicatesFunction implements Executable<RetrieveDuplicates
   }
 
   async parseResponse(response: Response): Promise<RetrieveDuplicatesResponse> {
-    const data = await response.json();
-    return data as RetrieveDuplicatesResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RetrieveDuplicatesResponse }).value;
   }
 }

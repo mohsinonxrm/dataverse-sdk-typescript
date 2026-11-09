@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * DeleteFlowMachineGroup request message
  *
  * Web API Action: DeleteFlowMachineGroup
+ *
+ * The first argument is the id of the flowmachinegroup record to call it on.
  */
 export class DeleteFlowMachineGroupRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class DeleteFlowMachineGroupRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowmachinegroups(${this.flowmachinegroupId})/Microsoft.Dynamics.CRM.DeleteFlowMachineGroup`;
+    const url = `${baseUrl}/flowmachinegroups(${odataLiteral.guid(this.flowmachinegroupId)})/Microsoft.Dynamics.CRM.DeleteFlowMachineGroup`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteFlowMachineGroupResponse> {
+  parseResponse(_response: Response): Promise<DeleteFlowMachineGroupResponse> {
     // No return value (204 No Content)
-    return new DeleteFlowMachineGroupResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowmachinegroupId,
-    };
+    return Promise.resolve(new DeleteFlowMachineGroupResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class DeleteFlowMachineGroupResponse extends OrganizationResponse {
     super("DeleteFlowMachineGroup");
   }
 
-  static fromResponse(_data: unknown): DeleteFlowMachineGroupResponse {
+  static fromResponse(_data?: unknown): DeleteFlowMachineGroupResponse {
     return new DeleteFlowMachineGroupResponse();
   }
 }

@@ -65,7 +65,7 @@ describe("Option Set Enum Generation", () => {
           Keys: [],
         },
       ],
-    } as any);
+    });
 
     model.EntityTypes.push({
       Name: "Account",
@@ -99,7 +99,7 @@ describe("Option Set Enum Generation", () => {
     expect(model.EnumTypes[0].Members[1].Value).toBe(2);
     expect(model.EnumTypes[0].Members[1].Name).toBe("Agriculture");
     expect(model.EnumTypes[0].Members[2].Value).toBe(3);
-    expect(model.EnumTypes[0].Members[2].Name).toBe("Financial Services");
+    expect(model.EnumTypes[0].Members[2].Name).toBe("FinancialServices"); // a valid identifier (#78)
 
     // Check property was updated to reference enum
     const industryCode = model.EntityTypes[0].Properties.find(
@@ -135,7 +135,7 @@ describe("Option Set Enum Generation", () => {
           Keys: [],
         },
       ],
-    } as any);
+    });
 
     await model.generate();
 
@@ -176,7 +176,7 @@ describe("Option Set Enum Generation", () => {
           Keys: [],
         },
       ],
-    } as any);
+    });
 
     model.EntityTypes.push({
       Name: "Account",
@@ -287,7 +287,7 @@ describe("Option Set Enum Generation", () => {
           Keys: [],
         },
       ],
-    } as any);
+    });
 
     model.EntityTypes.push({
       Name: "Account",

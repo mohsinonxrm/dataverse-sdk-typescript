@@ -1,6 +1,8 @@
 import type { Middleware, NextMiddleware } from "../abstractions/middleware.js";
 import type { MiddlewareContext, RequestInformation } from "../abstractions/http.js";
 import type { DataverseClientOptions } from "../abstractions/options.js";
+import { normalizeHeaders } from "../utils/HeaderUtils.js";
+import { isJsonBody } from "../utils/body.js";
 
 export class ODataHeadersMiddleware implements Middleware {
   name = "ODataHeadersMiddleware";
@@ -15,17 +17,26 @@ export class ODataHeadersMiddleware implements Middleware {
     const headers: Record<string, string> = {
       "odata-maxversion": "4.0",
       "odata-version": "4.0",
-      ...lowercaseKeys(this.options.defaultHeaders),
-      ...request.headers,
+      ...normalizeHeaders(this.options.defaultHeaders),
+      // Caller headers win over defaults. Names are already lower-cased by DataverseClient.send(),
+      // but normalise again so the middleware is safe to use on its own.
+      ...normalizeHeaders(request.headers),
     };
 
+    const prefer = mergePrefer(this.options.defaultPrefer, headers.prefer);
+    if (prefer) headers.prefer = prefer;
+
     // Set Accept header only if not already set (allow override for $metadata, etc.)
-    if (!headers.accept && !headers.Accept) {
+    if (!headers.accept) {
       headers.accept = "application/json";
     }
 
-    // If body present, set content-type unless user set it
-    if (request.body !== undefined && !headers["content-type"]) {
+    // Default content-type for bodies the SDK serialises to JSON, and for strings (usually raw JSON).
+    // Binary, Blob, FormData, URLSearchParams and stream bodies are left to the caller or to fetch.
+    if (
+      !headers["content-type"] &&
+      (isJsonBody(request.body) || typeof request.body === "string")
+    ) {
       headers["content-type"] = "application/json; charset=utf-8";
     }
 
@@ -34,9 +45,42 @@ export class ODataHeadersMiddleware implements Middleware {
   }
 }
 
-function lowercaseKeys(h?: Record<string, string>): Record<string, string> {
-  if (!h) return {};
-  const out: Record<string, string> = {};
-  for (const [k, v] of Object.entries(h)) out[k.toLowerCase()] = v;
-  return out;
+/**
+ * `defaultPrefer` plus the request's own `Prefer` header. Preferences are matched by name (the
+ * part before `=`, case-insensitive), and the request's value wins.
+ */
+export function mergePrefer(
+  defaults: readonly string[] | undefined,
+  requestPrefer: string | undefined
+): string | undefined {
+  if (!defaults?.length) return requestPrefer;
+  const own = splitPrefer(requestPrefer);
+  const ownNames = new Set(own.map(preferenceName));
+  const added = defaults.filter((p) => !ownNames.has(preferenceName(p)));
+  const merged = [...own, ...added];
+  return merged.length ? merged.join(", ") : undefined;
+}
+
+/** Split a `Prefer` header into its preferences (commas inside quotes are kept). */
+export function splitPrefer(value: string | undefined): string[] {
+  if (!value) return [];
+  // Split on commas outside quotes: include-annotations values are quoted and may list several.
+  const parts: string[] = [];
+  let current = "";
+  let quoted = false;
+  for (const ch of value) {
+    if (ch === '"') quoted = !quoted;
+    if (ch === "," && !quoted) {
+      parts.push(current);
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  parts.push(current);
+  return parts.map((p) => p.trim()).filter(Boolean);
+}
+
+function preferenceName(p: string): string {
+  return (p.split("=")[0] ?? p).split(";")[0]?.trim().toLowerCase() ?? "";
 }

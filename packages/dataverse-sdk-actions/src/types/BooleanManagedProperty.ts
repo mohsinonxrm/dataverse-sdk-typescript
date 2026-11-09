@@ -2,7 +2,7 @@
  * BooleanManagedProperty complex type
  */
 export interface BooleanManagedProperty {
-  Value: boolean;
-  CanBeChanged: boolean;
-  ManagedPropertyLogicalName: string;
+  CanBeChanged?: boolean;
+  ManagedPropertyLogicalName?: string;
+  Value?: boolean;
 }

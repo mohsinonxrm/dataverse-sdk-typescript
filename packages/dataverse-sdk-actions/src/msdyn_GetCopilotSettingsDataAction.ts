@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_GetCopilotSettingsData action
+ * Response from the msdyn_GetCopilotSettingsData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetCopilotSettingsDataResponse {
+  "@odata.context"?: string;
   msdyn_output: string;
+}
+
+/**
+ * Parameters of the msdyn_GetCopilotSettingsData action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetCopilotSettingsDataActionParameters {
+  msdyn_input: string;
 }
 
 /**
@@ -13,27 +25,27 @@ export interface msdyn_GetCopilotSettingsDataResponse {
  * Unbound action
  */
 export class msdyn_GetCopilotSettingsDataAction implements Executable<msdyn_GetCopilotSettingsDataResponse> {
-  constructor(public readonly msdyn_input: string) {}
+  constructor(public readonly parameters: msdyn_GetCopilotSettingsDataActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetCopilotSettingsData`;
 
-    const body: Record<string, unknown> = {
-      msdyn_input: this.msdyn_input,
-    };
+    const body = requestBody({
+      msdyn_input: this.parameters.msdyn_input,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetCopilotSettingsDataResponse> {
-    const data = await response.json();
-    return data as msdyn_GetCopilotSettingsDataResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetCopilotSettingsDataResponse;
   }
 }

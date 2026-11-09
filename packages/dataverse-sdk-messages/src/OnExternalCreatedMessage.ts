@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the OnExternalCreated message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface OnExternalCreatedRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * OnExternalCreated request message
@@ -11,36 +21,32 @@ export class OnExternalCreatedRequest
   extends OrganizationRequest
   implements Executable<OnExternalCreatedResponse>
 {
-  constructor(public target: EntityReference) {
-    super("OnExternalCreated");
+  declare readonly Parameters: Readonly<OnExternalCreatedRequestParameters>;
+
+  constructor(parameters: OnExternalCreatedRequestParameters) {
+    super("OnExternalCreated", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/OnExternalCreated`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<OnExternalCreatedResponse> {
+  parseResponse(_response: Response): Promise<OnExternalCreatedResponse> {
     // No return value (204 No Content)
-    return new OnExternalCreatedResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
+    return Promise.resolve(new OnExternalCreatedResponse());
   }
 }
 
@@ -52,7 +58,7 @@ export class OnExternalCreatedResponse extends OrganizationResponse {
     super("OnExternalCreated");
   }
 
-  static fromResponse(_data: unknown): OnExternalCreatedResponse {
+  static fromResponse(_data?: unknown): OnExternalCreatedResponse {
     return new OnExternalCreatedResponse();
   }
 }

@@ -1,12 +1,38 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { ExportComponentsParams } from "./types/index.js";
 
 /**
- * Response from ExportSolutionAsync action
+ * Response from the ExportSolutionAsync action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ExportSolutionAsyncResponse {
+  "@odata.context"?: string;
   AsyncOperationId: string;
   ExportJobId: string;
+}
+
+/**
+ * Parameters of the ExportSolutionAsync action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ExportSolutionAsyncActionParameters {
+  SolutionName: string;
+  Managed: boolean;
+  TargetVersion?: string;
+  ExportAutoNumberingSettings?: boolean;
+  ExportCalendarSettings?: boolean;
+  ExportCustomizationSettings?: boolean;
+  ExportEmailTrackingSettings?: boolean;
+  ExportGeneralSettings?: boolean;
+  ExportMarketingSettings?: boolean;
+  ExportOutlookSynchronizationSettings?: boolean;
+  ExportRelationshipRoles?: boolean;
+  ExportIsvConfig?: boolean;
+  ExportSales?: boolean;
+  ExportExternalApplications?: boolean;
+  ExportComponentsParams?: ExportComponentsParams;
 }
 
 /**
@@ -15,57 +41,41 @@ export interface ExportSolutionAsyncResponse {
  * Unbound action
  */
 export class ExportSolutionAsyncAction implements Executable<ExportSolutionAsyncResponse> {
-  constructor(
-    public readonly solutionName: string,
-    public readonly managed: boolean,
-    public readonly targetVersion: string,
-    public readonly exportAutoNumberingSettings: boolean,
-    public readonly exportCalendarSettings: boolean,
-    public readonly exportCustomizationSettings: boolean,
-    public readonly exportEmailTrackingSettings: boolean,
-    public readonly exportGeneralSettings: boolean,
-    public readonly exportMarketingSettings: boolean,
-    public readonly exportOutlookSynchronizationSettings: boolean,
-    public readonly exportRelationshipRoles: boolean,
-    public readonly exportIsvConfig: boolean,
-    public readonly exportSales: boolean,
-    public readonly exportExternalApplications: boolean,
-    public readonly exportComponentsParams: ExportComponentsParams
-  ) {}
+  constructor(public readonly parameters: ExportSolutionAsyncActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ExportSolutionAsync`;
 
-    const body: Record<string, unknown> = {
-      SolutionName: this.solutionName,
-      Managed: this.managed,
-      TargetVersion: this.targetVersion,
-      ExportAutoNumberingSettings: this.exportAutoNumberingSettings,
-      ExportCalendarSettings: this.exportCalendarSettings,
-      ExportCustomizationSettings: this.exportCustomizationSettings,
-      ExportEmailTrackingSettings: this.exportEmailTrackingSettings,
-      ExportGeneralSettings: this.exportGeneralSettings,
-      ExportMarketingSettings: this.exportMarketingSettings,
-      ExportOutlookSynchronizationSettings: this.exportOutlookSynchronizationSettings,
-      ExportRelationshipRoles: this.exportRelationshipRoles,
-      ExportIsvConfig: this.exportIsvConfig,
-      ExportSales: this.exportSales,
-      ExportExternalApplications: this.exportExternalApplications,
-      ExportComponentsParams: this.exportComponentsParams,
-    };
+    const body = requestBody({
+      SolutionName: this.parameters.SolutionName,
+      Managed: this.parameters.Managed,
+      TargetVersion: this.parameters.TargetVersion,
+      ExportAutoNumberingSettings: this.parameters.ExportAutoNumberingSettings,
+      ExportCalendarSettings: this.parameters.ExportCalendarSettings,
+      ExportCustomizationSettings: this.parameters.ExportCustomizationSettings,
+      ExportEmailTrackingSettings: this.parameters.ExportEmailTrackingSettings,
+      ExportGeneralSettings: this.parameters.ExportGeneralSettings,
+      ExportMarketingSettings: this.parameters.ExportMarketingSettings,
+      ExportOutlookSynchronizationSettings: this.parameters.ExportOutlookSynchronizationSettings,
+      ExportRelationshipRoles: this.parameters.ExportRelationshipRoles,
+      ExportIsvConfig: this.parameters.ExportIsvConfig,
+      ExportSales: this.parameters.ExportSales,
+      ExportExternalApplications: this.parameters.ExportExternalApplications,
+      ExportComponentsParams: this.parameters.ExportComponentsParams,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<ExportSolutionAsyncResponse> {
-    const data = await response.json();
-    return data as ExportSolutionAsyncResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as ExportSolutionAsyncResponse;
   }
 }

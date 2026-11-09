@@ -1,6 +1,22 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 import type { Label } from "./types/index.js";
+
+/**
+ * Parameters of the UpdateStateValue message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateStateValueRequestParameters {
+  OptionSetName?: string;
+  AttributeLogicalName?: string;
+  EntityLogicalName?: string;
+  Value: number;
+  Label?: Label;
+  Description?: Label;
+  MergeLabels: boolean;
+  DefaultStatusCode?: number;
+}
 
 /**
  * UpdateStateValue request message
@@ -11,59 +27,39 @@ export class UpdateStateValueRequest
   extends OrganizationRequest
   implements Executable<UpdateStateValueResponse>
 {
-  constructor(
-    public optionSetName: string,
-    public attributeLogicalName: string,
-    public entityLogicalName: string,
-    public value: number,
-    public label: Label,
-    public description: Label,
-    public mergeLabels: boolean,
-    public defaultStatusCode: number
-  ) {
-    super("UpdateStateValue");
+  declare readonly Parameters: Readonly<UpdateStateValueRequestParameters>;
+
+  constructor(parameters: UpdateStateValueRequestParameters) {
+    super("UpdateStateValue", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateStateValue`;
 
-    const body: Record<string, unknown> = {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Value: this.value,
-      Label: this.label,
-      Description: this.description,
-      MergeLabels: this.mergeLabels,
-      DefaultStatusCode: this.defaultStatusCode,
-    };
+    const body = requestBody({
+      OptionSetName: this.Parameters.OptionSetName,
+      AttributeLogicalName: this.Parameters.AttributeLogicalName,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Value: this.Parameters.Value,
+      Label: this.Parameters.Label,
+      Description: this.Parameters.Description,
+      MergeLabels: this.Parameters.MergeLabels,
+      DefaultStatusCode: this.Parameters.DefaultStatusCode,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateStateValueResponse> {
+  parseResponse(_response: Response): Promise<UpdateStateValueResponse> {
     // No return value (204 No Content)
-    return new UpdateStateValueResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      OptionSetName: this.optionSetName,
-      AttributeLogicalName: this.attributeLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-      Value: this.value,
-      Label: this.label,
-      Description: this.description,
-      MergeLabels: this.mergeLabels,
-      DefaultStatusCode: this.defaultStatusCode,
-    };
+    return Promise.resolve(new UpdateStateValueResponse());
   }
 }
 
@@ -75,7 +71,7 @@ export class UpdateStateValueResponse extends OrganizationResponse {
     super("UpdateStateValue");
   }
 
-  static fromResponse(_data: unknown): UpdateStateValueResponse {
+  static fromResponse(_data?: unknown): UpdateStateValueResponse {
     return new UpdateStateValueResponse();
   }
 }

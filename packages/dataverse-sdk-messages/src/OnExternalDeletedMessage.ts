@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the OnExternalDeleted message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface OnExternalDeletedRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * OnExternalDeleted request message
@@ -11,36 +21,32 @@ export class OnExternalDeletedRequest
   extends OrganizationRequest
   implements Executable<OnExternalDeletedResponse>
 {
-  constructor(public target: EntityReference) {
-    super("OnExternalDeleted");
+  declare readonly Parameters: Readonly<OnExternalDeletedRequestParameters>;
+
+  constructor(parameters: OnExternalDeletedRequestParameters) {
+    super("OnExternalDeleted", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/OnExternalDeleted`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<OnExternalDeletedResponse> {
+  parseResponse(_response: Response): Promise<OnExternalDeletedResponse> {
     // No return value (204 No Content)
-    return new OnExternalDeletedResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
+    return Promise.resolve(new OnExternalDeletedResponse());
   }
 }
 
@@ -52,7 +58,7 @@ export class OnExternalDeletedResponse extends OrganizationResponse {
     super("OnExternalDeleted");
   }
 
-  static fromResponse(_data: unknown): OnExternalDeletedResponse {
+  static fromResponse(_data?: unknown): OnExternalDeletedResponse {
     return new OnExternalDeletedResponse();
   }
 }

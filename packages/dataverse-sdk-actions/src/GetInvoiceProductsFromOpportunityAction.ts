@@ -1,11 +1,26 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { opportunity } from "./types/index.js";
 
 /**
- * Response from GetInvoiceProductsFromOpportunity action
+ * Response from the GetInvoiceProductsFromOpportunity action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface GetInvoiceProductsFromOpportunityResponse {
-  // No content returned
+export type GetInvoiceProductsFromOpportunityResponse = void;
+
+/**
+ * Parameters of the GetInvoiceProductsFromOpportunity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetInvoiceProductsFromOpportunityActionParameters {
+  Opportunity: EntityReference | EntityPayload<opportunity>;
 }
 
 /**
@@ -13,33 +28,35 @@ export interface GetInvoiceProductsFromOpportunityResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.invoice)
+ *
+ * The first argument is the id of the invoice record to call it on.
  */
 export class GetInvoiceProductsFromOpportunityAction implements Executable<GetInvoiceProductsFromOpportunityResponse> {
   constructor(
     public readonly invoiceId: string,
-    public readonly opportunity: opportunity
+    public readonly parameters: GetInvoiceProductsFromOpportunityActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/invoices(${this.invoiceId})/Microsoft.Dynamics.CRM.GetInvoiceProductsFromOpportunity`;
+    const url = `${baseUrl}/invoices(${odataLiteral.guid(this.invoiceId)})/Microsoft.Dynamics.CRM.GetInvoiceProductsFromOpportunity`;
 
-    const body: Record<string, unknown> = {
-      Opportunity: this.opportunity,
-    };
+    const body = requestBody({
+      Opportunity: this.parameters.Opportunity,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<GetInvoiceProductsFromOpportunityResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<GetInvoiceProductsFromOpportunityResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

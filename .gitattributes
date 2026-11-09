@@ -1,0 +1,2 @@
+# API reports are written with LF (scripts/api-report.mjs); keep them LF on every checkout
+packages/*/etc/*.api.md text eol=lf

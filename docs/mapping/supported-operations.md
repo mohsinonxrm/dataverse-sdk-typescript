@@ -1,26 +1,27 @@
 # Supported Operations - Complete Reference
 
-This document provides a complete reference of all **2,941 typed operations** available in the Dataverse TypeScript SDK.
+This document provides a complete reference of all **<!-- count:operations -->2,562<!-- /count --> typed operations** available in the Dataverse TypeScript SDK.
 
 ## Overview
 
 The SDK provides comprehensive coverage of Dataverse Web API operations through three complementary packages:
 
-| Package                                  | Count | Description                            | HTTP Method |
-| ---------------------------------------- | ----- | -------------------------------------- | ----------- |
-| **@mohsinonxrm/dataverse-sdk-functions** | 229   | Read-only operations (query, retrieve) | GET         |
-| **@mohsinonxrm/dataverse-sdk-actions**   | 1,356 | Operations with side effects           | POST        |
-| **@mohsinonxrm/dataverse-sdk-messages**  | 1,356 | Organization Service message pattern   | Varies      |
+| Package                                  | Count                                       | Description                                                                 | HTTP Method |
+| ---------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------- | ----------- |
+| **@mohsinonxrm/dataverse-sdk-functions** | <!-- count:functions -->209<!-- /count -->  | Read-only operations (query, retrieve)                                      | GET         |
+| **@mohsinonxrm/dataverse-sdk-actions**   | <!-- count:actions -->1,072<!-- /count -->  | Operations with side effects                                                | POST        |
+| **@mohsinonxrm/dataverse-sdk-messages**  | <!-- count:messages -->1,281<!-- /count --> | The same actions and functions as .NET-style messages (compatibility layer) | POST / GET  |
 
-**Total Coverage:** 2,941 typed operations
+**Total Coverage:** <!-- count:operations -->2,562<!-- /count --> typed operations (each message is the same request as an action or function, so there are <!-- count:messages -->1,281<!-- /count --> distinct operations)
 
-## Two Front Doors
+## The Main Path and the .NET Compatibility Layer
 
-The SDK offers **two ways** to interact with Dataverse, providing flexibility for different developer backgrounds:
+The SDK's main path is `client.api()` plus the typed action and function classes; the messages,
+with `OrganizationService`, are a compatibility layer for developers coming from the .NET SDK.
 
-### 1. HTTP/OData Fluent API (Modern JavaScript/TypeScript)
+### 1. Main path: `client.api()` and typed operations
 
-Direct Web API operations using a chainable request builder:
+Direct Web API operations using a chainable request builder, and the typed classes `client.execute()` runs:
 
 ```typescript
 import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
@@ -41,13 +42,16 @@ const whoAmI = new WhoAmIFunction();
 const userInfo = await client.execute(whoAmI);
 ```
 
-### 2. OrganizationService Facade (C#-Familiar)
+### 2. .NET compatibility layer: OrganizationService and messages
 
-Familiar patterns for developers coming from .NET SDK:
+Familiar patterns for developers coming from .NET SDK. Each message sends the same request as
+the action or function of the same name; see the
+[.NET mapping](./message-to-webapi.md#0-from-the-net-sdk-to-the-main-path) for the main-path
+equivalent of each call.
 
 ```typescript
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
-import { WhoAmIRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { PublishAllXmlRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const service = new OrganizationService(client);
 
@@ -55,9 +59,8 @@ const service = new OrganizationService(client);
 const accountId = await service.create("accounts", { name: "Contoso" });
 const account = await service.retrieve("accounts", accountId, { select: ["name"] });
 
-// Message execution
-const whoAmIRequest = new WhoAmIRequest();
-const response = await service.execute(whoAmIRequest);
+// Message execution: the same request as client.execute(new PublishAllXmlAction())
+await service.execute(new PublishAllXmlRequest());
 ```
 
 ## Operation Categories
@@ -67,14 +70,14 @@ const response = await service.execute(whoAmIRequest);
 **Functions (Read-Only):**
 
 - Identity & context (WhoAmI, RetrieveCurrentOrganization)
-- Security & access (RetrievePrincipalAccess, RetrieveUserPrivileges)
+- Security & access (RetrievePrincipalAccess\_<table>, RetrieveUserPrivileges)
 - Metadata operations (RetrieveMetadataChanges, RetrieveEntity)
 - Query helpers (fiscal periods, date ranges, conditional operators)
 
 **Actions (Modify Data):**
 
 - Bulk operations (CreateMultiple, UpdateMultiple, UpsertMultiple)
-- Entity operations (Assign, SetState, Merge)
+- Merge (assign and change state are record updates, not actions)
 - Solution management (ExportSolution, ImportSolution, PublishXml)
 - File operations (InitializeFileBlocksUpload, UploadBlock, CommitFileBlocksUpload)
 
@@ -105,38 +108,30 @@ const response = await service.execute(whoAmIRequest);
 - FullTextSearchKnowledgeArticle
 - CreateKnowledgeArticleVersion
 
-### Field Service Module (msdyn\_\*)
+**Marketing lists and campaigns** (part of Sales, not Customer Insights - Journeys):
 
-**Resource Scheduling:**
+- AddMemberList, AddListMembersList, CopyMembersList, QualifyMemberList
+- CopyCampaign, DistributeCampaignActivity
 
-- msdyn_BookRequirementGroup
-- msdyn_SearchResourceAvailability
-- msdyn_CancelBookings
+## What the Packages Cover
 
-**Work Orders:**
+The three packages hold the operations of the **platform** (Dataverse and the Power Platform
+solutions every environment has) and of **Sales** and **Customer Service**, the two core
+Dynamics 365 apps of a plain trial. They are chosen by the solution each operation comes from, not
+by what the org the SDK is generated from has installed; the [solution table](../../tools/generate-sdk-types/metadata/README.md#which-operations-are-prebuilt) lists every solution
+and whether its operations are in.
 
-- msdyn_CreateWorkOrder
-- msdyn_CascadeCrewBookings
+| Operations                                                                      | In the packages | Works in                              |
+| ------------------------------------------------------------------------------- | --------------- | ------------------------------------- |
+| Platform (no prefix, and `msdyn_*` / `msft_*` platform solutions)               | yes             | every Dataverse environment           |
+| Sales and Customer Service (`WinOpportunity`, `CloseIncident`, their `msdyn_*`) | yes             | an org with Sales or Customer Service |
+| Contact Center: Omnichannel, unified routing, voice (`CCaaS_*`, `msdyn_*`)      | no              | generate with dataverse-gen           |
+| Field Service, Project Operations, Universal Resource Scheduling (`msdyn_*`)    | no              | generate with dataverse-gen           |
+| Customer Insights - Journeys (`msdynmkt_*`), Customer Voice                     | no              | generate with dataverse-gen           |
+| Connected Customer Service (IoT), Power Pages (`adx_*`), Process Mining         | no              | generate with dataverse-gen           |
+| Your custom APIs and custom process actions                                     | no              | generate with dataverse-gen           |
 
-### Marketing Module (msdynmkt\_\*)
-
-**Campaign & Consent:**
-
-- msdynmkt_checkconsentbatch
-- msdynmkt_consentsubmission
-
-## Solution Dependencies
-
-Many operations require specific Dynamics 365 applications to be installed:
-
-| Prefix       | Solution Required      | Description                                      |
-| ------------ | ---------------------- | ------------------------------------------------ |
-| `msdyn_*`    | Dynamics 365 (varies)  | Field Service, Project Service Automation, Sales |
-| `msdynmkt_*` | Dynamics 365 Marketing | Marketing automation                             |
-| `CCaaS_*`    | Customer Service       | Omnichannel for Customer Service                 |
-| `adx_*`      | Power Pages            | Portal operations                                |
-
-**Note:** Platform operations (no prefix) are available in all Dataverse environments.
+To call one of the others, generate typed classes for it from your org with [dataverse-gen](../getting-started.md#generate-the-rest-with-dataverse-gen).
 
 ## Usage Examples by Scenario
 
@@ -166,7 +161,7 @@ const accounts = [
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Contoso" },
   { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Fabrikam" },
 ];
-const action = new CreateMultipleAction("accounts", accounts);
+const action = new CreateMultipleAction("accounts", { Targets: accounts });
 const response = await client.execute(action);
 // response.Ids: ['id1', 'id2']
 ```
@@ -194,7 +189,7 @@ const opportunityClose = {
   "opportunityid@odata.bind": `/opportunities(${oppId})`,
   actualrevenue: 100000,
 };
-const action = new WinOpportunityAction(opportunityClose, 3);
+const action = new WinOpportunityAction({ OpportunityClose: opportunityClose, Status: 3 });
 await client.execute(action);
 ```
 
@@ -203,10 +198,7 @@ await client.execute(action);
 ```typescript
 import { WinOpportunityRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const request = new WinOpportunityRequest({
-  OpportunityClose: opportunityClose,
-  Status: 3,
-});
+const request = new WinOpportunityRequest({ OpportunityClose: opportunityClose, Status: 3 });
 await service.execute(request);
 ```
 
@@ -219,7 +211,7 @@ const accounts = await client
   .api("accounts")
   .select("name", "revenue")
   .filter("revenue gt 1000000")
-  .orderby("revenue desc")
+  .orderBy("revenue desc")
   .top(10)
   .get();
 ```
@@ -237,9 +229,9 @@ const accounts = await service.retrieveMultiple("accounts", {
 
 ## Detailed References
 
-- [Supported Functions (229)](./supported-functions.md) - Complete list of all GET operations
-- [Supported Actions (1,356)](./supported-actions.md) - Complete list of all POST operations
-- [Supported Messages (1,356)](./supported-messages.md) - Complete list of all Organization Service messages
+- [Supported Functions (<!-- count:functions -->209<!-- /count -->)](./supported-functions.md) - Complete list of all GET operations
+- [Supported Actions (<!-- count:actions -->1,072<!-- /count -->)](./supported-actions.md) - Complete list of all POST operations
+- [Supported Messages (<!-- count:messages -->1,281<!-- /count -->)](./supported-messages.md) - Complete list of all Organization Service messages
 
 ## When to Use Each Approach
 
@@ -261,8 +253,8 @@ const accounts = await service.retrieveMultiple("accounts", {
 
 - Migrating from .NET SDK
 - Team familiar with Organization Service patterns
-- Need namespace organization (CrmSdk vs XrmSdk)
-- Prefer message-based architecture
+- Prefer message-based architecture (`<Name>Request` / `<Name>Response`, parameters in
+  `request.Parameters`)
 
 ### Use Raw API When:
 
@@ -276,7 +268,7 @@ const accounts = await service.retrieveMultiple("accounts", {
 - **Bulk operations** are faster than individual creates/updates for 100+ records
 - **$batch** is better for mixed operations (creates + updates + deletes)
 - **Functions** are cacheable (GET) while actions are not (POST)
-- **Messages** have slight overhead due to abstraction layer
+- **Messages** send the same request as the matching action
 
 ## Related Documentation
 

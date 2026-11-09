@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ProductDeterminationProvisioningAction action
+ * Response from the msdyn_ProductDeterminationProvisioningAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ProductDeterminationProvisioningActionResponse {
+  "@odata.context"?: string;
   Result: string;
+}
+
+/**
+ * Parameters of the msdyn_ProductDeterminationProvisioningAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ProductDeterminationProvisioningActionActionParameters {
+  RequestPayload: string;
 }
 
 /**
@@ -13,20 +25,22 @@ export interface msdyn_ProductDeterminationProvisioningActionResponse {
  * Unbound action
  */
 export class msdyn_ProductDeterminationProvisioningActionAction implements Executable<msdyn_ProductDeterminationProvisioningActionResponse> {
-  constructor(public readonly requestPayload: string) {}
+  constructor(
+    public readonly parameters: msdyn_ProductDeterminationProvisioningActionActionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ProductDeterminationProvisioningAction`;
 
-    const body: Record<string, unknown> = {
-      RequestPayload: this.requestPayload,
-    };
+    const body = requestBody({
+      RequestPayload: this.parameters.RequestPayload,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -35,7 +49,7 @@ export class msdyn_ProductDeterminationProvisioningActionAction implements Execu
   async parseResponse(
     response: Response
   ): Promise<msdyn_ProductDeterminationProvisioningActionResponse> {
-    const data = await response.json();
-    return data as msdyn_ProductDeterminationProvisioningActionResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_ProductDeterminationProvisioningActionResponse;
   }
 }

@@ -1,10 +1,23 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from PvaCreateBotComponents action
+ * Response from the PvaCreateBotComponents action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface PvaCreateBotComponentsResponse {
-  // No content returned
+export type PvaCreateBotComponentsResponse = void;
+
+/**
+ * Parameters of the PvaCreateBotComponents action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PvaCreateBotComponentsActionParameters {
+  BotComponents: Record<string, unknown>[];
 }
 
 /**
@@ -12,33 +25,35 @@ export interface PvaCreateBotComponentsResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.bot)
+ *
+ * The first argument is the id of the bot record to call it on.
  */
 export class PvaCreateBotComponentsAction implements Executable<PvaCreateBotComponentsResponse> {
   constructor(
     public readonly botId: string,
-    public readonly botComponents: Record<string, unknown>[]
+    public readonly parameters: PvaCreateBotComponentsActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/bots(${this.botId})/Microsoft.Dynamics.CRM.PvaCreateBotComponents`;
+    const url = `${baseUrl}/bots(${odataLiteral.guid(this.botId)})/Microsoft.Dynamics.CRM.PvaCreateBotComponents`;
 
-    const body: Record<string, unknown> = {
-      BotComponents: this.botComponents,
-    };
+    const body = requestBody({
+      BotComponents: this.parameters.BotComponents,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaCreateBotComponentsResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<PvaCreateBotComponentsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

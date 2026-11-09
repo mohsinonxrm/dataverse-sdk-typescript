@@ -1,13 +1,16 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_CheckIfActivityMonitorHasErrorLastSevenDays action
+ * Response from the msdyn_CheckIfActivityMonitorHasErrorLastSevenDays action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse {
+  "@odata.context"?: string;
+  HelpLink: string;
   Message: string;
   ResultEntities: string;
   ReturnStatus: number;
-  HelpLink: string;
 }
 
 /**
@@ -23,7 +26,7 @@ export class msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysAction implements 
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -31,7 +34,7 @@ export class msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysAction implements 
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CheckIfActivityMonitorHasErrorLastSevenDaysResponse;
   }
 }

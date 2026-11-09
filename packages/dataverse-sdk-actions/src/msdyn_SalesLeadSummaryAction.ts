@@ -1,15 +1,37 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesLeadSummary action
+ * Response from the msdyn_SalesLeadSummary action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesLeadSummaryResponse {
-  msdyn_sales_copilot_output: string;
-  msdyn_version: string;
-  msdyn_summary: string;
-  msdyn_summary_raw: string;
+  "@odata.context"?: string;
   msdyn_additionalDetails: string;
   msdyn_canUseCache: boolean;
+  msdyn_sales_copilot_output: string;
+  msdyn_summary: string;
+  msdyn_summary_raw: string;
+  msdyn_version: string;
+}
+
+/**
+ * Parameters of the msdyn_SalesLeadSummary action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesLeadSummaryActionParameters {
+  msdyn_id: string;
+  msdyn_sessionId?: string;
+  msdyn_skipHeader?: string;
+  msdyn_lastComputationTime?: string;
+  msdyn_responseFormat?: string;
+  msdyn_activityId?: string;
+  msdyn_isMergedCatchupAndSummary?: boolean;
+  msdyn_additionalParams?: string;
+  msdyn_doSuggestUpdates?: boolean;
+  msdyn_parentContactId?: string;
+  msdyn_parentAccountId?: string;
 }
 
 /**
@@ -18,49 +40,37 @@ export interface msdyn_SalesLeadSummaryResponse {
  * Unbound action
  */
 export class msdyn_SalesLeadSummaryAction implements Executable<msdyn_SalesLeadSummaryResponse> {
-  constructor(
-    public readonly msdyn_additionalParams: string,
-    public readonly msdyn_activityId: string,
-    public readonly msdyn_doSuggestUpdates: boolean,
-    public readonly msdyn_parentContactId: string,
-    public readonly msdyn_id: string,
-    public readonly msdyn_lastComputationTime: string,
-    public readonly msdyn_isMergedCatchupAndSummary: boolean,
-    public readonly msdyn_skipHeader: string,
-    public readonly msdyn_sessionId: string,
-    public readonly msdyn_parentAccountId: string,
-    public readonly msdyn_responseFormat: string
-  ) {}
+  constructor(public readonly parameters: msdyn_SalesLeadSummaryActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesLeadSummary`;
 
-    const body: Record<string, unknown> = {
-      msdyn_additionalParams: this.msdyn_additionalParams,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_doSuggestUpdates: this.msdyn_doSuggestUpdates,
-      msdyn_parentContactId: this.msdyn_parentContactId,
-      msdyn_id: this.msdyn_id,
-      msdyn_lastComputationTime: this.msdyn_lastComputationTime,
-      msdyn_isMergedCatchupAndSummary: this.msdyn_isMergedCatchupAndSummary,
-      msdyn_skipHeader: this.msdyn_skipHeader,
-      msdyn_sessionId: this.msdyn_sessionId,
-      msdyn_parentAccountId: this.msdyn_parentAccountId,
-      msdyn_responseFormat: this.msdyn_responseFormat,
-    };
+    const body = requestBody({
+      msdyn_id: this.parameters.msdyn_id,
+      msdyn_sessionId: this.parameters.msdyn_sessionId,
+      msdyn_skipHeader: this.parameters.msdyn_skipHeader,
+      msdyn_lastComputationTime: this.parameters.msdyn_lastComputationTime,
+      msdyn_responseFormat: this.parameters.msdyn_responseFormat,
+      msdyn_activityId: this.parameters.msdyn_activityId,
+      msdyn_isMergedCatchupAndSummary: this.parameters.msdyn_isMergedCatchupAndSummary,
+      msdyn_additionalParams: this.parameters.msdyn_additionalParams,
+      msdyn_doSuggestUpdates: this.parameters.msdyn_doSuggestUpdates,
+      msdyn_parentContactId: this.parameters.msdyn_parentContactId,
+      msdyn_parentAccountId: this.parameters.msdyn_parentAccountId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesLeadSummaryResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesLeadSummaryResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_SalesLeadSummaryResponse;
   }
 }

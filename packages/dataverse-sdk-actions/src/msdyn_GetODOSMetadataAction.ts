@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetODOSMetadata action
+ * Response from the msdyn_GetODOSMetadata action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetODOSMetadataResponse {
+  "@odata.context"?: string;
   Metadata: string;
 }
 
@@ -20,13 +23,13 @@ export class msdyn_GetODOSMetadataAction implements Executable<msdyn_GetODOSMeta
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetODOSMetadataResponse> {
-    const data = await response.json();
-    return data as msdyn_GetODOSMetadataResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetODOSMetadataResponse;
   }
 }

@@ -3,13 +3,10 @@
 Comprehensive sample demonstrating Dataverse metadata operations (schema management):
 
 - **Entity (table) creation** with primary name columns
-- **Attribute (column) creation** - 6+ types (text, number, currency, date, choice, yes/no)
-- **1:N relationships** (one-to-many) with lookup columns
-- **N:N relationships** (many-to-many) with intersect tables
-- **Global choices** (option sets) creation and reuse
-- **Option value management** (adding choices dynamically)
-- **RetrieveMetadataChanges** for incremental sync and change tracking
-- **Metadata querying** with expansions
+- **Attribute (column) creation** - text and integer columns, through `client.api()` and `MetadataClient`
+- **1:N relationships** (one-to-many) with a lookup column
+- **Global choices** (option sets) creation
+- **Metadata querying** with `$select` and `$expand`
 - **Proper cleanup** (deletion order matters!)
 
 This sample is perfect for:
@@ -59,10 +56,10 @@ See [daemon-clientcredentials sample](../daemon-clientcredentials/README.md#prer
 - ✅ Admin consent granted
 - ✅ Application User created with System Administrator role
 
-### 2. Node.js 18+
+### 2. Node.js 22+
 
 ```bash
-node --version  # Should be v18.0.0 or higher
+node --version  # Should be v22.0.0 or higher
 ```
 
 ---
@@ -101,9 +98,16 @@ SCHEMA_PREFIX=sample
 
 **Schema Prefix:**
 
-- All created entities will use this prefix (e.g., `sample_project`, `sample_task`)
+- All created entities will use this prefix (e.g., `sample_project<tag>`, `sample_milestone<tag>`)
 - Use `new` for production, `demo` or `test` for samples
-- Must follow naming rules: lowercase, start with letter
+- Must follow naming rules: 2 to 8 lowercase letters or digits, starting with a letter
+
+Environment variables work as well as `.env` (a value in `.env` wins). Instead of the three
+`AZURE_*` names you can set `DATAVERSE_CLIENT_ID`, `DATAVERSE_TENANT_ID` and
+`DATAVERSE_CLIENT_SECRET`, the names the repository's live tests use. That is how CI runs this
+sample against the dev org (`pnpm samples:live` from the repository root, with
+`SCHEMA_PREFIX=new`). Without these values the sample prints what's missing and exits with
+code 1.
 
 ---
 
@@ -115,20 +119,35 @@ SCHEMA_PREFIX=sample
 pnpm start
 ```
 
-This executes 9 comprehensive demos:
+This runs 6 demos, three of which show the same task two ways (the HTTP-first `client.api()`
+call, and the typed `MetadataClient` method):
 
-1. **Create Project Entity** - custom table with primary name column
-2. **Add 6 Attribute Types** - text, integer, money, date, choice, yes/no
-3. **Create Task Entity** - second table for relationships
-4. **Create 1:N Relationship** - project has many tasks
-5. **Create N:N Relationship** - projects and contacts (team members)
-6. **Create Global Choice** - project type option set
-7. **Add Option to Choice** - dynamically add "Maintenance" option
-8. **RetrieveMetadataChanges** - track schema changes over time
-9. **Query Metadata** - inspect created schema
+1. **Create entities** - `<prefix>_project<tag>` through `client.api("/EntityDefinitions")` and
+   `<prefix>_milestone<tag>` through `metadataClient.createEntityDefinition()`, each with a
+   primary name column
+2. **Add attributes** - a multi-line text column (`client.api()`) and an integer column with a
+   1 to 10 range (`metadataClient.createAttributeDefinition()`)
+3. **Query metadata** - read an entity with `$select` and `$expand=Attributes(...)`, both ways
+4. **Create a 1:N relationship** - project has many milestones, with a lookup column
+   (`client.api("/RelationshipDefinitions")`)
+5. **Create a global choice** - a project type option set (`metadataClient.createGlobalOptionSet()`)
+6. **Delete metadata** - the relationship, then the milestone table, with `DELETE` through
+   `client.api()`
+
+`<tag>` is a random tag per run (set `SAMPLE_RUN_TAG`, lowercase letters and digits, to choose
+it), and every display name starts with `sdk-sample-<tag>`, so a run never collides with an
+earlier one.
+
+New metadata takes a while to reach all of the org's servers: right after a table is created, a
+request can get a 404 or a 400 from a server that doesn't know it yet. The sample retries such
+reads and creates for up to two minutes, and a delete for up to four (`eventually()` and
+`remove()` in `src/index.ts`).
 
 **Cleanup:**
-After demos complete, all created metadata is automatically deleted (with 3-second warning).
+After the demos, also when one fails, the sample deletes everything it created by `MetadataId`
+(relationships, then entities, then global choices). It also looks up, by name, anything of the
+run a failed create may have left. It exits with code 1 if a demo failed or something couldn't be
+deleted.
 
 ### Development Mode
 
@@ -140,13 +159,14 @@ Changes to `src/index.ts` will automatically reload.
 
 ### Skip Cleanup (for inspection)
 
-Modify `main()` function to comment out cleanup:
+The cleanup step has no switch. To keep the metadata, comment out the `cleanup(client)` call in
+the `finally` block of `main()`:
 
 ```typescript
-// await cleanup(metadataClient); // Comment this to keep metadata
+// if (!(await cleanup(client))) failed = true; // Comment this to keep metadata
 ```
 
-Then inspect your custom tables in Power Apps maker portal.
+Then inspect your custom tables in the Power Apps maker portal.
 
 ---
 
@@ -174,414 +194,174 @@ These are **NOT** business entity types (like `Account`, `Contact`), which would
 
 ## Demo Explanations
 
-### Demo 1: Create Project Entity
-
-Creates a custom table named `sample_project` with primary name column:
+The sample builds one `MetadataClient` over the `DataverseClient`, and also uses
+`client.api(...)` directly where the HTTP call is the point of the demo:
 
 ```typescript
-const entityDefinition: EntityMetadataCreate = {
+import {
+  AttributeRequiredLevel,
+  MetadataClient,
+  OptionSetType,
+  OwnershipTypes,
+  type EntityMetadata,
+} from "@mohsinonxrm/dataverse-sdk-metadata";
+
+const metadataClient = new MetadataClient(client);
+```
+
+### Demo 1: Create Entities
+
+**HTTP-first** - POST the definition with its `@odata.type`, with the primary name column.
+`createAndGetId()` returns the new `MetadataId` from the `OData-EntityId` header:
+
+```typescript
+const metadataId = await client.api("/EntityDefinitions").createAndGetId({
   "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
   SchemaName: "sample_project",
-  DisplayName: {
-    LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }],
-  },
-  DisplayCollectionName: {
-    LocalizedLabels: [{ Label: "Projects", LanguageCode: 1033 }],
-  },
-  OwnershipType: 1, // UserOwned (tracks owner)
-  HasActivities: true, // Can have tasks, emails, appointments
-  HasNotes: true, // Can have notes and attachments
+  DisplayName: { LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }] },
+  DisplayCollectionName: { LocalizedLabels: [{ Label: "Projects", LanguageCode: 1033 }] },
+  OwnershipType: OwnershipTypes.UserOwned,
+  IsActivity: false,
+  HasActivities: true,
+  HasNotes: true,
+  // The primary name column is created with the table, first in Attributes
   Attributes: [
-    // Primary name column (REQUIRED)
     {
       "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
       SchemaName: "sample_Name",
       DisplayName: { LocalizedLabels: [{ Label: "Project Name", LanguageCode: 1033 }] },
-      RequiredLevel: { Value: "ApplicationRequired" },
-      MaxLength: 100,
-      IsPrimaryName: true, // Marks as primary name
-    },
-  ],
-};
-
-const metadataId = await metadataClient.createEntityDefinition(entityDefinition);
-```
-
-**Key concepts:**
-
-- **Primary name column** is required for every custom entity
-- **OwnershipType:** 1 = UserOwned, 2 = OrganizationOwned, 4 = TeamOwned
-- **HasActivities/HasNotes:** Enable activity and note tracking
-- **LocalizedLabels:** Support multi-language (1033 = English)
-
----
-
-### Demo 2: Add Multiple Attribute Types
-
-Demonstrates 6 common column types:
-
-#### Text (Single Line)
-
-```typescript
-await metadataClient.createAttributeDefinition("sample_project", {
-  "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-  SchemaName: "sample_ProjectCode",
-  DisplayName: { LocalizedLabels: [{ Label: "Project Code", LanguageCode: 1033 }] },
-  MaxLength: 20,
-  Format: "Text",
-});
-```
-
-#### Integer (Whole Number)
-
-```typescript
-await metadataClient.createAttributeDefinition("sample_project", {
-  "@odata.type": "Microsoft.Dynamics.CRM.IntegerAttributeMetadata",
-  SchemaName: "sample_Priority",
-  DisplayName: { LocalizedLabels: [{ Label: "Priority", LanguageCode: 1033 }] },
-  MinValue: 1,
-  MaxValue: 10,
-});
-```
-
-#### Money (Currency)
-
-```typescript
-await metadataClient.createAttributeDefinition("sample_project", {
-  "@odata.type": "Microsoft.Dynamics.CRM.MoneyAttributeMetadata",
-  SchemaName: "sample_Budget",
-  DisplayName: { LocalizedLabels: [{ Label: "Budget", LanguageCode: 1033 }] },
-  MinValue: 0,
-  MaxValue: 1000000000,
-  Precision: 2, // 2 decimal places
-  PrecisionSource: 2,
-});
-```
-
-#### DateTime (Date/Time)
-
-```typescript
-await metadataClient.createAttributeDefinition("sample_project", {
-  "@odata.type": "Microsoft.Dynamics.CRM.DateTimeAttributeMetadata",
-  SchemaName: "sample_StartDate",
-  DisplayName: { LocalizedLabels: [{ Label: "Start Date", LanguageCode: 1033 }] },
-  Format: "DateOnly", // or 'DateAndTime'
-});
-```
-
-#### Choice (Local Picklist)
-
-```typescript
-await metadataClient.createAttributeDefinition("sample_project", {
-  "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
-  SchemaName: "sample_Status",
-  DisplayName: { LocalizedLabels: [{ Label: "Status", LanguageCode: 1033 }] },
-  OptionSet: {
-    "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
-    IsGlobal: false, // Local to this entity
-    Options: [
-      { Value: 1, Label: { LocalizedLabels: [{ Label: "Not Started", LanguageCode: 1033 }] } },
-      { Value: 2, Label: { LocalizedLabels: [{ Label: "In Progress", LanguageCode: 1033 }] } },
-      { Value: 3, Label: { LocalizedLabels: [{ Label: "Completed", LanguageCode: 1033 }] } },
-      { Value: 4, Label: { LocalizedLabels: [{ Label: "On Hold", LanguageCode: 1033 }] } },
-    ],
-  },
-});
-```
-
-#### Yes/No (Boolean)
-
-```typescript
-await metadataClient.createAttributeDefinition("sample_project", {
-  "@odata.type": "Microsoft.Dynamics.CRM.BooleanAttributeMetadata",
-  SchemaName: "sample_IsActive",
-  DisplayName: { LocalizedLabels: [{ Label: "Is Active", LanguageCode: 1033 }] },
-  DefaultValue: true,
-  OptionSet: {
-    "@odata.type": "Microsoft.Dynamics.CRM.BooleanOptionSetMetadata",
-    TrueOption: { Value: 1, Label: { LocalizedLabels: [{ Label: "Yes", LanguageCode: 1033 }] } },
-    FalseOption: { Value: 0, Label: { LocalizedLabels: [{ Label: "No", LanguageCode: 1033 }] } },
-  },
-});
-```
-
-**Other attribute types** (not in sample but supported):
-
-- **Memo** - multi-line text
-- **Decimal** - precise decimal numbers
-- **Lookup** - created via relationships (see Demo 4)
-- **File** - file attachments
-- **Image** - image columns
-- **MultiSelectPicklist** - multiple choice selection
-
----
-
-### Demo 3: Create Task Entity
-
-Creates a second custom table for relationship demonstration:
-
-```typescript
-const taskEntity: EntityMetadataCreate = {
-  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
-  SchemaName: "sample_task",
-  DisplayName: { LocalizedLabels: [{ Label: "Task", LanguageCode: 1033 }] },
-  DisplayCollectionName: { LocalizedLabels: [{ Label: "Tasks", LanguageCode: 1033 }] },
-  OwnershipType: 1,
-  Attributes: [
-    {
-      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
-      SchemaName: "sample_Name",
-      DisplayName: { LocalizedLabels: [{ Label: "Task Name", LanguageCode: 1033 }] },
+      RequiredLevel: { Value: AttributeRequiredLevel.None },
       MaxLength: 100,
       IsPrimaryName: true,
     },
   ],
-};
-```
-
-This table will be used to demonstrate 1:N relationships.
-
----
-
-### Demo 4: Create 1:N Relationship
-
-Creates a **one-to-many** relationship: one project can have many tasks.
-
-```typescript
-const relationship: OneToManyRelationshipMetadataCreate = {
-  "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
-  SchemaName: "sample_project_tasks",
-  ReferencedEntity: "sample_project", // "One" side (parent)
-  ReferencedAttribute: "sample_projectid", // Primary key of parent
-  ReferencingEntity: "sample_task", // "Many" side (child)
-  Lookup: {
-    SchemaName: "sample_ProjectId", // Lookup column name on child table
-    DisplayName: { LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }] },
-    RequiredLevel: { Value: "ApplicationRequired" }, // Required lookup
-  },
-};
-
-await metadataClient.createOneToManyRelationship(relationship);
-```
-
-**Result:**
-
-- Creates lookup column `sample_ProjectId` on `sample_task` table
-- Tasks can now reference their parent project
-- Deleting a project can cascade delete tasks (if configured)
-
-**Navigation:**
-
-- From project: `project.sample_project_tasks` (collection of tasks)
-- From task: `task.sample_ProjectId` (parent project)
-
----
-
-### Demo 5: Create N:N Relationship
-
-Creates a **many-to-many** relationship: projects can have many contacts, contacts can work on many projects.
-
-```typescript
-const relationship: ManyToManyRelationshipMetadataCreate = {
-  "@odata.type": "Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata",
-  SchemaName: "sample_project_contact",
-  Entity1LogicalName: "sample_project",
-  Entity2LogicalName: "contact", // Standard Dataverse entity
-  IntersectEntityName: "sample_project_contact", // Junction/intersect table
-  Entity1NavigationPropertyName: "sample_project_contact_projects",
-  Entity2NavigationPropertyName: "sample_project_contact_contacts",
-};
-
-await metadataClient.createManyToManyRelationship(relationship);
-```
-
-**Result:**
-
-- Creates intersect table `sample_project_contact` (hidden in UI)
-- Projects can be associated with multiple contacts
-- Contacts can be associated with multiple projects
-
-**Use cases:**
-
-- Team members on projects
-- Products in orders
-- Students in courses
-
-**Associate records (via Web API):**
-
-```typescript
-// Associate contact with project
-await client.api(`/sample_projects(${projectId})/sample_project_contact_contacts/$ref`).post({
-  "@odata.id": `${env.dataverseUrl}/api/data/v9.2/contacts(${contactId})`,
 });
 ```
 
----
-
-### Demo 6: Create Global Choice
-
-Creates a **global option set** that can be reused across multiple entities:
+**MetadataClient** - the same for `sample_milestone`. `createEntityDefinition()` returns the new
+`MetadataId`; `EntityMetadataCreate` requires the properties a table create needs and the primary
+name column first in `Attributes`:
 
 ```typescript
-const optionSet: OptionSetMetadataCreate = {
+const metadataId = await metadataClient.createEntityDefinition({
+  "@odata.type": "Microsoft.Dynamics.CRM.EntityMetadata",
+  SchemaName: "sample_milestone",
+  // ...DisplayName, DisplayCollectionName, OwnershipType, IsActivity, HasActivities, HasNotes
+  Attributes: [
+    {
+      "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+      SchemaName: "sample_Name",
+      MaxLength: 100,
+      IsPrimaryName: true,
+      // ...DisplayName, RequiredLevel
+    },
+  ],
+});
+```
+
+### Demo 2: Add Attributes
+
+A multi-line text column through `client.api()`, and an integer column through the client:
+
+```typescript
+await client.api("/EntityDefinitions(LogicalName='sample_project')/Attributes").post({
+  "@odata.type": "Microsoft.Dynamics.CRM.StringAttributeMetadata",
+  SchemaName: "sample_Description",
+  MaxLength: 500,
+  FormatName: { Value: "Text" },
+});
+
+await metadataClient.createAttributeDefinition("sample_project", {
+  "@odata.type": "Microsoft.Dynamics.CRM.IntegerAttributeMetadata",
+  SchemaName: "sample_Priority",
+  MinValue: 1,
+  MaxValue: 10,
+  // ...DisplayName, RequiredLevel
+});
+```
+
+`MetadataClient` also creates the other column types the same way (money, date and time, yes/no,
+choice); see the [metadata README](../../packages/dataverse-sdk-metadata/README.md).
+
+### Demo 3: Query Metadata
+
+```typescript
+// HTTP-first
+const entity = await client
+  .api("/EntityDefinitions(LogicalName='sample_project')")
+  .select("LogicalName", "DisplayName", "SchemaName", "OwnershipType")
+  .expand("Attributes($select=LogicalName,AttributeType,DisplayName)")
+  .get<EntityMetadata>();
+
+// MetadataClient
+const same = await metadataClient.getEntityDefinition("sample_project", {
+  select: ["LogicalName", "DisplayName", "SchemaName", "OwnershipType"],
+  expand: "Attributes($select=LogicalName,AttributeType,DisplayName)",
+});
+```
+
+The sample prints the name, ownership, attribute count and the first custom attributes.
+
+### Demo 4: Create a 1:N Relationship
+
+Project (1) to milestone (N), with the lookup column created on the milestone:
+
+```typescript
+const relationshipId = await client.api("/RelationshipDefinitions").createAndGetId({
+  "@odata.type": "Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata",
+  SchemaName: "sample_project_milestones",
+  ReferencedEntity: "sample_project",
+  ReferencedAttribute: "sample_projectid",
+  ReferencingEntity: "sample_milestone",
+  Lookup: {
+    "@odata.type": "Microsoft.Dynamics.CRM.LookupAttributeMetadata",
+    SchemaName: "sample_ProjectId",
+    DisplayName: { LocalizedLabels: [{ Label: "Project", LanguageCode: 1033 }] },
+    RequiredLevel: { Value: AttributeRequiredLevel.ApplicationRequired },
+  },
+});
+```
+
+`metadataClient.createOneToManyRelationship()` and `createManyToManyRelationship()` do the same
+through the client.
+
+### Demo 5: Create a Global Choice
+
+```typescript
+const metadataId = await metadataClient.createGlobalOptionSet({
   "@odata.type": "Microsoft.Dynamics.CRM.OptionSetMetadata",
   Name: "sample_projecttype",
-  DisplayName: { LocalizedLabels: [{ Label: "Project Type", LanguageCode: 1033 }] },
-  IsGlobal: true, // Reusable across entities
-  OptionSetType: "Picklist",
+  IsGlobal: true,
+  OptionSetType: OptionSetType.Picklist,
   Options: [
     { Value: 100000, Label: { LocalizedLabels: [{ Label: "Internal", LanguageCode: 1033 }] } },
     { Value: 100001, Label: { LocalizedLabels: [{ Label: "External", LanguageCode: 1033 }] } },
     { Value: 100002, Label: { LocalizedLabels: [{ Label: "Research", LanguageCode: 1033 }] } },
-    { Value: 100003, Label: { LocalizedLabels: [{ Label: "Consulting", LanguageCode: 1033 }] } },
   ],
-};
-
-await metadataClient.createGlobalOptionSet(optionSet);
-```
-
-**Then reference it in a column:**
-
-```typescript
-await metadataClient.createAttributeDefinition("sample_project", {
-  "@odata.type": "Microsoft.Dynamics.CRM.PicklistAttributeMetadata",
-  SchemaName: "sample_Type",
-  DisplayName: { LocalizedLabels: [{ Label: "Project Type", LanguageCode: 1033 }] },
-  GlobalOptionSet: {
-    "@odata.bind": `/GlobalOptionSetDefinitions(Name='sample_projecttype')`,
-  },
+  // ...DisplayName, Description
 });
 ```
 
-**Benefits of global choices:**
+To change a choice later, use `metadataClient.insertOptionValue()`, `updateOptionValue()`,
+`deleteOptionValue()` and `orderOptions()`. The sample does not call them.
 
-- ✅ Reuse across multiple tables
-- ✅ Centralized option management
-- ✅ Add options without changing multiple columns
+### Demo 6: Delete Metadata
 
----
-
-### Demo 7: Add Option to Global Choice
-
-Dynamically adds a new option to existing global choice:
+The relationship first, then the table:
 
 ```typescript
-const result = await metadataClient.insertOptionValue({
-  OptionSetName: "sample_projecttype",
-  Label: { LocalizedLabels: [{ Label: "Maintenance", LanguageCode: 1033 }] },
-  // Value auto-assigned if omitted (usually next available number)
-});
-
-console.log("New option value:", result.NewOptionValue);
+await client.api(`/RelationshipDefinitions(${relationshipId})`).delete();
+await client.api("/EntityDefinitions(LogicalName='sample_milestone')").delete();
 ```
 
-**Use cases:**
-
-- Adding new statuses as business evolves
-- User-configurable options
-- Multi-tenant SaaS (different options per tenant)
-
-**Other option operations:**
-
-- `updateOptionValue` - change label/description
-- `deleteOptionValue` - remove option (if not used)
-- `updateOrderOfOptions` - reorder options
-
----
-
-### Demo 8: RetrieveMetadataChanges
-
-Tracks metadata changes over time using version stamps:
-
-```typescript
-// Initial query - get all metadata + version stamp
-const initialResult = await metadataClient.retrieveMetadataChanges(
-  {
-    Criteria: {
-      FilterOperator: "And",
-      Conditions: [{ PropertyName: "SchemaName", Value: "sample_project" }],
-    },
-    Properties: {
-      PropertyNames: ["LogicalName", "DisplayName", "Attributes"],
-    },
-  },
-  "Entity" // Track entity deletions
-);
-
-console.log("Version:", initialResult.ServerVersionStamp);
-
-// Store this version stamp for later
-
-// Later... query only changes since last sync
-const changesResult = await metadataClient.retrieveMetadataChanges(
-  {
-    Criteria: {
-      /* same criteria */
-    },
-    Properties: { PropertyNames: ["LogicalName", "DisplayName"] },
-  },
-  "Entity",
-  initialResult.ServerVersionStamp // Pass stored version
-);
-
-console.log("Modified entities:", changesResult.EntityMetadata);
-console.log("Deleted entities:", changesResult.DeletedMetadata);
-```
-
-**Use cases:**
-
-- **Metadata sync** - keep external systems in sync
-- **Change detection** - alert on schema changes
-- **Audit trail** - track who changed what
-- **Environment comparison** - diff dev vs prod schemas
-
-**How it works:**
-
-1. First call returns all metadata + version stamp
-2. Store version stamp (string, opaque)
-3. Later calls pass version stamp
-4. Server returns only changes since that version
-5. Includes both modifications and deletions
-
----
-
-### Demo 9: Query Metadata
-
-Inspects created metadata using query operations:
-
-```typescript
-// Get entity with expanded attributes
-const entity = await metadataClient.getEntityDefinition("sample_project", {
-  expand: "Attributes", // Include all columns
-});
-
-console.log("Attributes:", entity.Attributes.length);
-
-// Query 1:N relationships
-const oneToManyRels = await metadataClient.getOneToManyRelationships("sample_project");
-for (const rel of oneToManyRels) {
-  console.log(`${rel.ReferencedEntity} → ${rel.ReferencingEntity}`);
-}
-
-// Query N:N relationships
-const manyToManyRels = await metadataClient.getManyToManyRelationships("sample_project");
-for (const rel of manyToManyRels) {
-  console.log(`${rel.Entity1LogicalName} ↔ ${rel.Entity2LogicalName}`);
-}
-```
-
-**Query options:**
-
-- `select` - choose specific properties
-- `filter` - filter entities/attributes
-- `expand` - include related metadata
-- `orderby` - sort results
+The sample sends these through `remove()`, which retries while the org's servers catch up with
+the new components.
 
 ---
 
 ## Cleanup Order (Critical!)
 
-Metadata deletion must follow correct order or it will fail:
+Metadata deletion must follow the correct order or it will fail:
 
 ```
 1. Delete relationships (1:N and N:N)
@@ -593,18 +373,21 @@ Metadata deletion must follow correct order or it will fail:
 
 **Why this order?**
 
-- Can't delete entity if relationships reference it
-- Can't delete global choice if columns use it
+- Can't delete an entity if relationships reference it
+- Can't delete a global choice if columns use it
 
 **Sample cleanup code:**
 
 ```typescript
-// 1. Delete relationships first
-await metadataClient.deleteOneToManyRelationship("sample_project_tasks");
-await metadataClient.deleteManyToManyRelationship("sample_project_contact");
+// 1. Delete relationships first: look the relationship up by schema name, then delete it by id
+const relationship = await metadataClient.getRelationshipBySchemaName("sample_project_milestones");
+if (relationship.MetadataId) {
+  await metadataClient.deleteRelationship(relationship.MetadataId);
+}
+// or, in one call: await metadataClient.deleteRelationshipBySchemaName("sample_project_milestones");
 
 // 2. Then delete entities
-await metadataClient.deleteEntityDefinition("sample_task");
+await metadataClient.deleteEntityDefinition("sample_milestone");
 await metadataClient.deleteEntityDefinition("sample_project");
 
 // 3. Finally delete global choices
@@ -682,8 +465,9 @@ Attributes: [
 
 **Solution:**
 
-1. Change `SCHEMA_PREFIX` in `.env` to a different value
-2. Or manually delete existing entities in Power Apps maker portal
+1. Each run uses a new random tag, so this only happens with a fixed `SAMPLE_RUN_TAG`: change it
+2. Or manually delete existing entities in Power Apps maker portal (their display names start
+   with `sdk-sample-<tag>`)
 3. Ensure cleanup ran successfully last time
 
 ---

@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from ImportTranslation action
+ * Response from the ImportTranslation action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ImportTranslationResponse {
-  // No content returned
+export type ImportTranslationResponse = void;
+
+/**
+ * Parameters of the ImportTranslation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ImportTranslationActionParameters {
+  TranslationFile: string;
+  ImportJobId: string;
 }
 
 /**
@@ -13,31 +23,28 @@ export interface ImportTranslationResponse {
  * Unbound action
  */
 export class ImportTranslationAction implements Executable<ImportTranslationResponse> {
-  constructor(
-    public readonly translationFile: string,
-    public readonly importJobId: string
-  ) {}
+  constructor(public readonly parameters: ImportTranslationActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ImportTranslation`;
 
-    const body: Record<string, unknown> = {
-      TranslationFile: this.translationFile,
-      ImportJobId: this.importJobId,
-    };
+    const body = requestBody({
+      TranslationFile: this.parameters.TranslationFile,
+      ImportJobId: this.parameters.ImportJobId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ImportTranslationResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<ImportTranslationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

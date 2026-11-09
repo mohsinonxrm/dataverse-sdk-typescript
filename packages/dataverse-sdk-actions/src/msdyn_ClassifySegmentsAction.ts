@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ClassifySegments action
+ * Response from the msdyn_ClassifySegments action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_ClassifySegmentsResponse {
-  // No content returned
+export type msdyn_ClassifySegmentsResponse = void;
+
+/**
+ * Parameters of the msdyn_ClassifySegments action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ClassifySegmentsActionParameters {
+  RegardingEntityId?: string;
+  RegardingEntityName?: string;
 }
 
 /**
@@ -13,31 +23,28 @@ export interface msdyn_ClassifySegmentsResponse {
  * Unbound action
  */
 export class msdyn_ClassifySegmentsAction implements Executable<msdyn_ClassifySegmentsResponse> {
-  constructor(
-    public readonly regardingEntityId: string,
-    public readonly regardingEntityName: string
-  ) {}
+  constructor(public readonly parameters: msdyn_ClassifySegmentsActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ClassifySegments`;
 
-    const body: Record<string, unknown> = {
-      RegardingEntityId: this.regardingEntityId,
-      RegardingEntityName: this.regardingEntityName,
-    };
+    const body = requestBody({
+      RegardingEntityId: this.parameters.RegardingEntityId,
+      RegardingEntityName: this.parameters.RegardingEntityName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_ClassifySegmentsResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_ClassifySegmentsResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

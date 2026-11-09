@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SetFeatureStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SetFeatureStatusRequestParameters {
+  FeatureType?: number;
+  Status?: boolean;
+  IsSolutionUninstall?: boolean;
+  ConfigurationData?: string;
+}
 
 /**
  * msdyn_SetFeatureStatus request message
@@ -10,47 +22,35 @@ export class msdyn_SetFeatureStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_SetFeatureStatusResponse>
 {
-  constructor(
-    public featureType: number,
-    public status: boolean,
-    public isSolutionUninstall: boolean,
-    public configurationData: string
-  ) {
-    super("msdyn_SetFeatureStatus");
+  declare readonly Parameters: Readonly<msdyn_SetFeatureStatusRequestParameters>;
+
+  constructor(parameters: msdyn_SetFeatureStatusRequestParameters = {}) {
+    super("msdyn_SetFeatureStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SetFeatureStatus`;
 
-    const body: Record<string, unknown> = {
-      FeatureType: this.featureType,
-      Status: this.status,
-      IsSolutionUninstall: this.isSolutionUninstall,
-      ConfigurationData: this.configurationData,
-    };
+    const body = requestBody({
+      FeatureType: this.Parameters.FeatureType,
+      Status: this.Parameters.Status,
+      IsSolutionUninstall: this.Parameters.IsSolutionUninstall,
+      ConfigurationData: this.Parameters.ConfigurationData,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_SetFeatureStatusResponse> {
+  parseResponse(_response: Response): Promise<msdyn_SetFeatureStatusResponse> {
     // No return value (204 No Content)
-    return new msdyn_SetFeatureStatusResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FeatureType: this.featureType,
-      Status: this.status,
-      IsSolutionUninstall: this.isSolutionUninstall,
-      ConfigurationData: this.configurationData,
-    };
+    return Promise.resolve(new msdyn_SetFeatureStatusResponse());
   }
 }
 
@@ -62,7 +62,7 @@ export class msdyn_SetFeatureStatusResponse extends OrganizationResponse {
     super("msdyn_SetFeatureStatus");
   }
 
-  static fromResponse(_data: unknown): msdyn_SetFeatureStatusResponse {
+  static fromResponse(_data?: unknown): msdyn_SetFeatureStatusResponse {
     return new msdyn_SetFeatureStatusResponse();
   }
 }

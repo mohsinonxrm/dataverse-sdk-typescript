@@ -1,10 +1,28 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from GetDistinctValuesImportFile function
+ * Response from the GetDistinctValuesImportFile function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetDistinctValuesImportFileResponse {
+  "@odata.context"?: string;
   Values: string[];
+}
+
+/**
+ * Parameters of the GetDistinctValuesImportFile function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetDistinctValuesImportFileFunctionParameters {
+  columnNumber: number;
+  pageNumber: number;
+  recordsPerPage: number;
 }
 
 /**
@@ -12,44 +30,33 @@ export interface GetDistinctValuesImportFileResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.importfile)
+ *
+ * The first argument is the id of the importfile record to call it on.
  */
 export class GetDistinctValuesImportFileFunction implements Executable<GetDistinctValuesImportFileResponse> {
   constructor(
     public readonly importfileId: string,
-    public readonly columnNumber: number,
-    public readonly pageNumber: number,
-    public readonly recordsPerPage: number
+    public readonly parameters: GetDistinctValuesImportFileFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/importfiles(${this.importfileId})/Microsoft.Dynamics.CRM.GetDistinctValuesImportFile`;
+    let url = `${baseUrl}/importfiles(${odataLiteral.guid(this.importfileId)})/Microsoft.Dynamics.CRM.GetDistinctValuesImportFile`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.columnNumber !== undefined) {
+    if (this.parameters.columnNumber !== undefined) {
       aliases.push(`columnNumber=@p1`);
-      params.append(
-        "@p1",
-        typeof this.columnNumber === "string" ? `'${this.columnNumber}'` : String(this.columnNumber)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.columnNumber, "Edm.Int32"));
     }
-    if (this.pageNumber !== undefined) {
+    if (this.parameters.pageNumber !== undefined) {
       aliases.push(`pageNumber=@p2`);
-      params.append(
-        "@p2",
-        typeof this.pageNumber === "string" ? `'${this.pageNumber}'` : String(this.pageNumber)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.pageNumber, "Edm.Int32"));
     }
-    if (this.recordsPerPage !== undefined) {
+    if (this.parameters.recordsPerPage !== undefined) {
       aliases.push(`recordsPerPage=@p3`);
-      params.append(
-        "@p3",
-        typeof this.recordsPerPage === "string"
-          ? `'${this.recordsPerPage}'`
-          : String(this.recordsPerPage)
-      );
+      params.append("@p3", formatParameterAlias(this.parameters.recordsPerPage, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -65,7 +72,7 @@ export class GetDistinctValuesImportFileFunction implements Executable<GetDistin
   }
 
   async parseResponse(response: Response): Promise<GetDistinctValuesImportFileResponse> {
-    const data = await response.json();
-    return data as GetDistinctValuesImportFileResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as GetDistinctValuesImportFileResponse;
   }
 }

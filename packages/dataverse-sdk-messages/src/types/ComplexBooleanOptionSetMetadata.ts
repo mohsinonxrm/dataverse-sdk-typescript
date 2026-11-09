@@ -7,18 +7,18 @@ import type { OptionSetType } from "./OptionSetType.js";
  * ComplexBooleanOptionSetMetadata complex type
  */
 export interface ComplexBooleanOptionSetMetadata {
-  TrueOption: OptionMetadata;
-  FalseOption: OptionMetadata;
-  Description: Label;
-  DisplayName: Label;
-  IsCustomOptionSet: boolean;
-  IsGlobal: boolean;
-  IsManaged: boolean;
-  IsCustomizable: BooleanManagedProperty;
-  Name: string;
-  ExternalTypeName: string;
-  OptionSetType: OptionSetType;
-  IntroducedVersion: string;
-  MetadataId: string;
-  HasChanged: boolean;
+  Description?: Label;
+  DisplayName?: Label;
+  ExternalTypeName?: string;
+  FalseOption?: OptionMetadata;
+  HasChanged?: boolean;
+  IntroducedVersion?: string;
+  IsCustomOptionSet?: boolean;
+  IsCustomizable?: BooleanManagedProperty;
+  IsGlobal?: boolean;
+  IsManaged?: boolean;
+  MetadataId?: string;
+  Name?: string;
+  OptionSetType?: OptionSetType;
+  TrueOption?: OptionMetadata;
 }

@@ -1,9 +1,12 @@
 import type { ShareAccessRights } from "./ShareAccessRights.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type { AnyEntityPayload } from "./EntityPayload.js";
 
 /**
  * ComponentPrincipalAccess complex type
  */
 export interface ComponentPrincipalAccess {
-  ShareAccessMask: ShareAccessRights;
-  RequestType: number;
+  RequestType?: number;
+  ShareAccessMask?: ShareAccessRights;
+  SharePrincipal: EntityReference | AnyEntityPayload;
 }

@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * ProcessInboundEmail request message
  *
  * Web API Action: ProcessInboundEmail
+ *
+ * The first argument is the id of the email record to call it on.
  */
 export class ProcessInboundEmailRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class ProcessInboundEmailRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/emails(${this.emailId})/Microsoft.Dynamics.CRM.ProcessInboundEmail`;
+    const url = `${baseUrl}/emails(${odataLiteral.guid(this.emailId)})/Microsoft.Dynamics.CRM.ProcessInboundEmail`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<ProcessInboundEmailResponse> {
+  parseResponse(_response: Response): Promise<ProcessInboundEmailResponse> {
     // No return value (204 No Content)
-    return new ProcessInboundEmailResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.emailId,
-    };
+    return Promise.resolve(new ProcessInboundEmailResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class ProcessInboundEmailResponse extends OrganizationResponse {
     super("ProcessInboundEmail");
   }
 
-  static fromResponse(_data: unknown): ProcessInboundEmailResponse {
+  static fromResponse(_data?: unknown): ProcessInboundEmailResponse {
     return new ProcessInboundEmailResponse();
   }
 }

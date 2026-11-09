@@ -1,11 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { ComplexEntityMetadata, EntityFilters } from "./types/index.js";
 
 /**
- * Response from RetrieveEntity function
+ * Response from the RetrieveEntity function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveEntityResponse {
+  "@odata.context"?: string;
   EntityMetadata: ComplexEntityMetadata;
+}
+
+/**
+ * Parameters of the RetrieveEntity function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveEntityFunctionParameters {
+  EntityFilters: EntityFilters | keyof typeof EntityFilters;
+  LogicalName?: string;
+  MetadataId: string;
+  RetrieveAsIfPublished: boolean;
 }
 
 /**
@@ -14,12 +29,7 @@ export interface RetrieveEntityResponse {
  * Unbound function
  */
 export class RetrieveEntityFunction implements Executable<RetrieveEntityResponse> {
-  constructor(
-    public readonly entityFilters: EntityFilters,
-    public readonly logicalName: string,
-    public readonly metadataId: string,
-    public readonly retrieveAsIfPublished: boolean
-  ) {}
+  constructor(public readonly parameters: RetrieveEntityFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveEntity`;
@@ -27,36 +37,30 @@ export class RetrieveEntityFunction implements Executable<RetrieveEntityResponse
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityFilters !== undefined) {
+    if (this.parameters.EntityFilters !== undefined) {
       aliases.push(`EntityFilters=@p1`);
       params.append(
         "@p1",
-        typeof this.entityFilters === "string"
-          ? `'${this.entityFilters}'`
-          : String(this.entityFilters)
+        formatParameterAlias(
+          this.parameters.EntityFilters,
+          "mscrm.EntityFilters",
+          "EnumerationType"
+        )
       );
     }
-    if (this.logicalName !== undefined) {
+    if (this.parameters.LogicalName !== undefined) {
       aliases.push(`LogicalName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.logicalName === "string" ? `'${this.logicalName}'` : String(this.logicalName)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.LogicalName, "Edm.String"));
     }
-    if (this.metadataId !== undefined) {
+    if (this.parameters.MetadataId !== undefined) {
       aliases.push(`MetadataId=@p3`);
-      params.append(
-        "@p3",
-        typeof this.metadataId === "string" ? `'${this.metadataId}'` : String(this.metadataId)
-      );
+      params.append("@p3", formatParameterAlias(this.parameters.MetadataId, "Edm.Guid"));
     }
-    if (this.retrieveAsIfPublished !== undefined) {
+    if (this.parameters.RetrieveAsIfPublished !== undefined) {
       aliases.push(`RetrieveAsIfPublished=@p4`);
       params.append(
         "@p4",
-        typeof this.retrieveAsIfPublished === "string"
-          ? `'${this.retrieveAsIfPublished}'`
-          : String(this.retrieveAsIfPublished)
+        formatParameterAlias(this.parameters.RetrieveAsIfPublished, "Edm.Boolean")
       );
     }
     if (aliases.length > 0) {
@@ -73,7 +77,7 @@ export class RetrieveEntityFunction implements Executable<RetrieveEntityResponse
   }
 
   async parseResponse(response: Response): Promise<RetrieveEntityResponse> {
-    const data = await response.json();
-    return data as RetrieveEntityResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveEntityResponse;
   }
 }

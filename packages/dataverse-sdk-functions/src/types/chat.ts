@@ -1,17 +1,19 @@
+import type { activitypointer } from "./activitypointer.js";
+
 /**
  * chat entity type
  */
-export interface chat {
-  _linkedby_value: string;
-  importsequencenumber: number;
-  teamschatid: string;
-  _unlinkedby_value: string;
-  overriddencreatedon: string;
-  modifiedinteamson: string;
-  lastsyncerror: number;
-  modifiedinteamsbyactivitypartyid: string;
-  unlinkedon: string;
-  linkedon: string;
-  eventssummary: string;
-  syncstatus: number;
+export interface chat extends activitypointer {
+  _linkedby_value?: string;
+  _unlinkedby_value?: string;
+  eventssummary?: string;
+  importsequencenumber?: number;
+  lastsyncerror?: number;
+  linkedon?: string;
+  modifiedinteamsbyactivitypartyid?: string;
+  modifiedinteamson?: string;
+  overriddencreatedon?: string;
+  syncstatus?: number;
+  teamschatid?: string;
+  unlinkedon?: string;
 }

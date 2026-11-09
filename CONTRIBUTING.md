@@ -2,9 +2,36 @@
 
 Thank you for your interest in contributing to the Dataverse SDK TypeScript project!
 
+## How work gets done: issue first, maintainer-triaged
+
+This project follows a **planned, milestone-driven workflow**. Every change starts as an issue, the maintainer decides whether and when it is worked on, and work follows the milestone plan.
+
+1. **Open an issue first.** Use one of the [issue templates](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/new/choose): bug report, feature request or question. Search [existing issues](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues) before opening a new one. **Don't open a pull request for an issue that hasn't been triaged.**
+2. **The maintainer triages it.** New issues are labelled `needs-triage`. The maintainer analyses and reviews each one, then:
+   - adds a type label (`bug`, `enhancement`, `documentation`, `ci`, `security`) and package labels (`pkg:*`);
+   - sets a priority (`P0` to `P3`, defined below);
+   - assigns a milestone (the next release, for example `v2.0.1` or `v2.1.0`, or `Backlog`);
+   - replaces `needs-triage` with `accepted`, or closes the issue with a reason (duplicate, won't fix, needs more information).
+3. **Work follows the milestones.** Issues are worked in milestone order, highest priority first. See the [milestones](https://github.com/mohsinonxrm/dataverse-sdk-typescript/milestones) and the tracking issue pinned to each one.
+4. **Want to work on an issue?** Comment on an `accepted` issue and wait for the maintainer to assign it to you before you start. This avoids duplicated effort and work that conflicts with the plan.
+5. **Pull requests must link their issue.** Put `Fixes #123` (or `Refs #123` for partial work) in the PR description. A PR without a linked, accepted issue is converted to a draft or closed, however good the change is. Keep each PR to one issue.
+
+### Priorities
+
+| Priority | Meaning                                          |
+| -------- | ------------------------------------------------ |
+| `P0`     | Blocks browser or SPA use, or a security problem |
+| `P1`     | Wrong behaviour, likely to hit real users        |
+| `P2`     | Correctness or ergonomics gap with a workaround  |
+| `P3`     | Polish                                           |
+
+### Security issues
+
+**Don't report security vulnerabilities in public issues.** See [SECURITY.md](./SECURITY.md).
+
 ## Requirements
 
-- **Node 18+**
+- **Node 22+** (Node 18 and 20 are end of life). CI tests on Node 22, 24 and 26.
 - **pnpm** (package manager)
 - **ESM-only** packages
 
@@ -33,7 +60,7 @@ pnpm lint
 ### TypeScript
 
 - **TypeScript strict mode** is required
-- **No `any`** in public APIs (internal use with `@internal` tag allowed)
+- **No `any`** in the public API. Use `unknown` for values the SDK can't know (response bodies, request bodies, extra properties), with a generic defaulting to `unknown` where the caller knows the type (`BatchResponseStep<TBody = unknown>`). Lint enforces it (`@typescript-eslint/no-explicit-any` is an error); a disable comment needs a reason and is only for internal code
 - Prefer discriminated unions over string flags
 
 ### Public APIs
@@ -41,7 +68,7 @@ pnpm lint
 All public APIs must have:
 
 - **JSDoc documentation** with usage examples
-- **Unit tests** with >90% coverage
+- **Unit tests** that keep the package's coverage gate green (core's `pnpm test` fails below 85% statements/functions/lines and 80% branches; see `packages/dataverse-sdk-core/vitest.config.ts`)
 - **Type tests** (if impacting metadata types)
 
 ### Breaking Changes
@@ -55,18 +82,23 @@ All public APIs must have:
 
 Before submitting a PR, ensure:
 
+- [ ] The PR links an `accepted` issue that is assigned to you (`Fixes #123`)
 - [ ] Tests added/updated for all changes
 - [ ] Documentation updated:
   - [ ] Package README if API changed
   - [ ] `docs/mapping/` if actions/functions/messages added
   - [ ] `docs/api/` if new features added
 - [ ] Changeset added (if user-facing change): `pnpm changeset`
+- [ ] API report updated and committed if a public API changed: `pnpm api:update` (see [API reports](#api-reports))
 - [ ] All checks pass:
   ```bash
-  pnpm lint
-  pnpm typecheck
-  pnpm test
+  pnpm format:check
   pnpm build
+  pnpm typecheck
+  pnpm lint
+  pnpm test
+  pnpm api:check      # API reports, after pnpm build
+  pnpm test:browser   # browser smoke tests, after pnpm build
   ```
 - [ ] Commit messages follow convention:
   - `feat: add bulk operations support`
@@ -79,7 +111,7 @@ Before submitting a PR, ensure:
 ```
 packages/
   dataverse-sdk-core/          # Core HTTP pipeline & client
-  dataverse-sdk-auth-*         # Auth providers (MSAL browser/node)
+  dataverse-sdk-auth-*         # Auth providers (MSAL browser, MSAL node, Azure Identity)
   dataverse-sdk-batch/         # $batch operations
   dataverse-sdk-messages/      # SDK message request/response
   dataverse-sdk-xrm/           # OrganizationService facade
@@ -92,6 +124,11 @@ packages/
   dataverse-sdk-entities-runtime/ # Runtime for generated entities
   dataverse-sdk-appinsights/   # Application Insights telemetry
   dataverse-sdk-otel/          # OpenTelemetry adapter
+  dataverse-sdk-testing/       # Test harness: a real client with a fake fetch (private)
+  dataverse-sdk-browser-tests/ # Chromium smoke tests under a strict CSP (private)
+  dataverse-sdk-integration-tests/ # Live tests against a dev org (private)
+samples/                      # Runnable samples (private)
+tools/generate-sdk-types/     # Generates actions, functions, messages and metadata types from the committed $metadata snapshot
 ```
 
 ## Testing Strategy
@@ -100,10 +137,11 @@ packages/
 
 - Test individual functions/classes
 - Mock external dependencies
-- Target: >90% coverage
+- Coverage: core enforces its thresholds on every `pnpm test`; don't lower them, raise them as tests grow
 
-### Contract Tests (MSW)
+### Contract Tests
 
+- Use a real `DataverseClient` with the fake fetch from `@mohsinonxrm/dataverse-sdk-testing` (see its README), and assert on what reaches `fetch`
 - Test HTTP request/response contracts
 - Verify retry/throttle behavior
 - Validate request formats
@@ -112,12 +150,21 @@ packages/
 
 - Verify TypeScript type correctness
 - Ensure invalid payloads don't compile
-- Test metadata Read vs Create vs Update types
+- Test the metadata read types against the `*Create` / `*Update` types
 
 ### Integration Tests (Gated)
 
-- Run against real Dataverse environment
-- Require environment secrets (CI only)
+- Run against a real Dataverse dev org: `pnpm test:integration` after `pnpm build` (see `packages/dataverse-sdk-integration-tests/README.md`)
+- Need the `DATAVERSE_*` variables; CI runs them nightly with repository secrets
+- The TypeScript blocks of `README.md` and `docs/getting-started.md` marked `<!-- live -->` run there too, as written; see [Documentation examples](./packages/dataverse-sdk-integration-tests/README.md#documentation-examples)
+- `pnpm samples:live` builds the non-interactive Node samples (daemon-clientcredentials,
+  actions-functions, batch-ops, messages-sales-cs, metadata-ops) and runs each against the same
+  org with the same variables; CI runs it after the tests. Each sample names what it creates
+  `sdk-sample-<tag>` and deletes it, also when it fails
+
+### Browser Tests
+
+- `pnpm test:browser` runs Chromium smoke tests under a strict Content-Security-Policy (see `packages/dataverse-sdk-browser-tests/README.md`)
 
 ## Release Process
 
@@ -137,22 +184,40 @@ Select:
 - Version bump type (patch/minor/major)
 - Describe the change
 
+### API reports
+
+Each published package's public API is written to a committed
+[API Extractor](https://api-extractor.com/) report, `packages/<pkg>/etc/<name>.api.md`, so
+every change to a public API shows up in the PR diff. The three generated packages (`actions`,
+`functions`, `messages`) have no report: their API is the generator's output for the committed
+`$metadata` snapshot, which CI's regen check already enforces, and their reports would be
+megabytes.
+
+When you change an exported type, function, class or option, the report changes too:
+
+1. `pnpm build && pnpm api:update` rewrites the reports from the built `dist/index.d.ts`.
+2. Read the report's diff: it is the public API change your PR makes. Commit it.
+3. Add a changeset that names each package whose report changed, with the right bump: **major**
+   if the change can break a caller (a removed or renamed export, a narrower parameter, a wider
+   return type, a new required option), **minor** if it only adds.
+
+CI runs `pnpm api:check` (fails when a report differs from the build) and, on a PR, fails when a
+report changed but no changeset added in the PR names the package
+(`scripts/check-api-changeset.mjs`). The check only looks for the changeset; review checks the
+bump. A package's first report needs no changeset.
+
 ### Release (Maintainers Only)
 
-```bash
-# Version packages based on changesets
-pnpm version
-
-# Publish to npm
-pnpm release
-```
+Releases are cut with a release-prep PR that runs `pnpm changeset version`, then published by CI
+when the maintainer pushes a `vX.Y.Z` tag. Nobody publishes from a local machine. See
+[RELEASING.md](./RELEASING.md).
 
 ## Architectural Decision Records (ADRs)
 
 Major architectural decisions are documented in `docs/adr/`. Before proposing significant changes:
 
 1. Review existing ADRs in `docs/adr/`
-2. Create a new ADR if needed (follow template)
+2. Create a new ADR if needed: copy the structure of an existing one (Status, Context, Decision, Consequences) and number it next in sequence
 3. Discuss in issue/PR before implementing
 
 ## Licensing
@@ -169,9 +234,8 @@ By submitting a pull request, you agree that your contributions will be licensed
 
 ## Questions?
 
-- Open an issue for bugs or feature requests
-- Check existing issues/discussions first
-- Tag issues appropriately (`bug`, `feature`, `question`, `docs`)
+- Search the existing issues first.
+- Then open an issue with the **Question** template. The maintainer labels it during triage, so you don't need to.
 
 ---
 

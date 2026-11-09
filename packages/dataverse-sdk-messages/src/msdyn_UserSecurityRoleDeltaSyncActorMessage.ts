@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_UserSecurityRoleDeltaSyncActor message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UserSecurityRoleDeltaSyncActorRequestParameters {
+  InputData: string;
+}
 
 /**
  * msdyn_UserSecurityRoleDeltaSyncActor request message
@@ -10,36 +19,32 @@ export class msdyn_UserSecurityRoleDeltaSyncActorRequest
   extends OrganizationRequest
   implements Executable<msdyn_UserSecurityRoleDeltaSyncActorResponse>
 {
-  constructor(public inputData: string) {
-    super("msdyn_UserSecurityRoleDeltaSyncActor");
+  declare readonly Parameters: Readonly<msdyn_UserSecurityRoleDeltaSyncActorRequestParameters>;
+
+  constructor(parameters: msdyn_UserSecurityRoleDeltaSyncActorRequestParameters) {
+    super("msdyn_UserSecurityRoleDeltaSyncActor", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_UserSecurityRoleDeltaSyncActor`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.Parameters.InputData,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UserSecurityRoleDeltaSyncActorResponse> {
+  parseResponse(_response: Response): Promise<msdyn_UserSecurityRoleDeltaSyncActorResponse> {
     // No return value (204 No Content)
-    return new msdyn_UserSecurityRoleDeltaSyncActorResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
+    return Promise.resolve(new msdyn_UserSecurityRoleDeltaSyncActorResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class msdyn_UserSecurityRoleDeltaSyncActorResponse extends OrganizationRe
     super("msdyn_UserSecurityRoleDeltaSyncActor");
   }
 
-  static fromResponse(_data: unknown): msdyn_UserSecurityRoleDeltaSyncActorResponse {
+  static fromResponse(_data?: unknown): msdyn_UserSecurityRoleDeltaSyncActorResponse {
     return new msdyn_UserSecurityRoleDeltaSyncActorResponse();
   }
 }

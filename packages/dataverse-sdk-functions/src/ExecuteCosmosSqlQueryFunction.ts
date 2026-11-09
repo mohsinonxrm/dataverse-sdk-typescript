@@ -1,13 +1,31 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { ParameterCollection } from "./types/index.js";
 
 /**
- * Response from ExecuteCosmosSqlQuery function
+ * Response from the ExecuteCosmosSqlQuery function.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface ExecuteCosmosSqlQueryResponse {
-  value: EntityReference;
+export type ExecuteCosmosSqlQueryResponse = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
+ * Parameters of the ExecuteCosmosSqlQuery function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ExecuteCosmosSqlQueryFunctionParameters {
+  QueryText: string;
+  EntityLogicalName: string;
+  QueryParameters?: ParameterCollection;
+  PageSize?: number;
+  PagingCookie?: string;
+  PartitionId?: string;
 }
 
 /**
@@ -16,14 +34,7 @@ export interface ExecuteCosmosSqlQueryResponse {
  * Unbound function
  */
 export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSqlQueryResponse> {
-  constructor(
-    public readonly queryText: string,
-    public readonly entityLogicalName: string,
-    public readonly queryParameters: ParameterCollection,
-    public readonly pageSize: number,
-    public readonly pagingCookie: string,
-    public readonly partitionId: string
-  ) {}
+  constructor(public readonly parameters: ExecuteCosmosSqlQueryFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/ExecuteCosmosSqlQuery`;
@@ -31,46 +42,36 @@ export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSq
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.queryText !== undefined) {
+    if (this.parameters.QueryText !== undefined) {
       aliases.push(`QueryText=@p1`);
-      params.append(
-        "@p1",
-        typeof this.queryText === "string" ? `'${this.queryText}'` : String(this.queryText)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.QueryText, "Edm.String"));
     }
-    if (this.entityLogicalName !== undefined) {
+    if (this.parameters.EntityLogicalName !== undefined) {
       aliases.push(`EntityLogicalName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.entityLogicalName === "string"
-          ? `'${this.entityLogicalName}'`
-          : String(this.entityLogicalName)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.EntityLogicalName, "Edm.String"));
     }
-    if (this.queryParameters !== undefined) {
+    if (this.parameters.QueryParameters !== undefined) {
       aliases.push(`QueryParameters=@p3`);
-      params.append("@p3", JSON.stringify(this.queryParameters));
+      params.append(
+        "@p3",
+        formatParameterAlias(
+          this.parameters.QueryParameters,
+          "mscrm.ParameterCollection",
+          "ComplexType"
+        )
+      );
     }
-    if (this.pageSize !== undefined) {
+    if (this.parameters.PageSize !== undefined) {
       aliases.push(`PageSize=@p4`);
-      params.append(
-        "@p4",
-        typeof this.pageSize === "string" ? `'${this.pageSize}'` : String(this.pageSize)
-      );
+      params.append("@p4", formatParameterAlias(this.parameters.PageSize, "Edm.Int64"));
     }
-    if (this.pagingCookie !== undefined) {
+    if (this.parameters.PagingCookie !== undefined) {
       aliases.push(`PagingCookie=@p5`);
-      params.append(
-        "@p5",
-        typeof this.pagingCookie === "string" ? `'${this.pagingCookie}'` : String(this.pagingCookie)
-      );
+      params.append("@p5", formatParameterAlias(this.parameters.PagingCookie, "Edm.String"));
     }
-    if (this.partitionId !== undefined) {
+    if (this.parameters.PartitionId !== undefined) {
       aliases.push(`PartitionId=@p6`);
-      params.append(
-        "@p6",
-        typeof this.partitionId === "string" ? `'${this.partitionId}'` : String(this.partitionId)
-      );
+      params.append("@p6", formatParameterAlias(this.parameters.PartitionId, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -86,7 +87,9 @@ export class ExecuteCosmosSqlQueryFunction implements Executable<ExecuteCosmosSq
   }
 
   async parseResponse(response: Response): Promise<ExecuteCosmosSqlQueryResponse> {
-    const data = await response.json();
-    return data as ExecuteCosmosSqlQueryResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
+    return (await response.json()) as ExecuteCosmosSqlQueryResponse;
   }
 }

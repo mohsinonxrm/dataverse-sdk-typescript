@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the RemoveParent message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveParentRequestParameters {
+  Target: EntityReference | AnyEntityPayload;
+}
 
 /**
  * RemoveParent request message
@@ -11,36 +21,32 @@ export class RemoveParentRequest
   extends OrganizationRequest
   implements Executable<RemoveParentResponse>
 {
-  constructor(public target: EntityReference) {
-    super("RemoveParent");
+  declare readonly Parameters: Readonly<RemoveParentRequestParameters>;
+
+  constructor(parameters: RemoveParentRequestParameters) {
+    super("RemoveParent", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RemoveParent`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.Parameters.Target,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveParentResponse> {
+  parseResponse(_response: Response): Promise<RemoveParentResponse> {
     // No return value (204 No Content)
-    return new RemoveParentResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Target: this.target,
-    };
+    return Promise.resolve(new RemoveParentResponse());
   }
 }
 
@@ -52,7 +58,7 @@ export class RemoveParentResponse extends OrganizationResponse {
     super("RemoveParent");
   }
 
-  static fromResponse(_data: unknown): RemoveParentResponse {
+  static fromResponse(_data?: unknown): RemoveParentResponse {
     return new RemoveParentResponse();
   }
 }

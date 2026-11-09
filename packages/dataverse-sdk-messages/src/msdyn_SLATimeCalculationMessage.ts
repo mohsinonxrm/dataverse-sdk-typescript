@@ -1,5 +1,19 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_SLATimeCalculation message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SLATimeCalculationRequestParameters {
+  calendarId: string;
+  startTime: string;
+  requestType: string;
+  minutes?: number;
+  logsLevel?: number;
+  endTime?: string;
+}
 
 /**
  * msdyn_SLATimeCalculation request message
@@ -10,65 +24,63 @@ export class msdyn_SLATimeCalculationRequest
   extends OrganizationRequest
   implements Executable<msdyn_SLATimeCalculationResponse>
 {
-  constructor(
-    public calendarId: string,
-    public startTime: string,
-    public requestType: string,
-    public minutes: number,
-    public logsLevel: number,
-    public endTime: string
-  ) {
-    super("msdyn_SLATimeCalculation");
+  declare readonly Parameters: Readonly<msdyn_SLATimeCalculationRequestParameters>;
+
+  constructor(parameters: msdyn_SLATimeCalculationRequestParameters) {
+    super("msdyn_SLATimeCalculation", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SLATimeCalculation`;
 
-    const body: Record<string, unknown> = {
-      calendarId: this.calendarId,
-      startTime: this.startTime,
-      requestType: this.requestType,
-      minutes: this.minutes,
-      logsLevel: this.logsLevel,
-      endTime: this.endTime,
-    };
+    const body = requestBody({
+      calendarId: this.Parameters.calendarId,
+      startTime: this.Parameters.startTime,
+      requestType: this.Parameters.requestType,
+      minutes: this.Parameters.minutes,
+      logsLevel: this.Parameters.logsLevel,
+      endTime: this.Parameters.endTime,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_SLATimeCalculationResponse> {
-    const data = await response.json();
-    return msdyn_SLATimeCalculationResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      calendarId: this.calendarId,
-      startTime: this.startTime,
-      requestType: this.requestType,
-      minutes: this.minutes,
-      logsLevel: this.logsLevel,
-      endTime: this.endTime,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_SLATimeCalculationResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_SLATimeCalculation action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SLATimeCalculationResult {
+  "@odata.context"?: string;
+  outputLogs: string;
+  returnValue: string;
+}
+
+/**
  * msdyn_SLATimeCalculation response message
+ *
+ * `result` is the value the msdyn_SLATimeCalculation action returns (see {@link msdyn_SLATimeCalculationResult}).
  */
 export class msdyn_SLATimeCalculationResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SLATimeCalculationResponse) {
+  constructor(public result: msdyn_SLATimeCalculationResult) {
     super("msdyn_SLATimeCalculation");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SLATimeCalculationResponse {
-    return new msdyn_SLATimeCalculationResponse((data as any).value);
+    return new msdyn_SLATimeCalculationResponse(data as msdyn_SLATimeCalculationResult);
   }
 }

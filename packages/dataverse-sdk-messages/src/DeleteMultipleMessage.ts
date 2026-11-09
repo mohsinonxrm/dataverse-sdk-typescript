@@ -1,45 +1,56 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the DeleteMultiple message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteMultipleRequestParameters {
+  Targets: Record<string, unknown>[];
+}
 
 /**
  * DeleteMultiple request message
  *
  * Web API Action: DeleteMultiple
+ *
+ * The first argument is the entity set to call it on, for example "accounts".
  */
 export class DeleteMultipleRequest
   extends OrganizationRequest
   implements Executable<DeleteMultipleResponse>
 {
-  constructor(public targets: Record<string, unknown>[]) {
-    super("DeleteMultiple");
+  declare readonly Parameters: Readonly<DeleteMultipleRequestParameters>;
+
+  constructor(
+    public entitySetName: string,
+    parameters: DeleteMultipleRequestParameters
+  ) {
+    super("DeleteMultiple", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/DeleteMultiple`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.DeleteMultiple`;
 
-    const body: Record<string, unknown> = {
-      Targets: this.targets,
-    };
+    const body = requestBody({
+      Targets: this.Parameters.Targets,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteMultipleResponse> {
+  parseResponse(_response: Response): Promise<DeleteMultipleResponse> {
     // No return value (204 No Content)
-    return new DeleteMultipleResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Targets: this.targets,
-    };
+    return Promise.resolve(new DeleteMultipleResponse());
   }
 }
 
@@ -51,7 +62,7 @@ export class DeleteMultipleResponse extends OrganizationResponse {
     super("DeleteMultiple");
   }
 
-  static fromResponse(_data: unknown): DeleteMultipleResponse {
+  static fromResponse(_data?: unknown): DeleteMultipleResponse {
     return new DeleteMultipleResponse();
   }
 }

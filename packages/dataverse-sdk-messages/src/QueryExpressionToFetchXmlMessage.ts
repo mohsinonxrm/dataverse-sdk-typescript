@@ -1,6 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { QueryBase } from "./types/index.js";
+import { requestBody } from "./internal/requestBody.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { TypedQueryBase } from "./types/index.js";
+
+/**
+ * Parameters of the QueryExpressionToFetchXml message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface QueryExpressionToFetchXmlRequestParameters {
+  Query?: TypedQueryBase;
+}
 
 /**
  * QueryExpressionToFetchXml request message
@@ -11,48 +21,57 @@ export class QueryExpressionToFetchXmlRequest
   extends OrganizationRequest
   implements Executable<QueryExpressionToFetchXmlResponse>
 {
-  constructor(public query: QueryBase) {
-    super("QueryExpressionToFetchXml");
+  declare readonly Parameters: Readonly<QueryExpressionToFetchXmlRequestParameters>;
+
+  constructor(parameters: QueryExpressionToFetchXmlRequestParameters = {}) {
+    super("QueryExpressionToFetchXml", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/QueryExpressionToFetchXml`;
 
-    const body: Record<string, unknown> = {
-      Query: this.query,
-    };
+    const body = requestBody({
+      Query: enumBody(this.Parameters.Query, "QueryBase"),
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<QueryExpressionToFetchXmlResponse> {
-    const data = await response.json();
-    return QueryExpressionToFetchXmlResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Query: this.query,
-    };
+    // The body is the complex value, with its @odata.context
+    return QueryExpressionToFetchXmlResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the QueryExpressionToFetchXml action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface QueryExpressionToFetchXmlResult {
+  "@odata.context"?: string;
+  FetchXml: string;
+}
+
+/**
  * QueryExpressionToFetchXml response message
+ *
+ * `result` is the value the QueryExpressionToFetchXml action returns (see {@link QueryExpressionToFetchXmlResult}).
  */
 export class QueryExpressionToFetchXmlResponse extends OrganizationResponse {
-  constructor(public result: QueryExpressionToFetchXmlResponse) {
+  constructor(public result: QueryExpressionToFetchXmlResult) {
     super("QueryExpressionToFetchXml");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): QueryExpressionToFetchXmlResponse {
-    return new QueryExpressionToFetchXmlResponse((data as any).value);
+    return new QueryExpressionToFetchXmlResponse(data as QueryExpressionToFetchXmlResult);
   }
 }

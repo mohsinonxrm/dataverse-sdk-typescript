@@ -1,11 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from AppendRelatedParty action
+ * Response from the AppendRelatedParty action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AppendRelatedPartyResponse {
-  // No content returned
+export type AppendRelatedPartyResponse = void;
+
+/**
+ * Parameters of the AppendRelatedParty action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AppendRelatedPartyActionParameters {
+  Activity: EntityReference | AnyEntityPayload;
+  Party: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -14,31 +25,28 @@ export interface AppendRelatedPartyResponse {
  * Unbound action
  */
 export class AppendRelatedPartyAction implements Executable<AppendRelatedPartyResponse> {
-  constructor(
-    public readonly activity: EntityReference,
-    public readonly party: EntityReference
-  ) {}
+  constructor(public readonly parameters: AppendRelatedPartyActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AppendRelatedParty`;
 
-    const body: Record<string, unknown> = {
-      Activity: this.activity,
-      Party: this.party,
-    };
+    const body = requestBody({
+      Activity: this.parameters.Activity,
+      Party: this.parameters.Party,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<AppendRelatedPartyResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<AppendRelatedPartyResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

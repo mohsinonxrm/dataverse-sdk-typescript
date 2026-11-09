@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RetrieveProvisionedLanguagePackVersion function
+ * Response from the RetrieveProvisionedLanguagePackVersion function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveProvisionedLanguagePackVersionResponse {
+  "@odata.context"?: string;
   Version: string;
+}
+
+/**
+ * Parameters of the RetrieveProvisionedLanguagePackVersion function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveProvisionedLanguagePackVersionFunctionParameters {
+  Language: number;
 }
 
 /**
@@ -13,7 +25,9 @@ export interface RetrieveProvisionedLanguagePackVersionResponse {
  * Unbound function
  */
 export class RetrieveProvisionedLanguagePackVersionFunction implements Executable<RetrieveProvisionedLanguagePackVersionResponse> {
-  constructor(public readonly language: number) {}
+  constructor(
+    public readonly parameters: RetrieveProvisionedLanguagePackVersionFunctionParameters
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveProvisionedLanguagePackVersion`;
@@ -21,12 +35,9 @@ export class RetrieveProvisionedLanguagePackVersionFunction implements Executabl
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.language !== undefined) {
+    if (this.parameters.Language !== undefined) {
       aliases.push(`Language=@p1`);
-      params.append(
-        "@p1",
-        typeof this.language === "string" ? `'${this.language}'` : String(this.language)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.Language, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -42,7 +53,7 @@ export class RetrieveProvisionedLanguagePackVersionFunction implements Executabl
   }
 
   async parseResponse(response: Response): Promise<RetrieveProvisionedLanguagePackVersionResponse> {
-    const data = await response.json();
-    return data as RetrieveProvisionedLanguagePackVersionResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveProvisionedLanguagePackVersionResponse;
   }
 }

@@ -1,10 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_QueryExchange action
+ * Response from the msdyn_QueryExchange action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_QueryExchangeResponse {
+  "@odata.context"?: string;
   ExchangeData: string;
+}
+
+/**
+ * Parameters of the msdyn_QueryExchange action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_QueryExchangeActionParameters {
+  method: string;
+  body: string;
+  requesturl: string;
 }
 
 /**
@@ -13,33 +27,29 @@ export interface msdyn_QueryExchangeResponse {
  * Unbound action
  */
 export class msdyn_QueryExchangeAction implements Executable<msdyn_QueryExchangeResponse> {
-  constructor(
-    public readonly method: string,
-    public readonly body: string,
-    public readonly requesturl: string
-  ) {}
+  constructor(public readonly parameters: msdyn_QueryExchangeActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_QueryExchange`;
 
-    const body: Record<string, unknown> = {
-      method: this.method,
-      body: this.body,
-      requesturl: this.requesturl,
-    };
+    const body = requestBody({
+      method: this.parameters.method,
+      body: this.parameters.body,
+      requesturl: this.parameters.requesturl,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_QueryExchangeResponse> {
-    const data = await response.json();
-    return data as msdyn_QueryExchangeResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_QueryExchangeResponse;
   }
 }

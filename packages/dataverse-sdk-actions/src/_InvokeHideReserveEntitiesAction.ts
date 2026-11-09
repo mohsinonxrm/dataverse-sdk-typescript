@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from _InvokeHideReserveEntities action
+ * Response from the _InvokeHideReserveEntities action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface _InvokeHideReserveEntitiesResponse {
+  "@odata.context"?: string;
   output: string;
 }
 
@@ -20,13 +23,13 @@ export class _InvokeHideReserveEntitiesAction implements Executable<_InvokeHideR
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<_InvokeHideReserveEntitiesResponse> {
-    const data = await response.json();
-    return data as _InvokeHideReserveEntitiesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as _InvokeHideReserveEntitiesResponse;
   }
 }

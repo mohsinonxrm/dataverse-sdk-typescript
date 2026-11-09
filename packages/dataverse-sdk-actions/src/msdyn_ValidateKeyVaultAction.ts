@@ -1,10 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ValidateKeyVault action
+ * Response from the msdyn_ValidateKeyVault action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ValidateKeyVaultResponse {
+  "@odata.context"?: string;
   Result: string;
+}
+
+/**
+ * Parameters of the msdyn_ValidateKeyVault action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ValidateKeyVaultActionParameters {
+  BundleIdentifier?: string;
+  StorageTypeForUpload?: string;
+  IsAppSigningEnabled?: boolean;
+  KeyVaultUri?: string;
+  PlatformType?: string;
 }
 
 /**
@@ -13,37 +29,31 @@ export interface msdyn_ValidateKeyVaultResponse {
  * Unbound action
  */
 export class msdyn_ValidateKeyVaultAction implements Executable<msdyn_ValidateKeyVaultResponse> {
-  constructor(
-    public readonly keyVaultUri: string,
-    public readonly platformType: string,
-    public readonly isAppSigningEnabled: boolean,
-    public readonly bundleIdentifier: string,
-    public readonly storageTypeForUpload: string
-  ) {}
+  constructor(public readonly parameters: msdyn_ValidateKeyVaultActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ValidateKeyVault`;
 
-    const body: Record<string, unknown> = {
-      KeyVaultUri: this.keyVaultUri,
-      PlatformType: this.platformType,
-      IsAppSigningEnabled: this.isAppSigningEnabled,
-      BundleIdentifier: this.bundleIdentifier,
-      StorageTypeForUpload: this.storageTypeForUpload,
-    };
+    const body = requestBody({
+      BundleIdentifier: this.parameters.BundleIdentifier,
+      StorageTypeForUpload: this.parameters.StorageTypeForUpload,
+      IsAppSigningEnabled: this.parameters.IsAppSigningEnabled,
+      KeyVaultUri: this.parameters.KeyVaultUri,
+      PlatformType: this.parameters.PlatformType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_ValidateKeyVaultResponse> {
-    const data = await response.json();
-    return data as msdyn_ValidateKeyVaultResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_ValidateKeyVaultResponse;
   }
 }

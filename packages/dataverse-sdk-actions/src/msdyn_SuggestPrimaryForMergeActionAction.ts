@@ -1,11 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SuggestPrimaryForMergeAction action
+ * Response from the msdyn_SuggestPrimaryForMergeAction action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface msdyn_SuggestPrimaryForMergeActionResponse {
-  value: EntityReference;
+export type msdyn_SuggestPrimaryForMergeActionResponse = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
+ * Parameters of the msdyn_SuggestPrimaryForMergeAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SuggestPrimaryForMergeActionActionParameters {
+  RecordList?: Record<string, unknown>[];
 }
 
 /**
@@ -14,27 +28,31 @@ export interface msdyn_SuggestPrimaryForMergeActionResponse {
  * Unbound action
  */
 export class msdyn_SuggestPrimaryForMergeActionAction implements Executable<msdyn_SuggestPrimaryForMergeActionResponse> {
-  constructor(public readonly recordList: Record<string, unknown>[]) {}
+  constructor(
+    public readonly parameters: msdyn_SuggestPrimaryForMergeActionActionParameters = {}
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SuggestPrimaryForMergeAction`;
 
-    const body: Record<string, unknown> = {
-      RecordList: this.recordList,
-    };
+    const body = requestBody({
+      RecordList: this.parameters.RecordList,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_SuggestPrimaryForMergeActionResponse> {
-    const data = await response.json();
-    return data as msdyn_SuggestPrimaryForMergeActionResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
+    return (await response.json()) as msdyn_SuggestPrimaryForMergeActionResponse;
   }
 }

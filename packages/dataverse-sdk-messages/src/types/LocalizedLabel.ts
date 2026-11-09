@@ -2,9 +2,9 @@
  * LocalizedLabel complex type
  */
 export interface LocalizedLabel {
-  Label: string;
-  LanguageCode: number;
-  IsManaged: boolean;
-  MetadataId: string;
-  HasChanged: boolean;
+  HasChanged?: boolean;
+  IsManaged?: boolean;
+  Label?: string;
+  LanguageCode?: number;
+  MetadataId?: string;
 }

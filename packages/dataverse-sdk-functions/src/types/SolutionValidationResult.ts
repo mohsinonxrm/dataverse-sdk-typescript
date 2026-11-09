@@ -4,8 +4,8 @@ import type { SolutionValidationResultType } from "./SolutionValidationResultTyp
  * SolutionValidationResult complex type
  */
 export interface SolutionValidationResult {
-  SolutionValidationResultType: SolutionValidationResultType;
-  Message: string;
-  ErrorCode: number;
-  AdditionalInfo: string;
+  AdditionalInfo?: string;
+  ErrorCode?: number;
+  Message?: string;
+  SolutionValidationResultType?: SolutionValidationResultType;
 }

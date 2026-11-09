@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetEmailAssistStream message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetEmailAssistStreamRequestParameters {
+  Context?: string;
+  RequestPayload: string;
+}
 
 /**
  * msdyn_GetEmailAssistStream request message
@@ -10,41 +20,33 @@ export class msdyn_GetEmailAssistStreamRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetEmailAssistStreamResponse>
 {
-  constructor(
-    public context: string,
-    public requestPayload: string
-  ) {
-    super("msdyn_GetEmailAssistStream");
+  declare readonly Parameters: Readonly<msdyn_GetEmailAssistStreamRequestParameters>;
+
+  constructor(parameters: msdyn_GetEmailAssistStreamRequestParameters) {
+    super("msdyn_GetEmailAssistStream", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetEmailAssistStream`;
 
-    const body: Record<string, unknown> = {
-      Context: this.context,
-      RequestPayload: this.requestPayload,
-    };
+    const body = requestBody({
+      Context: this.Parameters.Context,
+      RequestPayload: this.Parameters.RequestPayload,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_GetEmailAssistStreamResponse> {
+  parseResponse(_response: Response): Promise<msdyn_GetEmailAssistStreamResponse> {
     // No return value (204 No Content)
-    return new msdyn_GetEmailAssistStreamResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Context: this.context,
-      RequestPayload: this.requestPayload,
-    };
+    return Promise.resolve(new msdyn_GetEmailAssistStreamResponse());
   }
 }
 
@@ -56,7 +58,7 @@ export class msdyn_GetEmailAssistStreamResponse extends OrganizationResponse {
     super("msdyn_GetEmailAssistStream");
   }
 
-  static fromResponse(_data: unknown): msdyn_GetEmailAssistStreamResponse {
+  static fromResponse(_data?: unknown): msdyn_GetEmailAssistStreamResponse {
     return new msdyn_GetEmailAssistStreamResponse();
   }
 }

@@ -1,10 +1,17 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type { AuditDetail } from "./types/index.js";
 
 /**
- * Response from RetrieveAuditDetails function
+ * Response from the RetrieveAuditDetails function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveAuditDetailsResponse {
+  "@odata.context"?: string;
   AuditDetail: AuditDetail;
 }
 
@@ -13,13 +20,15 @@ export interface RetrieveAuditDetailsResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.audit)
+ *
+ * The first argument is the id of the audit record to call it on.
  */
 export class RetrieveAuditDetailsFunction implements Executable<RetrieveAuditDetailsResponse> {
   constructor(public readonly auditId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/audits(${this.auditId})/Microsoft.Dynamics.CRM.RetrieveAuditDetails`;
+    let url = `${baseUrl}/audits(${odataLiteral.guid(this.auditId)})/Microsoft.Dynamics.CRM.RetrieveAuditDetails`;
 
     return {
       method: "GET",
@@ -31,7 +40,7 @@ export class RetrieveAuditDetailsFunction implements Executable<RetrieveAuditDet
   }
 
   async parseResponse(response: Response): Promise<RetrieveAuditDetailsResponse> {
-    const data = await response.json();
-    return data as RetrieveAuditDetailsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveAuditDetailsResponse;
   }
 }

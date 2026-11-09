@@ -1,12 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 /**
- * Response from IsValidStateTransition function
+ * Response from the IsValidStateTransition function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface IsValidStateTransitionResponse {
+  "@odata.context"?: string;
   IsValid: boolean;
+}
+
+/**
+ * Parameters of the IsValidStateTransition function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface IsValidStateTransitionFunctionParameters {
+  Entity: EntityReference;
+  NewState: string;
+  NewStatus: number;
 }
 
 /**
@@ -15,11 +28,7 @@ export interface IsValidStateTransitionResponse {
  * Unbound function
  */
 export class IsValidStateTransitionFunction implements Executable<IsValidStateTransitionResponse> {
-  constructor(
-    public readonly entity: EntityReference,
-    public readonly newState: string,
-    public readonly newStatus: number
-  ) {}
+  constructor(public readonly parameters: IsValidStateTransitionFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/IsValidStateTransition`;
@@ -27,28 +36,20 @@ export class IsValidStateTransitionFunction implements Executable<IsValidStateTr
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entity !== undefined) {
+    if (this.parameters.Entity !== undefined) {
       aliases.push(`Entity=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.entity)}(${this.entity.id})`,
-        })
+        formatParameterAlias(this.parameters.Entity, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.newState !== undefined) {
+    if (this.parameters.NewState !== undefined) {
       aliases.push(`NewState=@p2`);
-      params.append(
-        "@p2",
-        typeof this.newState === "string" ? `'${this.newState}'` : String(this.newState)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.NewState, "Edm.String"));
     }
-    if (this.newStatus !== undefined) {
+    if (this.parameters.NewStatus !== undefined) {
       aliases.push(`NewStatus=@p3`);
-      params.append(
-        "@p3",
-        typeof this.newStatus === "string" ? `'${this.newStatus}'` : String(this.newStatus)
-      );
+      params.append("@p3", formatParameterAlias(this.parameters.NewStatus, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -64,7 +65,7 @@ export class IsValidStateTransitionFunction implements Executable<IsValidStateTr
   }
 
   async parseResponse(response: Response): Promise<IsValidStateTransitionResponse> {
-    const data = await response.json();
-    return data as IsValidStateTransitionResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as IsValidStateTransitionResponse;
   }
 }

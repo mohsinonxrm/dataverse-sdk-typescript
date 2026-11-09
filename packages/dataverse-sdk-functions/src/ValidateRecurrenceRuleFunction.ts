@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { recurrencerule } from "./types/index.js";
 
 /**
- * Response from ValidateRecurrenceRule function
+ * Response from the ValidateRecurrenceRule function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ValidateRecurrenceRuleResponse {
+  "@odata.context"?: string;
   Description: string;
+}
+
+/**
+ * Parameters of the ValidateRecurrenceRule function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ValidateRecurrenceRuleFunctionParameters {
+  Target: recurrencerule;
 }
 
 /**
@@ -14,7 +26,7 @@ export interface ValidateRecurrenceRuleResponse {
  * Unbound function
  */
 export class ValidateRecurrenceRuleFunction implements Executable<ValidateRecurrenceRuleResponse> {
-  constructor(public readonly target: recurrencerule) {}
+  constructor(public readonly parameters: ValidateRecurrenceRuleFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/ValidateRecurrenceRule`;
@@ -22,9 +34,12 @@ export class ValidateRecurrenceRuleFunction implements Executable<ValidateRecurr
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
-      params.append("@p1", JSON.stringify(this.target));
+      params.append(
+        "@p1",
+        formatParameterAlias(this.parameters.Target, "mscrm.recurrencerule", "EntityType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -40,7 +55,7 @@ export class ValidateRecurrenceRuleFunction implements Executable<ValidateRecurr
   }
 
   async parseResponse(response: Response): Promise<ValidateRecurrenceRuleResponse> {
-    const data = await response.json();
-    return data as ValidateRecurrenceRuleResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as ValidateRecurrenceRuleResponse;
   }
 }

@@ -1,4 +1,7 @@
+import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
 import type { MetadataBase } from "./MetadataBase.js";
+import type { RelationshipType } from "./RelationshipType.js";
+import type { SecurityTypes } from "./SecurityTypes.js";
 
 /**
  * RelationshipMetadataBase - base interface for relationship metadata
@@ -6,11 +9,11 @@ import type { MetadataBase } from "./MetadataBase.js";
  */
 export interface RelationshipMetadataBase extends MetadataBase {
   IsCustomRelationship?: boolean;
-  IsCustomizable?: { Value: boolean; CanBeChanged: boolean };
+  IsCustomizable?: BooleanManagedProperty;
   IsManaged?: boolean;
   IsValidForAdvancedFind?: boolean;
   SchemaName?: string;
-  SecurityTypes?: string;
-  RelationshipType?: string;
+  SecurityTypes?: SecurityTypes;
+  RelationshipType?: RelationshipType;
   IntroducedVersion?: string;
 }

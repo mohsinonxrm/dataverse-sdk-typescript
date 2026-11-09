@@ -1,10 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_StartODOSProvisioning action
+ * Response from the msdyn_StartODOSProvisioning action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_StartODOSProvisioningResponse {
-  // No content returned
+export type msdyn_StartODOSProvisioningResponse = void;
+
+/**
+ * Parameters of the msdyn_StartODOSProvisioning action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_StartODOSProvisioningActionParameters {
+  Entities: string;
+  FeatureName: string;
+  FeatureDisplayName: string;
+  Roles: string;
+  Primitives: string;
 }
 
 /**
@@ -13,37 +26,31 @@ export interface msdyn_StartODOSProvisioningResponse {
  * Unbound action
  */
 export class msdyn_StartODOSProvisioningAction implements Executable<msdyn_StartODOSProvisioningResponse> {
-  constructor(
-    public readonly entities: string,
-    public readonly featureName: string,
-    public readonly featureDisplayName: string,
-    public readonly roles: string,
-    public readonly primitives: string
-  ) {}
+  constructor(public readonly parameters: msdyn_StartODOSProvisioningActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_StartODOSProvisioning`;
 
-    const body: Record<string, unknown> = {
-      Entities: this.entities,
-      FeatureName: this.featureName,
-      FeatureDisplayName: this.featureDisplayName,
-      Roles: this.roles,
-      Primitives: this.primitives,
-    };
+    const body = requestBody({
+      Entities: this.parameters.Entities,
+      FeatureName: this.parameters.FeatureName,
+      FeatureDisplayName: this.parameters.FeatureDisplayName,
+      Roles: this.parameters.Roles,
+      Primitives: this.parameters.Primitives,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_StartODOSProvisioningResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_StartODOSProvisioningResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

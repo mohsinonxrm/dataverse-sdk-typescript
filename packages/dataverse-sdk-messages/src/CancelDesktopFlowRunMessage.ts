@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * CancelDesktopFlowRun request message
  *
  * Web API Action: CancelDesktopFlowRun
+ *
+ * The first argument is the id of the flowsession record to call it on.
  */
 export class CancelDesktopFlowRunRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class CancelDesktopFlowRunRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowsessions(${this.flowsessionId})/Microsoft.Dynamics.CRM.CancelDesktopFlowRun`;
+    const url = `${baseUrl}/flowsessions(${odataLiteral.guid(this.flowsessionId)})/Microsoft.Dynamics.CRM.CancelDesktopFlowRun`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<CancelDesktopFlowRunResponse> {
+  parseResponse(_response: Response): Promise<CancelDesktopFlowRunResponse> {
     // No return value (204 No Content)
-    return new CancelDesktopFlowRunResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.flowsessionId,
-    };
+    return Promise.resolve(new CancelDesktopFlowRunResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class CancelDesktopFlowRunResponse extends OrganizationResponse {
     super("CancelDesktopFlowRun");
   }
 
-  static fromResponse(_data: unknown): CancelDesktopFlowRunResponse {
+  static fromResponse(_data?: unknown): CancelDesktopFlowRunResponse {
     return new CancelDesktopFlowRunResponse();
   }
 }

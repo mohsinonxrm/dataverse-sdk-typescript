@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the cascadeAsync_SuccessAPI message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface cascadeAsync_SuccessAPIRequestParameters {
+  casadeAsync_JobName: string;
+}
 
 /**
  * cascadeAsync_SuccessAPI request message
@@ -10,36 +19,32 @@ export class cascadeAsync_SuccessAPIRequest
   extends OrganizationRequest
   implements Executable<cascadeAsync_SuccessAPIResponse>
 {
-  constructor(public casadeAsync_JobName: string) {
-    super("cascadeAsync_SuccessAPI");
+  declare readonly Parameters: Readonly<cascadeAsync_SuccessAPIRequestParameters>;
+
+  constructor(parameters: cascadeAsync_SuccessAPIRequestParameters) {
+    super("cascadeAsync_SuccessAPI", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/cascadeAsync_SuccessAPI`;
 
-    const body: Record<string, unknown> = {
-      casadeAsync_JobName: this.casadeAsync_JobName,
-    };
+    const body = requestBody({
+      casadeAsync_JobName: this.Parameters.casadeAsync_JobName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<cascadeAsync_SuccessAPIResponse> {
+  parseResponse(_response: Response): Promise<cascadeAsync_SuccessAPIResponse> {
     // No return value (204 No Content)
-    return new cascadeAsync_SuccessAPIResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      casadeAsync_JobName: this.casadeAsync_JobName,
-    };
+    return Promise.resolve(new cascadeAsync_SuccessAPIResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class cascadeAsync_SuccessAPIResponse extends OrganizationResponse {
     super("cascadeAsync_SuccessAPI");
   }
 
-  static fromResponse(_data: unknown): cascadeAsync_SuccessAPIResponse {
+  static fromResponse(_data?: unknown): cascadeAsync_SuccessAPIResponse {
     return new cascadeAsync_SuccessAPIResponse();
   }
 }

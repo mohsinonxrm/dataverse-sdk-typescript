@@ -1,10 +1,35 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
+import type { githubappconfig } from "./types/index.js";
 
 /**
- * Response from ConnectToGit action
+ * Response from the ConnectToGit action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ConnectToGitResponse {
-  // No content returned
+export type ConnectToGitResponse = void;
+
+/**
+ * Parameters of the ConnectToGit action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ConnectToGitActionParameters {
+  UpstreamBranch?: string;
+  GitHubConnectionId?: string;
+  GitHubPAT?: string;
+  EnterpriseSubdomain?: string;
+  SolutionUniqueName?: string;
+  GitProvider?: number;
+  GitFolder: string;
+  GitHubAppConfigId?: EntityReference | EntityPayload<githubappconfig>;
+  RootFolder?: string;
+  Repository?: string;
+  Branch: string;
+  Organization?: string;
+  Project?: string;
+  ConnectionType?: number;
 }
 
 /**
@@ -13,47 +38,40 @@ export interface ConnectToGitResponse {
  * Unbound action
  */
 export class ConnectToGitAction implements Executable<ConnectToGitResponse> {
-  constructor(
-    public readonly connectionType: number,
-    public readonly solutionUniqueName: string,
-    public readonly gitProvider: number,
-    public readonly branch: string,
-    public readonly rootFolder: string,
-    public readonly organization: string,
-    public readonly gitFolder: string,
-    public readonly project: string,
-    public readonly repository: string,
-    public readonly upstreamBranch: string
-  ) {}
+  constructor(public readonly parameters: ConnectToGitActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ConnectToGit`;
 
-    const body: Record<string, unknown> = {
-      ConnectionType: this.connectionType,
-      SolutionUniqueName: this.solutionUniqueName,
-      GitProvider: this.gitProvider,
-      Branch: this.branch,
-      RootFolder: this.rootFolder,
-      Organization: this.organization,
-      GitFolder: this.gitFolder,
-      Project: this.project,
-      Repository: this.repository,
-      UpstreamBranch: this.upstreamBranch,
-    };
+    const body = requestBody({
+      UpstreamBranch: this.parameters.UpstreamBranch,
+      GitHubConnectionId: this.parameters.GitHubConnectionId,
+      GitHubPAT: this.parameters.GitHubPAT,
+      EnterpriseSubdomain: this.parameters.EnterpriseSubdomain,
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+      GitProvider: this.parameters.GitProvider,
+      GitFolder: this.parameters.GitFolder,
+      GitHubAppConfigId: this.parameters.GitHubAppConfigId,
+      RootFolder: this.parameters.RootFolder,
+      Repository: this.parameters.Repository,
+      Branch: this.parameters.Branch,
+      Organization: this.parameters.Organization,
+      Project: this.parameters.Project,
+      ConnectionType: this.parameters.ConnectionType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ConnectToGitResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<ConnectToGitResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

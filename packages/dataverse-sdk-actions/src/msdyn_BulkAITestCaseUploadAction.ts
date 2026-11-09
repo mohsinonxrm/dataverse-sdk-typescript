@@ -1,10 +1,22 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_BulkAITestCaseUpload action
+ * Response from the msdyn_BulkAITestCaseUpload action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_BulkAITestCaseUploadResponse {
+  "@odata.context"?: string;
   response: string;
+}
+
+/**
+ * Parameters of the msdyn_BulkAITestCaseUpload action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_BulkAITestCaseUploadActionParameters {
+  request: string;
 }
 
 /**
@@ -13,27 +25,27 @@ export interface msdyn_BulkAITestCaseUploadResponse {
  * Unbound action
  */
 export class msdyn_BulkAITestCaseUploadAction implements Executable<msdyn_BulkAITestCaseUploadResponse> {
-  constructor(public readonly request: string) {}
+  constructor(public readonly parameters: msdyn_BulkAITestCaseUploadActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_BulkAITestCaseUpload`;
 
-    const body: Record<string, unknown> = {
-      request: this.request,
-    };
+    const body = requestBody({
+      request: this.parameters.request,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_BulkAITestCaseUploadResponse> {
-    const data = await response.json();
-    return data as msdyn_BulkAITestCaseUploadResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_BulkAITestCaseUploadResponse;
   }
 }

@@ -2,23 +2,23 @@
  * importjob entity type
  */
 export interface importjob {
-  startedon: string;
-  completedon: string;
-  importjobid: string;
-  _modifiedonbehalfby_value: string;
-  name: string;
-  utcconversiontimezonecode: number;
-  _createdby_value: string;
-  _createdonbehalfby_value: string;
-  _modifiedby_value: string;
-  progress: number;
-  modifiedon: string;
-  importcontext: string;
-  operationcontext: string;
-  _organizationid_value: string;
-  timezoneruleversionnumber: number;
-  data: string;
-  solutionid: string;
-  solutionname: string;
-  createdon: string;
+  _createdby_value?: string;
+  _createdonbehalfby_value?: string;
+  _modifiedby_value?: string;
+  _modifiedonbehalfby_value?: string;
+  _organizationid_value?: string;
+  completedon?: string;
+  createdon?: string;
+  data?: string;
+  importcontext?: string;
+  importjobid?: string;
+  modifiedon?: string;
+  name?: string;
+  operationcontext?: string;
+  progress?: number;
+  solutionid?: string;
+  solutionname?: string;
+  startedon?: string;
+  timezoneruleversionnumber?: number;
+  utcconversiontimezonecode?: number;
 }

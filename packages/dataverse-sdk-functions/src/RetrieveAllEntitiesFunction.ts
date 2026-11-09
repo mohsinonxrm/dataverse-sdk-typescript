@@ -1,12 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { ComplexEntityMetadata, EntityFilters } from "./types/index.js";
 
 /**
- * Response from RetrieveAllEntities function
+ * Response from the RetrieveAllEntities function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveAllEntitiesResponse {
+  "@odata.context"?: string;
   EntityMetadata: ComplexEntityMetadata[];
   Timestamp: string;
+}
+
+/**
+ * Parameters of the RetrieveAllEntities function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAllEntitiesFunctionParameters {
+  EntityFilters: EntityFilters | keyof typeof EntityFilters;
+  RetrieveAsIfPublished: boolean;
 }
 
 /**
@@ -15,10 +28,7 @@ export interface RetrieveAllEntitiesResponse {
  * Unbound function
  */
 export class RetrieveAllEntitiesFunction implements Executable<RetrieveAllEntitiesResponse> {
-  constructor(
-    public readonly entityFilters: EntityFilters,
-    public readonly retrieveAsIfPublished: boolean
-  ) {}
+  constructor(public readonly parameters: RetrieveAllEntitiesFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveAllEntities`;
@@ -26,22 +36,22 @@ export class RetrieveAllEntitiesFunction implements Executable<RetrieveAllEntiti
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityFilters !== undefined) {
+    if (this.parameters.EntityFilters !== undefined) {
       aliases.push(`EntityFilters=@p1`);
       params.append(
         "@p1",
-        typeof this.entityFilters === "string"
-          ? `'${this.entityFilters}'`
-          : String(this.entityFilters)
+        formatParameterAlias(
+          this.parameters.EntityFilters,
+          "mscrm.EntityFilters",
+          "EnumerationType"
+        )
       );
     }
-    if (this.retrieveAsIfPublished !== undefined) {
+    if (this.parameters.RetrieveAsIfPublished !== undefined) {
       aliases.push(`RetrieveAsIfPublished=@p2`);
       params.append(
         "@p2",
-        typeof this.retrieveAsIfPublished === "string"
-          ? `'${this.retrieveAsIfPublished}'`
-          : String(this.retrieveAsIfPublished)
+        formatParameterAlias(this.parameters.RetrieveAsIfPublished, "Edm.Boolean")
       );
     }
     if (aliases.length > 0) {
@@ -58,7 +68,7 @@ export class RetrieveAllEntitiesFunction implements Executable<RetrieveAllEntiti
   }
 
   async parseResponse(response: Response): Promise<RetrieveAllEntitiesResponse> {
-    const data = await response.json();
-    return data as RetrieveAllEntitiesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveAllEntitiesResponse;
   }
 }

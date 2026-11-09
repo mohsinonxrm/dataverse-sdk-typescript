@@ -1,12 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import { enumBody } from "./internal/enumBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 import type { PrincipalAccess } from "./types/index.js";
 
 /**
- * Response from GrantAccess action
+ * Response from the GrantAccess action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface GrantAccessResponse {
-  // No content returned
+export type GrantAccessResponse = void;
+
+/**
+ * Parameters of the GrantAccess action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GrantAccessActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  PrincipalAccess?: PrincipalAccess;
 }
 
 /**
@@ -15,31 +27,28 @@ export interface GrantAccessResponse {
  * Unbound action
  */
 export class GrantAccessAction implements Executable<GrantAccessResponse> {
-  constructor(
-    public readonly target: EntityReference,
-    public readonly principalAccess: PrincipalAccess
-  ) {}
+  constructor(public readonly parameters: GrantAccessActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GrantAccess`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      PrincipalAccess: this.principalAccess,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      PrincipalAccess: enumBody(this.parameters.PrincipalAccess, "PrincipalAccess"),
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<GrantAccessResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<GrantAccessResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

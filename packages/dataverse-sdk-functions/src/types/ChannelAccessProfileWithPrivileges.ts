@@ -4,14 +4,14 @@ import type { ChannelAccessProfilePrivilege } from "./ChannelAccessProfilePrivil
  * ChannelAccessProfileWithPrivileges complex type
  */
 export interface ChannelAccessProfileWithPrivileges {
-  EmailAccess: boolean;
-  FacebookAccess: boolean;
-  PhoneAccess: boolean;
-  TwitterAccess: boolean;
-  WebAccess: boolean;
-  ViewKnowledgeArticles: boolean;
-  ViewArticleRating: boolean;
-  RateKnowledgeArticles: boolean;
-  SubmitFeedback: boolean;
-  ChannelAccessProfilePrivilegeList: ChannelAccessProfilePrivilege[];
+  ChannelAccessProfilePrivilegeList?: ChannelAccessProfilePrivilege[];
+  EmailAccess?: boolean;
+  FacebookAccess?: boolean;
+  PhoneAccess?: boolean;
+  RateKnowledgeArticles?: boolean;
+  SubmitFeedback?: boolean;
+  TwitterAccess?: boolean;
+  ViewArticleRating?: boolean;
+  ViewKnowledgeArticles?: boolean;
+  WebAccess?: boolean;
 }

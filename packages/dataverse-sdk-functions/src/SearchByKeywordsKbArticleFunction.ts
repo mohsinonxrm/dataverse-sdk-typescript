@@ -1,11 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { kbarticle, subject } from "./types/index.js";
 
 /**
- * Response from SearchByKeywordsKbArticle function
+ * Response from the SearchByKeywordsKbArticle function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface SearchByKeywordsKbArticleResponse {
-  value: kbarticle[];
+export type SearchByKeywordsKbArticleResponse = Array<
+  kbarticle & { "@odata.etag"?: string; "@odata.type"?: string }
+>;
+
+/**
+ * Parameters of the SearchByKeywordsKbArticle function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SearchByKeywordsKbArticleFunctionParameters {
+  SearchText: string;
+  Subject: subject;
+  UseInflection: boolean;
 }
 
 /**
@@ -15,37 +29,29 @@ export interface SearchByKeywordsKbArticleResponse {
  * Binding parameter: entityset (Collection(mscrm.kbarticle))
  */
 export class SearchByKeywordsKbArticleFunction implements Executable<SearchByKeywordsKbArticleResponse> {
-  constructor(
-    public readonly searchText: string,
-    public readonly subject: subject,
-    public readonly useInflection: boolean
-  ) {}
+  constructor(public readonly parameters: SearchByKeywordsKbArticleFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/SearchByKeywordsKbArticle`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/kbarticles/Microsoft.Dynamics.CRM.SearchByKeywordsKbArticle`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.searchText !== undefined) {
+    if (this.parameters.SearchText !== undefined) {
       aliases.push(`SearchText=@p1`);
-      params.append(
-        "@p1",
-        typeof this.searchText === "string" ? `'${this.searchText}'` : String(this.searchText)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.SearchText, "Edm.String"));
     }
-    if (this.subject !== undefined) {
+    if (this.parameters.Subject !== undefined) {
       aliases.push(`Subject=@p2`);
-      params.append("@p2", JSON.stringify(this.subject));
-    }
-    if (this.useInflection !== undefined) {
-      aliases.push(`UseInflection=@p3`);
       params.append(
-        "@p3",
-        typeof this.useInflection === "string"
-          ? `'${this.useInflection}'`
-          : String(this.useInflection)
+        "@p2",
+        formatParameterAlias(this.parameters.Subject, "mscrm.subject", "EntityType")
       );
+    }
+    if (this.parameters.UseInflection !== undefined) {
+      aliases.push(`UseInflection=@p3`);
+      params.append("@p3", formatParameterAlias(this.parameters.UseInflection, "Edm.Boolean"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -61,7 +67,9 @@ export class SearchByKeywordsKbArticleFunction implements Executable<SearchByKey
   }
 
   async parseResponse(response: Response): Promise<SearchByKeywordsKbArticleResponse> {
-    const data = await response.json();
-    return data as SearchByKeywordsKbArticleResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: SearchByKeywordsKbArticleResponse }).value;
   }
 }

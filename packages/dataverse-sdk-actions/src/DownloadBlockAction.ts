@@ -1,10 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DownloadBlock action
+ * Response from the DownloadBlock action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface DownloadBlockResponse {
+  "@odata.context"?: string;
   Data: string;
+}
+
+/**
+ * Parameters of the DownloadBlock action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DownloadBlockActionParameters {
+  Offset: number;
+  BlockLength: number;
+  FileContinuationToken: string;
 }
 
 /**
@@ -13,33 +27,29 @@ export interface DownloadBlockResponse {
  * Unbound action
  */
 export class DownloadBlockAction implements Executable<DownloadBlockResponse> {
-  constructor(
-    public readonly offset: number,
-    public readonly blockLength: number,
-    public readonly fileContinuationToken: string
-  ) {}
+  constructor(public readonly parameters: DownloadBlockActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DownloadBlock`;
 
-    const body: Record<string, unknown> = {
-      Offset: this.offset,
-      BlockLength: this.blockLength,
-      FileContinuationToken: this.fileContinuationToken,
-    };
+    const body = requestBody({
+      Offset: this.parameters.Offset,
+      BlockLength: this.parameters.BlockLength,
+      FileContinuationToken: this.parameters.FileContinuationToken,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<DownloadBlockResponse> {
-    const data = await response.json();
-    return data as DownloadBlockResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as DownloadBlockResponse;
   }
 }

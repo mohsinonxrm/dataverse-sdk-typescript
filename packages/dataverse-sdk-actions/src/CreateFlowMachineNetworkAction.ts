@@ -1,10 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CreateFlowMachineNetwork action
+ * Response from the CreateFlowMachineNetwork action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateFlowMachineNetworkResponse {
+  "@odata.context"?: string;
   flowmachinenetworkid: string;
+}
+
+/**
+ * Parameters of the CreateFlowMachineNetwork action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateFlowMachineNetworkActionParameters {
+  type: string;
+  subnet: string;
+  name: string;
+  description?: string;
+  supportedscenario: string;
+  extendedproperties?: string;
 }
 
 /**
@@ -14,39 +31,33 @@ export interface CreateFlowMachineNetworkResponse {
  * Binding parameter: entityset (Collection(mscrm.flowmachinenetwork))
  */
 export class CreateFlowMachineNetworkAction implements Executable<CreateFlowMachineNetworkResponse> {
-  constructor(
-    public readonly subnet: string,
-    public readonly type: string,
-    public readonly extendedproperties: string,
-    public readonly supportedscenario: string,
-    public readonly name: string,
-    public readonly description: string
-  ) {}
+  constructor(public readonly parameters: CreateFlowMachineNetworkActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/CreateFlowMachineNetwork`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/flowmachinenetworks/Microsoft.Dynamics.CRM.CreateFlowMachineNetwork`;
 
-    const body: Record<string, unknown> = {
-      subnet: this.subnet,
-      type: this.type,
-      extendedproperties: this.extendedproperties,
-      supportedscenario: this.supportedscenario,
-      name: this.name,
-      description: this.description,
-    };
+    const body = requestBody({
+      type: this.parameters.type,
+      subnet: this.parameters.subnet,
+      name: this.parameters.name,
+      description: this.parameters.description,
+      supportedscenario: this.parameters.supportedscenario,
+      extendedproperties: this.parameters.extendedproperties,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<CreateFlowMachineNetworkResponse> {
-    const data = await response.json();
-    return data as CreateFlowMachineNetworkResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as CreateFlowMachineNetworkResponse;
   }
 }

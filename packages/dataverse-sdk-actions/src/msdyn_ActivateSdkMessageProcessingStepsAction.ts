@@ -1,12 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_ActivateSdkMessageProcessingSteps action
+ * Response from the msdyn_ActivateSdkMessageProcessingSteps action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ActivateSdkMessageProcessingStepsResponse {
-  ResolvedRecordsCount: number;
+  "@odata.context"?: string;
   ResolutionState: number;
+  ResolvedRecordsCount: number;
+}
+
+/**
+ * Parameters of the msdyn_ActivateSdkMessageProcessingSteps action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ActivateSdkMessageProcessingStepsActionParameters {
+  AnalysisResult?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -15,20 +28,22 @@ export interface msdyn_ActivateSdkMessageProcessingStepsResponse {
  * Unbound action
  */
 export class msdyn_ActivateSdkMessageProcessingStepsAction implements Executable<msdyn_ActivateSdkMessageProcessingStepsResponse> {
-  constructor(public readonly analysisResult: EntityReference) {}
+  constructor(
+    public readonly parameters: msdyn_ActivateSdkMessageProcessingStepsActionParameters = {}
+  ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ActivateSdkMessageProcessingSteps`;
 
-    const body: Record<string, unknown> = {
-      AnalysisResult: this.analysisResult,
-    };
+    const body = requestBody({
+      AnalysisResult: this.parameters.AnalysisResult,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -37,7 +52,7 @@ export class msdyn_ActivateSdkMessageProcessingStepsAction implements Executable
   async parseResponse(
     response: Response
   ): Promise<msdyn_ActivateSdkMessageProcessingStepsResponse> {
-    const data = await response.json();
-    return data as msdyn_ActivateSdkMessageProcessingStepsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_ActivateSdkMessageProcessingStepsResponse;
   }
 }

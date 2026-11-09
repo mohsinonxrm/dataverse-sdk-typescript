@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * ReleaseToQueue request message
  *
  * Web API Action: ReleaseToQueue
+ *
+ * The first argument is the id of the queueitem record to call it on.
  */
 export class ReleaseToQueueRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class ReleaseToQueueRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/queueitems(${this.queueitemId})/Microsoft.Dynamics.CRM.ReleaseToQueue`;
+    const url = `${baseUrl}/queueitems(${odataLiteral.guid(this.queueitemId)})/Microsoft.Dynamics.CRM.ReleaseToQueue`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<ReleaseToQueueResponse> {
+  parseResponse(_response: Response): Promise<ReleaseToQueueResponse> {
     // No return value (204 No Content)
-    return new ReleaseToQueueResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.queueitemId,
-    };
+    return Promise.resolve(new ReleaseToQueueResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class ReleaseToQueueResponse extends OrganizationResponse {
     super("ReleaseToQueue");
   }
 
-  static fromResponse(_data: unknown): ReleaseToQueueResponse {
+  static fromResponse(_data?: unknown): ReleaseToQueueResponse {
     return new ReleaseToQueueResponse();
   }
 }

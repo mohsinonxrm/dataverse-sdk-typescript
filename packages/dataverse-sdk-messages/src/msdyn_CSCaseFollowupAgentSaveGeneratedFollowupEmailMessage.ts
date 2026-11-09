@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailRequestParameters {
+  msdyn_payload: string;
+}
 
 /**
  * msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail request message
@@ -10,22 +19,24 @@ export class msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailRequest
   extends OrganizationRequest
   implements Executable<msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse>
 {
-  constructor(public msdyn_payload: string) {
-    super("msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail");
+  declare readonly Parameters: Readonly<msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailRequestParameters>;
+
+  constructor(parameters: msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailRequestParameters) {
+    super("msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail`;
 
-    const body: Record<string, unknown> = {
-      msdyn_payload: this.msdyn_payload,
-    };
+    const body = requestBody({
+      msdyn_payload: this.Parameters.msdyn_payload,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -34,26 +45,37 @@ export class msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse> {
-    const data = await response.json();
-    return msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      msdyn_payload: this.msdyn_payload,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 
 /**
+ * Response from the msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResult {
+  "@odata.context"?: string;
+  msdyn_response: string;
+}
+
+/**
  * msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail response message
+ *
+ * `result` is the value the msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail action returns (see {@link msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResult}).
  */
 export class msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse) {
+  constructor(public result: msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResult) {
     super("msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmail");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse {
-    return new msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse((data as any).value);
+    return new msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResponse(
+      data as msdyn_CSCaseFollowupAgentSaveGeneratedFollowupEmailResult
+    );
   }
 }

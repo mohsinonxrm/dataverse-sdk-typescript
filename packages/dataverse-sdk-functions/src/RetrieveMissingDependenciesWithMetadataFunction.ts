@@ -1,11 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { DependencyMetadataCollection } from "./types/index.js";
 
 /**
- * Response from RetrieveMissingDependenciesWithMetadata function
+ * Response from the RetrieveMissingDependenciesWithMetadata function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveMissingDependenciesWithMetadataResponse {
+  "@odata.context"?: string;
   DependencyMetadataCollection: DependencyMetadataCollection;
+}
+
+/**
+ * Parameters of the RetrieveMissingDependenciesWithMetadata function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveMissingDependenciesWithMetadataFunctionParameters {
+  SolutionUniqueName: string;
+  SkipManagedDependencies: boolean;
 }
 
 /**
@@ -15,8 +28,7 @@ export interface RetrieveMissingDependenciesWithMetadataResponse {
  */
 export class RetrieveMissingDependenciesWithMetadataFunction implements Executable<RetrieveMissingDependenciesWithMetadataResponse> {
   constructor(
-    public readonly solutionUniqueName: string,
-    public readonly skipManagedDependencies: boolean
+    public readonly parameters: RetrieveMissingDependenciesWithMetadataFunctionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -25,22 +37,15 @@ export class RetrieveMissingDependenciesWithMetadataFunction implements Executab
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.solutionUniqueName !== undefined) {
+    if (this.parameters.SolutionUniqueName !== undefined) {
       aliases.push(`SolutionUniqueName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.solutionUniqueName === "string"
-          ? `'${this.solutionUniqueName}'`
-          : String(this.solutionUniqueName)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.SolutionUniqueName, "Edm.String"));
     }
-    if (this.skipManagedDependencies !== undefined) {
+    if (this.parameters.SkipManagedDependencies !== undefined) {
       aliases.push(`SkipManagedDependencies=@p2`);
       params.append(
         "@p2",
-        typeof this.skipManagedDependencies === "string"
-          ? `'${this.skipManagedDependencies}'`
-          : String(this.skipManagedDependencies)
+        formatParameterAlias(this.parameters.SkipManagedDependencies, "Edm.Boolean")
       );
     }
     if (aliases.length > 0) {
@@ -59,7 +64,7 @@ export class RetrieveMissingDependenciesWithMetadataFunction implements Executab
   async parseResponse(
     response: Response
   ): Promise<RetrieveMissingDependenciesWithMetadataResponse> {
-    const data = await response.json();
-    return data as RetrieveMissingDependenciesWithMetadataResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveMissingDependenciesWithMetadataResponse;
   }
 }

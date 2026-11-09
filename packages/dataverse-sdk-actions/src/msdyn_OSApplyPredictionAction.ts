@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_OSApplyPrediction action
+ * Response from the msdyn_OSApplyPrediction action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_OSApplyPredictionResponse {
-  // No content returned
+export type msdyn_OSApplyPredictionResponse = void;
+
+/**
+ * Parameters of the msdyn_OSApplyPrediction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_OSApplyPredictionActionParameters {
+  AutoScheduleTrainingConfig?: string;
 }
 
 /**
@@ -13,27 +22,27 @@ export interface msdyn_OSApplyPredictionResponse {
  * Unbound action
  */
 export class msdyn_OSApplyPredictionAction implements Executable<msdyn_OSApplyPredictionResponse> {
-  constructor(public readonly autoScheduleTrainingConfig: string) {}
+  constructor(public readonly parameters: msdyn_OSApplyPredictionActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OSApplyPrediction`;
 
-    const body: Record<string, unknown> = {
-      AutoScheduleTrainingConfig: this.autoScheduleTrainingConfig,
-    };
+    const body = requestBody({
+      AutoScheduleTrainingConfig: this.parameters.AutoScheduleTrainingConfig,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OSApplyPredictionResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_OSApplyPredictionResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

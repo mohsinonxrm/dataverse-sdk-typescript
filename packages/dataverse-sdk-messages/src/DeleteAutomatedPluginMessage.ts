@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the DeleteAutomatedPlugin message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeleteAutomatedPluginRequestParameters {
+  pluginid: string;
+}
 
 /**
  * DeleteAutomatedPlugin request message
@@ -10,36 +19,32 @@ export class DeleteAutomatedPluginRequest
   extends OrganizationRequest
   implements Executable<DeleteAutomatedPluginResponse>
 {
-  constructor(public pluginid: string) {
-    super("DeleteAutomatedPlugin");
+  declare readonly Parameters: Readonly<DeleteAutomatedPluginRequestParameters>;
+
+  constructor(parameters: DeleteAutomatedPluginRequestParameters) {
+    super("DeleteAutomatedPlugin", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeleteAutomatedPlugin`;
 
-    const body: Record<string, unknown> = {
-      pluginid: this.pluginid,
-    };
+    const body = requestBody({
+      pluginid: this.Parameters.pluginid,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<DeleteAutomatedPluginResponse> {
+  parseResponse(_response: Response): Promise<DeleteAutomatedPluginResponse> {
     // No return value (204 No Content)
-    return new DeleteAutomatedPluginResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      pluginid: this.pluginid,
-    };
+    return Promise.resolve(new DeleteAutomatedPluginResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class DeleteAutomatedPluginResponse extends OrganizationResponse {
     super("DeleteAutomatedPlugin");
   }
 
-  static fromResponse(_data: unknown): DeleteAutomatedPluginResponse {
+  static fromResponse(_data?: unknown): DeleteAutomatedPluginResponse {
     return new DeleteAutomatedPluginResponse();
   }
 }

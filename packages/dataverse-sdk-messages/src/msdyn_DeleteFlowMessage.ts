@@ -21,18 +21,14 @@ export class msdyn_DeleteFlowRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_DeleteFlowResponse> {
+  parseResponse(_response: Response): Promise<msdyn_DeleteFlowResponse> {
     // No return value (204 No Content)
-    return new msdyn_DeleteFlowResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    return Promise.resolve(new msdyn_DeleteFlowResponse());
   }
 }
 
@@ -44,7 +40,7 @@ export class msdyn_DeleteFlowResponse extends OrganizationResponse {
     super("msdyn_DeleteFlow");
   }
 
-  static fromResponse(_data: unknown): msdyn_DeleteFlowResponse {
+  static fromResponse(_data?: unknown): msdyn_DeleteFlowResponse {
     return new msdyn_DeleteFlowResponse();
   }
 }

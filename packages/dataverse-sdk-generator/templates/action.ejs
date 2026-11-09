@@ -1,65 +1,71 @@
-import { ActionBase } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
-
+<%# Patterned on the templates of dataverse-gen by Scott Durow (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, MIT License. See THIRD_PARTY_NOTICES.md in this package. -%>
+<%_ if (action.Parameters.length > 0) { _%>
 /**
- * Response type for <%= action.Name %> action
+ * Parameters of the <%- doc(action.Name) %> action, by their CSDL names. A parameter the CSDL
+ * declares nullable is optional, and left out of the request when it's undefined.
  */
-export interface <%= action.Name %>Response {
-<%_ if (action.ReturnType) { _%>
-  result: <%= formatType(action.ReturnType) %>;
-<%_ } else { _%>
-  // No return value (204 No Content)
-<%_ } _%>
+export interface <%- parametersName %> {
+<%_ action.Parameters.forEach(function(param){ _%>
+  <%- propertyKey(param.Name) %><%- param.Nullable ? '?' : '' %>: <%- parameterType(param) %><%- param.Nullable ? ' | null' : '' %>;
+<%_ }) _%>
 }
 
+<%_ } _%>
+<%_ if (responseDeclaration) { _%>
+<%- responseDeclaration %>
+<%_ } _%>
 /**
- * <%= action.Name %> action
- * <%_ if (action.IsBound) { _%>Bound to: <%= action.BindingType %><%_ } else { _%>Unbound action<%_ } _%>
+ * <%- doc(action.Name) %> action
+ * <%- action.IsBound ? 'Bound to: ' + doc(action.BindingType) : 'Unbound action' %>
+<%_ if (bindingDoc) { _%>
+ *
+ * <%- bindingDoc %>
+<%_ } _%>
  */
-export class <%= action.Name %>Action extends ActionBase<<%= action.ReturnType ? action.Name + 'Response' : 'void' %>> {
+export class <%- className %> extends ActionBase<<%- responseType %>> {
+<%_ if (constructorArguments.length > 0) { _%>
   constructor(
-<%_ action.Parameters.forEach(function(param, index){ _%>
-    public <%= param.Name %>: <%= formatType(param.TypeScriptType) %><%= param.Nullable ? ' | null' : '' %><%= index < action.Parameters.length - 1 ? ',' : '' %>
+<%_ constructorArguments.forEach(function(arg){ _%>
+    <%- arg %>,
 <%_ }) _%>
   ) {
     super();
   }
 
+<%_ } _%>
   /**
    * Parameter metadata for runtime type checking
    */
   static parameterTypes = {
-<%_ action.Parameters.forEach(function(param, index){ _%>
-    <%= param.Name %>: {
-      type: '<%= param.Type %>',
-      structuralProperty: '<%= getStructuralType(param.Type) %>',
-      nullable: <%= param.Nullable || false %>
-    }<%= index < action.Parameters.length - 1 ? ',' : '' %>
+<%_ action.Parameters.forEach(function(param){ _%>
+    <%- propertyKey(param.Name) %>: {
+      type: <%- literal(param.Type) %>,
+      structuralProperty: <%- literal(getStructuralType(param.Type)) %>,
+      nullable: <%- param.Nullable ? 'true' : 'false' %>,
+    },
 <%_ }) _%>
   };
 
-  toRequestInformation(baseUrl: string) {
-    return {
-      method: 'POST' as const,
-      url: `${baseUrl}/<%= action.Name %>`,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json'
-      },
-      body: {
-<%_ action.Parameters.forEach(function(param, index){ _%>
-        <%= param.Name %>: this.<%= param.Name %><%= index < action.Parameters.length - 1 ? ',' : '' %>
+  toRequestInformation(baseUrl: string): RequestInformation {
+<%_ if (action.Parameters.length > 0) { _%>
+    // The parameters by their CSDL names; an undefined one isn't sent. Enum values are sent as
+    // member names, and entities with their lookups as @odata.bind (bodyValue).
+    const body: Record<string, unknown> = {};
+<%_ action.Parameters.forEach(function(param){ _%>
+    if (this.parameters<%- access(param.Name) %> !== undefined) body[<%- literal(param.Name) %>] = <%- bodyExpression(param) %>;
 <%_ }) _%>
-      }
+
+<%_ } _%>
+    return {
+      method: "POST",
+      url: `${baseUrl}<%- operationPath %>`,
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json",
+      },
+      body: <%- action.Parameters.length > 0 ? 'body' : '{}' %>,
     };
   }
 
-  async parseResponse(response: Response): Promise<<%= action.ReturnType ? action.Name + 'Response' : 'void' %>> {
-<%_ if (action.ReturnType) { _%>
-    const data = await response.json();
-    return { result: data };
-<%_ } else { _%>
-    // 204 No Content
-    return;
-<%_ } _%>
-  }
+<%- parseResponse -%>
 }

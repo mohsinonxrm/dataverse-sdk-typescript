@@ -1,16 +1,18 @@
+import type { activitypointer } from "./activitypointer.js";
+
 /**
  * fax entity type
  */
-export interface fax {
-  subscriptionid: string;
-  numberofpages: number;
-  billingcode: string;
-  coverpagename: string;
-  importsequencenumber: number;
-  subcategory: string;
-  overriddencreatedon: string;
-  faxnumber: string;
-  directioncode: boolean;
-  tsid: string;
-  category: string;
+export interface fax extends activitypointer {
+  billingcode?: string;
+  category?: string;
+  coverpagename?: string;
+  directioncode?: boolean;
+  faxnumber?: string;
+  importsequencenumber?: number;
+  numberofpages?: number;
+  overriddencreatedon?: string;
+  subcategory?: string;
+  subscriptionid?: string;
+  tsid?: string;
 }

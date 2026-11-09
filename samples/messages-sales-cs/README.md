@@ -26,15 +26,15 @@ SDK Messages are typed request/response pairs that wrap **Dataverse Web API oper
 This sample demonstrates:
 
 1. **WhoAmI** (Function) - Get current user info
-2. **Assign** (SDK Message) - Assign record to user/team
-3. **SetState** (SDK Message) - Activate/deactivate records
+2. **Assign** (OrganizationService) - Assign a record to a user/team
+3. **SetState** (OrganizationService) - Activate/deactivate records
 4. **ExecuteWorkflow** (SDK Message) - Run on-demand workflows
 5. **WinOpportunity** (SDK Message) - Mark opportunity as won
 6. **Merge** (SDK Message) - Merge duplicate records
 7. **ExportSolution** (SDK Message) - Export solution as ZIP
 8. **PublishXml** (SDK Message) - Publish customizations
 9. **Generic OrganizationRequest** - For custom/unlisted messages
-10. **Message Execution Patterns** - Common patterns and best practices
+10. **OptionSet Value Handling** - Plain numbers for choice values, and the execution patterns
 
 ## Prerequisites
 
@@ -84,6 +84,12 @@ DATAVERSE_URL=https://your-org.crm.dynamics.com
 # SOLUTION_NAME=YourSolutionUniqueName
 ```
 
+Environment variables work as well as `.env`. Instead of the three `AZURE_*` names you can set
+`DATAVERSE_CLIENT_ID`, `DATAVERSE_TENANT_ID` and `DATAVERSE_CLIENT_SECRET`, the names the
+repository's live tests use. That is how CI runs this sample against the dev org
+(`pnpm samples:live` from the repository root). Without these values the sample prints what's
+missing and exits with code 1.
+
 ## Running the Sample
 
 ### Build the Sample
@@ -115,6 +121,12 @@ The sample will:
 3. Show colored output for each message
 4. Clean up test data automatically
 5. Display message-to-WebAPI mappings
+
+Every record is named `sdk-sample-<tag> ...` (a lead by its topic), with a random tag per run
+(set `SAMPLE_RUN_TAG`, lowercase letters and digits, to choose it). Cleanup runs also when a demo
+fails: it deletes the records the demos tracked and any opportunity, lead, account or solution
+still named with the run's id. The sample exits with code 1 if a demo failed or a record couldn't
+be deleted.
 
 ## Demo 1: WhoAmI (Function)
 
@@ -151,94 +163,67 @@ interface WhoAmIResponse {
 
 ---
 
-## Demo 2: Assign (SDK Message)
+## Demo 2: Assign (OrganizationService)
 
-**Message**: Assigns a record to a different user or team.
-
-```typescript
-import { AssignRequest } from "@mohsinonxrm/dataverse-sdk-messages";
-import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
-
-const accountId = "11111111-1111-1111-1111-111111111111";
-const targetUserId = "22222222-2222-2222-2222-222222222222";
-
-const request = new AssignRequest(
-  createEntityReference("account", accountId),
-  createEntityReference("systemuser", targetUserId) // or 'team'
-);
-
-await orgService.execute(request);
-```
-
-**Constructor:**
+**Operation**: Assigns a record to a different user or team. The sample does this with an
+`orgService.update()` that binds `ownerid`; no message class is involved.
 
 ```typescript
-new AssignRequest(
-  target: EntityReference,    // Record to assign
-  assignee: EntityReference   // User or team to assign to
-)
+const accountId = await orgService.create("accounts", { name: "Test Account for Assignment" });
+
+await orgService.update("accounts", accountId, {
+  "ownerid@odata.bind": `/systemusers(${targetUserId})`, // or `/teams(${teamId})`
+});
 ```
+
+`OrganizationService` also has a ready-made `assign()` (it takes the table's logical name, the
+record id and the assignee id; see the [xrm README](../../packages/dataverse-sdk-xrm/README.md)):
+
+```typescript
+await orgService.assign("account", accountId, targetUserId);
+```
+
+The demo needs `TEST_USER_ID` in `.env` and skips the assignment without it.
 
 **When to use:**
 
-- Reassign records during workflow
-- Load balancing (distribute leads to sales team)
-- Escalation scenarios (assign case to manager)
+- Reassign records during a workflow
+- Load balancing (distribute leads to a sales team)
+- Escalation scenarios (assign a case to a manager)
 
 ---
 
-## Demo 3: SetState (SDK Message)
+## Demo 3: SetState (OrganizationService)
 
-**Message**: Changes the state (statecode) and status (statuscode) of a record.
-
-```typescript
-import { SetStateRequest } from "@mohsinonxrm/dataverse-sdk-messages";
-import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
-
-const accountId = "11111111-1111-1111-1111-111111111111";
-
-// Deactivate account
-const request = new SetStateRequest(
-  createEntityReference("account", accountId),
-  1, // State: Inactive
-  2 // Status: Inactive
-);
-
-await orgService.execute(request);
-```
-
-**Constructor:**
+**Operation**: Changes the state (`statecode`) and status (`statuscode`) of a record. The sample
+does it with `orgService.update()`:
 
 ```typescript
-new SetStateRequest(
-  entityMoniker: EntityReference,
-  state: number,
-  status: number
-)
+// Deactivate an account
+await orgService.update("accounts", accountId, {
+  statecode: 1, // Inactive
+  statuscode: 2, // Inactive
+});
 ```
+
+`orgService.setState("account", accountId, 1, 2)` does the same with the logical name.
 
 **Common State/Status Codes:**
 
-| Entity              | State         | Status                        | Meaning |
-| ------------------- | ------------- | ----------------------------- | ------- |
+| Entity              | State         | Meaning                       |
+| ------------------- | ------------- | ----------------------------- |
 | **account**         | 0 / 1         | Active / Inactive             |
 | **contact**         | 0 / 1         | Active / Inactive             |
 | **opportunity**     | 0 / 1 / 2     | Open / Won / Lost             |
 | **incident (case)** | 0 / 1 / 2     | Active / Resolved / Canceled  |
 | **quote**           | 0 / 1 / 2 / 3 | Draft / Active / Won / Closed |
 
+Status values depend on the table, so check its status options.
+
 **When to use:**
 
 - Activate/deactivate records
-- Change opportunity to won/lost
-- Resolve/cancel cases
-- Close quotes
-
-**vs PATCH /api/data/v9.2/accounts(id):**
-
-- SetState validates state transitions
-- SetState triggers plugins/workflows for state changes
-- PATCH may fail on invalid transitions
+- Resolve or cancel cases (use the dedicated close messages for opportunities, cases and quotes)
 
 ---
 
@@ -252,50 +237,45 @@ import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 const workflowId = "12345678-1234-1234-1234-123456789abc";
 const targetRecordId = "11111111-1111-1111-1111-111111111111";
 
-const request = new ExecuteWorkflowRequest(
-  workflowId,
-  targetRecordId,
-  {} // Optional input arguments
-);
+const request = new ExecuteWorkflowRequest(workflowId, {
+  EntityId: targetRecordId,
+});
 
-const response = await orgService.execute(request);
+const response = await orgService.execute<ExecuteWorkflowResponse>(request);
 
-console.log(`Async Operation ID: ${response.Id}`);
+console.log(`Async Operation ID: ${response.result?.asyncoperationid}`);
 ```
 
-**Constructor:**
+**Constructor:** the workflow id, then the parameters by their Web API names.
 
-```typescript
-new ExecuteWorkflowRequest(
-  workflowId: string,
-  entityId: string,
-  inputArguments?: Record<string, unknown>
-)
+```text
+new ExecuteWorkflowRequest(workflowId: string, {
+  EntityId: string; // the record to run it on
+  InputArguments?: InputArgumentCollection;
+})
 ```
 
-**Response Type:**
-
-```typescript
-interface ExecuteWorkflowResponse {
-  Id: string; // asyncoperationid for monitoring
-}
-```
+**Response:** `ExecuteWorkflowResponse` has a `result` property, the created `asyncoperation`
+(its `asyncoperationid` is the job to monitor).
 
 **Monitoring Workflow Execution:**
 
 ```typescript
+const asyncOperationId = response.result?.asyncoperationid; // null if Dataverse answered 204
+if (!asyncOperationId) throw new Error("The workflow did not start");
+
 // Poll for completion
 let asyncOp;
 do {
   await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2s
 
   asyncOp = await client
-    .api(`/asyncoperations(${response.Id})`)
+    .api(`/asyncoperations(${asyncOperationId})`)
     .select("statuscode", "message", "friendlymessage")
-    .get();
+    .get<{ statuscode: number; message?: string }>();
 
   console.log(`Status: ${asyncOp.statuscode}`);
-} while (asyncOp.statuscode === 0); // 0 = In Progress
+} while (asyncOp.statuscode < 30); // below 30: still waiting or running
 
 // Check final status
 if (asyncOp.statuscode === 30) {
@@ -318,17 +298,13 @@ if (asyncOp.statuscode === 30) {
 - `31` - Failed
 - `32` - Canceled
 
-**When to use:**
-
-- Trigger complex business logic
-- Run background processes
-- Execute long-running operations asynchronously
-
 **Requirements:**
 
 - Workflow must be **Activated**
 - Workflow must be **On Demand** (not background)
 - User must have **Execute** privilege
+
+The demo needs `TEST_WORKFLOW_ID` in `.env` and skips without it.
 
 ---
 
@@ -338,147 +314,81 @@ if (asyncOp.statuscode === 30) {
 
 ```typescript
 import { WinOpportunityRequest } from "@mohsinonxrm/dataverse-sdk-messages";
-import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
 
 const opportunityId = "11111111-1111-1111-1111-111111111111";
 
-const request = new WinOpportunityRequest(
-  {
+const request = new WinOpportunityRequest({
+  OpportunityClose: {
+    "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+    "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
     subject: "Won: Big Enterprise Deal",
     actualrevenue: 125000,
-    opportunityid: createEntityReference("opportunity", opportunityId),
     actualend: new Date().toISOString(),
-    description: "Closed after 3 months of negotiation",
   },
-  -1 // Won status code
-);
+  Status: 3,
+});
 
-await orgService.execute(request);
+await orgService.execute<WinOpportunityResponse>(request);
 ```
 
 **Constructor:**
 
-```typescript
-new WinOpportunityRequest(
-  opportunityClose: Record<string, unknown>,
-  status: number
-)
+```text
+new WinOpportunityRequest({
+  OpportunityClose: EntityReference | EntityPayload<opportunityclose>;
+  Caller?: string;
+  Status: number;
+})
 ```
 
 **Result:**
 
-- Opportunity `statecode` = 1 (Won)
-- Opportunity `statuscode` = 3 (Won)
-- Creates `opportunityclose` activity record
-- Updates `actualrevenue` on opportunity
-- Updates `actualend` date
-
-**When to use:**
-
-- Close opportunities as won
-- Set actual revenue (may differ from estimate)
-- Trigger win-related plugins/workflows
-- Generate reports on won deals
+- Opportunity `statecode` = 1 (Won), `statuscode` = 3 (Won)
+- Creates an `opportunityclose` activity record
+- Sets `actualrevenue` on the opportunity
 
 ---
 
 ## Demo 6: Merge (SDK Message)
 
-**Message**: Merges two records of the same entity type. Moves all related data to target and deletes subordinate.
+**Message**: Merges two records of the same entity type. Moves related data to the target and
+deactivates the subordinate. The sample merges two leads.
 
 ```typescript
-import { MergeRequest } from "@mohsinonxrm/dataverse-sdk-messages";
-import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
+import { MergeRequest, createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const targetId = "11111111-1111-1111-1111-111111111111";
-const subordinateId = "22222222-2222-2222-2222-222222222222";
-
-const request = new MergeRequest(
-  createEntityReference("account", targetId),
-  subordinateId,
-  {
-    revenue: 800000, // Combined revenue from both accounts
-    description: "Merged from duplicate record",
+const request = new MergeRequest({
+  Target: createEntityReference("lead", targetId),
+  Subordinate: createEntityReference("lead", subordinateId),
+  UpdateContent: {
+    "@odata.type": "Microsoft.Dynamics.CRM.lead",
+    subject: "Merged lead - consolidated from duplicate",
   },
-  false // PerformParentingChecks
-);
+  PerformParentingChecks: false,
+});
 
-await orgService.execute(request);
+await orgService.execute<MergeResponse>(request);
 ```
 
 **Constructor:**
 
-```typescript
-new MergeRequest(
-  target: EntityReference,
-  subordinateId: string,
-  updateContent: Record<string, unknown>,
-  performParentingChecks: boolean
-)
+```text
+new MergeRequest({
+  Target: EntityReference | AnyEntityPayload;
+  Subordinate: EntityReference | AnyEntityPayload;
+  UpdateContent?: EntityReference | AnyEntityPayload; // the column values to set on the target
+  PerformParentingChecks: boolean;
+})
 ```
 
-**What Happens:**
+**What happens:**
 
-1. All activities, notes, attachments move from subordinate to target
-2. All relationships (contacts, opportunities) reassigned to target
-3. Target record updated with `updateContent`
-4. Subordinate record **permanently deleted**
-5. Cannot be undone!
+1. Related records (activities, notes, relationships) move from the subordinate to the target
+2. The target is updated with `updateContent`
+3. The subordinate is **deactivated** and points to the target; this cannot be undone (the
+   sample deletes both leads in its cleanup)
 
-**Supported Entities:**
-
-- `account`
-- `contact`
-- `lead`
-- `incident` (case)
-
-**When to use:**
-
-- Deduplicate customer records
-- Consolidate data after import
-- Merge duplicate leads from different sources
-- Clean up after data migration
-
-**Best Practices:**
-
-```typescript
-// 1. Export subordinate data as backup
-const subordinate = await client
-  .api(`/accounts(${subordinateId})`)
-  .expand("contact_customer_accounts", "opportunity_customer_accounts")
-  .get();
-
-await fs.writeFile("backup.json", JSON.stringify(subordinate, null, 2));
-
-// 2. Review related records
-const relatedContacts = await client
-  .api("/contacts")
-  .filter(`_parentcustomerid_value eq ${subordinateId}`)
-  .get();
-
-console.log(`Will reassign ${relatedContacts.value.length} contacts to target`);
-
-// 3. Combine numeric fields
-const target = await client.api(`/accounts(${targetId})`).select("revenue").get();
-const sub = await client.api(`/accounts(${subordinateId})`).select("revenue").get();
-
-const updateContent = {
-  revenue: (target.revenue || 0) + (sub.revenue || 0),
-};
-
-// 4. Merge with combined data
-await orgService.execute(request);
-```
-
-**Common Errors:**
-
-**Error:** `The record you are trying to merge has child records`
-
-**Fix:** Set `performParentingChecks: true` or delete child records first
-
-**Error:** `You do not have sufficient permissions`
-
-**Fix:** User needs **Merge** privilege on the entity
+Supported tables: `account`, `contact`, `lead`, `incident`.
 
 ---
 
@@ -490,84 +400,32 @@ await orgService.execute(request);
 import { ExportSolutionRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 import fs from "fs/promises";
 
-const request = new ExportSolutionRequest(
-  "MySolution", // SolutionName
-  false, // Managed
-  {
-    // Options
-    ExportAutoNumberingSettings: false,
-    ExportCalendarSettings: false,
-    ExportCustomizationSettings: false,
-    ExportEmailTrackingSettings: false,
-    ExportGeneralSettings: false,
-    ExportMarketingSettings: false,
-    ExportOutlookSynchronizationSettings: false,
-    ExportRelationshipRoles: false,
-    ExportIsvConfig: false,
-    ExportSales: false,
-    ExportExternalApplications: false,
-  }
-);
+// SolutionName and Managed are required; the Export*Settings flags default to false
+const request = new ExportSolutionRequest({ SolutionName: "MySolution", Managed: false });
 
-const response = await orgService.execute(request);
+const response = await orgService.execute<ExportSolutionResponse>(request);
 
 // Save to disk
-const solutionZip = Buffer.from(response.ExportSolutionFile, "base64");
+const solutionZip = Buffer.from(response.result.ExportSolutionFile ?? "", "base64");
 await fs.writeFile("MySolution.zip", solutionZip);
 
 console.log(`Exported ${(solutionZip.length / 1024).toFixed(2)} KB`);
 ```
 
-**Constructor:**
-
-```typescript
-new ExportSolutionRequest(
-  solutionName: string,
-  managed: boolean,
-  options?: ExportSolutionOptions
-)
-```
+The sample exports `SOLUTION_NAME` from `.env` and does not save the file. The Default solution
+can't be exported, so without `SOLUTION_NAME` the sample creates an empty unmanaged solution,
+`sdksample<tag>` (under the Default solution's publisher), exports that, and deletes it in its
+cleanup.
 
 **When to use:**
 
-- Automate solution export in CI/CD pipeline
-- Backup solutions before modifications
-- Export for version control (Git)
+- Automate solution export in a CI/CD pipeline
+- Back up solutions before modifications
+- Export for version control
 - Migrate solutions between environments
 
-**Performance:**
-
-- Small solutions (10-50 components): 5-15 seconds
-- Medium solutions (50-200 components): 15-45 seconds
-- Large solutions (200+ components): 45-180 seconds
-
-**Best Practices:**
-
-```typescript
-// 1. Export unmanaged for source control
-const unmanagedRequest = new ExportSolutionRequest("MySolution", false, {
-  // All settings: false for minimal diff
-});
-
-const unmanagedResponse = await orgService.execute(unmanagedRequest);
-await fs.writeFile(
-  "MySolution_unmanaged.zip",
-  Buffer.from(unmanagedResponse.ExportSolutionFile, "base64")
-);
-
-// 2. Export managed for deployment
-const managedRequest = new ExportSolutionRequest("MySolution", true);
-
-const managedResponse = await orgService.execute(managedRequest);
-await fs.writeFile(
-  "MySolution_managed.zip",
-  Buffer.from(managedResponse.ExportSolutionFile, "base64")
-);
-
-// 3. Add timestamp to filename
-const timestamp = new Date().toISOString().replace(/:/g, "-").split(".")[0];
-await fs.writeFile(`MySolution_${timestamp}.zip`, solutionZip);
-```
+Export unmanaged solutions for source control and managed ones for deployment. Export time
+grows with the size of the solution.
 
 ---
 
@@ -584,7 +442,6 @@ const parameterXml = `
     <entities>
       <entity>account</entity>
       <entity>contact</entity>
-      <entity>new_customentity</entity>
     </entities>
     <nodes/>
     <securityroles/>
@@ -593,172 +450,92 @@ const parameterXml = `
   </importexportxml>
 `.trim();
 
-const request = new PublishXmlRequest(parameterXml);
-
-await orgService.execute(request);
+await orgService.execute(new PublishXmlRequest({ ParameterXml: parameterXml }));
 ```
 
-**Constructor:**
+**Constructor:** `new PublishXmlRequest(parameterXml: string)`
 
-```typescript
-new PublishXmlRequest(parameterXml: string)
-```
+Notes:
 
-**When to use:**
-
-- After creating/updating metadata (entities, attributes)
-- After modifying forms or views
-- After workflow changes
-- Part of deployment automation
-
-**vs PublishAllXml:**
-
-| PublishXml                | PublishAllXml              |
-| ------------------------- | -------------------------- |
-| Publish specific entities | Publish all customizations |
-| Faster (5-30 seconds)     | Slower (30-300 seconds)    |
-| Less disruptive           | Can impact performance     |
-| Use in development        | Use before major release   |
-
-**Performance Impact:**
-
-- Publishing can lock customizations temporarily
-- Active users may experience brief slowness
-- Schedule during maintenance window for large publishes
-
-**Best Practices:**
-
-```typescript
-// 1. Publish only what changed
-const publishAfterMetadataChange = async (entityLogicalName: string) => {
-  const xml = `
-    <importexportxml>
-      <entities>
-        <entity>${entityLogicalName}</entity>
-      </entities>
-      <nodes/>
-      <securityroles/>
-      <settings/>
-      <workflows/>
-    </importexportxml>
-  `.trim();
-
-  await orgService.execute(new PublishXmlRequest(xml));
-};
-
-// 2. Batch metadata changes, then publish once
-await metadataClient.createEntity(/* ... */);
-await metadataClient.createAttribute(/* ... */);
-await metadataClient.createAttribute(/* ... */);
-
-// Publish all changes at once
-await orgService.execute(new PublishAllXmlRequest());
-```
+- Publishing can lock customizations temporarily, so schedule large publishes.
+- After several metadata changes, publish once at the end, or use `PublishAllXmlRequest` to publish everything.
 
 ---
 
 ## Demo 9: Generic OrganizationRequest
 
-For messages not yet typed in the SDK, use `OrganizationRequest`:
+For messages without a typed class, use `OrganizationRequest`. It takes the message name and its
+parameters, and the response has the returned values in `Results`. It runs as a Web API action
+(`POST`), with the parameters in their Web API shapes; for a function (`GET`) such as `WhoAmI`,
+use the typed function classes (Demo 1). The sample loses an opportunity it creates:
 
 ```typescript
-import { OrganizationRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { OrganizationRequest, OrganizationResponse } from "@mohsinonxrm/dataverse-sdk-messages";
 
-// Generic request for WhoAmI (though WhoAmIFunction is preferred)
-const request = new OrganizationRequest("WhoAmI", {});
+const request = new OrganizationRequest("LoseOpportunity", {
+  OpportunityClose: {
+    "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+    subject: "Lost: Test Opportunity",
+    "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
+  },
+  Status: 4, // Canceled, a statuscode of the Lost state
+});
+const response = await orgService.execute<OrganizationResponse>(request);
 
-const response = await orgService.execute(request);
-
-console.log(response.Results.UserId);
-console.log(response.Results.BusinessUnitId);
-console.log(response.Results.OrganizationId);
+console.log(response.Results); // {}: LoseOpportunity returns nothing
 ```
-
-**Use cases:**
 
 ### 1. Custom Actions
 
 ```typescript
-// Execute custom action created in your environment
 const customRequest = new OrganizationRequest("new_CalculateCommission", {
-  Target: {
-    "@odata.type": "Microsoft.Dynamics.CRM.opportunity",
-    opportunityid: opportunityId,
-  },
-  CommissionRate: 0.05,
+  OpportunityId: opportunityId,
+  Rate: 0.05,
 });
 
 const customResponse = await orgService.execute(customRequest);
-console.log(`Commission: $${customResponse.Results.CommissionAmount}`);
 ```
 
 ### 2. Partner/ISV Messages
 
 ```typescript
-// Execute ISV-provided custom message
-const isvRequest = new OrganizationRequest("contoso_ValidateAddress", {
-  Street: "123 Main St",
-  City: "Seattle",
-  State: "WA",
-  ZipCode: "98101",
-});
-
-const isvResponse = await orgService.execute(isvRequest);
-console.log(`Valid: ${isvResponse.Results.IsValid}`);
+const isvRequest = new OrganizationRequest("contoso_ValidateAddress", { Street: "1 Main St" });
 ```
 
 ### 3. Preview/Beta Messages
 
-```typescript
-// Use preview messages before SDK support
-const previewRequest = new OrganizationRequest("msdyn_NewFeatureRequest", {
-  InputParameter: "value",
-});
-
-const previewResponse = await orgService.execute(previewRequest);
-```
-
-**Response Structure:**
-
-```typescript
-interface OrganizationResponse {
-  Results: Record<string, any>; // Output parameters
-}
-```
-
-Access output parameters via `Results`:
-
-```typescript
-const response = await orgService.execute(request);
-
-// Access outputs
-const outputValue = response.Results.OutputParameterName;
-const anotherValue = response.Results.AnotherParameter;
-```
+Use the generic request for a message that was released after this SDK version, then read
+its output parameters from `response.Results`.
 
 ---
 
-## Demo 10: Message Execution Patterns
+## Demo 10: OptionSet Value Handling
 
-SDK Messages provide a consistent execution pattern across all operations:
-
-### Pattern 1: Direct Message Execution
+The last demo prints how choice values are written. In messages and in `orgService` calls, use
+plain numbers:
 
 ```typescript
-import { AssignRequest, SetStateRequest } from "@mohsinonxrm/dataverse-sdk-messages";
-import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
+await orgService.update("accounts", accountId, {
+  statecode: 1, // plain number
+  statuscode: 2, // plain number
+});
 
-// Create request with typed constructor
-const request = new AssignRequest(
-  createEntityReference("account", accountId),
-  createEntityReference("systemuser", userId)
-);
-
-// Execute through OrganizationService
-const response = await orgService.execute(request);
+const request = new WinOpportunityRequest({
+  OpportunityClose: opportunityClose,
+  Status: 3,
+}); // status as a plain number
 ```
 
-### Pattern 2: Error Handling
+### Execution patterns used by the other demos
+
+**Direct execution** - build the request and pass it to `orgService.execute()` (or
+`client.execute()`):
+
+```typescript
+const response = await orgService.execute<ExecuteWorkflowResponse>(request);
+```
+
+**Error handling** - failures throw typed SDK errors:
 
 ```typescript
 import { DataverseError } from "@mohsinonxrm/dataverse-sdk-core";
@@ -768,30 +545,17 @@ try {
 } catch (error) {
   if (error instanceof DataverseError) {
     console.error(`Dataverse error: ${error.message}`);
-    console.error(`Status: ${error.statusCode}`);
+    console.error(`Status: ${error.status}`);
   } else {
     throw error;
   }
 }
 ```
 
-### Pattern 3: Batch Execution
-
-```typescript
-// Messages can be batched for better performance
-import { createBatch } from "@mohsinonxrm/dataverse-sdk-batch";
-
-const batch = createBatch(client);
-
-// Add multiple message executions
-batch.addChangeSet([
-  new AssignRequest(/* ... */),
-  new SetStateRequest(/* ... */),
-  new ExecuteWorkflowRequest(/* ... */),
-]);
-
-const responses = await batch.execute();
-```
+**Batching** - message classes are executed one by one. To send several operations in one round
+trip, use the `$batch` builder with plain Web API requests (see
+[the batch README](../../packages/dataverse-sdk-batch/README.md) and the `batch-ops` sample);
+a request object is not an input to `BatchRequestBuilder`.
 
 ---
 
@@ -799,16 +563,16 @@ const responses = await batch.execute();
 
 All SDK Messages are implemented on top of Web API. Here's how they map:
 
-| SDK Message         | Web API Endpoint                                        | HTTP Method         |
-| ------------------- | ------------------------------------------------------- | ------------------- |
-| **WhoAmI**          | `/WhoAmI()`                                             | GET (function)      |
-| **Assign**          | `/Assign`                                               | POST (action)       |
-| **SetState**        | `PATCH /entity(id)` with statecode/statuscode           | PATCH               |
-| **ExecuteWorkflow** | `/workflows(id)/Microsoft.Dynamics.CRM.ExecuteWorkflow` | POST (bound action) |
-| **WinOpportunity**  | `/WinOpportunity`                                       | POST (action)       |
-| **Merge**           | `/Merge`                                                | POST (action)       |
-| **ExportSolution**  | `/ExportSolution`                                       | POST (action)       |
-| **PublishXml**      | `/PublishXml`                                           | POST (action)       |
+| SDK Message         | Web API Endpoint                                             | HTTP Method         |
+| ------------------- | ------------------------------------------------------------ | ------------------- |
+| **WhoAmI**          | `/WhoAmI()`                                                  | GET (function)      |
+| **Assign**          | `PATCH /entity(id)` with `ownerid@odata.bind` (or `/Assign`) | PATCH (POST action) |
+| **SetState**        | `PATCH /entity(id)` with statecode/statuscode                | PATCH               |
+| **ExecuteWorkflow** | `/workflows(id)/Microsoft.Dynamics.CRM.ExecuteWorkflow`      | POST (bound action) |
+| **WinOpportunity**  | `/WinOpportunity`                                            | POST (action)       |
+| **Merge**           | `/Merge`                                                     | POST (action)       |
+| **ExportSolution**  | `/ExportSolution`                                            | POST (action)       |
+| **PublishXml**      | `/PublishXml`                                                | POST (action)       |
 
 **See [`docs/mapping/message-to-webapi.md`](../../docs/mapping/message-to-webapi.md) for complete mapping.**
 
@@ -828,10 +592,10 @@ InvalidArgument: Entity logical name 'Account' is not valid. Expected 'account'
 
 ```typescript
 // ❌ Wrong - Capital A
-Target: { LogicalName: 'Account', Id: accountId }
+createEntityReference("Account", accountId);
 
 // ✅ Correct - lowercase
-Target: { LogicalName: 'account', Id: accountId }
+createEntityReference("account", accountId);
 ```
 
 **Logical names are always lowercase:**
@@ -924,11 +688,14 @@ For messages that return async operation IDs:
 ```typescript
 import { ExecuteWorkflowRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 
-const executeWf = new ExecuteWorkflowRequest(workflowId, entityId, {});
-const response = await orgService.execute(executeWf);
+const executeWf = new ExecuteWorkflowRequest(workflowId, {
+  EntityId: entityId,
+});
+const response = await orgService.execute<ExecuteWorkflowResponse>(executeWf);
 
 // Monitor completion
-const asyncOpId = response.Id;
+const asyncOpId = response.result?.asyncoperationid; // null if Dataverse answered 204
+if (!asyncOpId) throw new Error("The workflow did not start");
 let completed = false;
 
 while (!completed) {
@@ -937,7 +704,7 @@ while (!completed) {
   const asyncOp = await client
     .api(`/asyncoperations(${asyncOpId})`)
     .select("statuscode", "message")
-    .get();
+    .get<{ statuscode: number; message?: string }>();
 
   if (asyncOp.statuscode >= 30) {
     // 30=Success, 31=Failed, 32=Canceled
@@ -978,41 +745,35 @@ await orgService.execute(mergeRequest);
 If migrating from .NET:
 
 ```typescript
-// .NET SDK pattern
-var orgService = new OrganizationService(client);
+// .NET: orgService.Execute(new WinOpportunityRequest { ... })
 
-var assignRequest = new AssignRequest {
-  Target = new EntityReference("account", accountId),
-  Assignee = new EntityReference("systemuser", userId)
-};
-orgService.Execute(assignRequest);
-
-// TypeScript SDK - similar pattern!
-import { AssignRequest, createEntityReference } from '@mohsinonxrm/dataverse-sdk-messages';
-import { OrganizationService } from '@mohsinonxrm/dataverse-sdk-xrm';
+// TypeScript SDK - similar pattern
+import { WinOpportunityRequest } from "@mohsinonxrm/dataverse-sdk-messages";
+import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 
 const orgService = new OrganizationService(client);
 
-const assignRequest = new AssignRequest(
-  createEntityReference('account', accountId),
-  createEntityReference('systemuser', userId)
+await orgService.execute(
+  new WinOpportunityRequest({ OpportunityClose: opportunityClose, Status: 3 })
 );
-await orgService.execute(assignRequest);
+
+// CRUD, associate, assign and setState are methods on the service
+await orgService.assign("account", accountId, userId);
 ```
 
 ### 5. Combine with DataverseClient for Flexibility
 
 ```typescript
-import { WinOpportunityRequest, createEntityReference } from "@mohsinonxrm/dataverse-sdk-messages";
+import { WinOpportunityRequest } from "@mohsinonxrm/dataverse-sdk-messages";
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
 
 // Use OrganizationService for complex messages
 const orgService = new OrganizationService(client);
 
-const winRequest = new WinOpportunityRequest(
-  { subject: "Won Deal", opportunityid: createEntityReference("opportunity", oppId) },
-  -1
-);
+const winRequest = new WinOpportunityRequest({
+  OpportunityClose: opportunityClose,
+  Status: 3,
+});
 await orgService.execute(winRequest);
 
 // Use DataverseClient for simple queries
@@ -1021,7 +782,7 @@ const accounts = await client
   .filter("revenue gt 100000")
   .select("name", "revenue")
   .top(10)
-  .get();
+  .get<{ value: { name: string; revenue?: number }[] }>();
 
 // Best of both worlds!
 ```
@@ -1032,40 +793,32 @@ const accounts = await client
 
 ### Pattern 1: Batch Message Execution
 
-Execute multiple messages efficiently:
+Message classes run one request at a time. To send several operations in one round trip, put the
+equivalent Web API calls in a `$batch` changeset:
 
 ```typescript
-// Use $batch to execute multiple messages
-const batch = client.batch();
+import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 
+const batch = new BatchRequestBuilder(client);
 batch.beginChangeset();
 
-// Add message requests as POST actions
-batch.addRequest(
-  client.api("/WinOpportunity").post({
-    OpportunityClose: {
-      /* ... */
-    },
-    Status: -1,
-  })
-);
+batch.addRequest("win", "POST", "WinOpportunity", undefined, {
+  OpportunityClose: {
+    "@odata.type": "Microsoft.Dynamics.CRM.opportunityclose",
+    "opportunityid@odata.bind": `/opportunities(${opportunityId})`,
+    subject: "Won Deal",
+  },
+  Status: 3,
+});
 
-batch.addRequest(
-  client.api("/Assign").post({
-    Target: {
-      /* ... */
-    },
-    Assignee: {
-      /* ... */
-    },
-  })
-);
+batch.addRequest("assign", "PATCH", `accounts(${accountId})`, undefined, {
+  "ownerid@odata.bind": `/systemusers(${userId})`,
+});
 
 batch.endChangeset();
 
-const batchResponse = await batch.execute();
-
-// All messages executed transactionally
+const result = await batch.execute(); // throws DataverseBatchError if a request fails
+// All requests ran in one transaction
 ```
 
 ### Pattern 2: Solution Export Automation (CI/CD)
@@ -1081,48 +834,24 @@ async function exportSolutionForCI(
 ): Promise<void> {
   const timestamp = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-  // Export unmanaged for source control
-  const unmanagedRequest = new ExportSolutionRequest(
-    solutionName,
-    false, // managed
-    {
-      ExportAutoNumberingSettings: false,
-      ExportCalendarSettings: false,
-      ExportCustomizationSettings: false,
-      ExportEmailTrackingSettings: false,
-      ExportGeneralSettings: false,
-      ExportMarketingSettings: false,
-      ExportOutlookSynchronizationSettings: false,
-      ExportRelationshipRoles: false,
-      ExportIsvConfig: false,
-      ExportSales: false,
-      ExportExternalApplications: false,
-    }
-  );
+  // The Export*Settings flags are optional and default to false
+  const exportSolution = async (managed: boolean): Promise<Buffer> => {
+    const request = new ExportSolutionRequest({ SolutionName: solutionName, Managed: managed });
+    const response = await orgService.execute<ExportSolutionResponse>(request);
+    return Buffer.from(response.result.ExportSolutionFile ?? "", "base64");
+  };
 
-  console.log(`Exporting ${solutionName} (unmanaged)...`);
-  const unmanagedResponse = await orgService.execute(unmanagedRequest);
+  // Export unmanaged for source control, managed for deployment
+  for (const managed of [false, true]) {
+    const label = managed ? "managed" : "unmanaged";
+    console.log(`Exporting ${solutionName} (${label})...`);
 
-  const unmanagedZip = Buffer.from(unmanagedResponse.ExportSolutionFile, "base64");
-  const unmanagedPath = path.join(outputDir, `${solutionName}_${timestamp}_unmanaged.zip`);
-  await fs.writeFile(unmanagedPath, unmanagedZip);
+    const zip = await exportSolution(managed);
+    const zipPath = path.join(outputDir, `${solutionName}_${timestamp}_${label}.zip`);
+    await fs.writeFile(zipPath, zip);
 
-  console.log(`✓ Unmanaged: ${unmanagedPath} (${(unmanagedZip.length / 1024).toFixed(2)} KB)`);
-
-  // Export managed for deployment
-  const managedRequest = new ExportSolutionRequest(
-    solutionName,
-    true // managed
-  );
-
-  console.log(`Exporting ${solutionName} (managed)...`);
-  const managedResponse = await orgService.execute(managedRequest);
-
-  const managedZip = Buffer.from(managedResponse.ExportSolutionFile, "base64");
-  const managedPath = path.join(outputDir, `${solutionName}_${timestamp}_managed.zip`);
-  await fs.writeFile(managedPath, managedZip);
-
-  console.log(`✓ Managed: ${managedPath} (${(managedZip.length / 1024).toFixed(2)} KB)`);
+    console.log(`✓ ${label}: ${zipPath} (${(zip.length / 1024).toFixed(2)} KB)`);
+  }
 }
 
 // Usage in CI/CD pipeline
@@ -1142,18 +871,20 @@ async function executeWorkflowWithRetry(
 
   while (attempt < maxRetries) {
     try {
-      const request = new ExecuteWorkflowRequest(
-        workflowId,
-        entityId,
-        {} // input arguments
-      );
+      const request = new ExecuteWorkflowRequest(workflowId, {
+        EntityId: entityId,
+      });
 
-      const response = await orgService.execute(request);
-      return response.Id; // asyncoperationid
-    } catch (error: any) {
+      const response = await orgService.execute<ExecuteWorkflowResponse>(request);
+      return response.result?.asyncoperationid ?? ""; // asyncoperationid
+    } catch (error: unknown) {
       attempt++;
 
-      if (error.message?.includes("locked") && attempt < maxRetries) {
+      if (
+        error instanceof DataverseError &&
+        error.message.includes("locked") &&
+        attempt < maxRetries
+      ) {
         console.log(`Attempt ${attempt} failed (locked), retrying...`);
         await new Promise((resolve) => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
       } else {
@@ -1183,14 +914,15 @@ async function smartMerge(
   subordinateId: string,
   resolver: MergeConflictResolver
 ): Promise<void> {
-  // Fetch both records
+  // Fetch both records (the entity set name comes from metadata, not from adding an "s")
+  const entitySet = await orgService.getEntitySetName(entityLogicalName);
   const [target, subordinate] = await Promise.all([
-    client.api(`/${entityLogicalName}s(${targetId})`).get(),
-    client.api(`/${entityLogicalName}s(${subordinateId})`).get(),
+    client.api(`/${entitySet}(${targetId})`).get<Record<string, unknown>>(),
+    client.api(`/${entitySet}(${subordinateId})`).get<Record<string, unknown>>(),
   ]);
 
   // Resolve conflicts
-  const updateContent: any = {};
+  const updateContent: Record<string, unknown> = {};
 
   for (const field of Object.keys(subordinate)) {
     if (field.startsWith("_") || field.startsWith("@")) continue; // Skip metadata
@@ -1202,9 +934,17 @@ async function smartMerge(
       if (targetValue === null || targetValue === undefined) {
         // Target missing, use subordinate
         updateContent[field] = subValue;
-      } else if (typeof subValue === "string" && resolver.resolveString) {
+      } else if (
+        typeof subValue === "string" &&
+        typeof targetValue === "string" &&
+        resolver.resolveString
+      ) {
         updateContent[field] = resolver.resolveString(targetValue, subValue);
-      } else if (typeof subValue === "number" && resolver.resolveNumber) {
+      } else if (
+        typeof subValue === "number" &&
+        typeof targetValue === "number" &&
+        resolver.resolveNumber
+      ) {
         updateContent[field] = resolver.resolveNumber(targetValue, subValue);
       }
       // Add more type handlers as needed
@@ -1212,12 +952,15 @@ async function smartMerge(
   }
 
   // Execute merge
-  const mergeRequest = new MergeRequest(
-    createEntityReference(entityLogicalName, targetId),
-    subordinateId,
-    updateContent,
-    false // PerformParentingChecks
-  );
+  const mergeRequest = new MergeRequest({
+    Target: createEntityReference(entityLogicalName, targetId),
+    Subordinate: createEntityReference(entityLogicalName, subordinateId),
+    UpdateContent: {
+      "@odata.type": `Microsoft.Dynamics.CRM.${entityLogicalName}`,
+      ...updateContent,
+    },
+    PerformParentingChecks: false,
+  });
 
   await orgService.execute(mergeRequest);
 }
@@ -1236,7 +979,8 @@ await smartMerge(orgService, client, "account", targetId, subordinateId, {
 
 This sample demonstrated:
 
-✅ **SDK Messages**: AssignRequest, SetStateRequest, ExecuteWorkflowRequest, WinOpportunityRequest, MergeRequest, ExportSolutionRequest, PublishXmlRequest
+✅ **SDK Messages**: ExecuteWorkflowRequest, WinOpportunityRequest, MergeRequest, ExportSolutionRequest, PublishXmlRequest
+✅ **OrganizationService**: update/assign/setState for ownership and state changes
 ✅ **Functions**: WhoAmIFunction (from @mohsinonxrm/dataverse-sdk-functions)
 ✅ **Generic OrganizationRequest** for custom/unlisted messages  
 ✅ **EntityReference pattern**: `createEntityReference('entity', id)`
@@ -1250,8 +994,8 @@ This sample demonstrated:
 2. **All message classes** are exported directly (no namespace organization)
 3. **Each message** extends `OrganizationRequest` and implements `Executable<TResponse>`
 4. **OrganizationService.execute()** is the entry point
-5. **OptionSet values** accept plain numbers or `{ Value: number }`
-6. **EntityReference** uses `{ LogicalName: 'entity', Id: 'guid' }`
+5. **OptionSet values** are plain numbers in messages and in `orgService` calls
+6. **EntityReference**: `createEntityReference('entity', id)` gives the Web API shape
 7. **Async operations** require polling for completion
 8. **Merge is destructive** - always backup subordinate data
 
@@ -1260,7 +1004,7 @@ This sample demonstrated:
 - Explore `@mohsinonxrm/dataverse-sdk-actions` for HTTP-first actions/functions
 - See `actions-functions` sample for typed action executables
 - Review `docs/mapping/message-to-webapi.md` for complete mapping
-- Check `batch-ops` sample for transactional message execution
+- See the `batch-ops` sample for `$batch` changesets (message classes themselves run one at a time)
 
 ## License
 

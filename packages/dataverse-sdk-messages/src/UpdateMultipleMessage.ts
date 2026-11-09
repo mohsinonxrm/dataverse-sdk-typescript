@@ -1,45 +1,56 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UpdateMultiple message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateMultipleRequestParameters {
+  Targets: Record<string, unknown>[];
+}
 
 /**
  * UpdateMultiple request message
  *
  * Web API Action: UpdateMultiple
+ *
+ * The first argument is the entity set to call it on, for example "accounts".
  */
 export class UpdateMultipleRequest
   extends OrganizationRequest
   implements Executable<UpdateMultipleResponse>
 {
-  constructor(public targets: Record<string, unknown>[]) {
-    super("UpdateMultiple");
+  declare readonly Parameters: Readonly<UpdateMultipleRequestParameters>;
+
+  constructor(
+    public entitySetName: string,
+    parameters: UpdateMultipleRequestParameters
+  ) {
+    super("UpdateMultiple", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/UpdateMultiple`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/${this.entitySetName}/Microsoft.Dynamics.CRM.UpdateMultiple`;
 
-    const body: Record<string, unknown> = {
-      Targets: this.targets,
-    };
+    const body = requestBody({
+      Targets: this.Parameters.Targets,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateMultipleResponse> {
+  parseResponse(_response: Response): Promise<UpdateMultipleResponse> {
     // No return value (204 No Content)
-    return new UpdateMultipleResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Targets: this.targets,
-    };
+    return Promise.resolve(new UpdateMultipleResponse());
   }
 }
 
@@ -51,7 +62,7 @@ export class UpdateMultipleResponse extends OrganizationResponse {
     super("UpdateMultiple");
   }
 
-  static fromResponse(_data: unknown): UpdateMultipleResponse {
+  static fromResponse(_data?: unknown): UpdateMultipleResponse {
     return new UpdateMultipleResponse();
   }
 }

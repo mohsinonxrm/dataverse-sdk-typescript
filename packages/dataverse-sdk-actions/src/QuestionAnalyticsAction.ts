@@ -1,13 +1,30 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from QuestionAnalytics action
+ * Response from the QuestionAnalytics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface QuestionAnalyticsResponse {
-  value: string;
-  pagingCookie: string;
+  "@odata.context"?: string;
   moreRecords: boolean;
   page: number;
+  pagingCookie: string;
+  value: string;
+}
+
+/**
+ * Parameters of the QuestionAnalytics action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface QuestionAnalyticsActionParameters {
+  startDateTime: string;
+  count?: number;
+  botId: string;
+  state: string;
+  endDateTime: string;
+  page?: number;
 }
 
 /**
@@ -16,39 +33,32 @@ export interface QuestionAnalyticsResponse {
  * Unbound action
  */
 export class QuestionAnalyticsAction implements Executable<QuestionAnalyticsResponse> {
-  constructor(
-    public readonly botId: string,
-    public readonly page: number,
-    public readonly endDateTime: string,
-    public readonly startDateTime: string,
-    public readonly state: string,
-    public readonly count: number
-  ) {}
+  constructor(public readonly parameters: QuestionAnalyticsActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/QuestionAnalytics`;
 
-    const body: Record<string, unknown> = {
-      botId: this.botId,
-      page: this.page,
-      endDateTime: this.endDateTime,
-      startDateTime: this.startDateTime,
-      state: this.state,
-      count: this.count,
-    };
+    const body = requestBody({
+      startDateTime: this.parameters.startDateTime,
+      count: this.parameters.count,
+      botId: this.parameters.botId,
+      state: this.parameters.state,
+      endDateTime: this.parameters.endDateTime,
+      page: this.parameters.page,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<QuestionAnalyticsResponse> {
-    const data = await response.json();
-    return data as QuestionAnalyticsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as QuestionAnalyticsResponse;
   }
 }

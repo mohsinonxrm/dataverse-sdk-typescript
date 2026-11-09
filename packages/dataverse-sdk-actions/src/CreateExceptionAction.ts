@@ -1,11 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { appointment } from "./types/index.js";
 
 /**
- * Response from CreateException action
+ * Response from the CreateException action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CreateExceptionResponse {
+  "@odata.context"?: string;
   id: string;
+}
+
+/**
+ * Parameters of the CreateException action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateExceptionActionParameters {
+  Target: EntityReference | EntityPayload<appointment>;
+  OriginalStartDate: string;
+  IsDeleted: boolean;
 }
 
 /**
@@ -15,33 +31,30 @@ export interface CreateExceptionResponse {
  * Binding parameter: entityset (Collection(mscrm.recurringappointmentmaster))
  */
 export class CreateExceptionAction implements Executable<CreateExceptionResponse> {
-  constructor(
-    public readonly target: appointment,
-    public readonly originalStartDate: string,
-    public readonly isDeleted: boolean
-  ) {}
+  constructor(public readonly parameters: CreateExceptionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    const url = `${baseUrl}/CreateException`;
+    // Bound action (entity collection)
+    const url = `${baseUrl}/recurringappointmentmasters/Microsoft.Dynamics.CRM.CreateException`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      OriginalStartDate: this.originalStartDate,
-      IsDeleted: this.isDeleted,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      OriginalStartDate: this.parameters.OriginalStartDate,
+      IsDeleted: this.parameters.IsDeleted,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<CreateExceptionResponse> {
-    const data = await response.json();
-    return data as CreateExceptionResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as CreateExceptionResponse;
   }
 }

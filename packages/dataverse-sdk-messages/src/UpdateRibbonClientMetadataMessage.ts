@@ -21,18 +21,14 @@ export class UpdateRibbonClientMetadataRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateRibbonClientMetadataResponse> {
+  parseResponse(_response: Response): Promise<UpdateRibbonClientMetadataResponse> {
     // No return value (204 No Content)
-    return new UpdateRibbonClientMetadataResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    return Promise.resolve(new UpdateRibbonClientMetadataResponse());
   }
 }
 
@@ -44,7 +40,7 @@ export class UpdateRibbonClientMetadataResponse extends OrganizationResponse {
     super("UpdateRibbonClientMetadata");
   }
 
-  static fromResponse(_data: unknown): UpdateRibbonClientMetadataResponse {
+  static fromResponse(_data?: unknown): UpdateRibbonClientMetadataResponse {
     return new UpdateRibbonClientMetadataResponse();
   }
 }

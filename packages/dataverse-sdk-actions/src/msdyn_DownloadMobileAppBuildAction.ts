@@ -1,11 +1,28 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { msdyn_mobileapp } from "./types/index.js";
 
 /**
- * Response from msdyn_DownloadMobileAppBuild action
+ * Response from the msdyn_DownloadMobileAppBuild action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_DownloadMobileAppBuildResponse {
+  "@odata.context"?: string;
   Result: string;
+}
+
+/**
+ * Parameters of the msdyn_DownloadMobileAppBuild action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_DownloadMobileAppBuildActionParameters {
+  BuildId?: string;
+  ArtifactType?: string;
+  msdyn_MobileApp: EntityReference | EntityPayload<msdyn_mobileapp>;
+  PipelineId?: string;
 }
 
 /**
@@ -14,31 +31,30 @@ export interface msdyn_DownloadMobileAppBuildResponse {
  * Unbound action
  */
 export class msdyn_DownloadMobileAppBuildAction implements Executable<msdyn_DownloadMobileAppBuildResponse> {
-  constructor(
-    public readonly buildId: string,
-    public readonly msdyn_MobileApp: msdyn_mobileapp
-  ) {}
+  constructor(public readonly parameters: msdyn_DownloadMobileAppBuildActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_DownloadMobileAppBuild`;
 
-    const body: Record<string, unknown> = {
-      BuildId: this.buildId,
-      msdyn_MobileApp: this.msdyn_MobileApp,
-    };
+    const body = requestBody({
+      BuildId: this.parameters.BuildId,
+      ArtifactType: this.parameters.ArtifactType,
+      msdyn_MobileApp: this.parameters.msdyn_MobileApp,
+      PipelineId: this.parameters.PipelineId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_DownloadMobileAppBuildResponse> {
-    const data = await response.json();
-    return data as msdyn_DownloadMobileAppBuildResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_DownloadMobileAppBuildResponse;
   }
 }

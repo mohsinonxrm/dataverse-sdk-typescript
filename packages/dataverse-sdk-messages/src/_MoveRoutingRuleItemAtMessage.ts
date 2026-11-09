@@ -1,6 +1,20 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
+
+/**
+ * Parameters of the _MoveRoutingRuleItemAt message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _MoveRoutingRuleItemAtRequestParameters {
+  RoutingRuleSetId: EntityReference | AnyEntityPayload;
+  RoutingRuleItemIdToMove: EntityReference | AnyEntityPayload;
+  TargetRoutingRuleItemId: EntityReference | AnyEntityPayload;
+  IsBefore: boolean;
+  Options?: string;
+}
 
 /**
  * _MoveRoutingRuleItemAt request message
@@ -11,50 +25,36 @@ export class _MoveRoutingRuleItemAtRequest
   extends OrganizationRequest
   implements Executable<_MoveRoutingRuleItemAtResponse>
 {
-  constructor(
-    public routingRuleSetId: EntityReference,
-    public routingRuleItemIdToMove: EntityReference,
-    public targetRoutingRuleItemId: EntityReference,
-    public isBefore: boolean,
-    public options: string
-  ) {
-    super("_MoveRoutingRuleItemAt");
+  declare readonly Parameters: Readonly<_MoveRoutingRuleItemAtRequestParameters>;
+
+  constructor(parameters: _MoveRoutingRuleItemAtRequestParameters) {
+    super("_MoveRoutingRuleItemAt", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_MoveRoutingRuleItemAt`;
 
-    const body: Record<string, unknown> = {
-      RoutingRuleSetId: this.routingRuleSetId,
-      RoutingRuleItemIdToMove: this.routingRuleItemIdToMove,
-      TargetRoutingRuleItemId: this.targetRoutingRuleItemId,
-      IsBefore: this.isBefore,
-      Options: this.options,
-    };
+    const body = requestBody({
+      RoutingRuleSetId: this.Parameters.RoutingRuleSetId,
+      RoutingRuleItemIdToMove: this.Parameters.RoutingRuleItemIdToMove,
+      TargetRoutingRuleItemId: this.Parameters.TargetRoutingRuleItemId,
+      IsBefore: this.Parameters.IsBefore,
+      Options: this.Parameters.Options,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<_MoveRoutingRuleItemAtResponse> {
+  parseResponse(_response: Response): Promise<_MoveRoutingRuleItemAtResponse> {
     // No return value (204 No Content)
-    return new _MoveRoutingRuleItemAtResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RoutingRuleSetId: this.routingRuleSetId,
-      RoutingRuleItemIdToMove: this.routingRuleItemIdToMove,
-      TargetRoutingRuleItemId: this.targetRoutingRuleItemId,
-      IsBefore: this.isBefore,
-      Options: this.options,
-    };
+    return Promise.resolve(new _MoveRoutingRuleItemAtResponse());
   }
 }
 
@@ -66,7 +66,7 @@ export class _MoveRoutingRuleItemAtResponse extends OrganizationResponse {
     super("_MoveRoutingRuleItemAt");
   }
 
-  static fromResponse(_data: unknown): _MoveRoutingRuleItemAtResponse {
+  static fromResponse(_data?: unknown): _MoveRoutingRuleItemAtResponse {
     return new _MoveRoutingRuleItemAtResponse();
   }
 }

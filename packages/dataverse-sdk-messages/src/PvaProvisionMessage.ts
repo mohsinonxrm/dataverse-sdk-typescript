@@ -1,10 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
  * PvaProvision request message
  *
  * Web API Action: PvaProvision
+ *
+ * The first argument is the id of the bot record to call it on.
  */
 export class PvaProvisionRequest
   extends OrganizationRequest
@@ -16,26 +22,20 @@ export class PvaProvisionRequest
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/bots(${this.botId})/Microsoft.Dynamics.CRM.PvaProvision`;
+    const url = `${baseUrl}/bots(${odataLiteral.guid(this.botId)})/Microsoft.Dynamics.CRM.PvaProvision`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<PvaProvisionResponse> {
+  parseResponse(_response: Response): Promise<PvaProvisionResponse> {
     // No return value (204 No Content)
-    return new PvaProvisionResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      entity: this.botId,
-    };
+    return Promise.resolve(new PvaProvisionResponse());
   }
 }
 
@@ -47,7 +47,7 @@ export class PvaProvisionResponse extends OrganizationResponse {
     super("PvaProvision");
   }
 
-  static fromResponse(_data: unknown): PvaProvisionResponse {
+  static fromResponse(_data?: unknown): PvaProvisionResponse {
     return new PvaProvisionResponse();
   }
 }

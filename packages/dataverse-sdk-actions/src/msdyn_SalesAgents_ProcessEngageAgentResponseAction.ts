@@ -1,15 +1,31 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAgents_ProcessEngageAgentResponse action
+ * Response from the msdyn_SalesAgents_ProcessEngageAgentResponse action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesAgents_ProcessEngageAgentResponseResponse {
-  msdyn_IsUnsubscribe: boolean;
+  "@odata.context"?: string;
   msdyn_AreAllFollowUpsCompleted: boolean;
-  msdyn_Explanation: string;
   msdyn_EmailBody: string;
+  msdyn_Explanation: string;
   msdyn_IsAwaitingResponse: boolean;
   msdyn_IsStuck: boolean;
+  msdyn_IsUnsubscribe: boolean;
+}
+
+/**
+ * Parameters of the msdyn_SalesAgents_ProcessEngageAgentResponse action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_ProcessEngageAgentResponseActionParameters {
+  msdyn_SalesAgentRun?: string;
+  msdyn_Thread?: string;
+  msdyn_SalesMacroAgentType: number;
+  msdyn_TrackingId?: string;
+  msdyn_EngageAgentActivities: string;
 }
 
 /**
@@ -19,29 +35,25 @@ export interface msdyn_SalesAgents_ProcessEngageAgentResponseResponse {
  */
 export class msdyn_SalesAgents_ProcessEngageAgentResponseAction implements Executable<msdyn_SalesAgents_ProcessEngageAgentResponseResponse> {
   constructor(
-    public readonly msdyn_Thread: string,
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_SalesMacroAgentType: number,
-    public readonly msdyn_SalesAgentRun: string,
-    public readonly msdyn_EngageAgentActivities: string
+    public readonly parameters: msdyn_SalesAgents_ProcessEngageAgentResponseActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_ProcessEngageAgentResponse`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Thread: this.msdyn_Thread,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesMacroAgentType: this.msdyn_SalesMacroAgentType,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-      msdyn_EngageAgentActivities: this.msdyn_EngageAgentActivities,
-    };
+    const body = requestBody({
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+      msdyn_Thread: this.parameters.msdyn_Thread,
+      msdyn_SalesMacroAgentType: this.parameters.msdyn_SalesMacroAgentType,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_EngageAgentActivities: this.parameters.msdyn_EngageAgentActivities,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -50,7 +62,7 @@ export class msdyn_SalesAgents_ProcessEngageAgentResponseAction implements Execu
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_ProcessEngageAgentResponseResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_ProcessEngageAgentResponseResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_SalesAgents_ProcessEngageAgentResponseResponse;
   }
 }

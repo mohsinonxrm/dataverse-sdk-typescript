@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the PBIAutoRefreshDataset message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PBIAutoRefreshDatasetRequestParameters {
+  ReportId: string;
+  AutoRefreshParameters: string;
+}
 
 /**
  * PBIAutoRefreshDataset request message
@@ -10,53 +20,58 @@ export class PBIAutoRefreshDatasetRequest
   extends OrganizationRequest
   implements Executable<PBIAutoRefreshDatasetResponse>
 {
-  constructor(
-    public reportId: string,
-    public autoRefreshParameters: string
-  ) {
-    super("PBIAutoRefreshDataset");
+  declare readonly Parameters: Readonly<PBIAutoRefreshDatasetRequestParameters>;
+
+  constructor(parameters: PBIAutoRefreshDatasetRequestParameters) {
+    super("PBIAutoRefreshDataset", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/PBIAutoRefreshDataset`;
 
-    const body: Record<string, unknown> = {
-      ReportId: this.reportId,
-      AutoRefreshParameters: this.autoRefreshParameters,
-    };
+    const body = requestBody({
+      ReportId: this.Parameters.ReportId,
+      AutoRefreshParameters: this.Parameters.AutoRefreshParameters,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<PBIAutoRefreshDatasetResponse> {
-    const data = await response.json();
-    return PBIAutoRefreshDatasetResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ReportId: this.reportId,
-      AutoRefreshParameters: this.autoRefreshParameters,
-    };
+    // The body is the complex value, with its @odata.context
+    return PBIAutoRefreshDatasetResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PBIAutoRefreshDataset action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PBIAutoRefreshDatasetResult {
+  "@odata.context"?: string;
+  HttpResponse: string;
+}
+
+/**
  * PBIAutoRefreshDataset response message
+ *
+ * `result` is the value the PBIAutoRefreshDataset action returns (see {@link PBIAutoRefreshDatasetResult}).
  */
 export class PBIAutoRefreshDatasetResponse extends OrganizationResponse {
-  constructor(public result: PBIAutoRefreshDatasetResponse) {
+  constructor(public result: PBIAutoRefreshDatasetResult) {
     super("PBIAutoRefreshDataset");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PBIAutoRefreshDatasetResponse {
-    return new PBIAutoRefreshDatasetResponse((data as any).value);
+    return new PBIAutoRefreshDatasetResponse(data as PBIAutoRefreshDatasetResult);
   }
 }

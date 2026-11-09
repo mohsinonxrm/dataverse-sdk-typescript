@@ -2,5 +2,5 @@
  * InitializeFileBlocksUploadResponse complex type
  */
 export interface InitializeFileBlocksUploadResponse {
-  FileContinuationToken: string;
+  FileContinuationToken?: string;
 }

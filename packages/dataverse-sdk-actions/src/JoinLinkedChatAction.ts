@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from JoinLinkedChat action
+ * Response from the JoinLinkedChat action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface JoinLinkedChatResponse {
-  // No content returned
+export type JoinLinkedChatResponse = void;
+
+/**
+ * Parameters of the JoinLinkedChat action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface JoinLinkedChatActionParameters {
+  TeamsChatId: string;
+  UserId: string;
+  RegardingEntity: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -14,33 +26,29 @@ export interface JoinLinkedChatResponse {
  * Unbound action
  */
 export class JoinLinkedChatAction implements Executable<JoinLinkedChatResponse> {
-  constructor(
-    public readonly teamsChatId: string,
-    public readonly userId: string,
-    public readonly regardingEntity: EntityReference
-  ) {}
+  constructor(public readonly parameters: JoinLinkedChatActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/JoinLinkedChat`;
 
-    const body: Record<string, unknown> = {
-      TeamsChatId: this.teamsChatId,
-      UserId: this.userId,
-      RegardingEntity: this.regardingEntity,
-    };
+    const body = requestBody({
+      TeamsChatId: this.parameters.TeamsChatId,
+      UserId: this.parameters.UserId,
+      RegardingEntity: this.parameters.RegardingEntity,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<JoinLinkedChatResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<JoinLinkedChatResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

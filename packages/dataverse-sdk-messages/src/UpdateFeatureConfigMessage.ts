@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UpdateFeatureConfig message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateFeatureConfigRequestParameters {
+  FeatureType: number;
+  ConfigData: string;
+}
 
 /**
  * UpdateFeatureConfig request message
@@ -10,41 +20,33 @@ export class UpdateFeatureConfigRequest
   extends OrganizationRequest
   implements Executable<UpdateFeatureConfigResponse>
 {
-  constructor(
-    public featureType: number,
-    public configData: string
-  ) {
-    super("UpdateFeatureConfig");
+  declare readonly Parameters: Readonly<UpdateFeatureConfigRequestParameters>;
+
+  constructor(parameters: UpdateFeatureConfigRequestParameters) {
+    super("UpdateFeatureConfig", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateFeatureConfig`;
 
-    const body: Record<string, unknown> = {
-      FeatureType: this.featureType,
-      ConfigData: this.configData,
-    };
+    const body = requestBody({
+      FeatureType: this.Parameters.FeatureType,
+      ConfigData: this.Parameters.ConfigData,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateFeatureConfigResponse> {
+  parseResponse(_response: Response): Promise<UpdateFeatureConfigResponse> {
     // No return value (204 No Content)
-    return new UpdateFeatureConfigResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      FeatureType: this.featureType,
-      ConfigData: this.configData,
-    };
+    return Promise.resolve(new UpdateFeatureConfigResponse());
   }
 }
 
@@ -56,7 +58,7 @@ export class UpdateFeatureConfigResponse extends OrganizationResponse {
     super("UpdateFeatureConfig");
   }
 
-  static fromResponse(_data: unknown): UpdateFeatureConfigResponse {
+  static fromResponse(_data?: unknown): UpdateFeatureConfigResponse {
     return new UpdateFeatureConfigResponse();
   }
 }

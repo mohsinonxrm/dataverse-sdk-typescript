@@ -1,6 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the InstantiateTemplateGeneric message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InstantiateTemplateGenericRequestParameters {
+  TemplateId: string;
+  ObjectType: string;
+  ObjectId: string;
+  EntityLogicalName?: string;
+}
 
 /**
  * InstantiateTemplateGeneric request message
@@ -11,59 +22,66 @@ export class InstantiateTemplateGenericRequest
   extends OrganizationRequest
   implements Executable<InstantiateTemplateGenericResponse>
 {
-  constructor(
-    public templateId: string,
-    public objectType: string,
-    public objectId: string,
-    public entityLogicalName: string
-  ) {
-    super("InstantiateTemplateGeneric");
+  declare readonly Parameters: Readonly<InstantiateTemplateGenericRequestParameters>;
+
+  constructor(parameters: InstantiateTemplateGenericRequestParameters) {
+    super("InstantiateTemplateGeneric", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/InstantiateTemplateGeneric`;
 
-    const body: Record<string, unknown> = {
-      TemplateId: this.templateId,
-      ObjectType: this.objectType,
-      ObjectId: this.objectId,
-      EntityLogicalName: this.entityLogicalName,
-    };
+    const body = requestBody({
+      TemplateId: this.Parameters.TemplateId,
+      ObjectType: this.Parameters.ObjectType,
+      ObjectId: this.Parameters.ObjectId,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<InstantiateTemplateGenericResponse> {
-    const data = await response.json();
-    return InstantiateTemplateGenericResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      TemplateId: this.templateId,
-      ObjectType: this.objectType,
-      ObjectId: this.objectId,
-      EntityLogicalName: this.entityLogicalName,
-    };
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return InstantiateTemplateGenericResponse.fromResponse(undefined);
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return InstantiateTemplateGenericResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the InstantiateTemplateGeneric action.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
+ */
+export type InstantiateTemplateGenericResult = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
  * InstantiateTemplateGeneric response message
+ *
+ * `result` is the value the InstantiateTemplateGeneric action returns (see {@link InstantiateTemplateGenericResult}).
  */
 export class InstantiateTemplateGenericResponse extends OrganizationResponse {
-  constructor(public result: EntityReference[]) {
+  constructor(public result: InstantiateTemplateGenericResult) {
     super("InstantiateTemplateGeneric");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): InstantiateTemplateGenericResponse {
-    return new InstantiateTemplateGenericResponse((data as any).value);
+    return new InstantiateTemplateGenericResponse(
+      data === undefined ? [] : (data as { value: InstantiateTemplateGenericResult }).value
+    );
   }
 }

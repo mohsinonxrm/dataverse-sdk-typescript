@@ -1,10 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msft_DataEngineIndexMgmt_CreateIndex action
+ * Response from the msft_DataEngineIndexMgmt_CreateIndex action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msft_DataEngineIndexMgmt_CreateIndexResponse {
+  "@odata.context"?: string;
   CreateIndex_CreateResult: boolean;
+}
+
+/**
+ * Parameters of the msft_DataEngineIndexMgmt_CreateIndex action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msft_DataEngineIndexMgmt_CreateIndexActionParameters {
+  CreateIndex_QueueAdhocRequest: boolean;
+  CreateIndex_KeyColumnsJson: string;
+  CreateIndex_LogicalTableName: string;
 }
 
 /**
@@ -13,33 +27,29 @@ export interface msft_DataEngineIndexMgmt_CreateIndexResponse {
  * Unbound action
  */
 export class msft_DataEngineIndexMgmt_CreateIndexAction implements Executable<msft_DataEngineIndexMgmt_CreateIndexResponse> {
-  constructor(
-    public readonly createIndex_QueueAdhocRequest: boolean,
-    public readonly createIndex_KeyColumnsJson: string,
-    public readonly createIndex_LogicalTableName: string
-  ) {}
+  constructor(public readonly parameters: msft_DataEngineIndexMgmt_CreateIndexActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msft_DataEngineIndexMgmt_CreateIndex`;
 
-    const body: Record<string, unknown> = {
-      CreateIndex_QueueAdhocRequest: this.createIndex_QueueAdhocRequest,
-      CreateIndex_KeyColumnsJson: this.createIndex_KeyColumnsJson,
-      CreateIndex_LogicalTableName: this.createIndex_LogicalTableName,
-    };
+    const body = requestBody({
+      CreateIndex_QueueAdhocRequest: this.parameters.CreateIndex_QueueAdhocRequest,
+      CreateIndex_KeyColumnsJson: this.parameters.CreateIndex_KeyColumnsJson,
+      CreateIndex_LogicalTableName: this.parameters.CreateIndex_LogicalTableName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msft_DataEngineIndexMgmt_CreateIndexResponse> {
-    const data = await response.json();
-    return data as msft_DataEngineIndexMgmt_CreateIndexResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msft_DataEngineIndexMgmt_CreateIndexResponse;
   }
 }

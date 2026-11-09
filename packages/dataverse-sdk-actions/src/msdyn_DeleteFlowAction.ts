@@ -1,11 +1,11 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_DeleteFlow action
+ * Response from the msdyn_DeleteFlow action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_DeleteFlowResponse {
-  // No content returned
-}
+export type msdyn_DeleteFlowResponse = void;
 
 /**
  * msdyn_DeleteFlow action
@@ -20,13 +20,13 @@ export class msdyn_DeleteFlowAction implements Executable<msdyn_DeleteFlowRespon
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_DeleteFlowResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_DeleteFlowResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

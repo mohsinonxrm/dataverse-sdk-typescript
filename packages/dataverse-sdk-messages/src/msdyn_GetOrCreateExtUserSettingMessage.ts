@@ -21,30 +21,41 @@ export class msdyn_GetOrCreateExtUserSettingRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetOrCreateExtUserSettingResponse> {
-    const data = await response.json();
-    return msdyn_GetOrCreateExtUserSettingResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetOrCreateExtUserSettingResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetOrCreateExtUserSetting action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetOrCreateExtUserSettingResult {
+  "@odata.context"?: string;
+  ExtUserSettingRecordId: string;
+}
+
+/**
  * msdyn_GetOrCreateExtUserSetting response message
+ *
+ * `result` is the value the msdyn_GetOrCreateExtUserSetting action returns (see {@link msdyn_GetOrCreateExtUserSettingResult}).
  */
 export class msdyn_GetOrCreateExtUserSettingResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetOrCreateExtUserSettingResponse) {
+  constructor(public result: msdyn_GetOrCreateExtUserSettingResult) {
     super("msdyn_GetOrCreateExtUserSetting");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetOrCreateExtUserSettingResponse {
-    return new msdyn_GetOrCreateExtUserSettingResponse((data as any).value);
+    return new msdyn_GetOrCreateExtUserSettingResponse(
+      data as msdyn_GetOrCreateExtUserSettingResult
+    );
   }
 }

@@ -2,9 +2,25 @@
  * @fileoverview OrganizationService class providing C#-familiar CRUD operations for Dataverse
  */
 
-import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  DataverseAbortError,
+  DataverseInvalidRequestError,
+  odataLiteral,
+  odataKey,
+  Prefer,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import type {
-  EntityReference,
+  DataverseClient,
+  DataverseRequestBuilder,
+  Executable,
+  RequestOptions,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type {
+  EntityRecord,
+  ExpandOption,
+  OrganizationServiceOptions,
+  OperationOptions,
   CreateOptions,
   RetrieveOptions,
   RetrieveMultipleOptions,
@@ -15,8 +31,61 @@ import type {
   DisassociateOptions,
 } from "./types.js";
 
+/** Options of the operations that take impersonation and extra headers. */
+interface CommonOptions extends OperationOptions {
+  impersonateUserId?: string;
+  headers?: Record<string, string>;
+}
+
+/** Options of the operations that write a record (create, update). */
+interface WriteOptions extends CommonOptions {
+  returnRepresentation?: boolean;
+  select?: string[];
+  suppressDuplicateDetection?: boolean;
+  detectDuplicates?: boolean;
+}
+
+/** An entity set name lookup still waiting for its response. */
+interface PendingLookup {
+  /** Callers still waiting; `Infinity` once one without a signal joins (it can't cancel). */
+  waiters: number;
+  /** Aborts the request and drops it from the cache. */
+  cancel: () => void;
+}
+
+/** The error an aborted operation rejects with, the same type the core client throws. */
+function abortError(signal: AbortSignal): DataverseAbortError {
+  return new DataverseAbortError(undefined, signal.reason);
+}
+
 /**
- * OrganizationService provides a C#-familiar interface for Dataverse operations
+ * The record a `Prefer: return=representation` write resolved, or a `DataverseInvalidRequestError`
+ * when the response had none (a 204 or an empty body), rather than a made-up record.
+ */
+function representation<T>(record: T | undefined, operation: "create" | "update"): T {
+  if (record === undefined || record === null) {
+    throw new DataverseInvalidRequestError(
+      `${operation}() with returnRepresentation got no representation back: the response had no ` +
+        "record (204 No Content or an empty body), so there is nothing to return."
+    );
+  }
+  return record;
+}
+
+/** The request options that carry a caller's signal, or `undefined` without one. */
+function signalOptions(options: OperationOptions | undefined): RequestOptions | undefined {
+  return options?.signal ? { signal: options.signal } : undefined;
+}
+
+/**
+ * OrganizationService provides a C#-familiar interface for Dataverse operations.
+ *
+ * Every method goes through the client's request builder, so auth, retry, throttling and error
+ * mapping apply as they do for `client.api()`. Failed requests reject with the core error types
+ * (`DataverseError` and its subclasses).
+ *
+ * Every method takes an `AbortSignal` (`{ signal }`, in its options object or as its last
+ * argument). Aborting it cancels the request and rejects with `DataverseAbortError`.
  *
  * @example
  * ```typescript
@@ -37,7 +106,7 @@ import type {
  *   select: ['name', 'telephone1', 'revenue']
  * });
  *
- * // Update
+ * // Update, only if nobody changed the record since it was read
  * await service.update('accounts', accountId, {
  *   telephone1: '555-0200'
  * }, { etag: account['@odata.etag'] });
@@ -48,23 +117,139 @@ import type {
  */
 export class OrganizationService {
   private client: DataverseClient;
+  /** Entity set names by lower-cased logical name: overrides, then metadata lookups. */
+  private entitySetNames = new Map<string, Promise<string>>();
+  /** Metadata lookups in flight, so they're cancelled only once every caller has aborted. */
+  private pendingLookups = new Map<string, PendingLookup>();
 
   /**
    * Creates a new OrganizationService instance
    *
    * @param client - The DataverseClient instance to use for operations
+   * @param options - Optional settings, such as entity set names to use without a metadata lookup
    */
-  constructor(client: DataverseClient) {
+  constructor(client: DataverseClient, options: OrganizationServiceOptions = {}) {
     this.client = client;
+    for (const [logicalName, entitySetName] of Object.entries(options.entitySetNames ?? {})) {
+      this.setEntitySetName(logicalName, entitySetName);
+    }
   }
 
   /**
-   * Creates a new entity record
+   * The entity set name of a table, e.g. `"opportunity"` → `"opportunities"`.
    *
+   * Methods that take a logical name (`assign()`, `setState()`, and the `EntityReference`s of
+   * `associate()`) use this. It reads `EntityDefinitions(LogicalName='…')?$select=EntitySetName`
+   * once per logical name and caches the answer on this service. Names given with
+   * `options.entitySetNames` or {@link setEntitySetName} are used without a lookup. A failed
+   * lookup rejects (with the core `DataverseError`, e.g. 404 for an unknown table, or
+   * `DataverseInvalidRequestError` when the definition has no `EntitySetName`) and is not cached.
+   *
+   * Concurrent callers share one lookup. Aborting a caller's `signal` rejects that caller's
+   * promise; the lookup request itself is aborted once every caller waiting on it has aborted.
+   *
+   * @param logicalName - The table's logical name, e.g. 'account'
+   * @param options - Optional settings, such as a `signal` to cancel the lookup
+   * @returns The entity set name, e.g. 'accounts'
+   *
+   * @example
+   * ```typescript
+   * await service.getEntitySetName('opportunity'); // 'opportunities'
+   * ```
+   */
+  getEntitySetName(logicalName: string, options?: OperationOptions): Promise<string> {
+    const signal = options?.signal;
+    if (signal?.aborted) return Promise.reject(abortError(signal));
+
+    const key = logicalName.toLowerCase();
+    const lookup = this.entitySetNames.get(key) ?? this.lookUpEntitySetName(key, logicalName);
+    const pending = this.pendingLookups.get(key);
+    // A known answer (or an override) has no request left to cancel.
+    if (!pending) return lookup;
+    if (!signal) {
+      pending.waiters = Number.POSITIVE_INFINITY;
+      return lookup;
+    }
+
+    pending.waiters++;
+    return new Promise<string>((resolve, reject) => {
+      const onAbort = (): void => {
+        reject(abortError(signal));
+        // The last waiter to give up cancels the request.
+        if (--pending.waiters === 0) pending.cancel();
+      };
+      signal.addEventListener("abort", onAbort, { once: true });
+      lookup.then(resolve, reject).finally(() => {
+        signal.removeEventListener("abort", onAbort);
+      });
+    });
+  }
+
+  /** Sends the metadata lookup for `key`, caching it while it is pending and once it succeeds. */
+  private lookUpEntitySetName(key: string, logicalName: string): Promise<string> {
+    const controller = new AbortController();
+    const lookup = this.client
+      .api(`/EntityDefinitions(${odataKey({ LogicalName: key })})`)
+      .select("EntitySetName")
+      .get<{ EntitySetName?: string } | undefined>({ signal: controller.signal })
+      .then((definition) => {
+        if (!definition?.EntitySetName) {
+          throw new DataverseInvalidRequestError(
+            `EntityDefinitions returned no EntitySetName for '${logicalName}'.`
+          );
+        }
+        return definition.EntitySetName;
+      });
+    const settled = (): void => {
+      if (this.pendingLookups.get(key) === pending) this.pendingLookups.delete(key);
+    };
+    const forget = (): void => {
+      if (this.entitySetNames.get(key) === lookup) this.entitySetNames.delete(key);
+      settled();
+    };
+    const pending: PendingLookup = {
+      waiters: 0,
+      cancel: () => {
+        // Forget it at once, so a caller arriving before the rejection lands starts a new lookup.
+        forget();
+        controller.abort();
+      },
+    };
+    // Concurrent callers share one lookup; a failure is forgotten so the next call retries.
+    this.entitySetNames.set(key, lookup);
+    this.pendingLookups.set(key, pending);
+    void lookup.then(settled, forget);
+    return lookup;
+  }
+
+  /**
+   * Sets the entity set name to use for a logical name, so no metadata lookup is made for it.
+   *
+   * @param logicalName - The table's logical name, e.g. 'new_widget'
+   * @param entitySetName - Its entity set name, e.g. 'new_widgets'
+   */
+  setEntitySetName(logicalName: string, entitySetName: string): void {
+    const key = logicalName.toLowerCase();
+    this.entitySetNames.set(key, Promise.resolve(entitySetName));
+    this.pendingLookups.delete(key);
+  }
+
+  /**
+   * Creates a new entity record.
+   *
+   * Without `returnRepresentation` this resolves the new record's id, read from the
+   * `OData-EntityId` response header. With it, the request sends
+   * `Prefer: return=representation` and resolves the created record; a response with no record
+   * (a 204 or an empty body) rejects with `DataverseInvalidRequestError`.
+   *
+   * @typeParam T - The created record's type when `returnRepresentation` is true; without one,
+   *   {@link EntityRecord}
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
-   * @param entity - The entity data to create
+   * @param entity - The columns to set: an object literal, or an object of your own record type
    * @param options - Optional creation settings
-   * @returns The ID of the created record
+   * @returns The ID of the created record, or the record when `returnRepresentation` is true
+   * @throws {DataverseInvalidRequestError} With `returnRepresentation`, when the response has no
+   *   record
    *
    * @example
    * ```typescript
@@ -73,7 +258,7 @@ export class OrganizationService {
    *   telephone1: '555-1234'
    * });
    *
-   * // With options
+   * // With options: resolves the created record (an EntityRecord, or pass a type)
    * const account = await service.create('accounts', {
    *   name: 'Contoso Ltd'
    * }, {
@@ -82,62 +267,40 @@ export class OrganizationService {
    * });
    * ```
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async create<T = any>(
+  create(
     entitySetName: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    entity: Record<string, any>,
+    entity: object,
+    options?: CreateOptions & { returnRepresentation?: false }
+  ): Promise<string>;
+  create<T = EntityRecord>(
+    entitySetName: string,
+    entity: object,
+    options: CreateOptions & { returnRepresentation: true }
+  ): Promise<T>;
+  create<T = EntityRecord>(
+    entitySetName: string,
+    entity: object,
+    options?: CreateOptions
+  ): Promise<string | T>;
+  async create<T = EntityRecord>(
+    entitySetName: string,
+    entity: object,
     options?: CreateOptions
   ): Promise<string | T> {
     const builder = this.client.api(`/${entitySetName}`);
-
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
+    const requestOptions = this.applyWriteOptions(builder, options);
 
     if (options?.returnRepresentation) {
-      headers.Prefer = "return=representation";
-
-      if (options.select && options.select.length > 0) {
-        builder.select(...options.select);
-      }
+      return representation(await builder.post<T | undefined>(entity, requestOptions), "create");
     }
 
-    if (options?.suppressDuplicateDetection) {
-      headers["MSCRM.SuppressDuplicateDetection"] = "true";
-    }
-
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
-    const response: Response = await builder.post(entity, headers);
-
-    // If returnRepresentation, parse and return the entity
-    if (options?.returnRepresentation) {
-      const text = await response.text();
-      return text ? JSON.parse(text) : ({} as T);
-    }
-
-    // Extract ID from OData-EntityId header
-    const entityIdHeader = response.headers.get("OData-EntityId");
-    if (!entityIdHeader) {
-      throw new Error("No OData-EntityId header in create response");
-    }
-
-    // Extract GUID from URL: https://org.crm.dynamics.com/api/data/v9.2/accounts(guid)
-    const regex = /\(([0-9a-f-]{36})\)/i;
-    const match = regex.exec(entityIdHeader);
-    if (!match) {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      throw new Error(`Could not extract ID from OData-EntityId: ${entityIdHeader}`);
-    }
-
-    return match[1];
+    return builder.createAndGetId(entity, requestOptions);
   }
 
   /**
    * Retrieves an entity record by ID
    *
+   * @typeParam T - The record's type; without one, {@link EntityRecord} (each column `unknown`)
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param id - The GUID of the record to retrieve
    * @param options - Optional retrieval settings
@@ -145,11 +308,12 @@ export class OrganizationService {
    *
    * @example
    * ```typescript
-   * // Basic retrieve
+   * // Basic retrieve: an EntityRecord, whose columns are `unknown`
    * const account = await service.retrieve('accounts', accountId);
    *
-   * // With select
-   * const account = await service.retrieve('accounts', accountId, {
+   * // With select, typed
+   * interface Account { name: string; telephone1: string | null; revenue: number | null }
+   * const account = await service.retrieve<Account>('accounts', accountId, {
    *   select: ['name', 'telephone1', 'revenue']
    * });
    *
@@ -162,8 +326,7 @@ export class OrganizationService {
    * });
    * ```
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async retrieve<T = any>(
+  async retrieve<T = EntityRecord>(
     entitySetName: string,
     id: string,
     options?: RetrieveOptions
@@ -171,61 +334,30 @@ export class OrganizationService {
     const normalizedId = this.normalizeGuid(id);
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
 
-    // Apply select
     if (options?.select && options.select.length > 0) {
       builder.select(...options.select);
     }
+    this.applyExpand(builder, options?.expand);
 
-    // Apply expand
-    if (options?.expand) {
-      if (typeof options.expand === "string") {
-        builder.expand(options.expand);
-      } else {
-        for (const exp of options.expand) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const expandOptions: any = {};
-
-          if (exp.select && exp.select.length > 0) {
-            expandOptions.select = exp.select;
-          }
-
-          if (exp.filter) {
-            expandOptions.filter = exp.filter;
-          }
-
-          if (exp.orderBy) {
-            expandOptions.orderBy = exp.orderBy;
-          }
-
-          if (exp.top !== undefined) {
-            expandOptions.top = exp.top;
-          }
-
-          builder.expand(exp.navigationProperty, expandOptions);
-        }
-      }
-    }
-
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
-
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
-    const response: Response = await builder.get(headers);
-    const text = await response.text();
-    return JSON.parse(text);
+    return builder.get<T>(this.applyCommonOptions(builder, options));
   }
 
   /**
-   * Updates an entity record
+   * Updates an existing entity record.
    *
+   * Like the C# `IOrganizationService.Update`, this never creates a record: the PATCH carries
+   * `If-Match: *` (or `If-Match: <etag>` when `etag` is given), so a missing record rejects with
+   * a 404 instead of being created. Use `client.api(...).patch()` for an upsert.
+   *
+   * @typeParam T - The updated record's type when `returnRepresentation` is true; without one,
+   *   {@link EntityRecord}
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param id - The GUID of the record to update
-   * @param entity - The entity data to update
+   * @param entity - The columns to change: an object literal, or an object of your own record type
    * @param options - Optional update settings
-   * @returns The updated entity if returnRepresentation is true, otherwise void
+   * @returns The updated record if returnRepresentation is true, otherwise nothing
+   * @throws {DataverseInvalidRequestError} With `returnRepresentation`, when the response has no
+   *   record (a 204 or an empty body)
    *
    * @example
    * ```typescript
@@ -250,47 +382,43 @@ export class OrganizationService {
    * });
    * ```
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async update<T = any>(
+  update(
     entitySetName: string,
     id: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    entity: Record<string, any>,
+    entity: object,
+    options?: UpdateOptions & { returnRepresentation?: false }
+  ): Promise<void>;
+  update<T = EntityRecord>(
+    entitySetName: string,
+    id: string,
+    entity: object,
+    options: UpdateOptions & { returnRepresentation: true }
+  ): Promise<T>;
+  update<T = EntityRecord>(
+    entitySetName: string,
+    id: string,
+    entity: object,
+    options?: UpdateOptions
+  ): Promise<T | undefined>;
+  async update<T = EntityRecord>(
+    entitySetName: string,
+    id: string,
+    entity: object,
     options?: UpdateOptions
   ): Promise<T | undefined> {
     const normalizedId = this.normalizeGuid(id);
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
 
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
+    // `If-Match: *` makes Dataverse reject the PATCH with 404 when the record doesn't exist,
+    // instead of creating it (PATCH is an upsert without it).
+    builder.ifMatch(options?.etag ?? "*");
+    const requestOptions = this.applyWriteOptions(builder, options);
 
-    if (options?.etag) {
-      headers["If-Match"] = options.etag;
-    }
-
+    const updated = await builder.patch<T | undefined>(entity, requestOptions);
     if (options?.returnRepresentation) {
-      headers.Prefer = "return=representation";
-
-      if (options.select && options.select.length > 0) {
-        builder.select(...options.select);
-      }
+      return representation(updated, "update");
     }
-
-    if (options?.suppressDuplicateDetection) {
-      headers["MSCRM.SuppressDuplicateDetection"] = "true";
-    }
-
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
-    const response: Response = await builder.patch(entity, headers);
-
-    // If returnRepresentation, parse and return the entity
-    if (options?.returnRepresentation) {
-      const text = await response.text();
-      return text ? JSON.parse(text) : ({} as T);
-    }
+    return undefined;
   }
 
   /**
@@ -320,23 +448,20 @@ export class OrganizationService {
     const normalizedId = this.normalizeGuid(id);
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
 
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
-
     if (options?.etag) {
-      headers["If-Match"] = options.etag;
+      builder.ifMatch(options.etag);
     }
 
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
-    await builder.delete(headers);
+    await builder.delete(this.applyCommonOptions(builder, options));
   }
 
   /**
-   * Retrieves multiple entity records matching a query
+   * Retrieves multiple entity records matching a query.
    *
+   * This returns one page. When `@odata.nextLink` is set, pass it to
+   * `client.api(nextLink).get()` for the next page, or use `client.api(...).iterate()`.
+   *
+   * @typeParam T - The type of each record; without one, {@link EntityRecord}
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param options - Optional query settings
    * @returns Result containing array of entities and optional pagination info
@@ -372,24 +497,20 @@ export class OrganizationService {
    * });
    * ```
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async retrieveMultiple<T = any>(
+  async retrieveMultiple<T = EntityRecord>(
     entitySetName: string,
     options?: RetrieveMultipleOptions
   ): Promise<RetrieveMultipleResult<T>> {
     const builder = this.client.api(`/${entitySetName}`);
 
-    // Apply select
     if (options?.select && options.select.length > 0) {
       builder.select(...options.select);
     }
 
-    // Apply filter
     if (options?.filter) {
       builder.filter(options.filter);
     }
 
-    // Apply orderBy
     if (options?.orderBy) {
       if (Array.isArray(options.orderBy)) {
         builder.orderBy(...options.orderBy);
@@ -398,83 +519,42 @@ export class OrganizationService {
       }
     }
 
-    // Apply top
     if (options?.top !== undefined) {
       builder.top(options.top);
     }
 
-    // Apply skip
-    if (options?.skip !== undefined) {
-      builder.skip(options.skip);
+    if (options?.maxPageSize !== undefined) {
+      builder.preferRaw(`odata.maxpagesize=${String(options.maxPageSize)}`);
     }
 
-    // Apply count
     if (options?.count) {
       builder.count(true);
     }
 
-    // Apply expand
-    if (options?.expand) {
-      if (typeof options.expand === "string") {
-        builder.expand(options.expand);
-      } else {
-        for (const exp of options.expand) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const expandOptions: any = {};
+    this.applyExpand(builder, options?.expand);
 
-          if (exp.select && exp.select.length > 0) {
-            expandOptions.select = exp.select;
-          }
-
-          if (exp.filter) {
-            expandOptions.filter = exp.filter;
-          }
-
-          if (exp.orderBy) {
-            expandOptions.orderBy = exp.orderBy;
-          }
-
-          if (exp.top !== undefined) {
-            expandOptions.top = exp.top;
-          }
-
-          builder.expand(exp.navigationProperty, expandOptions);
-        }
-      }
-    }
-
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
-
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
-    const response: Response = await builder.get(headers);
-    const text = await response.text();
-    return JSON.parse(text);
+    return builder.get<RetrieveMultipleResult<T>>(this.applyCommonOptions(builder, options));
   }
 
   /**
-   * Associates entity records using a relationship
+   * Associates entity records using a collection-valued navigation property
    *
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param id - The GUID of the primary record
-   * @param relationship - The relationship navigation property name
-   * @param relatedEntities - Array of entity references to associate
+   * @param relationship - The collection-valued navigation property name
+   * @param relatedEntities - The records to associate, made with `createEntityReference` (any
+   *   package's: they are one type, #295). A reference's `entitySetName` is used when it has one;
+   *   otherwise the set is looked up from its `logicalName` (`getEntitySetName()`).
    * @param options - Optional association settings
    *
    * @example
    * ```typescript
+   * import { createEntityReference } from '@mohsinonxrm/dataverse-sdk-xrm';
+   *
    * // Associate contacts to an account
    * await service.associate('accounts', accountId, 'contact_customer_accounts', [
-   *   { logicalName: 'contacts', id: contactId1 },
-   *   { logicalName: 'contacts', id: contactId2 }
-   * ]);
-   *
-   * // Associate single record
-   * await service.associate('opportunities', opportunityId, 'parentaccountid', [
-   *   { logicalName: 'accounts', id: accountId }
+   *   createEntityReference('contact', contactId1),
+   *   createEntityReference('contact', contactId2),
    * ]);
    * ```
    */
@@ -487,28 +567,23 @@ export class OrganizationService {
   ): Promise<void> {
     const normalizedId = this.normalizeGuid(id);
 
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
-
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
     // For collection-valued navigation properties (many-to-many or one-to-many)
     // POST to /{entitySetName}({id})/{relationship}/$ref
     for (const related of relatedEntities) {
       const relatedId = this.normalizeGuid(related.id);
 
-      // Determine the related entity set name from logicalName
-      const relatedSetName = this.getEntitySetName(related.logicalName);
+      const relatedSetName =
+        related.entitySetName ??
+        (await this.getEntitySetName(related.logicalName, { signal: options?.signal }));
 
       const builder = this.client.api(`/${entitySetName}(${normalizedId})/${relationship}/$ref`);
 
+      // Dataverse rejects a relative @odata.id here, so the reference is the absolute URL.
       const body = {
-        "@odata.id": `${relatedSetName}(${relatedId})`,
+        "@odata.id": `${this.client.getBaseUrl()}/${relatedSetName}(${relatedId})`,
       };
 
-      await builder.post(body, headers);
+      await builder.post(body, this.applyCommonOptions(builder, options));
     }
   }
 
@@ -518,7 +593,7 @@ export class OrganizationService {
    * @param entitySetName - The entity set name (plural, e.g., 'accounts', 'contacts')
    * @param id - The GUID of the primary record
    * @param relationship - The relationship navigation property name
-   * @param relatedId - Optional GUID of specific record to disassociate (for single-valued navigation)
+   * @param relatedId - Optional GUID of specific record to disassociate (for collection-valued navigation)
    * @param options - Optional disassociation settings
    *
    * @example
@@ -527,7 +602,7 @@ export class OrganizationService {
    * await service.disassociate('accounts', accountId, 'contact_customer_accounts', contactId);
    *
    * // Clear single-valued navigation (lookup)
-   * await service.disassociate('opportunities', opportunityId, 'parentaccountid');
+   * await service.disassociate('accounts', accountId, 'primarycontactid');
    * ```
    */
   async disassociate(
@@ -539,18 +614,11 @@ export class OrganizationService {
   ): Promise<void> {
     const normalizedId = this.normalizeGuid(id);
 
-    // Build headers
-    const headers: Record<string, string> = { ...options?.headers };
-
-    if (options?.impersonateUserId) {
-      headers.MSCRMCallerID = options.impersonateUserId;
-    }
-
     // For collection-valued navigation: DELETE /{entitySetName}({id})/{relationship}({relatedId})/$ref
     // For single-valued navigation: DELETE /{entitySetName}({id})/{relationship}/$ref
     let url: string;
 
-    if (relatedId) {
+    if (relatedId !== undefined) {
       const normalizedRelatedId = this.normalizeGuid(relatedId);
       url = `/${entitySetName}(${normalizedId})/${relationship}(${normalizedRelatedId})/$ref`;
     } else {
@@ -558,12 +626,13 @@ export class OrganizationService {
     }
 
     const builder = this.client.api(url);
-    await builder.delete(headers);
+    await builder.delete(this.applyCommonOptions(builder, options));
   }
 
   /**
    * Gets the current user information
    *
+   * @param options - Optional settings, such as a `signal` to cancel the request
    * @returns WhoAmI response with user, business unit, and organization IDs
    *
    * @example
@@ -574,14 +643,17 @@ export class OrganizationService {
    * console.log('Organization:', whoAmI.OrganizationId);
    * ```
    */
-  async whoAmI(): Promise<{
+  async whoAmI(options?: OperationOptions): Promise<{
     UserId: string;
     BusinessUnitId: string;
     OrganizationId: string;
   }> {
     const builder = this.client.api("/WhoAmI");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const response = (await builder.get()) as any;
+    const response = await builder.get<{
+      UserId: string;
+      BusinessUnitId: string;
+      OrganizationId: string;
+    }>(signalOptions(options));
     return {
       UserId: response.UserId,
       BusinessUnitId: response.BusinessUnitId,
@@ -592,10 +664,13 @@ export class OrganizationService {
   /**
    * Assigns a record to a user or team
    *
-   * @param entityName - The logical name of the entity
+   * @param entityName - The logical name of the entity (its entity set name is resolved with
+   *   {@link getEntitySetName})
    * @param recordId - The ID of the record to assign
    * @param assigneeId - The ID of the user or team to assign to
    * @param assigneeType - The type of assignee ('systemuser' or 'team')
+   * @param options - Optional settings, such as a `signal` to cancel the request (and the entity
+   *   set name lookups it needs)
    *
    * @example
    * ```typescript
@@ -606,25 +681,34 @@ export class OrganizationService {
     entityName: string,
     recordId: string,
     assigneeId: string,
-    assigneeType: "systemuser" | "team" = "systemuser"
+    assigneeType: "systemuser" | "team" = "systemuser",
+    options?: OperationOptions
   ): Promise<void> {
-    const entitySetName = this.getEntitySetName(entityName);
+    const lookupOptions = { signal: options?.signal };
+    const entitySetName = await this.getEntitySetName(entityName, lookupOptions);
+    const assigneeSetName = await this.getEntitySetName(assigneeType, lookupOptions);
     const normalizedId = this.normalizeGuid(recordId);
     const normalizedAssigneeId = this.normalizeGuid(assigneeId);
 
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
-    await builder.patch({
-      [`ownerid@odata.bind`]: `/${this.getEntitySetName(assigneeType)}(${normalizedAssigneeId})`,
-    });
+    // `If-Match: *`: a missing record rejects with 404 instead of being created (#272).
+    builder.ifMatch("*");
+    await builder.patch(
+      { [`ownerid@odata.bind`]: `/${assigneeSetName}(${normalizedAssigneeId})` },
+      signalOptions(options)
+    );
   }
 
   /**
    * Sets the state and status of a record
    *
-   * @param entityName - The logical name of the entity
+   * @param entityName - The logical name of the entity (its entity set name is resolved with
+   *   {@link getEntitySetName})
    * @param recordId - The ID of the record
    * @param stateCode - The state code (0 = Active, 1 = Inactive, etc.)
    * @param statusCode - The status code (specific to entity)
+   * @param options - Optional settings, such as a `signal` to cancel the request (and the entity
+   *   set name lookup it needs)
    *
    * @example
    * ```typescript
@@ -636,47 +720,60 @@ export class OrganizationService {
     entityName: string,
     recordId: string,
     stateCode: number,
-    statusCode: number
+    statusCode: number,
+    options?: OperationOptions
   ): Promise<void> {
-    const entitySetName = this.getEntitySetName(entityName);
+    const entitySetName = await this.getEntitySetName(entityName, { signal: options?.signal });
     const normalizedId = this.normalizeGuid(recordId);
 
     const builder = this.client.api(`/${entitySetName}(${normalizedId})`);
-    await builder.patch({
-      statecode: stateCode,
-      statuscode: statusCode,
-    });
+    // `If-Match: *`: a missing record rejects with 404 instead of being created (#272).
+    builder.ifMatch("*");
+    await builder.patch({ statecode: stateCode, statuscode: statusCode }, signalOptions(options));
   }
 
   /**
    * Executes a message request
    *
+   * The response type comes from the request, as with `client.execute()`: a request that
+   * implements `Executable<T>` resolves `T`.
+   *
+   * @typeParam T - The response type, inferred from the request
    * @param request - The message request to execute (must implement Executable<T> interface)
+   * @param options - Optional settings, such as a `signal` to cancel the request
    * @returns The message response
+   * @throws {DataverseInvalidRequestError} When `request` has no `toRequestInformation()` and
+   *   `parseResponse()` methods (possible only from JavaScript or through a cast)
    *
    * @example
    * ```typescript
-   * // Using Messages (C# SDK pattern)
+   * // A message (C# SDK pattern): the workflow it's bound to, then its parameters
    * import { ExecuteWorkflowRequest } from '@mohsinonxrm/dataverse-sdk-messages';
    *
-   * const request = new ExecuteWorkflowRequest(workflowId, entityId);
-   * const response = await service.execute(request);
+   * const response = await service.execute(
+   *   new ExecuteWorkflowRequest(workflowId, { EntityId: accountId })
+   * );
+   * // response: ExecuteWorkflowResponse; result is the asyncoperation, or null for a 204
+   * console.log(response.result?.asyncoperationid);
    *
    * // Also works with Actions/Functions directly
    * import { WhoAmIFunction } from '@mohsinonxrm/dataverse-sdk-functions';
    *
-   * const whoAmI = await service.execute(new WhoAmIFunction());
+   * const whoAmI = await service.execute(new WhoAmIFunction()); // WhoAmIResponse
+   * console.log(whoAmI.UserId);
+   *
+   * // Cancellable: aborting the controller rejects with DataverseAbortError
+   * await service.execute(new WhoAmIFunction(), { signal: controller.signal });
    * ```
    */
-  async execute<TResponse>(request: unknown): Promise<TResponse> {
-    // Check if request implements Executable<T> interface (has toRequestInformation and parseResponse)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (this.isExecutable(request)) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return await this.client.execute(request as any);
+  async execute<T>(request: Executable<T>, options?: OperationOptions): Promise<T> {
+    // The type rules out anything else, but a JavaScript caller (or a cast) can still pass an
+    // object without the Executable<T> methods: fail with a clear message instead of a TypeError.
+    if (this.isExecutable<T>(request)) {
+      return await this.client.execute(request, signalOptions(options));
     }
 
-    throw new Error(
+    throw new DataverseInvalidRequestError(
       "Request must implement Executable<T> interface with toRequestInformation() and parseResponse() methods. " +
         "Use generated classes from @mohsinonxrm/dataverse-sdk-messages, @mohsinonxrm/dataverse-sdk-actions, or @mohsinonxrm/dataverse-sdk-functions."
     );
@@ -685,68 +782,90 @@ export class OrganizationService {
   /**
    * Type guard to check if an object implements Executable<T> interface
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private isExecutable(obj: any): obj is {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toRequestInformation: (baseUrl: string) => any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    parseResponse: (response: Response) => Promise<any>;
-  } {
+  private isExecutable<T>(obj: unknown): obj is Executable<T> {
+    if (typeof obj !== "object" || obj === null) return false;
+    const candidate = obj as { toRequestInformation?: unknown; parseResponse?: unknown };
     return (
-      obj &&
-      typeof obj.toRequestInformation === "function" &&
-      typeof obj.parseResponse === "function"
+      typeof candidate.toRequestInformation === "function" &&
+      typeof candidate.parseResponse === "function"
     );
   }
 
   /**
-   * Normalizes a GUID string (removes braces/hyphens if needed)
+   * Applies impersonation to the builder and returns the request options carrying the caller's
+   * extra headers and signal. Headers must go in `RequestOptions.headers`: the builder's
+   * terminals take `RequestOptions`, not a header map.
+   */
+  private applyCommonOptions(
+    builder: DataverseRequestBuilder,
+    options: CommonOptions | undefined
+  ): RequestOptions | undefined {
+    if (options?.impersonateUserId) {
+      builder.impersonate(options.impersonateUserId);
+    }
+    const requestOptions: RequestOptions = {};
+    if (options?.headers) requestOptions.headers = { ...options.headers };
+    if (options?.signal) requestOptions.signal = options.signal;
+    return requestOptions.headers || requestOptions.signal ? requestOptions : undefined;
+  }
+
+  /** {@link applyCommonOptions} plus `Prefer: return=representation` and duplicate detection. */
+  private applyWriteOptions(
+    builder: DataverseRequestBuilder,
+    options: WriteOptions | undefined
+  ): RequestOptions | undefined {
+    if (options?.returnRepresentation) {
+      builder.prefer(Prefer.returnRepresentation());
+      if (options.select && options.select.length > 0) {
+        builder.select(...options.select);
+      }
+    }
+
+    // Dataverse's Web API skips duplicate detection unless the request asks for it, so
+    // suppression is the default and only "detect" needs a header.
+    if (options?.detectDuplicates || options?.suppressDuplicateDetection === false) {
+      builder.detectDuplicates();
+    }
+
+    return this.applyCommonOptions(builder, options);
+  }
+
+  /**
+   * Adds `$expand` from a raw string or a list of expand options. The builder's `expand()`
+   * joins its arguments, and the entries of earlier calls, into one `$expand`.
+   */
+  private applyExpand(
+    builder: DataverseRequestBuilder,
+    expand: string | ExpandOption[] | undefined
+  ): void {
+    if (!expand) return;
+    if (typeof expand === "string") {
+      builder.expand(expand);
+      return;
+    }
+    const parts = expand.map((exp) => {
+      const nested: string[] = [];
+      if (exp.select && exp.select.length > 0) nested.push(`$select=${exp.select.join(",")}`);
+      if (exp.filter) nested.push(`$filter=${exp.filter}`);
+      if (exp.orderBy) nested.push(`$orderby=${exp.orderBy}`);
+      if (exp.top !== undefined) nested.push(`$top=${String(exp.top)}`);
+      return nested.length > 0
+        ? `${exp.navigationProperty}(${nested.join(";")})`
+        : exp.navigationProperty;
+    });
+    if (parts.length > 0) {
+      builder.expand(...parts);
+    }
+  }
+
+  /**
+   * Validates a GUID (braces optional) and returns it lowercase without braces. A malformed id
+   * throws `DataverseInvalidRequestError` instead of building a broken URL.
    *
    * @param guid - The GUID string to normalize
    * @returns Normalized GUID without braces
    */
   private normalizeGuid(guid: string): string {
-    // Remove braces if present
-    let normalized = guid.replace(/[{}]/g, "");
-
-    // GUIDs should be lowercase for consistency
-    normalized = normalized.toLowerCase();
-
-    return normalized;
-  }
-
-  /**
-   * Gets the entity set name from a logical name
-   * Simple pluralization - this should be enhanced or use metadata in the future
-   *
-   * @param logicalName - The entity logical name
-   * @returns The entity set name
-   */
-  private getEntitySetName(logicalName: string): string {
-    // Very basic pluralization - in real implementation this should use metadata
-    // For now, just append 's' if it doesn't end with 's'
-    // Common cases handled explicitly
-    const pluralMap: Record<string, string> = {
-      account: "accounts",
-      contact: "contacts",
-      opportunity: "opportunities",
-      lead: "leads",
-      systemuser: "systemusers",
-      team: "teams",
-      businessunit: "businessunits",
-      organization: "organizations",
-      incident: "incidents",
-      task: "tasks",
-      appointment: "appointments",
-      email: "emails",
-      phonecall: "phonecalls",
-      letter: "letters",
-      fax: "faxes",
-      activityparty: "activityparties",
-      annotation: "annotations",
-      attachment: "attachments",
-    };
-
-    return pluralMap[logicalName.toLowerCase()] || `${logicalName}s`;
+    return odataLiteral.guid(guid).toLowerCase();
   }
 }

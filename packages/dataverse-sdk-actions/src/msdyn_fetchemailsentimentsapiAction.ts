@@ -1,10 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_fetchemailsentimentsapi action
+ * Response from the msdyn_fetchemailsentimentsapi action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_fetchemailsentimentsapiResponse {
+  "@odata.context"?: string;
   emailsentimentsapijson: string;
+}
+
+/**
+ * Parameters of the msdyn_fetchemailsentimentsapi action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_fetchemailsentimentsapiActionParameters {
+  entitylogicalname?: string;
+  entityid?: string;
 }
 
 /**
@@ -13,31 +26,28 @@ export interface msdyn_fetchemailsentimentsapiResponse {
  * Unbound action
  */
 export class msdyn_fetchemailsentimentsapiAction implements Executable<msdyn_fetchemailsentimentsapiResponse> {
-  constructor(
-    public readonly entityid: string,
-    public readonly entitylogicalname: string
-  ) {}
+  constructor(public readonly parameters: msdyn_fetchemailsentimentsapiActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_fetchemailsentimentsapi`;
 
-    const body: Record<string, unknown> = {
-      entityid: this.entityid,
-      entitylogicalname: this.entitylogicalname,
-    };
+    const body = requestBody({
+      entitylogicalname: this.parameters.entitylogicalname,
+      entityid: this.parameters.entityid,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_fetchemailsentimentsapiResponse> {
-    const data = await response.json();
-    return data as msdyn_fetchemailsentimentsapiResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_fetchemailsentimentsapiResponse;
   }
 }

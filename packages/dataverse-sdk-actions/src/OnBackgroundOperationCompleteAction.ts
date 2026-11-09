@@ -1,12 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from OnBackgroundOperationComplete action
+ * Response from the OnBackgroundOperationComplete action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface OnBackgroundOperationCompleteResponse {
+  "@odata.context"?: string;
+  BackgroundOperationStateCode: number;
   BackgroundOperationStatusCode: number;
   OperationName: string;
-  BackgroundOperationStateCode: number;
+}
+
+/**
+ * Parameters of the OnBackgroundOperationComplete action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface OnBackgroundOperationCompleteActionParameters {
+  LocationUrl: string;
+  PayloadType: number;
+  CallbackUrl?: string;
+  BackgroundOperationId: string;
 }
 
 /**
@@ -15,35 +30,30 @@ export interface OnBackgroundOperationCompleteResponse {
  * Unbound action
  */
 export class OnBackgroundOperationCompleteAction implements Executable<OnBackgroundOperationCompleteResponse> {
-  constructor(
-    public readonly locationUrl: string,
-    public readonly callbackUrl: string,
-    public readonly backgroundOperationId: string,
-    public readonly payloadType: number
-  ) {}
+  constructor(public readonly parameters: OnBackgroundOperationCompleteActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/OnBackgroundOperationComplete`;
 
-    const body: Record<string, unknown> = {
-      LocationUrl: this.locationUrl,
-      CallbackUrl: this.callbackUrl,
-      BackgroundOperationId: this.backgroundOperationId,
-      PayloadType: this.payloadType,
-    };
+    const body = requestBody({
+      LocationUrl: this.parameters.LocationUrl,
+      PayloadType: this.parameters.PayloadType,
+      CallbackUrl: this.parameters.CallbackUrl,
+      BackgroundOperationId: this.parameters.BackgroundOperationId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<OnBackgroundOperationCompleteResponse> {
-    const data = await response.json();
-    return data as OnBackgroundOperationCompleteResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as OnBackgroundOperationCompleteResponse;
   }
 }

@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { RolePrivilege } from "./types/index.js";
 
 /**
- * Response from RetrieveRolePrivilegesRole function
+ * Response from the RetrieveRolePrivilegesRole function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveRolePrivilegesRoleResponse {
+  "@odata.context"?: string;
   RolePrivileges: RolePrivilege[];
+}
+
+/**
+ * Parameters of the RetrieveRolePrivilegesRole function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveRolePrivilegesRoleFunctionParameters {
+  RoleId: string;
 }
 
 /**
@@ -14,7 +26,7 @@ export interface RetrieveRolePrivilegesRoleResponse {
  * Unbound function
  */
 export class RetrieveRolePrivilegesRoleFunction implements Executable<RetrieveRolePrivilegesRoleResponse> {
-  constructor(public readonly roleId: string) {}
+  constructor(public readonly parameters: RetrieveRolePrivilegesRoleFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveRolePrivilegesRole`;
@@ -22,12 +34,9 @@ export class RetrieveRolePrivilegesRoleFunction implements Executable<RetrieveRo
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.roleId !== undefined) {
+    if (this.parameters.RoleId !== undefined) {
       aliases.push(`RoleId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.roleId === "string" ? `'${this.roleId}'` : String(this.roleId)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.RoleId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -43,7 +52,7 @@ export class RetrieveRolePrivilegesRoleFunction implements Executable<RetrieveRo
   }
 
   async parseResponse(response: Response): Promise<RetrieveRolePrivilegesRoleResponse> {
-    const data = await response.json();
-    return data as RetrieveRolePrivilegesRoleResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveRolePrivilegesRoleResponse;
   }
 }

@@ -1,12 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 /**
- * Response from RetrieveTimelineWallRecords function
+ * Response from the RetrieveTimelineWallRecords function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveTimelineWallRecordsResponse {
+  "@odata.context"?: string;
   TimelineWallRecords: string;
+}
+
+/**
+ * Parameters of the RetrieveTimelineWallRecords function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveTimelineWallRecordsFunctionParameters {
+  FetchXml: string;
+  Target?: EntityReference;
+  RollupType?: number;
 }
 
 /**
@@ -16,40 +29,29 @@ export interface RetrieveTimelineWallRecordsResponse {
  * Binding parameter: entityset (Collection(mscrm.activitypointer))
  */
 export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveTimelineWallRecordsResponse> {
-  constructor(
-    public readonly fetchXml: string,
-    public readonly target: EntityReference,
-    public readonly rollupType: number
-  ) {}
+  constructor(public readonly parameters: RetrieveTimelineWallRecordsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/RetrieveTimelineWallRecords`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/activitypointers/Microsoft.Dynamics.CRM.RetrieveTimelineWallRecords`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.fetchXml !== undefined) {
+    if (this.parameters.FetchXml !== undefined) {
       aliases.push(`FetchXml=@p1`);
-      params.append(
-        "@p1",
-        typeof this.fetchXml === "string" ? `'${this.fetchXml}'` : String(this.fetchXml)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.FetchXml, "Edm.String"));
     }
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p2`);
       params.append(
         "@p2",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.target)}(${this.target.id})`,
-        })
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.rollupType !== undefined) {
+    if (this.parameters.RollupType !== undefined) {
       aliases.push(`RollupType=@p3`);
-      params.append(
-        "@p3",
-        typeof this.rollupType === "string" ? `'${this.rollupType}'` : String(this.rollupType)
-      );
+      params.append("@p3", formatParameterAlias(this.parameters.RollupType, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -65,7 +67,7 @@ export class RetrieveTimelineWallRecordsFunction implements Executable<RetrieveT
   }
 
   async parseResponse(response: Response): Promise<RetrieveTimelineWallRecordsResponse> {
-    const data = await response.json();
-    return data as RetrieveTimelineWallRecordsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveTimelineWallRecordsResponse;
   }
 }

@@ -1,12 +1,25 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_ActivateProcesses action
+ * Response from the msdyn_ActivateProcesses action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ActivateProcessesResponse {
-  ResolvedRecordsCount: number;
+  "@odata.context"?: string;
   ResolutionState: number;
+  ResolvedRecordsCount: number;
+}
+
+/**
+ * Parameters of the msdyn_ActivateProcesses action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ActivateProcessesActionParameters {
+  AnalysisResult?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -15,27 +28,27 @@ export interface msdyn_ActivateProcessesResponse {
  * Unbound action
  */
 export class msdyn_ActivateProcessesAction implements Executable<msdyn_ActivateProcessesResponse> {
-  constructor(public readonly analysisResult: EntityReference) {}
+  constructor(public readonly parameters: msdyn_ActivateProcessesActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ActivateProcesses`;
 
-    const body: Record<string, unknown> = {
-      AnalysisResult: this.analysisResult,
-    };
+    const body = requestBody({
+      AnalysisResult: this.parameters.AnalysisResult,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_ActivateProcessesResponse> {
-    const data = await response.json();
-    return data as msdyn_ActivateProcessesResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_ActivateProcessesResponse;
   }
 }

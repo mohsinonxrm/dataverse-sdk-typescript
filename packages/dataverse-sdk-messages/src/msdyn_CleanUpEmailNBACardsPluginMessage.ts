@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_CleanUpEmailNBACardsPlugin message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CleanUpEmailNBACardsPluginRequestParameters {
+  InputData?: string;
+}
 
 /**
  * msdyn_CleanUpEmailNBACardsPlugin request message
@@ -10,36 +19,32 @@ export class msdyn_CleanUpEmailNBACardsPluginRequest
   extends OrganizationRequest
   implements Executable<msdyn_CleanUpEmailNBACardsPluginResponse>
 {
-  constructor(public inputData: string) {
-    super("msdyn_CleanUpEmailNBACardsPlugin");
+  declare readonly Parameters: Readonly<msdyn_CleanUpEmailNBACardsPluginRequestParameters>;
+
+  constructor(parameters: msdyn_CleanUpEmailNBACardsPluginRequestParameters = {}) {
+    super("msdyn_CleanUpEmailNBACardsPlugin", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CleanUpEmailNBACardsPlugin`;
 
-    const body: Record<string, unknown> = {
-      InputData: this.inputData,
-    };
+    const body = requestBody({
+      InputData: this.Parameters.InputData,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_CleanUpEmailNBACardsPluginResponse> {
+  parseResponse(_response: Response): Promise<msdyn_CleanUpEmailNBACardsPluginResponse> {
     // No return value (204 No Content)
-    return new msdyn_CleanUpEmailNBACardsPluginResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      InputData: this.inputData,
-    };
+    return Promise.resolve(new msdyn_CleanUpEmailNBACardsPluginResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class msdyn_CleanUpEmailNBACardsPluginResponse extends OrganizationRespon
     super("msdyn_CleanUpEmailNBACardsPlugin");
   }
 
-  static fromResponse(_data: unknown): msdyn_CleanUpEmailNBACardsPluginResponse {
+  static fromResponse(_data?: unknown): msdyn_CleanUpEmailNBACardsPluginResponse {
     return new msdyn_CleanUpEmailNBACardsPluginResponse();
   }
 }

@@ -2,5 +2,6 @@
  * RecognizeTextResponse complex type
  */
 export interface RecognizeTextResponse {
-  countOfPages: number;
+  countOfPages?: number;
+  pages?: Record<string, unknown>[];
 }

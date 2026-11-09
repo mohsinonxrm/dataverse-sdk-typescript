@@ -1,10 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_ExecuteCopilotServiceJob action
+ * Response from the msdyn_ExecuteCopilotServiceJob action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_ExecuteCopilotServiceJobResponse {
+  "@odata.context"?: string;
   msdyn_Response: string;
+}
+
+/**
+ * Parameters of the msdyn_ExecuteCopilotServiceJob action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_ExecuteCopilotServiceJobActionParameters {
+  msdyn_AuthFlowType?: number;
+  msdyn_JobPayload?: string;
+  msdyn_JobType: number;
 }
 
 /**
@@ -13,33 +27,29 @@ export interface msdyn_ExecuteCopilotServiceJobResponse {
  * Unbound action
  */
 export class msdyn_ExecuteCopilotServiceJobAction implements Executable<msdyn_ExecuteCopilotServiceJobResponse> {
-  constructor(
-    public readonly msdyn_JobPayload: string,
-    public readonly msdyn_JobType: number,
-    public readonly msdyn_AuthFlowType: number
-  ) {}
+  constructor(public readonly parameters: msdyn_ExecuteCopilotServiceJobActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_ExecuteCopilotServiceJob`;
 
-    const body: Record<string, unknown> = {
-      msdyn_JobPayload: this.msdyn_JobPayload,
-      msdyn_JobType: this.msdyn_JobType,
-      msdyn_AuthFlowType: this.msdyn_AuthFlowType,
-    };
+    const body = requestBody({
+      msdyn_AuthFlowType: this.parameters.msdyn_AuthFlowType,
+      msdyn_JobPayload: this.parameters.msdyn_JobPayload,
+      msdyn_JobType: this.parameters.msdyn_JobType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_ExecuteCopilotServiceJobResponse> {
-    const data = await response.json();
-    return data as msdyn_ExecuteCopilotServiceJobResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_ExecuteCopilotServiceJobResponse;
   }
 }

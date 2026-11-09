@@ -2,5 +2,5 @@
  * CreateFlowCredentialApplicationResponse complex type
  */
 export interface CreateFlowCredentialApplicationResponse {
-  flowCredentialApplicationId: string;
+  flowCredentialApplicationId?: string;
 }

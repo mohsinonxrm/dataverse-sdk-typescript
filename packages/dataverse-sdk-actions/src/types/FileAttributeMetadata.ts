@@ -1,6 +1,8 @@
+import type { AttributeMetadata } from "./AttributeMetadata.js";
+
 /**
  * FileAttributeMetadata entity type
  */
-export interface FileAttributeMetadata {
-  MaxSizeInKB: number;
+export interface FileAttributeMetadata extends AttributeMetadata {
+  MaxSizeInKB?: number;
 }

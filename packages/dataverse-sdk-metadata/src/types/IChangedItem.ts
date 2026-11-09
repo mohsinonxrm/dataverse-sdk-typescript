@@ -1,4 +1,0 @@
-/**
- * IChangedItem
- */
-export interface IChangedItem {}

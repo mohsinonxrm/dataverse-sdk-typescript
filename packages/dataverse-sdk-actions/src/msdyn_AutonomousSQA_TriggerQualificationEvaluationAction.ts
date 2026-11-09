@@ -1,10 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_AutonomousSQA_TriggerQualificationEvaluation action
+ * Response from the msdyn_AutonomousSQA_TriggerQualificationEvaluation action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse {
-  // No content returned
+export type msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse = void;
+
+/**
+ * Parameters of the msdyn_AutonomousSQA_TriggerQualificationEvaluation action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_AutonomousSQA_TriggerQualificationEvaluationActionParameters {
+  msdyn_IsResearchOnly?: boolean;
+  msdyn_QualificationDecision?: number;
+  msdyn_SalesAgentRun: string;
+  msdyn_ShouldOverwriteQualificationDecision?: boolean;
+  msdyn_TrackingId: string;
 }
 
 /**
@@ -14,38 +27,35 @@ export interface msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse {
  */
 export class msdyn_AutonomousSQA_TriggerQualificationEvaluationAction implements Executable<msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse> {
   constructor(
-    public readonly msdyn_IsResearchOnly: boolean,
-    public readonly msdyn_ShouldOverwriteQualificationDecision: boolean,
-    public readonly msdyn_QualificationDecision: number,
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_SalesAgentRun: string
+    public readonly parameters: msdyn_AutonomousSQA_TriggerQualificationEvaluationActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_AutonomousSQA_TriggerQualificationEvaluation`;
 
-    const body: Record<string, unknown> = {
-      msdyn_IsResearchOnly: this.msdyn_IsResearchOnly,
-      msdyn_ShouldOverwriteQualificationDecision: this.msdyn_ShouldOverwriteQualificationDecision,
-      msdyn_QualificationDecision: this.msdyn_QualificationDecision,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentRun: this.msdyn_SalesAgentRun,
-    };
+    const body = requestBody({
+      msdyn_IsResearchOnly: this.parameters.msdyn_IsResearchOnly,
+      msdyn_QualificationDecision: this.parameters.msdyn_QualificationDecision,
+      msdyn_SalesAgentRun: this.parameters.msdyn_SalesAgentRun,
+      msdyn_ShouldOverwriteQualificationDecision:
+        this.parameters.msdyn_ShouldOverwriteQualificationDecision,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_AutonomousSQA_TriggerQualificationEvaluationResponse> {
-    // No return value (204 No Content)
-    return {};
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

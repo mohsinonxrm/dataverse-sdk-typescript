@@ -21,7 +21,7 @@ export class msdyn_SalesAgents_GetSalesAgentsFeatureSettingsRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -29,24 +29,37 @@ export class msdyn_SalesAgents_GetSalesAgentsFeatureSettingsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse> {
-    const data = await response.json();
-    return msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 
 /**
+ * Response from the msdyn_SalesAgents_GetSalesAgentsFeatureSettings action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResult {
+  "@odata.context"?: string;
+  ResponseJson: string;
+}
+
+/**
  * msdyn_SalesAgents_GetSalesAgentsFeatureSettings response message
+ *
+ * `result` is the value the msdyn_SalesAgents_GetSalesAgentsFeatureSettings action returns (see {@link msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResult}).
  */
 export class msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse) {
+  constructor(public result: msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResult) {
     super("msdyn_SalesAgents_GetSalesAgentsFeatureSettings");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse {
-    return new msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse((data as any).value);
+    return new msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResponse(
+      data as msdyn_SalesAgents_GetSalesAgentsFeatureSettingsResult
+    );
   }
 }

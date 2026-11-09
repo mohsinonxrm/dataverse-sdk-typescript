@@ -1,16 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from GetHostedRpaCapacity function
+ * Response from the GetHostedRpaCapacity function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetHostedRpaCapacityResponse {
-  failedToGetCapacity: boolean;
-  isPayGo: boolean;
-  hostedMachineGroupsBotCount: number;
-  hostedMachineCount: number;
-  hostedGroupCount: number;
-  totalEnvironmentAddOns: number;
+  "@odata.context"?: string;
   availableCapacity: number;
+  failedToGetCapacity: boolean;
+  hostedGroupCount: number;
+  hostedMachineCount: number;
+  hostedMachineGroupsBotCount: number;
+  isPayGo: boolean;
+  totalEnvironmentAddOns: number;
 }
 
 /**
@@ -32,7 +35,7 @@ export class GetHostedRpaCapacityFunction implements Executable<GetHostedRpaCapa
   }
 
   async parseResponse(response: Response): Promise<GetHostedRpaCapacityResponse> {
-    const data = await response.json();
-    return data as GetHostedRpaCapacityResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as GetHostedRpaCapacityResponse;
   }
 }

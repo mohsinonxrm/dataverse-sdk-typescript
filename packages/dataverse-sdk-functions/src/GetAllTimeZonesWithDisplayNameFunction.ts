@@ -1,12 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from GetAllTimeZonesWithDisplayName function
+ * Response from the GetAllTimeZonesWithDisplayName function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface GetAllTimeZonesWithDisplayNameResponse {
-  value: EntityReference[];
+export type GetAllTimeZonesWithDisplayNameResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
+ * Parameters of the GetAllTimeZonesWithDisplayName function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetAllTimeZonesWithDisplayNameFunctionParameters {
+  LocaleId: number;
 }
 
 /**
@@ -16,20 +28,18 @@ export interface GetAllTimeZonesWithDisplayNameResponse {
  * Binding parameter: entityset (Collection(mscrm.timezonedefinition))
  */
 export class GetAllTimeZonesWithDisplayNameFunction implements Executable<GetAllTimeZonesWithDisplayNameResponse> {
-  constructor(public readonly localeId: number) {}
+  constructor(public readonly parameters: GetAllTimeZonesWithDisplayNameFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
-    let url = `${baseUrl}/GetAllTimeZonesWithDisplayName`;
+    // Bound function (entity collection)
+    let url = `${baseUrl}/timezonedefinitions/Microsoft.Dynamics.CRM.GetAllTimeZonesWithDisplayName`;
 
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.localeId !== undefined) {
+    if (this.parameters.LocaleId !== undefined) {
       aliases.push(`LocaleId=@p1`);
-      params.append(
-        "@p1",
-        typeof this.localeId === "string" ? `'${this.localeId}'` : String(this.localeId)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.LocaleId, "Edm.Int32"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -45,7 +55,9 @@ export class GetAllTimeZonesWithDisplayNameFunction implements Executable<GetAll
   }
 
   async parseResponse(response: Response): Promise<GetAllTimeZonesWithDisplayNameResponse> {
-    const data = await response.json();
-    return data as GetAllTimeZonesWithDisplayNameResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: GetAllTimeZonesWithDisplayNameResponse }).value;
   }
 }

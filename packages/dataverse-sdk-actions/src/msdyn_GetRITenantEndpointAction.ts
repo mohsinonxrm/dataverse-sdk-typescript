@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_GetRITenantEndpoint action
+ * Response from the msdyn_GetRITenantEndpoint action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_GetRITenantEndpointResponse {
+  "@odata.context"?: string;
   TenantInfo: string;
 }
 
@@ -20,13 +23,13 @@ export class msdyn_GetRITenantEndpointAction implements Executable<msdyn_GetRITe
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetRITenantEndpointResponse> {
-    const data = await response.json();
-    return data as msdyn_GetRITenantEndpointResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_GetRITenantEndpointResponse;
   }
 }

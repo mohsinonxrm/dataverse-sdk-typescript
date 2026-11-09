@@ -1,11 +1,21 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from RemoveParent action
+ * Response from the RemoveParent action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface RemoveParentResponse {
-  // No content returned
+export type RemoveParentResponse = void;
+
+/**
+ * Parameters of the RemoveParent action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveParentActionParameters {
+  Target: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -14,27 +24,27 @@ export interface RemoveParentResponse {
  * Unbound action
  */
 export class RemoveParentAction implements Executable<RemoveParentResponse> {
-  constructor(public readonly target: EntityReference) {}
+  constructor(public readonly parameters: RemoveParentActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/RemoveParent`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<RemoveParentResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<RemoveParentResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,11 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAgents_FetchRecordsForAgentProcessing action
+ * Response from the msdyn_SalesAgents_FetchRecordsForAgentProcessing action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse {
-  msdyn_Records: string;
+  "@odata.context"?: string;
   msdyn_ODataNextLink: string;
+  msdyn_Records: string;
+}
+
+/**
+ * Parameters of the msdyn_SalesAgents_FetchRecordsForAgentProcessing action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_FetchRecordsForAgentProcessingActionParameters {
+  msdyn_AgentProfileId?: string;
+  msdyn_NextLink?: string;
+  msdyn_SalesAgentType: number;
+  msdyn_TrackingId?: string;
+  msdyn_Top?: number;
 }
 
 /**
@@ -15,27 +31,25 @@ export interface msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse {
  */
 export class msdyn_SalesAgents_FetchRecordsForAgentProcessingAction implements Executable<msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse> {
   constructor(
-    public readonly msdyn_Top: number,
-    public readonly msdyn_SalesAgentType: number,
-    public readonly msdyn_NextLink: string,
-    public readonly msdyn_TrackingId: string
+    public readonly parameters: msdyn_SalesAgents_FetchRecordsForAgentProcessingActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_FetchRecordsForAgentProcessing`;
 
-    const body: Record<string, unknown> = {
-      msdyn_Top: this.msdyn_Top,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-      msdyn_NextLink: this.msdyn_NextLink,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-    };
+    const body = requestBody({
+      msdyn_AgentProfileId: this.parameters.msdyn_AgentProfileId,
+      msdyn_NextLink: this.parameters.msdyn_NextLink,
+      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_Top: this.parameters.msdyn_Top,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -44,7 +58,7 @@ export class msdyn_SalesAgents_FetchRecordsForAgentProcessingAction implements E
   async parseResponse(
     response: Response
   ): Promise<msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_SalesAgents_FetchRecordsForAgentProcessingResponse;
   }
 }

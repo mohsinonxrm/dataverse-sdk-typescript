@@ -1,5 +1,17 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_CheckIfFormsHaveTooManyCustomControls message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CheckIfFormsHaveTooManyCustomControlsRequestParameters {
+  SolutionName?: string;
+  LogicalNamesOfEntitiesToCheck?: string;
+  NotificationRecipientUserIds?: string;
+  ControlsAndLimits?: string;
+}
 
 /**
  * msdyn_CheckIfFormsHaveTooManyCustomControls request message
@@ -10,30 +22,27 @@ export class msdyn_CheckIfFormsHaveTooManyCustomControlsRequest
   extends OrganizationRequest
   implements Executable<msdyn_CheckIfFormsHaveTooManyCustomControlsResponse>
 {
-  constructor(
-    public solutionName: string,
-    public logicalNamesOfEntitiesToCheck: string,
-    public notificationRecipientUserIds: string,
-    public controlsAndLimits: string
-  ) {
-    super("msdyn_CheckIfFormsHaveTooManyCustomControls");
+  declare readonly Parameters: Readonly<msdyn_CheckIfFormsHaveTooManyCustomControlsRequestParameters>;
+
+  constructor(parameters: msdyn_CheckIfFormsHaveTooManyCustomControlsRequestParameters = {}) {
+    super("msdyn_CheckIfFormsHaveTooManyCustomControls", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CheckIfFormsHaveTooManyCustomControls`;
 
-    const body: Record<string, unknown> = {
-      SolutionName: this.solutionName,
-      LogicalNamesOfEntitiesToCheck: this.logicalNamesOfEntitiesToCheck,
-      NotificationRecipientUserIds: this.notificationRecipientUserIds,
-      ControlsAndLimits: this.controlsAndLimits,
-    };
+    const body = requestBody({
+      SolutionName: this.Parameters.SolutionName,
+      LogicalNamesOfEntitiesToCheck: this.Parameters.LogicalNamesOfEntitiesToCheck,
+      NotificationRecipientUserIds: this.Parameters.NotificationRecipientUserIds,
+      ControlsAndLimits: this.Parameters.ControlsAndLimits,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
@@ -42,29 +51,39 @@ export class msdyn_CheckIfFormsHaveTooManyCustomControlsRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfFormsHaveTooManyCustomControlsResponse> {
-    const data = await response.json();
-    return msdyn_CheckIfFormsHaveTooManyCustomControlsResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionName: this.solutionName,
-      LogicalNamesOfEntitiesToCheck: this.logicalNamesOfEntitiesToCheck,
-      NotificationRecipientUserIds: this.notificationRecipientUserIds,
-      ControlsAndLimits: this.controlsAndLimits,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_CheckIfFormsHaveTooManyCustomControlsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_CheckIfFormsHaveTooManyCustomControls action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_CheckIfFormsHaveTooManyCustomControlsResult {
+  "@odata.context"?: string;
+  HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
+}
+
+/**
  * msdyn_CheckIfFormsHaveTooManyCustomControls response message
+ *
+ * `result` is the value the msdyn_CheckIfFormsHaveTooManyCustomControls action returns (see {@link msdyn_CheckIfFormsHaveTooManyCustomControlsResult}).
  */
 export class msdyn_CheckIfFormsHaveTooManyCustomControlsResponse extends OrganizationResponse {
-  constructor(public result: msdyn_CheckIfFormsHaveTooManyCustomControlsResponse) {
+  constructor(public result: msdyn_CheckIfFormsHaveTooManyCustomControlsResult) {
     super("msdyn_CheckIfFormsHaveTooManyCustomControls");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_CheckIfFormsHaveTooManyCustomControlsResponse {
-    return new msdyn_CheckIfFormsHaveTooManyCustomControlsResponse((data as any).value);
+    return new msdyn_CheckIfFormsHaveTooManyCustomControlsResponse(
+      data as msdyn_CheckIfFormsHaveTooManyCustomControlsResult
+    );
   }
 }

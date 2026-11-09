@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AutoMapEntity action
+ * Response from the AutoMapEntity action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AutoMapEntityResponse {
-  // No content returned
+export type AutoMapEntityResponse = void;
+
+/**
+ * Parameters of the AutoMapEntity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AutoMapEntityActionParameters {
+  EntityMapId: string;
 }
 
 /**
@@ -13,27 +22,27 @@ export interface AutoMapEntityResponse {
  * Unbound action
  */
 export class AutoMapEntityAction implements Executable<AutoMapEntityResponse> {
-  constructor(public readonly entityMapId: string) {}
+  constructor(public readonly parameters: AutoMapEntityActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AutoMapEntity`;
 
-    const body: Record<string, unknown> = {
-      EntityMapId: this.entityMapId,
-    };
+    const body = requestBody({
+      EntityMapId: this.parameters.EntityMapId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<AutoMapEntityResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<AutoMapEntityResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

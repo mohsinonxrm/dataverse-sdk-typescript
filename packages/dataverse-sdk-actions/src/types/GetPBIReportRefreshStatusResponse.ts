@@ -2,7 +2,7 @@
  * GetPBIReportRefreshStatusResponse complex type
  */
 export interface GetPBIReportRefreshStatusResponse {
-  ReportRefreshStatusState: string;
-  ReportRefreshStatusEndTime: string;
-  ReportRefreshStatusStartTime: string;
+  ReportRefreshStatusEndTime?: string;
+  ReportRefreshStatusStartTime?: string;
+  ReportRefreshStatusState?: string;
 }

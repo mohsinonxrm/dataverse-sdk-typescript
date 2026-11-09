@@ -1,11 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_CreateAutonomousEmailWrapper action
+ * Response from the msdyn_CreateAutonomousEmailWrapper action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CreateAutonomousEmailWrapperResponse {
+  "@odata.context"?: string;
   Result: string;
+}
+
+/**
+ * Parameters of the msdyn_CreateAutonomousEmailWrapper action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateAutonomousEmailWrapperActionParameters {
+  SourceContextEntity?: EntityReference | AnyEntityPayload;
+  Entity: EntityReference | AnyEntityPayload;
+  NextSuggestion: string;
+  SenderEntity?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -14,35 +30,30 @@ export interface msdyn_CreateAutonomousEmailWrapperResponse {
  * Unbound action
  */
 export class msdyn_CreateAutonomousEmailWrapperAction implements Executable<msdyn_CreateAutonomousEmailWrapperResponse> {
-  constructor(
-    public readonly senderEntity: EntityReference,
-    public readonly entity: EntityReference,
-    public readonly nextSuggestion: string,
-    public readonly sourceContextEntity: EntityReference
-  ) {}
+  constructor(public readonly parameters: msdyn_CreateAutonomousEmailWrapperActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateAutonomousEmailWrapper`;
 
-    const body: Record<string, unknown> = {
-      SenderEntity: this.senderEntity,
-      Entity: this.entity,
-      NextSuggestion: this.nextSuggestion,
-      SourceContextEntity: this.sourceContextEntity,
-    };
+    const body = requestBody({
+      SourceContextEntity: this.parameters.SourceContextEntity,
+      Entity: this.parameters.Entity,
+      NextSuggestion: this.parameters.NextSuggestion,
+      SenderEntity: this.parameters.SenderEntity,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_CreateAutonomousEmailWrapperResponse> {
-    const data = await response.json();
-    return data as msdyn_CreateAutonomousEmailWrapperResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CreateAutonomousEmailWrapperResponse;
   }
 }

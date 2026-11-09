@@ -21,30 +21,39 @@ export class msdyn_GetPremiumOrgStatusRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPremiumOrgStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetPremiumOrgStatusResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetPremiumOrgStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetPremiumOrgStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetPremiumOrgStatusResult {
+  "@odata.context"?: string;
+  PremiumOrgStatus: boolean;
+}
+
+/**
  * msdyn_GetPremiumOrgStatus response message
+ *
+ * `result` is the value the msdyn_GetPremiumOrgStatus action returns (see {@link msdyn_GetPremiumOrgStatusResult}).
  */
 export class msdyn_GetPremiumOrgStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetPremiumOrgStatusResponse) {
+  constructor(public result: msdyn_GetPremiumOrgStatusResult) {
     super("msdyn_GetPremiumOrgStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetPremiumOrgStatusResponse {
-    return new msdyn_GetPremiumOrgStatusResponse((data as any).value);
+    return new msdyn_GetPremiumOrgStatusResponse(data as msdyn_GetPremiumOrgStatusResult);
   }
 }

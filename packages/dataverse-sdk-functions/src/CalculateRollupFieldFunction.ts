@@ -1,12 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 
 /**
- * Response from CalculateRollupField function
+ * Response from the CalculateRollupField function.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface CalculateRollupFieldResponse {
-  value: EntityReference;
+export type CalculateRollupFieldResponse = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
+ * Parameters of the CalculateRollupField function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CalculateRollupFieldFunctionParameters {
+  Target: EntityReference;
+  FieldName: string;
 }
 
 /**
@@ -15,10 +30,7 @@ export interface CalculateRollupFieldResponse {
  * Unbound function
  */
 export class CalculateRollupFieldFunction implements Executable<CalculateRollupFieldResponse> {
-  constructor(
-    public readonly target: EntityReference,
-    public readonly fieldName: string
-  ) {}
+  constructor(public readonly parameters: CalculateRollupFieldFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/CalculateRollupField`;
@@ -26,21 +38,16 @@ export class CalculateRollupFieldFunction implements Executable<CalculateRollupF
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.target)}(${this.target.id})`,
-        })
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.fieldName !== undefined) {
+    if (this.parameters.FieldName !== undefined) {
       aliases.push(`FieldName=@p2`);
-      params.append(
-        "@p2",
-        typeof this.fieldName === "string" ? `'${this.fieldName}'` : String(this.fieldName)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.FieldName, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -56,7 +63,9 @@ export class CalculateRollupFieldFunction implements Executable<CalculateRollupF
   }
 
   async parseResponse(response: Response): Promise<CalculateRollupFieldResponse> {
-    const data = await response.json();
-    return data as CalculateRollupFieldResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
+    return (await response.json()) as CalculateRollupFieldResponse;
   }
 }

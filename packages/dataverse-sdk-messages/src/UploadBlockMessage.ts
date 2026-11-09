@@ -1,5 +1,16 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UploadBlock message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UploadBlockRequestParameters {
+  BlockId: string;
+  BlockData: string;
+  FileContinuationToken: string;
+}
 
 /**
  * UploadBlock request message
@@ -10,44 +21,34 @@ export class UploadBlockRequest
   extends OrganizationRequest
   implements Executable<UploadBlockResponse>
 {
-  constructor(
-    public blockId: string,
-    public blockData: string,
-    public fileContinuationToken: string
-  ) {
-    super("UploadBlock");
+  declare readonly Parameters: Readonly<UploadBlockRequestParameters>;
+
+  constructor(parameters: UploadBlockRequestParameters) {
+    super("UploadBlock", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UploadBlock`;
 
-    const body: Record<string, unknown> = {
-      BlockId: this.blockId,
-      BlockData: this.blockData,
-      FileContinuationToken: this.fileContinuationToken,
-    };
+    const body = requestBody({
+      BlockId: this.Parameters.BlockId,
+      BlockData: this.Parameters.BlockData,
+      FileContinuationToken: this.Parameters.FileContinuationToken,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UploadBlockResponse> {
+  parseResponse(_response: Response): Promise<UploadBlockResponse> {
     // No return value (204 No Content)
-    return new UploadBlockResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      BlockId: this.blockId,
-      BlockData: this.blockData,
-      FileContinuationToken: this.fileContinuationToken,
-    };
+    return Promise.resolve(new UploadBlockResponse());
   }
 }
 
@@ -59,7 +60,7 @@ export class UploadBlockResponse extends OrganizationResponse {
     super("UploadBlock");
   }
 
-  static fromResponse(_data: unknown): UploadBlockResponse {
+  static fromResponse(_data?: unknown): UploadBlockResponse {
     return new UploadBlockResponse();
   }
 }

@@ -1,12 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from PowerAutomateProxy action
+ * Response from the PowerAutomateProxy action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface PowerAutomateProxyResponse {
+  "@odata.context"?: string;
   HttpStatusCode: number;
-  ResponseHeaders: string;
   ResponseBody: string;
+  ResponseHeaders: string;
+}
+
+/**
+ * Parameters of the PowerAutomateProxy action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PowerAutomateProxyActionParameters {
+  HttpMethod: string;
+  RelativeUrl: string;
+  RequestHeaders?: string;
+  RequestBody?: string;
 }
 
 /**
@@ -15,35 +30,30 @@ export interface PowerAutomateProxyResponse {
  * Unbound action
  */
 export class PowerAutomateProxyAction implements Executable<PowerAutomateProxyResponse> {
-  constructor(
-    public readonly httpMethod: string,
-    public readonly relativeUrl: string,
-    public readonly requestHeaders: string,
-    public readonly requestBody: string
-  ) {}
+  constructor(public readonly parameters: PowerAutomateProxyActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/PowerAutomateProxy`;
 
-    const body: Record<string, unknown> = {
-      HttpMethod: this.httpMethod,
-      RelativeUrl: this.relativeUrl,
-      RequestHeaders: this.requestHeaders,
-      RequestBody: this.requestBody,
-    };
+    const body = requestBody({
+      HttpMethod: this.parameters.HttpMethod,
+      RelativeUrl: this.parameters.RelativeUrl,
+      RequestHeaders: this.parameters.RequestHeaders,
+      RequestBody: this.parameters.RequestBody,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<PowerAutomateProxyResponse> {
-    const data = await response.json();
-    return data as PowerAutomateProxyResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as PowerAutomateProxyResponse;
   }
 }

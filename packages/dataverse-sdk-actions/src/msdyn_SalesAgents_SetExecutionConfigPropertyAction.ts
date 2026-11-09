@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_SalesAgents_SetExecutionConfigProperty action
+ * Response from the msdyn_SalesAgents_SetExecutionConfigProperty action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SalesAgents_SetExecutionConfigPropertyResponse {
-  // No content returned
+export type msdyn_SalesAgents_SetExecutionConfigPropertyResponse = void;
+
+/**
+ * Parameters of the msdyn_SalesAgents_SetExecutionConfigProperty action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_SetExecutionConfigPropertyActionParameters {
+  msdyn_salesagentprofileid: EntityReference | AnyEntityPayload;
+  msdyn_config_key: string;
+  msdyn_config_value: string;
 }
 
 /**
@@ -15,34 +27,32 @@ export interface msdyn_SalesAgents_SetExecutionConfigPropertyResponse {
  */
 export class msdyn_SalesAgents_SetExecutionConfigPropertyAction implements Executable<msdyn_SalesAgents_SetExecutionConfigPropertyResponse> {
   constructor(
-    public readonly msdyn_salesagentprofileid: EntityReference,
-    public readonly msdyn_config_key: string,
-    public readonly msdyn_config_value: string
+    public readonly parameters: msdyn_SalesAgents_SetExecutionConfigPropertyActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_SetExecutionConfigProperty`;
 
-    const body: Record<string, unknown> = {
-      msdyn_salesagentprofileid: this.msdyn_salesagentprofileid,
-      msdyn_config_key: this.msdyn_config_key,
-      msdyn_config_value: this.msdyn_config_value,
-    };
+    const body = requestBody({
+      msdyn_salesagentprofileid: this.parameters.msdyn_salesagentprofileid,
+      msdyn_config_key: this.parameters.msdyn_config_key,
+      msdyn_config_value: this.parameters.msdyn_config_value,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAgents_SetExecutionConfigPropertyResponse> {
-    // No return value (204 No Content)
-    return {};
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

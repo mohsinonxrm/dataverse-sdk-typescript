@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_OSCreatePrediction message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_OSCreatePredictionRequestParameters {
+  ModelState?: string;
+}
 
 /**
  * msdyn_OSCreatePrediction request message
@@ -10,36 +19,32 @@ export class msdyn_OSCreatePredictionRequest
   extends OrganizationRequest
   implements Executable<msdyn_OSCreatePredictionResponse>
 {
-  constructor(public modelState: string) {
-    super("msdyn_OSCreatePrediction");
+  declare readonly Parameters: Readonly<msdyn_OSCreatePredictionRequestParameters>;
+
+  constructor(parameters: msdyn_OSCreatePredictionRequestParameters = {}) {
+    super("msdyn_OSCreatePrediction", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_OSCreatePrediction`;
 
-    const body: Record<string, unknown> = {
-      ModelState: this.modelState,
-    };
+    const body = requestBody({
+      ModelState: this.Parameters.ModelState,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_OSCreatePredictionResponse> {
+  parseResponse(_response: Response): Promise<msdyn_OSCreatePredictionResponse> {
     // No return value (204 No Content)
-    return new msdyn_OSCreatePredictionResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ModelState: this.modelState,
-    };
+    return Promise.resolve(new msdyn_OSCreatePredictionResponse());
   }
 }
 
@@ -51,7 +56,7 @@ export class msdyn_OSCreatePredictionResponse extends OrganizationResponse {
     super("msdyn_OSCreatePrediction");
   }
 
-  static fromResponse(_data: unknown): msdyn_OSCreatePredictionResponse {
+  static fromResponse(_data?: unknown): msdyn_OSCreatePredictionResponse {
     return new msdyn_OSCreatePredictionResponse();
   }
 }

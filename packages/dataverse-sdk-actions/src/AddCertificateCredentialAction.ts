@@ -1,10 +1,21 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from AddCertificateCredential action
+ * Response from the AddCertificateCredential action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface AddCertificateCredentialResponse {
-  // No content returned
+export type AddCertificateCredentialResponse = void;
+
+/**
+ * Parameters of the AddCertificateCredential action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface AddCertificateCredentialActionParameters {
+  thumbprint: string;
+  entityId: string;
+  entityLogicalName: string;
 }
 
 /**
@@ -13,33 +24,29 @@ export interface AddCertificateCredentialResponse {
  * Unbound action
  */
 export class AddCertificateCredentialAction implements Executable<AddCertificateCredentialResponse> {
-  constructor(
-    public readonly entityLogicalName: string,
-    public readonly entityId: string,
-    public readonly thumbprint: string
-  ) {}
+  constructor(public readonly parameters: AddCertificateCredentialActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/AddCertificateCredential`;
 
-    const body: Record<string, unknown> = {
-      entityLogicalName: this.entityLogicalName,
-      entityId: this.entityId,
-      thumbprint: this.thumbprint,
-    };
+    const body = requestBody({
+      thumbprint: this.parameters.thumbprint,
+      entityId: this.parameters.entityId,
+      entityLogicalName: this.parameters.entityLogicalName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<AddCertificateCredentialResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<AddCertificateCredentialResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

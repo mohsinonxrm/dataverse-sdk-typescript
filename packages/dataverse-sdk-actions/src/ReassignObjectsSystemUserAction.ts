@@ -1,11 +1,26 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from ReassignObjectsSystemUser action
+ * Response from the ReassignObjectsSystemUser action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface ReassignObjectsSystemUserResponse {
-  // No content returned
+export type ReassignObjectsSystemUserResponse = void;
+
+/**
+ * Parameters of the ReassignObjectsSystemUser action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ReassignObjectsSystemUserActionParameters {
+  ReassignPrincipal: EntityReference | AnyEntityPayload;
+  objectType?: number;
 }
 
 /**
@@ -13,35 +28,36 @@ export interface ReassignObjectsSystemUserResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.systemuser)
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class ReassignObjectsSystemUserAction implements Executable<ReassignObjectsSystemUserResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly reassignPrincipal: EntityReference,
-    public readonly objectType: number
+    public readonly parameters: ReassignObjectsSystemUserActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/systemusers(${this.systemuserId})/Microsoft.Dynamics.CRM.ReassignObjectsSystemUser`;
+    const url = `${baseUrl}/systemusers(${odataLiteral.guid(this.systemuserId)})/Microsoft.Dynamics.CRM.ReassignObjectsSystemUser`;
 
-    const body: Record<string, unknown> = {
-      ReassignPrincipal: this.reassignPrincipal,
-      objectType: this.objectType,
-    };
+    const body = requestBody({
+      ReassignPrincipal: this.parameters.ReassignPrincipal,
+      objectType: this.parameters.objectType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ReassignObjectsSystemUserResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<ReassignObjectsSystemUserResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

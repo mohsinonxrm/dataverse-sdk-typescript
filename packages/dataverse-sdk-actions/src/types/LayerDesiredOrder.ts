@@ -5,6 +5,6 @@ import type { SolutionInfo } from "./SolutionInfo.js";
  * LayerDesiredOrder complex type
  */
 export interface LayerDesiredOrder {
-  Type: LayerDesiredOrderType;
-  Solutions: SolutionInfo[];
+  Solutions?: SolutionInfo[];
+  Type?: LayerDesiredOrderType;
 }

@@ -1,10 +1,24 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_TriggerARCWithRule action
+ * Response from the msdyn_TriggerARCWithRule action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_TriggerARCWithRuleResponse {
-  // No content returned
+export type msdyn_TriggerARCWithRuleResponse = void;
+
+/**
+ * Parameters of the msdyn_TriggerARCWithRule action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_TriggerARCWithRuleActionParameters {
+  msdyn_ruleid: string;
+  msdyn_queueitemid: string;
 }
 
 /**
@@ -12,35 +26,36 @@ export interface msdyn_TriggerARCWithRuleResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.queueitem)
+ *
+ * The first argument is the id of the queueitem record to call it on.
  */
 export class msdyn_TriggerARCWithRuleAction implements Executable<msdyn_TriggerARCWithRuleResponse> {
   constructor(
     public readonly queueitemId: string,
-    public readonly msdyn_ruleid: string,
-    public readonly msdyn_queueitemid: string
+    public readonly parameters: msdyn_TriggerARCWithRuleActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/queueitems(${this.queueitemId})/Microsoft.Dynamics.CRM.msdyn_TriggerARCWithRule`;
+    const url = `${baseUrl}/queueitems(${odataLiteral.guid(this.queueitemId)})/Microsoft.Dynamics.CRM.msdyn_TriggerARCWithRule`;
 
-    const body: Record<string, unknown> = {
-      msdyn_ruleid: this.msdyn_ruleid,
-      msdyn_queueitemid: this.msdyn_queueitemid,
-    };
+    const body = requestBody({
+      msdyn_ruleid: this.parameters.msdyn_ruleid,
+      msdyn_queueitemid: this.parameters.msdyn_queueitemid,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_TriggerARCWithRuleResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_TriggerARCWithRuleResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

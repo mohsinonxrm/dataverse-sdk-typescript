@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_CreateSimilarOpportunitiyPredictionModel message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_CreateSimilarOpportunitiyPredictionModelRequestParameters {
+  ModelState?: string;
+}
 
 /**
  * msdyn_CreateSimilarOpportunitiyPredictionModel request message
@@ -10,38 +19,34 @@ export class msdyn_CreateSimilarOpportunitiyPredictionModelRequest
   extends OrganizationRequest
   implements Executable<msdyn_CreateSimilarOpportunitiyPredictionModelResponse>
 {
-  constructor(public modelState: string) {
-    super("msdyn_CreateSimilarOpportunitiyPredictionModel");
+  declare readonly Parameters: Readonly<msdyn_CreateSimilarOpportunitiyPredictionModelRequestParameters>;
+
+  constructor(parameters: msdyn_CreateSimilarOpportunitiyPredictionModelRequestParameters = {}) {
+    super("msdyn_CreateSimilarOpportunitiyPredictionModel", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_CreateSimilarOpportunitiyPredictionModel`;
 
-    const body: Record<string, unknown> = {
-      ModelState: this.modelState,
-    };
+    const body = requestBody({
+      ModelState: this.Parameters.ModelState,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_CreateSimilarOpportunitiyPredictionModelResponse> {
     // No return value (204 No Content)
-    return new msdyn_CreateSimilarOpportunitiyPredictionModelResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ModelState: this.modelState,
-    };
+    return Promise.resolve(new msdyn_CreateSimilarOpportunitiyPredictionModelResponse());
   }
 }
 
@@ -53,7 +58,7 @@ export class msdyn_CreateSimilarOpportunitiyPredictionModelResponse extends Orga
     super("msdyn_CreateSimilarOpportunitiyPredictionModel");
   }
 
-  static fromResponse(_data: unknown): msdyn_CreateSimilarOpportunitiyPredictionModelResponse {
+  static fromResponse(_data?: unknown): msdyn_CreateSimilarOpportunitiyPredictionModelResponse {
     return new msdyn_CreateSimilarOpportunitiyPredictionModelResponse();
   }
 }

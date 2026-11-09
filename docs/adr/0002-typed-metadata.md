@@ -30,6 +30,12 @@ Microsoft also highlights `RetrieveMetadataChanges` as an approach to query sche
     - `RetrieveMetadataChanges` (typed) support.
 7.  **Type generation cadence:** Type generation is an **optional internal step** (manual/CI-on-demand), not required for every build.
 
+### Status update (2026-11-07, 2.0.0)
+
+- **Read types (decision 3)** are the generated metadata types under their own names (`EntityMetadata`, `ComplexStringAttributeMetadata`, …); there are no `*Read` types. The write types are `*Create` (`EntityMetadataCreate`, `StringAttributeMetadataCreate`, the `AttributeMetadataCreateTypes` union, …) and `*Update` (`EntityMetadataUpdate`, the relationship updates), #171.
+- **Typed builders (decision 5)** are the `Metadata` object (#345, typed `MetadataBuilders`): plain functions per component (`Metadata.label`, `Metadata.entity`, `Metadata.primaryName`, `Metadata.string`, `Metadata.picklist`, `Metadata.lookup`, `Metadata.globalOptionSet`, `Metadata.manyToMany`, …) that return the `*Create` types, with the `@odata.type`, labels and `RequiredLevel` filled in and input Dataverse would reject refused. `Metadata.lookup` returns the 1:N relationship create, since a lookup is created with its relationship. The object literals still work; the builders are a shorter way to write them.
+- **Generation (decisions 2 and 7).** The metadata types are generated from a committed `$metadata` snapshot, and CI checks that regenerating reproduces them (#293, #295).
+
 ### Consequences
 
 - **Pros:** Developers get compile-time correctness for metadata payloads; avoids “guesswork” for metadata shapes; write payloads cannot include read-only/internal fields; aligns with the documented inheritance model and required `@odata.type` payload patterns.

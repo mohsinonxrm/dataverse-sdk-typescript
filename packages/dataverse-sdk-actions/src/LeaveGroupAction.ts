@@ -1,36 +1,42 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from LeaveGroup action
+ * Response from the LeaveGroup action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface LeaveGroupResponse {
-  // No content returned
-}
+export type LeaveGroupResponse = void;
 
 /**
  * LeaveGroup action
  *
  * Bound action
  * Binding parameter: entity (mscrm.flowmachine)
+ *
+ * The first argument is the id of the flowmachine record to call it on.
  */
 export class LeaveGroupAction implements Executable<LeaveGroupResponse> {
   constructor(public readonly flowmachineId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/flowmachines(${this.flowmachineId})/Microsoft.Dynamics.CRM.LeaveGroup`;
+    const url = `${baseUrl}/flowmachines(${odataLiteral.guid(this.flowmachineId)})/Microsoft.Dynamics.CRM.LeaveGroup`;
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
-  async parseResponse(response: Response): Promise<LeaveGroupResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<LeaveGroupResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

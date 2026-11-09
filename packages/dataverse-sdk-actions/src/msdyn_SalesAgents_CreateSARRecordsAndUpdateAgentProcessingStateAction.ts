@@ -1,10 +1,21 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingState action
+ * Response from the msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingState action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateResponse {
-  // No content returned
+export type msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateResponse = void;
+
+/**
+ * Parameters of the msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingState action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateActionParameters {
+  msdyn_SARRecordsToCreate: string;
+  msdyn_SalesAgentType: number;
+  msdyn_TrackingId?: string;
 }
 
 /**
@@ -14,34 +25,32 @@ export interface msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingState
  */
 export class msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateAction implements Executable<msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateResponse> {
   constructor(
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_SARRecordsToCreate: string,
-    public readonly msdyn_SalesAgentType: number
+    public readonly parameters: msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingState`;
 
-    const body: Record<string, unknown> = {
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SARRecordsToCreate: this.msdyn_SARRecordsToCreate,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-    };
+    const body = requestBody({
+      msdyn_SARRecordsToCreate: this.parameters.msdyn_SARRecordsToCreate,
+      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
+  parseResponse(
+    _response: Response
   ): Promise<msdyn_SalesAgents_CreateSARRecordsAndUpdateAgentProcessingStateResponse> {
-    // No return value (204 No Content)
-    return {};
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,11 +1,27 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
 import type { systemuser } from "./types/index.js";
 
 /**
- * Response from SetParentSystemUser action
+ * Response from the SetParentSystemUser action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface SetParentSystemUserResponse {
-  // No content returned
+export type SetParentSystemUserResponse = void;
+
+/**
+ * Parameters of the SetParentSystemUser action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface SetParentSystemUserActionParameters {
+  Parent: EntityReference | EntityPayload<systemuser>;
+  KeepChildUsers: boolean;
 }
 
 /**
@@ -13,35 +29,36 @@ export interface SetParentSystemUserResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.systemuser)
+ *
+ * The first argument is the id of the systemuser record to call it on.
  */
 export class SetParentSystemUserAction implements Executable<SetParentSystemUserResponse> {
   constructor(
     public readonly systemuserId: string,
-    public readonly parent: systemuser,
-    public readonly keepChildUsers: boolean
+    public readonly parameters: SetParentSystemUserActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/systemusers(${this.systemuserId})/Microsoft.Dynamics.CRM.SetParentSystemUser`;
+    const url = `${baseUrl}/systemusers(${odataLiteral.guid(this.systemuserId)})/Microsoft.Dynamics.CRM.SetParentSystemUser`;
 
-    const body: Record<string, unknown> = {
-      Parent: this.parent,
-      KeepChildUsers: this.keepChildUsers,
-    };
+    const body = requestBody({
+      Parent: this.parameters.Parent,
+      KeepChildUsers: this.parameters.KeepChildUsers,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<SetParentSystemUserResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<SetParentSystemUserResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

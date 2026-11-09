@@ -1,13 +1,31 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { TargetFieldType } from "./types/index.js";
 
 /**
- * Response from InitializeFrom function
+ * Response from the InitializeFrom function.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface InitializeFromResponse {
-  value: EntityReference;
+export type InitializeFromResponse = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
+ * Parameters of the InitializeFrom function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface InitializeFromFunctionParameters {
+  EntityMoniker: EntityReference;
+  SkipParentalRelationshipMapping?: boolean;
+  TargetEntityName: string;
+  TargetFieldType: TargetFieldType | keyof typeof TargetFieldType;
+  RetrieveConsumableRecord?: boolean;
 }
 
 /**
@@ -16,13 +34,7 @@ export interface InitializeFromResponse {
  * Unbound function
  */
 export class InitializeFromFunction implements Executable<InitializeFromResponse> {
-  constructor(
-    public readonly entityMoniker: EntityReference,
-    public readonly skipParentalRelationshipMapping: boolean,
-    public readonly targetEntityName: string,
-    public readonly targetFieldType: TargetFieldType,
-    public readonly retrieveConsumableRecord: boolean
-  ) {}
+  constructor(public readonly parameters: InitializeFromFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/InitializeFrom`;
@@ -30,49 +42,40 @@ export class InitializeFromFunction implements Executable<InitializeFromResponse
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.entityMoniker !== undefined) {
+    if (this.parameters.EntityMoniker !== undefined) {
       aliases.push(`EntityMoniker=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.entityMoniker)}(${this.entityMoniker.id})`,
-        })
+        formatParameterAlias(this.parameters.EntityMoniker, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.skipParentalRelationshipMapping !== undefined) {
+    if (this.parameters.SkipParentalRelationshipMapping !== undefined) {
       aliases.push(`SkipParentalRelationshipMapping=@p2`);
       params.append(
         "@p2",
-        typeof this.skipParentalRelationshipMapping === "string"
-          ? `'${this.skipParentalRelationshipMapping}'`
-          : String(this.skipParentalRelationshipMapping)
+        formatParameterAlias(this.parameters.SkipParentalRelationshipMapping, "Edm.Boolean")
       );
     }
-    if (this.targetEntityName !== undefined) {
+    if (this.parameters.TargetEntityName !== undefined) {
       aliases.push(`TargetEntityName=@p3`);
-      params.append(
-        "@p3",
-        typeof this.targetEntityName === "string"
-          ? `'${this.targetEntityName}'`
-          : String(this.targetEntityName)
-      );
+      params.append("@p3", formatParameterAlias(this.parameters.TargetEntityName, "Edm.String"));
     }
-    if (this.targetFieldType !== undefined) {
+    if (this.parameters.TargetFieldType !== undefined) {
       aliases.push(`TargetFieldType=@p4`);
       params.append(
         "@p4",
-        typeof this.targetFieldType === "string"
-          ? `'${this.targetFieldType}'`
-          : String(this.targetFieldType)
+        formatParameterAlias(
+          this.parameters.TargetFieldType,
+          "mscrm.TargetFieldType",
+          "EnumerationType"
+        )
       );
     }
-    if (this.retrieveConsumableRecord !== undefined) {
+    if (this.parameters.RetrieveConsumableRecord !== undefined) {
       aliases.push(`RetrieveConsumableRecord=@p5`);
       params.append(
         "@p5",
-        typeof this.retrieveConsumableRecord === "string"
-          ? `'${this.retrieveConsumableRecord}'`
-          : String(this.retrieveConsumableRecord)
+        formatParameterAlias(this.parameters.RetrieveConsumableRecord, "Edm.Boolean")
       );
     }
     if (aliases.length > 0) {
@@ -89,7 +92,9 @@ export class InitializeFromFunction implements Executable<InitializeFromResponse
   }
 
   async parseResponse(response: Response): Promise<InitializeFromResponse> {
-    const data = await response.json();
-    return data as InitializeFromResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
+    return (await response.json()) as InitializeFromResponse;
   }
 }

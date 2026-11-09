@@ -1,12 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesExternalServiceInvoke action
+ * Response from the msdyn_SalesExternalServiceInvoke action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SalesExternalServiceInvokeResponse {
-  msdyn_summary_raw: string;
-  msdyn_summary: string;
+  "@odata.context"?: string;
   msdyn_additionalDetails: string;
+  msdyn_summary: string;
+  msdyn_summary_raw: string;
+}
+
+/**
+ * Parameters of the msdyn_SalesExternalServiceInvoke action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesExternalServiceInvokeActionParameters {
+  msdyn_entityName: string;
+  msdyn_id: string;
+  msdyn_activityId?: string;
 }
 
 /**
@@ -15,33 +29,29 @@ export interface msdyn_SalesExternalServiceInvokeResponse {
  * Unbound action
  */
 export class msdyn_SalesExternalServiceInvokeAction implements Executable<msdyn_SalesExternalServiceInvokeResponse> {
-  constructor(
-    public readonly msdyn_entityName: string,
-    public readonly msdyn_activityId: string,
-    public readonly msdyn_id: string
-  ) {}
+  constructor(public readonly parameters: msdyn_SalesExternalServiceInvokeActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesExternalServiceInvoke`;
 
-    const body: Record<string, unknown> = {
-      msdyn_entityName: this.msdyn_entityName,
-      msdyn_activityId: this.msdyn_activityId,
-      msdyn_id: this.msdyn_id,
-    };
+    const body = requestBody({
+      msdyn_entityName: this.parameters.msdyn_entityName,
+      msdyn_id: this.parameters.msdyn_id,
+      msdyn_activityId: this.parameters.msdyn_activityId,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_SalesExternalServiceInvokeResponse> {
-    const data = await response.json();
-    return data as msdyn_SalesExternalServiceInvokeResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_SalesExternalServiceInvokeResponse;
   }
 }

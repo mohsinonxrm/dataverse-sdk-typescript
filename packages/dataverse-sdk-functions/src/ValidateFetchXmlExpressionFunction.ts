@@ -1,11 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 import type { ValidateFetchXmlExpressionResult } from "./types/index.js";
 
 /**
- * Response from ValidateFetchXmlExpression function
+ * Response from the ValidateFetchXmlExpression function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface ValidateFetchXmlExpressionResponse {
+  "@odata.context"?: string;
   ValidationResults: ValidateFetchXmlExpressionResult;
+}
+
+/**
+ * Parameters of the ValidateFetchXmlExpression function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ValidateFetchXmlExpressionFunctionParameters {
+  FetchXml: string;
 }
 
 /**
@@ -14,7 +26,7 @@ export interface ValidateFetchXmlExpressionResponse {
  * Unbound function
  */
 export class ValidateFetchXmlExpressionFunction implements Executable<ValidateFetchXmlExpressionResponse> {
-  constructor(public readonly fetchXml: string) {}
+  constructor(public readonly parameters: ValidateFetchXmlExpressionFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/ValidateFetchXmlExpression`;
@@ -22,12 +34,9 @@ export class ValidateFetchXmlExpressionFunction implements Executable<ValidateFe
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.fetchXml !== undefined) {
+    if (this.parameters.FetchXml !== undefined) {
       aliases.push(`FetchXml=@p1`);
-      params.append(
-        "@p1",
-        typeof this.fetchXml === "string" ? `'${this.fetchXml}'` : String(this.fetchXml)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.FetchXml, "Edm.String"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -43,7 +52,7 @@ export class ValidateFetchXmlExpressionFunction implements Executable<ValidateFe
   }
 
   async parseResponse(response: Response): Promise<ValidateFetchXmlExpressionResponse> {
-    const data = await response.json();
-    return data as ValidateFetchXmlExpressionResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as ValidateFetchXmlExpressionResponse;
   }
 }

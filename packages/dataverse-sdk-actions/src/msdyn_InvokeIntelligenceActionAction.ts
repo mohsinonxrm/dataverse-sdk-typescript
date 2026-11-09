@@ -1,12 +1,28 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_InvokeIntelligenceAction action
+ * Response from the msdyn_InvokeIntelligenceAction action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_InvokeIntelligenceActionResponse {
+  "@odata.context"?: string;
   Metadata: string;
   Result: string;
+}
+
+/**
+ * Parameters of the msdyn_InvokeIntelligenceAction action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_InvokeIntelligenceActionActionParameters {
+  Context?: string;
+  ScenarioType: string;
+  entityReference?: EntityReference | AnyEntityPayload;
+  RequestPayload: string;
 }
 
 /**
@@ -15,35 +31,30 @@ export interface msdyn_InvokeIntelligenceActionResponse {
  * Unbound action
  */
 export class msdyn_InvokeIntelligenceActionAction implements Executable<msdyn_InvokeIntelligenceActionResponse> {
-  constructor(
-    public readonly context: string,
-    public readonly entityReference: EntityReference,
-    public readonly scenarioType: string,
-    public readonly requestPayload: string
-  ) {}
+  constructor(public readonly parameters: msdyn_InvokeIntelligenceActionActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_InvokeIntelligenceAction`;
 
-    const body: Record<string, unknown> = {
-      Context: this.context,
-      entityReference: this.entityReference,
-      ScenarioType: this.scenarioType,
-      RequestPayload: this.requestPayload,
-    };
+    const body = requestBody({
+      Context: this.parameters.Context,
+      ScenarioType: this.parameters.ScenarioType,
+      entityReference: this.parameters.entityReference,
+      RequestPayload: this.parameters.RequestPayload,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_InvokeIntelligenceActionResponse> {
-    const data = await response.json();
-    return data as msdyn_InvokeIntelligenceActionResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_InvokeIntelligenceActionResponse;
   }
 }

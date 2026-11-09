@@ -1,14 +1,17 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_CheckIfSalesFormsFromUnmanagedLayer action
+ * Response from the msdyn_CheckIfSalesFormsFromUnmanagedLayer action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse {
-  ReturnStatus: number;
-  ResultEntities: string;
-  Message: string;
-  ReturnSeverity: number;
+  "@odata.context"?: string;
   HelpLink: string;
+  Message: string;
+  ResultEntities: string;
+  ReturnSeverity: number;
+  ReturnStatus: number;
 }
 
 /**
@@ -24,7 +27,7 @@ export class msdyn_CheckIfSalesFormsFromUnmanagedLayerAction implements Executab
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -32,7 +35,7 @@ export class msdyn_CheckIfSalesFormsFromUnmanagedLayerAction implements Executab
   async parseResponse(
     response: Response
   ): Promise<msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse> {
-    const data = await response.json();
-    return data as msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_CheckIfSalesFormsFromUnmanagedLayerResponse;
   }
 }

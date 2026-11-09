@@ -21,7 +21,7 @@ export class msdyn_GetSalesAccelerationConfigurationStatusRequest
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
@@ -29,24 +29,39 @@ export class msdyn_GetSalesAccelerationConfigurationStatusRequest
   async parseResponse(
     response: Response
   ): Promise<msdyn_GetSalesAccelerationConfigurationStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetSalesAccelerationConfigurationStatusResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {};
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetSalesAccelerationConfigurationStatusResponse.fromResponse(
+      await response.json()
+    );
   }
 }
 
 /**
+ * Response from the msdyn_GetSalesAccelerationConfigurationStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetSalesAccelerationConfigurationStatusResult {
+  "@odata.context"?: string;
+  IsEnabledForOrganization: boolean;
+  IsEnabledForUser: boolean;
+  SettingsInstance: string;
+}
+
+/**
  * msdyn_GetSalesAccelerationConfigurationStatus response message
+ *
+ * `result` is the value the msdyn_GetSalesAccelerationConfigurationStatus action returns (see {@link msdyn_GetSalesAccelerationConfigurationStatusResult}).
  */
 export class msdyn_GetSalesAccelerationConfigurationStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetSalesAccelerationConfigurationStatusResponse) {
+  constructor(public result: msdyn_GetSalesAccelerationConfigurationStatusResult) {
     super("msdyn_GetSalesAccelerationConfigurationStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetSalesAccelerationConfigurationStatusResponse {
-    return new msdyn_GetSalesAccelerationConfigurationStatusResponse((data as any).value);
+    return new msdyn_GetSalesAccelerationConfigurationStatusResponse(
+      data as msdyn_GetSalesAccelerationConfigurationStatusResult
+    );
   }
 }

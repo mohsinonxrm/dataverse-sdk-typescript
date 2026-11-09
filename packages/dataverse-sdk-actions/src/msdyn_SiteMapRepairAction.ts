@@ -1,13 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from msdyn_SiteMapRepair action
+ * Response from the msdyn_SiteMapRepair action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_SiteMapRepairResponse {
-  ResolvedRecordsCount: number;
-  ResolutionState: number;
+  "@odata.context"?: string;
   HelpLink: string;
+  ResolutionState: number;
+  ResolvedRecordsCount: number;
+}
+
+/**
+ * Parameters of the msdyn_SiteMapRepair action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SiteMapRepairActionParameters {
+  AnalysisResult?: EntityReference | AnyEntityPayload;
 }
 
 /**
@@ -16,27 +29,27 @@ export interface msdyn_SiteMapRepairResponse {
  * Unbound action
  */
 export class msdyn_SiteMapRepairAction implements Executable<msdyn_SiteMapRepairResponse> {
-  constructor(public readonly analysisResult: EntityReference) {}
+  constructor(public readonly parameters: msdyn_SiteMapRepairActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SiteMapRepair`;
 
-    const body: Record<string, unknown> = {
-      AnalysisResult: this.analysisResult,
-    };
+    const body = requestBody({
+      AnalysisResult: this.parameters.AnalysisResult,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_SiteMapRepairResponse> {
-    const data = await response.json();
-    return data as msdyn_SiteMapRepairResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_SiteMapRepairResponse;
   }
 }

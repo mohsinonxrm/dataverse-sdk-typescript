@@ -1,82 +1,137 @@
-import type { IEntity, EntityMetadata } from '@mohsinonxrm/dataverse-sdk-entities-runtime';
-
+<%# Patterned on the templates of dataverse-gen by Scott Durow (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, MIT License. See THIRD_PARTY_NOTICES.md in this package. -%>
 /**
- * <%= entity.Name %> entity interface
- * Logical Name: <%= entity.LogicalName %>
- * Entity Set: <%= entity.EntitySetName %>
- <%_ if (entity.SchemaName && entity.SchemaName !== entity.Name) { _%>
- * Schema Name: <%= entity.SchemaName %>
- <%_ } _%>
+ * <%- doc(entity.SchemaName || entity.Name) %> entity
+ * Logical Name: <%- doc(entity.LogicalName) %>
+ * Entity Set: <%- doc(entity.EntitySetName) %>
  */
-export interface <%= entity.Name %> extends IEntity {
-  logicalName: '<%= entity.LogicalName %>';
+export interface <%- typeName %> extends IEntity {
 <%_ entity.Properties.forEach(function(prop){ _%>
-  
-  <%_ if (prop.Description) { _%>
-  /** <%= prop.Description %> */
-  <%_ } else if (prop.DisplayName) { _%>
-  /** <%= prop.DisplayName %> */
-  <%_ } else { _%>
-  /** <%= prop.LogicalName %> */
-  <%_ } _%>
-  <%= prop.Name %>?: <%= formatType(prop.TypeScriptType) %><%= prop.Nullable ? ' | null' : '' %>;<%= getSourceTypeComment(prop.SourceType) %>
+
+  /** <%- doc(prop.Description || prop.DisplayName || prop.LogicalName) %> */
+  <%- propertyKey(prop.Name) %>?: <%- formatType(prop.TypeScriptType) %><%- prop.Nullable ? ' | null' : '' %>;<%- getSourceTypeComment(prop.SourceType) %>
 <%_ }) _%>
 <%_ entity.NavigationProperties.forEach(function(nav){ _%>
-  
-  /** Navigation: <%= nav.RelationshipName %><%= nav.IsPolymorphic ? ' (polymorphic: ' + nav.Targets.join(', ') + ')' : '' %> */
-  <%= nav.Name %>?: <%= nav.IsPolymorphic ? 'any' : nav.TargetType %><%= nav.IsCollection ? '[]' : '' %>;
+
+  /** Navigation: <%- doc(nav.RelationshipName) %><%- nav.IsPolymorphic ? doc(' (polymorphic: ' + (nav.Targets || []).join(', ') + ')') : '' %> */
+  <%- propertyKey(nav.Name) %>?: <%- navigationType(nav) %>;
 <%_ }) _%>
 }
+<%_ [['create', createName, 'a create (IsValidForCreate)', 'a new'], ['update', updateName, 'an update (IsValidForUpdate)', 'an existing']].forEach(function(write){ _%>
+<%_ const columns = writeColumns(write[0]); _%>
 
 /**
- * Metadata for <%= entity.Name %> entity
+ * The columns of <%- write[3] %> <%- doc(entity.SchemaName || entity.Name) %> record that Dataverse accepts in <%- write[2] %>.
+ * Read-only and server-set columns are left out. A lookup takes an EntityReference, which
+ * formatEntityForWrite() sends as "<navigation property>@odata.bind".
  */
-export const <%= entity.Name %>Metadata: EntityMetadata = {
-  typeName: '<%= entity.TypeName %>',
-  logicalName: '<%= entity.LogicalName %>',
-  collectionName: '<%= entity.EntitySetName %>',
-  primaryIdAttribute: '<%= entity.KeyName %>',
+<%_ if (columns.length === 0) { _%>
+export type <%- write[1] %> = Record<string, never>;
+<%_ } else { _%>
+export type <%- write[1] %> = {
+<%_ columns.forEach(function(column){ _%>
+
+  /** <%- doc(column.doc) %> */
+  <%- propertyKey(column.key) %>?: <%- column.type %>;
+<%_ }) _%>
+};
+<%_ } _%>
+<%_ }) _%>
+
+/**
+ * Metadata for the <%- doc(entity.LogicalName) %> entity
+ */
+export const <%- metadataName %>: <%- metadataType %> = {
+  typeName: <%- literal(entity.TypeName) %>,
+  logicalName: <%- literal(entity.LogicalName) %>,
+  collectionName: <%- literal(entity.EntitySetName) %>,
+  primaryIdAttribute: <%- literal(entity.KeyName) %>,
   <%_ if (entity.PrimaryNameAttribute) { _%>
-  primaryNameAttribute: '<%= entity.PrimaryNameAttribute %>',
+  primaryNameAttribute: <%- literal(entity.PrimaryNameAttribute) %>,
   <%_ } _%>
   attributeTypes: {
-<%_ entity.Properties.forEach(function(prop, index){ _%>
-    <%= prop.LogicalName %>: {
-      logicalName: '<%= prop.LogicalName %>',
-      schemaName: '<%= prop.SchemaName || prop.Name %>',
-      type: '<%= prop.Type %>',
+<%_ entity.Properties.forEach(function(prop){ _%>
+    <%- propertyKey(prop.LogicalName) %>: <%- literal(prop.Type) %>,
+<%_ }) _%>
+  },
+  attributes: {
+<%_ entity.Properties.forEach(function(prop){ _%>
+    <%- propertyKey(prop.LogicalName) %>: {
+      logicalName: <%- literal(prop.LogicalName) %>,
+      schemaName: <%- literal(prop.SchemaName || prop.Name) %>,
+      attributeType: <%- literal(prop.AttributeType || prop.Type) %>,
+      typescriptType: <%- literal(formatType(prop.TypeScriptType)) %>,
+      odataType: <%- literal(prop.Type) %>,
       <%_ if (prop.IsRequired) { _%>
       isRequired: true,
       <%_ } _%>
+      <%_ if (prop.RequiredLevel) { _%>
+      requiredLevel: <%- literal(prop.RequiredLevel) %>,
+      <%_ } _%>
       <%_ if (prop.SourceType === 1) { _%>
-      sourceType: 'calculated',
+      sourceType: "calculated",
       <%_ } else if (prop.SourceType === 2) { _%>
-      sourceType: 'rollup',
+      sourceType: "rollup",
       <%_ } _%>
       <%_ if (prop.Targets && prop.Targets.length > 0) { _%>
-      targets: <%= JSON.stringify(prop.Targets) %>,
+      targets: <%- literal(prop.Targets) %>,
       <%_ } _%>
       <%_ if (prop.EnumName) { _%>
-      enumType: '<%= prop.EnumName %>',
+      optionSetType: <%- literal(prop.EnumName) %>,
       <%_ } _%>
-    }<%= index < entity.Properties.length - 1 ? ',' : '' %>
+      <%_ if (prop.IsMultiSelect) { _%>
+      isMultiSelect: true,
+      <%_ } _%>
+      <%_ if (prop.MaxLength !== undefined) { _%>
+      maxLength: <%- literal(prop.MaxLength) %>,
+      <%_ } _%>
+      <%_ if (prop.MinValue !== undefined) { _%>
+      minValue: <%- literal(prop.MinValue) %>,
+      <%_ } _%>
+      <%_ if (prop.MaxValue !== undefined) { _%>
+      maxValue: <%- literal(prop.MaxValue) %>,
+      <%_ } _%>
+      <%_ if (prop.OptionValues) { _%>
+      optionValues: <%- literal(prop.OptionValues) %>,
+      <%_ } _%>
+      <%_ if (prop.IsValidForCreate === false) { _%>
+      isValidForCreate: false,
+      <%_ } _%>
+      <%_ if (prop.IsValidForUpdate === false) { _%>
+      isValidForUpdate: false,
+      <%_ } _%>
+    },
 <%_ }) _%>
   },
   navigation: {
-<%_ entity.NavigationProperties.forEach(function(nav, index){ _%>
-    <%= nav.Name %>: {
-      name: '<%= nav.Name %>',
+<%_ entity.NavigationProperties.forEach(function(nav){ _%>
+    <%- propertyKey(nav.Name) %>: {
+      name: <%- literal(nav.Name) %>,
       <%_ if (nav.FullName) { _%>
-      fullName: '<%= nav.FullName %>',
+      fullName: <%- literal(nav.FullName) %>,
       <%_ } _%>
-      targetType: '<%= nav.TargetType %>',
+      targetType: <%- literal(nav.TargetType) %>,
       <%_ if (nav.IsPolymorphic) { _%>
       isPolymorphic: true,
-      targets: <%= JSON.stringify(nav.Targets) %>,
+      targets: <%- literal(nav.Targets || []) %>,
       <%_ } _%>
-      isCollection: <%= nav.IsCollection %>,
-      relationshipName: '<%= nav.RelationshipName %>'
-    }<%= index < entity.NavigationProperties.length - 1 ? ',' : '' %>
+      isCollection: <%- nav.IsCollection ? 'true' : 'false' %>,
+      relationshipName: <%- literal(nav.RelationshipName) %>,
+      <%_ if (nav.LookupAttribute) { _%>
+      lookupAttribute: <%- literal(nav.LookupAttribute) %>,
+      <%_ } _%>
+      <%_ if (nav.RequiredLevel === 'ApplicationRequired') { _%>
+      isRequired: true,
+      <%_ } _%>
+      <%_ if (nav.RequiredLevel) { _%>
+      requiredLevel: <%- literal(nav.RequiredLevel) %>,
+      <%_ } _%>
+      <%_ if (nav.IsValidForCreate === false) { _%>
+      isValidForCreate: false,
+      <%_ } _%>
+      <%_ if (nav.IsValidForUpdate === false) { _%>
+      isValidForUpdate: false,
+      <%_ } _%>
+    },
 <%_ }) _%>
-  }
+  },
 };

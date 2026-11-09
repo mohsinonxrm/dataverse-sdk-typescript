@@ -1,5 +1,30 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { EntityPayload } from "./types/EntityPayload.js";
+import type { githubappconfig } from "./types/index.js";
+
+/**
+ * Parameters of the ConnectToGit message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface ConnectToGitRequestParameters {
+  UpstreamBranch?: string;
+  GitHubConnectionId?: string;
+  GitHubPAT?: string;
+  EnterpriseSubdomain?: string;
+  SolutionUniqueName?: string;
+  GitProvider?: number;
+  GitFolder: string;
+  GitHubAppConfigId?: EntityReference | EntityPayload<githubappconfig>;
+  RootFolder?: string;
+  Repository?: string;
+  Branch: string;
+  Organization?: string;
+  Project?: string;
+  ConnectionType?: number;
+}
 
 /**
  * ConnectToGit request message
@@ -10,65 +35,45 @@ export class ConnectToGitRequest
   extends OrganizationRequest
   implements Executable<ConnectToGitResponse>
 {
-  constructor(
-    public connectionType: number,
-    public solutionUniqueName: string,
-    public gitProvider: number,
-    public branch: string,
-    public rootFolder: string,
-    public organization: string,
-    public gitFolder: string,
-    public project: string,
-    public repository: string,
-    public upstreamBranch: string
-  ) {
-    super("ConnectToGit");
+  declare readonly Parameters: Readonly<ConnectToGitRequestParameters>;
+
+  constructor(parameters: ConnectToGitRequestParameters) {
+    super("ConnectToGit", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/ConnectToGit`;
 
-    const body: Record<string, unknown> = {
-      ConnectionType: this.connectionType,
-      SolutionUniqueName: this.solutionUniqueName,
-      GitProvider: this.gitProvider,
-      Branch: this.branch,
-      RootFolder: this.rootFolder,
-      Organization: this.organization,
-      GitFolder: this.gitFolder,
-      Project: this.project,
-      Repository: this.repository,
-      UpstreamBranch: this.upstreamBranch,
-    };
+    const body = requestBody({
+      UpstreamBranch: this.Parameters.UpstreamBranch,
+      GitHubConnectionId: this.Parameters.GitHubConnectionId,
+      GitHubPAT: this.Parameters.GitHubPAT,
+      EnterpriseSubdomain: this.Parameters.EnterpriseSubdomain,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      GitProvider: this.Parameters.GitProvider,
+      GitFolder: this.Parameters.GitFolder,
+      GitHubAppConfigId: this.Parameters.GitHubAppConfigId,
+      RootFolder: this.Parameters.RootFolder,
+      Repository: this.Parameters.Repository,
+      Branch: this.Parameters.Branch,
+      Organization: this.Parameters.Organization,
+      Project: this.Parameters.Project,
+      ConnectionType: this.Parameters.ConnectionType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<ConnectToGitResponse> {
+  parseResponse(_response: Response): Promise<ConnectToGitResponse> {
     // No return value (204 No Content)
-    return new ConnectToGitResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      ConnectionType: this.connectionType,
-      SolutionUniqueName: this.solutionUniqueName,
-      GitProvider: this.gitProvider,
-      Branch: this.branch,
-      RootFolder: this.rootFolder,
-      Organization: this.organization,
-      GitFolder: this.gitFolder,
-      Project: this.project,
-      Repository: this.repository,
-      UpstreamBranch: this.upstreamBranch,
-    };
+    return Promise.resolve(new ConnectToGitResponse());
   }
 }
 
@@ -80,7 +85,7 @@ export class ConnectToGitResponse extends OrganizationResponse {
     super("ConnectToGit");
   }
 
-  static fromResponse(_data: unknown): ConnectToGitResponse {
+  static fromResponse(_data?: unknown): ConnectToGitResponse {
     return new ConnectToGitResponse();
   }
 }

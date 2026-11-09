@@ -1,10 +1,15 @@
+import type { AuditDetail } from "./AuditDetail.js";
 import type { Collection_Int32_String } from "./Collection_Int32_String.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type { AnyEntityPayload } from "./EntityPayload.js";
 
 /**
  * AttributeAuditDetail complex type
  */
-export interface AttributeAuditDetail {
-  InvalidNewValueAttributes: string[];
-  DeletedAttributes: Collection_Int32_String;
-  LocLabelLanguageCode: number;
+export interface AttributeAuditDetail extends AuditDetail {
+  DeletedAttributes?: Collection_Int32_String;
+  InvalidNewValueAttributes?: string[];
+  LocLabelLanguageCode?: number;
+  NewValue: EntityReference | AnyEntityPayload;
+  OldValue: EntityReference | AnyEntityPayload;
 }

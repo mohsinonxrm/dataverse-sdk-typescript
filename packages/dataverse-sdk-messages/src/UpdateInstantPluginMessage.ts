@@ -1,5 +1,21 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the UpdateInstantPlugin message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateInstantPluginRequestParameters {
+  Description?: string;
+  Parameters?: string;
+  Expression?: string;
+  SolutionUniqueName?: string;
+  Name?: string;
+  EntityLogicalName?: string;
+  Context?: string;
+  FxExpressionUniqueName: string;
+}
 
 /**
  * UpdateInstantPlugin request message
@@ -10,59 +26,39 @@ export class UpdateInstantPluginRequest
   extends OrganizationRequest
   implements Executable<UpdateInstantPluginResponse>
 {
-  constructor(
-    public description: string,
-    public fxExpressionUniqueName: string,
-    public parameters: string,
-    public context: string,
-    public entityLogicalName: string,
-    public solutionUniqueName: string,
-    public expression: string,
-    public name: string
-  ) {
-    super("UpdateInstantPlugin");
+  declare readonly Parameters: Readonly<UpdateInstantPluginRequestParameters>;
+
+  constructor(parameters: UpdateInstantPluginRequestParameters) {
+    super("UpdateInstantPlugin", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateInstantPlugin`;
 
-    const body: Record<string, unknown> = {
-      Description: this.description,
-      FxExpressionUniqueName: this.fxExpressionUniqueName,
-      Parameters: this.parameters,
-      Context: this.context,
-      EntityLogicalName: this.entityLogicalName,
-      SolutionUniqueName: this.solutionUniqueName,
-      Expression: this.expression,
-      Name: this.name,
-    };
+    const body = requestBody({
+      Description: this.Parameters.Description,
+      Parameters: this.Parameters.Parameters,
+      Expression: this.Parameters.Expression,
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      Name: this.Parameters.Name,
+      EntityLogicalName: this.Parameters.EntityLogicalName,
+      Context: this.Parameters.Context,
+      FxExpressionUniqueName: this.Parameters.FxExpressionUniqueName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateInstantPluginResponse> {
+  parseResponse(_response: Response): Promise<UpdateInstantPluginResponse> {
     // No return value (204 No Content)
-    return new UpdateInstantPluginResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      Description: this.description,
-      FxExpressionUniqueName: this.fxExpressionUniqueName,
-      Parameters: this.parameters,
-      Context: this.context,
-      EntityLogicalName: this.entityLogicalName,
-      SolutionUniqueName: this.solutionUniqueName,
-      Expression: this.expression,
-      Name: this.name,
-    };
+    return Promise.resolve(new UpdateInstantPluginResponse());
   }
 }
 
@@ -74,7 +70,7 @@ export class UpdateInstantPluginResponse extends OrganizationResponse {
     super("UpdateInstantPlugin");
   }
 
-  static fromResponse(_data: unknown): UpdateInstantPluginResponse {
+  static fromResponse(_data?: unknown): UpdateInstantPluginResponse {
     return new UpdateInstantPluginResponse();
   }
 }

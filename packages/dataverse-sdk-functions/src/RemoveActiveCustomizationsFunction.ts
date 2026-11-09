@@ -1,10 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from RemoveActiveCustomizations function
+ * Response from the RemoveActiveCustomizations function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RemoveActiveCustomizationsResponse {
+  "@odata.context"?: string;
   Result: boolean;
+}
+
+/**
+ * Parameters of the RemoveActiveCustomizations function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RemoveActiveCustomizationsFunctionParameters {
+  SolutionComponentName: string;
+  ComponentId: string;
 }
 
 /**
@@ -13,10 +26,7 @@ export interface RemoveActiveCustomizationsResponse {
  * Unbound function
  */
 export class RemoveActiveCustomizationsFunction implements Executable<RemoveActiveCustomizationsResponse> {
-  constructor(
-    public readonly solutionComponentName: string,
-    public readonly componentId: string
-  ) {}
+  constructor(public readonly parameters: RemoveActiveCustomizationsFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RemoveActiveCustomizations`;
@@ -24,21 +34,16 @@ export class RemoveActiveCustomizationsFunction implements Executable<RemoveActi
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.solutionComponentName !== undefined) {
+    if (this.parameters.SolutionComponentName !== undefined) {
       aliases.push(`SolutionComponentName=@p1`);
       params.append(
         "@p1",
-        typeof this.solutionComponentName === "string"
-          ? `'${this.solutionComponentName}'`
-          : String(this.solutionComponentName)
+        formatParameterAlias(this.parameters.SolutionComponentName, "Edm.String")
       );
     }
-    if (this.componentId !== undefined) {
+    if (this.parameters.ComponentId !== undefined) {
       aliases.push(`ComponentId=@p2`);
-      params.append(
-        "@p2",
-        typeof this.componentId === "string" ? `'${this.componentId}'` : String(this.componentId)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.ComponentId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -54,7 +59,7 @@ export class RemoveActiveCustomizationsFunction implements Executable<RemoveActi
   }
 
   async parseResponse(response: Response): Promise<RemoveActiveCustomizationsResponse> {
-    const data = await response.json();
-    return data as RemoveActiveCustomizationsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RemoveActiveCustomizationsResponse;
   }
 }

@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from RetrieveApplicationRibbon function
+ * Response from the RetrieveApplicationRibbon function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveApplicationRibbonResponse {
+  "@odata.context"?: string;
   CompressedApplicationRibbonXml: string;
 }
 
@@ -26,7 +29,7 @@ export class RetrieveApplicationRibbonFunction implements Executable<RetrieveApp
   }
 
   async parseResponse(response: Response): Promise<RetrieveApplicationRibbonResponse> {
-    const data = await response.json();
-    return data as RetrieveApplicationRibbonResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveApplicationRibbonResponse;
   }
 }

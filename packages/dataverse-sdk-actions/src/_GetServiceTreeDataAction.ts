@@ -1,10 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from _GetServiceTreeData action
+ * Response from the _GetServiceTreeData action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface _GetServiceTreeDataResponse {
+  "@odata.context"?: string;
   TreeObject: string;
+}
+
+/**
+ * Parameters of the _GetServiceTreeData action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface _GetServiceTreeDataActionParameters {
+  ServiceId: string;
+  InputSource?: string;
 }
 
 /**
@@ -13,31 +26,28 @@ export interface _GetServiceTreeDataResponse {
  * Unbound action
  */
 export class _GetServiceTreeDataAction implements Executable<_GetServiceTreeDataResponse> {
-  constructor(
-    public readonly serviceId: string,
-    public readonly inputSource: string
-  ) {}
+  constructor(public readonly parameters: _GetServiceTreeDataActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/_GetServiceTreeData`;
 
-    const body: Record<string, unknown> = {
-      ServiceId: this.serviceId,
-      InputSource: this.inputSource,
-    };
+    const body = requestBody({
+      ServiceId: this.parameters.ServiceId,
+      InputSource: this.parameters.InputSource,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<_GetServiceTreeDataResponse> {
-    const data = await response.json();
-    return data as _GetServiceTreeDataResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as _GetServiceTreeDataResponse;
   }
 }

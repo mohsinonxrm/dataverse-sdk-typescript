@@ -1,10 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UpdateAutomatedPlugin action
+ * Response from the UpdateAutomatedPlugin action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpdateAutomatedPluginResponse {
-  // No content returned
+export type UpdateAutomatedPluginResponse = void;
+
+/**
+ * Parameters of the UpdateAutomatedPlugin action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpdateAutomatedPluginActionParameters {
+  SolutionUniqueName?: string;
+  Expression?: string;
+  FxExpressionUniqueName: string;
+  Stage?: number;
+  EntityLogicalName?: string;
+  Context?: string;
+  MessageName?: string;
+  Name?: string;
 }
 
 /**
@@ -13,43 +29,34 @@ export interface UpdateAutomatedPluginResponse {
  * Unbound action
  */
 export class UpdateAutomatedPluginAction implements Executable<UpdateAutomatedPluginResponse> {
-  constructor(
-    public readonly expression: string,
-    public readonly solutionUniqueName: string,
-    public readonly entityLogicalName: string,
-    public readonly context: string,
-    public readonly name: string,
-    public readonly stage: number,
-    public readonly fxExpressionUniqueName: string,
-    public readonly messageName: string
-  ) {}
+  constructor(public readonly parameters: UpdateAutomatedPluginActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpdateAutomatedPlugin`;
 
-    const body: Record<string, unknown> = {
-      Expression: this.expression,
-      SolutionUniqueName: this.solutionUniqueName,
-      EntityLogicalName: this.entityLogicalName,
-      Context: this.context,
-      Name: this.name,
-      Stage: this.stage,
-      FxExpressionUniqueName: this.fxExpressionUniqueName,
-      MessageName: this.messageName,
-    };
+    const body = requestBody({
+      SolutionUniqueName: this.parameters.SolutionUniqueName,
+      Expression: this.parameters.Expression,
+      FxExpressionUniqueName: this.parameters.FxExpressionUniqueName,
+      Stage: this.parameters.Stage,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+      Context: this.parameters.Context,
+      MessageName: this.parameters.MessageName,
+      Name: this.parameters.Name,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UpdateAutomatedPluginResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<UpdateAutomatedPluginResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

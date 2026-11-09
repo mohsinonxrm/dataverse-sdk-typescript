@@ -1,10 +1,21 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_SalesAgents_CompleteOrchestration action
+ * Response from the msdyn_SalesAgents_CompleteOrchestration action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_SalesAgents_CompleteOrchestrationResponse {
-  // No content returned
+export type msdyn_SalesAgents_CompleteOrchestrationResponse = void;
+
+/**
+ * Parameters of the msdyn_SalesAgents_CompleteOrchestration action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_SalesAgents_CompleteOrchestrationActionParameters {
+  msdyn_SarRecordId: string;
+  msdyn_TrackingId?: string;
+  msdyn_SalesAgentType: number;
 }
 
 /**
@@ -14,34 +25,30 @@ export interface msdyn_SalesAgents_CompleteOrchestrationResponse {
  */
 export class msdyn_SalesAgents_CompleteOrchestrationAction implements Executable<msdyn_SalesAgents_CompleteOrchestrationResponse> {
   constructor(
-    public readonly msdyn_SarRecordId: string,
-    public readonly msdyn_TrackingId: string,
-    public readonly msdyn_SalesAgentType: number
+    public readonly parameters: msdyn_SalesAgents_CompleteOrchestrationActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_SalesAgents_CompleteOrchestration`;
 
-    const body: Record<string, unknown> = {
-      msdyn_SarRecordId: this.msdyn_SarRecordId,
-      msdyn_TrackingId: this.msdyn_TrackingId,
-      msdyn_SalesAgentType: this.msdyn_SalesAgentType,
-    };
+    const body = requestBody({
+      msdyn_SarRecordId: this.parameters.msdyn_SarRecordId,
+      msdyn_TrackingId: this.parameters.msdyn_TrackingId,
+      msdyn_SalesAgentType: this.parameters.msdyn_SalesAgentType,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(
-    response: Response
-  ): Promise<msdyn_SalesAgents_CompleteOrchestrationResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_SalesAgents_CompleteOrchestrationResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

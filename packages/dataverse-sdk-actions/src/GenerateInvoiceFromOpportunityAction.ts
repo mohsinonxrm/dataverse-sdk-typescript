@@ -1,12 +1,28 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import { requestBody } from "./internal/requestBody.js";
+import { enumBody } from "./internal/enumBody.js";
 import type { ColumnSet } from "./types/index.js";
 
 /**
- * Response from GenerateInvoiceFromOpportunity action
+ * Response from the GenerateInvoiceFromOpportunity action.
+ *
+ * The record: the response body itself, with its annotations (not wrapped in `value`).
+ * `null` when the Web API answers 204 No Content (an entity output that wasn't set).
  */
-export interface GenerateInvoiceFromOpportunityResponse {
-  value: EntityReference;
+export type GenerateInvoiceFromOpportunityResponse = {
+  "@odata.context"?: string;
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+} | null;
+
+/**
+ * Parameters of the GenerateInvoiceFromOpportunity action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GenerateInvoiceFromOpportunityActionParameters {
+  OpportunityId: string;
+  ColumnSet?: ColumnSet;
 }
 
 /**
@@ -15,31 +31,30 @@ export interface GenerateInvoiceFromOpportunityResponse {
  * Unbound action
  */
 export class GenerateInvoiceFromOpportunityAction implements Executable<GenerateInvoiceFromOpportunityResponse> {
-  constructor(
-    public readonly opportunityId: string,
-    public readonly columnSet: ColumnSet
-  ) {}
+  constructor(public readonly parameters: GenerateInvoiceFromOpportunityActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/GenerateInvoiceFromOpportunity`;
 
-    const body: Record<string, unknown> = {
-      OpportunityId: this.opportunityId,
-      ColumnSet: this.columnSet,
-    };
+    const body = requestBody({
+      OpportunityId: this.parameters.OpportunityId,
+      ColumnSet: enumBody(this.parameters.ColumnSet, "ColumnSet"),
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<GenerateInvoiceFromOpportunityResponse> {
-    const data = await response.json();
-    return data as GenerateInvoiceFromOpportunityResponse;
+    // An entity output that wasn't set answers 204 No Content
+    if (response.status === 204) return null;
+    // The body is the record, with its annotations
+    return (await response.json()) as GenerateInvoiceFromOpportunityResponse;
   }
 }

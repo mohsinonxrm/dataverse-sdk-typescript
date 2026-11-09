@@ -1,9 +1,16 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from CalculateTotalTimeIncident function
+ * Response from the CalculateTotalTimeIncident function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface CalculateTotalTimeIncidentResponse {
+  "@odata.context"?: string;
   TotalTime: number;
 }
 
@@ -12,13 +19,15 @@ export interface CalculateTotalTimeIncidentResponse {
  *
  * Bound function
  * Binding parameter: entity (mscrm.incident)
+ *
+ * The first argument is the id of the incident record to call it on.
  */
 export class CalculateTotalTimeIncidentFunction implements Executable<CalculateTotalTimeIncidentResponse> {
   constructor(public readonly incidentId: string) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound function
-    let url = `${baseUrl}/incidents(${this.incidentId})/Microsoft.Dynamics.CRM.CalculateTotalTimeIncident`;
+    let url = `${baseUrl}/incidents(${odataLiteral.guid(this.incidentId)})/Microsoft.Dynamics.CRM.CalculateTotalTimeIncident`;
 
     return {
       method: "GET",
@@ -30,7 +39,7 @@ export class CalculateTotalTimeIncidentFunction implements Executable<CalculateT
   }
 
   async parseResponse(response: Response): Promise<CalculateTotalTimeIncidentResponse> {
-    const data = await response.json();
-    return data as CalculateTotalTimeIncidentResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as CalculateTotalTimeIncidentResponse;
   }
 }

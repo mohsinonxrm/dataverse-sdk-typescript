@@ -1,11 +1,24 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import { requestBody } from "./internal/requestBody.js";
+import type { AnyEntityPayload } from "./types/EntityPayload.js";
 
 /**
- * Response from Merge action
+ * Response from the Merge action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface MergeResponse {
-  // No content returned
+export type MergeResponse = void;
+
+/**
+ * Parameters of the Merge action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface MergeActionParameters {
+  Target: EntityReference | AnyEntityPayload;
+  Subordinate: EntityReference | AnyEntityPayload;
+  UpdateContent?: EntityReference | AnyEntityPayload;
+  PerformParentingChecks: boolean;
 }
 
 /**
@@ -14,35 +27,30 @@ export interface MergeResponse {
  * Unbound action
  */
 export class MergeAction implements Executable<MergeResponse> {
-  constructor(
-    public readonly target: EntityReference,
-    public readonly subordinate: EntityReference,
-    public readonly updateContent: EntityReference,
-    public readonly performParentingChecks: boolean
-  ) {}
+  constructor(public readonly parameters: MergeActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/Merge`;
 
-    const body: Record<string, unknown> = {
-      Target: this.target,
-      Subordinate: this.subordinate,
-      UpdateContent: this.updateContent,
-      PerformParentingChecks: this.performParentingChecks,
-    };
+    const body = requestBody({
+      Target: this.parameters.Target,
+      Subordinate: this.parameters.Subordinate,
+      UpdateContent: this.parameters.UpdateContent,
+      PerformParentingChecks: this.parameters.PerformParentingChecks,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<MergeResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<MergeResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

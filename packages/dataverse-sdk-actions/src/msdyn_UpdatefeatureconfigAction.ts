@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from msdyn_Updatefeatureconfig action
+ * Response from the msdyn_Updatefeatureconfig action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface msdyn_UpdatefeatureconfigResponse {
-  // No content returned
+export type msdyn_UpdatefeatureconfigResponse = void;
+
+/**
+ * Parameters of the msdyn_Updatefeatureconfig action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_UpdatefeatureconfigActionParameters {
+  featureType?: number;
+  configuration?: string;
 }
 
 /**
@@ -13,31 +23,28 @@ export interface msdyn_UpdatefeatureconfigResponse {
  * Unbound action
  */
 export class msdyn_UpdatefeatureconfigAction implements Executable<msdyn_UpdatefeatureconfigResponse> {
-  constructor(
-    public readonly featureType: number,
-    public readonly configuration: string
-  ) {}
+  constructor(public readonly parameters: msdyn_UpdatefeatureconfigActionParameters = {}) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_Updatefeatureconfig`;
 
-    const body: Record<string, unknown> = {
-      featureType: this.featureType,
-      configuration: this.configuration,
-    };
+    const body = requestBody({
+      featureType: this.parameters.featureType,
+      configuration: this.parameters.configuration,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_UpdatefeatureconfigResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<msdyn_UpdatefeatureconfigResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

@@ -1,10 +1,20 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from DeactivateEntityKey action
+ * Response from the DeactivateEntityKey action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface DeactivateEntityKeyResponse {
-  // No content returned
+export type DeactivateEntityKeyResponse = void;
+
+/**
+ * Parameters of the DeactivateEntityKey action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface DeactivateEntityKeyActionParameters {
+  EntityKeyLogicalName: string;
+  EntityLogicalName: string;
 }
 
 /**
@@ -13,31 +23,28 @@ export interface DeactivateEntityKeyResponse {
  * Unbound action
  */
 export class DeactivateEntityKeyAction implements Executable<DeactivateEntityKeyResponse> {
-  constructor(
-    public readonly entityKeyLogicalName: string,
-    public readonly entityLogicalName: string
-  ) {}
+  constructor(public readonly parameters: DeactivateEntityKeyActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/DeactivateEntityKey`;
 
-    const body: Record<string, unknown> = {
-      EntityKeyLogicalName: this.entityKeyLogicalName,
-      EntityLogicalName: this.entityLogicalName,
-    };
+    const body = requestBody({
+      EntityKeyLogicalName: this.parameters.EntityKeyLogicalName,
+      EntityLogicalName: this.parameters.EntityLogicalName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<DeactivateEntityKeyResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<DeactivateEntityKeyResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

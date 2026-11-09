@@ -1,10 +1,23 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
 
 /**
- * Response from GetComponentManagedIdentityFIC function
+ * Response from the GetComponentManagedIdentityFIC function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetComponentManagedIdentityFICResponse {
+  "@odata.context"?: string;
   FICSubject: string;
+}
+
+/**
+ * Parameters of the GetComponentManagedIdentityFIC function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetComponentManagedIdentityFICFunctionParameters {
+  ComponentName: string;
+  ComponentId: string;
 }
 
 /**
@@ -13,10 +26,7 @@ export interface GetComponentManagedIdentityFICResponse {
  * Unbound function
  */
 export class GetComponentManagedIdentityFICFunction implements Executable<GetComponentManagedIdentityFICResponse> {
-  constructor(
-    public readonly componentName: string,
-    public readonly componentId: string
-  ) {}
+  constructor(public readonly parameters: GetComponentManagedIdentityFICFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/GetComponentManagedIdentityFIC`;
@@ -24,21 +34,13 @@ export class GetComponentManagedIdentityFICFunction implements Executable<GetCom
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.componentName !== undefined) {
+    if (this.parameters.ComponentName !== undefined) {
       aliases.push(`ComponentName=@p1`);
-      params.append(
-        "@p1",
-        typeof this.componentName === "string"
-          ? `'${this.componentName}'`
-          : String(this.componentName)
-      );
+      params.append("@p1", formatParameterAlias(this.parameters.ComponentName, "Edm.String"));
     }
-    if (this.componentId !== undefined) {
+    if (this.parameters.ComponentId !== undefined) {
       aliases.push(`ComponentId=@p2`);
-      params.append(
-        "@p2",
-        typeof this.componentId === "string" ? `'${this.componentId}'` : String(this.componentId)
-      );
+      params.append("@p2", formatParameterAlias(this.parameters.ComponentId, "Edm.Guid"));
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -54,7 +56,7 @@ export class GetComponentManagedIdentityFICFunction implements Executable<GetCom
   }
 
   async parseResponse(response: Response): Promise<GetComponentManagedIdentityFICResponse> {
-    const data = await response.json();
-    return data as GetComponentManagedIdentityFICResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as GetComponentManagedIdentityFICResponse;
   }
 }

@@ -1,11 +1,29 @@
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import {
+  odataLiteral,
+  type Executable,
+  type RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from GetRunMap action
+ * Response from the GetRunMap action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface GetRunMapResponse {
+  "@odata.context"?: string;
   continuationToken: string;
   runMap: string;
+}
+
+/**
+ * Parameters of the GetRunMap action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface GetRunMapActionParameters {
+  continuationToken?: string;
+  runId: string;
+  max?: number;
 }
 
 /**
@@ -13,37 +31,37 @@ export interface GetRunMapResponse {
  *
  * Bound action
  * Binding parameter: entity (mscrm.businessprocess)
+ *
+ * The first argument is the id of the businessprocess record to call it on.
  */
 export class GetRunMapAction implements Executable<GetRunMapResponse> {
   constructor(
     public readonly businessprocessId: string,
-    public readonly runId: string,
-    public readonly continuationToken: string,
-    public readonly max: number
+    public readonly parameters: GetRunMapActionParameters
   ) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     // Bound action
-    const url = `${baseUrl}/businessprocesses(${this.businessprocessId})/Microsoft.Dynamics.CRM.GetRunMap`;
+    const url = `${baseUrl}/businessprocesses(${odataLiteral.guid(this.businessprocessId)})/Microsoft.Dynamics.CRM.GetRunMap`;
 
-    const body: Record<string, unknown> = {
-      runId: this.runId,
-      continuationToken: this.continuationToken,
-      max: this.max,
-    };
+    const body = requestBody({
+      continuationToken: this.parameters.continuationToken,
+      runId: this.parameters.runId,
+      max: this.parameters.max,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<GetRunMapResponse> {
-    const data = await response.json();
-    return data as GetRunMapResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as GetRunMapResponse;
   }
 }

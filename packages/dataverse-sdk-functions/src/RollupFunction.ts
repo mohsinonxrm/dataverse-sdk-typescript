@@ -1,13 +1,29 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
-import type { QueryBase, RollupType } from "./types/index.js";
+import { enumBody } from "./internal/enumBody.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
+import type { RollupType, TypedQueryBase } from "./types/index.js";
 
 /**
- * Response from Rollup function
+ * Response from the Rollup function.
+ *
+ * The collection, read from the `value` of the response body.
+ * Each record keeps its annotations. A 204 (an output that wasn't set) is `[]`.
  */
-export interface RollupResponse {
-  value: EntityReference[];
+export type RollupResponse = Array<{
+  "@odata.etag"?: string;
+  "@odata.type"?: string;
+  [column: string]: unknown;
+}>;
+
+/**
+ * Parameters of the Rollup function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RollupFunctionParameters {
+  Target: EntityReference;
+  Query?: TypedQueryBase;
+  RollupType: RollupType | keyof typeof RollupType;
 }
 
 /**
@@ -16,11 +32,7 @@ export interface RollupResponse {
  * Unbound function
  */
 export class RollupFunction implements Executable<RollupResponse> {
-  constructor(
-    public readonly target: EntityReference,
-    public readonly query: QueryBase,
-    public readonly rollupType: RollupType
-  ) {}
+  constructor(public readonly parameters: RollupFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/Rollup`;
@@ -28,24 +40,29 @@ export class RollupFunction implements Executable<RollupResponse> {
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.target)}(${this.target.id})`,
-        })
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.query !== undefined) {
+    if (this.parameters.Query !== undefined) {
       aliases.push(`Query=@p2`);
-      params.append("@p2", JSON.stringify(this.query));
+      params.append(
+        "@p2",
+        formatParameterAlias(
+          enumBody(this.parameters.Query, "QueryBase"),
+          "mscrm.QueryBase",
+          "ComplexType"
+        )
+      );
     }
-    if (this.rollupType !== undefined) {
+    if (this.parameters.RollupType !== undefined) {
       aliases.push(`RollupType=@p3`);
       params.append(
         "@p3",
-        typeof this.rollupType === "string" ? `'${this.rollupType}'` : String(this.rollupType)
+        formatParameterAlias(this.parameters.RollupType, "mscrm.RollupType", "EnumerationType")
       );
     }
     if (aliases.length > 0) {
@@ -62,7 +79,9 @@ export class RollupFunction implements Executable<RollupResponse> {
   }
 
   async parseResponse(response: Response): Promise<RollupResponse> {
-    const data = await response.json();
-    return data as RollupResponse;
+    // An output that wasn't set answers 204 No Content: an empty collection
+    if (response.status === 204) return [];
+    // A collection comes wrapped: { "@odata.context": "…", "value": [ … ] }
+    return ((await response.json()) as { value: RollupResponse }).value;
   }
 }

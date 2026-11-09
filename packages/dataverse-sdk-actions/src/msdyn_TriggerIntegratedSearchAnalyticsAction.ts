@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from msdyn_TriggerIntegratedSearchAnalytics action
+ * Response from the msdyn_TriggerIntegratedSearchAnalytics action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface msdyn_TriggerIntegratedSearchAnalyticsResponse {
+  "@odata.context"?: string;
   msdyn_IntegratedSearchAnalyticsResponse: string;
 }
 
@@ -20,13 +23,13 @@ export class msdyn_TriggerIntegratedSearchAnalyticsAction implements Executable<
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_TriggerIntegratedSearchAnalyticsResponse> {
-    const data = await response.json();
-    return data as msdyn_TriggerIntegratedSearchAnalyticsResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as msdyn_TriggerIntegratedSearchAnalyticsResponse;
   }
 }

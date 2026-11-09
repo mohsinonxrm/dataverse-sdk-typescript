@@ -6,6 +6,6 @@ import type { OptionSetMetadataBase } from "./OptionSetMetadataBase.js";
  * Extends: OptionSetMetadataBase
  */
 export interface BooleanOptionSetMetadata extends OptionSetMetadataBase {
-  TrueOption?: OptionMetadata;
   FalseOption?: OptionMetadata;
+  TrueOption?: OptionMetadata;
 }

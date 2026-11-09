@@ -1,9 +1,12 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
 
 /**
- * Response from IsDataEncryptionActive function
+ * Response from the IsDataEncryptionActive function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface IsDataEncryptionActiveResponse {
+  "@odata.context"?: string;
   IsActive: boolean;
 }
 
@@ -26,7 +29,7 @@ export class IsDataEncryptionActiveFunction implements Executable<IsDataEncrypti
   }
 
   async parseResponse(response: Response): Promise<IsDataEncryptionActiveResponse> {
-    const data = await response.json();
-    return data as IsDataEncryptionActiveResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as IsDataEncryptionActiveResponse;
   }
 }

@@ -2,6 +2,6 @@
  * RelationshipAttribute complex type
  */
 export interface RelationshipAttribute {
-  ReferencingAttributeName: string;
-  ReferencedAttributeName: string;
+  ReferencedAttributeName?: string;
+  ReferencingAttributeName?: string;
 }

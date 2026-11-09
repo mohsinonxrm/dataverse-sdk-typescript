@@ -1,10 +1,19 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from CreateAsyncJobToRevokeInheritedAccess action
+ * Response from the CreateAsyncJobToRevokeInheritedAccess action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface CreateAsyncJobToRevokeInheritedAccessResponse {
-  // No content returned
+export type CreateAsyncJobToRevokeInheritedAccessResponse = void;
+
+/**
+ * Parameters of the CreateAsyncJobToRevokeInheritedAccess action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface CreateAsyncJobToRevokeInheritedAccessActionParameters {
+  RelationshipSchema: string;
 }
 
 /**
@@ -13,27 +22,27 @@ export interface CreateAsyncJobToRevokeInheritedAccessResponse {
  * Unbound action
  */
 export class CreateAsyncJobToRevokeInheritedAccessAction implements Executable<CreateAsyncJobToRevokeInheritedAccessResponse> {
-  constructor(public readonly relationshipSchema: string) {}
+  constructor(public readonly parameters: CreateAsyncJobToRevokeInheritedAccessActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/CreateAsyncJobToRevokeInheritedAccess`;
 
-    const body: Record<string, unknown> = {
-      RelationshipSchema: this.relationshipSchema,
-    };
+    const body = requestBody({
+      RelationshipSchema: this.parameters.RelationshipSchema,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<CreateAsyncJobToRevokeInheritedAccessResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<CreateAsyncJobToRevokeInheritedAccessResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }

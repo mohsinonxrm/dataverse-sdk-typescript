@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetCopilotServiceStream message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetCopilotServiceStreamRequestParameters {
+  Context: string;
+  RequestPayload?: string;
+}
 
 /**
  * msdyn_GetCopilotServiceStream request message
@@ -10,41 +20,33 @@ export class msdyn_GetCopilotServiceStreamRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetCopilotServiceStreamResponse>
 {
-  constructor(
-    public requestPayload: string,
-    public context: string
-  ) {
-    super("msdyn_GetCopilotServiceStream");
+  declare readonly Parameters: Readonly<msdyn_GetCopilotServiceStreamRequestParameters>;
+
+  constructor(parameters: msdyn_GetCopilotServiceStreamRequestParameters) {
+    super("msdyn_GetCopilotServiceStream", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetCopilotServiceStream`;
 
-    const body: Record<string, unknown> = {
-      RequestPayload: this.requestPayload,
-      Context: this.context,
-    };
+    const body = requestBody({
+      Context: this.Parameters.Context,
+      RequestPayload: this.Parameters.RequestPayload,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<msdyn_GetCopilotServiceStreamResponse> {
+  parseResponse(_response: Response): Promise<msdyn_GetCopilotServiceStreamResponse> {
     // No return value (204 No Content)
-    return new msdyn_GetCopilotServiceStreamResponse();
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      RequestPayload: this.requestPayload,
-      Context: this.context,
-    };
+    return Promise.resolve(new msdyn_GetCopilotServiceStreamResponse());
   }
 }
 
@@ -56,7 +58,7 @@ export class msdyn_GetCopilotServiceStreamResponse extends OrganizationResponse 
     super("msdyn_GetCopilotServiceStream");
   }
 
-  static fromResponse(_data: unknown): msdyn_GetCopilotServiceStreamResponse {
+  static fromResponse(_data?: unknown): msdyn_GetCopilotServiceStreamResponse {
     return new msdyn_GetCopilotServiceStreamResponse();
   }
 }

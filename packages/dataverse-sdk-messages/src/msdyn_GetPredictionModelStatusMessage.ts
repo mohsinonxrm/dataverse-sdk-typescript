@@ -1,5 +1,14 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the msdyn_GetPredictionModelStatus message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface msdyn_GetPredictionModelStatusRequestParameters {
+  PredictionName?: string;
+}
 
 /**
  * msdyn_GetPredictionModelStatus request message
@@ -10,48 +19,57 @@ export class msdyn_GetPredictionModelStatusRequest
   extends OrganizationRequest
   implements Executable<msdyn_GetPredictionModelStatusResponse>
 {
-  constructor(public predictionName: string) {
-    super("msdyn_GetPredictionModelStatus");
+  declare readonly Parameters: Readonly<msdyn_GetPredictionModelStatusRequestParameters>;
+
+  constructor(parameters: msdyn_GetPredictionModelStatusRequestParameters = {}) {
+    super("msdyn_GetPredictionModelStatus", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/msdyn_GetPredictionModelStatus`;
 
-    const body: Record<string, unknown> = {
-      PredictionName: this.predictionName,
-    };
+    const body = requestBody({
+      PredictionName: this.Parameters.PredictionName,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<msdyn_GetPredictionModelStatusResponse> {
-    const data = await response.json();
-    return msdyn_GetPredictionModelStatusResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      PredictionName: this.predictionName,
-    };
+    // The body is the complex value, with its @odata.context
+    return msdyn_GetPredictionModelStatusResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the msdyn_GetPredictionModelStatus action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface msdyn_GetPredictionModelStatusResult {
+  "@odata.context"?: string;
+  PredictionModelStatus: string;
+}
+
+/**
  * msdyn_GetPredictionModelStatus response message
+ *
+ * `result` is the value the msdyn_GetPredictionModelStatus action returns (see {@link msdyn_GetPredictionModelStatusResult}).
  */
 export class msdyn_GetPredictionModelStatusResponse extends OrganizationResponse {
-  constructor(public result: msdyn_GetPredictionModelStatusResponse) {
+  constructor(public result: msdyn_GetPredictionModelStatusResult) {
     super("msdyn_GetPredictionModelStatus");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): msdyn_GetPredictionModelStatusResponse {
-    return new msdyn_GetPredictionModelStatusResponse((data as any).value);
+    return new msdyn_GetPredictionModelStatusResponse(data as msdyn_GetPredictionModelStatusResult);
   }
 }

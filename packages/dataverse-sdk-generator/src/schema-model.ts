@@ -1,3 +1,9 @@
+/**
+ * Portions of this file are adapted from dataverse-gen by Scott Durow
+ * (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, licensed under
+ * the MIT License. See THIRD_PARTY_NOTICES.md in this package for the notice.
+ */
+
 import * as xmljs from "xml-js";
 import type {
   DataverseGenConfig,
@@ -6,11 +12,16 @@ import type {
   ActionType,
   FunctionType,
   ComplexType,
+  NavigationPropertyType,
   PropertyType,
   TypeScriptType,
   ParameterType,
 } from "./types.js";
-import type { MetadataService } from "./metadata-service.js";
+import type {
+  AttributeMetadataDetail,
+  EntityMetadataDetail,
+  MetadataService,
+} from "./metadata-service.js";
 
 /**
  * Schema model that parses CSDL $metadata and builds type definitions
@@ -21,6 +32,28 @@ export class SchemaModel {
   Actions: ActionType[] = [];
   Functions: FunctionType[] = [];
   ComplexTypes: ComplexType[] = [];
+
+  /**
+   * Messages about the configuration, such as a listed function that is not generated. The CLI
+   * prints them after generating.
+   */
+  Warnings: string[] = [];
+
+  /**
+   * Names of the Web API's query functions (`LastXDays`, `Between`, `EqualUserId`, …). `$metadata`
+   * declares them as functions, but Dataverse runs them only inside `$filter`, so they are not
+   * generated: use `queryFunctions` from `@mohsinonxrm/dataverse-sdk-functions` instead.
+   */
+  QueryFunctionNames = new Set<string>();
+
+  /**
+   * Names of every entity type in $metadata, before filtering. Generated code types references
+   * to entities that were not generated (and abstract ones such as `crmbaseentity`) as `IEntity`.
+   */
+  AllEntityTypeNames = new Set<string>();
+
+  /** Entity types that are tables: not abstract, and with an entity set. */
+  private tableEntityTypeNames = new Set<string>();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private metadata: any;
@@ -66,13 +99,27 @@ export class SchemaModel {
 
     if (entities && entities.length > 0) {
       this.EntityTypes = this.EntityTypes.filter((e) => entities.includes(e.LogicalName));
+    } else {
+      // "All entities" means all tables: abstract types (crmbaseentity, principal) and types
+      // without an entity set have no RetrieveMetadataChanges entry and nothing to query.
+      this.EntityTypes = this.EntityTypes.filter((e) => this.tableEntityTypeNames.has(e.Name));
     }
 
     if (actions && actions.length > 0) {
       this.Actions = this.Actions.filter((a) => actions.includes(a.Name));
     }
 
+    // Query functions can't be called on their own (GET /LastXDays(...) is a 404), so they are
+    // never generated, even when listed.
+    this.Functions = this.Functions.filter((f) => !this.QueryFunctionNames.has(f.Name));
     if (functions && functions.length > 0) {
+      const skipped = functions.filter((name) => this.QueryFunctionNames.has(name));
+      if (skipped.length > 0) {
+        this.Warnings.push(
+          `Not generated: ${skipped.join(", ")}. Query functions run only inside $filter; ` +
+            `use queryFunctions from @mohsinonxrm/dataverse-sdk-functions instead.`
+        );
+      }
       this.Functions = this.Functions.filter((f) => functions.includes(f.Name));
     }
   }
@@ -84,20 +131,32 @@ export class SchemaModel {
   private async enrichWithDetailedMetadata(): Promise<void> {
     if (this.EntityTypes.length === 0) return;
 
-    for (const entityType of this.EntityTypes) {
+    const allTables = !this.config.entities || this.config.entities.length === 0;
+    const skipped: string[] = [];
+    for (const entityType of [...this.EntityTypes]) {
       const response = await this.metadataService.getEntityMetadata(entityType.LogicalName);
 
       if (!response.EntityMetadata || response.EntityMetadata.length === 0) {
+        if (allTables) {
+          // All-tables mode (#360): an entity type RetrieveMetadataChanges doesn't know isn't
+          // generated (references to it are typed IEntity), instead of failing the whole run.
+          skipped.push(entityType.LogicalName);
+          this.EntityTypes = this.EntityTypes.filter((e) => e !== entityType);
+          continue;
+        }
         throw new Error(
           `${entityType.LogicalName} is not a Dataverse entity, remove it from the .dataverse-gen.json`
         );
       }
 
-      const entityMetadata = response.EntityMetadata[0];
+      const entityMetadata = canonicalOrder(response.EntityMetadata[0]);
 
       // Set metadata properties not available in EDMX
       entityType.SchemaName = entityMetadata.SchemaName ?? entityType.LogicalName;
       entityType.EntitySetName = entityMetadata.EntitySetName ?? entityType.LogicalName + "s";
+      if (entityMetadata.PrimaryNameAttribute) {
+        entityType.PrimaryNameAttribute = entityMetadata.PrimaryNameAttribute;
+      }
 
       // Convert Keys metadata to EntityKeyType
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,9 +182,16 @@ export class SchemaModel {
 
         // Enrich with metadata
         existingProp.SchemaName = attribute.SchemaName ?? logicalName;
-        existingProp.IsRequired = attribute.RequiredLevel?.Value === 2; // ApplicationRequired
+        existingProp.AttributeType = attribute.AttributeType;
+        // RequiredLevel.Value is the member name ("ApplicationRequired"), not a number (#325).
+        const requiredLevel = attribute.RequiredLevel?.Value;
+        existingProp.IsRequired = requiredLevel === "ApplicationRequired";
+        existingProp.RequiredLevel =
+          requiredLevel && requiredLevel !== "None" ? requiredLevel : undefined;
         existingProp.AttributeOf = attribute.AttributeOf;
         existingProp.SourceType = attribute.SourceType ?? 0;
+        existingProp.IsValidForCreate = attribute.IsValidForCreate;
+        existingProp.IsValidForUpdate = attribute.IsValidForUpdate;
         existingProp.DisplayName = this.extractLabel(attribute.DisplayName);
         existingProp.Description = this.extractLabel(attribute.Description);
 
@@ -135,7 +201,6 @@ export class SchemaModel {
           if (enumType) {
             existingProp.IsEnum = true;
             existingProp.EnumName = enumType.Name;
-            existingProp.Type = enumType.Name;
           }
         } else if (attribute.OptionSet?.IsGlobal === true) {
           // Global option set - should already exist in EnumTypes
@@ -157,10 +222,31 @@ export class SchemaModel {
         if (attribute.AttributeTypeName?.Value === "MultiSelectPicklistType") {
           existingProp.IsMultiSelect = true;
         }
+
+        // Constraints for validation (#347)
+        if (typeof attribute.MaxLength === "number") existingProp.MaxLength = attribute.MaxLength;
+        if (typeof attribute.MinValue === "number") existingProp.MinValue = attribute.MinValue;
+        if (typeof attribute.MaxValue === "number") existingProp.MaxValue = attribute.MaxValue;
+        const options = attribute.OptionSet?.Options;
+        if (Array.isArray(options)) {
+          existingProp.OptionValues = options
+            .map((o) => o.Value)
+            .filter((v): v is number => typeof v === "number")
+            .sort((a, b) => a - b);
+        }
       }
 
       // Apply polymorphic lookup consolidation
       this.consolidatePolymorphicLookups(entityType, entityMetadata);
+      this.markLookupNavigationProperties(entityType, entityMetadata.Attributes);
+      this.ensureUniqueMemberNames(entityType);
+    }
+
+    if (skipped.length > 0) {
+      this.Warnings.push(
+        `Not generated: ${skipped.join(", ")}. RetrieveMetadataChanges returns no table ` +
+          `metadata for ${skipped.length === 1 ? "it" : "them"}.`
+      );
     }
   }
 
@@ -180,24 +266,49 @@ export class SchemaModel {
 
     const members = Array.isArray(optionSet.Options) ? optionSet.Options : [optionSet.Options];
 
+    interface Option {
+      Value?: number | null;
+      Label?: unknown;
+    }
+    const options = (members as Option[])
+      .filter((m): m is Option & { Value: number } => typeof m.Value === "number")
+      .sort((a, b) => a.Value - b.Value);
+
+    const used = new Set<string>();
     const enumType: EnumType = {
       Name: enumName,
       IsGlobal: false,
-      Members: members
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .filter((m: any) => m.Value !== null && m.Value !== undefined)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((m: any) => ({
-          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-explicit-any
-          Name: this.extractLabel(m.Label) || `Value${m.Value}`,
-          Value: m.Value,
-        }))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .sort((a: { Value: number }, b: { Value: number }) => a.Value - b.Value),
+      Members: options.map((m) => {
+        let name = toEnumMemberName(this.extractLabel(m.Label), m.Value);
+        // Two options can share a label; the value keeps the second one distinct.
+        if (used.has(name)) name = `${name}_${String(m.Value).replace("-", "Minus")}`;
+        used.add(name);
+        return { Name: name, Value: m.Value };
+      }),
     };
 
     this.EnumTypes.push(enumType);
     return enumType;
+  }
+
+  /**
+   * Make every generated member name of an entity unique. Two navigation properties with one name would be declared twice in the
+   * interface and the metadata object, which strict `tsc` rejects (#244). The later one is renamed to
+   * `<name>_<relationship>`, or `<name>_<n>` if that is taken too.
+   */
+  private ensureUniqueMemberNames(entityType: EntityType): void {
+    const taken = new Set<string>();
+    for (const nav of entityType.NavigationProperties) {
+      if (taken.has(nav.Name)) {
+        const base = nav.Name;
+        const suffix = nav.RelationshipName || nav.TargetType;
+        let candidate = suffix ? `${base}_${suffix}` : base;
+        for (let n = 2; taken.has(candidate) || candidate === base; n++)
+          candidate = `${base}_${String(n)}`;
+        nav.Name = candidate;
+      }
+      taken.add(nav.Name);
+    }
   }
 
   /**
@@ -211,12 +322,16 @@ export class SchemaModel {
     for (const attribute of entityMetadata.Attributes) {
       if (!attribute.Targets || attribute.Targets.length === 0) continue;
 
-      const logicalName = attribute.LogicalName ?? "";
+      const logicalName = String(attribute.LogicalName ?? "");
 
-      // Find all navigation properties that start with this lookup's logical name
-      const relatedNav = entityType.NavigationProperties.filter((nav) =>
-        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-        nav.Name.startsWith(logicalName + "_")
+      // A lookup that already has a navigation property of its own name (`createdby`) has nothing
+      // to merge: the `createdby_<table>` properties beside it are the other side of other
+      // tables' relationships (collections), not one property per target (#244).
+      if (entityType.NavigationProperties.some((nav) => nav.Name === logicalName)) continue;
+
+      // Find the single-valued navigation properties that start with this lookup's logical name
+      const relatedNav = entityType.NavigationProperties.filter(
+        (nav) => !nav.IsCollection && nav.Name.startsWith(`${logicalName}_`)
       );
 
       if (relatedNav.length === 0) continue;
@@ -238,6 +353,44 @@ export class SchemaModel {
       );
 
       entityType.NavigationProperties.push(consolidatedNav);
+    }
+  }
+
+  /**
+   * Find the navigation property each lookup column is written through, and record the lookup on
+   * it with whether a create or an update can set it (#347). A lookup's CSDL property
+   * (`_primarycontactid_value`) is read-only; a write binds the navigation property instead.
+   *
+   * The navigation property is the one named after the lookup (`primarycontactid`, or a
+   * consolidated polymorphic lookup such as `customerid`), else the one single-valued navigation
+   * property the CSDL constrains with `_<lookup>_value`: a custom lookup's navigation property is
+   * named after its schema name (`contoso_ParentAccountId`). A polymorphic lookup that wasn't
+   * consolidated has one per target and gets none.
+   */
+  private markLookupNavigationProperties(
+    entityType: EntityType,
+    attributes: AttributeMetadataDetail[]
+  ): void {
+    for (const attribute of attributes) {
+      if (!attribute.LogicalName || !attribute.Targets?.length) continue;
+      const logicalName = attribute.LogicalName;
+      const singleValued = entityType.NavigationProperties.filter((nav) => !nav.IsCollection);
+      let nav = singleValued.find(
+        (n) => n.Name === logicalName || (n.IsPolymorphic === true && n.FullName === logicalName)
+      );
+      if (!nav) {
+        const constrained = singleValued.filter(
+          (n) => n.ReferentialProperty === `_${logicalName}_value`
+        );
+        if (constrained.length === 1) nav = constrained[0];
+      }
+      if (!nav || nav.LookupAttribute !== undefined) continue;
+      nav.LookupAttribute = logicalName;
+      nav.LookupTargets = attribute.Targets;
+      nav.IsValidForCreate = attribute.IsValidForCreate;
+      nav.IsValidForUpdate = attribute.IsValidForUpdate;
+      const requiredLevel = attribute.RequiredLevel?.Value;
+      if (requiredLevel && requiredLevel !== "None") nav.RequiredLevel = requiredLevel;
     }
   }
 
@@ -322,22 +475,31 @@ export class SchemaModel {
   private resolveTypes(): void {
     for (const entity of this.EntityTypes) {
       for (const prop of entity.Properties) {
+        const enumType = prop.EnumName
+          ? this.EnumTypes.find((e) => e.Name === prop.EnumName)
+          : undefined;
+        // Multi-select values are sent and returned as a comma-separated string ("1,2"),
+        // so only single-choice option sets get the enum type.
+        prop.TypeScriptType =
+          enumType && !prop.IsMultiSelect
+            ? { name: enumType.Name, reference: enumType.Name, isArray: false }
+            : this.getTypeScriptType(prop.Type);
+      }
+    }
+
+    for (const complexType of this.ComplexTypes) {
+      for (const prop of complexType.Properties) {
         prop.TypeScriptType = this.getTypeScriptType(prop.Type);
       }
     }
 
-    for (const action of this.Actions) {
-      for (const param of action.Parameters) {
-        param.TypeScriptType = this.getTypeScriptType(param.Type);
-      }
-      if (action.ReturnType) {
-        // Already resolved
-      }
-    }
-
-    for (const func of this.Functions) {
-      for (const param of func.Parameters) {
-        param.TypeScriptType = this.getTypeScriptType(param.Type);
+    // A parameter takes a date-time as an ISO string or a Date (#361); values read back are strings.
+    for (const op of [...this.Actions, ...this.Functions]) {
+      for (const param of op.Parameters) {
+        const type = this.getTypeScriptType(param.Type);
+        param.TypeScriptType = isDateTimeOffset(param.Type)
+          ? { ...type, name: "string | Date" }
+          : type;
       }
     }
   }
@@ -361,6 +523,7 @@ export class SchemaModel {
       this.EnumTypes.push({
         Name: this.getAttribute(enumType, "Name"),
         IsGlobal: true,
+        IsFlags: this.getAttribute(enumType, "IsFlags") === "true",
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Members: members.map((m: any) => ({
           Name: this.getAttribute(m, "Name"),
@@ -377,15 +540,44 @@ export class SchemaModel {
     const schema = this.getSchema();
     if (!schema?.EntityType) return;
 
-    const entityTypes = Array.isArray(schema.EntityType) ? schema.EntityType : [schema.EntityType];
+    const entityTypes: CsdlEntityTypeNode[] = Array.isArray(schema.EntityType)
+      ? schema.EntityType
+      : [schema.EntityType];
+    const byName = new Map<string, CsdlEntityTypeNode>();
+    for (const entityType of entityTypes) {
+      byName.set(this.getAttribute(entityType, "Name"), entityType);
+    }
 
     for (const entityType of entityTypes) {
       const name = this.getAttribute(entityType, "Name");
-      const key = entityType.Key?.PropertyRef;
+      this.AllEntityTypeNames.add(name);
+      // The type and its base types, up to (not including) crmbaseentity: a derived type, such as
+      // an activity (BaseType="mscrm.activitypointer"), leaves out the columns it inherits (#360).
+      const chain = this.baseTypeChain(entityType, byName);
+      // A table derives from crmbaseentity. EntityMetadata (EntityDefinitions) and the other
+      // metadata types derive from crmmodelbaseentity and have no RetrieveMetadataChanges entry.
+      if (
+        this.getAttribute(entityType, "Abstract") !== "true" &&
+        this.hasEntitySet(name) &&
+        chain.derivesFromCrmBaseEntity
+      ) {
+        this.tableEntityTypeNames.add(name);
+      }
+      const key = chain.types.find((t) => t.Key?.PropertyRef)?.Key?.PropertyRef;
       const keyName = key ? this.getAttribute(key, "Name") : `${name.toLowerCase()}id`;
 
-      const properties = this.readProperties(entityType.Property);
-      const navProps = this.readNavigationProperties(entityType.NavigationProperty);
+      // Own properties first, then the inherited ones a derived type doesn't redeclare. Then by
+      // name: the org's $metadata doesn't list a table's columns in a fixed order from one request
+      // to the next, and the model (its incremental-generation hash, the generated code) must not
+      // depend on it (#347; seen live).
+      const properties = uniqueBy(
+        chain.types.flatMap((t) => this.readProperties(t.Property)),
+        (p) => p.Name
+      ).sort(compareByName);
+      const navProps = uniqueBy(
+        chain.types.flatMap((t) => this.readNavigationProperties(t.NavigationProperty)),
+        (n) => n.Name
+      ).sort(compareByName);
 
       this.EntityTypes.push({
         Name: name,
@@ -401,6 +593,33 @@ export class SchemaModel {
   }
 
   /**
+   * An entity type and its base types, nearest first, stopping before `crmbaseentity` (which has
+   * no properties) and at a type without a base type. `derivesFromCrmBaseEntity` says whether the
+   * chain reached `crmbaseentity`, that is, whether the type is a Dataverse table.
+   */
+  private baseTypeChain(
+    entityType: CsdlEntityTypeNode,
+    byName: Map<string, CsdlEntityTypeNode>
+  ): { types: CsdlEntityTypeNode[]; derivesFromCrmBaseEntity: boolean } {
+    const types: CsdlEntityTypeNode[] = [];
+    const seen = new Set<string>();
+    let current: CsdlEntityTypeNode | undefined = entityType;
+    while (current) {
+      const name = this.getAttribute(current, "Name");
+      if (name === CRM_BASE_ENTITY) return { types, derivesFromCrmBaseEntity: true };
+      if (seen.has(name)) break;
+      seen.add(name);
+      types.push(current);
+      const baseType = this.getAttribute(current, "BaseType");
+      if (!baseType) break;
+      const baseName = this.extractEntityName(baseType);
+      if (baseName === CRM_BASE_ENTITY) return { types, derivesFromCrmBaseEntity: true };
+      current = byName.get(baseName);
+    }
+    return { types, derivesFromCrmBaseEntity: false };
+  }
+
+  /**
    * Read complex types from CSDL
    */
   private readComplexTypes(): void {
@@ -413,10 +632,21 @@ export class SchemaModel {
 
     for (const complexType of complexTypes) {
       const name = this.getAttribute(complexType, "Name");
-      const properties = this.readProperties(complexType.Property);
+      // A complex type can have navigation properties too: PrincipalAccess.Principal is the user
+      // or team to grant access to (#231 for the in-repo generator, #361 here).
+      const navigation = this.readProperties(complexType.NavigationProperty).map((p) => ({
+        ...p,
+        IsNavigation: true,
+      }));
+      // By name, for the same reason as a table's columns (readEntityTypes)
+      const properties = [...this.readProperties(complexType.Property), ...navigation].sort(
+        compareByName
+      );
+      const baseType = this.getAttribute(complexType, "BaseType");
 
       this.ComplexTypes.push({
         Name: name,
+        BaseType: baseType ? this.extractEntityName(baseType) : undefined,
         Properties: properties,
       });
     }
@@ -446,8 +676,12 @@ export class SchemaModel {
         Name: name,
         IsBound: isBound,
         BindingType: bindingType,
+        ...this.bindingInfo(bindingType),
         Parameters: isBound ? parameters.slice(1) : parameters,
         ReturnType: returnType,
+        ReturnTypeNullable: action.ReturnType
+          ? this.getAttribute(action.ReturnType, "Nullable") !== "false"
+          : undefined,
       });
     }
   }
@@ -469,19 +703,65 @@ export class SchemaModel {
       const parameters = this.readParameters(func.Parameter);
       const bindingType = isBound && parameters.length > 0 ? parameters[0].Type : undefined;
 
-      const returnType = func.ReturnType
-        ? this.getTypeScriptType(this.getAttribute(func.ReturnType, "Type"))
-        : undefined;
+      const rawReturnType = func.ReturnType ? this.getAttribute(func.ReturnType, "Type") : "";
+      const returnType = rawReturnType ? this.getTypeScriptType(rawReturnType) : undefined;
+
+      if (this.isQueryFunction(name, isBound, parameters, rawReturnType)) {
+        this.QueryFunctionNames.add(name);
+      }
 
       this.Functions.push({
         Name: name,
         IsBound: isBound,
         BindingType: bindingType,
+        ...this.bindingInfo(bindingType),
         Parameters: isBound ? parameters.slice(1) : parameters,
         ReturnType: returnType,
+        ReturnTypeNullable: func.ReturnType
+          ? this.getAttribute(func.ReturnType, "Nullable") !== "false"
+          : undefined,
         IsComposable: isComposable,
       });
     }
+  }
+
+  /**
+   * A Web API query function, such as `LastXDays(PropertyName=...,PropertyValue=...)`: unbound,
+   * returns `Edm.Boolean`, and takes the column to test as its first parameter, `PropertyName`.
+   * Custom APIs always have a publisher prefix (`contoso_`), and no query function has an
+   * underscore, so a custom function of the same shape is still generated.
+   */
+  private isQueryFunction(
+    name: string,
+    isBound: boolean,
+    parameters: ParameterType[],
+    returnType: string
+  ): boolean {
+    const first = parameters.at(0);
+    return (
+      !isBound &&
+      !name.includes("_") &&
+      returnType === "Edm.Boolean" &&
+      first?.Name === "PropertyName" &&
+      first.Type === "Edm.String"
+    );
+  }
+
+  /**
+   * What a bound operation is bound to: one record of an entity type, or its collection.
+   */
+  private bindingInfo(bindingType: string | undefined): {
+    BindingEntity?: string;
+    IsCollectionBound?: boolean;
+    BindingEntitySetName?: string;
+  } {
+    if (!bindingType) return {};
+    const entity = this.extractEntityName(bindingType);
+    return {
+      BindingEntity: entity,
+      IsCollectionBound: bindingType.startsWith("Collection("),
+      BindingEntitySetName: this.hasEntitySet(entity) ? this.findEntitySetName(entity) : undefined,
+    };
   }
 
   /**
@@ -508,19 +788,23 @@ export class SchemaModel {
   /**
    * Read navigation properties
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private readNavigationProperties(navNode: any): any[] {
+  private readNavigationProperties(navNode: unknown): NavigationPropertyType[] {
     if (!navNode) return [];
 
-    const navProps = Array.isArray(navNode) ? navNode : [navNode];
+    const navProps: unknown[] = Array.isArray(navNode) ? navNode : [navNode];
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return navProps.map((n: any) => ({
-      Name: this.getAttribute(n, "Name"),
-      TargetType: this.extractEntityName(this.getAttribute(n, "Type")),
-      IsCollection: this.getAttribute(n, "Type").startsWith("Collection("),
-      RelationshipName: this.getAttribute(n, "Partner") || "",
-    }));
+    return navProps.map((n) => {
+      const constraint = (n as { ReferentialConstraint?: unknown }).ReferentialConstraint;
+      const first: unknown = Array.isArray(constraint) ? constraint[0] : constraint;
+      const referentialProperty = this.getAttribute(first, "Property");
+      return {
+        Name: this.getAttribute(n, "Name"),
+        TargetType: this.extractEntityName(this.getAttribute(n, "Type")),
+        IsCollection: this.getAttribute(n, "Type").startsWith("Collection("),
+        RelationshipName: this.getAttribute(n, "Partner") || "",
+        ...(referentialProperty ? { ReferentialProperty: referentialProperty } : {}),
+      };
+    });
   }
 
   /**
@@ -560,17 +844,15 @@ export class SchemaModel {
       return { name: tsType, isArray };
     }
 
-    // Entity or complex type
-    if (baseType.includes("Microsoft.Dynamics.CRM.")) {
-      const typeName = baseType.split(".").pop() ?? "any";
-      return {
-        name: this.toPascalCase(typeName),
-        importPath: `../entities/${this.toPascalCase(typeName)}.js`,
-        isArray,
-      };
+    // Entity, complex or enum type of the Dataverse schema ("mscrm.account" or
+    // "Microsoft.Dynamics.CRM.account"). The generator resolves the name to an import, because
+    // only it knows which types are generated.
+    const referenced = this.extractEntityName(baseType);
+    if (referenced !== baseType) {
+      return { name: referenced, reference: referenced, isArray };
     }
 
-    return { name: "any", isArray };
+    return { name: "unknown", isArray };
   }
 
   /**
@@ -579,17 +861,39 @@ export class SchemaModel {
   private mapEdmToTypeScript(edmType: string): string {
     const mapping: Record<string, string> = {
       String: "string",
+      Byte: "number",
+      SByte: "number",
+      Int16: "number",
       Int32: "number",
       Int64: "number",
+      Single: "number",
       Double: "number",
       Decimal: "number",
       Boolean: "boolean",
-      DateTimeOffset: "Date",
+      // The Web API returns date-times as ISO 8601 strings; nothing turns them into Dates (#361).
+      DateTimeOffset: "string",
+      Date: "string",
+      TimeOfDay: "string",
+      Duration: "string",
       Guid: "string",
       Binary: "string",
     };
 
-    return mapping[edmType] || "any";
+    return mapping[edmType] ?? "unknown";
+  }
+
+  /**
+   * Whether the entity container has an entity set for this entity type
+   */
+  private hasEntitySet(entityTypeName: string): boolean {
+    const container = this.getEntityContainer();
+    if (!container?.EntitySet) return false;
+    const entitySets = Array.isArray(container.EntitySet)
+      ? container.EntitySet
+      : [container.EntitySet];
+    return entitySets.some((entitySet: unknown) =>
+      this.getAttribute(entitySet, "EntityType").endsWith(`.${entityTypeName}`)
+    );
   }
 
   /**
@@ -648,15 +952,10 @@ export class SchemaModel {
    * Extract entity name from type string
    */
   private extractEntityName(typeString: string): string {
-    const match = /Microsoft\.Dynamics\.CRM\.(\w+)/.exec(typeString);
+    // $metadata declares the schema as Namespace="Microsoft.Dynamics.CRM" Alias="mscrm" and
+    // refers to its own types through the alias ("mscrm.contact").
+    const match = /(?:Microsoft\.Dynamics\.CRM|mscrm)\.(\w+)/.exec(typeString);
     return match ? match[1] : typeString;
-  }
-
-  /**
-   * Convert to PascalCase
-   */
-  private toPascalCase(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   /**
@@ -671,9 +970,12 @@ export class SchemaModel {
       return "Collection";
     }
 
-    // Check if it's an entity type
+    // Check if it's an entity type (generated or not, abstract ones included)
     const entityName = this.extractEntityName(type);
-    if (this.EntityTypes.some((e) => e.Name === entityName || e.LogicalName === entityName)) {
+    if (
+      this.AllEntityTypeNames.has(entityName) ||
+      this.EntityTypes.some((e) => e.Name === entityName || e.LogicalName === entityName)
+    ) {
       return "EntityType";
     }
 
@@ -690,4 +992,75 @@ export class SchemaModel {
     // Default to primitive
     return "PrimitiveType";
   }
+}
+
+/** `Edm.DateTimeOffset` or a collection of it. */
+function isDateTimeOffset(edmType: string): boolean {
+  return edmType === "Edm.DateTimeOffset" || edmType === "Collection(Edm.DateTimeOffset)";
+}
+
+/** An `EntityType` element of the CSDL, as xml-js reads it. */
+interface CsdlEntityTypeNode {
+  _attributes?: Record<string, string>;
+  Key?: { PropertyRef?: unknown };
+  Property?: unknown;
+  NavigationProperty?: unknown;
+}
+
+/** The abstract base type of every Dataverse table. */
+const CRM_BASE_ENTITY = "crmbaseentity";
+
+/** The items with a distinct key, the first of each kept, in order. */
+function uniqueBy<T>(items: T[], key: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    const k = key(item);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
+/**
+ * Turn an option label into an enum member name: letters and digits only, words joined in
+ * PascalCase ("Financial Services" -> "FinancialServices"), prefixed with `_` when it would start
+ * with a digit. Labels without letters or digits fall back to `Value<n>`.
+ */
+/** Order-insensitive comparison of two logical names (plain code-unit order, no locale). */
+/** Plain code-unit order of two `Name`s (no locale), for a fixed property order. */
+function compareByName(a: { Name: string }, b: { Name: string }): number {
+  return a.Name < b.Name ? -1 : a.Name > b.Name ? 1 : 0;
+}
+
+function byLogicalName(a: { LogicalName?: string }, b: { LogicalName?: string }): number {
+  const x = a.LogicalName ?? "";
+  const y = b.LogicalName ?? "";
+  return x < y ? -1 : x > y ? 1 : 0;
+}
+
+/**
+ * A table's metadata with the lists Dataverse may return in any order sorted: attributes and keys
+ * by logical name, and each lookup's targets. The model, the generated code and incremental
+ * generation's hashes then don't change when the server orders its response differently. The
+ * order of a key's attributes is kept: it is part of the key.
+ */
+function canonicalOrder(entity: EntityMetadataDetail): EntityMetadataDetail {
+  return {
+    ...entity,
+    ...(entity.Attributes && {
+      Attributes: [...entity.Attributes]
+        .map((attribute) =>
+          attribute.Targets ? { ...attribute, Targets: [...attribute.Targets].sort() } : attribute
+        )
+        .sort(byLogicalName),
+    }),
+    ...(entity.Keys && { Keys: [...entity.Keys].sort(byLogicalName) }),
+  };
+}
+
+export function toEnumMemberName(label: string, value: number): string {
+  const words = label.split(/[^\p{L}\p{Nd}_]+/u).filter((w) => w.length > 0);
+  if (words.length === 0) return `Value${String(value).replace("-", "Minus")}`;
+  const name = words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join("");
+  return /^\p{Nd}/u.test(name) ? `_${name}` : name;
 }

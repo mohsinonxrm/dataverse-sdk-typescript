@@ -1,13 +1,26 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
-import type { EntityReference } from "./types/EntityReference.js";
-import { getEntitySetNameFromReference } from "./types/EntityReference.js";
+import { formatParameterAlias } from "./internal/odataLiteral.js";
+import type { EntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import type { AuditDetailCollection, PagingInfo } from "./types/index.js";
 
 /**
- * Response from RetrieveAttributeChangeHistory function
+ * Response from the RetrieveAttributeChangeHistory function.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
  */
 export interface RetrieveAttributeChangeHistoryResponse {
+  "@odata.context"?: string;
   AuditDetailCollection: AuditDetailCollection;
+}
+
+/**
+ * Parameters of the RetrieveAttributeChangeHistory function, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface RetrieveAttributeChangeHistoryFunctionParameters {
+  Target: EntityReference;
+  AttributeLogicalName: string;
+  PagingInfo?: PagingInfo;
 }
 
 /**
@@ -16,11 +29,7 @@ export interface RetrieveAttributeChangeHistoryResponse {
  * Unbound function
  */
 export class RetrieveAttributeChangeHistoryFunction implements Executable<RetrieveAttributeChangeHistoryResponse> {
-  constructor(
-    public readonly target: EntityReference,
-    public readonly attributeLogicalName: string,
-    public readonly pagingInfo: PagingInfo
-  ) {}
+  constructor(public readonly parameters: RetrieveAttributeChangeHistoryFunctionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     let url = `${baseUrl}/RetrieveAttributeChangeHistory`;
@@ -28,27 +37,26 @@ export class RetrieveAttributeChangeHistoryFunction implements Executable<Retrie
     // Build query parameters using parameter aliases
     const params = new URLSearchParams();
     const aliases: string[] = [];
-    if (this.target !== undefined) {
+    if (this.parameters.Target !== undefined) {
       aliases.push(`Target=@p1`);
       params.append(
         "@p1",
-        JSON.stringify({
-          "@odata.id": `${getEntitySetNameFromReference(this.target)}(${this.target.id})`,
-        })
+        formatParameterAlias(this.parameters.Target, "mscrm.crmbaseentity", "EntityType")
       );
     }
-    if (this.attributeLogicalName !== undefined) {
+    if (this.parameters.AttributeLogicalName !== undefined) {
       aliases.push(`AttributeLogicalName=@p2`);
       params.append(
         "@p2",
-        typeof this.attributeLogicalName === "string"
-          ? `'${this.attributeLogicalName}'`
-          : String(this.attributeLogicalName)
+        formatParameterAlias(this.parameters.AttributeLogicalName, "Edm.String")
       );
     }
-    if (this.pagingInfo !== undefined) {
+    if (this.parameters.PagingInfo !== undefined) {
       aliases.push(`PagingInfo=@p3`);
-      params.append("@p3", JSON.stringify(this.pagingInfo));
+      params.append(
+        "@p3",
+        formatParameterAlias(this.parameters.PagingInfo, "mscrm.PagingInfo", "ComplexType")
+      );
     }
     if (aliases.length > 0) {
       url += `(${aliases.join(",")})?${params.toString()}`;
@@ -64,7 +72,7 @@ export class RetrieveAttributeChangeHistoryFunction implements Executable<Retrie
   }
 
   async parseResponse(response: Response): Promise<RetrieveAttributeChangeHistoryResponse> {
-    const data = await response.json();
-    return data as RetrieveAttributeChangeHistoryResponse;
+    // The body is the complex value, with its @odata.context
+    return (await response.json()) as RetrieveAttributeChangeHistoryResponse;
   }
 }

@@ -2,5 +2,5 @@
  * GetComponentManagedIdentityFICResponse complex type
  */
 export interface GetComponentManagedIdentityFICResponse {
-  FICSubject: string;
+  FICSubject?: string;
 }

@@ -13,6 +13,8 @@ export default tseslint.config(
       "**/*.config.js",
       "**/*.config.ts",
       "**/*.config.mjs",
+      // Plain Node release scripts (no tsconfig), e.g. scripts/check-packages.mjs
+      "scripts/**",
       // Auto-generated SDK files
       "packages/dataverse-sdk-actions/src/**/*.ts",
       "packages/dataverse-sdk-functions/src/**/*.ts",
@@ -23,8 +25,8 @@ export default tseslint.config(
       "packages/dataverse-sdk-actions/src/index.ts",
       "packages/dataverse-sdk-functions/src/index.ts",
       "packages/dataverse-sdk-messages/src/index.ts",
-      // Test file for code generation
-      "tools/generate-sdk-types/test-response-types.ts",
+      // ...except the hand-written messages (#344)
+      "!packages/dataverse-sdk-messages/src/handwritten/**/*.ts",
     ],
   },
   js.configs.recommended,
@@ -40,6 +42,11 @@ export default tseslint.config(
     rules: {
       // Enforce no 'any' in public APIs
       "@typescript-eslint/no-explicit-any": "error",
+
+      // No eval-like code: it needs CSP 'unsafe-eval' and bundlers can't follow it (#20)
+      "no-eval": "error",
+      "no-new-func": "error",
+      "@typescript-eslint/no-implied-eval": "error",
 
       // Require await in async functions
       "@typescript-eslint/require-await": "error",

@@ -1,5 +1,15 @@
 import { OrganizationRequest, OrganizationResponse } from "./OrganizationRequest.js";
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
+
+/**
+ * Parameters of the PreValidateGitComponents message, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface PreValidateGitComponentsRequestParameters {
+  SolutionUniqueName: string;
+  IsRetriableOnly?: boolean;
+}
 
 /**
  * PreValidateGitComponents request message
@@ -10,53 +20,58 @@ export class PreValidateGitComponentsRequest
   extends OrganizationRequest
   implements Executable<PreValidateGitComponentsResponse>
 {
-  constructor(
-    public solutionUniqueName: string,
-    public isRetriableOnly: boolean
-  ) {
-    super("PreValidateGitComponents");
+  declare readonly Parameters: Readonly<PreValidateGitComponentsRequestParameters>;
+
+  constructor(parameters: PreValidateGitComponentsRequestParameters) {
+    super("PreValidateGitComponents", { ...parameters });
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/PreValidateGitComponents`;
 
-    const body: Record<string, unknown> = {
-      SolutionUniqueName: this.solutionUniqueName,
-      IsRetriableOnly: this.isRetriableOnly,
-    };
+    const body = requestBody({
+      SolutionUniqueName: this.Parameters.SolutionUniqueName,
+      IsRetriableOnly: this.Parameters.IsRetriableOnly,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
   async parseResponse(response: Response): Promise<PreValidateGitComponentsResponse> {
-    const data = await response.json();
-    return PreValidateGitComponentsResponse.fromResponse(data);
-  }
-
-  toRequestBody(): Record<string, unknown> {
-    return {
-      SolutionUniqueName: this.solutionUniqueName,
-      IsRetriableOnly: this.isRetriableOnly,
-    };
+    // The body is the complex value, with its @odata.context
+    return PreValidateGitComponentsResponse.fromResponse(await response.json());
   }
 }
 
 /**
+ * Response from the PreValidateGitComponents action.
+ *
+ * The response body itself, with its `@odata.context` (not wrapped in `value`).
+ */
+export interface PreValidateGitComponentsResult {
+  "@odata.context"?: string;
+  ValidationMessages: string;
+}
+
+/**
  * PreValidateGitComponents response message
+ *
+ * `result` is the value the PreValidateGitComponents action returns (see {@link PreValidateGitComponentsResult}).
  */
 export class PreValidateGitComponentsResponse extends OrganizationResponse {
-  constructor(public result: PreValidateGitComponentsResponse) {
+  constructor(public result: PreValidateGitComponentsResult) {
     super("PreValidateGitComponents");
   }
 
+  /** Read the result from a parsed response body (`undefined` for 204 No Content). */
   static fromResponse(data: unknown): PreValidateGitComponentsResponse {
-    return new PreValidateGitComponentsResponse((data as any).value);
+    return new PreValidateGitComponentsResponse(data as PreValidateGitComponentsResult);
   }
 }

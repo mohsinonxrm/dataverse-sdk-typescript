@@ -1,0 +1,53 @@
+{
+  "$comment": "Gzipped bytes of each entry bundled for the browser from the built packages (scripts/check-bundle-size.mjs, #307). Raise a budget only for growth you mean, and say why in the PR.",
+  "entries": [
+    {
+      "name": "core: DataverseClient",
+      "code": "import { DataverseClient } from \"@mohsinonxrm/dataverse-sdk-core\"; globalThis.keep = DataverseClient;",
+      "budget": 16384
+    },
+    {
+      "name": "client + one action + one function",
+      "code": "import { DataverseClient } from \"@mohsinonxrm/dataverse-sdk-core\"; import { WinOpportunityAction } from \"@mohsinonxrm/dataverse-sdk-actions\"; import { WhoAmIFunction } from \"@mohsinonxrm/dataverse-sdk-functions\"; globalThis.keep = [DataverseClient, WinOpportunityAction, WhoAmIFunction];",
+      "budget": 16896
+    },
+    {
+      "name": "actions: one operation",
+      "code": "import { WinOpportunityAction } from \"@mohsinonxrm/dataverse-sdk-actions\"; globalThis.keep = WinOpportunityAction;",
+      "budget": 512,
+      "fullPackage": "@mohsinonxrm/dataverse-sdk-actions",
+      "maxShareOfFull": 0.1
+    },
+    {
+      "name": "functions: one operation",
+      "code": "import { WhoAmIFunction } from \"@mohsinonxrm/dataverse-sdk-functions\"; globalThis.keep = WhoAmIFunction;",
+      "budget": 512,
+      "fullPackage": "@mohsinonxrm/dataverse-sdk-functions",
+      "maxShareOfFull": 0.1
+    },
+    {
+      "name": "messages: one request",
+      "code": "import { WinOpportunityRequest } from \"@mohsinonxrm/dataverse-sdk-messages\"; globalThis.keep = WinOpportunityRequest;",
+      "budget": 1024,
+      "fullPackage": "@mohsinonxrm/dataverse-sdk-messages",
+      "maxShareOfFull": 0.1
+    },
+    {
+      "name": "batch: BatchRequestBuilder",
+      "code": "import { BatchRequestBuilder } from \"@mohsinonxrm/dataverse-sdk-batch\"; globalThis.keep = BatchRequestBuilder;",
+      "budget": 6656
+    },
+    {
+      "name": "xrm: OrganizationService",
+      "code": "import { OrganizationService } from \"@mohsinonxrm/dataverse-sdk-xrm\"; globalThis.keep = OrganizationService;",
+      "budget": 5120
+    },
+    {
+      "name": "appinsights/browser: telemetry client",
+      "code": "import { ApplicationInsightsBrowserTelemetryClient } from \"@mohsinonxrm/dataverse-sdk-appinsights/browser\"; globalThis.keep = ApplicationInsightsBrowserTelemetryClient;",
+      "budget": 2560,
+      "browser": true,
+      "forbiddenImports": ["@azure/", "@opentelemetry/"]
+    }
+  ]
+}

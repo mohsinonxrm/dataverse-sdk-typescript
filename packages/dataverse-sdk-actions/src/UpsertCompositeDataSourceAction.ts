@@ -1,10 +1,27 @@
 import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import { requestBody } from "./internal/requestBody.js";
 
 /**
- * Response from UpsertCompositeDataSource action
+ * Response from the UpsertCompositeDataSource action.
+ *
+ * Nothing: the Web API answers 204 No Content.
  */
-export interface UpsertCompositeDataSourceResponse {
-  // No content returned
+export type UpsertCompositeDataSourceResponse = void;
+
+/**
+ * Parameters of the UpsertCompositeDataSource action, by their CSDL names. A parameter the CSDL declares
+ * nullable is optional, and left out of the request when it's undefined.
+ */
+export interface UpsertCompositeDataSourceActionParameters {
+  ParentDisplayName?: string;
+  ParentSchemaName: string;
+  ParentParameterKey: string;
+  ParentApiId?: string;
+  ParentValue?: string;
+  ChildDisplayName?: string;
+  ChildSchemaName?: string;
+  ChildParameterKey?: string;
+  ChildValue?: string;
 }
 
 /**
@@ -13,45 +30,35 @@ export interface UpsertCompositeDataSourceResponse {
  * Unbound action
  */
 export class UpsertCompositeDataSourceAction implements Executable<UpsertCompositeDataSourceResponse> {
-  constructor(
-    public readonly parentDisplayName: string,
-    public readonly parentSchemaName: string,
-    public readonly parentParameterKey: string,
-    public readonly parentApiId: string,
-    public readonly parentValue: string,
-    public readonly childDisplayName: string,
-    public readonly childSchemaName: string,
-    public readonly childParameterKey: string,
-    public readonly childValue: string
-  ) {}
+  constructor(public readonly parameters: UpsertCompositeDataSourceActionParameters) {}
 
   toRequestInformation(baseUrl: string): RequestInformation {
     const url = `${baseUrl}/UpsertCompositeDataSource`;
 
-    const body: Record<string, unknown> = {
-      ParentDisplayName: this.parentDisplayName,
-      ParentSchemaName: this.parentSchemaName,
-      ParentParameterKey: this.parentParameterKey,
-      ParentApiId: this.parentApiId,
-      ParentValue: this.parentValue,
-      ChildDisplayName: this.childDisplayName,
-      ChildSchemaName: this.childSchemaName,
-      ChildParameterKey: this.childParameterKey,
-      ChildValue: this.childValue,
-    };
+    const body = requestBody({
+      ParentDisplayName: this.parameters.ParentDisplayName,
+      ParentSchemaName: this.parameters.ParentSchemaName,
+      ParentParameterKey: this.parameters.ParentParameterKey,
+      ParentApiId: this.parameters.ParentApiId,
+      ParentValue: this.parameters.ParentValue,
+      ChildDisplayName: this.parameters.ChildDisplayName,
+      ChildSchemaName: this.parameters.ChildSchemaName,
+      ChildParameterKey: this.parameters.ChildParameterKey,
+      ChildValue: this.parameters.ChildValue,
+    });
 
     return {
       method: "POST",
       url,
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
       body,
     };
   }
 
-  async parseResponse(response: Response): Promise<UpsertCompositeDataSourceResponse> {
-    // No return value (204 No Content)
-    return {};
+  parseResponse(_response: Response): Promise<UpsertCompositeDataSourceResponse> {
+    // No return value: the Web API answers 204 No Content
+    return Promise.resolve();
   }
 }
