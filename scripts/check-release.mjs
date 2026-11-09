@@ -127,10 +127,20 @@ export function entries(sectionText) {
 }
 
 /**
+ * The most the notes may hold. A GitHub Release body is limited to 125,000 characters, and the
+ * release appends GitHub's generated list of pull requests (`--generate-notes`), so the notes
+ * leave room for it. 2.0.0's merged entries came to 182,808 characters, and creating its release
+ * failed with HTTP 422.
+ */
+export const MAX_NOTES = 100_000;
+
+/**
  * GitHub Release notes: every package's entries for `version`, merged by kind, each entry once
  * (a changeset that names several packages appears in each CHANGELOG), then the packages.
+ * Longer than `max`, the kinds are left out from the least important (patch, then minor, then
+ * major), and the notes link each package's CHANGELOG instead.
  */
-export function releaseNotes(packages, version, repository) {
+export function releaseNotes(packages, version, repository, max = MAX_NOTES) {
   const merged = new Map(KINDS.map((k) => [k, []]));
   for (const p of packages) {
     for (const [kind, list] of entries(section(p.changelog, version))) {
@@ -145,10 +155,22 @@ export function releaseNotes(packages, version, repository) {
       `This is a major release with breaking changes; see the [migration guide](https://github.com/${repository}/blob/v${version}/docs/migration-${version.split(".")[0]}.0.md).`
     );
   }
-  for (const kind of KINDS) {
-    const list = merged.get(kind);
-    if (list.length > 0) parts.push(`## ${kind}\n\n${list.join("\n")}`);
-  }
+  const sections = KINDS.filter((kind) => merged.get(kind).length > 0).map(
+    (kind) => `## ${kind}\n\n${merged.get(kind).join("\n")}`
+  );
+  const changelogs = `## Changelogs\n\nThe complete list of changes is in each package's CHANGELOG:\n\n${packages
+    .map(
+      (p) =>
+        `- [\`${p.name}\`](https://github.com/${repository}/blob/v${version}/packages/${p.dir}/CHANGELOG.md)`
+    )
+    .join("\n")}`;
+  const size = (texts) => texts.reduce((n, text) => n + text.length + 2, 0);
+  // Room for the Changelogs and Packages sections
+  const reserved = size(parts) + 2 * changelogs.length;
+  let kept = sections;
+  while (kept.length > 0 && reserved + size(kept) > max) kept = kept.slice(0, -1);
+  parts.push(...kept);
+  if (kept.length < sections.length) parts.push(changelogs);
   parts.push(
     `## Packages\n\nAll ${String(packages.length)} packages are published at ${version}${
       prerelease ? " under the npm `beta` tag" : ""
