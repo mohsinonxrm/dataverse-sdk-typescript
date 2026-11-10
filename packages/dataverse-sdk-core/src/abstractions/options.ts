@@ -97,9 +97,13 @@ export interface RetryOptions {
    */
   retryNetworkErrors?: boolean;
   /**
-   * Decide yourself whether to retry. Replaces the status-code, method and network-error checks;
-   * `maxRetries`, the delays and `maxRetryAfterMs` still apply. For a network error it is called
-   * with status `0` and the error.
+   * Decide which failures are worth retrying. Replaces `retryableStatusCodes` and
+   * `retryNetworkErrors`: for a network error it is called with status `0` and the error.
+   *
+   * It does not decide which requests may be replayed. A POST, or a PATCH without `If-Match`, is
+   * still not retried after a 5xx or a network error, nor a `$batch` whose 429 response has
+   * per-request results, unless `retryNonIdempotent` is `true`. `maxRetries`, the delays,
+   * `maxRetryAfterMs` and the request's `timeoutMs` still apply.
    */
   shouldRetry?: (statusCode: number, error?: Error) => boolean;
   /**
@@ -210,7 +214,9 @@ export interface RequestOptions {
   /**
    * Time limit for the whole request, in ms, from the call until the response headers arrive:
    * every attempt, retry wait and wait for a concurrency slot. When it passes, the request rejects
-   * with `DataverseNetworkError` (`RequestTimeout`). Reading the body afterwards isn't limited.
+   * with `DataverseNetworkError` (`RequestTimeout`). A retry whose wait (`Retry-After` or backoff)
+   * would end after it is not attempted: the failed response is returned at once, so a 429 throws
+   * `DataverseThrottleError` with `retryAfterMs`. Reading the body afterwards isn't limited.
    */
   timeoutMs?: number;
   /** Time limit for each attempt, in ms. A timed-out attempt is not retried. */

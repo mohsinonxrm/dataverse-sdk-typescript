@@ -11,7 +11,8 @@ export interface RequestInformation {
   /**
    * Time limit for the whole request, in ms: every attempt, retry wait and wait for a
    * concurrency slot. When it passes, the request rejects with `DataverseNetworkError`
-   * (`RequestTimeout`).
+   * (`RequestTimeout`). A retry whose wait would end after it is not attempted: the failed
+   * response is returned at once.
    */
   timeoutMs?: number;
   /** Time limit for each attempt, in ms. A timed-out attempt is not retried. */
@@ -140,6 +141,12 @@ export interface MiddlewareContext {
   correlationId?: string;
   /** Used by retry middleware for diagnostics */
   attempt?: number;
+  /**
+   * When the request's `timeoutMs` runs out, in ms since the epoch (as `Date.now()`); unset without
+   * `timeoutMs`. The retry middleware doesn't start a wait that would end after it: it returns the
+   * response (or throws the network error) at once instead.
+   */
+  deadline?: number;
   /**
    * Per-request middleware options
    * Allows individual requests to override middleware behavior

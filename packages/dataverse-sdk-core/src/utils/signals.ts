@@ -44,12 +44,15 @@ export interface Deadline extends LinkedSignal {
   signal: AbortSignal;
   /** True once the deadline has passed (as opposed to the caller aborting). */
   readonly expired: boolean;
+  /** When the deadline passes, in ms since the epoch (as `Date.now()`). */
+  readonly at: number;
 }
 
 /** Start a deadline of `ms` linked to `caller`. Call `dispose()` when the request is done. */
 export function startDeadline(ms: number, caller?: AbortSignal): Deadline {
   const controller = new AbortController();
   let expired = false;
+  const at = Date.now() + ms;
   const timer = setTimeout(() => {
     expired = true;
     controller.abort(new DOMException(`Request timed out after ${String(ms)}ms`, "TimeoutError"));
@@ -61,6 +64,7 @@ export function startDeadline(ms: number, caller?: AbortSignal): Deadline {
     get expired() {
       return expired;
     },
+    at,
     dispose() {
       clearTimeout(timer);
       linked.dispose();
