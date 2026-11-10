@@ -70,3 +70,5 @@ When the variables aren't set, the tests are skipped. Set `DATAVERSE_INTEGRATION
 Behind an HTTP proxy, Node's `fetch` ignores `HTTPS_PROXY` unless you run with `NODE_USE_ENV_PROXY=1` (Node 22.21+ / 24+).
 
 In CI, `.github/workflows/integration-tests.yml` runs nightly and on demand, using the repository secrets with the same names.
+
+A failed test runs **once more** before it fails the suite (`retry: 1` in `vitest.config.ts`), so a slow or busy moment of the org doesn't fail a release run. A test that passes only on the retry still passes, but it isn't hidden: `test/flaky-reporter.ts` lists it at the end of the run and, on GitHub Actions, adds a "Flaky live test (passed on retry)" warning to the run. A test that keeps showing up there needs fixing, not more retries.
