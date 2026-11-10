@@ -110,11 +110,44 @@ describe("#343: CircuitBreakerMiddleware", () => {
     expect(breaker.consecutiveFailures).toBe(2);
   });
 
-  it("doesn't count 429 or 4xx: the service answered", async () => {
-    const { breaker, get } = setup([503, 503, 429, 503, 503, 404], { failureThreshold: 3 });
-    for (let i = 0; i < 6; i++) await get();
+  it("#470: a 429 neither counts nor resets the count, so 503s between 429s open it", async () => {
+    const { breaker, get, calls } = setup([503, 429, 503, 429, 503, 200], { failureThreshold: 3 });
+    for (let i = 0; i < 4; i++) await get();
     expect(breaker.state).toBe("closed");
-    expect(breaker.consecutiveFailures).toBe(0);
+    expect(breaker.consecutiveFailures).toBe(2);
+    expect(await get()).toMatchObject({ status: 503 });
+    expect(breaker.state).toBe("open");
+    expect(breaker.consecutiveFailures).toBe(3);
+    expect(await get()).toBeInstanceOf(DataverseCircuitOpenError);
+    expect(calls()).toBe(5);
+  });
+
+  it("#470: another 4xx is neutral too: 503, 404, 503, 503 opens at the third 503", async () => {
+    const { breaker, get } = setup([503, 404, 503, 503], { failureThreshold: 3 });
+    for (let i = 0; i < 3; i++) await get();
+    expect(breaker.state).toBe("closed");
+    expect(breaker.consecutiveFailures).toBe(2);
+    await get();
+    expect(breaker.state).toBe("open");
+  });
+
+  it.each([400, 401, 403, 404, 409, 412, 429])(
+    "#470: a %i neither counts nor resets the count",
+    async (status) => {
+      const { breaker, get } = setup([503, status, status, 503], { failureThreshold: 3 });
+      for (let i = 0; i < 4; i++) await get();
+      expect(breaker.state).toBe("closed");
+      expect(breaker.consecutiveFailures).toBe(2);
+    }
+  );
+
+  it("#470: a 2xx or 3xx resets the count", async () => {
+    const breaker = new CircuitBreakerMiddleware({ failureThreshold: 3 });
+    for (const status of [503, 503, 304, 503, 503, 204, 503]) {
+      await breaker.execute(request, {}, () => Promise.resolve(new Response(null, { status })));
+    }
+    expect(breaker.state).toBe("closed");
+    expect(breaker.consecutiveFailures).toBe(1);
   });
 
   it("counts network failures and timed-out attempts, but not a request the caller aborted", async () => {
@@ -200,6 +233,61 @@ describe("#343: CircuitBreakerMiddleware", () => {
 
     await breaker.execute(request, {}, () => Promise.resolve(new Response(null, { status: 204 })));
     expect(breaker.state).toBe("closed");
+  });
+
+  it.each([429, 404])(
+    "#470: a probe answered with %i leaves it half-open, and the next request probes",
+    async (status) => {
+      const { breaker, changes, get, calls } = setup([503, 503, status, 503, status, 200], {
+        failureThreshold: 2,
+        breakDurationMs: 1000,
+      });
+      await get();
+      await get();
+      vi.advanceTimersByTime(1000);
+      expect(await get()).toMatchObject({ status });
+      expect(breaker.state).toBe("half-open");
+      expect(breaker.consecutiveFailures).toBe(2);
+
+      // The next request probes at once; a failed probe opens it again.
+      expect(await get()).toMatchObject({ status: 503 });
+      expect(breaker.state).toBe("open");
+      expect(breaker.consecutiveFailures).toBe(3);
+
+      vi.advanceTimersByTime(1000);
+      expect(await get()).toMatchObject({ status });
+      expect(breaker.state).toBe("half-open");
+      // A successful probe closes it.
+      expect(await get()).toBe("ok");
+      expect(breaker.state).toBe("closed");
+      expect(breaker.consecutiveFailures).toBe(0);
+      expect(calls()).toBe(6);
+      expect(changes.map((c) => c.to)).toEqual([
+        "open",
+        "half-open",
+        "open",
+        "half-open",
+        "closed",
+      ]);
+    }
+  );
+
+  it("#470: inside the retry middleware, the retry of a 429 probe is the next probe", async () => {
+    const { breaker, changes, get, calls } = setup(
+      [503, 503, 429, 200],
+      { failureThreshold: 2, breakDurationMs: 1000 },
+      { maxRetries: 1 }
+    );
+    // The 503 and its retry open the circuit.
+    expect(await get()).toMatchObject({ status: 503 });
+    expect(breaker.state).toBe("open");
+    expect(calls()).toBe(2);
+    vi.advanceTimersByTime(1000);
+    // The probe gets a 429, and the retry of it probes again and succeeds.
+    expect(await get()).toBe("ok");
+    expect(calls()).toBe(4);
+    expect(breaker.state).toBe("closed");
+    expect(changes.map((c) => c.to)).toEqual(["open", "half-open", "closed"]);
   });
 
   it("inside the retry middleware, retries stop as soon as the circuit opens", async () => {

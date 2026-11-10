@@ -25,9 +25,10 @@ export interface CircuitBreakerOptions {
   breakDurationMs?: number;
   /**
    * Whether an attempt counts as a failure. It gets the response status, or `0` and the error when
-   * no response came back.
+   * no response came back. A response it doesn't count as a failure is a success when its status is
+   * below 400 (it resets the count), and neutral otherwise (it leaves the count as it is).
    * @default a status of 500 or more, or a `DataverseNetworkError` (a failed connection or a
-   *   timed-out attempt). A 429 is not a failure: the service answered.
+   *   timed-out attempt). A 429 or another 4xx is not a failure, and doesn't reset the count either.
    */
   isFailure?: (status: number, error?: Error) => boolean;
   /**
@@ -52,6 +53,21 @@ type Outcome = "success" | "failure" | "neutral";
  * failures), it fails requests fast with `DataverseCircuitOpenError` for `breakDurationMs`,
  * without sending them. Then it lets one probe request through: if the probe succeeds the circuit
  * closes, if it fails the circuit opens for another `breakDurationMs`.
+ *
+ * Each attempt is one of three outcomes:
+ * - **failure** (what `isFailure` counts: by default a 5xx or a network failure): adds one to the
+ *   count of failures in a row.
+ * - **success** (any other response with a status below 400, i.e. 2xx or 3xx): resets the count.
+ * - **neutral** (any other 4xx, a 429 included, or a request its caller aborted): leaves the count
+ *   as it is. A 429 is service protection, which the retry and adaptive throttling middleware
+ *   handle; a 400, 401, 403, 404, 409 or 412 says the request was wrong, not that the service is
+ *   healthy. So a run of 503s with 429s or 404s between them still opens the circuit.
+ *
+ * A neutral probe leaves the circuit half-open, and the next request is the probe. It doesn't close
+ * the circuit, because a 429 or a 4xx doesn't show the service handles requests again (closing
+ * would let every waiting request through to a service that just asked to slow down), and it doesn't
+ * reopen it for another `breakDurationMs`, because the service did answer. Until a probe succeeds or
+ * fails, requests go through one at a time, and others fail fast while a probe is in flight.
  *
  * Opt-in: it isn't part of the default pipeline. Add it with `middleware.append`, so it runs
  * inside the retry middleware: each attempt counts, and once the circuit opens the remaining
@@ -133,7 +149,7 @@ export class CircuitBreakerMiddleware implements Middleware {
     let outcome: Outcome = "neutral";
     try {
       const res = await next(request, ctx);
-      outcome = this.isFailure(res.status) ? "failure" : "success";
+      outcome = this.classify(res.status);
       return res;
     } catch (err) {
       // A request the caller cancelled (or that ran out of its time) says nothing about the service.
@@ -144,6 +160,12 @@ export class CircuitBreakerMiddleware implements Middleware {
     } finally {
       this.record(outcome, isProbe, ctx);
     }
+  }
+
+  /** A failure as `isFailure` says; otherwise a success below 400, and neutral from 400 up. */
+  private classify(status: number): Outcome {
+    if (this.isFailure(status)) return "failure";
+    return status < 400 ? "success" : "neutral";
   }
 
   /** Let the request through (true when it is the probe), or throw `DataverseCircuitOpenError`. */
@@ -180,7 +202,8 @@ export class CircuitBreakerMiddleware implements Middleware {
         this.failures++;
         this.open(ctx);
       }
-      // neutral: stay half-open, and let the next request probe.
+      // Neutral (a 429 or another 4xx, or an aborted request): stay half-open, and let the next
+      // request probe. A 429 doesn't show the service handles requests again, and it did answer.
       return;
     }
     // Requests that started before the circuit opened don't change it once it has.

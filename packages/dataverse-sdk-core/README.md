@@ -1271,14 +1271,18 @@ try {
 
 - **Closed → open:** after `failureThreshold` failures in a row. A failure is a response with a
   status of 500 or more, or a `DataverseNetworkError` (a failed connection or a timed-out attempt).
-  A 429 or another 4xx is not a failure, and neither is a request its caller aborted. Any other
-  response resets the count. `isFailure(status, error?)` replaces the rule (`status` is 0 when no
-  response came back).
+  A 2xx or 3xx response resets the count. A 429 or another 4xx (400, 401, 403, 404, 409, 412...)
+  is neutral, like a request its caller aborted: it neither counts nor resets the count, so a run
+  of 503s with 429s between them still opens the circuit. Throttling is the retry and adaptive
+  throttling middleware's job, and a 4xx says the request was wrong, not that the service is
+  healthy. `isFailure(status, error?)` replaces the failure rule (`status` is 0 when no response
+  came back); a response it doesn't count is a success below 400 and neutral from 400 up.
 - **Open:** requests fail at once, without being sent, with `DataverseCircuitOpenError`.
   `retryAfterMs` says when a probe may go. Inside the retry middleware this ends the retries.
 - **Half-open:** after `breakDurationMs`, one request goes through as a probe, and others fail fast
   while it is in flight (`retryAfterMs` is then `undefined`). A successful probe closes the
-  circuit. A failed probe opens it for another `breakDurationMs`.
+  circuit. A failed probe opens it for another `breakDurationMs`. A neutral probe (a 429 or another
+  4xx) leaves it half-open, and the next request probes.
 - **State:** `breaker.state` (`"closed"`, `"open"` or `"half-open"`), `breaker.consecutiveFailures`
   and `onStateChange({ from, to, consecutiveFailures })` are there for telemetry. `breaker.reset()`
   closes it. The state belongs to the instance: use one breaker per client (org).
