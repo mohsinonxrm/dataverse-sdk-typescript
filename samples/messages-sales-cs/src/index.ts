@@ -39,7 +39,8 @@ import {
   PublishXmlResponse,
 } from "@mohsinonxrm/dataverse-sdk-messages";
 
-config();
+// quiet: dotenv 17+ otherwise logs a line when it loads .env.
+config({ quiet: true });
 
 /** The connection settings: AZURE_* (this sample's names) or DATAVERSE_* (the live CI's names). */
 function loadSettings(): {

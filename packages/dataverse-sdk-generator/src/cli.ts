@@ -28,7 +28,11 @@ const { version } = JSON.parse(
 program
   .name("dataverse-gen")
   .description("Generate TypeScript code from Dataverse metadata")
-  .version(version);
+  .version(version)
+  // Commander 13+ rejects command-arguments a command doesn't declare ("too many arguments");
+  // dataverse-gen has always ignored them, so command lines that pass extra words keep working.
+  // Set before the subcommands are added, which inherit it.
+  .allowExcessArguments();
 
 /**
  * Initialize configuration file

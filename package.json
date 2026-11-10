@@ -57,5 +57,13 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.1",
     "vitest": "^4.1.11"
+  },
+  "pnpm": {
+    "overrides": {
+      "tsup>esbuild": "^0.28.2",
+      "@microsoft/api-extractor>minimatch": "^11.0.5",
+      "@typescript-eslint/typescript-estree>minimatch": "^11.0.5",
+      "@azure/msal-node>uuid": "^11.1.1"
+    }
   }
 }
