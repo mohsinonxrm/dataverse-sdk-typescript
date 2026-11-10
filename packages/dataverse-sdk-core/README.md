@@ -203,7 +203,9 @@ await builder.get({
 `timeoutMs` is a deadline for the whole request, from the call until the response headers arrive:
 every attempt, every retry wait (including `Retry-After`) and the wait for a concurrency slot. When it
 passes, the request rejects with `DataverseNetworkError` named `RequestTimeout`, even if retries were
-left. `attemptTimeoutMs` limits a single attempt; a timed-out attempt is not retried. A caller's
+left. A retry whose wait would end after the deadline isn't attempted: the failed response comes back
+at once, so a 429 with a long `Retry-After` throws `DataverseThrottleError` with `retryAfterMs` right
+away instead of a timeout later. `attemptTimeoutMs` limits a single attempt; a timed-out attempt is not retried. A caller's
 `signal` aborting rejects with `DataverseAbortError`. A caller's signal that times out
 (`AbortSignal.timeout(ms)`) rejects like `timeoutMs`, with `DataverseNetworkError` named
 `RequestTimeout`, and its `TimeoutError` is the `cause`. Neither the SDK's timers nor its listeners stay
@@ -1128,8 +1130,11 @@ User Code (typed result)
   aren't, because the connection can drop after Dataverse applied them. They are retried only with both
   `retryNetworkErrors: true` and `retryNonIdempotent: true`. `retryNetworkErrors: false` turns
   network-error retries off. Aborts, timeouts and requests with a stream body are never retried.
-- **`shouldRetry(statusCode, error?)`:** replaces the status-code, method and network-error checks
-  (called with status `0` for a network error); the counts and delays still apply.
+- **`shouldRetry(statusCode, error?)`:** decides which failures are retried, in place of
+  `retryableStatusCodes` and `retryNetworkErrors` (called with status `0` for a network error). It
+  doesn't decide which requests may be replayed: POST and PATCH without `If-Match` are still not
+  retried after a 5xx or a network error, nor a `$batch` with a multipart 429, unless
+  `retryNonIdempotent: true`. The counts, delays, `maxRetryAfterMs` and `timeoutMs` still apply.
 - **Watching retries:** `onRetry(info)` runs once before each retry, with `attempt`, `maxRetries`,
   `status` (0 for a network error), `delayMs`, `retryAfterMs`, `correlationId` and the request. A
   per-request `onRetry` replaces the client's; an error it throws is logged and ignored.

@@ -952,8 +952,10 @@ const client = new DataverseClient({
 });
 ```
 
-`Retry-After` is waited out as sent when it's at most `maxRetryAfterMs` (default: `maxDelayMs`);
-a longer wait is returned to you as a `DataverseThrottleError` with `retryAfterMs`. See the
+`Retry-After` is waited out as sent when it's at most `maxRetryAfterMs` (default: `maxDelayMs`)
+and ends before the request's `timeoutMs`; otherwise the 429 is returned to you at once as a
+`DataverseThrottleError` with `retryAfterMs`. `shouldRetry` picks which statuses to retry; only
+`retryNonIdempotent` lets a create or an action be replayed after a 5xx. See the
 [core README](../packages/dataverse-sdk-core/README.md#retry-with-exponential-backoff) for
 `retryableStatusCodes`, `retryNonIdempotent`, `retryNetworkErrors`, `shouldRetry` and `onRetry`.
 

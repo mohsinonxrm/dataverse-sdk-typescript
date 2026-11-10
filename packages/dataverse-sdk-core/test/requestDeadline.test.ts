@@ -7,6 +7,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import { DataverseClient } from "../src/client/DataverseClient.js";
 import type { DataverseClientOptions } from "../src/abstractions/options.js";
 import { DataverseAbortError, DataverseNetworkError } from "../src/errors/NamedErrors.js";
+import { DataverseODataError } from "../src/errors/DataverseODataError.js";
+import { DataverseThrottleError } from "../src/errors/DataverseThrottleError.js";
 import { linkSignals, startDeadline } from "../src/utils/signals.js";
 import { sleep } from "../src/utils/sleep.js";
 
@@ -63,30 +65,43 @@ async function timed<T>(p: Promise<T>): Promise<{ ms: number; result: unknown }>
 }
 
 describe("#46: timeoutMs covers the whole request", () => {
-  it("a server that keeps answering 503 fails at the deadline, not after every retry", async () => {
+  it("a 503 whose backoff ends after the deadline is returned at once, not waited out (#471)", async () => {
     const { client, calls } = makeClient(() => new Response(null, { status: 503 }), {
-      retry: { maxRetries: 3, baseDelayMs: 2000, jitter: false },
+      retry: { maxRetries: 3, baseDelayMs: 5000, jitter: false },
     });
+    const { ms, result } = await timed(client.api("WhoAmI").get({ timeoutMs: 2000 }));
+    expect(result).toBeInstanceOf(DataverseODataError);
+    expect(result).toMatchObject({ status: 503 });
+    // The first retry wait (5 s) would end after the 2 s deadline, so it isn't started. The bound
+    // is loose on purpose (slow CI runners), and well below the deadline.
+    expect(ms).toBeLessThan(1000);
+    expect(calls()).toBe(1);
+  });
+
+  it("an attempt still running at the deadline fails with RequestTimeout after a retry", async () => {
+    const { client, calls } = makeClient(
+      (signal, n) => (n === 1 ? new Response(null, { status: 503 }) : hang(signal, n)),
+      { retry: { maxRetries: 3, baseDelayMs: 10, jitter: false } }
+    );
     const { ms, result } = await timed(client.api("WhoAmI").get({ timeoutMs: 200 }));
     expect(result).toBeInstanceOf(DataverseNetworkError);
     expect(result).toMatchObject({
       name: "RequestTimeout",
       message: "Request timed out after 200ms",
     });
-    // The retries alone would take 2 + 4 + 8 s; the deadline cuts the first wait short. The bound
-    // is loose on purpose (slow CI runners), and far below the first retry wait.
     expect(ms).toBeLessThan(1500);
-    expect(calls()).toBe(1);
+    expect(calls()).toBe(2);
   });
 
-  it("a 429 with a Retry-After longer than the deadline fails at the deadline", async () => {
+  it("a 429 with a Retry-After longer than the time left throws the throttle error at once", async () => {
     const { client } = makeClient(
-      () => new Response(null, { status: 429, headers: { "retry-after": "1" } }),
+      () => new Response(null, { status: 429, headers: { "retry-after": "3" } }),
       { retry: { maxRetries: 6 } }
     );
-    const { ms, result } = await timed(client.api("WhoAmI").get({ timeoutMs: 200 }));
-    expect(result).toMatchObject({ name: "RequestTimeout" });
-    expect(ms).toBeLessThan(2500); // waiting out Retry-After and retrying would take over 6 s
+    const { ms, result } = await timed(client.api("WhoAmI").get({ timeoutMs: 2000 }));
+    expect(result).toBeInstanceOf(DataverseThrottleError);
+    expect(result).toMatchObject({ retryAfterMs: 3000 });
+    expect(ms).toBeLessThan(1000); // before #471 it waited the whole 2 s, then timed out
   });
 
   it("the wait for a concurrency slot counts too, and leaves the queue", async () => {
