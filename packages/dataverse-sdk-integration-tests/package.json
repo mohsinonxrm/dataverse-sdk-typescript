@@ -37,7 +37,7 @@
     "@opentelemetry/api-logs": "^0.223.0",
     "@opentelemetry/context-async-hooks": "^2.10.0",
     "@opentelemetry/core": "^2.10.0",
-    "@opentelemetry/sdk-logs": "^0.221.0",
+    "@opentelemetry/sdk-logs": "^3.1.0",
     "@opentelemetry/sdk-trace-base": "^2.10.0",
     "@types/xrm": "^9.0.97",
     "eslint": "^9.39.5",
