@@ -220,6 +220,8 @@ export class DataverseClient {
       ...this.baseCtx,
       correlationId: request.correlationId ?? generateUUID(),
       attempt: 0,
+      // The retry middleware won't start a wait that ends after the deadline (#471).
+      deadline: deadline?.at,
       middlewareOptions: request.middlewareOptions,
     };
     try {

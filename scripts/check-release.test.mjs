@@ -1,7 +1,14 @@
 // node --test scripts/
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { checkPackages, entries, newestSection, releaseNotes, section } from "./check-release.mjs";
+import {
+  MAX_NOTES,
+  checkPackages,
+  entries,
+  newestSection,
+  releaseNotes,
+  section,
+} from "./check-release.mjs";
 
 const changelog = (name, version, body) =>
   `# ${name}\n\n## ${version}\n\n${body}\n\n## 1.0.0\n\n### Major Changes\n\n- 78fc1e1: Initial release\n`;
@@ -25,8 +32,8 @@ const batchBody = `### Patch Changes
   - @mohsinonxrm/dataverse-sdk-core@2.0.0`;
 
 const pkgs = (version = "2.0.0") => [
-  { name: "@x/core", version, changelog: changelog("@x/core", version, coreBody) },
-  { name: "@x/batch", version, changelog: changelog("@x/batch", version, batchBody) },
+  { dir: "core", name: "@x/core", version, changelog: changelog("@x/core", version, coreBody) },
+  { dir: "batch", name: "@x/batch", version, changelog: changelog("@x/batch", version, batchBody) },
 ];
 
 test("newestSection reads the first ## heading", () => {
@@ -68,4 +75,51 @@ test("pre-release notes name the beta tag and skip the migration line", () => {
   const notes = releaseNotes(pkgs("2.0.0-beta.0"), "2.0.0-beta.0", "o/r");
   assert.match(notes, /npm `beta` tag/);
   assert.doesNotMatch(notes, /migration guide/);
+});
+
+test("notes under the limit list every change and no Changelogs section", () => {
+  const notes = releaseNotes(pkgs(), "2.0.0", "o/r");
+  assert.doesNotMatch(notes, /## Changelogs/);
+});
+
+test("notes over the limit leave out patch changes first and link the CHANGELOGs", () => {
+  const patches = Array.from({ length: 50 }, (_, i) => `- p${String(i)}: ${"x".repeat(700)}`);
+  const body = `### Major Changes\n\n- abc1234: **Breaking.** One thing.\n\n### Patch Changes\n\n${patches.join("\n")}`;
+  const one = [
+    {
+      dir: "core",
+      name: "@x/core",
+      version: "2.0.0",
+      changelog: changelog("@x/core", "2.0.0", body),
+    },
+  ];
+  const notes = releaseNotes(one, "2.0.0", "o/r", 10_000);
+  assert.ok(notes.length <= 10_000, String(notes.length));
+  assert.match(notes, /## Major Changes[\s\S]*abc1234/);
+  assert.doesNotMatch(notes, /## Patch Changes/);
+  assert.match(notes, /## Changelogs[\s\S]*blob\/v2\.0\.0\/packages\/core\/CHANGELOG\.md/);
+  assert.match(notes, /## Packages/);
+});
+
+test("a release as big as 2.0.0 stays under MAX_NOTES, with its breaking changes", () => {
+  // 2.0.0's merged entries came to 182,808 characters
+  const many = (kind, n) =>
+    `### ${kind}\n\n${Array.from({ length: n }, (_, i) => `- ${kind[0]}${String(i).padStart(6, "0")}: ${"x".repeat(700)}`).join("\n")}`;
+  const body = [
+    many("Major Changes", 20),
+    many("Minor Changes", 160),
+    many("Patch Changes", 60),
+  ].join("\n\n");
+  const big = [
+    {
+      dir: "core",
+      name: "@x/core",
+      version: "2.0.0",
+      changelog: changelog("@x/core", "2.0.0", body),
+    },
+  ];
+  const notes = releaseNotes(big, "2.0.0", "o/r");
+  assert.ok(notes.length <= MAX_NOTES, `${String(notes.length)} > ${String(MAX_NOTES)}`);
+  assert.match(notes, /## Major Changes/);
+  assert.match(notes, /## Changelogs/);
 });

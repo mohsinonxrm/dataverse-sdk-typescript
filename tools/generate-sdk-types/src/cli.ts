@@ -7,7 +7,7 @@ import { loadConfig, type SdkGeneratorConfig } from "./config.js";
 import _path from "path";
 
 // Load .env file
-loadDotenv();
+loadDotenv({ quiet: true }); // quiet: dotenv 17+ otherwise logs a line when it loads .env
 
 const program = new Command();
 

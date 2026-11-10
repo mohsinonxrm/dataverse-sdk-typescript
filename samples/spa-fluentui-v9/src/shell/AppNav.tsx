@@ -38,7 +38,7 @@ export function AppNav({ open, overlay, onOpenChange }: AppNavProps) {
     // Let the browser open a new tab or window for modified clicks.
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0) return;
     event.preventDefault();
-    navigate(path);
+    void navigate(path); // void | Promise<void> in React Router 7; void with BrowserRouter
     if (overlay) onOpenChange(false);
   };
 

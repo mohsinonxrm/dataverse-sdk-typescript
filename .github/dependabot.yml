@@ -19,6 +19,10 @@ updates:
       # TypeScript minor upgrades — track manually
       - dependency-name: "typescript"
         update-types: ["version-update:semver-minor"]
+      # The packages support Node 22+, so @types/node stays at the oldest supported major (22):
+      # newer majors type APIs that Node 22 doesn't have. Minor and patch updates still come.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

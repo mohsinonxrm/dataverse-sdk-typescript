@@ -42,7 +42,7 @@
     "@arethetypeswrong/cli": "^0.18.2",
     "@changesets/cli": "^2.31.1",
     "@eslint/js": "^9.39.5",
-    "@microsoft/api-extractor": "7.59.4",
+    "@microsoft/api-extractor": "7.60.1",
     "@typescript-eslint/eslint-plugin": "^8.72.1",
     "@typescript-eslint/parser": "^8.72.1",
     "@vitest/coverage-v8": "^4.1.12",
@@ -51,11 +51,19 @@
     "prettier": "^3.9.10",
     "publint": "^0.3.12",
     "rimraf": "^6.1.4",
-    "tsd": "^0.31.2",
+    "tsd": "^0.33.0",
     "tsup": "^8.5.1",
     "turbo": "^2.11.10",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.1",
     "vitest": "^4.1.11"
+  },
+  "pnpm": {
+    "overrides": {
+      "tsup>esbuild": "^0.28.2",
+      "@microsoft/api-extractor>minimatch": "^11.0.5",
+      "@typescript-eslint/typescript-estree>minimatch": "^11.0.5",
+      "@azure/msal-node>uuid": "^11.1.1"
+    }
   }
 }

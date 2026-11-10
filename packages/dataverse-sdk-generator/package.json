@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-generator",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "author": "Mohsin On xRM",
   "license": "AGPL-3.0-only",
@@ -48,7 +48,7 @@
     "@mohsinonxrm/dataverse-sdk-entities-runtime": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-metadata": "workspace:*",
     "chalk": "^5.6.2",
-    "commander": "^12.1.0",
+    "commander": "^14.0.3",
     "ejs": "^3.1.10",
     "ora": "^8.2.0",
     "xml-js": "^1.6.11"

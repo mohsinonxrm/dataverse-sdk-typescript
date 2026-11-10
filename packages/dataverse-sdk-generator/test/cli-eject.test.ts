@@ -32,4 +32,17 @@ describe("#347: dataverse-gen eject", () => {
     expect((await fs.readdir(dir)).sort()).toEqual([...TEMPLATE_NAMES].sort());
     expect(logged.join("\n")).toContain(`"templates": ${JSON.stringify(dir)}`);
   });
+
+  it("ignores extra command-arguments, as before Commander 13", async () => {
+    const dir = path.join(await scratch.create(), "my-templates");
+    vi.spyOn(console, "log").mockImplementation(() => undefined);
+    vi.spyOn(process, "exit").mockImplementation((code) => {
+      throw new Error(`process.exit(${String(code)})`);
+    });
+    process.argv = ["node", "dataverse-gen", "eject", dir, "extra"];
+
+    await import("../src/cli.js");
+
+    expect((await fs.readdir(dir)).sort()).toEqual([...TEMPLATE_NAMES].sort());
+  });
 });

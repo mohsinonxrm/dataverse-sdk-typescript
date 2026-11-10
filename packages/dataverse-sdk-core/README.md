@@ -203,7 +203,9 @@ await builder.get({
 `timeoutMs` is a deadline for the whole request, from the call until the response headers arrive:
 every attempt, every retry wait (including `Retry-After`) and the wait for a concurrency slot. When it
 passes, the request rejects with `DataverseNetworkError` named `RequestTimeout`, even if retries were
-left. `attemptTimeoutMs` limits a single attempt; a timed-out attempt is not retried. A caller's
+left. A retry whose wait would end after the deadline isn't attempted: the failed response comes back
+at once, so a 429 with a long `Retry-After` throws `DataverseThrottleError` with `retryAfterMs` right
+away instead of a timeout later. `attemptTimeoutMs` limits a single attempt; a timed-out attempt is not retried. A caller's
 `signal` aborting rejects with `DataverseAbortError`. A caller's signal that times out
 (`AbortSignal.timeout(ms)`) rejects like `timeoutMs`, with `DataverseNetworkError` named
 `RequestTimeout`, and its `TimeoutError` is the `cause`. Neither the SDK's timers nor its listeners stay
@@ -1128,8 +1130,11 @@ User Code (typed result)
   aren't, because the connection can drop after Dataverse applied them. They are retried only with both
   `retryNetworkErrors: true` and `retryNonIdempotent: true`. `retryNetworkErrors: false` turns
   network-error retries off. Aborts, timeouts and requests with a stream body are never retried.
-- **`shouldRetry(statusCode, error?)`:** replaces the status-code, method and network-error checks
-  (called with status `0` for a network error); the counts and delays still apply.
+- **`shouldRetry(statusCode, error?)`:** decides which failures are retried, in place of
+  `retryableStatusCodes` and `retryNetworkErrors` (called with status `0` for a network error). It
+  doesn't decide which requests may be replayed: POST and PATCH without `If-Match` are still not
+  retried after a 5xx or a network error, nor a `$batch` with a multipart 429, unless
+  `retryNonIdempotent: true`. The counts, delays, `maxRetryAfterMs` and `timeoutMs` still apply.
 - **Watching retries:** `onRetry(info)` runs once before each retry, with `attempt`, `maxRetries`,
   `status` (0 for a network error), `delayMs`, `retryAfterMs`, `correlationId` and the request. A
   per-request `onRetry` replaces the client's; an error it throws is logged and ignored.
@@ -1266,14 +1271,18 @@ try {
 
 - **Closed → open:** after `failureThreshold` failures in a row. A failure is a response with a
   status of 500 or more, or a `DataverseNetworkError` (a failed connection or a timed-out attempt).
-  A 429 or another 4xx is not a failure, and neither is a request its caller aborted. Any other
-  response resets the count. `isFailure(status, error?)` replaces the rule (`status` is 0 when no
-  response came back).
+  A 2xx or 3xx response resets the count. A 429 or another 4xx (400, 401, 403, 404, 409, 412...)
+  is neutral, like a request its caller aborted: it neither counts nor resets the count, so a run
+  of 503s with 429s between them still opens the circuit. Throttling is the retry and adaptive
+  throttling middleware's job, and a 4xx says the request was wrong, not that the service is
+  healthy. `isFailure(status, error?)` replaces the failure rule (`status` is 0 when no response
+  came back); a response it doesn't count is a success below 400 and neutral from 400 up.
 - **Open:** requests fail at once, without being sent, with `DataverseCircuitOpenError`.
   `retryAfterMs` says when a probe may go. Inside the retry middleware this ends the retries.
 - **Half-open:** after `breakDurationMs`, one request goes through as a probe, and others fail fast
   while it is in flight (`retryAfterMs` is then `undefined`). A successful probe closes the
-  circuit. A failed probe opens it for another `breakDurationMs`.
+  circuit. A failed probe opens it for another `breakDurationMs`. A neutral probe (a 429 or another
+  4xx) leaves it half-open, and the next request probes.
 - **State:** `breaker.state` (`"closed"`, `"open"` or `"half-open"`), `breaker.consecutiveFailures`
   and `onStateChange({ from, to, consecutiveFailures })` are there for telemetry. `breaker.reset()`
   closes it. The state belongs to the instance: use one breaker per client (org).

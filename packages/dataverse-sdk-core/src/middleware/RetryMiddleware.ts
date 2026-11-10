@@ -134,6 +134,8 @@ export class RetryMiddleware implements Middleware {
       } catch (err) {
         if (attempt >= opt.maxRetries || !this.shouldRetryError(err, request, opt)) throw err;
         const delay = computeBackoff(opt, attempt);
+        // Waiting would only end in a timeout: report the network error itself (#471).
+        if (endsAfterDeadline(ctx, delay)) throw err;
         ctx.logger?.debug("Retrying request after a network error", {
           attempt: attempt + 1,
           maxRetries: opt.maxRetries,
@@ -150,11 +152,12 @@ export class RetryMiddleware implements Middleware {
         return done(res);
       }
 
-      if (opt.shouldRetry) {
-        if (!opt.shouldRetry(res.status)) {
-          return done(res);
-        }
-      } else if (!opt.retryableStatusCodes.includes(res.status)) {
+      // shouldRetry (or retryableStatusCodes) picks the statuses worth retrying; the method checks
+      // below still apply to them, so a custom shouldRetry never replays a create (#469).
+      const retryable = opt.shouldRetry
+        ? opt.shouldRetry(res.status)
+        : opt.retryableStatusCodes.includes(res.status);
+      if (!retryable) {
         return done(res);
       } else if (res.status !== 429 && !opt.retryNonIdempotent && !isIdempotent(request)) {
         // A 5xx from a gateway can arrive after Dataverse applied the request; replaying a
@@ -195,6 +198,15 @@ export class RetryMiddleware implements Middleware {
         return done(res);
       }
       const delay = retryAfterMs ?? computeBackoff(opt, attempt);
+      if (endsAfterDeadline(ctx, delay)) {
+        // The request would time out while waiting: hand the response back now, so a 429 becomes
+        // DataverseThrottleError with retryAfterMs instead of a RequestTimeout later (#471).
+        ctx.logger?.debug("Not retrying: the wait would end after the request's deadline", {
+          delayMs: delay,
+          statusCode: res.status,
+        });
+        return done(res);
+      }
 
       ctx.logger?.debug("Retrying request", {
         attempt: attempt + 1,
@@ -215,7 +227,11 @@ export class RetryMiddleware implements Middleware {
     // Never retry what the caller cancelled, or a request that ran out of time.
     if (request.signal?.aborted) return false;
     if (!(err instanceof DataverseNetworkError) || err.name !== "ConnectionFailed") return false;
-    if (opt.shouldRetry) return opt.shouldRetry(0, err);
+    // shouldRetry decides whether network errors are retried at all; only retryNonIdempotent lets
+    // it replay a create or an action, which may have been applied before the connection dropped.
+    if (opt.shouldRetry) {
+      return opt.shouldRetry(0, err) && (opt.retryNonIdempotent || isIdempotent(request));
+    }
     if (opt.retryNetworkErrors === false) return false;
     // Left unset, only idempotent requests are retried, even with `retryNonIdempotent`: a dropped
     // connection can come after Dataverse applied a create or an action. Replaying those after a
@@ -244,6 +260,11 @@ function resolveOptions(client?: RetryOptions, perRequest?: RetryOptions): Resol
 function computeBackoff(opt: ResolvedOptions, attempt: number): number {
   const v = Math.min(opt.maxDelayMs, opt.baseDelayMs * 2 ** attempt);
   return opt.jitter ? Math.min(opt.maxDelayMs, withJitter(v)) : v;
+}
+
+/** Whether waiting `delayMs` from now would end after the request's `timeoutMs` deadline. */
+function endsAfterDeadline(ctx: MiddlewareContext, delayMs: number): boolean {
+  return ctx.deadline !== undefined && Date.now() + delayMs >= ctx.deadline;
 }
 
 /** Drop undefined values so they don't override client-level settings when spread. */

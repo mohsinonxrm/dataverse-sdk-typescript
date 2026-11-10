@@ -44,7 +44,11 @@ beforeAll(async () => {
   page = await browser.newPage();
   page.on("pageerror", (e) => pageErrors.push(e.message));
   page.on("console", (m) => {
-    if (m.type() === "error") consoleErrors.push(m.text());
+    // A full Chromium (Edge, Chrome) asks for /favicon.ico, which the app doesn't have. Vite 6's
+    // preview server answered with index.html; Vite 8's answers 404. Not the SDK's error.
+    if (m.type() === "error" && !m.location().url.endsWith("/favicon.ico")) {
+      consoleErrors.push(m.text());
+    }
   });
   await page.goto(url);
   await page.waitForSelector("body[data-ready='true']", { state: "attached", timeout: 15_000 });

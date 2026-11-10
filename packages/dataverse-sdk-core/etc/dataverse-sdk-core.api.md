@@ -797,6 +797,7 @@ export interface MiddlewareContext {
     attempt?: number;
     // (undocumented)
     correlationId?: string;
+    deadline?: number;
     featureTracker?: FeatureUsageTracker;
     // (undocumented)
     logger?: Logger;

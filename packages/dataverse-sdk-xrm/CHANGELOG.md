@@ -1,5 +1,15 @@
 # @mohsinonxrm/dataverse-sdk-xrm
 
+## 2.0.1
+
+### Patch Changes
+
+- Updated dependencies [17f85cf]
+- Updated dependencies [3204963]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.1
+  - @mohsinonxrm/dataverse-sdk-entities-runtime@2.0.1
+  - @mohsinonxrm/dataverse-sdk-messages@2.0.1
+
 ## 2.0.0
 
 ### Major Changes
