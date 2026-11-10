@@ -1,5 +1,20 @@
 # @mohsinonxrm/dataverse-sdk-generator
 
+## 2.0.1
+
+### Patch Changes
+
+- df6a1c6: `dataverse-gen` uses Commander 14 (was 12). The commands, options and help are the same. Extra
+  words after a command are still ignored, as before (Commander 13 and later would reject them with
+  "too many arguments"; `dataverse-gen` keeps accepting them so existing command lines and scripts
+  keep working).
+- Updated dependencies [17f85cf]
+- Updated dependencies [3204963]
+  - @mohsinonxrm/dataverse-sdk-core@2.0.1
+  - @mohsinonxrm/dataverse-sdk-auth-msal-node@2.0.1
+  - @mohsinonxrm/dataverse-sdk-entities-runtime@2.0.1
+  - @mohsinonxrm/dataverse-sdk-metadata@2.0.1
+
 ## 2.0.0
 
 ### Major Changes
