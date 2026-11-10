@@ -75,7 +75,7 @@ export default defineConfig({
     // Each scenario page is its own chunk (React.lazy); the shell stays small. The largest chunks
     // are the operation packages the explorer loads on demand.
     chunkSizeWarningLimit: 1200,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         // Named so you can tell them apart in the network panel (and the e2e tests can).
         chunkFileNames(chunk) {
