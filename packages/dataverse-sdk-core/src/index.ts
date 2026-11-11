@@ -48,6 +48,13 @@ export {
   type ChaosRequestOptions,
   type ChaosScriptInfo,
 } from "./middleware/ChaosMiddleware.js";
+// Dataverse failures for ChaosMiddleware, and a clock tests can replace (#475, #478).
+export {
+  ChaosPresets,
+  type ServiceProtectionChaosOptions,
+  type SlowOrgChaosOptions,
+} from "./middleware/chaosPresets.js";
+export { systemClock, type Clock } from "./utils/clock.js";
 export { getRetryAttempts } from "./middleware/RetryMiddleware.js";
 export type { RawBody } from "./utils/body.js";
 // Opt-in resilience middleware (#343).

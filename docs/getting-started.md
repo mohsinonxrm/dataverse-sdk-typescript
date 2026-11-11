@@ -894,7 +894,7 @@ console.log(account.name);
 ### Explore Advanced Features
 
 - **Metadata Operations**: `MetadataClient` and the `Metadata` builders in `@mohsinonxrm/dataverse-sdk-metadata` create and update tables, columns, relationships and choices ([reference](./api/metadata-operations.md))
-- **Resilience**: opt-in adaptive throttling, circuit breaker and bulkhead middleware, and `ChaosMiddleware` to test your app against 429s and outages ([core README](../packages/dataverse-sdk-core/README.md#resiliency-features))
+- **Resilience**: opt-in adaptive throttling, circuit breaker and bulkhead middleware, and `ChaosMiddleware` to test your app against 429s, outages and slow responses in dev and test environments ([core README](../packages/dataverse-sdk-core/README.md#resiliency-features), [Testing your app's resilience](testing-resilience.md))
 - **Telemetry**: the OpenTelemetry and Application Insights adapters record a dependency per request attempt, with W3C trace context and the SDK's throttle, retry and batch events ([core README](../packages/dataverse-sdk-core/README.md#telemetryclient))
 - **FetchXML and views**: `client.fetchXml()`, `client.savedQuery()` and `client.userQuery()` ([core README](../packages/dataverse-sdk-core/README.md#fetchxml))
 - **Discovery**: find the environments a user can open, in every cloud (`@mohsinonxrm/dataverse-sdk-discovery`)
