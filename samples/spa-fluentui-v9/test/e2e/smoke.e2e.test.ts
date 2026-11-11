@@ -18,6 +18,13 @@ const TENANT = "contoso.onmicrosoft.com";
 const LOGIN = "https://login.microsoftonline.com";
 
 /**
+ * The code editor's (Monaco's) size budget, in bytes before compression: its chunk is loaded the
+ * first time code is shown. (The rest of the app's chunks are measured in a production build;
+ * these tests run React's development build.)
+ */
+const EDITOR_BUDGET = 3_150_000;
+
+/**
  * Mocks Microsoft sign-in: MSAL's metadata requests are answered, and the authorize URLs MSAL
  * redirects to are recorded (and answered with an empty page).
  */
@@ -190,6 +197,8 @@ describe("spa-fluentui-v9", () => {
       // Every form control on the page has an accessible name.
       const unlabelled = await page.evaluate(() =>
         [...document.querySelectorAll("main input, main textarea, main [role=combobox]")]
+          // Hidden from assistive technology (the code editor's IME text area).
+          .filter((el) => !el.closest('[aria-hidden="true"]'))
           .filter((el) => {
             const labels = (el as HTMLInputElement).labels;
             return (
@@ -239,6 +248,31 @@ describe("spa-fluentui-v9", () => {
     expect(await problems(session)).toEqual([]);
   });
 
+  it("loads the code editor only when code is shown, within the site's size budget", async () => {
+    const session = await open();
+    const { page } = session;
+    const scripts = () =>
+      page.evaluate(() =>
+        performance
+          .getEntriesByType("resource")
+          .map((e) => new URL(e.name).pathname)
+          .filter((path) => path.endsWith(".js"))
+      );
+    const isEditor = (path: string) => /\/CodeEditor-[\w-]+\.js$/.test(path);
+    await page.getByRole("heading", { level: 1, name: "Dataverse SDK explorer" }).waitFor();
+    // The sign-in page doesn't download Monaco.
+    expect((await scripts()).filter(isEditor)).toEqual([]);
+    const size = async (path = "") =>
+      (await (await page.request.get(new URL(path, baseUrl).href)).body()).length;
+
+    // The overview shows code: the editor is loaded then, as one chunk, with its worker.
+    await startDemo(page);
+    await page.locator("main .monaco-editor").first().waitFor();
+    const editor = (await scripts()).filter(isEditor);
+    expect(editor).toHaveLength(1);
+    expect(await size(editor[0])).toBeLessThan(EDITOR_BUDGET);
+    expect(await problems(session)).toEqual([]);
+  });
   it("serves the app's routes from index.html (the SPA fallback)", async () => {
     const session = await open("/docs");
     await startDemo(session.page, "Documentation");

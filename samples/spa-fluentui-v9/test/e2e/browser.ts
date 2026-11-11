@@ -5,7 +5,7 @@
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, inject } from "vitest";
-import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
+import { chromium, type Browser, type BrowserContext, type Locator, type Page } from "playwright";
 
 export interface Session {
   context: BrowserContext;
@@ -103,4 +103,13 @@ export async function axeViolations(page: Page): Promise<string[]> {
   return result.violations.flatMap((v) =>
     v.nodes.map((n) => `${v.id} (${v.impact ?? "?"}): ${JSON.stringify(n.target)}`)
   );
+}
+
+/**
+ * The text of the code editor in `container` (a Monaco editor: the lines it has rendered, which
+ * are the visible ones, joined without line breaks). Monaco renders spaces as no-break spaces.
+ */
+export async function editorText(container: Locator): Promise<string> {
+  const lines = container.locator(".monaco-editor .view-lines").first();
+  return ((await lines.textContent()) ?? "").replaceAll(String.fromCharCode(0xa0), " ");
 }

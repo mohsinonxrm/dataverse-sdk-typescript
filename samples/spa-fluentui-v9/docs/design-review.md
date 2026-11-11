@@ -81,11 +81,14 @@ pull request for #473; `[ ]` is deferred, with the reason.
 - [x] **Action columns without a header** — `MetadataPage.tsx` ("Browse columns") and
       `DiscoveryPage.tsx` ("Use") had an empty column header. Fluent's `DataGrid` examples name
       every column. Fix: the header says "Action".
-- [ ] **Explorer picker lists as `<ul>` of buttons** — `OperationPicker.tsx`. v9 has `List` /
-      `ListItem` with arrow-key navigation. Deferred: the lists are long, filtered and
-      re-rendered on every keystroke, and the arrow-key model needs a design of its own; the
-      buttons are keyboard and screen-reader accessible as they are. Revisit with #472 (Monaco),
-      which reworks the explorer.
+- [x] **Explorer picker lists as `<ul>` of buttons** — `OperationPicker.tsx`. v9 has `List` /
+      `ListItem` with arrow-key navigation. Deferred from #473, done in
+      [#472](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/472): each list
+      (a sample group, the operations found, the history) is a v9 `List` with
+      `navigationMode="items"` and single selection, so it is one Tab stop: the arrow keys move
+      between its items, Enter, Space or a click chooses one, and Tab goes on to the next list.
+      It is a listbox whose selected option is the request shown, and it keeps working while the
+      search filters it (the selection follows the item, not its position).
 
 ## Feedback: loading, empty and error states
 
@@ -113,9 +116,12 @@ pull request for #473; `[ ]` is deferred, with the reason.
 - [x] **Focus indicator on scrollable regions** — `CodeBlock.tsx` drew its own outline on
       `:focus-visible`; the Telemetry log (`role="log"`, `tabIndex=0`) had only the browser's.
       Fix: both use `createFocusOutlineStyle()`, Fluent's keyboard-only focus outline.
-- [ ] **Explorer request/response panels are sections, not tab panels** — `ExplorerPage.tsx`:
-      the content under the Request and Response tab lists is a named `section`. Deferred to
-      #472, which replaces these panels with editors; the e2e tests address them by those names.
+- [x] **Explorer request/response panels are sections, not tab panels** — `ExplorerPage.tsx`:
+      the content under the Request and Response tab lists was a named `section`. Deferred from
+      #473, done in #472: each tab list has one `role="tabpanel"` labelled by the selected tab
+      (`aria-labelledby`), and every tab `aria-controls` it (`components/tabs.ts`, which the
+      picker uses too). The panels' code and JSON are Monaco editors, each with its own
+      accessible name.
 - [x] Skip link, focus moved to `<main>` after navigating, landmarks (`banner`, `navigation`,
       `main`), labelled form controls and axe WCAG 2.1 A/AA — already in place and covered by the
       e2e tests. Kept.
@@ -149,3 +155,15 @@ Demo mode, at 1366px and 375px wide. The full set (every main page, light and da
 | A 20px brand icon next to the page title.                                             | The icon matches the title; large card radius.                                        |
 | ![Navigation drawer at 375px, dark, before](design-review/nav-dark-narrow-before.png) | ![Navigation drawer at 375px, dark, after](design-review/nav-dark-narrow-after.png)   |
 | The overlay drawer at 375px, with the repeated headers.                               | The same drawer, shorter, with sections set apart.                                    |
+
+## Code editor (#472)
+
+The explorer and the scenario pages after
+[#472](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/472): code and JSON in the
+Monaco editor with Fluent-derived themes, the request body as a JSON field with **Format**, and
+the picker's v9 `List` with the chosen sample selected (compare the explorer with the "after"
+above).
+
+| Explorer, dark                                                              | Queries, light                                                                 |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| ![Explorer with code editors, dark](design-review/explorer-dark-editor.png) | ![Queries with the code editor, light](design-review/queries-light-editor.png) |

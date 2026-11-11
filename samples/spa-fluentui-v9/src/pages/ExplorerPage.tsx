@@ -26,13 +26,21 @@ import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { useSearchParams } from "react-router-dom";
 import { CodeBlock } from "../components/CodeBlock";
 import { ErrorCard } from "../components/ErrorCard";
+import { JsonEditor } from "../components/JsonEditor";
 import { JsonView } from "../components/JsonView";
 import { HeaderList, RequestInspector } from "../components/RequestInspector";
 import { ScenarioPage } from "../components/ScenarioPage";
 import { MethodBadge, StatusBadge } from "../components/StatusBadge";
+import { useTabs } from "../components/tabs";
 import { loadCatalog, loadPackage } from "../explorer/catalog/load";
 import { operationCode, rawCode } from "../explorer/codegen";
-import { OperationPicker, type PickerTab } from "../explorer/components/OperationPicker";
+import {
+  OperationPicker,
+  pickedHistory,
+  pickedOperation,
+  pickedSample,
+  type PickerTab,
+} from "../explorer/components/OperationPicker";
 import { ParameterForm } from "../explorer/components/ParameterForm";
 import {
   addToHistory,
@@ -160,12 +168,16 @@ export default function ExplorerPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [pickerTab, setPickerTab] = useState<PickerTab>("samples");
+  // The picker's item the request came from, shown as selected there.
+  const [picked, setPicked] = useState<string>();
   const [target, setTarget] = useState<Target>({ type: "raw", title: "Request" });
   const [raw, setRaw] = useState<RawRequestInput>(DEFAULT_RAW);
   const [opInput, setOpInput] = useState<OperationInput>(EMPTY_INPUT);
   const [flavour, setFlavour] = useState<CodeFlavour>("typed");
   const [requestTab, setRequestTab] = useState("body");
   const [responseTab, setResponseTab] = useState<ResponseTab>("code");
+  const requestTabs = useTabs(requestTab, setRequestTab, "Request details");
+  const responseTabs = useTabs(responseTab, setResponseTab, "Response details");
   const [history, setHistory] = useState<HistoryEntry[]>(readHistory);
   const [pkg, setPkg] = useState<
     { kind: OperationKind; pkg: OperationPackage } | { kind: OperationKind; error: unknown }
@@ -363,6 +375,7 @@ export default function ExplorerPage() {
   };
 
   const selectSample = (sample: Sample) => {
+    setPicked(pickedSample(sample.id));
     setSearchParams({ sample: sample.id }, { replace: true });
     if (sample.type === "raw") selectRaw(sample.request, sample.title);
     else
@@ -376,6 +389,7 @@ export default function ExplorerPage() {
   };
 
   const selectHistory = (entry: HistoryEntry) => {
+    setPicked(pickedHistory(entry.id));
     if (entry.type === "raw") selectRaw(entry.request, entry.title);
     else
       void selectByName(
@@ -396,6 +410,7 @@ export default function ExplorerPage() {
     }
     const [kind, name] = (searchParams.get("op") ?? "").split("/");
     if (name && OPERATION_KINDS.includes(kind as OperationKind)) {
+      setPicked(pickedOperation({ kind: kind as OperationKind, name }));
       void selectByName(kind as OperationKind, name);
       return;
     }
@@ -472,7 +487,9 @@ export default function ExplorerPage() {
             tab={pickerTab}
             onTabChange={setPickerTab}
             onSample={selectSample}
+            picked={picked}
             onOperation={(op) => {
+              setPicked(pickedOperation(op));
               setSearchParams({ op: `${op.kind}/${op.name}` }, { replace: true });
               selectOperation(op);
             }}
@@ -523,50 +540,11 @@ export default function ExplorerPage() {
                   <Caption1 className={common.muted}>
                     Relative to <span className={common.mono}>{apiRoot}/</span>
                   </Caption1>
-                  <TabList
-                    selectedValue={requestTab}
-                    onTabSelect={(_, d) => setRequestTab(String(d.value))}
-                    aria-label="Request details"
-                    size="small"
-                  >
-                    <Tab value="body">Body</Tab>
-                    <Tab value="headers">Headers</Tab>
-                    <Tab value="preview">Preview</Tab>
+                  <TabList {...requestTabs.list}>
+                    <Tab {...requestTabs.tab("body")}>Body</Tab>
+                    <Tab {...requestTabs.tab("headers")}>Headers</Tab>
+                    <Tab {...requestTabs.tab("preview")}>Preview</Tab>
                   </TabList>
-                  {requestTab === "body" && (
-                    <Field
-                      label="Body (JSON)"
-                      hint={
-                        raw.method === "GET" || raw.method === "DELETE"
-                          ? `${raw.method} requests send no body.`
-                          : undefined
-                      }
-                    >
-                      <Textarea
-                        className={styles.textarea}
-                        value={raw.body}
-                        onChange={(_, d) => editRaw({ body: d.value })}
-                        placeholder='{ "name": "Contoso" }'
-                        resize="vertical"
-                        spellCheck={false}
-                      />
-                    </Field>
-                  )}
-                  {requestTab === "headers" && (
-                    <Field
-                      label="Headers"
-                      hint="One Name: value per line. Prefer, If-Match, If-None-Match, MSCRMCallerID and CallerObjectId become the SDK's own methods."
-                    >
-                      <Textarea
-                        className={styles.textarea}
-                        value={raw.headers}
-                        onChange={(_, d) => editRaw({ headers: d.value })}
-                        placeholder="Prefer: return=representation"
-                        resize="vertical"
-                        spellCheck={false}
-                      />
-                    </Field>
-                  )}
                 </>
               ) : (
                 <>
@@ -578,52 +556,88 @@ export default function ExplorerPage() {
                   <Caption1 className={common.mono}>
                     {target.op.method} {target.op.route}
                   </Caption1>
-                  <TabList
-                    selectedValue={requestTab}
-                    onTabSelect={(_, d) => setRequestTab(String(d.value))}
-                    aria-label="Request details"
-                    size="small"
-                  >
-                    <Tab value="parameters">Parameters</Tab>
-                    <Tab value="preview">Preview</Tab>
+                  <TabList {...requestTabs.list}>
+                    <Tab {...requestTabs.tab("parameters")}>Parameters</Tab>
+                    <Tab {...requestTabs.tab("preview")}>Preview</Tab>
                   </TabList>
-                  {requestTab === "parameters" && (
-                    <ParameterForm
-                      op={target.op}
-                      input={opInput}
-                      onChange={setOpInput}
-                      errors={fieldErrors}
-                    />
-                  )}
-                  <div className={styles.actions}>
-                    {runButton}
-                    <Button
-                      icon={<ArrowSwapRegular />}
-                      disabled={!built.ok || !built.raw}
-                      onClick={() => built.ok && built.raw && selectRaw(built.raw, "Request")}
-                    >
-                      Edit as a raw request
-                    </Button>
-                  </div>
                 </>
               )}
-              {requestTab === "preview" && (
-                <section className={styles.tabPanel} aria-label="Request preview">
-                  <Caption1 className={common.muted}>
-                    The request the SDK will send, built by the SDK without sending it.
-                  </Caption1>
-                  {!built.ok ? (
-                    <Caption1 className={common.muted}>{built.reason}</Caption1>
-                  ) : !preview ? (
-                    <Spinner size="tiny" label="Building the request…" />
-                  ) : preview.error !== undefined ? (
-                    <ErrorCard error={preview.error} />
-                  ) : (
-                    preview.requests.map((r, i) => (
-                      <CodeBlock key={i} code={httpText(r)} plain label="Previewed request" />
-                    ))
-                  )}
-                </section>
+              <div {...requestTabs.panel} className={styles.tabPanel}>
+                {target.type === "raw" && requestTab === "body" && (
+                  <JsonEditor
+                    label="Body (JSON)"
+                    value={raw.body}
+                    onChange={(body) => editRaw({ body })}
+                    placeholder='{ "name": "Contoso" }'
+                    hint={
+                      raw.method === "GET" || raw.method === "DELETE"
+                        ? `${raw.method} requests send no body.`
+                        : undefined
+                    }
+                  />
+                )}
+                {target.type === "raw" && requestTab === "headers" && (
+                  <Field
+                    label="Headers"
+                    hint="One Name: value per line. Prefer, If-Match, If-None-Match, MSCRMCallerID and CallerObjectId become the SDK's own methods."
+                  >
+                    <Textarea
+                      className={styles.textarea}
+                      value={raw.headers}
+                      onChange={(_, d) => editRaw({ headers: d.value })}
+                      placeholder="Prefer: return=representation"
+                      resize="vertical"
+                      spellCheck={false}
+                    />
+                  </Field>
+                )}
+                {target.type === "operation" && requestTab === "parameters" && (
+                  <ParameterForm
+                    op={target.op}
+                    input={opInput}
+                    onChange={setOpInput}
+                    errors={fieldErrors}
+                  />
+                )}
+                {requestTab === "preview" && (
+                  <>
+                    <Caption1 className={common.muted}>
+                      The request the SDK will send, built by the SDK without sending it.
+                    </Caption1>
+                    {!built.ok ? (
+                      <Caption1 className={common.muted}>{built.reason}</Caption1>
+                    ) : !preview ? (
+                      <Spinner size="tiny" label="Building the request…" />
+                    ) : preview.error !== undefined ? (
+                      <ErrorCard error={preview.error} />
+                    ) : (
+                      preview.requests.map((r, i) => (
+                        <CodeBlock
+                          key={i}
+                          code={httpText(r)}
+                          language="http"
+                          label={
+                            preview.requests.length > 1
+                              ? `Previewed request ${i + 1}`
+                              : "Previewed request"
+                          }
+                        />
+                      ))
+                    )}
+                  </>
+                )}
+              </div>
+              {target.type === "operation" && (
+                <div className={styles.actions}>
+                  {runButton}
+                  <Button
+                    icon={<ArrowSwapRegular />}
+                    disabled={!built.ok || !built.raw}
+                    onClick={() => built.ok && built.raw && selectRaw(built.raw, "Request")}
+                  >
+                    Edit as a raw request
+                  </Button>
+                </div>
               )}
               {!built.ok && !built.loading && !built.problems && (
                 <MessageBar intent="warning">
@@ -655,65 +669,60 @@ export default function ExplorerPage() {
                 </Button>
               )}
             </div>
-            <TabList
-              selectedValue={responseTab}
-              onTabSelect={(_, d) => setResponseTab(d.value as ResponseTab)}
-              aria-label="Response details"
-              size="small"
-            >
-              <Tab value="response">Response</Tab>
-              <Tab value="headers">Headers</Tab>
-              <Tab value="code">SDK code</Tab>
-              <Tab value="requests">Requests</Tab>
+            <TabList {...responseTabs.list}>
+              <Tab {...responseTabs.tab("response")}>Response</Tab>
+              <Tab {...responseTabs.tab("headers")}>Headers</Tab>
+              <Tab {...responseTabs.tab("code")}>SDK code</Tab>
+              <Tab {...responseTabs.tab("requests")}>Requests</Tab>
             </TabList>
-            {responseTab === "response" && (
-              <section className={styles.tabPanel} aria-label="Response preview">
-                {run.state.status === "idle" && (
-                  <Caption1 className={common.muted}>Run the request to see its result.</Caption1>
-                )}
-                {run.state.status === "running" && <Spinner size="small" label="Waiting…" />}
-                {run.state.status === "done" &&
-                  (run.state.result === undefined ? (
-                    <Caption1>No content: the request succeeded with an empty body.</Caption1>
-                  ) : (
-                    <JsonView value={run.state.result} label="Response body" />
-                  ))}
-                {run.state.status === "failed" && <ErrorCard error={run.state.error} />}
-              </section>
-            )}
-            {responseTab === "headers" && (
-              <section className={styles.tabPanel} aria-label="Response headers">
-                {lastExchange?.responseHeaders ? (
+            <div {...responseTabs.panel} className={styles.tabPanel}>
+              {responseTab === "response" && run.state.status === "idle" && (
+                <Caption1 className={common.muted}>Run the request to see its result.</Caption1>
+              )}
+              {responseTab === "response" && run.state.status === "running" && (
+                <Spinner size="small" label="Waiting…" />
+              )}
+              {responseTab === "response" &&
+                run.state.status === "done" &&
+                (run.state.result === undefined ? (
+                  <Caption1>No content: the request succeeded with an empty body.</Caption1>
+                ) : (
+                  <JsonView value={run.state.result} label="Response body" />
+                ))}
+              {responseTab === "response" && run.state.status === "failed" && (
+                <ErrorCard error={run.state.error} />
+              )}
+              {responseTab === "headers" &&
+                (lastExchange?.responseHeaders ? (
                   <HeaderList headers={lastExchange.responseHeaders} />
                 ) : (
                   <Caption1 className={common.muted}>No response yet.</Caption1>
-                )}
-              </section>
-            )}
-            {responseTab === "code" && (
-              <section className={styles.tabPanel} aria-label="SDK code">
-                {target.type === "operation" && (
-                  <RadioGroup
-                    layout="horizontal"
-                    value={flavour}
-                    onChange={(_, d) => setFlavour(d.value as CodeFlavour)}
-                    aria-label="Code style"
-                  >
-                    {FLAVOURS.map((f) => (
-                      <Radio key={f.value} value={f.value} label={f.label} />
-                    ))}
-                  </RadioGroup>
-                )}
-                {built.code !== undefined ? (
-                  <CodeBlock code={built.code} label="SDK code" />
-                ) : built.ok ? null : built.loading ? (
-                  <Spinner size="tiny" label="Loading the package…" />
-                ) : (
-                  <Caption1 className={common.muted}>{built.reason}</Caption1>
-                )}
-              </section>
-            )}
-            {responseTab === "requests" && <RequestInspector exchanges={run.exchanges} />}
+                ))}
+              {responseTab === "code" && (
+                <>
+                  {target.type === "operation" && (
+                    <RadioGroup
+                      layout="horizontal"
+                      value={flavour}
+                      onChange={(_, d) => setFlavour(d.value as CodeFlavour)}
+                      aria-label="Code style"
+                    >
+                      {FLAVOURS.map((f) => (
+                        <Radio key={f.value} value={f.value} label={f.label} />
+                      ))}
+                    </RadioGroup>
+                  )}
+                  {built.code !== undefined ? (
+                    <CodeBlock code={built.code} label="SDK code" />
+                  ) : built.ok ? null : built.loading ? (
+                    <Spinner size="tiny" label="Loading the package…" />
+                  ) : (
+                    <Caption1 className={common.muted}>{built.reason}</Caption1>
+                  )}
+                </>
+              )}
+              {responseTab === "requests" && <RequestInspector exchanges={run.exchanges} />}
+            </div>
           </Card>
         </div>
       </div>

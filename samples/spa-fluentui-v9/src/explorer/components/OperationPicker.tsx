@@ -1,9 +1,12 @@
 import { useEffect, useId, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import {
   Button,
   Caption1,
   Caption1Strong,
   Field,
+  List,
+  ListItem,
   makeStyles,
   SearchBox,
   Select,
@@ -15,6 +18,7 @@ import {
 import { DeleteRegular } from "@fluentui/react-icons";
 import { ErrorCard } from "../../components/ErrorCard";
 import { MethodBadge, StatusBadge } from "../../components/StatusBadge";
+import { useTabs } from "../../components/tabs";
 import { loadCatalog } from "../catalog/load";
 import type { HistoryEntry } from "../history";
 import { SAMPLE_GROUPS, SAMPLES, sampleMethod, type Sample } from "../samples";
@@ -25,23 +29,37 @@ const useStyles = makeStyles({
   panel: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS, minWidth: 0 },
   list: {
     margin: 0,
-    paddingInlineStart: 0,
-    listStyle: "none",
+    padding: 0,
     display: "flex",
     flexDirection: "column",
     gap: tokens.spacingVerticalXXS,
   },
+  // A list item that looks like a subtle button: hover and selected backgrounds from the subtle
+  // tokens, the selected one's title in semibold (which shows in forced colours too).
   item: {
-    width: "100%",
-    justifyContent: "flex-start",
-    textAlign: "start",
-    fontWeight: tokens.fontWeightRegular,
-    minWidth: 0,
+    alignItems: "center",
     gap: tokens.spacingHorizontalS,
+    minWidth: 0,
+    minHeight: "32px",
+    paddingBlock: tokens.spacingVerticalXS,
+    paddingInline: tokens.spacingHorizontalS,
+    borderRadius: tokens.borderRadiusMedium,
+    color: tokens.colorNeutralForeground2,
+    ":hover": {
+      backgroundColor: tokens.colorSubtleBackgroundHover,
+      color: tokens.colorNeutralForeground2Hover,
+    },
+    ":active": { backgroundColor: tokens.colorSubtleBackgroundPressed },
+    '&[aria-selected="true"]': {
+      backgroundColor: tokens.colorSubtleBackgroundSelected,
+      color: tokens.colorNeutralForeground1Selected,
+      fontWeight: tokens.fontWeightSemibold,
+    },
   },
   // The method badge, in a column of its own so the titles line up.
   badge: { flexShrink: 0, width: "3.25rem", display: "flex" },
   itemText: {
+    flex: 1,
     display: "flex",
     flexDirection: "column",
     minWidth: 0,
@@ -51,17 +69,12 @@ const useStyles = makeStyles({
   route: {
     color: tokens.colorNeutralForeground3,
     fontFamily: tokens.fontFamilyMonospace,
+    fontWeight: tokens.fontWeightRegular,
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
   group: { margin: 0, marginTop: tokens.spacingVerticalS },
-  historyItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: tokens.spacingHorizontalXS,
-    minWidth: 0,
-  },
   muted: { color: tokens.colorNeutralForeground3 },
 });
 
@@ -75,9 +88,17 @@ const KIND_LABEL: Record<OperationKind, string> = {
   messages: "Messages",
 };
 
+/** The list item values (also their element ids) of what the picker offers. */
+export const pickedSample = (id: string) => `sample-${id}`;
+export const pickedOperation = (op: Pick<CatalogOperation, "kind" | "name">) =>
+  `operation-${op.kind}-${op.name}`;
+export const pickedHistory = (id: string) => `history-${id}`;
+
 interface OperationPickerProps {
   tab: PickerTab;
   onTabChange: (tab: PickerTab) => void;
+  /** The value of the item chosen last (`pickedSample` and so on), shown as selected. */
+  picked?: string;
   onSample: (sample: Sample) => void;
   onOperation: (op: CatalogOperation) => void;
   history: HistoryEntry[];
@@ -89,8 +110,69 @@ function matches(text: string, query: string): boolean {
   return text.toLowerCase().includes(query.trim().toLowerCase());
 }
 
-function SampleList({ onSample }: { onSample: (s: Sample) => void }) {
+/**
+ * A Fluent `List` to pick from: a single-selection listbox where the arrow keys move between the
+ * items, Enter, Space or a click chooses one, and Tab leaves the list. The chosen item is the
+ * selected one.
+ */
+function PickList<T>({
+  items,
+  keyOf,
+  picked,
+  onPick,
+  render,
+  itemProps,
+  ...rest
+}: {
+  items: T[];
+  keyOf: (item: T) => string;
+  picked?: string;
+  onPick: (item: T) => void;
+  render: (item: T) => ReactNode;
+  itemProps?: (item: T) => Record<string, string>;
+} & ({ "aria-label": string } | { "aria-labelledby": string })) {
   const styles = useStyles();
+  const byValue = new Map(items.map((item) => [keyOf(item), item]));
+  const pick = (value: string | number | undefined) => {
+    const item = value === undefined ? undefined : byValue.get(String(value));
+    if (item !== undefined) onPick(item);
+  };
+  return (
+    <List
+      {...rest}
+      className={styles.list}
+      navigationMode="items"
+      selectionMode="single"
+      selectedItems={picked && byValue.has(picked) ? [picked] : []}
+      // Space selects (the list's own behaviour): that picks the item too.
+      onSelectionChange={(_, data) => pick(data.selectedItems[0])}
+    >
+      {items.map((item) => {
+        const value = keyOf(item);
+        return (
+          <ListItem
+            key={value}
+            value={value}
+            className={styles.item}
+            checkmark={null}
+            // Click and Enter. Handled here, so the list doesn't also toggle the selection.
+            onAction={(e) => {
+              e.preventDefault();
+              pick(value);
+            }}
+            {...itemProps?.(item)}
+          >
+            {render(item)}
+          </ListItem>
+        );
+      })}
+    </List>
+  );
+}
+
+function SampleList({ onSample, picked }: { onSample: (s: Sample) => void; picked?: string }) {
+  const styles = useStyles();
+  const id = useId();
   const [query, setQuery] = useState("");
   const shown = SAMPLES.filter((s) => matches(`${s.group} ${s.title}`, query));
   return (
@@ -101,32 +183,32 @@ function SampleList({ onSample }: { onSample: (s: Sample) => void }) {
         value={query}
         onChange={(_, d) => setQuery(d.value)}
       />
-      {SAMPLE_GROUPS.map((group) => {
+      {SAMPLE_GROUPS.map((group, index) => {
         const items = shown.filter((s) => s.group === group);
         if (!items.length) return null;
+        const headingId = `${id}-group-${index}`;
         return (
-          <section key={group} aria-label={group}>
-            <Caption1Strong as="h3" className={styles.group}>
+          <div key={group}>
+            <Caption1Strong as="h3" id={headingId} className={styles.group}>
               {group}
             </Caption1Strong>
-            <ul className={styles.list}>
-              {items.map((s) => (
-                <li key={s.id}>
-                  <Button
-                    appearance="subtle"
-                    className={styles.item}
-                    onClick={() => onSample(s)}
-                    data-sample={s.id}
-                  >
-                    <span className={styles.badge}>
-                      <MethodBadge method={sampleMethod(s)} />
-                    </span>
-                    <span className={styles.itemTitle}>{s.title}</span>
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          </section>
+            <PickList
+              aria-labelledby={headingId}
+              items={items}
+              keyOf={(s) => pickedSample(s.id)}
+              picked={picked}
+              onPick={onSample}
+              itemProps={(s) => ({ "data-sample": s.id })}
+              render={(s) => (
+                <>
+                  <span className={styles.badge}>
+                    <MethodBadge method={sampleMethod(s)} />
+                  </span>
+                  <span className={styles.itemTitle}>{s.title}</span>
+                </>
+              )}
+            />
+          </div>
         );
       })}
       {!shown.length && <Caption1 className={styles.muted}>No sample matches.</Caption1>}
@@ -134,7 +216,13 @@ function SampleList({ onSample }: { onSample: (s: Sample) => void }) {
   );
 }
 
-function OperationList({ onOperation }: { onOperation: (op: CatalogOperation) => void }) {
+function OperationList({
+  onOperation,
+  picked,
+}: {
+  onOperation: (op: CatalogOperation) => void;
+  picked?: string;
+}) {
   const styles = useStyles();
   const [kind, setKind] = useState<OperationKind>("functions");
   const [query, setQuery] = useState("");
@@ -191,26 +279,25 @@ function OperationList({ onOperation }: { onOperation: (op: CatalogOperation) =>
               : `${found.length} of ${state.operations.length} match`}
             {found.length > SHOWN ? `; showing the first ${SHOWN}` : ""}
           </Caption1>
-          <ul className={styles.list}>
-            {found.slice(0, SHOWN).map((op) => (
-              <li key={op.className}>
-                <Button
-                  appearance="subtle"
-                  className={styles.item}
-                  onClick={() => onOperation(op)}
-                  title={`${op.method} ${op.route}`}
-                >
-                  <span className={styles.badge}>
-                    <MethodBadge method={op.method} />
-                  </span>
-                  <span className={styles.itemText}>
-                    <span className={styles.itemTitle}>{op.className}</span>
-                    <Caption1 className={styles.route}>{op.route}</Caption1>
-                  </span>
-                </Button>
-              </li>
-            ))}
-          </ul>
+          <PickList
+            aria-label={KIND_LABEL[kind]}
+            items={found.slice(0, SHOWN)}
+            keyOf={pickedOperation}
+            picked={picked}
+            onPick={onOperation}
+            itemProps={(op) => ({ title: `${op.method} ${op.route}` })}
+            render={(op) => (
+              <>
+                <span className={styles.badge}>
+                  <MethodBadge method={op.method} />
+                </span>
+                <span className={styles.itemText}>
+                  <span className={styles.itemTitle}>{op.className}</span>
+                  <Caption1 className={styles.route}>{op.route}</Caption1>
+                </span>
+              </>
+            )}
+          />
         </>
       )}
     </div>
@@ -219,10 +306,12 @@ function OperationList({ onOperation }: { onOperation: (op: CatalogOperation) =>
 
 function HistoryList({
   history,
+  picked,
   onHistory,
   onClear,
 }: {
   history: HistoryEntry[];
+  picked?: string;
   onHistory: (e: HistoryEntry) => void;
   onClear: () => void;
 }) {
@@ -236,24 +325,27 @@ function HistoryList({
   }
   return (
     <div className={styles.panel}>
-      <ul className={styles.list} aria-label="History">
-        {history.map((e) => (
-          <li key={e.id} className={styles.historyItem}>
-            <Button appearance="subtle" className={styles.item} onClick={() => onHistory(e)}>
-              <span className={styles.badge}>
-                <MethodBadge method={e.method} />
-              </span>
-              <span className={styles.itemText}>
-                <span className={styles.itemTitle}>{e.title}</span>
-                <Caption1 className={styles.route}>
-                  {new Date(e.at).toLocaleTimeString()} · {e.environmentHost}
-                </Caption1>
-              </span>
-            </Button>
+      <PickList
+        aria-label="History"
+        items={history}
+        keyOf={(e) => pickedHistory(e.id)}
+        picked={picked}
+        onPick={onHistory}
+        render={(e) => (
+          <>
+            <span className={styles.badge}>
+              <MethodBadge method={e.method} />
+            </span>
+            <span className={styles.itemText}>
+              <span className={styles.itemTitle}>{e.title}</span>
+              <Caption1 className={styles.route}>
+                {new Date(e.at).toLocaleTimeString()} · {e.environmentHost}
+              </Caption1>
+            </span>
             {e.status !== undefined && <StatusBadge status={e.status} />}
-          </li>
-        ))}
-      </ul>
+          </>
+        )}
+      />
       <Button icon={<DeleteRegular />} onClick={onClear}>
         Clear the history
       </Button>
@@ -264,33 +356,22 @@ function HistoryList({
 /** The explorer's left panel: sample queries, the operation catalogs, and history. */
 export function OperationPicker(props: OperationPickerProps) {
   const styles = useStyles();
-  const { tab, onTabChange } = props;
-  const id = useId();
-  const tabId = (value: PickerTab) => `${id}-${value}`;
+  const { tab, onTabChange, picked } = props;
+  const tabs = useTabs(tab, onTabChange, "Pick a request");
   return (
     <div className={styles.root}>
-      <TabList
-        selectedValue={tab}
-        onTabSelect={(_, d) => onTabChange(d.value as PickerTab)}
-        aria-label="Pick a request"
-        size="small"
-      >
-        <Tab value="samples" id={tabId("samples")} aria-controls={`${id}-panel`}>
-          Samples
-        </Tab>
-        <Tab value="operations" id={tabId("operations")} aria-controls={`${id}-panel`}>
-          Operations
-        </Tab>
-        <Tab value="history" id={tabId("history")} aria-controls={`${id}-panel`}>
-          History
-        </Tab>
+      <TabList {...tabs.list}>
+        <Tab {...tabs.tab("samples")}>Samples</Tab>
+        <Tab {...tabs.tab("operations")}>Operations</Tab>
+        <Tab {...tabs.tab("history")}>History</Tab>
       </TabList>
-      <div role="tabpanel" id={`${id}-panel`} aria-labelledby={tabId(tab)}>
-        {tab === "samples" && <SampleList onSample={props.onSample} />}
-        {tab === "operations" && <OperationList onOperation={props.onOperation} />}
+      <div {...tabs.panel}>
+        {tab === "samples" && <SampleList onSample={props.onSample} picked={picked} />}
+        {tab === "operations" && <OperationList onOperation={props.onOperation} picked={picked} />}
         {tab === "history" && (
           <HistoryList
             history={props.history}
+            picked={picked}
             onHistory={props.onHistory}
             onClear={props.onClearHistory}
           />
