@@ -403,20 +403,33 @@ function typedUnion(typeName: string, concreteTypes: string[]): string {
 }
 
 /**
- * Generate TypeScript enum for an enum type.
+ * Generate the declaration for an enum type (#479): a const object and a type of the same name,
+ * not a TypeScript `enum`, so the packages compile under `erasableSyntaxOnly` and Node's type
+ * stripping. `X.Member` and `x: X` work as with an enum; only the reverse mapping (`X[14]`) is
+ * gone.
+ *
+ * The values stay numbers in 2.x, so `X.Member` is sent as before (the generated code turns it
+ * into the member name the Web API reads); they become names in 3.0. The type is the union of the
+ * values, or `number` for a flags enum, whose members combine with `|`.
  */
-function generateEnumTypeDefinition(enumType: CsdlEnumType): string {
+export function generateEnumTypeDefinition(enumType: CsdlEnumType): string {
+  const { name } = enumType;
   let code = `/**\n`;
-  code += ` * ${enumType.name} enum\n`;
-  code += ` */\n`;
-  code += `export enum ${enumType.name} {\n`;
-
-  for (const member of enumType.members) {
-    code += `  ${member.name} = ${String(member.value)},\n`;
+  code += ` * ${name} enum\n`;
+  if (enumType.isFlags === true) {
+    code += ` *\n`;
+    code += ` * A flags enum: combine members with \`|\`, so the type is \`number\`.\n`;
   }
-
-  code += `}\n`;
-
+  code += ` */\n`;
+  code += `export const ${name} = {\n`;
+  for (const member of enumType.members) {
+    code += `  ${member.name}: ${String(member.value)},\n`;
+  }
+  code += `} as const;\n\n`;
+  code +=
+    enumType.isFlags === true
+      ? `export type ${name} = number;\n`
+      : `export type ${name} = (typeof ${name})[keyof typeof ${name}];\n`;
   return code;
 }
 

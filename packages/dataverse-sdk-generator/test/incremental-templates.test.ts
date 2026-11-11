@@ -288,11 +288,12 @@ describe("custom templates (#347)", () => {
       path.join(templates, "enum.ejs"),
       [
         "/** <%- doc(enumType.Name) %>, from a custom template */",
-        "export enum <%- typeName %> {",
+        "export const <%- typeName %> = {",
         "<%_ enumType.Members.forEach(function(member){ _%>",
-        "  <%- propertyKey(member.Name) %> = <%- Number(member.Value) %>,",
+        "  <%- propertyKey(member.Name) %>: <%- Number(member.Value) %>,",
         "<%_ }) _%>",
-        "}",
+        "} as const;",
+        "export type <%- typeName %> = number;",
         "",
       ].join("\n"),
       "utf-8"
@@ -302,7 +303,7 @@ describe("custom templates (#347)", () => {
 
     const industry = await fs.readFile(path.join(dir, "enums", "account_industrycode.ts"), "utf-8");
     expect(industry).toContain("from a custom template");
-    expect(industry).toContain("export enum account_industrycode {");
+    expect(industry).toContain("export const account_industrycode = {");
     expect(await fs.readFile(path.join(dir, "entities", "Account.ts"), "utf-8")).toContain(
       "export interface Account extends IEntity"
     );

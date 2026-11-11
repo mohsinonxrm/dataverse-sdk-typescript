@@ -1,9 +1,12 @@
 /**
  * AttributeRequiredLevel enum
  */
-export enum AttributeRequiredLevel {
-  None = 0,
-  SystemRequired = 1,
-  ApplicationRequired = 2,
-  Recommended = 3,
-}
+export const AttributeRequiredLevel = {
+  None: 0,
+  SystemRequired: 1,
+  ApplicationRequired: 2,
+  Recommended: 3,
+} as const;
+
+export type AttributeRequiredLevel =
+  (typeof AttributeRequiredLevel)[keyof typeof AttributeRequiredLevel];

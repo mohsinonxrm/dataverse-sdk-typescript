@@ -294,14 +294,19 @@ describe("options-object constructors, as in the in-repo generator (#96)", () =>
     expect(search).toContain("  Term: string;");
     expect(search).toContain("  OwnerId: string;");
     expect(search).toMatch(/ {2}Since\?: .+ \| null;/);
-    expect(search).toContain("public readonly parameters: contoso_SearchFunctionParameters,");
+    // A declared field, not a parameter property, which erasableSyntaxOnly rejects (#479)
+    expect(search).toContain("  public readonly parameters: contoso_SearchFunctionParameters;");
+    expect(search).toContain("    parameters: contoso_SearchFunctionParameters,");
+    expect(search).toContain("    this.parameters = parameters;");
+    expect(search).not.toMatch(/constructor\([^)]*public readonly/);
     const recalculate = await read("actions/contoso_RecalculateAction.ts");
-    expect(recalculate).toContain("public readonly accountId: string,");
+    expect(recalculate).toContain("  public readonly accountId: string;");
+    expect(recalculate).toContain("    accountId: string,");
     expect(recalculate).toContain(
       " * The first argument is the id of the account record to call it on."
     );
     expect(await read("actions/contoso_FlagAction.ts")).toContain(
-      "public readonly parameters: contoso_FlagActionParameters = {},"
+      "    parameters: contoso_FlagActionParameters = {},"
     );
     const whoAmI = await read("functions/WhoAmIFunction.ts");
     expect(whoAmI).not.toContain("constructor(");

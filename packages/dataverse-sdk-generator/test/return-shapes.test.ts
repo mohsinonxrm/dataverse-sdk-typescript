@@ -300,7 +300,9 @@ export const checks: true[] = [
   {} as Equal<G.FInt32FunctionResponse, number>,
   {} as Equal<G.FBooleanFunctionResponse, boolean>,
   {} as Equal<G.FGuidFunctionResponse, string>,
-  {} as Equal<G.FEnumFunctionResponse, string>,
+  // A (non-flags) enum is read as its member name, which is the enum's value (#479)
+  {} as Equal<G.FEnumFunctionResponse, G.Mode>,
+  {} as Equal<G.FEnumFunctionResponse, "First" | "Second">,
   {} as Equal<G.FStringsFunctionResponse, string[]>,
   {} as Equal<G.FItemsFunctionResponse, G.Item[]>,
   {} as Equal<G.FInfoFunctionResponse["Count"], number | undefined>,

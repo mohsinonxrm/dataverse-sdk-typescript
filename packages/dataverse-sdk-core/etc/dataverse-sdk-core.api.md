@@ -721,26 +721,29 @@ export interface ExpandOptions {
 }
 
 // @public
-export enum FeatureUsageFlag {
-    APPINSIGHTS_TELEMETRY = 32768,
-    BATCH_ENABLED = 4,// 1 (binary: 0001)
-    CONCURRENCY_ENABLED = 2,// 2 (binary: 0010)
-    CUSTOM_AUTH = 8,// 4 (binary: 0100)
-    DISCOVERY_SERVICE = 1024,// 8 (binary: 1000)
-    FILE_OPERATIONS = 256,// 16 (binary: 10000)
-    LOGGING_ENABLED = 32,// 32 (binary: 100000)
-    METADATA_OPERATIONS = 512,// 64 (binary: 1000000)
-    NONE = 0,// 128 (binary: 10000000)
-    OTEL_TELEMETRY = 65536,// 256 (binary: 100000000)
-    PAGING_ENABLED = 128,// 512 (binary: 1000000000)
-    REQUEST_OPTIONS_OVERRIDE = 64,// 1024 (binary: 10000000000)
-    RETRY_ENABLED = 1,// 2048 (binary: 100000000000)
-    SDK_MESSAGES = 4096,// 4096 (binary: 1000000000000)
-    TELEMETRY_ENABLED = 16,// 8192 (binary: 10000000000000)
-    TYPED_ACTIONS = 8192,// 16384 (binary: 100000000000000)
-    TYPED_FUNCTIONS = 16384,// 32768 (binary: 1000000000000000)
-    XRM_FACADE = 2048
-}
+export const FeatureUsageFlag: {
+    readonly NONE: 0;
+    readonly RETRY_ENABLED: 1;
+    readonly CONCURRENCY_ENABLED: 2;
+    readonly BATCH_ENABLED: 4;
+    readonly CUSTOM_AUTH: 8;
+    readonly TELEMETRY_ENABLED: 16;
+    readonly LOGGING_ENABLED: 32;
+    readonly REQUEST_OPTIONS_OVERRIDE: 64;
+    readonly PAGING_ENABLED: 128;
+    readonly FILE_OPERATIONS: 256;
+    readonly METADATA_OPERATIONS: 512;
+    readonly DISCOVERY_SERVICE: 1024;
+    readonly XRM_FACADE: 2048;
+    readonly SDK_MESSAGES: 4096;
+    readonly TYPED_ACTIONS: 8192;
+    readonly TYPED_FUNCTIONS: 16384;
+    readonly APPINSIGHTS_TELEMETRY: 32768;
+    readonly OTEL_TELEMETRY: 65536;
+};
+
+// @public
+export type FeatureUsageFlag = number;
 
 // @public
 export class FeatureUsageTracker {

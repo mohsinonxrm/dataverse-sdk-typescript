@@ -98,6 +98,8 @@ export async function typecheck(dir: string, types: string[] = []): Promise<stri
     noUnusedLocals: true,
     noUnusedParameters: true,
     noImplicitOverride: true,
+    // No `enum`, `namespace` or parameter properties: the code runs under Node's type stripping (#479)
+    erasableSyntaxOnly: true,
     skipLibCheck: true,
     types,
     typeRoots: [path.join(packageRoot, "node_modules", "@types")],

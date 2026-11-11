@@ -1,7 +1,9 @@
 /**
  * RelationshipType enum
  */
-export enum RelationshipType {
-  OneToManyRelationship = 0,
-  ManyToManyRelationship = 1,
-}
+export const RelationshipType = {
+  OneToManyRelationship: 0,
+  ManyToManyRelationship: 1,
+} as const;
+
+export type RelationshipType = (typeof RelationshipType)[keyof typeof RelationshipType];

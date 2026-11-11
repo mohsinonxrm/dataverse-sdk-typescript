@@ -1,7 +1,9 @@
 /**
  * OrganizationState enum
  */
-export enum OrganizationState {
-  Enabled = 0,
-  Disabled = 1,
-}
+export const OrganizationState = {
+  Enabled: 0,
+  Disabled: 1,
+} as const;
+
+export type OrganizationState = (typeof OrganizationState)[keyof typeof OrganizationState];

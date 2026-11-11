@@ -348,7 +348,7 @@ export const checks: true[] = [
   {} as Equal<NonNullable<G.FMaybeInfoFunctionResponse>["Label"], string | null>,
   {} as Equal<G.FStringFunctionResponse, string>,
   {} as Equal<G.FMaybeStringFunctionResponse, string | null>,
-  {} as Equal<G.FMaybeEnumFunctionResponse, string | null>,
+  {} as Equal<G.FMaybeEnumFunctionResponse, G.Mode | null>,
   {} as Equal<G.FStringsFunctionResponse, string[]>,
   {} as Equal<G.FMaybeStringsFunctionResponse, Array<string | null>>,
   {} as Equal<G.FItemsFunctionResponse, G.ItemOutput_2[]>,

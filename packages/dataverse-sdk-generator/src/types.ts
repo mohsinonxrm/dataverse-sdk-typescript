@@ -382,6 +382,14 @@ export interface EnumType {
 
   /** A CSDL enum with `IsFlags="true"`: a value can combine members (`ReadAccess, WriteAccess`). */
   IsFlags?: boolean;
+
+  /**
+   * An `EnumType` of the CSDL (`AccessRights`) that isn't a choice column's option set. Its members
+   * are generated with their names as values, which the Web API reads and writes (#479); a flags
+   * enum keeps its numbers, which combine with `|`. An option set (local, or a `$metadata` enum a
+   * choice column uses) keeps its numbers, which Dataverse stores.
+   */
+  IsCsdlEnum?: boolean;
 }
 
 /**
