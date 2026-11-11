@@ -4,7 +4,7 @@
  * in the history, links open a sample, and axe finds no WCAG A/AA violation.
  */
 import { describe, expect, it } from "vitest";
-import type { Page } from "playwright";
+import type { Locator, Page } from "playwright";
 import { SAMPLES } from "../../src/explorer/samples";
 import { axeViolations, editorText, problems, startDemo, useBrowser } from "./browser";
 
@@ -20,6 +20,10 @@ const responsePanel = (page: Page) => responseCard(page).getByRole("tabpanel");
 const code = (page: Page) => editorText(responsePanel(page));
 const status = (page: Page) => responseCard(page).getByRole("status");
 const runButton = (page: Page) => page.getByRole("button", { name: "Run", exact: true });
+
+/** Waits for the animations in `locator` (a dialog fading in) to end, so axe sees full contrast. */
+const settled = (locator: Locator) =>
+  locator.evaluate((el) => Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)));
 
 async function openExplorer(page: Page): Promise<void> {
   await startDemo(page);
@@ -247,6 +251,124 @@ describe("explorer", () => {
       .poll(() => code(page))
       .toContain('new RetrieveTotalRecordCountFunction({ EntityNames: ["account", "contact"] })');
     expect(await runAndWait(page)).toBe("finished");
+    expect(await problems(session)).toEqual([]);
+  });
+
+  it("shares a request as a link that loads it without running it", async () => {
+    const session = await open();
+    const { page, context } = session;
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    const clipboard = () => page.evaluate(() => navigator.clipboard.readText());
+    await openExplorer(page);
+    await page.getByLabel("Method").selectOption("POST");
+    await page.getByLabel("URL", { exact: true }).fill("accounts?$select=name");
+    await page.getByRole("tab", { name: "Headers", exact: true }).first().click();
+    await page
+      .getByRole("textbox", { name: "Headers", exact: true })
+      .fill("Prefer: return=representation\nAuthorization: Bearer typed-secret");
+
+    // Share: the link is in the fragment, without the environment unless asked.
+    await page.getByRole("button", { name: "Share" }).click();
+    const dialog = page.getByRole("dialog", { name: "Share this request" });
+    const linkField = dialog.getByRole("textbox", { name: "Link" });
+    await expect.poll(() => linkField.inputValue()).toMatch(/\/explorer#r=[zj]\.[\w-]+$/);
+    const withoutEnvironment = await linkField.inputValue();
+    await dialog.getByRole("switch", { name: /Include the environment/ }).check();
+    await expect.poll(() => linkField.inputValue()).not.toBe(withoutEnvironment);
+    await dialog.getByRole("switch", { name: /Include the environment/ }).uncheck();
+    await expect.poll(() => linkField.inputValue()).toBe(withoutEnvironment);
+    await settled(dialog);
+    expect(await axeViolations(page)).toEqual([]);
+    await dialog.getByRole("button", { name: "Copy link" }).click();
+    await page.locator(".fui-ToastTitle", { hasText: "Link copied to the clipboard" }).waitFor();
+    const link = await clipboard();
+    expect(link).toBe(withoutEnvironment);
+    expect(new URL(link).search).toBe("");
+    await page.keyboard.press("Escape");
+    expect(await problems(session)).toEqual([]);
+
+    // Opened in another browser tab (not signed in): loaded after sign-in, not run.
+    const other = await open(link);
+    const second = other.page;
+    await startDemo(second, "Explorer");
+    await second.getByText("Loaded a shared request").waitFor();
+    await second.getByText("This POST request changes data").waitFor();
+    await expect(second.getByLabel("Method").inputValue()).resolves.toBe("POST");
+    await expect(second.getByLabel("URL", { exact: true }).inputValue()).resolves.toBe(
+      "accounts?$select=name"
+    );
+    await second.getByRole("tab", { name: "Headers", exact: true }).first().click();
+    await expect(
+      second.getByRole("textbox", { name: "Headers", exact: true }).inputValue()
+    ).resolves.toBe("Prefer: return=representation");
+    await expect(status(second).textContent()).resolves.toBe("Not run yet.");
+    // The fragment is gone, so a reload doesn't load it again over edits.
+    expect(new URL(second.url()).hash).toBe("");
+    expect(await axeViolations(second)).toEqual([]);
+    expect(await problems(other)).toEqual([]);
+
+    // A damaged link says so, and doesn't break the page.
+    await second.goto(new URL("/explorer#r=j.bm90IGpzb24", second.url()).href);
+    await second.getByText("The shared link can't be opened").waitFor();
+    await second.getByText(/doesn't hold valid JSON/).waitFor();
+    expect(await problems(other)).toEqual([]);
+  });
+
+  it("copies a request as curl, fetch or C# with a token placeholder", async () => {
+    const session = await open();
+    const { page, context } = session;
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await openExplorer(page);
+    await page.locator('[data-sample="create-account"]').click();
+    await expect.poll(() => code(page)).toContain('.api("accounts")');
+
+    const copyAsButton = responsePanel(page).getByRole("button", { name: "Copy as" });
+    await expect.poll(() => copyAsButton.isEnabled()).toBe(true);
+    // Keyboard: the menu opens and is navigated with the keys.
+    await copyAsButton.focus();
+    await page.keyboard.press("Enter");
+    await page.getByRole("menuitem", { name: "curl (bash)" }).waitFor();
+    await page.keyboard.press("Enter");
+    const dialog = page.getByRole("dialog", { name: "Copy as curl (bash)" });
+    const url = "'https://<org>.crm.dynamics.com/api/data/v9.2/accounts?$select=name,accountid'";
+    await expect.poll(() => editorText(dialog)).toContain(`curl -X POST ${url}`);
+    // The dialog has the focus, on its Copy button.
+    await expect(
+      dialog
+        .getByRole("button", { name: "Copy", exact: true })
+        .evaluate((b) => b === document.activeElement)
+    ).resolves.toBe(true);
+    await settled(dialog);
+    expect(await axeViolations(page)).toEqual([]);
+    await dialog.getByRole("button", { name: "Copy", exact: true }).click();
+    await page.locator(".fui-ToastTitle", { hasText: "Copied to the clipboard" }).waitFor();
+    const curl = await page.evaluate(() => navigator.clipboard.readText());
+    expect(curl).toContain(`curl -X POST ${url}`);
+    expect(curl).toContain("-H 'Authorization: Bearer <TOKEN>'");
+    expect(curl).toContain("-H 'OData-Version: 4.0'");
+    expect(curl).toContain('"name": "Created in the explorer"');
+    expect(curl).not.toContain("demo-token");
+    expect(curl).not.toContain("contoso");
+    await dialog.getByRole("button", { name: "Close" }).click();
+    await dialog.waitFor({ state: "detached" });
+    // The focus is back on the menu's button.
+    await expect(copyAsButton.evaluate((b) => b === document.activeElement)).resolves.toBe(true);
+    // The toast goes (axe would see it fading out behind the next dialog).
+    await page.locator(".fui-ToastTitle").waitFor({ state: "detached" });
+
+    for (const [item, expected] of [
+      ["fetch (JavaScript)", 'Authorization: "Bearer <TOKEN>",'],
+      ["C# HttpClient", 'new AuthenticationHeaderValue("Bearer", "<TOKEN>")'],
+    ] as const) {
+      await copyAsButton.click();
+      await page.getByRole("menuitem", { name: item }).click();
+      const shown = page.getByRole("dialog", { name: `Copy as ${item}` });
+      await expect.poll(() => editorText(shown)).toContain(expected);
+      await settled(shown);
+      expect(await axeViolations(page)).toEqual([]);
+      await page.keyboard.press("Escape");
+      await shown.waitFor({ state: "detached" });
+    }
     expect(await problems(session)).toEqual([]);
   });
 

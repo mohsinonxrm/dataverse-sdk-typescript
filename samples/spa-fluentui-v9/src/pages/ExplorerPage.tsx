@@ -10,7 +10,9 @@ import {
   Input,
   makeStyles,
   MessageBar,
+  MessageBarActions,
   MessageBarBody,
+  MessageBarTitle,
   Radio,
   RadioGroup,
   Select,
@@ -23,7 +25,7 @@ import {
 } from "@fluentui/react-components";
 import { ArrowSwapRegular, DismissRegular, PlayRegular } from "@fluentui/react-icons";
 import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { CodeBlock } from "../components/CodeBlock";
 import { ErrorCard } from "../components/ErrorCard";
 import { JsonEditor } from "../components/JsonEditor";
@@ -34,6 +36,7 @@ import { MethodBadge, StatusBadge } from "../components/StatusBadge";
 import { useTabs } from "../components/tabs";
 import { loadCatalog, loadPackage } from "../explorer/catalog/load";
 import { operationCode, rawCode } from "../explorer/codegen";
+import { CopyAsMenu } from "../explorer/components/CopyAsMenu";
 import {
   OperationPicker,
   pickedHistory,
@@ -42,6 +45,8 @@ import {
   type PickerTab,
 } from "../explorer/components/OperationPicker";
 import { ParameterForm } from "../explorer/components/ParameterForm";
+import { ShareRequest } from "../explorer/components/ShareRequest";
+import { ORG_PLACEHOLDER, withOrigin, type CopyAsRequest } from "../explorer/copyAs";
 import {
   addToHistory,
   clearHistory,
@@ -63,6 +68,13 @@ import {
 } from "../explorer/rawRequest";
 import { SAMPLES, type Sample } from "../explorer/samples";
 import {
+  decodeShare,
+  sharedRequestRisks,
+  sharePayload,
+  withoutSecretHeaders,
+  type SharedRequest,
+} from "../explorer/share";
+import {
   HTTP_METHODS,
   OPERATION_KINDS,
   PACKAGE_OF,
@@ -77,7 +89,7 @@ import { draftValues, type ValueError } from "../explorer/values";
 import { useRun } from "../hooks/useRun";
 import type { Sdk } from "../sdk/createSdk";
 import { useSdkContext } from "../sdk/SdkProvider";
-import { MEDIA_MEDIUM, MEDIA_SMALL } from "../theme/layout";
+import { MEDIA_MEDIUM, MEDIA_SMALL, MEDIUM } from "../theme/layout";
 import { useCommonStyles } from "../theme/styles";
 
 const useStyles = makeStyles({
@@ -121,7 +133,27 @@ const useStyles = makeStyles({
     flexWrap: "wrap",
   },
   textarea: { fontFamily: tokens.fontFamilyMonospace, minHeight: "8rem" },
+  cardHeader: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: tokens.spacingHorizontalS,
+  },
+  codeBar: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    rowGap: tokens.spacingVerticalS,
+    columnGap: tokens.spacingHorizontalS,
+  },
+  codeBarEnd: { marginInlineStart: "auto" },
 });
+
+/** A request opened from a shared link, or why the link couldn't be opened. */
+type ShareNotice = { type: "loaded"; shared: SharedRequest } | { type: "error"; reason: string };
+
+const SHARED_TITLE = "Shared request";
 
 const DEFAULT_RAW: RawRequestInput = {
   method: "GET",
@@ -166,6 +198,9 @@ export default function ExplorerPage() {
   const apiRoot = `${environmentUrl}/api/data/v9.2`;
   const host = new URL(environmentUrl).host;
   const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [shareNotice, setShareNotice] = useState<ShareNotice>();
 
   const [pickerTab, setPickerTab] = useState<PickerTab>("samples");
   // The picker's item the request came from, shown as selected there.
@@ -375,6 +410,7 @@ export default function ExplorerPage() {
   };
 
   const selectSample = (sample: Sample) => {
+    setShareNotice(undefined);
     setPicked(pickedSample(sample.id));
     setSearchParams({ sample: sample.id }, { replace: true });
     if (sample.type === "raw") selectRaw(sample.request, sample.title);
@@ -389,6 +425,7 @@ export default function ExplorerPage() {
   };
 
   const selectHistory = (entry: HistoryEntry) => {
+    setShareNotice(undefined);
     setPicked(pickedHistory(entry.id));
     if (entry.type === "raw") selectRaw(entry.request, entry.title);
     else
@@ -421,7 +458,7 @@ export default function ExplorerPage() {
         {
           method: HTTP_METHODS.includes(method) ? method : "GET",
           url,
-          headers: searchParams.get("headers") ?? "",
+          headers: withoutSecretHeaders(searchParams.get("headers") ?? ""),
           body: searchParams.get("body") ?? "",
         },
         "Request"
@@ -429,6 +466,74 @@ export default function ExplorerPage() {
     }
     // Only when the page opens.
   }, []);
+
+  // A shared link, /explorer#r=…: the request is loaded, never run, and the fragment removed so
+  // a reload doesn't load it over the visitor's edits. The link is untrusted: decodeShare()
+  // validates it and throws a ShareError that says what is wrong.
+  useEffect(() => {
+    const payload = sharePayload(location.hash);
+    if (payload === undefined) return;
+    let cancelled = false;
+    const done = () =>
+      void navigate({ pathname: location.pathname, search: location.search }, { replace: true });
+    decodeShare(payload).then(
+      (shared) => {
+        if (cancelled) return;
+        setPicked(undefined);
+        if (shared.type === "raw") selectRaw(shared.request, SHARED_TITLE);
+        else
+          void selectByName(
+            shared.operation.kind,
+            shared.operation.name,
+            shared.input,
+            shared.flavour,
+            SHARED_TITLE
+          );
+        setShareNotice({ type: "loaded", shared });
+        done();
+        // In one column, the request (and the notice) is below the picker: show it.
+        if (window.matchMedia(MEDIUM).matches)
+          requestAnimationFrame(() =>
+            document.getElementById("request-heading")?.scrollIntoView({ block: "start" })
+          );
+      },
+      (error: unknown) => {
+        if (cancelled) return;
+        setShareNotice({ type: "error", reason: message(error) });
+        done();
+      }
+    );
+    return () => {
+      cancelled = true;
+    };
+    // When a link's fragment arrives (on opening, or pasted into the address bar).
+  }, [location.hash]);
+
+  const sharedRequest = useMemo<SharedRequest>(
+    () =>
+      target.type === "raw"
+        ? { type: "raw", request: raw }
+        : {
+            type: "operation",
+            operation: { kind: target.op.kind, name: target.op.name },
+            input: opInput,
+            flavour,
+          },
+    [target, raw, opInput, flavour]
+  );
+
+  const copyAsRequests = useMemo<CopyAsRequest[] | undefined>(() => {
+    if (!built.ok || !preview || preview.error !== undefined || !preview.requests.length)
+      return undefined;
+    return session.mode === "demo"
+      ? preview.requests.map((r) => withOrigin(r, ORG_PLACEHOLDER))
+      : preview.requests;
+  }, [built.ok, preview, session.mode]);
+
+  const method = target.type === "raw" ? raw.method : target.op.method;
+  const risks =
+    shareNotice?.type === "loaded" ? sharedRequestRisks(shareNotice.shared, method) : undefined;
+  const sharedFrom = shareNotice?.type === "loaded" ? shareNotice.shared.environmentUrl : undefined;
 
   const editRaw = (patch: Partial<RawRequestInput>) => {
     setRaw((r) => ({ ...r, ...patch }));
@@ -489,6 +594,7 @@ export default function ExplorerPage() {
             onSample={selectSample}
             picked={picked}
             onOperation={(op) => {
+              setShareNotice(undefined);
               setPicked(pickedOperation(op));
               setSearchParams({ op: `${op.kind}/${op.name}` }, { replace: true });
               selectOperation(op);
@@ -506,9 +612,72 @@ export default function ExplorerPage() {
             role="region"
             aria-labelledby="request-heading"
           >
-            <Subtitle1 as="h2" id="request-heading">
-              Request
-            </Subtitle1>
+            <div className={styles.cardHeader}>
+              <Subtitle1 as="h2" id="request-heading">
+                Request
+              </Subtitle1>
+              <ShareRequest request={sharedRequest} environmentUrl={environmentUrl} />
+            </div>
+            {shareNotice?.type === "error" && (
+              <MessageBar intent="error">
+                <MessageBarBody>
+                  <MessageBarTitle>The shared link can&apos;t be opened</MessageBarTitle>
+                  {shareNotice.reason}
+                </MessageBarBody>
+                <MessageBarActions
+                  containerAction={
+                    <Button
+                      appearance="transparent"
+                      aria-label="Dismiss"
+                      icon={<DismissRegular />}
+                      onClick={() => setShareNotice(undefined)}
+                    />
+                  }
+                />
+              </MessageBar>
+            )}
+            {shareNotice?.type === "loaded" && (
+              <MessageBar intent="info">
+                <MessageBarBody>
+                  <MessageBarTitle>Loaded a shared request</MessageBarTitle>
+                  Review it before running: it came from a link, and it hasn&apos;t run.
+                  {sharedFrom && sharedFrom !== environmentUrl && (
+                    <>
+                      {" "}
+                      It was shared from{" "}
+                      <span className={common.mono}>{new URL(sharedFrom).host}</span>; here it runs
+                      against <span className={common.mono}>{host}</span>.
+                    </>
+                  )}
+                </MessageBarBody>
+                <MessageBarActions
+                  containerAction={
+                    <Button
+                      appearance="transparent"
+                      aria-label="Dismiss"
+                      icon={<DismissRegular />}
+                      onClick={() => setShareNotice(undefined)}
+                    />
+                  }
+                />
+              </MessageBar>
+            )}
+            {risks && (risks.changesData || risks.impersonates) && (
+              <MessageBar intent="warning">
+                <MessageBarBody>
+                  <MessageBarTitle>
+                    {risks.changesData ? `This ${method} request changes data` : "Impersonation"}
+                  </MessageBarTitle>
+                  {risks.changesData &&
+                    (session.mode === "demo"
+                      ? "Running it changes the demo data. "
+                      : "Running it changes data in your environment, as you. ")}
+                  {risks.impersonates &&
+                    "It acts on behalf of another user (MSCRMCallerID or CallerObjectId). "}
+                  Check what it does first.
+                </MessageBarBody>
+              </MessageBar>
+            )}
             {selecting && !selecting.error && (
               <Spinner size="small" label="Loading the operation…" />
             )}
@@ -700,18 +869,23 @@ export default function ExplorerPage() {
                 ))}
               {responseTab === "code" && (
                 <>
-                  {target.type === "operation" && (
-                    <RadioGroup
-                      layout="horizontal"
-                      value={flavour}
-                      onChange={(_, d) => setFlavour(d.value as CodeFlavour)}
-                      aria-label="Code style"
-                    >
-                      {FLAVOURS.map((f) => (
-                        <Radio key={f.value} value={f.value} label={f.label} />
-                      ))}
-                    </RadioGroup>
-                  )}
+                  <div className={styles.codeBar}>
+                    {target.type === "operation" && (
+                      <RadioGroup
+                        layout="horizontal"
+                        value={flavour}
+                        onChange={(_, d) => setFlavour(d.value as CodeFlavour)}
+                        aria-label="Code style"
+                      >
+                        {FLAVOURS.map((f) => (
+                          <Radio key={f.value} value={f.value} label={f.label} />
+                        ))}
+                      </RadioGroup>
+                    )}
+                    <div className={styles.codeBarEnd}>
+                      <CopyAsMenu requests={copyAsRequests} demo={session.mode === "demo"} />
+                    </div>
+                  </div>
                   {built.code !== undefined ? (
                     <CodeBlock code={built.code} label="SDK code" />
                   ) : built.ok ? null : built.loading ? (

@@ -4,9 +4,10 @@
  * - The core editor and the features for reading and editing code: folding, find, copy (and the
  *   context menu), bracket matching, formatting, word navigation. Not hovers: a JSON body's
  *   problems are shown by its field.
- * - Four languages: TypeScript (Monaco's syntax highlighting; no TypeScript language service),
+ * - Six languages: TypeScript (Monaco's syntax highlighting; no TypeScript language service),
  *   JSON (json.ts: highlighting, validation and formatting without Monaco's JSON worker), an HTTP
- *   request language (http.ts), and plain text. None of Monaco's other languages are bundled.
+ *   request language (http.ts), shell and C# (Monaco's highlighting, for the explorer's "Copy
+ *   as" curl and HttpClient code), and plain text. None of Monaco's other languages are bundled.
  * - The editor's worker is built by Vite and served from the site, and `MonacoEnvironment`
  *   hands it to Monaco, so Monaco never starts a `blob:` worker: the site's
  *   Content-Security-Policy stays `'self'` for scripts and workers, without `unsafe-eval`.
@@ -25,6 +26,8 @@ import "monaco-editor/features/format/register";
 import "monaco-editor/features/placeholderText/register";
 import "monaco-editor/features/readOnlyMessage/register";
 import "monaco-editor/features/wordOperations/register";
+import "monaco-editor/languages/definitions/csharp/register";
+import "monaco-editor/languages/definitions/shell/register";
 import "monaco-editor/languages/definitions/typescript/register";
 import EditorWorker from "monaco-editor/editor/editor.worker?worker";
 import { teamsHighContrastTheme, webDarkTheme, webLightTheme } from "@fluentui/react-components";
