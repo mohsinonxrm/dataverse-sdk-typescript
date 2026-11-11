@@ -102,10 +102,14 @@ function anchors(md) {
 
 /** Heading text as it renders: no links, code ticks or emphasis markers. */
 function stripInline(text) {
-  return text
-    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
-    .replace(/[`*_]/g, "")
-    .replace(/<[^>]+>/g, "");
+  return (
+    text
+      .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
+      .replace(/[`*_]/g, "")
+      .replace(/<[^>]+>/g, "")
+      // Heading text for an anchor, not markup: drop any angle bracket a tag left behind
+      .replace(/[<>]/g, "")
+  );
 }
 
 function forEachProseLine(md, fn) {
