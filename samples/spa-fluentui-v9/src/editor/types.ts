@@ -4,7 +4,7 @@
  */
 import { webLightTheme } from "@fluentui/react-components";
 
-export type EditorLanguage = "typescript" | "json" | "http" | "plaintext";
+export type EditorLanguage = "typescript" | "json" | "http" | "shell" | "csharp" | "plaintext";
 
 /** A validation problem in the editor's text (1-based line and column). */
 export interface EditorProblem {

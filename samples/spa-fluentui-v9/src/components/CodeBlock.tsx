@@ -5,14 +5,11 @@ import {
   mergeClasses,
   tokens,
   Tooltip,
-  useToastController,
-  Toast,
-  ToastTitle,
 } from "@fluentui/react-components";
 import { CopyRegular } from "@fluentui/react-icons";
 import { detectLanguage, type EditorLanguage } from "../editor/types";
+import { useCopy } from "../hooks/useCopy";
 import { LazyEditor } from "./LazyEditor";
-import { TOASTER_ID } from "./toaster";
 
 const useStyles = makeStyles({
   root: {
@@ -72,27 +69,9 @@ interface CodeBlockProps {
  */
 export function CodeBlock({ code, plain, language, label, className }: CodeBlockProps) {
   const styles = useStyles();
-  const { dispatchToast } = useToastController(TOASTER_ID);
+  const copyText = useCopy();
   const lang = language ?? detectLanguage(code, plain);
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      dispatchToast(
-        <Toast>
-          <ToastTitle>Copied to the clipboard</ToastTitle>
-        </Toast>,
-        { intent: "success", timeout: 2000 }
-      );
-    } catch {
-      dispatchToast(
-        <Toast>
-          <ToastTitle>The browser didn't allow copying</ToastTitle>
-        </Toast>,
-        { intent: "warning" }
-      );
-    }
-  };
+  const copy = () => void copyText(code);
 
   return (
     <div className={mergeClasses(styles.root, className)} data-code-block={lang}>
@@ -101,8 +80,8 @@ export function CodeBlock({ code, plain, language, label, className }: CodeBlock
           value={code}
           language={lang}
           label={label}
-          // Long request lines (URLs) wrap; code and JSON scroll sideways.
-          wordWrap={lang === "http" || lang === "plaintext"}
+          // Long request lines (URLs, curl commands) wrap; code and JSON scroll sideways.
+          wordWrap={lang === "http" || lang === "plaintext" || lang === "shell"}
           fallback={
             <pre className={styles.pre} tabIndex={0} aria-label={label}>
               <code>{code}</code>

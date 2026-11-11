@@ -109,6 +109,21 @@ page, where each step is a separate scenario.
   `codegen.ts`). Links open a sample or an operation: `/explorer?sample=top-accounts`,
   `/explorer?op=functions/WhoAmI`, `/explorer?method=GET&url=accounts%3F%24top%3D3`.
 
+  **Share** copies a link to the request in the explorer: `/explorer#r=…`, the request as
+  compact versioned JSON, compressed (`CompressionStream("deflate-raw")`) and base64url-encoded,
+  in the URL fragment, which the browser never sends to a server (`src/explorer/share.ts`). It
+  holds the method, the URL relative to the Web API root, the headers and body of a raw request,
+  or a typed operation's name, arguments, parameters and code style. Never the access token or
+  an `Authorization`, `Cookie` or other secret header; the environment URL only if you switch
+  it on. Opening a link loads the request without running it, says so, and warns about a
+  request that changes data. The link is untrusted input: it is limited to 16 KB (64 KB
+  decompressed), checked field by field, and refused with a message when it isn't valid.
+
+  **Copy as** (by the SDK code) shows the request as a curl command, JavaScript `fetch` or C#
+  `HttpClient` code, written from the request the SDK builds: the full URL (with
+  `https://<org>.crm.dynamics.com` in the demo), the OData headers it sends, and `<TOKEN>` for
+  the access token (`src/explorer/copyAs.ts`).
+
   The operation catalog is read from the actions, functions and messages packages' source at
   build time (`src/explorer/catalog/parse.ts`, run by the Vite plugin in `vite.config.ts`), one
   chunk per package (about 40 KB gzipped each), loaded when you open that package's list. Each

@@ -70,6 +70,14 @@ export function editorTheme(theme: Theme, base: editor.BuiltinTheme): editor.ISt
       { token: "keyword.http", foreground: fg("colorBrandForeground1"), fontStyle: "bold" },
       { token: "attribute.name.http", foreground: fg("colorBrandForeground2") },
       { token: "attribute.value.http", foreground: fg("colorNeutralForeground1") },
+      // Shell (curl's options and variables) and C#: what the vs themes colour without enough
+      // contrast on the code block's background.
+      { token: "attribute.name", foreground: fg("colorBrandForeground2") },
+      { token: "variable", foreground: fg("colorPaletteDarkOrangeForeground1") },
+      { token: "metatag", foreground: fg("colorNeutralForeground2") },
+      { token: "constants", foreground: fg("colorPaletteBerryForeground1") },
+      { token: "namespace", foreground: fg("colorPaletteTealForeground2") },
+      { token: "operator", foreground: fg("colorNeutralForeground2") },
     ],
     colors: {
       "editor.background": "#00000000",
