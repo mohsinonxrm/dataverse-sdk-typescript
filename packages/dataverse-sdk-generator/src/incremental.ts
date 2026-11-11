@@ -25,9 +25,12 @@ export interface GenerationStamp {
   format: 1;
   /** The generator version that wrote it: another version regenerates everything. */
   generator: string;
-  /** Hash of what every file depends on: options, templates, the names of the generated types. */
+  /** Hash of what every table depends on: options, templates, the names of the generated tables. */
   settings: string;
-  /** Per table (logical name): the hash of its schema model and the files generated from it. */
+  /**
+   * Per table (logical name): the hash of its schema model and of the types it uses (enums, complex
+   * types, the names of its create, update and form types), and the files generated from it.
+   */
   tables: Record<string, { hash: string; files: string[] }>;
   /** Every file the run wrote or kept, relative to the output folder, with `/`. */
   files: string[];

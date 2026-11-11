@@ -248,7 +248,7 @@ export class TypescriptGenerator {
       const reusable = previous?.generator === GENERATOR_VERSION && previous.settings === settings;
       for (const entity of this.model.EntityTypes) {
         const files = this.tableFiles(entity);
-        const hash = hashOf(JSON.stringify(entity));
+        const hash = hashOf(JSON.stringify(entity), JSON.stringify(this.tableDependencies(entity)));
         tables[entity.LogicalName] = { hash, files };
         const before = previous?.tables[entity.LogicalName];
         if (
@@ -290,9 +290,15 @@ export class TypescriptGenerator {
   }
 
   /**
-   * Incremental generation: a hash of what every generated file depends on besides its own
-   * table: the generator options, the templates (custom ones included) and the names of the
-   * generated tables, enums and complex types, which other files import.
+   * Incremental generation: a hash of what every table's files depend on besides the table
+   * itself: the generator options, the templates (custom ones included) and the names of the
+   * generated tables, which the tables' files import from each other.
+   *
+   * The enums and complex types aren't in it (#501): `$metadata` declares far more of them than
+   * the generated tables use, and a table's files depend only on the ones it uses, which
+   * {@link tableDependencies} puts in that table's hash. A choice or complex type that no
+   * generated table uses can come and go without regenerating any table. (The enum, complex type,
+   * operation and index files aren't per table and are written on every run.)
    */
   private async settingsHash(): Promise<string> {
     const templates = await Promise.all(TEMPLATE_NAMES.map((name) => this.loadTemplate(name)));
@@ -302,10 +308,51 @@ export class TypescriptGenerator {
       formContext: this.config.formContext === true,
       typedClient: this.config.typedClient === true,
       tables: this.model.EntityTypes.map((e) => [e.Name, e.LogicalName, this.entityTypeName(e)]),
-      enums: this.model.EnumTypes.map((e) => e.Name),
-      complexTypes: this.model.ComplexTypes.map((c) => c.Name),
     };
     return hashOf(JSON.stringify(settings), ...templates);
+  }
+
+  /**
+   * Incremental generation: what a table's files depend on besides its schema model and the
+   * settings (#501): the names of its create, update and form types (unique among all the
+   * generated names, so another type can change them), and each type its columns, choices and
+   * lookups refer to: what the name resolves to in its files, and the enum or complex type itself,
+   * with the types a complex type refers to in turn (its properties and base type).
+   */
+  private tableDependencies(entity: EntityType): unknown {
+    const enums = new Map(this.model.EnumTypes.map((e) => [e.Name, e]));
+    const complexTypes = new Map(this.model.ComplexTypes.map((c) => [c.Name, c]));
+    const pending: string[] = [];
+    for (const prop of entity.Properties) {
+      if (prop.TypeScriptType.reference !== undefined) pending.push(prop.TypeScriptType.reference);
+      if (prop.EnumName) pending.push(prop.EnumName);
+    }
+    for (const nav of entity.NavigationProperties) {
+      pending.push(nav.TargetType, ...(nav.Targets ?? []));
+    }
+
+    const types = new Map<string, unknown>();
+    for (let name = pending.pop(); name !== undefined; name = pending.pop()) {
+      if (types.has(name)) continue;
+      const complexType = complexTypes.get(name);
+      types.set(name, {
+        as: this.resolveReference(name, "entities", new ImportCollector()),
+        enum: enums.get(name),
+        complexType,
+      });
+      if (complexType) {
+        if (complexType.BaseType) pending.push(complexType.BaseType);
+        for (const prop of complexType.Properties) {
+          const reference = prop.TypeScriptType.reference;
+          if (reference !== undefined) pending.push(reference);
+        }
+      }
+    }
+    return {
+      write: this.writeTypeNames.get(entity),
+      form: this.formNames.get(entity),
+      types: [...types].sort(([a], [b]) => compareCodeUnits(a, b)),
+    };
   }
 
   /** The files generated from one table, relative to the output folder. */
