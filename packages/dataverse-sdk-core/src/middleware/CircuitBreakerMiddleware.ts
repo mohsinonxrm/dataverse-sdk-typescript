@@ -99,7 +99,8 @@ export interface CircuitBreakerOptions {
   /**
    * The clock whose `now()` the breaker reads, e.g. the testing package's fake clock, shared with
    * other middleware that take a `clock`. `now`, when set, takes precedence.
-   * @default `systemClock` (the real one)
+   * @default the client's `clock` (`DataverseClientOptions.clock`, as of its last request), else
+   *   `systemClock` (the real one)
    */
   clock?: Clock;
 }
@@ -238,6 +239,8 @@ export class CircuitBreakerMiddleware implements Middleware {
   /** The last request's logger and telemetry, for `isolate()` and `reset()`. */
   private lastLogger?: Logger;
   private lastTelemetry?: TelemetryClient;
+  /** The last request's `ctx.clock`, used when the `clock` option isn't set. */
+  private ctxClock?: Clock;
 
   constructor(private readonly options: CircuitBreakerOptions = {}) {
     const mode: string = options.mode ?? "consecutive";
@@ -278,8 +281,8 @@ export class CircuitBreakerMiddleware implements Middleware {
       );
     }
     this.isFailure = options.isFailure ?? defaultIsFailure;
-    const clock = options.clock ?? systemClock;
-    this.now = options.now ?? (() => clock.now());
+    // Without a clock of its own, the client's (ctx.clock of the last request), else the real one.
+    this.now = options.now ?? (() => (options.clock ?? this.ctxClock ?? systemClock).now());
   }
 
   /**
@@ -336,6 +339,7 @@ export class CircuitBreakerMiddleware implements Middleware {
     if (ctx.middlewareOptions?.get("circuitBreaker")?.bypass) return next(request, ctx);
     this.lastLogger = ctx.logger;
     this.lastTelemetry = ctx.telemetry;
+    this.ctxClock = ctx.clock;
     const probe = this.admit(ctx);
     let outcome: Outcome = "neutral";
     try {

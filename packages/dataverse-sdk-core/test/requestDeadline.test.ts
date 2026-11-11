@@ -10,6 +10,7 @@ import { DataverseAbortError, DataverseNetworkError } from "../src/errors/NamedE
 import { DataverseODataError } from "../src/errors/DataverseODataError.js";
 import { DataverseThrottleError } from "../src/errors/DataverseThrottleError.js";
 import { linkSignals, startDeadline } from "../src/utils/signals.js";
+import { systemClock } from "../src/utils/clock.js";
 import { sleep } from "../src/utils/sleep.js";
 
 const ORG = "https://contoso.crm.dynamics.com";
@@ -250,7 +251,7 @@ describe("signal helpers", () => {
   });
 
   it("a deadline reports expiry and aborts with a TimeoutError", async () => {
-    const d = startDeadline(10);
+    const d = startDeadline(10, undefined, systemClock);
     expect(d.expired).toBe(false);
     await new Promise((r) => setTimeout(r, 30));
     expect(d.expired).toBe(true);

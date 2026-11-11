@@ -98,7 +98,8 @@ export interface ChaosOptions {
   onFault?: (fault: ChaosFault, request: RequestInformation) => void;
   /**
    * The clock that times `delayMs`, and the `attemptTimeoutMs` of a delayed or hanging attempt,
-   * e.g. a fake clock in tests. @default `systemClock` (the real one)
+   * e.g. a fake clock in tests. @default the client's `clock` (`DataverseClientOptions.clock`),
+   *   else `systemClock` (the real one)
    */
   clock?: Clock;
 }
@@ -177,7 +178,8 @@ export class ChaosMiddleware implements Middleware {
   private readonly percentage: number;
   private readonly faults: readonly ChaosFault[];
   private readonly random: () => number;
-  private readonly clock: Clock;
+  /** The last request's `ctx.clock`, used when the `clock` option isn't set. */
+  private ctxClock?: Clock;
   private seen = 0;
   private warned = false;
 
@@ -204,7 +206,11 @@ export class ChaosMiddleware implements Middleware {
     this.percentage = percentage;
     this.faults = faults;
     this.random = options.random ?? Math.random;
-    this.clock = options.clock ?? systemClock;
+  }
+
+  /** Its own `clock`, else the client's (`ctx.clock` of the last request), else the real one. */
+  private get clock(): Clock {
+    return this.options.clock ?? this.ctxClock ?? systemClock;
   }
 
   async execute(
@@ -213,6 +219,7 @@ export class ChaosMiddleware implements Middleware {
     next: NextMiddleware
   ): Promise<Response> {
     const requestIndex = this.seen++;
+    this.ctxClock = ctx.clock;
     if (!this.isEnabled(request, ctx)) return next(request, ctx);
     const perRequest = ctx.middlewareOptions?.get("chaos");
     if (perRequest?.disable) return next(request, ctx);

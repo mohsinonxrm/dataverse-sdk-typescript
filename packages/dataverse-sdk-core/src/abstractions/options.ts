@@ -321,6 +321,13 @@ export interface RequestOptions {
    * option `retryAttemptTimeouts` is on (idempotent requests only).
    */
   attemptTimeoutMs?: number;
+  /**
+   * When a time limit you enforce yourself (through `signal`) runs out, in ms since the epoch on
+   * the client's `clock` (`Date.now()` by default): for example one `timeoutMs` for several
+   * requests. It doesn't abort anything; like `timeoutMs`, it stops a retry wait that would end
+   * after it, so the failed response comes back at once. With `timeoutMs` too, the earlier counts.
+   */
+  deadline?: number;
   signal?: AbortSignal;
   /** Correlation id for this request. A new one is generated per request when omitted. */
   correlationId?: string;
@@ -434,4 +441,13 @@ export interface DataverseClientOptions {
    * `"strip"` sends it without the `authorization` header.
    */
   onForeignOrigin?: "throw" | "strip";
+  /**
+   * The clock the client measures time with: the `timeoutMs` deadline and the retry middleware's
+   * waits and deadline checks. It is also on the middleware context (`ctx.clock`), where
+   * `CircuitBreakerMiddleware`, `AdaptiveThrottlingMiddleware` and `ChaosMiddleware` use it unless
+   * they have a `clock` option of their own. Pass the testing package's fake clock to test retries
+   * and timeouts without waiting. Each attempt's `attemptTimeoutMs` stays on real time.
+   * @default `systemClock` (`Date.now()` and `setTimeout`)
+   */
+  clock?: import("../utils/clock.js").Clock;
 }

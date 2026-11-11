@@ -4,6 +4,8 @@
  * request (#46).
  */
 
+import { systemClock, type Clock } from "./clock.js";
+
 /** A signal that aborts when any of its sources does, and how to detach it from them. */
 export interface LinkedSignal {
   signal: AbortSignal | undefined;
@@ -44,19 +46,36 @@ export interface Deadline extends LinkedSignal {
   signal: AbortSignal;
   /** True once the deadline has passed (as opposed to the caller aborting). */
   readonly expired: boolean;
-  /** When the deadline passes, in ms since the epoch (as `Date.now()`). */
+  /** When the deadline passes, in ms since the epoch, on the clock it was started with. */
   readonly at: number;
 }
 
-/** Start a deadline of `ms` linked to `caller`. Call `dispose()` when the request is done. */
-export function startDeadline(ms: number, caller?: AbortSignal): Deadline {
+/**
+ * Start a deadline of `ms` linked to `caller`, timed by `clock` (its `now()` and `sleep()`). Call
+ * `dispose()` when the request is done.
+ */
+export function startDeadline(ms: number, caller: AbortSignal | undefined, clock: Clock): Deadline {
   const controller = new AbortController();
   let expired = false;
-  const at = Date.now() + ms;
-  const timer = setTimeout(() => {
+  const at = clock.now() + ms;
+  const onTimeout = () => {
     expired = true;
     controller.abort(new DOMException(`Request timed out after ${String(ms)}ms`, "TimeoutError"));
-  }, ms);
+  };
+  let stop: () => void;
+  if (clock === systemClock) {
+    const t = setTimeout(onTimeout, ms);
+    stop = () => {
+      clearTimeout(t);
+    };
+  } else {
+    // Another clock (a fake one in tests) times it with its sleep, which dispose() ends.
+    const timer = new AbortController();
+    clock.sleep(ms, timer.signal).then(onTimeout, noop);
+    stop = () => {
+      timer.abort();
+    };
+  }
   const linked = linkSignals(caller, controller.signal);
   return {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- two sources, so never undefined
@@ -66,7 +85,7 @@ export function startDeadline(ms: number, caller?: AbortSignal): Deadline {
     },
     at,
     dispose() {
-      clearTimeout(timer);
+      stop();
       linked.dispose();
     },
   };

@@ -22,7 +22,7 @@ export interface RequestInformation {
   attemptTimeoutMs?: number;
   /**
    * When a time limit the caller enforces itself (through `signal`) runs out, in ms since the
-   * epoch (as `Date.now()`): for example one `timeoutMs` for several requests. It doesn't abort
+   * epoch on the client's `clock` (`Date.now()` by default): for example one `timeoutMs` for several requests. It doesn't abort
    * anything; like `timeoutMs`, it stops the retry middleware from starting a wait that would end
    * after it, so the failed response is returned at once. With `timeoutMs` too, the earlier one
    * counts.
@@ -154,10 +154,16 @@ export interface MiddlewareContext {
   attempt?: number;
   /**
    * When the request's `timeoutMs` (or its `deadline`, if earlier) runs out, in ms since the epoch
-   * (as `Date.now()`); unset without either. The retry middleware doesn't start a wait that would end after it: it returns the
-   * response (or throws the network error) at once instead.
+   * on `clock`; unset without either. The retry middleware doesn't start a wait that would end
+   * after it: it returns the response (or throws the network error) at once instead.
    */
   deadline?: number;
+  /**
+   * The client's clock (`DataverseClientOptions.clock`, else `systemClock`): the retry
+   * middleware waits and checks `deadline` with it, and middleware with a `clock` option of their
+   * own use it when that option isn't set. Unset when middleware runs outside a client.
+   */
+  clock?: import("../utils/clock.js").Clock;
   /**
    * Per-request middleware options
    * Allows individual requests to override middleware behavior

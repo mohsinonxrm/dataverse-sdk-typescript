@@ -51,7 +51,8 @@ export interface AdaptiveThrottlingOptions {
   /**
    * The clock that reads the time (for the spacing, the pause after a 429 and the age of
    * readings) and waits, e.g. the testing package's fake clock in tests.
-   * @default `systemClock` (the real one)
+   * @default the client's `clock` (`DataverseClientOptions.clock`, as of its last request), else
+   *   `systemClock` (the real one)
    */
   clock?: Clock;
 }
@@ -176,7 +177,8 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
   private readonly maxPauseMs: number;
   private readonly requests: Budget;
   private readonly time: Budget;
-  private readonly clock: Clock;
+  /** The last request's `ctx.clock`, used when the `clock` option isn't set. */
+  private ctxClock?: Clock;
   private pausedUntil = 0;
   private nextStart = 0;
 
@@ -195,7 +197,11 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
     }
     this.requests = new Budget(options.requestBudget);
     this.time = new Budget(options.timeBudget);
-    this.clock = options.clock ?? systemClock;
+  }
+
+  /** Its own `clock`, else the client's (`ctx.clock` of the last request), else the real one. */
+  private get clock(): Clock {
+    return this.options.clock ?? this.ctxClock ?? systemClock;
   }
 
   /** The budgets as last read, and what they mean for the next request. */
@@ -225,6 +231,7 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
     ctx: MiddlewareContext,
     next: NextMiddleware
   ): Promise<Response> {
+    this.ctxClock = ctx.clock;
     if (ctx.middlewareOptions?.get("adaptiveThrottling")?.bypass) {
       const res = await next(request, ctx);
       this.observe(res, this.clock.now());

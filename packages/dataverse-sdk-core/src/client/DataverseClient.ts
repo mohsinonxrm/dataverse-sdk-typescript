@@ -16,6 +16,7 @@ import { setResponseCorrelationId } from "../errors/responseDetails.js";
 import { DataverseError } from "../errors/DataverseError.js";
 import { DataverseAbortError, DataverseNetworkError } from "../errors/NamedErrors.js";
 import { isTimeoutError, startDeadline } from "../utils/signals.js";
+import { systemClock, type Clock } from "../utils/clock.js";
 import { generateUUID, normalizeHeaders } from "../utils/HeaderUtils.js";
 import { FeatureUsageTracker } from "../telemetry/FeatureUsageTracker.js";
 import { guardTelemetry } from "../utils/telemetry.js";
@@ -38,6 +39,11 @@ export class DataverseClient {
   private readonly adapter: RequestAdapter;
   /** Shared by every request; each request gets its own copy (see send()). */
   private readonly baseCtx: MiddlewareContext;
+  /**
+   * The clock this client measures time with (`DataverseClientOptions.clock`, else
+   * `systemClock`). A deadline passed as a request's `deadline` is read on it.
+   */
+  readonly clock: Clock;
 
   constructor(private options: DataverseClientOptions) {
     if (!isAllowedBaseUrl(options.baseUrl)) {
@@ -56,9 +62,11 @@ export class DataverseClient {
     const middleware = buildMiddleware(options);
     this.pipeline = new Pipeline(middleware);
 
+    this.clock = options.clock ?? systemClock;
     this.baseCtx = {
       logger: options.logger,
       telemetry: options.telemetry,
+      clock: this.clock,
       // Per client, so feature flags from one client never leak into another's telemetry.
       featureTracker: new FeatureUsageTracker(),
     };
@@ -210,7 +218,7 @@ export class DataverseClient {
     // timeoutMs covers the whole request, retries and waits included (#46): it becomes a deadline
     // signal that every attempt, retry wait and concurrency-slot wait sees.
     const deadline = request.timeoutMs
-      ? startDeadline(request.timeoutMs, request.signal)
+      ? startDeadline(request.timeoutMs, request.signal, this.clock)
       : undefined;
     // Work on a copy with lower-cased header names: middleware must never see (or send) two
     // casings of the same header, and the caller's object must not be mutated.
@@ -263,6 +271,7 @@ function applyOptions(req: RequestInformation, opt?: RequestOptions) {
   });
   if (opt.timeoutMs !== undefined) req.timeoutMs = opt.timeoutMs;
   if (opt.attemptTimeoutMs !== undefined) req.attemptTimeoutMs = opt.attemptTimeoutMs;
+  if (opt.deadline !== undefined) req.deadline = opt.deadline;
   if (opt.correlationId) req.correlationId = opt.correlationId;
   if (opt.middlewareOptions) req.middlewareOptions = opt.middlewareOptions;
   if (opt.signal) req.signal = opt.signal;
