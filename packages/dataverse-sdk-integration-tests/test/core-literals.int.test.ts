@@ -1,32 +1,41 @@
 /**
  * #53 live: values with `'` in a filter and in function parameters, through odataLiteral.
- * Creates one contact and deletes it afterwards.
+ * Creates one contact in beforeAll (once, whatever happens to the tests) and deletes it afterwards.
  */
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { odata, odataKey, odataLiteral } from "@mohsinonxrm/dataverse-sdk-core";
 import { live, liveClient, runId } from "./env.js";
 
-const lastname = `O'Brien ${runId}`;
-let contactId: string | undefined;
+// Starts with "sdk-int " so the sweeper finds it if it's ever left behind
+const lastname = `sdk-int O'Brien ${runId}`;
+const ids: string[] = [];
+
+beforeAll(async () => {
+  if (!live) return;
+  ids.push(await liveClient().client.api("contacts").createAndGetId({ lastname }));
+});
 
 afterAll(async () => {
-  if (!live || !contactId) return;
-  await liveClient()
-    .client.api(`contacts(${contactId})`)
-    .delete()
-    .catch(() => undefined);
+  if (!live) return;
+  const { client } = liveClient();
+  for (const id of ids) {
+    await client
+      .api(`contacts(${id})`)
+      .delete()
+      .catch(() => undefined);
+  }
 });
 
 describe.skipIf(!live)("live: OData literals (#53)", () => {
   it("finds O'Brien with odata.eq", async () => {
     const { client } = liveClient();
-    contactId = await client.api("contacts").createAndGetId({ lastname });
+    const contactId = ids[0] ?? "";
     const found = await client
       .api("contacts")
-      .select("lastname")
+      .select("contactid", "lastname")
       .filter(odata.eq("lastname", lastname))
-      .get<{ value: Array<{ lastname: string }> }>();
-    expect(found.value.map((c) => c.lastname)).toEqual([lastname]);
+      .get<{ value: Array<{ contactid: string; lastname: string }> }>();
+    expect(found.value.map((c) => [c.contactid, c.lastname])).toEqual([[contactId, lastname]]);
 
     // The same record by its key, formatted with odataKey.
     const byKey = await client

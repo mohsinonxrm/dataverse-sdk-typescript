@@ -10,6 +10,7 @@
   },
   "scripts": {
     "test:integration": "vitest run --config vitest.config.ts",
+    "sweep": "node scripts/sweep.mjs",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.typecheck.json"
   },
