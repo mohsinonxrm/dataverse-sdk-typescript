@@ -5,7 +5,7 @@
  * `it.fails("#NN: …")` pins a bug that is known to reproduce live. The PR that fixes the
  * issue flips it to `it`.
  */
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 import { MetadataClient } from "@mohsinonxrm/dataverse-sdk-metadata";
 import { idFromEntityId, live, liveClient, orgUrl, runId } from "./env.js";
@@ -163,16 +163,21 @@ describe.skipIf(!live)("live: headers", () => {
 });
 
 describe.skipIf(!live)("live: query encoding and URL length", () => {
+  // Created once, in the hook: the test looks it up by name and expects exactly this record.
+  const spaced = `${runId} a b`;
+  let spacedId = "";
+  beforeAll(async () => {
+    spacedId = await createAccount(spaced);
+  });
+
   it("#52: a $filter literal with spaces still matches when encoded with '+'", async () => {
     const { client } = liveClient();
-    const name = `${runId} a b`;
-    await createAccount(name);
     const res = await client
       .api("accounts")
-      .select("name")
-      .filter(`name eq '${name}'`)
-      .get<{ value: Array<{ name: string }> }>();
-    expect(res.value.map((r) => r.name)).toEqual([name]);
+      .select("accountid", "name")
+      .filter(`name eq '${spaced}'`)
+      .get<{ value: Array<{ accountid: string; name: string }> }>();
+    expect(res.value.map((r) => [r.accountid, r.name])).toEqual([[spacedId, spaced]]);
   });
 
   it("#10: Dataverse accepts a $filter longer than 260 characters", async () => {

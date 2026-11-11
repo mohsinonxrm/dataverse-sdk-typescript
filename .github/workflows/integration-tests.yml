@@ -48,3 +48,15 @@ jobs:
           DATAVERSE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
           DATAVERSE_INTEGRATION_REQUIRED: "1"
         run: pnpm samples:live --no-build
+      # Delete what earlier runs left behind: records named with the tests' and samples' prefixes
+      # (sdk-it-, sdk-int , sdk-sample-) created more than 2 hours ago, so this run's records and
+      # any run in progress are never touched. Test schema is only listed. Same job, so it stays
+      # in the concurrency group; runs whatever happened to the steps before it.
+      - name: Sweep records left by earlier runs
+        if: always()
+        env:
+          DATAVERSE_URL: ${{ secrets.DATAVERSE_URL }}
+          DATAVERSE_TENANT_ID: ${{ secrets.DATAVERSE_TENANT_ID }}
+          DATAVERSE_CLIENT_ID: ${{ secrets.DATAVERSE_CLIENT_ID }}
+          DATAVERSE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
+        run: node packages/dataverse-sdk-integration-tests/scripts/sweep.mjs --delete

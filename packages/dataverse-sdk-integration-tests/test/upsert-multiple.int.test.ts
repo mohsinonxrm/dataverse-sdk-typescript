@@ -7,12 +7,14 @@
  * resolves `null` (a message's `result` is `null`).
  *
  * Each Target carries `@odata.type` and no alternate key, so each one creates an account (named
- * with this run's id); afterAll finds them by name and deletes them.
+ * with this run's id); afterAll finds them by name and deletes them. The records are created in
+ * the test (that's what's tested), so each attempt names them with its own `attemptId()` and
+ * finds only its own, even if an earlier attempt created some before it timed out.
  */
 import { afterAll, describe, expect, it } from "vitest";
 import { UpsertMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
 import { UpsertMultipleRequest } from "@mohsinonxrm/dataverse-sdk-messages";
-import { live, liveClient, runId } from "./env.js";
+import { attemptId, live, liveClient, runId } from "./env.js";
 
 interface Account {
   accountid: string;
@@ -48,7 +50,7 @@ describe.skipIf(!live)("live: UpsertMultiple resolves null for Dataverse's 204",
 
   it("UpsertMultipleAction creates the records and resolves null", async () => {
     const { client } = liveClient();
-    const prefix = `${runId} upsert action`;
+    const prefix = `${runId} upsert action ${attemptId()}`;
 
     const result = await client.execute(
       new UpsertMultipleAction("accounts", { Targets: targets(prefix) })
@@ -61,7 +63,7 @@ describe.skipIf(!live)("live: UpsertMultiple resolves null for Dataverse's 204",
 
   it("UpsertMultipleRequest creates the records and its result is null", async () => {
     const { client } = liveClient();
-    const prefix = `${runId} upsert message`;
+    const prefix = `${runId} upsert message ${attemptId()}`;
 
     const response = await client.execute(
       new UpsertMultipleRequest("accounts", { Targets: targets(prefix) })
