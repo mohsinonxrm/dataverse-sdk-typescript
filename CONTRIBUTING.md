@@ -55,6 +55,20 @@ pnpm test
 pnpm lint
 ```
 
+### Docs site
+
+The documentation site ([`apps/docs`](apps/docs), VitePress) is built from `docs/`, the package
+READMEs and the packages' type declarations, so build the packages first:
+
+```bash
+pnpm build
+pnpm --filter docs-site dev   # http://localhost:5173/docs/
+pnpm docs:build               # what CI runs: fails on dead links and on twoslash blocks that don't compile
+```
+
+Edit the Markdown in `docs/` and the packages, not in `apps/docs/content` (generated). See
+[docs/site.md](docs/site.md#the-documentation-site) for how pages, links and twoslash work.
+
 ## Coding Standards
 
 ### TypeScript
@@ -127,6 +141,7 @@ packages/
   dataverse-sdk-testing/       # Test harness: a real client with a fake fetch (private)
   dataverse-sdk-browser-tests/ # Chromium smoke tests under a strict CSP (private)
   dataverse-sdk-integration-tests/ # Live tests against a dev org (private)
+apps/docs/                    # The documentation site, served at /docs (VitePress, private)
 samples/                      # Runnable samples (private)
 tools/generate-sdk-types/     # Generates actions, functions, messages and metadata types from the committed $metadata snapshot
 ```

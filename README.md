@@ -955,12 +955,17 @@ pnpm test
 
 # Lint
 pnpm lint
+
+# Documentation site, after pnpm build (http://localhost:5173/docs/)
+pnpm --filter docs-site dev
 ```
 
 ### Monorepo Structure
 
 ```
 dataverse-sdk-typescript/
+├── apps/
+│   └── docs/              # Documentation site (VitePress), served at /docs on the explorer site
 ├── packages/              # SDK packages
 │   ├── dataverse-sdk-core/
 │   ├── dataverse-sdk-auth-msal-node/

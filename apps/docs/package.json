@@ -1,0 +1,41 @@
+{
+  "name": "docs-site",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The documentation site (VitePress): the guides in docs/, the package READMEs and a TypeDoc API reference, served at /docs on the explorer site",
+  "type": "module",
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "content": "node scripts/content.mjs",
+    "api": "typedoc",
+    "dev": "node scripts/content.mjs && typedoc && vitepress dev",
+    "build:site": "node scripts/content.mjs && typedoc && vitepress build && node scripts/check-csp.mjs",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "@azure/msal-node": "^2.16.3",
+    "@mohsinonxrm/dataverse-sdk-actions": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-appinsights": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-auth-azure-identity": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-auth-msal-browser": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-auth-msal-node": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-batch": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-discovery": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-entities-runtime": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-files": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-functions": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-generator": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-messages": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-metadata": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-otel": "workspace:*",
+    "@mohsinonxrm/dataverse-sdk-xrm": "workspace:*",
+    "@shikijs/vitepress-twoslash": "4.5.0",
+    "@types/node": "^22.20.5",
+    "typedoc": "^0.28.20",
+    "typedoc-plugin-markdown": "^4.14.1",
+    "typedoc-vitepress-theme": "^1.1.4",
+    "typescript": "^5.9.3",
+    "vitepress": "^1.6.4"
+  }
+}
