@@ -7,6 +7,7 @@ import {
   Card,
   CardHeader,
   makeStyles,
+  mergeClasses,
   Subtitle1,
   Switch,
   Tab,
@@ -28,9 +29,9 @@ import { generateActivity } from "../scenarios/telemetry";
 import source from "../scenarios/telemetry.ts?raw";
 import { activity, useActivity, type ActivityEntry, type ActivitySource } from "../sdk/activity";
 import sdkSource from "../sdk/createSdk.ts?raw";
+import { useCommonStyles } from "../theme/styles";
 
 const useStyles = makeStyles({
-  card: { padding: tokens.spacingHorizontalL, gap: tokens.spacingVerticalM },
   toolbar: {
     display: "flex",
     flexWrap: "wrap",
@@ -57,7 +58,6 @@ const useStyles = makeStyles({
     fontSize: tokens.fontSizeBase200,
     overflowWrap: "anywhere",
   },
-  muted: { color: tokens.colorNeutralForeground3 },
 });
 
 const LEVEL_COLOR = {
@@ -70,6 +70,7 @@ type Filter = "all" | ActivitySource;
 
 function LogPanel() {
   const styles = useStyles();
+  const common = useCommonStyles();
   const entries = useActivity();
   const [filter, setFilter] = useState<Filter>("all");
   const [debug, setDebug] = useState(true);
@@ -79,7 +80,7 @@ function LogPanel() {
     .reverse();
 
   return (
-    <Card className={styles.card} role="region" aria-labelledby="log-heading">
+    <Card size="large" role="region" aria-labelledby="log-heading">
       <CardHeader
         header={
           <Subtitle1 as="h2" id="log-heading">
@@ -116,7 +117,12 @@ function LogPanel() {
         </Button>
       </div>
       {shown.length ? (
-        <div className={styles.log} role="log" aria-label="Activity" tabIndex={0}>
+        <div
+          className={mergeClasses(styles.log, common.focusableRegion)}
+          role="log"
+          aria-label="Activity"
+          tabIndex={0}
+        >
           <Table size="extra-small" className={styles.table}>
             <TableHeader>
               <TableRow>
@@ -143,7 +149,7 @@ function LogPanel() {
           </Table>
         </div>
       ) : (
-        <Caption1 className={styles.muted}>
+        <Caption1 className={common.muted}>
           Nothing logged yet. Run the scenario above, or any other.
         </Caption1>
       )}
@@ -152,13 +158,12 @@ function LogPanel() {
 }
 
 export default function TelemetryPage() {
-  const styles = useStyles();
   return (
     <ScenarioPage
       title="Telemetry and logging"
       description="DataverseClient reports through hooks you pass in: logger (request logs, nothing by default), telemetry (a dependency per attempt and exceptions) and retry.onRetry. Here they all feed the live log below. URLs are redacted unless you ask for full URLs."
     >
-      <Card className={styles.card} role="region" aria-labelledby="hooks-heading">
+      <Card size="large" role="region" aria-labelledby="hooks-heading">
         <CardHeader
           header={
             <Subtitle1 as="h2" id="hooks-heading">

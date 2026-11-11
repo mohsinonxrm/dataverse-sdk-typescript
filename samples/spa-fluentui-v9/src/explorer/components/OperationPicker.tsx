@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import {
   Button,
   Caption1,
+  Caption1Strong,
   Field,
   makeStyles,
   SearchBox,
@@ -9,7 +10,6 @@ import {
   Spinner,
   Tab,
   TabList,
-  Text,
   tokens,
 } from "@fluentui/react-components";
 import { DeleteRegular } from "@fluentui/react-icons";
@@ -106,9 +106,9 @@ function SampleList({ onSample }: { onSample: (s: Sample) => void }) {
         if (!items.length) return null;
         return (
           <section key={group} aria-label={group}>
-            <Text as="h3" size={200} weight="semibold" className={styles.group}>
+            <Caption1Strong as="h3" className={styles.group}>
               {group}
-            </Text>
+            </Caption1Strong>
             <ul className={styles.list}>
               {items.map((s) => (
                 <li key={s.id}>
@@ -265,6 +265,8 @@ function HistoryList({
 export function OperationPicker(props: OperationPickerProps) {
   const styles = useStyles();
   const { tab, onTabChange } = props;
+  const id = useId();
+  const tabId = (value: PickerTab) => `${id}-${value}`;
   return (
     <div className={styles.root}>
       <TabList
@@ -273,14 +275,17 @@ export function OperationPicker(props: OperationPickerProps) {
         aria-label="Pick a request"
         size="small"
       >
-        <Tab value="samples">Samples</Tab>
-        <Tab value="operations">Operations</Tab>
-        <Tab value="history">History</Tab>
+        <Tab value="samples" id={tabId("samples")} aria-controls={`${id}-panel`}>
+          Samples
+        </Tab>
+        <Tab value="operations" id={tabId("operations")} aria-controls={`${id}-panel`}>
+          Operations
+        </Tab>
+        <Tab value="history" id={tabId("history")} aria-controls={`${id}-panel`}>
+          History
+        </Tab>
       </TabList>
-      <div
-        role="tabpanel"
-        aria-label={tab === "samples" ? "Samples" : tab === "operations" ? "Operations" : "History"}
-      >
+      <div role="tabpanel" id={`${id}-panel`} aria-labelledby={tabId(tab)}>
         {tab === "samples" && <SampleList onSample={props.onSample} />}
         {tab === "operations" && <OperationList onOperation={props.onOperation} />}
         {tab === "history" && (

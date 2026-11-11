@@ -11,6 +11,3 @@ export function useMediaQuery(query: string): boolean {
     () => window.matchMedia(query).matches
   );
 }
-
-/** The width below which the navigation becomes an overlay drawer. */
-export const NARROW_QUERY = "(max-width: 63.99em)";

@@ -14,21 +14,18 @@ import {
   MessageBarBody,
   MessageBarTitle,
   SearchBox,
-  Spinner,
+  Skeleton,
+  SkeletonItem,
   Subtitle1,
   Title2,
-  ToggleButton,
   tokens,
-  Tooltip,
 } from "@fluentui/react-components";
 import {
   ArrowClockwiseRegular,
   ArrowLeftRegular,
-  Database20Regular,
+  Database32Regular,
   GlobeRegular,
   SignOutRegular,
-  WeatherMoon20Regular,
-  WeatherSunny20Regular,
 } from "@fluentui/react-icons";
 import type { DiscoveredEnvironment } from "@mohsinonxrm/dataverse-sdk-discovery";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -51,24 +48,31 @@ import {
   readConnectionSettings,
   validateEnvironmentUrl,
 } from "../config";
-import { useThemeMode } from "../theme/ThemeProvider";
+import { DIALOG_PAGE_WIDTH, MEDIA_SMALL } from "../theme/layout";
+import { useCommonStyles } from "../theme/styles";
+import { ThemeToggle } from "../theme/ThemeToggle";
 
 const useStyles = makeStyles({
   root: {
     minHeight: "100dvh",
     display: "grid",
     placeItems: "center",
-    padding: tokens.spacingHorizontalL,
+    paddingBlock: tokens.spacingVerticalL,
+    paddingInline: tokens.spacingHorizontalL,
     backgroundColor: tokens.colorNeutralBackground2,
     boxSizing: "border-box",
     ":focus-visible": { outline: "none" },
   },
+  // Card size="large" sets 16px padding and gap; wide screens get more room around the content.
   card: {
     width: "100%",
-    maxWidth: "42rem",
-    padding: tokens.spacingHorizontalXXL,
-    gap: tokens.spacingVerticalL,
-    "@media (max-width: 47.99em)": { padding: tokens.spacingHorizontalL },
+    maxWidth: DIALOG_PAGE_WIDTH,
+    paddingBlock: tokens.spacingVerticalXXL,
+    paddingInline: tokens.spacingHorizontalXXL,
+    [MEDIA_SMALL]: {
+      paddingBlock: tokens.spacingVerticalL,
+      paddingInline: tokens.spacingHorizontalL,
+    },
   },
   brand: { color: tokens.colorBrandForeground1 },
   title: { margin: 0, color: tokens.colorNeutralForeground1 },
@@ -96,7 +100,7 @@ const useStyles = makeStyles({
     justifyContent: "flex-start",
     textAlign: "start",
   },
-  muted: { color: tokens.colorNeutralForeground3 },
+  loading: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalXS },
   actions: { display: "flex", flexWrap: "wrap", gap: tokens.spacingHorizontalS },
   theme: { position: "absolute", top: tokens.spacingVerticalM, right: tokens.spacingHorizontalM },
 });
@@ -133,8 +137,8 @@ export default function EnvironmentPicker({
   current?: string;
 }) {
   const styles = useStyles();
+  const common = useCommonStyles();
   const { chooseEnvironment, cancelSwitch, signOut } = useAuth();
-  const { mode, toggle } = useThemeMode();
   const main = useRef<HTMLElement>(null);
   const lastUsed = useMemo(() => readLastEnvironment(session.accountId), [session]);
   const [discovery, setDiscovery] = useState<Discovery>({ status: "loading" });
@@ -175,7 +179,7 @@ export default function EnvironmentPicker({
 
   const settings = session.mode === "msal" ? readConnectionSettings() : undefined;
   const hint = (
-    <Caption1 className={styles.muted}>
+    <Caption1 className={common.muted}>
       The Global Discovery Service lists the environments where your account has a Dataverse license
       and a security role. If one is missing, ask an admin for a license or a role in it.
       {settings?.clientId && (
@@ -193,22 +197,10 @@ export default function EnvironmentPicker({
 
   return (
     <main ref={main} tabIndex={-1} className={styles.root}>
-      <Tooltip
-        content={mode === "dark" ? "Use the light theme" : "Use the dark theme"}
-        relationship="description"
-      >
-        <ToggleButton
-          className={styles.theme}
-          appearance="subtle"
-          checked={mode === "dark"}
-          onClick={toggle}
-          aria-label="Dark theme"
-          icon={mode === "dark" ? <WeatherSunny20Regular /> : <WeatherMoon20Regular />}
-        />
-      </Tooltip>
-      <Card className={styles.card}>
+      <ThemeToggle className={styles.theme} />
+      <Card className={styles.card} size="large">
         <CardHeader
-          image={<Database20Regular className={styles.brand} aria-hidden />}
+          image={<Database32Regular className={styles.brand} aria-hidden />}
           header={
             <Title2 as="h1" className={styles.title}>
               Choose an environment
@@ -224,7 +216,14 @@ export default function EnvironmentPicker({
           <Subtitle1 as="h2" id="environments-heading">
             Your environments
           </Subtitle1>
-          {discovery.status === "loading" && <Spinner label="Finding your environments…" />}
+          {discovery.status === "loading" && (
+            // Shaped like the list it stands in for: three environment buttons.
+            <Skeleton className={styles.loading} aria-label="Finding your environments…">
+              <SkeletonItem size={64} />
+              <SkeletonItem size={64} />
+              <SkeletonItem size={64} />
+            </Skeleton>
+          )}
           {discovery.status === "failed" && (
             <>
               <ErrorCard error={discovery.error} />
@@ -258,7 +257,7 @@ export default function EnvironmentPicker({
                   />
                 </Field>
               )}
-              <Caption1 role="status" className={styles.muted}>
+              <Caption1 role="status" className={common.muted}>
                 {shown.length === environments.length
                   ? `${environments.length} environment${environments.length === 1 ? "" : "s"}`
                   : `${shown.length} of ${environments.length} environments match`}

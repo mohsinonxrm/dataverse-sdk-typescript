@@ -17,10 +17,10 @@ const useStyles = makeStyles({
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 22rem), 1fr))",
-    gap: tokens.spacingHorizontalL,
+    rowGap: tokens.spacingVerticalL,
+    columnGap: tokens.spacingHorizontalL,
     alignItems: "start",
   },
-  card: { padding: tokens.spacingHorizontalL, gap: tokens.spacingVerticalM },
   list: {
     margin: 0,
     paddingInlineStart: 0,
@@ -53,12 +53,7 @@ export default function DocsPage() {
     >
       <div className={styles.grid}>
         {SECTIONS.map((section) => (
-          <Card
-            key={section}
-            className={styles.card}
-            role="region"
-            aria-labelledby={`docs-${section}`}
-          >
+          <Card key={section} size="large" role="region" aria-labelledby={`docs-${section}`}>
             <CardHeader
               header={
                 <Subtitle1 as="h2" id={`docs-${section}`}>
@@ -78,7 +73,7 @@ export default function DocsPage() {
             </ul>
           </Card>
         ))}
-        <Card className={styles.card} role="region" aria-labelledby="docs-try">
+        <Card size="large" role="region" aria-labelledby="docs-try">
           <CardHeader
             header={
               <Subtitle1 as="h2" id="docs-try">

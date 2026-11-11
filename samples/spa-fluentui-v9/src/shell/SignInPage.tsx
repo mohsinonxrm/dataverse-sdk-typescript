@@ -12,17 +12,9 @@ import {
   Spinner,
   Subtitle1,
   Title2,
-  ToggleButton,
   tokens,
-  Tooltip,
 } from "@fluentui/react-components";
-import {
-  Database20Regular,
-  PersonRegular,
-  PlayRegular,
-  WeatherMoon20Regular,
-  WeatherSunny20Regular,
-} from "@fluentui/react-icons";
+import { Database32Regular, PersonRegular, PlayRegular } from "@fluentui/react-icons";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useAuth } from "../auth/AuthProvider";
@@ -38,23 +30,30 @@ import {
   type ConnectionSettings,
 } from "../config";
 import { DOC_LINKS } from "../docs";
-import { useThemeMode } from "../theme/ThemeProvider";
+import { DIALOG_PAGE_WIDTH, MEDIA_SMALL } from "../theme/layout";
+import { useCommonStyles } from "../theme/styles";
+import { ThemeToggle } from "../theme/ThemeToggle";
 
 const useStyles = makeStyles({
   root: {
     minHeight: "100dvh",
     display: "grid",
     placeItems: "center",
-    padding: tokens.spacingHorizontalL,
+    paddingBlock: tokens.spacingVerticalL,
+    paddingInline: tokens.spacingHorizontalL,
     backgroundColor: tokens.colorNeutralBackground2,
     boxSizing: "border-box",
   },
+  // Card size="large" sets 16px padding and gap; wide screens get more room around the content.
   card: {
     width: "100%",
-    maxWidth: "38rem",
-    padding: tokens.spacingHorizontalXXL,
-    gap: tokens.spacingVerticalL,
-    "@media (max-width: 47.99em)": { padding: tokens.spacingHorizontalL },
+    maxWidth: DIALOG_PAGE_WIDTH,
+    paddingBlock: tokens.spacingVerticalXXL,
+    paddingInline: tokens.spacingHorizontalXXL,
+    [MEDIA_SMALL]: {
+      paddingBlock: tokens.spacingVerticalL,
+      paddingInline: tokens.spacingHorizontalL,
+    },
   },
   brand: {
     display: "flex",
@@ -65,8 +64,6 @@ const useStyles = makeStyles({
   title: { margin: 0, color: tokens.colorNeutralForeground1 },
   section: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS },
   form: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalM },
-  muted: { color: tokens.colorNeutralForeground3 },
-  code: { fontFamily: tokens.fontFamilyMonospace, overflowWrap: "anywhere" },
   links: {
     display: "flex",
     flexWrap: "wrap",
@@ -87,8 +84,8 @@ const useStyles = makeStyles({
  */
 export default function SignInPage() {
   const styles = useStyles();
+  const common = useCommonStyles();
   const { state, signIn, startDemo } = useAuth();
-  const { mode, toggle } = useThemeMode();
   const [settings, setSettings] = useState<ConnectionSettings>(readConnectionSettings);
   const [submitted, setSubmitted] = useState(false);
   const loading = state.status === "loading";
@@ -116,22 +113,10 @@ export default function SignInPage() {
 
   return (
     <main className={styles.root}>
-      <Tooltip
-        content={mode === "dark" ? "Use the light theme" : "Use the dark theme"}
-        relationship="description"
-      >
-        <ToggleButton
-          className={styles.theme}
-          appearance="subtle"
-          checked={mode === "dark"}
-          onClick={toggle}
-          aria-label="Dark theme"
-          icon={mode === "dark" ? <WeatherSunny20Regular /> : <WeatherMoon20Regular />}
-        />
-      </Tooltip>
-      <Card className={styles.card}>
+      <ThemeToggle className={styles.theme} />
+      <Card className={styles.card} size="large">
         <CardHeader
-          image={<Database20Regular className={styles.brand} aria-hidden />}
+          image={<Database32Regular className={styles.brand} aria-hidden />}
           header={
             <Title2 as="h1" className={styles.title}>
               {APP_NAME}
@@ -139,7 +124,7 @@ export default function SignInPage() {
           }
         />
         <Body1>
-          Try the <span className={styles.code}>@mohsinonxrm/dataverse-sdk</span> packages in your
+          Try the <span className={common.mono}>@mohsinonxrm/dataverse-sdk</span> packages in your
           browser: build a Web API request or pick one of more than 2,300 typed actions, functions
           and messages, see the SDK code for it, run it and inspect the request and response.
         </Body1>
@@ -159,7 +144,7 @@ export default function SignInPage() {
               >
                 Explore with demo data
               </Button>
-              <Caption1 className={styles.muted}>
+              <Caption1 className={common.muted}>
                 Demo mode runs the real SDK against an in-browser copy of a small Dataverse
                 environment. Nothing leaves your browser.
               </Caption1>
@@ -169,12 +154,12 @@ export default function SignInPage() {
               <Subtitle1 as="h2" id="org-heading">
                 Use your own environment
               </Subtitle1>
-              <Caption1 className={styles.muted}>
+              <Caption1 className={common.muted}>
                 Sign in with a work or school account, then pick one of your environments, or enter
                 its URL here. The app registration needs the platform &quot;Single-page
                 application&quot; with the redirect URI{" "}
-                <span className={styles.code}>{redirectUri()}</span>, and the delegated permission{" "}
-                <span className={styles.code}>Dynamics CRM / user_impersonation</span>. Requests go
+                <span className={common.mono}>{redirectUri()}</span>, and the delegated permission{" "}
+                <span className={common.mono}>Dynamics CRM / user_impersonation</span>. Requests go
                 straight from your browser to your environment; there is no server in between.
               </Caption1>
               <form
@@ -223,7 +208,7 @@ export default function SignInPage() {
                 </Button>
               </form>
               {!errors.clientId && (
-                <Caption1 className={styles.muted}>
+                <Caption1 className={common.muted}>
                   Some organizations let only an admin consent to an app&apos;s permissions. If
                   sign-in asks for admin approval, an admin can{" "}
                   <Link href={adminConsentUrl(settings)} target="_blank" rel="noreferrer">

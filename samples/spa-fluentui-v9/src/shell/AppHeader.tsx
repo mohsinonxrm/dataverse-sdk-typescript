@@ -13,24 +13,24 @@ import {
   MenuList,
   MenuPopover,
   MenuTrigger,
-  Text,
-  ToggleButton,
+  Subtitle2,
   tokens,
   Tooltip,
 } from "@fluentui/react-components";
 import {
-  ArrowSwap20Regular,
+  ArrowSwapRegular,
   Database20Regular,
   Globe20Regular,
-  SignOut20Regular,
-  WeatherMoon20Regular,
-  WeatherSunny20Regular,
+  GlobeRegular,
+  SignOutRegular,
 } from "@fluentui/react-icons";
 import { useAuth } from "../auth/AuthProvider";
 import { APP_NAME } from "../config";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { useSdkContext } from "../sdk/SdkProvider";
-import { useThemeMode } from "../theme/ThemeProvider";
+import { SMALL } from "../theme/layout";
+import { useCommonStyles } from "../theme/styles";
+import { ThemeToggle } from "../theme/ThemeToggle";
 
 const useStyles = makeStyles({
   header: {
@@ -73,14 +73,6 @@ const useStyles = makeStyles({
     overflow: "hidden",
     textOverflow: "ellipsis",
   },
-  srOnly: {
-    position: "absolute",
-    width: tokens.strokeWidthThin,
-    height: tokens.strokeWidthThin,
-    overflow: "hidden",
-    clipPath: "inset(50%)",
-    whiteSpace: "nowrap",
-  },
   user: { minWidth: 0, maxWidth: "16rem" },
   userName: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" },
 });
@@ -92,12 +84,11 @@ interface AppHeaderProps {
 
 export function AppHeader({ navOpen, onToggleNav }: AppHeaderProps) {
   const styles = useStyles();
+  const common = useCommonStyles();
   const { signOut, switchEnvironment } = useAuth();
   const { session, connection } = useSdkContext();
-  const { mode, toggle } = useThemeMode();
-  const compact = useMediaQuery("(max-width: 47.99em)");
+  const compact = useMediaQuery(SMALL);
   const host = new URL(connection.environmentUrl).host;
-  const dark = mode === "dark";
 
   return (
     <header className={styles.header}>
@@ -106,15 +97,15 @@ export function AppHeader({ navOpen, onToggleNav }: AppHeaderProps) {
       </Tooltip>
       <div className={styles.brand}>
         <Database20Regular aria-hidden />
-        <Text as="span" weight="semibold" size={400} className={styles.title}>
+        <Subtitle2 as="span" className={styles.title}>
           {compact ? "SDK explorer" : APP_NAME}
-        </Text>
+        </Subtitle2>
       </div>
       <div className={styles.spacer} />
       <div className={styles.env} title={connection.environmentUrl}>
         <Globe20Regular aria-hidden />
-        <Caption1 className={compact ? styles.srOnly : styles.host}>
-          <span className={styles.srOnly}>Environment: </span>
+        <Caption1 className={compact ? common.visuallyHidden : styles.host}>
+          <span className={common.visuallyHidden}>Environment: </span>
           {host}
         </Caption1>
         {session.mode === "demo" && (
@@ -123,18 +114,7 @@ export function AppHeader({ navOpen, onToggleNav }: AppHeaderProps) {
           </Badge>
         )}
       </div>
-      <Tooltip
-        content={dark ? "Use the light theme" : "Use the dark theme"}
-        relationship="description"
-      >
-        <ToggleButton
-          appearance="subtle"
-          checked={dark}
-          onClick={toggle}
-          aria-label="Dark theme"
-          icon={dark ? <WeatherSunny20Regular /> : <WeatherMoon20Regular />}
-        />
-      </Tooltip>
+      <ThemeToggle />
       <Menu positioning="below-end">
         <MenuTrigger disableButtonEnhancement>
           <Button
@@ -144,23 +124,25 @@ export function AppHeader({ navOpen, onToggleNav }: AppHeaderProps) {
             // shown (WCAG 2.5.3): "Account: <name>", with the name hidden on narrow screens.
             icon={<Avatar name={session.user.name} size={24} color="colorful" aria-hidden />}
           >
-            <span className={styles.srOnly}>Account: </span>
-            <span className={compact ? styles.srOnly : styles.userName}>{session.user.name}</span>
+            <span className={common.visuallyHidden}>Account: </span>
+            <span className={compact ? common.visuallyHidden : styles.userName}>
+              {session.user.name}
+            </span>
           </Button>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
             <MenuGroup>
               <MenuGroupHeader>{session.user.username}</MenuGroupHeader>
-              <MenuItem disabled icon={<Globe20Regular />}>
+              <MenuItem disabled icon={<GlobeRegular />}>
                 {host}
               </MenuItem>
-              <MenuItem icon={<ArrowSwap20Regular />} onClick={switchEnvironment}>
+              <MenuItem icon={<ArrowSwapRegular />} onClick={switchEnvironment}>
                 Switch environment
               </MenuItem>
             </MenuGroup>
             <MenuDivider />
-            <MenuItem icon={<SignOut20Regular />} onClick={() => void signOut()}>
+            <MenuItem icon={<SignOutRegular />} onClick={() => void signOut()}>
               Sign out
             </MenuItem>
           </MenuList>

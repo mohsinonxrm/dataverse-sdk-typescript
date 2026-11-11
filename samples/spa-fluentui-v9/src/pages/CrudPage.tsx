@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Field, Input, SpinButton } from "@fluentui/react-components";
+import { Body1, Field, Input, SpinButton } from "@fluentui/react-components";
 import { RecordsGrid } from "../components/RecordsGrid";
 import { Scenario } from "../components/Scenario";
 import { ScenarioPage } from "../components/ScenarioPage";
@@ -67,7 +67,7 @@ export default function CrudPage() {
         run={(sdk, signal) => crud.createAccount(sdk, { name, city, revenue }, signal)}
         onResult={setId}
         successMessage={() => "Account created"}
-        renderResult={(newId) => <>New account id: {newId}</>}
+        renderResult={(newId) => <Body1>New account id: {newId}</Body1>}
       >
         <AccountFields
           name={name}

@@ -20,7 +20,7 @@ import {
   SkeletonItem,
   Spinner,
   Subtitle1,
-  Text,
+  Subtitle2,
   Toast,
   ToastTitle,
   tokens,
@@ -28,6 +28,7 @@ import {
 } from "@fluentui/react-components";
 import { DismissRegular, PlayRegular } from "@fluentui/react-icons";
 import { useRun } from "../hooks/useRun";
+import { useCommonStyles } from "../theme/styles";
 import type { Sdk } from "../sdk/createSdk";
 import { CodeBlock } from "./CodeBlock";
 import { ErrorCard } from "./ErrorCard";
@@ -36,14 +37,14 @@ import { RequestInspector } from "./RequestInspector";
 import { TOASTER_ID } from "./toaster";
 
 const useStyles = makeStyles({
-  card: { padding: tokens.spacingHorizontalL, gap: tokens.spacingVerticalL },
   // Keep the badge on one line: in the CardHeader action slot it would otherwise wrap.
   badge: { flexShrink: 0, whiteSpace: "nowrap" },
   form: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalM },
   fields: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 16rem), 1fr))",
-    gap: tokens.spacingHorizontalM,
+    rowGap: tokens.spacingVerticalM,
+    columnGap: tokens.spacingHorizontalM,
     alignItems: "start",
   },
   actions: {
@@ -53,18 +54,33 @@ const useStyles = makeStyles({
     alignItems: "center",
   },
   section: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS, minWidth: 0 },
-  sectionTitle: { margin: 0 },
-  summary: { color: tokens.colorNeutralForeground3 },
   skeleton: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS },
-  visuallyHidden: {
-    position: "absolute",
-    width: tokens.strokeWidthThin,
-    height: tokens.strokeWidthThin,
-    overflow: "hidden",
-    clipPath: "inset(50%)",
-    whiteSpace: "nowrap",
-  },
 });
+
+/**
+ * A section of a scenario card: its heading, and a region named after the scenario and the
+ * heading ("Create Result"), so the regions of a page's scenarios have different names.
+ */
+function Section({
+  scenarioHeadingId,
+  title,
+  children,
+}: {
+  scenarioHeadingId: string;
+  title: string;
+  children: ReactNode;
+}) {
+  const styles = useStyles();
+  const id = useId();
+  return (
+    <section className={styles.section} aria-labelledby={`${scenarioHeadingId} ${id}`}>
+      <Subtitle2 as="h3" id={id}>
+        {title}
+      </Subtitle2>
+      {children}
+    </section>
+  );
+}
 
 export interface ConfirmOptions {
   title: string;
@@ -113,6 +129,7 @@ export function Scenario<T>(props: ScenarioProps<T>) {
     failsOnPurpose,
   } = props;
   const styles = useStyles();
+  const common = useCommonStyles();
   const headingId = useId();
   const { state, exchanges, start, cancel } = useRun(run);
   const [confirming, setConfirming] = useState(false);
@@ -152,7 +169,7 @@ export function Scenario<T>(props: ScenarioProps<T>) {
 
   return (
     <Card
-      className={styles.card}
+      size="large"
       aria-labelledby={headingId}
       role="region"
       data-scenario={title}
@@ -190,25 +207,19 @@ export function Scenario<T>(props: ScenarioProps<T>) {
               Cancel
             </Button>
           )}
-          {disabledReason && <Caption1 className={styles.summary}>{disabledReason}</Caption1>}
+          {disabledReason && <Caption1 className={common.muted}>{disabledReason}</Caption1>}
         </div>
       </form>
 
-      <section className={styles.section} aria-label="Code">
-        <Text as="h3" weight="semibold" className={styles.sectionTitle}>
-          Code
-        </Text>
+      <Section scenarioHeadingId={headingId} title="Code">
         <CodeBlock code={code} label={`${title} code`} />
-      </section>
+      </Section>
 
-      <section className={styles.section} aria-label="Result">
-        <Text as="h3" weight="semibold" className={styles.sectionTitle}>
-          Result
-        </Text>
-        <span className={styles.visuallyHidden} role="status" aria-live="polite">
+      <Section scenarioHeadingId={headingId} title="Result">
+        <span className={common.visuallyHidden} role="status" aria-live="polite">
           {summary}
         </span>
-        {state.status === "idle" && <Caption1 className={styles.summary}>Not run yet.</Caption1>}
+        {state.status === "idle" && <Caption1 className={common.muted}>Not run yet.</Caption1>}
         {state.status === "running" && (
           <Skeleton className={styles.skeleton} aria-label="Waiting for the result">
             <SkeletonItem size={16} />
@@ -226,18 +237,15 @@ export function Scenario<T>(props: ScenarioProps<T>) {
         )}
         {state.status === "failed" && (
           <>
-            <Caption1 className={styles.summary}>{summary}</Caption1>
+            <Caption1 className={common.muted}>{summary}</Caption1>
             <ErrorCard error={state.error} />
           </>
         )}
-      </section>
+      </Section>
 
-      <section className={styles.section} aria-label="Requests">
-        <Text as="h3" weight="semibold" className={styles.sectionTitle}>
-          Requests
-        </Text>
+      <Section scenarioHeadingId={headingId} title="Requests">
         <RequestInspector exchanges={exchanges} />
-      </section>
+      </Section>
 
       {confirm && (
         <Dialog

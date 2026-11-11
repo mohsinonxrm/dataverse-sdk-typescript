@@ -14,7 +14,8 @@ const useStyles = makeStyles({
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 18rem), 1fr))",
-    gap: tokens.spacingHorizontalM,
+    rowGap: tokens.spacingVerticalM,
+    columnGap: tokens.spacingHorizontalM,
     alignItems: "start",
   },
   type: { fontFamily: tokens.fontFamilyMonospace, overflowWrap: "anywhere" },
