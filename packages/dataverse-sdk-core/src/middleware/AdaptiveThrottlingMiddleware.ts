@@ -2,9 +2,10 @@ import type { Middleware, NextMiddleware } from "../abstractions/middleware.js";
 import type { MiddlewareContext, RequestInformation } from "../abstractions/http.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 import { parseRetryAfter } from "../utils/HeaderUtils.js";
-import { sleep } from "../utils/sleep.js";
+import { systemClock, type Clock } from "../utils/clock.js";
 import { TelemetryEvents } from "../telemetry/events.js";
 import { requestTelemetry } from "../utils/telemetry.js";
+import type { MiddlewareOptions } from "./RequestOptions.js";
 
 /** Remaining number of requests, per web server and user, in the 5-minute window. */
 const REQUESTS_HEADER = "x-ms-ratelimit-burst-remaining-xrm-requests";
@@ -47,6 +48,25 @@ export interface AdaptiveThrottlingOptions {
    * is ignored.
    */
   onDelay?: (delay: AdaptiveThrottlingDelay) => void;
+  /**
+   * The clock that reads the time (for the spacing, the pause after a 429 and the age of
+   * readings) and waits, e.g. the testing package's fake clock in tests.
+   * @default `systemClock` (the real one)
+   */
+  clock?: Clock;
+}
+
+/**
+ * Per-request settings of `AdaptiveThrottlingMiddleware`:
+ * `new MiddlewareRequestOptions([{ type: "adaptiveThrottling", bypass: true }])`.
+ */
+export interface AdaptiveThrottlingRequestOptions extends MiddlewareOptions {
+  /**
+   * Send this request without waiting for the spacing or for a 429's pause, and without taking a
+   * turn (the next request's start isn't pushed back). Its response still updates the budgets.
+   * @default false
+   */
+  bypass?: boolean;
 }
 
 /** What `AdaptiveThrottlingOptions.onDelay` receives. */
@@ -156,6 +176,7 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
   private readonly maxPauseMs: number;
   private readonly requests: Budget;
   private readonly time: Budget;
+  private readonly clock: Clock;
   private pausedUntil = 0;
   private nextStart = 0;
 
@@ -174,11 +195,12 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
     }
     this.requests = new Budget(options.requestBudget);
     this.time = new Budget(options.timeBudget);
+    this.clock = options.clock ?? systemClock;
   }
 
   /** The budgets as last read, and what they mean for the next request. */
   get status(): AdaptiveThrottlingStatus {
-    const now = Date.now();
+    const now = this.clock.now();
     const pressure = this.pressure(now);
     const status: AdaptiveThrottlingStatus = {
       pressure,
@@ -203,7 +225,12 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
     ctx: MiddlewareContext,
     next: NextMiddleware
   ): Promise<Response> {
-    const now = Date.now();
+    if (ctx.middlewareOptions?.get("adaptiveThrottling")?.bypass) {
+      const res = await next(request, ctx);
+      this.observe(res, this.clock.now());
+      return res;
+    }
+    const now = this.clock.now();
     const pressure = this.pressure(now);
     // Requests take turns: each starts no sooner than the previous one's start plus the spacing.
     const start = Math.max(now, this.pausedUntil, this.nextStart);
@@ -232,11 +259,11 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
         },
         { delay_ms: delayMs, "throttle.pressure": pressure }
       );
-      await sleep(delayMs, request.signal);
+      await this.clock.sleep(delayMs, request.signal);
     }
 
     const res = await next(request, ctx);
-    this.observe(res, Date.now());
+    this.observe(res, this.clock.now());
     return res;
   }
 

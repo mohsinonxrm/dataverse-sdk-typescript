@@ -20,6 +20,8 @@ export {
   type MiddlewareOptions,
   type MiddlewareOptionEntry,
   type BuiltInMiddlewareOptions,
+  type CheckedMiddlewareOptionEntry,
+  type MiddlewareOptionKey,
 } from "./middleware/RequestOptions.js";
 
 export * from "./utils/HeaderUtils.js";
@@ -62,6 +64,7 @@ export {
   CircuitBreakerMiddleware,
   type CircuitBreakDurationInfo,
   type CircuitBreakerOptions,
+  type CircuitBreakerRequestOptions,
   type CircuitState,
   type CircuitStateChange,
 } from "./middleware/CircuitBreakerMiddleware.js";
@@ -126,5 +129,6 @@ export {
   AdaptiveThrottlingMiddleware,
   type AdaptiveThrottlingDelay,
   type AdaptiveThrottlingOptions,
+  type AdaptiveThrottlingRequestOptions,
   type AdaptiveThrottlingStatus,
 } from "./middleware/AdaptiveThrottlingMiddleware.js";

@@ -8,7 +8,9 @@ import type {
 import { DataverseCircuitOpenError } from "../errors/DataverseResilienceErrors.js";
 import { DataverseInvalidRequestError, DataverseNetworkError } from "../errors/NamedErrors.js";
 import { TelemetryEvents } from "../telemetry/events.js";
+import { systemClock, type Clock } from "../utils/clock.js";
 import { guardTelemetry, requestTelemetry, type SafeTelemetry } from "../utils/telemetry.js";
+import type { MiddlewareOptions } from "./RequestOptions.js";
 
 /**
  * State of a circuit breaker: `"closed"` sends requests, `"open"` refuses them, `"half-open"`
@@ -90,9 +92,29 @@ export interface CircuitBreakerOptions {
   /**
    * The clock, in ms (as `Date.now()`). Every time the breaker reads (break durations, the
    * sampling window, `retryAfterMs`) comes from it, so tests can move time without fake timers.
-   * @default () => Date.now()
+   * Takes precedence over `clock`.
+   * @default `clock.now`
    */
   now?: () => number;
+  /**
+   * The clock whose `now()` the breaker reads, e.g. the testing package's fake clock, shared with
+   * other middleware that take a `clock`. `now`, when set, takes precedence.
+   * @default `systemClock` (the real one)
+   */
+  clock?: Clock;
+}
+
+/**
+ * Per-request settings of `CircuitBreakerMiddleware`:
+ * `new MiddlewareRequestOptions([{ type: "circuitBreaker", bypass: true }])`.
+ */
+export interface CircuitBreakerRequestOptions extends MiddlewareOptions {
+  /**
+   * Send this request whatever the circuit's state (open or isolated included), and leave its
+   * outcome out of the count, e.g. for a health check that must reach the service.
+   * @default false
+   */
+  bypass?: boolean;
 }
 
 /** Why the circuit changed state, as the `circuit.reason` property of `dataverse.circuit.state`. */
@@ -256,7 +278,8 @@ export class CircuitBreakerMiddleware implements Middleware {
       );
     }
     this.isFailure = options.isFailure ?? defaultIsFailure;
-    this.now = options.now ?? (() => Date.now());
+    const clock = options.clock ?? systemClock;
+    this.now = options.now ?? (() => clock.now());
   }
 
   /**
@@ -310,6 +333,7 @@ export class CircuitBreakerMiddleware implements Middleware {
     ctx: MiddlewareContext,
     next: NextMiddleware
   ): Promise<Response> {
+    if (ctx.middlewareOptions?.get("circuitBreaker")?.bypass) return next(request, ctx);
     this.lastLogger = ctx.logger;
     this.lastTelemetry = ctx.telemetry;
     const probe = this.admit(ctx);

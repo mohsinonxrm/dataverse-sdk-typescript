@@ -30,6 +30,7 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
 
 // @public
 export interface AdaptiveThrottlingOptions {
+    clock?: Clock;
     maxPauseMs?: number;
     maxSpacingMs?: number;
     onDelay?: (delay: AdaptiveThrottlingDelay) => void;
@@ -37,6 +38,11 @@ export interface AdaptiveThrottlingOptions {
     requestBudget?: number;
     threshold?: number;
     timeBudget?: number;
+}
+
+// @public
+export interface AdaptiveThrottlingRequestOptions extends MiddlewareOptions {
+    bypass?: boolean;
 }
 
 // @public
@@ -135,13 +141,13 @@ export function buildUrl(req: RequestInformation): string;
 
 // @public
 export interface BuiltInMiddlewareOptions {
-    // (undocumented)
+    adaptiveThrottling: AdaptiveThrottlingRequestOptions;
+    bulkhead: BulkheadRequestOptions;
+    chaos: ChaosRequestOptions;
+    circuitBreaker: CircuitBreakerRequestOptions;
     concurrency: MiddlewareConcurrencyOptions;
-    // (undocumented)
     logging: LoggingOptions;
-    // (undocumented)
     retry: RetryOptions;
-    // (undocumented)
     telemetry: TelemetryOptions;
 }
 
@@ -221,6 +227,13 @@ export interface ChaosScriptInfo {
 }
 
 // @public
+export type CheckedMiddlewareOptionEntry<E> = E extends {
+    type: infer T;
+} ? T extends keyof BuiltInMiddlewareOptions ? {
+    type: T;
+} & BuiltInMiddlewareOptions[T] & Partial<Record<Exclude<keyof E, "type" | keyof BuiltInMiddlewareOptions[T]>, never>> : E : E;
+
+// @public
 export interface CircuitBreakDurationInfo {
     consecutiveOpens: number;
     failures: number;
@@ -244,6 +257,7 @@ export class CircuitBreakerMiddleware implements Middleware {
 // @public
 export interface CircuitBreakerOptions {
     breakDurationMs?: number | ((info: CircuitBreakDurationInfo) => number);
+    clock?: Clock;
     failureRatio?: number;
     failureThreshold?: number;
     isFailure?: (status: number, error?: Error) => boolean;
@@ -252,6 +266,11 @@ export interface CircuitBreakerOptions {
     now?: () => number;
     onStateChange?: (change: CircuitStateChange) => void;
     samplingDurationMs?: number;
+}
+
+// @public
+export interface CircuitBreakerRequestOptions extends MiddlewareOptions {
+    bypass?: boolean;
 }
 
 // @public
@@ -884,23 +903,34 @@ export type MiddlewareOptionEntry = ({
 } & TelemetryOptions) | ({
     type: "logging";
 } & LoggingOptions) | ({
+    type: "chaos";
+} & ChaosRequestOptions) | ({
+    type: "bulkhead";
+} & BulkheadRequestOptions) | ({
+    type: "circuitBreaker";
+} & CircuitBreakerRequestOptions) | ({
+    type: "adaptiveThrottling";
+} & AdaptiveThrottlingRequestOptions) | ({
     type: string;
 } & Record<string, unknown>);
+
+// @public
+export type MiddlewareOptionKey = keyof BuiltInMiddlewareOptions | (string & {});
 
 // @public
 export interface MiddlewareOptions {
 }
 
-// @public (undocumented)
-export class MiddlewareRequestOptions {
-    constructor(options?: MiddlewareOptionEntry[]);
+// @public
+export class MiddlewareRequestOptions<E extends MiddlewareOptionEntry = MiddlewareOptionEntry> {
+    constructor(options?: ReadonlyArray<E & CheckedMiddlewareOptionEntry<E>>);
     clear(): void;
-    delete(middlewareType: string): boolean;
+    delete(middlewareType: MiddlewareOptionKey): boolean;
     get<K extends keyof BuiltInMiddlewareOptions>(middlewareType: K): BuiltInMiddlewareOptions[K] | undefined;
     // (undocumented)
-    get(middlewareType: string): MiddlewareOptions | undefined;
-    has(middlewareType: string): boolean;
-    set(middlewareType: string, options: MiddlewareOptions): void;
+    get(middlewareType: MiddlewareOptionKey): MiddlewareOptions | undefined;
+    has(middlewareType: MiddlewareOptionKey): boolean;
+    set<K extends MiddlewareOptionKey>(middlewareType: K, options: K extends keyof BuiltInMiddlewareOptions ? BuiltInMiddlewareOptions[K] : MiddlewareOptions): void;
 }
 
 // @public (undocumented)

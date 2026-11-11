@@ -2,8 +2,9 @@ import { sleep } from "./sleep.js";
 
 /**
  * Time, as middleware that waits sees it: the current time and a wait. Pass your own (for example
- * the testing package's fake clock) to test waits without waiting. Today `ChaosMiddleware` uses
- * it (`ChaosOptions.clock`, for latency and hang faults).
+ * the testing package's fake clock) to test waits without waiting. `ChaosMiddleware` (for latency
+ * and hang faults), `AdaptiveThrottlingMiddleware` and `CircuitBreakerMiddleware` take one as
+ * their `clock` option.
  */
 export interface Clock {
   /** The current time in ms since the epoch, as `Date.now()`. */
