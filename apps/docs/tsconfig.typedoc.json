@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "files": [
+    "../../packages/dataverse-sdk-actions/src/index.ts",
+    "../../packages/dataverse-sdk-appinsights/dist/index.d.ts",
+    "../../packages/dataverse-sdk-appinsights/dist/browser.d.ts",
+    "../../packages/dataverse-sdk-auth-azure-identity/dist/index.d.ts",
+    "../../packages/dataverse-sdk-auth-msal-browser/dist/index.d.ts",
+    "../../packages/dataverse-sdk-auth-msal-node/dist/index.d.ts",
+    "../../packages/dataverse-sdk-batch/dist/index.d.ts",
+    "../../packages/dataverse-sdk-core/dist/index.d.ts",
+    "../../packages/dataverse-sdk-discovery/dist/index.d.ts",
+    "../../packages/dataverse-sdk-entities-runtime/dist/index.d.ts",
+    "../../packages/dataverse-sdk-files/dist/index.d.ts",
+    "../../packages/dataverse-sdk-functions/src/index.ts",
+    "../../packages/dataverse-sdk-generator/dist/index.d.ts",
+    "../../packages/dataverse-sdk-messages/src/index.ts",
+    "../../packages/dataverse-sdk-metadata/dist/index.d.ts",
+    "../../packages/dataverse-sdk-otel/dist/index.d.ts",
+    "../../packages/dataverse-sdk-xrm/dist/index.d.ts"
+  ]
+}
