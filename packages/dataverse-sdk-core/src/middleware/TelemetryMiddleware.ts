@@ -8,6 +8,7 @@ import { generateUUID, parseRetryAfter } from "../utils/HeaderUtils.js";
 import { redactRequestUrl } from "../utils/redact.js";
 import { requestTelemetry, type SafeTelemetry } from "../utils/telemetry.js";
 import { tokenOriginRefusal, tokenOrigins } from "../utils/tokenOrigins.js";
+import { THROTTLE_LIMITS, throttleErrorCode } from "../utils/serviceProtection.js";
 import { SDK_VERSION } from "../version.js";
 
 /**
@@ -144,13 +145,6 @@ export class TelemetryMiddleware implements Middleware {
   }
 }
 
-/** Dataverse error codes of the service protection limits, by the limit they name. */
-const THROTTLE_LIMITS: Record<string, string> = {
-  "0x80072322": "requests",
-  "0x80072321": "execution_time",
-  "0x80072326": "concurrent_requests",
-};
-
 /** `chaos.injected` and `chaos.fault` when ChaosMiddleware injected a fault into the attempt. */
 function chaosProperties(ctx: MiddlewareContext): Record<string, string> {
   return ctx.chaos ? { "chaos.injected": "true", "chaos.fault": ctx.chaos.fault } : {};
@@ -182,23 +176,6 @@ async function trackThrottle(
     },
     measurements
   );
-}
-
-/**
- * The error code of a JSON 429 body (`{"error":{"code":"0x80072322",…}}`), read from a clone so
- * the response is untouched. A `$batch` 429 with per-request results (multipart) isn't read.
- */
-async function throttleErrorCode(res: Response): Promise<string | undefined> {
-  if (!/json/i.test(res.headers.get("content-type") ?? "") || res.bodyUsed) return undefined;
-  try {
-    const body = JSON.parse(await res.clone().text()) as { error?: { code?: unknown } } | null;
-    const code = body?.error?.code;
-    return typeof code === "string" && /^0x[0-9a-f]{8}$/i.test(code)
-      ? code.toLowerCase()
-      : undefined;
-  } catch {
-    return undefined;
-  }
 }
 
 function hostOf(url: string): string | undefined {

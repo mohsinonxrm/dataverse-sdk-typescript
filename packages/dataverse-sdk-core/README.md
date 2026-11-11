@@ -111,7 +111,12 @@ const client = new DataverseClient({
     adaptiveFromDopHint: true, // Default: true (follows x-ms-dop-hint, within min..max)
     min: 2, // Default: 2 (lowest limit the hint can set)
     max: 16, // Default: maxConcurrentRequests when set, otherwise 16 (highest limit the hint can set)
+    reduceOnThrottle: true, // Default: true (halve the limit on the concurrent-requests 429, 0x80072326)
+    maxQueue: Infinity, // Default: unbounded (requests waiting for a slot; beyond it, DataverseQueueFullError)
   },
+
+  // Optional: Slow down from the service-protection headers (see "Adaptive Throttling")
+  adaptiveThrottling: new AdaptiveThrottlingMiddleware(), // Default: none (off)
 
   // Optional: Logger (implements Logger interface)
   logger: new ConsoleLogger(), // Default: none (the SDK logs nothing unless you pass a logger)
@@ -681,6 +686,7 @@ import {
   DataverseInvalidRequestError, // refused before sending (e.g. TokenOriginRefused)
   DataverseAuthenticationError, // auth helpers (e.g. EmptyAccessToken)
   DataverseUrlError, // client-side URL validation
+  DataverseQueueFullError, // refused before sending: a full concurrency or bulkhead queue (maxQueue)
 } from "@mohsinonxrm/dataverse-sdk-core";
 
 try {
@@ -722,6 +728,8 @@ DataverseError (base)
 ├── DataverseAbortError (cancelled; name "AbortError")
 ├── DataverseInvalidRequestError (refused before sending)
 ├── DataverseAuthenticationError (auth helpers)
+├── DataverseQueueFullError (a full queue: queue, maxQueue, queued, inFlight, limit)
+│   └── DataverseBulkheadRejectedError (queue "bulkhead", has category)
 └── DataverseServiceError (DataverseServiceError.fromResponse helper)
 ```
 
@@ -807,12 +815,13 @@ const inspector: Middleware = {
 1. **prepend** middleware (if any)
 2. **ODataHeadersMiddleware** - Sets `Accept`, `OData-Version`, `OData-MaxVersion`, a JSON `Content-Type` for JSON bodies, `defaultHeaders` and `defaultPrefer`
 3. **RetryMiddleware** - Handles 429/502/503/504 with exponential backoff + jitter
-4. **ConcurrencyMiddleware** - Semaphore-based rate limiting with adaptive concurrency, one slot per attempt
-5. **AuthMiddleware** - Adds `Authorization: Bearer <token>` on every attempt; after a 401 gets a new token (passing a claims challenge) and retries once (only when a token provider is set)
-6. **TelemetryMiddleware** - Diagnostic headers; tracks dependencies and exceptions
-7. **LoggingMiddleware** - Logs request/response details (only when a logger is set)
-8. **append** middleware (if any)
-9. **FetchRequestAdapter** - Final adapter that calls native `fetch()`
+4. **AdaptiveThrottlingMiddleware** - Holds requests back from the service-protection headers (only with the `adaptiveThrottling` option)
+5. **ConcurrencyMiddleware** - Semaphore-based rate limiting with adaptive concurrency, one slot per attempt
+6. **AuthMiddleware** - Adds `Authorization: Bearer <token>` on every attempt; after a 401 gets a new token (passing a claims challenge) and retries once (only when a token provider is set)
+7. **TelemetryMiddleware** - Diagnostic headers; tracks dependencies and exceptions
+8. **LoggingMiddleware** - Logs request/response details (only when a logger is set)
+9. **append** middleware (if any)
+10. **FetchRequestAdapter** - Final adapter that calls native `fetch()`
 
 **Middleware Features:**
 
@@ -1044,6 +1053,7 @@ Middleware Chain (sequential execution)
    ├─ prepend middleware (user-provided, optional)
    ├─ ODataHeadersMiddleware (add OData headers, defaultHeaders, defaultPrefer)
    ├─ RetryMiddleware (retry on 429/502/503/504)
+   ├─ AdaptiveThrottlingMiddleware (with the adaptiveThrottling option: holds requests back)
    ├─ ConcurrencyMiddleware (rate limiting, a slot per attempt)
    ├─ AuthMiddleware (Bearer token per attempt; one refresh-and-retry after a 401)
    ├─ TelemetryMiddleware (diagnostic headers, a dependency and traceparent per attempt)
@@ -1070,12 +1080,13 @@ User Code (typed result)
 1. `prepend` middleware (if any)
 2. ODataHeadersMiddleware - Adds `Accept`, `Content-Type`, `OData-Version`, `OData-MaxVersion`, `defaultHeaders`, `defaultPrefer`
 3. RetryMiddleware - Wraps the rest of the chain with retry logic (adds `retry-attempt` on retries)
-4. ConcurrencyMiddleware - Acquires a semaphore slot for this attempt (blocks if at max concurrency)
-5. AuthMiddleware - Calls `tokenProvider.getToken()` (every attempt) and adds `Authorization` header
-6. TelemetryMiddleware - Adds diagnostic headers, starts the attempt's dependency and adds its `traceparent`
-7. LoggingMiddleware - Logs request details
-8. `append` middleware (if any)
-9. FetchRequestAdapter - Calls `fetch(url, { method, headers, body })`
+4. AdaptiveThrottlingMiddleware (with `adaptiveThrottling`) - Holds the attempt back while a budget is low or a 429's pause runs; it holds no slot and no token meanwhile
+5. ConcurrencyMiddleware - Acquires a semaphore slot for this attempt (blocks if at max concurrency; refuses it if `maxQueue` are already waiting)
+6. AuthMiddleware - Calls `tokenProvider.getToken()` (every attempt) and adds `Authorization` header
+7. TelemetryMiddleware - Adds diagnostic headers, starts the attempt's dependency and adds its `traceparent`
+8. LoggingMiddleware - Logs request details
+9. `append` middleware (if any)
+10. FetchRequestAdapter - Calls `fetch(url, { method, headers, body })`
 
 **Response Phase (bottom-up):**
 
@@ -1084,10 +1095,11 @@ User Code (typed result)
 3. LoggingMiddleware - Logs response status and duration
 4. TelemetryMiddleware - Ends the dependency with its result; a `dataverse.throttle` event for a 429
 5. AuthMiddleware - On a 401, gets a new token (with the claims challenge, if any) and resends once
-6. ConcurrencyMiddleware - Releases the semaphore slot, adjusts limit based on `x-ms-dop-hint` header
-7. RetryMiddleware - Checks status code, waits and retries if 429/502/503/504 and attempts < maxRetries (the wait holds no slot)
-8. ODataHeadersMiddleware - (no response processing)
-9. `prepend` middleware
+6. ConcurrencyMiddleware - Releases the semaphore slot; follows the `x-ms-dop-hint` header, and halves the limit on a concurrent-requests 429 (`0x80072326`)
+7. AdaptiveThrottlingMiddleware (with `adaptiveThrottling`) - Reads the service-protection headers; after a 429, pauses new requests for its `Retry-After`
+8. RetryMiddleware - Checks status code, waits and retries if 429/502/503/504 and attempts < maxRetries (the wait holds no slot)
+9. ODataHeadersMiddleware - (no response processing)
+10. `prepend` middleware
 
 ### Resiliency Features
 
@@ -1185,12 +1197,21 @@ const throttle = new AdaptiveThrottlingMiddleware({
 const client = new DataverseClient({
   baseUrl,
   tokenProvider,
-  // append: it runs inside the retry middleware, so it sees every attempt's response, 429s included
-  middleware: { append: [throttle] },
+  adaptiveThrottling: throttle, // one instance per client
 });
 
 throttle.status; // { requestsRemaining, requestBudget, timeRemaining, timeBudget, pressure, spacingMs, pausedUntil? }
 ```
+
+- **Where it runs:** the `adaptiveThrottling` option (default: none) puts it
+  inside the retry middleware, so it sees every attempt's response, 429s included, and outside the
+  concurrency middleware, so a request it holds back holds no concurrency slot and no access token,
+  and the wait isn't counted in the attempt's dependency duration. Before this option it was added
+  with `middleware.append`; that still works, but there it runs inside the concurrency slot (a
+  30-second pause holds a slot and a token for 30 seconds), so the client logs a warning once
+  recommending the option.
+- **Telemetry:** each wait is a `dataverse.throttle.delay` event (`throttle.reason`, `delay_ms`,
+  `throttle.pressure`); see [TelemetryClient](#telemetryclient).
 
 - **Spacing:** while both budgets are above `threshold` of their full value, nothing changes. Below
   it, request starts are spaced out, in turn, by up to `maxSpacingMs` as the lower budget nears
@@ -1227,6 +1248,36 @@ throttle.status; // { requestsRemaining, requestBudget, timeRemaining, timeBudge
   a slot again like any new request.
 - **Browsers:** `x-ms-dop-hint` isn't readable there (see [docs/browser.md](../../docs/browser.md)),
   so the limit stays at `maxConcurrentRequests`.
+- **Too many concurrent requests (`reduceOnThrottle`, default on):** a 429 with error `0x80072326`
+  (Dataverse's limit on concurrent requests per user, per web server; other clients signed in as
+  the same user count too) halves the limit, not below `min`. One burst of such 429s halves it
+  once: only a request sent after the halving can halve it again. The limit stays down until the
+  429's `Retry-After` has passed; then the next `x-ms-dop-hint` sets it again as usual, or, where
+  the hint isn't readable (browsers, `adaptiveFromDopHint: false`), each successful response raises
+  it by 1 back to where it was. The other service-protection 429s (`0x80072322` requests,
+  `0x80072321` execution time) leave the limit alone. Each change is a `dataverse.concurrency.limit`
+  event with `concurrency.reason` `throttle`, `dop_hint` or `recovery`. `reduceOnThrottle: false`
+  keeps the limit as it was before 2.1.
+- **Bounded queue (`maxQueue`, default unbounded):** at most this many requests wait for a slot; one
+  more is refused at once, without being sent, with `DataverseQueueFullError` (its `queue` is
+  `"concurrency"`; it also has `maxQueue`, `queued`, `inFlight` and `limit`). It isn't retried. On
+  a server, set a bound so a burst of incoming work can't pile up waiting requests (and their
+  memory) without limit, and answer the refused ones with a 503 or a retry later:
+
+  ```typescript
+  const client = new DataverseClient({
+    baseUrl,
+    tokenProvider,
+    concurrency: { maxConcurrentRequests: 8, maxQueue: 200 },
+  });
+  try {
+    await client.api("accounts").get();
+  } catch (err) {
+    if (err instanceof DataverseQueueFullError) {
+      // err.queue === "concurrency" (or "bulkhead"), err.maxQueue === 200
+    }
+  }
+  ```
 
 #### Circuit Breaker & Bulkhead
 
@@ -1298,7 +1349,9 @@ try {
   Returning `undefined` leaves the request unlimited.
 - **Waiting:** requests over the limit wait for a slot, and leave the queue when their `signal`
   aborts. With `maxQueue` (default unlimited), a request beyond that many waiting is refused at once
-  with `DataverseBulkheadRejectedError` (with its `category`).
+  with `DataverseBulkheadRejectedError` (with its `category`), a `DataverseQueueFullError` with
+  `queue: "bulkhead"`, `maxQueue`, `queued`, `inFlight` and `limit`. On a server, set `maxQueue`
+  so a burst can't pile up waiting requests without limit.
 - **Per request:** `new MiddlewareRequestOptions([{ type: "bulkhead", category: "import" }])`
   counts a request in another category; `{ type: "bulkhead", bypass: true }` skips the bulkhead.
 - `bulkhead.inFlight(category)` and `bulkhead.queued(category)` show the current load.
@@ -1528,14 +1581,15 @@ active span, injected with your registered propagator.
 
 **Events (`TelemetryEvents`).** Every event carries `correlation.id`:
 
-| Event                         | When                                                      | Properties / measurements                                                                                                                                                           |
-| ----------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `dataverse.throttle`          | A 429 response, per attempt                               | `request.method`, `request.url`, `throttle.limit` (`requests`, `execution_time`, `concurrent_requests`) and `error.code` when known / `retry.attempt`, `retry.after_ms`, `dop_hint` |
-| `dataverse.retry`             | Before each retry wait (when `onRetry` runs)              | `request.method`, `request.url`, `retry.reason` (`status`, `network_error`), `error.type` / `retry.attempt`, `retry.max`, `retry.delay_ms`, `retry.after_ms`, `status`              |
-| `dataverse.concurrency.wait`  | A request waited for a concurrency slot                   | `request.method`, `request.url` / `wait_ms`, `concurrency.limit`, `concurrency.queued`                                                                                              |
-| `dataverse.concurrency.limit` | `x-ms-dop-hint` changed the concurrency limit             | `concurrency.limit`, `concurrency.previous_limit`, `dop_hint`                                                                                                                       |
-| `dataverse.batch`             | A `$batch` came back (`@mohsinonxrm/dataverse-sdk-batch`) | `batch.continue_on_error` / `batch.requests`, `batch.succeeded`, `batch.failed`, `duration_ms`, `status`                                                                            |
-| `dataverse.chaos.injected`    | `ChaosMiddleware` injected a fault (dev and test only)    | `chaos.fault` (`status`, `network`, `latency`, `hang`), `request.method`, `error.type` / `retry.attempt`, `status`, `chaos.delay_ms`                                                |
+| Event                         | When                                                          | Properties / measurements                                                                                                                                                              |
+| ----------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dataverse.throttle`          | A 429 response, per attempt                                   | `request.method`, `request.url`, `throttle.limit` (`requests`, `execution_time`, `concurrent_requests`) and `error.code` when known / `retry.attempt`, `retry.after_ms`, `dop_hint`    |
+| `dataverse.retry`             | Before each retry wait (when `onRetry` runs)                  | `request.method`, `request.url`, `retry.reason` (`status`, `network_error`), `error.type` / `retry.attempt`, `retry.max`, `retry.delay_ms`, `retry.after_ms`, `status`                 |
+| `dataverse.concurrency.wait`  | A request waited for a concurrency slot                       | `request.method`, `request.url` / `wait_ms`, `concurrency.limit`, `concurrency.queued`                                                                                                 |
+| `dataverse.concurrency.limit` | The concurrency limit changed                                 | `concurrency.reason` (`dop_hint`, `throttle`: halved after a `0x80072326` 429, `recovery`) / `concurrency.limit`, `concurrency.previous_limit`, `dop_hint` (when the response had one) |
+| `dataverse.batch`             | A `$batch` came back (`@mohsinonxrm/dataverse-sdk-batch`)     | `batch.continue_on_error` / `batch.requests`, `batch.succeeded`, `batch.failed`, `duration_ms`, `status`                                                                               |
+| `dataverse.chaos.injected`    | `ChaosMiddleware` injected a fault (dev and test only)        | `chaos.fault` (`status`, `network`, `latency`, `hang`), `request.method`, `error.type` / `retry.attempt`, `status`, `chaos.delay_ms`                                                   |
+| `dataverse.throttle.delay`    | Adaptive throttling held a request back (when `onDelay` runs) | `request.method`, `throttle.reason` (`pressure`, `retry-after`); no URL, match by `correlation.id` / `delay_ms`, `throttle.pressure`                                                   |
 
 A request with `{ type: "telemetry", disable: true }` sends none of them.
 `client.trackEvent(name, props, measurements)` sends your own event to the client's telemetry,

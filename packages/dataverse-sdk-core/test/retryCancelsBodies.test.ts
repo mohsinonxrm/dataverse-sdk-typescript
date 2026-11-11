@@ -29,6 +29,9 @@ function client(responses: Response[]) {
   return new DataverseClient({
     baseUrl: ORG,
     retry: { maxRetries: 3, baseDelayMs: 1, jitter: false },
+    // With reduceOnThrottle (#477), the concurrency middleware reads a 429's JSON body (a clone)
+    // for its error code, which also releases the connection; off, the 429 is cancelled unread.
+    concurrency: { reduceOnThrottle: false },
     fetchProvider: {
       fetch: () => {
         const res = responses.at(i++);
