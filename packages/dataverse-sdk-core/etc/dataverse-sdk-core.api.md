@@ -409,6 +409,7 @@ export class DataverseClient {
     api(pathOrAbsoluteUrl: string): DataverseRequestBuilder;
     bind(navigationProperty: string, entitySetName: string, id: ODataKey): Record<string, string>;
     changesSince<T = Record<string, unknown>>(deltaLink: string, options?: TrackChangesOptions): Promise<TrackedChanges<T>>;
+    readonly clock: Clock;
     describePipeline(): string[];
     // (undocumented)
     execute<T>(request: Executable<T>, options?: RequestOptions): Promise<T>;
@@ -431,6 +432,7 @@ export interface DataverseClientOptions {
     apiVersion?: ApiVersion;
     // (undocumented)
     baseUrl: string;
+    clock?: Clock;
     // (undocumented)
     concurrency?: ConcurrencyOptions;
     defaultHeaders?: Record<string, string>;
@@ -875,6 +877,7 @@ export interface MiddlewareContext {
         fault: "status" | "network" | "latency" | "hang";
         status?: number;
     };
+    clock?: Clock;
     // (undocumented)
     correlationId?: string;
     deadline?: number;
@@ -1105,6 +1108,7 @@ export interface RequestInformation {
 export interface RequestOptions {
     attemptTimeoutMs?: number;
     correlationId?: string;
+    deadline?: number;
     // (undocumented)
     headers?: Record<string, string>;
     middlewareOptions?: MiddlewareRequestOptions;

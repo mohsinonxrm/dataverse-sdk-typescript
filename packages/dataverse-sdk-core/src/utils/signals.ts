@@ -62,20 +62,13 @@ export function startDeadline(ms: number, caller: AbortSignal | undefined, clock
     expired = true;
     controller.abort(new DOMException(`Request timed out after ${String(ms)}ms`, "TimeoutError"));
   };
-  let stop: () => void;
-  if (clock === systemClock) {
-    const t = setTimeout(onTimeout, ms);
-    stop = () => {
-      clearTimeout(t);
-    };
-  } else {
-    // Another clock (a fake one in tests) times it with its sleep, which dispose() ends.
-    const timer = new AbortController();
-    clock.sleep(ms, timer.signal).then(onTimeout, noop);
-    stop = () => {
-      timer.abort();
-    };
-  }
+  // The real clock gets a timer; another (a fake one in tests) times it with its sleep, which
+  // dispose() ends through `stop`.
+  const stop = new AbortController();
+  const timer =
+    clock === systemClock
+      ? setTimeout(onTimeout, ms)
+      : void clock.sleep(ms, stop.signal).then(onTimeout, noop);
   const linked = linkSignals(caller, controller.signal);
   return {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- two sources, so never undefined
@@ -85,7 +78,8 @@ export function startDeadline(ms: number, caller: AbortSignal | undefined, clock
     },
     at,
     dispose() {
-      stop();
+      clearTimeout(timer);
+      stop.abort();
       linked.dispose();
     },
   };
