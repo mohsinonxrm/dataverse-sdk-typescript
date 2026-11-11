@@ -1112,13 +1112,45 @@ User Code (typed result)
   - `baseDelayMs: 3000` (3 seconds)
   - `maxDelayMs: 30000` (30 seconds)
   - `maxRetryAfterMs`: same as `maxDelayMs`
+  - `backoff: "exponential"`
   - `jitter: true` (±20% on the computed backoff)
+  - `retryAfterJitterMs: 0` (`Retry-After` is waited out exactly)
   - `retryNonIdempotent: false`; `retryNetworkErrors` unset (idempotent requests are retried after a network error)
-- **Retry-After header:** Waited out exactly (no jitter) when it is at most `maxRetryAfterMs`. A longer
-  `Retry-After` is not waited out: the response is returned at once (a 429 throws
-  `DataverseThrottleError` with `retryAfterMs`), so your code decides whether to wait. Delta-seconds
-  (including decimals such as `1.5`) and HTTP-dates are both understood.
-- **Backoff formula:** `min(maxDelayMs, baseDelayMs * 2^attempt)`, then ±20% jitter (still capped at `maxDelayMs`)
+  - `retryAttemptTimeouts: false` (an attempt that runs out of `attemptTimeoutMs` fails the request)
+- **Retry-After header:** Waited out exactly when it is at most `maxRetryAfterMs` (plus a random
+  0 to `retryAfterJitterMs` ms when you set it). A longer `Retry-After` is not waited out: the
+  response is returned at once (a 429 throws `DataverseThrottleError` with `retryAfterMs`), so your
+  code decides whether to wait. Delta-seconds (including decimals such as `1.5`) and HTTP-dates are
+  both understood.
+- **Backoff formula:** by default `min(maxDelayMs, baseDelayMs * 2^attempt)`, then ±20% jitter
+  (still capped at `maxDelayMs`). `backoff` and `jitter` change it:
+
+  | `backoff`               | Delay before retry `n` (0-based) | With `jitter: true` |
+  | ----------------------- | -------------------------------- | ------------------- |
+  | `"exponential"` default | `baseDelayMs * 2^n`              | ±20%                |
+  | `"linear"`              | `baseDelayMs * (n + 1)`          | ±20%                |
+  | `"constant"`            | `baseDelayMs`                    | ±20%                |
+
+  Every delay is capped at `maxDelayMs`. `jitter: false` uses the delay as is. `jitter: "decorrelated"`
+  (with `"exponential"`) uses Polly v8's decorrelated jitter (`DecorrelatedJitterBackoffV2`):
+  delays spread from 0 to about `baseDelayMs * 2^(n+1)`, with medians near `baseDelayMs * 2^n` and
+  fewer clusters than uniform jitter, so many clients that failed together spread their retries out.
+  With `"linear"` or `"constant"` it acts as `true`.
+
+  ```typescript
+  const client = new DataverseClient({
+    baseUrl,
+    tokenProvider,
+    retry: {
+      backoff: "exponential",
+      jitter: "decorrelated", // 0..~2 s, then 0..~4 s, ... capped at maxDelayMs
+      baseDelayMs: 1000,
+      maxDelayMs: 20_000,
+      retryAfterJitterMs: 1000, // throttled requests wake up to 1 s apart instead of together
+    },
+  });
+  ```
+
 - **Methods:** 429 is retried for every method (Dataverse rejects throttled requests before doing any
   work). After 502/503/504 only idempotent requests are replayed: GET, HEAD, OPTIONS, PUT, DELETE, and
   PATCH with `If-Match`. The one exception for 429: a non-idempotent request (such as a `$batch`
@@ -1129,12 +1161,36 @@ User Code (typed result)
   DELETE, and PATCH with `If-Match`) are retried with backoff, as after a 503. POST and other PATCHes
   aren't, because the connection can drop after Dataverse applied them. They are retried only with both
   `retryNetworkErrors: true` and `retryNonIdempotent: true`. `retryNetworkErrors: false` turns
-  network-error retries off. Aborts, timeouts and requests with a stream body are never retried.
-- **`shouldRetry(statusCode, error?)`:** decides which failures are retried, in place of
-  `retryableStatusCodes` and `retryNetworkErrors` (called with status `0` for a network error). It
-  doesn't decide which requests may be replayed: POST and PATCH without `If-Match` are still not
-  retried after a 5xx or a network error, nor a `$batch` with a multipart 429, unless
-  `retryNonIdempotent: true`. The counts, delays, `maxRetryAfterMs` and `timeoutMs` still apply.
+  network-error retries off. Aborts and requests with a stream body are never retried.
+- **Timed-out attempts:** an attempt that runs out of `attemptTimeoutMs` (a `DataverseNetworkError`
+  named `RequestTimeout`) isn't retried by default. With `retryAttemptTimeouts: true` it is, for
+  idempotent requests (as for a dropped connection); a POST or a PATCH without `If-Match` takes
+  `retryNonIdempotent: true` as well, since it may have been applied. The request's own `timeoutMs`
+  still ends it: when the whole request times out, or the backoff would end after its deadline,
+  there is no retry.
+
+  ```typescript
+  // Give each attempt 10 s, and the whole request 45 s.
+  await client.api("accounts").get({ attemptTimeoutMs: 10_000, timeoutMs: 45_000 });
+  // with retry: { retryAttemptTimeouts: true } on the client
+  ```
+
+- **`shouldRetry(statusCode, error, { request, response, attempt })`:** decides which failures are
+  retried, in place of `retryableStatusCodes` and `retryNetworkErrors` (called with status `0` and
+  the error for a network error, with no `response`). `attempt` is 0 for the first attempt; a
+  predicate with one or two parameters works as before. It doesn't decide which requests may be
+  replayed: POST and PATCH without `If-Match` are still not retried after a 5xx or a network error,
+  nor a `$batch` with a multipart 429, unless `retryNonIdempotent: true`. The counts, delays,
+  `maxRetryAfterMs` and `timeoutMs` still apply.
+
+  ```typescript
+  retry: {
+    // 5xx only, and at most twice for anything other than a GET
+    shouldRetry: (status, _error, { request, attempt }) =>
+      status >= 500 && (request.method === "GET" || attempt < 2),
+  }
+  ```
+
 - **Watching retries:** `onRetry(info)` runs once before each retry, with `attempt`, `maxRetries`,
   `status` (0 for a network error), `delayMs`, `retryAfterMs`, `correlationId` and the request. A
   per-request `onRetry` replaces the client's; an error it throws is logged and ignored.
@@ -1244,7 +1300,8 @@ import {
 const breaker = new CircuitBreakerMiddleware({
   failureThreshold: 5, // failures in a row that open the circuit (default 5)
   breakDurationMs: 30_000, // how long it stays open before a probe (default 30 s)
-  onStateChange: ({ from, to }) => telemetry.trackEvent("dataverse.circuit", { from, to }),
+  // State changes also go to the client's telemetry as "dataverse.circuit.state".
+  onStateChange: ({ from, to }) => console.log(`circuit ${from} -> ${to}`),
 });
 
 const client = new DataverseClient({
@@ -1277,15 +1334,53 @@ try {
   throttling middleware's job, and a 4xx says the request was wrong, not that the service is
   healthy. `isFailure(status, error?)` replaces the failure rule (`status` is 0 when no response
   came back); a response it doesn't count is a success below 400 and neutral from 400 up.
+- **Failure ratio:** `mode: "ratio"` opens the circuit on the share of failures instead of a run of
+  them (Polly's advanced circuit breaker). Failures and successes go into a sliding window of
+  `samplingDurationMs` (default 30 s); neutral outcomes stay out of it. When a failure arrives and
+  the window holds at least `minimumThroughput` outcomes (default 10), of which at least
+  `failureRatio` (default 0.5) are failures, the circuit opens. The window starts empty again each
+  time the circuit closes. `failureThreshold` doesn't apply in this mode.
+
+  ```typescript
+  const breaker = new CircuitBreakerMiddleware({
+    mode: "ratio",
+    failureRatio: 0.5, // half of the requests that succeeded or failed...
+    minimumThroughput: 20, // ...out of at least 20...
+    samplingDurationMs: 60_000, // ...in the last minute
+  });
+  ```
+
 - **Open:** requests fail at once, without being sent, with `DataverseCircuitOpenError`.
   `retryAfterMs` says when a probe may go. Inside the retry middleware this ends the retries.
-- **Half-open:** after `breakDurationMs`, one request goes through as a probe, and others fail fast
-  while it is in flight (`retryAfterMs` is then `undefined`). A successful probe closes the
-  circuit. A failed probe opens it for another `breakDurationMs`. A neutral probe (a 429 or another
-  4xx) leaves it half-open, and the next request probes.
+- **Break duration:** `breakDurationMs` is a number (default 30 s) or a function called each time
+  the circuit opens with `{ failures, consecutiveOpens }` (`consecutiveOpens` is 1 the first time,
+  2 when the first probe fails, and so on), to back off while the service stays down:
+  `breakDurationMs: ({ consecutiveOpens }) => Math.min(300_000, 15_000 * 2 ** (consecutiveOpens - 1))`.
+  If the function throws or returns something other than a number of at least 0, 30 s is used.
+- **Half-open:** after the break duration, one request goes through as a probe, and others fail
+  fast while it is in flight, with `retryAfterMs` set to the rest of a break duration counted from
+  when the probe started. A probe still in flight after that no longer holds the circuit: the next
+  request probes as well (as in Polly). A successful probe closes the circuit. A failed probe opens
+  it for another break duration. A neutral probe (a 429 or another 4xx) leaves it half-open, and
+  the next request probes.
+- **Manual control:** `breaker.isolate()` holds the circuit open, sending nothing and no probe,
+  until `breaker.reset()` (or `breaker.close()`), e.g. while the environment is in administration
+  mode. Requests then fail with `DataverseCircuitOpenError` without `retryAfterMs`;
+  `breaker.isolated` is `true` and `breaker.state` reads `"open"`. `reset()` also closes a circuit
+  that opened on its own, and forgets the failures.
 - **State:** `breaker.state` (`"closed"`, `"open"` or `"half-open"`), `breaker.consecutiveFailures`
-  and `onStateChange({ from, to, consecutiveFailures })` are there for telemetry. `breaker.reset()`
-  closes it. The state belongs to the instance: use one breaker per client (org).
+  and `onStateChange({ from, to, consecutiveFailures })` are there for telemetry. The state belongs
+  to the instance: use one breaker per client (org).
+- **Telemetry:** each change goes to the client's `telemetry` as the event
+  `dataverse.circuit.state` (`TelemetryEvents.circuitState`), with `circuit.state` (`closed`,
+  `open`, `half-open` or `isolated`), `circuit.previous_state`, `circuit.reason`
+  (`failure_threshold`, `failure_ratio`, `probe_failed`, `probe_succeeded`, `break_elapsed`,
+  `isolate` or `reset`) and `circuit.mode`, and the measurements `circuit.failures`,
+  `circuit.break_ms` (when it opens) and `circuit.throughput` (ratio mode). `isolate()` and
+  `reset()` report through the telemetry client of the last request the breaker saw.
+- **Testing:** `now: () => number` replaces the breaker's clock (`Date.now()`) for everything it
+  times: break durations, the sampling window and `retryAfterMs`. Move your own clock forward
+  instead of using fake timers.
 
 **Bulkhead** (`BulkheadMiddleware`):
 
@@ -1535,6 +1630,7 @@ active span, injected with your registered propagator.
 | `dataverse.concurrency.wait`  | A request waited for a concurrency slot                   | `request.method`, `request.url` / `wait_ms`, `concurrency.limit`, `concurrency.queued`                                                                                              |
 | `dataverse.concurrency.limit` | `x-ms-dop-hint` changed the concurrency limit             | `concurrency.limit`, `concurrency.previous_limit`, `dop_hint`                                                                                                                       |
 | `dataverse.batch`             | A `$batch` came back (`@mohsinonxrm/dataverse-sdk-batch`) | `batch.continue_on_error` / `batch.requests`, `batch.succeeded`, `batch.failed`, `duration_ms`, `status`                                                                            |
+| `dataverse.circuit.state`     | A `CircuitBreakerMiddleware` changed state                | `circuit.state`, `circuit.previous_state`, `circuit.reason`, `circuit.mode` / `circuit.failures`, `circuit.break_ms`, `circuit.throughput`                                          |
 
 A request with `{ type: "telemetry", disable: true }` sends none of them.
 `client.trackEvent(name, props, measurements)` sends your own event to the client's telemetry,

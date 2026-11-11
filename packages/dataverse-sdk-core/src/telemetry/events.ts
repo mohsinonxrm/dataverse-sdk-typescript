@@ -39,4 +39,14 @@ export const TelemetryEvents = {
    * `batch.succeeded` and `batch.failed` are absent when the batch failed as a whole.
    */
   batch: "dataverse.batch",
+  /**
+   * A `CircuitBreakerMiddleware` changed state. Properties: `circuit.state` (`closed`, `open`,
+   * `half-open` or `isolated`), `circuit.previous_state`, `circuit.reason` (`failure_threshold`,
+   * `failure_ratio`, `probe_failed`, `probe_succeeded`, `break_elapsed`, `isolate` or `reset`),
+   * `circuit.mode` (`consecutive` or `ratio`); `correlation.id` is the request's that caused the
+   * change (empty for `isolate()` and `reset()`, which report through the last request's
+   * telemetry client). Measurements: `circuit.failures` (in a row, or in the sampling window in
+   * ratio mode), `circuit.break_ms` (when it opens), `circuit.throughput` (ratio mode).
+   */
+  circuitState: "dataverse.circuit.state",
 } as const;

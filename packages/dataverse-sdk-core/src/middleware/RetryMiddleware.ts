@@ -4,7 +4,9 @@ import { resolveDiagnosticHeaders } from "../utils/diagnosticHeaders.js";
 import type {
   DataverseClientOptions,
   RetryAttempt,
+  RetryBackoff,
   RetryOptions,
+  ShouldRetryInfo,
 } from "../abstractions/options.js";
 import { DataverseNetworkError } from "../errors/NamedErrors.js";
 import { withJitter } from "../utils/jitter.js";
@@ -43,7 +45,9 @@ const DEFAULTS = {
   maxRetries: 6,
   baseDelayMs: 3000,
   maxDelayMs: 30000,
-  jitter: true,
+  backoff: "exponential" as RetryBackoff,
+  jitter: true as boolean | "decorrelated",
+  retryAfterJitterMs: 0,
   retryableStatusCodes: [429, 502, 503, 504],
   retryNonIdempotent: false,
 };
@@ -69,6 +73,8 @@ export class RetryMiddleware implements Middleware {
 
     let attempt = 0;
     const history: RetryAttempt[] = [];
+    // Decorrelated jitter carries a value from one delay to the next, per request (as Polly does).
+    const backoff: BackoffState = { prev: 0 };
     const telemetry = requestTelemetry(this.options, ctx);
     /** Record the attempt, tell telemetry and `onRetry`, then wait. */
     const waitBeforeRetry = async (entry: RetryAttempt, delayMs: number) => {
@@ -132,8 +138,10 @@ export class RetryMiddleware implements Middleware {
       try {
         res = await next(request, ctx);
       } catch (err) {
-        if (attempt >= opt.maxRetries || !this.shouldRetryError(err, request, opt)) throw err;
-        const delay = computeBackoff(opt, attempt);
+        if (attempt >= opt.maxRetries || !this.shouldRetryError(err, request, opt, attempt)) {
+          throw err;
+        }
+        const delay = computeBackoff(opt, attempt, backoff);
         // Waiting would only end in a timeout: report the network error itself (#471).
         if (endsAfterDeadline(ctx, delay)) throw err;
         ctx.logger?.debug("Retrying request after a network error", {
@@ -155,7 +163,7 @@ export class RetryMiddleware implements Middleware {
       // shouldRetry (or retryableStatusCodes) picks the statuses worth retrying; the method checks
       // below still apply to them, so a custom shouldRetry never replays a create (#469).
       const retryable = opt.shouldRetry
-        ? opt.shouldRetry(res.status)
+        ? opt.shouldRetry(res.status, undefined, { request, response: res, attempt })
         : opt.retryableStatusCodes.includes(res.status);
       if (!retryable) {
         return done(res);
@@ -197,7 +205,12 @@ export class RetryMiddleware implements Middleware {
         });
         return done(res);
       }
-      const delay = retryAfterMs ?? computeBackoff(opt, attempt);
+      // Decorrelated jitter moves on even when Retry-After decides the wait, as in Polly.
+      const computed =
+        retryAfterMs === undefined || opt.jitter === "decorrelated"
+          ? computeBackoff(opt, attempt, backoff)
+          : 0;
+      let delay = retryAfterMs ?? computed;
       if (endsAfterDeadline(ctx, delay)) {
         // The request would time out while waiting: hand the response back now, so a 429 becomes
         // DataverseThrottleError with retryAfterMs instead of a RequestTimeout later (#471).
@@ -206,6 +219,15 @@ export class RetryMiddleware implements Middleware {
           statusCode: res.status,
         });
         return done(res);
+      }
+      if (retryAfterMs !== undefined) {
+        // Up to retryAfterJitterMs more, so requests throttled together don't wake together; never
+        // so much that the wait ends after the deadline.
+        const room = Math.min(
+          opt.retryAfterJitterMs,
+          (ctx.deadline ?? Infinity) - Date.now() - delay - 1
+        );
+        if (room > 0) delay += Math.round(Math.random() * room);
       }
 
       ctx.logger?.debug("Retrying request", {
@@ -223,14 +245,30 @@ export class RetryMiddleware implements Middleware {
     }
   }
 
-  private shouldRetryError(err: unknown, request: RequestInformation, opt: ResolvedOptions) {
+  private shouldRetryError(
+    err: unknown,
+    request: RequestInformation,
+    opt: ResolvedOptions,
+    attempt: number
+  ) {
     // Never retry what the caller cancelled, or a request that ran out of time.
     if (request.signal?.aborted) return false;
-    if (!(err instanceof DataverseNetworkError) || err.name !== "ConnectionFailed") return false;
+    if (!(err instanceof DataverseNetworkError)) return false;
+    const info: ShouldRetryInfo = { request, attempt };
+    if (err.name === "RequestTimeout") {
+      // The request's signal is still live, so only this attempt's attemptTimeoutMs ran out. Like
+      // a dropped connection, it can come after Dataverse applied a create or an action.
+      return (
+        opt.retryAttemptTimeouts &&
+        (opt.shouldRetry?.(0, err, info) ?? true) &&
+        (opt.retryNonIdempotent || isIdempotent(request))
+      );
+    }
+    if (err.name !== "ConnectionFailed") return false;
     // shouldRetry decides whether network errors are retried at all; only retryNonIdempotent lets
     // it replay a create or an action, which may have been applied before the connection dropped.
     if (opt.shouldRetry) {
-      return opt.shouldRetry(0, err) && (opt.retryNonIdempotent || isIdempotent(request));
+      return opt.shouldRetry(0, err, info) && (opt.retryNonIdempotent || isIdempotent(request));
     }
     if (opt.retryNetworkErrors === false) return false;
     // Left unset, only idempotent requests are retried, even with `retryNonIdempotent`: a dropped
@@ -242,7 +280,7 @@ export class RetryMiddleware implements Middleware {
 }
 
 type ResolvedOptions = typeof DEFAULTS &
-  Pick<RetryOptions, "shouldRetry" | "onRetry" | "retryNetworkErrors"> & {
+  Pick<RetryOptions, "shouldRetry" | "onRetry" | "retryNetworkErrors" | "retryAttemptTimeouts"> & {
     maxRetryAfterMs: number;
   };
 
@@ -256,10 +294,39 @@ function resolveOptions(client?: RetryOptions, perRequest?: RetryOptions): Resol
   return { ...merged, maxRetryAfterMs: merged.maxRetryAfterMs ?? merged.maxDelayMs };
 }
 
-/** `min(maxDelayMs, baseDelayMs * 2^attempt)`, with ±20% jitter when enabled. */
-function computeBackoff(opt: ResolvedOptions, attempt: number): number {
-  const v = Math.min(opt.maxDelayMs, opt.baseDelayMs * 2 ** attempt);
-  return opt.jitter ? Math.min(opt.maxDelayMs, withJitter(v)) : v;
+/** What decorrelated jitter carries from one delay to the next (Polly's `retryState`). */
+interface BackoffState {
+  prev: number;
+}
+
+/**
+ * The delay before retry `attempt` (0-based): `backoff` from `baseDelayMs`, capped at `maxDelayMs`,
+ * with ±20% jitter (`jitter: true`), or decorrelated jitter (`"decorrelated"` with exponential).
+ */
+function computeBackoff(opt: ResolvedOptions, attempt: number, state: BackoffState): number {
+  const { baseDelayMs: base, backoff, jitter, maxDelayMs: max } = opt;
+  if (jitter === "decorrelated" && backoff === "exponential") {
+    if (base <= 0) return 0;
+    // Polly v8's DecorrelatedJitterBackoffV2 (src/Polly.Core/Retry/RetryHelper.cs; the formula is
+    // George Polevoy's, from App-vNext/Polly#530): t = attempt + random(),
+    // next = 2^t * tanh(sqrt(4t)) (pFactor 4), delay = (next - prev) * (1 / 1.4) * baseDelayMs
+    // (rpScalingFactor), then prev = next. Medians fall near baseDelayMs * 2^attempt.
+    const t = attempt + Math.random();
+    const next = 2 ** t * Math.tanh(Math.sqrt(4 * t));
+    const delay = (next - state.prev) * (1 / 1.4) * base;
+    state.prev = next;
+    // From t = 1024, next is Infinity (and the delay Infinity or NaN): the cap applies, as in Polly.
+    return delay < max ? Math.floor(delay) : max;
+  }
+  const v = Math.min(
+    max,
+    backoff === "constant"
+      ? base
+      : backoff === "linear"
+        ? base * (attempt + 1)
+        : base * 2 ** attempt
+  );
+  return jitter ? Math.min(max, withJitter(v)) : v;
 }
 
 /** Whether waiting `delayMs` from now would end after the request's `timeoutMs` deadline. */

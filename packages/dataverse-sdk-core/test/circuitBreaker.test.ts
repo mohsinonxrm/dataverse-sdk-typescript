@@ -190,10 +190,13 @@ describe("#343: CircuitBreakerMiddleware", () => {
     await vi.waitFor(() => {
       expect(calls()).toBe(3);
     });
-    // While the probe is in flight, others fail fast with no retryAfterMs.
+    // While the probe is in flight, others fail fast; retryAfterMs is the rest of the probe's hold
+    // (one break duration from when it started, #476).
     const other = await get();
     expect(other).toBeInstanceOf(DataverseCircuitOpenError);
-    expect((other as DataverseCircuitOpenError).retryAfterMs).toBeUndefined();
+    const retryAfterMs = (other as DataverseCircuitOpenError).retryAfterMs ?? 0;
+    expect(retryAfterMs).toBeGreaterThan(0);
+    expect(retryAfterMs).toBeLessThanOrEqual(1000);
 
     release();
     expect(await probe).toBe("ok");

@@ -947,17 +947,22 @@ const client = new DataverseClient({
     maxRetries: 5, // default 6
     baseDelayMs: 1000, // default 3000; the backoff doubles per retry
     maxDelayMs: 30000, // default 30000
-    jitter: true, // default true (±20% on the computed backoff)
+    backoff: "exponential", // default; or "linear", "constant"
+    jitter: true, // default true (±20% on the computed backoff); or false, "decorrelated"
+    retryAfterJitterMs: 0, // default 0; up to this many ms added to each Retry-After wait
   },
 });
 ```
 
-`Retry-After` is waited out as sent when it's at most `maxRetryAfterMs` (default: `maxDelayMs`)
-and ends before the request's `timeoutMs`; otherwise the 429 is returned to you at once as a
-`DataverseThrottleError` with `retryAfterMs`. `shouldRetry` picks which statuses to retry; only
-`retryNonIdempotent` lets a create or an action be replayed after a 5xx. See the
+`Retry-After` is waited out as sent (plus up to `retryAfterJitterMs`) when it's at most
+`maxRetryAfterMs` (default: `maxDelayMs`) and ends before the request's `timeoutMs`; otherwise the
+429 is returned to you at once as a `DataverseThrottleError` with `retryAfterMs`. `shouldRetry`
+picks which statuses to retry; only `retryNonIdempotent` lets a create or an action be replayed
+after a 5xx. See the
 [core README](../packages/dataverse-sdk-core/README.md#retry-with-exponential-backoff) for
-`retryableStatusCodes`, `retryNonIdempotent`, `retryNetworkErrors`, `shouldRetry` and `onRetry`.
+`jitter: "decorrelated"`, `retryableStatusCodes`, `retryNonIdempotent`, `retryNetworkErrors`,
+`retryAttemptTimeouts`, `shouldRetry` and `onRetry`, and for the opt-in circuit breaker (by
+failures in a row, or by failure ratio).
 
 ### Type Safety
 

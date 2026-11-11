@@ -15,7 +15,10 @@ export interface RequestInformation {
    * response is returned at once.
    */
   timeoutMs?: number;
-  /** Time limit for each attempt, in ms. A timed-out attempt is not retried. */
+  /**
+   * Time limit for each attempt, in ms. A timed-out attempt is not retried, unless the retry
+   * option `retryAttemptTimeouts` is on (idempotent requests only).
+   */
   attemptTimeoutMs?: number;
   /**
    * When a time limit the caller enforces itself (through `signal`) runs out, in ms since the
