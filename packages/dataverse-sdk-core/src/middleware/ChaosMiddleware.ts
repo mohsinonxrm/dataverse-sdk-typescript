@@ -214,7 +214,7 @@ export class ChaosMiddleware implements Middleware {
   ): Promise<Response> {
     const requestIndex = this.seen++;
     if (!this.isEnabled(request, ctx)) return next(request, ctx);
-    const perRequest: ChaosRequestOptions | undefined = ctx.middlewareOptions?.get("chaos");
+    const perRequest = ctx.middlewareOptions?.get("chaos");
     if (perRequest?.disable) return next(request, ctx);
     const fault =
       perRequest?.fault ?? this.pick(request, { requestIndex, attempt: ctx.attempt ?? 0 });

@@ -832,6 +832,44 @@ const inspector: Middleware = {
 - Middleware can access attempt number via `ctx.attempt` (for retry scenarios)
 - Middleware can short-circuit by not calling `next()` (return early response)
 
+#### Per-request middleware options
+
+`middlewareOptions` (on `send()`, `execute()` and every builder terminal) takes a
+`MiddlewareRequestOptions` with one entry per middleware `type`. Each built-in middleware reads
+its own entry, and the entries are type-checked: a misspelt or mistyped field of a built-in entry
+is a compile error. Any other `type` is for your own middleware and takes any fields.
+
+```typescript
+import { MiddlewareRequestOptions } from "@mohsinonxrm/dataverse-sdk-core";
+
+await client.api("accounts").get({
+  middlewareOptions: new MiddlewareRequestOptions([
+    { type: "retry", maxRetries: 0 },
+    { type: "concurrency", bypass: true },
+    { type: "chaos", disable: true },
+    { type: "audit", tag: "nightly" }, // your own middleware
+  ]),
+});
+
+// In middleware: typed for the built-in types, MiddlewareOptions for your own
+const chaos = ctx.middlewareOptions?.get("chaos"); // ChaosRequestOptions | undefined
+```
+
+| `type`                 | Options type                       | Fields                                                                                                        |
+| ---------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `"retry"`              | `RetryOptions`                     | Any of the client's `retry` settings, for this request (`maxRetries`, `baseDelayMs`, `shouldRetry`, ...)      |
+| `"concurrency"`        | `MiddlewareConcurrencyOptions`     | `bypass`: send without waiting for a concurrency slot                                                         |
+| `"telemetry"`          | `TelemetryOptions`                 | `disable`: no diagnostic headers or telemetry; `customProperties`: added to the dependency                    |
+| `"logging"`            | `LoggingOptions`                   | `disable`: don't log the request; `logLevel`: a level other than `"debug"` silences it too (it logs at debug) |
+| `"chaos"`              | `ChaosRequestOptions`              | `disable`: never inject a fault; `fault`: always inject this one (while `enabled`)                            |
+| `"bulkhead"`           | `BulkheadRequestOptions`           | `category`: count the request in this category; `bypass`: no bulkhead slot                                    |
+| `"circuitBreaker"`     | `CircuitBreakerRequestOptions`     | `bypass`: send whatever the circuit's state (isolated included), and leave the outcome out of the count       |
+| `"adaptiveThrottling"` | `AdaptiveThrottlingRequestOptions` | `bypass`: don't wait for the spacing or a 429's pause, nor take a turn (the response still updates budgets)   |
+
+`BuiltInMiddlewareOptions` maps each built-in `type` to its options. `get`, `set`, `has` and
+`delete` take a `MiddlewareOptionKey`: a built-in type (your editor suggests them) or any other
+string. `set("chaos", { ... })` checks the options like the constructor does.
+
 ### Advanced Features
 
 #### Impersonation (MSCRMCallerID / CallerObjectId Headers)
@@ -1285,6 +1323,11 @@ throttle.status; // { requestsRemaining, requestBudget, timeRemaining, timeBudge
   handles the ones that come.
 - **Browsers:** Dataverse doesn't expose the two headers to CORS, so in a browser only the pause
   after a 429 applies (`Retry-After` is exposed).
+- **Per request:** `new MiddlewareRequestOptions([{ type: "adaptiveThrottling", bypass: true }])`
+  sends a request without waiting for the spacing or a 429's pause, and without taking a turn; its
+  response still updates the budgets.
+- **Testing:** `clock` (a `Clock`) replaces `Date.now()` and the waits, so a test can move time
+  without fake timers.
 
 #### Adaptive Concurrency
 
@@ -1429,9 +1472,13 @@ try {
   `isolate` or `reset`) and `circuit.mode`, and the measurements `circuit.failures`,
   `circuit.break_ms` (when it opens) and `circuit.throughput` (ratio mode). `isolate()` and
   `reset()` report through the telemetry client of the last request the breaker saw.
-- **Testing:** `now: () => number` replaces the breaker's clock (`Date.now()`) for everything it
-  times: break durations, the sampling window and `retryAfterMs`. Move your own clock forward
-  instead of using fake timers.
+- **Per request:** `new MiddlewareRequestOptions([{ type: "circuitBreaker", bypass: true }])`
+  sends a request whatever the circuit's state (isolated included), e.g. a health check, and
+  leaves its outcome out of the count.
+- **Testing:** `clock` (a `Clock`, e.g. the one you give `ChaosMiddleware`) or `now: () => number`
+  (which takes precedence) replaces the breaker's clock (`Date.now()`) for everything it times:
+  break durations, the sampling window and `retryAfterMs`. Move your own clock forward instead of
+  using fake timers.
 
 **Bulkhead** (`BulkheadMiddleware`):
 

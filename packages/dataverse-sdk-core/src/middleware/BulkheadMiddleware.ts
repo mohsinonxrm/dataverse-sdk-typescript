@@ -118,7 +118,7 @@ export class BulkheadMiddleware implements Middleware {
     ctx: MiddlewareContext,
     next: NextMiddleware
   ): Promise<Response> {
-    const perRequest: BulkheadRequestOptions | undefined = ctx.middlewareOptions?.get("bulkhead");
+    const perRequest = ctx.middlewareOptions?.get("bulkhead");
     if (perRequest?.bypass) return next(request, ctx);
     const category = perRequest?.category ?? this.categorize(request);
     const compartment = category === undefined ? undefined : this.compartment(category);
