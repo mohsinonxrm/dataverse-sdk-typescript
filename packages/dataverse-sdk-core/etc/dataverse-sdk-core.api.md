@@ -277,6 +277,7 @@ export class ConcurrencyMiddleware implements Middleware {
     constructor(options: DataverseClientOptions);
     // (undocumented)
     execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    get limit(): number;
     // (undocumented)
     name: string;
 }
@@ -286,7 +287,9 @@ export interface ConcurrencyOptions {
     adaptiveFromDopHint?: boolean;
     max?: number;
     maxConcurrentRequests?: number;
+    maxQueue?: number;
     min?: number;
+    reduceOnThrottle?: boolean;
 }
 
 // @public
@@ -369,8 +372,8 @@ export interface DataverseBatchPartError {
 }
 
 // @public
-export class DataverseBulkheadRejectedError extends DataverseError {
-    constructor(message: string, category: string);
+export class DataverseBulkheadRejectedError extends DataverseQueueFullError {
+    constructor(message: string, category: string, details?: DataverseQueueFullDetails);
     readonly category: string;
 }
 
@@ -404,6 +407,7 @@ export class DataverseClient {
 
 // @public (undocumented)
 export interface DataverseClientOptions {
+    adaptiveThrottling?: AdaptiveThrottlingMiddleware;
     allowedTokenOrigins?: string[];
     apiVersion?: ApiVersion;
     // (undocumented)
@@ -508,6 +512,27 @@ export class DataverseNetworkError extends DataverseError {
 export class DataverseODataError extends DataverseError {
     constructor(message: string, init?: ConstructorParameters<typeof DataverseError>[1]);
 }
+
+// @public
+export interface DataverseQueueFullDetails {
+    inFlight: number;
+    limit: number;
+    maxQueue: number;
+    queued: number;
+}
+
+// @public
+export class DataverseQueueFullError extends DataverseError {
+    constructor(message: string, queue: DataverseQueueName, details: DataverseQueueFullDetails);
+    readonly inFlight: number;
+    readonly limit: number;
+    readonly maxQueue: number;
+    readonly queue: DataverseQueueName;
+    readonly queued: number;
+}
+
+// @public
+export type DataverseQueueName = "concurrency" | "bulkhead";
 
 // @public (undocumented)
 export class DataverseRequestBuilder {
@@ -1159,6 +1184,7 @@ export const TelemetryEvents: {
     readonly batch: "dataverse.batch";
     readonly circuitState: "dataverse.circuit.state";
     readonly chaosInjected: "dataverse.chaos.injected";
+    readonly throttleDelay: "dataverse.throttle.delay";
 };
 
 // @public

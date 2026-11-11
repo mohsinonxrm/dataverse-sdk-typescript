@@ -3,6 +3,8 @@ import type { MiddlewareContext, RequestInformation } from "../abstractions/http
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 import { parseRetryAfter } from "../utils/HeaderUtils.js";
 import { sleep } from "../utils/sleep.js";
+import { TelemetryEvents } from "../telemetry/events.js";
+import { requestTelemetry } from "../utils/telemetry.js";
 
 /** Remaining number of requests, per web server and user, in the 5-minute window. */
 const REQUESTS_HEADER = "x-ms-ratelimit-burst-remaining-xrm-requests";
@@ -118,9 +120,16 @@ class Budget {
  * requests, up to `maxSpacingMs` apart when a budget is used up. After a 429 with `Retry-After`,
  * it holds every new request until the wait has passed, not just the one that was throttled.
  *
- * Opt-in: it isn't part of the default pipeline. Add it with `middleware.append`, so it sees
- * every attempt's response, 429s included. Use one instance per client: the budgets belong to the
- * user the client signs in as.
+ * Opt-in: it isn't part of the default pipeline. Turn it on with the client's `adaptiveThrottling`
+ * option, which places it inside Retry (so it sees every attempt's response, 429s included) and
+ * outside Concurrency (so a request it holds back holds no concurrency slot and no access token,
+ * and the wait isn't counted in the attempt's dependency duration). Each wait is reported as a
+ * `dataverse.throttle.delay` telemetry event. Use one instance per client: the budgets belong to
+ * the user the client signs in as.
+ *
+ * Added with `middleware.append` instead (how it was added before `adaptiveThrottling` existed), it
+ * still works, but runs inside the concurrency slot; the client logs a warning once recommending
+ * the option.
  *
  * Microsoft documents the headers as being for debugging, not for controlling how many requests
  * to send. Each web server of an environment counts on its own, and without the affinity cookie
@@ -131,19 +140,13 @@ class Budget {
  *
  * @example
  * ```typescript
- * const client = new DataverseClient({
- *   baseUrl,
- *   tokenProvider,
- *   middleware: {
- *     append: [
- *       new AdaptiveThrottlingMiddleware({
- *         threshold: 0.2,
- *         maxSpacingMs: 2000,
- *         onDelay: ({ delayMs, reason }) => console.log(`Holding a request ${delayMs} ms (${reason})`),
- *       }),
- *     ],
- *   },
+ * const throttling = new AdaptiveThrottlingMiddleware({
+ *   threshold: 0.2,
+ *   maxSpacingMs: 2000,
+ *   onDelay: ({ delayMs, reason }) => console.log(`Holding a request ${delayMs} ms (${reason})`),
  * });
+ * const client = new DataverseClient({ baseUrl, tokenProvider, adaptiveThrottling: throttling });
+ * console.log(throttling.status.pressure);
  * ```
  */
 export class AdaptiveThrottlingMiddleware implements Middleware {
@@ -218,6 +221,17 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
         reason,
         pressure,
       });
+      // The client's telemetry (the context carries it); the URL is left out, as this middleware
+      // can't know the client's redactUrl: the correlation id links the wait to the request.
+      requestTelemetry({}, ctx)?.trackEvent(
+        TelemetryEvents.throttleDelay,
+        {
+          "correlation.id": ctx.correlationId ?? "",
+          "request.method": request.method,
+          "throttle.reason": reason,
+        },
+        { delay_ms: delayMs, "throttle.pressure": pressure }
+      );
       await sleep(delayMs, request.signal);
     }
 

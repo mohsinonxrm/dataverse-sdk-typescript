@@ -74,6 +74,12 @@ export {
   DataverseBulkheadRejectedError,
   DataverseCircuitOpenError,
 } from "./errors/DataverseResilienceErrors.js";
+// A full concurrency or bulkhead queue (#477).
+export {
+  DataverseQueueFullError,
+  type DataverseQueueFullDetails,
+  type DataverseQueueName,
+} from "./errors/DataverseQueueFullError.js";
 
 export {
   DataverseAuthenticationError,

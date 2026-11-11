@@ -265,6 +265,26 @@ export interface ConcurrencyOptions {
    * @default `maxConcurrentRequests` when that is set, otherwise 16
    */
   max?: number;
+  /**
+   * Halve the limit (not below `min`) when Dataverse answers 429 with error `0x80072326`, its
+   * service protection limit on concurrent requests per user. One burst of such 429s halves it
+   * once: only a request sent after the last halving can halve it again. The limit stays down
+   * until the 429's `Retry-After` has passed; then the next `x-ms-dop-hint` sets it again (as
+   * usual), or, without a readable hint (browsers, `adaptiveFromDopHint: false`), each successful
+   * response raises it by 1 back to where it was. The other 429s (`0x80072322` requests,
+   * `0x80072321` execution time) leave the limit alone: they are about volume, not concurrency.
+   * @default true
+   */
+  reduceOnThrottle?: boolean;
+  /**
+   * Most requests waiting for a slot. A request beyond it is refused at once, without being
+   * sent, with `DataverseQueueFullError` (`queue: "concurrency"`). `0` refuses every request over
+   * the limit instead of queueing it. Unbounded by default; on a server, set a bound so a burst of
+   * work can't pile up waiting requests (and their memory) without limit, and answer the refused
+   * ones with a 503 or a retry later.
+   * @default Infinity
+   */
+  maxQueue?: number;
 }
 
 /**
@@ -364,6 +384,17 @@ export interface DataverseClientOptions {
   diagnosticHeaders?: boolean | DiagnosticHeaderOptions;
   retry?: RetryOptions;
   concurrency?: ConcurrencyOptions;
+  /**
+   * Slow requests down before Dataverse throttles them, from its service-protection headers, and
+   * hold every new request while a 429's `Retry-After` runs:
+   * `adaptiveThrottling: new AdaptiveThrottlingMiddleware({ ... })` (one instance per client). It
+   * runs inside Retry, so it sees each attempt's response, and outside Concurrency, so a request
+   * it holds back holds no concurrency slot and no access token, and the wait isn't part of the
+   * attempt's dependency duration. Each wait is a `dataverse.throttle.delay` telemetry event. An
+   * instance rather than settings, so clients that don't use it don't bundle it.
+   * @default none (off)
+   */
+  adaptiveThrottling?: import("../middleware/AdaptiveThrottlingMiddleware.js").AdaptiveThrottlingMiddleware;
   /** Headers added to every request. A header the request sets itself wins. */
   defaultHeaders?: Record<string, string>;
   /**
@@ -374,9 +405,12 @@ export interface DataverseClientOptions {
   defaultPrefer?: PreferOption[];
   /**
    * Customise the middleware pipeline. The defaults run in this order: ODataHeaders, Retry,
-   * Concurrency, Auth (when a token provider is set), Telemetry, Logging; then the request goes
-   * to `fetch`. Retry wraps Concurrency, so each attempt takes a concurrency slot and releases it
-   * before a retry wait. `replace` receives that list and returns the one to use (for example without
+   * AdaptiveThrottling (when `adaptiveThrottling` is set), Concurrency, Auth (when a token
+   * provider is set), Telemetry, Logging; then the request goes to `fetch`. Retry wraps
+   * Concurrency, so each attempt takes a concurrency slot and releases it before a retry wait.
+   * Add `AdaptiveThrottlingMiddleware` with the `adaptiveThrottling` option rather than here:
+   * appended, it runs inside the concurrency slot, so its waits hold a slot and an access token
+   * (the client logs a warning once). `replace` receives that list and returns the one to use (for example without
    * Logging); then `prepend` runs first and `append` runs last, right before `fetch`, so it sees
    * the final headers including `authorization`.
    */

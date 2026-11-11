@@ -28,8 +28,11 @@ export const TelemetryEvents = {
    */
   concurrencyWait: "dataverse.concurrency.wait",
   /**
-   * The concurrency limit changed because of an `x-ms-dop-hint` response header. Measurements:
-   * `concurrency.limit`, `concurrency.previous_limit`, `dop_hint`.
+   * The concurrency limit changed. Properties: `concurrency.reason`: `dop_hint` (an
+   * `x-ms-dop-hint` response header), `throttle` (halved after a 429 with error `0x80072326`, too
+   * many concurrent requests; see `concurrency.reduceOnThrottle`) or `recovery` (raised one step
+   * after such a halving, when no hint is readable). Measurements: `concurrency.limit`,
+   * `concurrency.previous_limit`, and `dop_hint` when the response had one.
    */
   concurrencyLimit: "dataverse.concurrency.limit",
   /**
@@ -58,4 +61,12 @@ export const TelemetryEvents = {
    * `chaos.delay_ms` (a fault's `delayMs`).
    */
   chaosInjected: "dataverse.chaos.injected",
+  /**
+   * `AdaptiveThrottlingMiddleware` held a request back before sending it (the same moment its
+   * `onDelay` runs). Properties: `request.method`, `throttle.reason` (`pressure`: a
+   * service-protection budget is low; `retry-after`: a 429's pause is in force). No `request.url`:
+   * use `correlation.id` to find the request. Measurements: `delay_ms`, `throttle.pressure` (0 to
+   * 1).
+   */
+  throttleDelay: "dataverse.throttle.delay",
 } as const;
