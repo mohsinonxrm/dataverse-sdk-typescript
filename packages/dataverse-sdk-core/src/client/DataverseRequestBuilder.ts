@@ -27,6 +27,8 @@ import {
 } from "../fetchxml/page.js";
 import { buildSingleGetBatch, readSingleBatchResponse } from "../fetchxml/singleGetBatch.js";
 import { PreferBuilder } from "./PreferBuilder.js";
+import type { DataverseHeaders, DataverseHeaderValue } from "./headers.js";
+import { hasErrorCode, type DataverseErrorCode } from "../errors/errorCodes.js";
 import { formatExpand, type ExpandOptions } from "../odata/expand.js";
 import { odataKey, type ODataKey } from "../odata/literal.js";
 import {
@@ -128,7 +130,15 @@ export class DataverseRequestBuilder {
     return this;
   }
 
-  header(name: string, value: string): this {
+  /**
+   * Set a request header (names are case-insensitive; a later call for the same name wins). For
+   * a header in `DataverseHeaders` the editor completes the documented values:
+   * `.header(DataverseHeaders.BypassBusinessLogicExecution, "CustomSync")`.
+   */
+  header<TName extends DataverseHeaders | (string & {})>(
+    name: TName,
+    value: DataverseHeaderValue<TName>
+  ): this {
     this.headers[name.toLowerCase()] = value;
     return this;
   }
@@ -807,9 +817,6 @@ export class DataverseRequestBuilder {
   }
 }
 
-/** Dataverse's error code for "a duplicate of the current record already exists". */
-const DUPLICATE_RECORD = "0x80040333";
-
 /**
  * The duplicate-detection details in a 412 body, or undefined when the 412 is something else.
  * Dataverse sends `{ error: { code: "0x80040333", message } }`; `innererror.duplicaterecords` and
@@ -833,8 +840,8 @@ function duplicateDetails(
   const records = Array.isArray(inner.duplicaterecords)
     ? (inner.duplicaterecords as DuplicateRecord[])
     : undefined;
-  const code = typeof e.code === "string" ? e.code.toLowerCase() : "";
-  if (code !== DUPLICATE_RECORD && !records) return undefined;
+  // DuplicateRecordsFound: "a duplicate of the current record already exists".
+  if (!hasErrorCode(e, "0x80040333" satisfies DataverseErrorCode) && !records) return undefined;
   return {
     message: typeof e.message === "string" ? e.message : "Duplicate records detected",
     duplicates: records ?? [],

@@ -216,7 +216,7 @@ const accountData = {
 
 const response = await client
   .api("/accounts")
-  .header("Prefer", "return=representation")
+  .prefer(Prefer.returnRepresentation())
   .post<{ accountid: string }>(accountData);
 
 const accountId = response.accountid;

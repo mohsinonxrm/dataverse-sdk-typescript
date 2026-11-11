@@ -90,7 +90,20 @@ export {
   DataverseServiceError,
   DataverseNetworkError,
   DataverseAbortError,
+  type DataverseAuthenticationErrorName,
+  type DataverseInvalidRequestErrorName,
+  type DataverseServiceErrorName,
+  type DataverseNetworkErrorName,
 } from "./errors/NamedErrors.js";
+
+// Known Dataverse constants: error codes, request headers, Prefer annotation terms (#481).
+export { DataverseErrorCode, hasErrorCode } from "./errors/errorCodes.js";
+export {
+  DataverseHeaders,
+  type DataverseHeaderValue,
+  type DataverseHeaderValues,
+} from "./client/headers.js";
+export { Annotations, type AnnotationTerm } from "./client/annotations.js";
 
 export * from "./telemetry/FeatureUsageTracker.js";
 export { TelemetryEvents } from "./telemetry/events.js";

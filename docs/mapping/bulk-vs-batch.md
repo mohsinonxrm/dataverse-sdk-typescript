@@ -318,7 +318,7 @@ try {
 
 ```typescript
 import { CreateMultipleAction } from "@mohsinonxrm/dataverse-sdk-actions";
-import { DataverseError, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
+import { Annotations, DataverseError, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
 
 // An elastic table keeps the records that succeeded. Ask for the error details annotations, and
 // the error body says which records failed.
@@ -327,7 +327,7 @@ const readings = [
 ];
 try {
   await client.execute(new CreateMultipleAction("contoso_sensordatas", { Targets: readings }), {
-    prefer: [Prefer.includeAnnotations("Microsoft.PowerApps.CDS.ErrorDetails.*")],
+    prefer: [Prefer.includeAnnotations(Annotations.ErrorDetails)], // Microsoft.PowerApps.CDS.ErrorDetails.*
   });
 } catch (error) {
   if (error instanceof DataverseError) {

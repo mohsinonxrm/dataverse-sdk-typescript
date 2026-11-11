@@ -218,7 +218,7 @@ const account = {
 
 const newAccount = await client
   .api("/accounts")
-  .prefer(Prefer.returnRepresentation()) // or .header("Prefer", "return=representation")
+  .prefer(Prefer.returnRepresentation()) // Prefer: return=representation
   .post<{ accountid: string; name: string }>(account);
 
 console.log("Created account ID:", newAccount.accountid);

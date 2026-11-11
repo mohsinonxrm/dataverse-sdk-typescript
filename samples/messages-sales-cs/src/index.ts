@@ -39,6 +39,15 @@ import {
   PublishXmlResponse,
 } from "@mohsinonxrm/dataverse-sdk-messages";
 
+/**
+ * Choice values this sample uses, as `as const` objects (each value keeps its literal type; no
+ * TypeScript `enum`).
+ */
+const AccountState = { Active: 0, Inactive: 1 } as const;
+const AccountStatus = { Active: 1, Inactive: 2 } as const;
+const OpportunityState = { Open: 0, Won: 1, Lost: 2 } as const;
+const LeadState = { Open: 0, Qualified: 1, Disqualified: 2 } as const;
+
 // quiet: dotenv 17+ otherwise logs a line when it loads .env.
 config({ quiet: true });
 
@@ -201,8 +210,8 @@ async function setStateDemo(
   console.log("\nDeactivating account...");
 
   await orgService.update("accounts", accountId, {
-    statecode: 1, // Inactive
-    statuscode: 2, // Inactive
+    statecode: AccountState.Inactive,
+    statuscode: AccountStatus.Inactive,
   });
 
   console.log(chalk.green("✓ Account deactivated"));
@@ -214,7 +223,7 @@ async function setStateDemo(
     .get<{ name: string; statecode: number; statuscode: number }>();
   console.log(`\nVerified state:`);
   console.log(
-    `  State Code: ${chalk.yellow(String(account.statecode))} (${account.statecode === 1 ? "Inactive" : "Active"})`
+    `  State Code: ${chalk.yellow(String(account.statecode))} (${account.statecode === AccountState.Inactive ? "Inactive" : "Active"})`
   );
   console.log(`  Status Code: ${chalk.yellow(String(account.statuscode))}`);
 
@@ -317,7 +326,9 @@ async function winOpportunityDemo(
     .get<{ name: string; statecode: number; statuscode: number; actualvalue: number | null }>();
 
   console.log("\nVerified opportunity:");
-  console.log(`  State: ${chalk.yellow(opportunity.statecode === 1 ? "Won" : "Unknown")}`);
+  console.log(
+    `  State: ${chalk.yellow(opportunity.statecode === OpportunityState.Won ? "Won" : "Unknown")}`
+  );
   console.log(`  Status Code: ${chalk.yellow(String(opportunity.statuscode))}`);
   console.log(
     `  Actual Revenue: ${chalk.green("$" + String(opportunity.actualvalue?.toLocaleString()))}`
@@ -400,7 +411,7 @@ async function mergeDemo(orgService: OrganizationService, client: DataverseClien
     .api(`/leads(${subordinateId})`)
     .select("statecode")
     .get<{ statecode: number }>();
-  if (subordinate.statecode === 0) {
+  if (subordinate.statecode === LeadState.Open) {
     throw new Error("The subordinate lead is still open after the merge");
   }
   console.log(
@@ -573,7 +584,7 @@ async function genericRequestDemo(
     .api(`/opportunities(${opportunityId})`)
     .select("statecode", "statuscode")
     .get<{ statecode: number; statuscode: number }>();
-  if (opportunity.statecode !== 2) {
+  if (opportunity.statecode !== OpportunityState.Lost) {
     throw new Error(`The opportunity isn't lost (statecode ${String(opportunity.statecode)})`);
   }
   console.log(`  State: ${chalk.yellow("Lost")}, Status Code: ${String(opportunity.statuscode)}`);

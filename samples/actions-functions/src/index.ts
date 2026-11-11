@@ -34,6 +34,9 @@ import {
   createEntityReference,
 } from "@mohsinonxrm/dataverse-sdk-actions";
 
+/** Choice values this sample uses, as an `as const` object (no TypeScript `enum`). */
+const AccountState = { Active: 0, Inactive: 1 } as const;
+
 // quiet: dotenv 17+ otherwise logs a line when it loads .env.
 config({ quiet: true });
 
@@ -471,7 +474,7 @@ async function mergeDemo(client: DataverseClient): Promise<void> {
     .api(`/accounts(${subordinateId})`)
     .select("statecode")
     .get<{ statecode: number }>();
-  if (subordinate.statecode !== 1) {
+  if (subordinate.statecode !== AccountState.Inactive) {
     throw new Error(
       `The subordinate account is still active (statecode ${String(subordinate.statecode)})`
     );

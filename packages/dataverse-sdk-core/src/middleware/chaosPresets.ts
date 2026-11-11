@@ -1,4 +1,5 @@
 import type { ChaosFault } from "./ChaosMiddleware.js";
+import type { DataverseErrorCode } from "../errors/errorCodes.js";
 
 /** Options of `ChaosPresets.serviceProtection`. */
 export interface ServiceProtectionChaosOptions {
@@ -27,7 +28,7 @@ const SERVICE_PROTECTION = [
     code: "0x80072326",
     message: "Number of concurrent requests exceeded the limit of 52.",
   },
-] as const;
+] as const satisfies ReadonlyArray<{ code: DataverseErrorCode; message: string }>;
 
 /**
  * Sets of `ChaosMiddleware` faults that look like Dataverse failures, for `ChaosOptions.faults`.

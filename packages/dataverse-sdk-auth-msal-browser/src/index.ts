@@ -16,7 +16,11 @@ export {
   POPUP_BLOCKED_ERROR_CODES,
   MsalBrowserAuthenticationError,
 } from "./errors.js";
-export type { MsalErrorLike, MsalErrorDetails } from "./errors.js";
+export type {
+  MsalErrorLike,
+  MsalErrorDetails,
+  MsalBrowserAuthenticationErrorName,
+} from "./errors.js";
 export {
   initializeMsal,
   scopesForEnvironment,

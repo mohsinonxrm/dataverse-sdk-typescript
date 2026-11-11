@@ -8,7 +8,7 @@ import * as path from "node:path";
 import chalk from "chalk";
 import prompts from "prompts";
 import { PublicClientApplication } from "@azure/msal-node";
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { DiscoveryClient } from "@mohsinonxrm/dataverse-sdk-discovery";
 import { WhoAmIFunction } from "@mohsinonxrm/dataverse-sdk-functions";
@@ -173,7 +173,7 @@ async function createAccount(client: DataverseClient, accountName: string): Prom
 
     const response = await client
       .api("/accounts")
-      .header("Prefer", "return=representation")
+      .prefer(Prefer.returnRepresentation())
       .post<AccountRecord>(accountData);
 
     const accountId = response.accountid;
