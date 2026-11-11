@@ -274,9 +274,9 @@ describe("spa-fluentui-v9", () => {
     expect(await problems(session)).toEqual([]);
   });
   it("serves the app's routes from index.html (the SPA fallback)", async () => {
-    const session = await open("/docs");
+    const session = await open("/documentation");
     await startDemo(session.page, "Documentation");
-    expect(new URL(session.page.url()).pathname).toBe("/docs");
+    expect(new URL(session.page.url()).pathname).toBe("/documentation");
     expect(await problems(session)).toEqual([]);
   });
 
