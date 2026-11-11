@@ -1535,6 +1535,7 @@ active span, injected with your registered propagator.
 | `dataverse.concurrency.wait`  | A request waited for a concurrency slot                   | `request.method`, `request.url` / `wait_ms`, `concurrency.limit`, `concurrency.queued`                                                                                              |
 | `dataverse.concurrency.limit` | `x-ms-dop-hint` changed the concurrency limit             | `concurrency.limit`, `concurrency.previous_limit`, `dop_hint`                                                                                                                       |
 | `dataverse.batch`             | A `$batch` came back (`@mohsinonxrm/dataverse-sdk-batch`) | `batch.continue_on_error` / `batch.requests`, `batch.succeeded`, `batch.failed`, `duration_ms`, `status`                                                                            |
+| `dataverse.chaos.injected`    | `ChaosMiddleware` injected a fault (dev and test only)    | `chaos.fault` (`status`, `network`, `latency`, `hang`), `request.method`, `error.type` / `retry.attempt`, `status`, `chaos.delay_ms`                                                |
 
 A request with `{ type: "telemetry", disable: true }` sends none of them.
 `client.trackEvent(name, props, measurements)` sends your own event to the client's telemetry,
@@ -1650,13 +1651,19 @@ pnpm --filter @mohsinonxrm/dataverse-sdk-core exec vitest  # Watch mode
 
 ### Fault Injection (ChaosMiddleware)
 
-To see how your app copes with throttling and outages, add `ChaosMiddleware` (modelled on the
-Microsoft Graph SDK's `ChaosHandler`). It answers some requests itself, with a fake 429 (with
-`Retry-After`), 502, 503 or 504, or fails them like a dropped connection, without sending them.
-It is never in the default pipeline; add it only in test or development builds.
+To see how your app copes with throttling, outages and slow responses, add `ChaosMiddleware`
+(modelled on the Microsoft Graph SDK's `ChaosHandler` and Polly's chaos strategies). It answers
+some requests itself, with a fake 429 (with `Retry-After`), 502, 503 or 504, fails them like a
+dropped connection without sending them, delays them, or never answers them.
+
+> **Dev and test environments only.** Chaos must never run in a live production environment.
+> Always set `enabled`, from something that is off in production (an environment variable, a
+> feature flag), so the same client setup can't fail real requests by accident. Without
+> `enabled` the middleware is on, as in 2.0, and logs a warning once through the client's
+> `logger`.
 
 ```typescript
-import { ChaosMiddleware, DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { ChaosMiddleware, ChaosPresets, DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 
 const client = new DataverseClient({
   baseUrl,
@@ -1665,8 +1672,10 @@ const client = new DataverseClient({
     // append: it runs last, so its faults go through retry, concurrency and telemetry like real ones
     append: [
       new ChaosMiddleware({
-        percentage: 20, // default 10
-        faults: [{ status: 429, retryAfterSeconds: 2 }, { status: 503 }, { status: "network" }],
+        // Off unless switched on: DATAVERSE_SDK_CHAOS=1 in a dev or test environment
+        enabled: process.env.DATAVERSE_SDK_CHAOS === "1",
+        percentage: 5, // default 10; keep it low
+        faults: [...ChaosPresets.serviceProtection(), { status: 503 }, { status: "network" }],
         match: /\/accounts/, // only requests whose URL matches (default: every request)
       }),
     ],
@@ -1675,15 +1684,40 @@ const client = new DataverseClient({
 
 // A script decides instead of the percentage: here, the first two attempts of each request fail.
 new ChaosMiddleware({
+  enabled: true, // e.g. in a unit test
   script: (request, { attempt }) => (attempt < 2 ? { status: 503 } : undefined),
 });
 ```
 
+- **On and off:** `enabled` is `true`, `false`, or a function of the request asked for each
+  attempt (a feature flag, a header, a percentage of users). While it is off (or the function
+  returns anything but `true`, or throws), every request goes through untouched, per-request
+  `fault`s included.
 - **Faults:** `{ status }` with any status from 200 to 599, plus optional `retryAfterSeconds`
   (default 1 for a 429), `headers` and `body` (default: a Dataverse error body; for a 429 the
   service-protection error `0x80072322`). `status: "network"` throws a `DataverseNetworkError`
   named `ConnectionFailed`, as `fetch` failing does. The default faults are 429 (`Retry-After: 1`),
   502, 503 and 504, picked at random.
+- **Slow and hanging requests:** `{ status: "latency", delayMs }` sends the request after
+  `delayMs`; `{ status: "hang" }` never answers, so the request ends only when its `signal`
+  aborts, `timeoutMs` passes (`RequestTimeout`) or `attemptTimeoutMs` passes (`RequestTimeout`
+  for that attempt). Both waits end at once when the request is aborted, and a delay of
+  `attemptTimeoutMs` or more times the attempt out, as a slow response would. `delayMs` on a
+  status or network fault makes it a slow failure. `clock` takes a fake clock for tests
+  (`Clock`: `now()` and `sleep(ms, signal)`; `systemClock` by default).
+- **Presets:** `ChaosPresets.serviceProtection({ retryAfterSeconds? })` (the three
+  service-protection 429s: `0x80072322` number of requests, `0x80072321` execution time,
+  `0x80072326` concurrent requests, each with `Retry-After` and Dataverse's error body),
+  `gatewayOutage()` (502, 503, 504), `flakyNetwork()` (dropped connections) and
+  `slowOrg({ delayMs? })` (latency, 2 s by default). Each returns `faults`; spread several into one
+  list.
+- **Rate:** the default `percentage` is 10 in 2.x. Polly's chaos strategies default to 0.1%; use a
+  low rate in a shared dev or test environment, and 100 (or a `script`) in a unit test.
+- **Telemetry:** each fault is tracked as a `dataverse.chaos.injected` event
+  (`TelemetryEvents.chaosInjected`), and the attempt's dependency (and its exception or
+  `dataverse.throttle` event) carries `chaos.injected: "true"` and `chaos.fault`, so dashboards
+  can filter injected faults out. `client.describePipeline()` lists the middleware in order, to
+  check where (and whether) the chaos middleware is.
 - **Choosing requests:** `percentage` (0 to 100) of the requests that pass `match` (a `RegExp`
   tested against the full URL, or a function of the request). A `script` replaces `percentage`
   and `faults`: it gets the request and `{ requestIndex, attempt }`, and returns a fault or
@@ -1691,6 +1725,11 @@ new ChaosMiddleware({
   about each fault.
 - **Per request:** `new MiddlewareRequestOptions([{ type: "chaos", disable: true }])` keeps a
   request clean; `{ type: "chaos", fault: { status: 504 } }` forces a fault on it (`ChaosRequestOptions`).
+
+**Planned for 3.0** (not in 2.x, which stays compatible): `enabled` defaults to off, so a
+`ChaosMiddleware` without it does nothing. Set `enabled` now and nothing changes for you then.
+
+See [Testing your app's resilience](../../docs/testing-resilience.md) for a walk-through.
 
 ## Bundle Size
 

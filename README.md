@@ -496,6 +496,7 @@ import {
   AdaptiveThrottlingMiddleware,
   BulkheadMiddleware,
   ChaosMiddleware,
+  ChaosPresets,
   CircuitBreakerMiddleware,
   DataverseClient,
 } from "@mohsinonxrm/dataverse-sdk-core";
@@ -515,10 +516,12 @@ const resilient = new DataverseClient({
   },
 });
 
-// In tests: answer 20% of the requests with a fake 429 or 503
+// Dev and test environments only, never production: switched on by DATAVERSE_SDK_CHAOS=1,
+// it answers 5% of the requests with a fake service-protection 429 or a 503
 const chaos = new ChaosMiddleware({
-  percentage: 20,
-  faults: [{ status: 429, retryAfterSeconds: 1 }, { status: 503 }],
+  enabled: process.env.DATAVERSE_SDK_CHAOS === "1",
+  percentage: 5,
+  faults: [...ChaosPresets.serviceProtection(), { status: 503 }],
 });
 ```
 

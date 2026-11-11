@@ -164,4 +164,12 @@ export interface MiddlewareContext {
    * Feature usage tracker for telemetry
    */
   featureTracker?: import("../telemetry/FeatureUsageTracker.js").FeatureUsageTracker;
+  /**
+   * Set by `ChaosMiddleware` when it injects a fault into the current attempt: which kind
+   * (`status` for a fake response, with its `status`; `network`, `latency` or `hang`). The
+   * telemetry middleware clears it before each attempt and, when it is set after the attempt,
+   * tags the attempt's dependency (and its exception or `dataverse.throttle` event) with
+   * `chaos.injected: "true"` and `chaos.fault`, so injected faults can be told from real ones.
+   */
+  chaos?: { fault: "status" | "network" | "latency" | "hang"; status?: number };
 }

@@ -39,4 +39,13 @@ export const TelemetryEvents = {
    * `batch.succeeded` and `batch.failed` are absent when the batch failed as a whole.
    */
   batch: "dataverse.batch",
+  /**
+   * `ChaosMiddleware` injected a fault into an attempt (dev and test environments only). The
+   * attempt's dependency, and its exception or `dataverse.throttle` event, carry
+   * `chaos.injected: "true"` and `chaos.fault` too. Properties: `chaos.fault` (`status`,
+   * `network`, `latency` or `hang`), `request.method`, `error.type` (`ConnectionFailed`) for a
+   * network fault. Measurements: `retry.attempt`, `status` (a fake response's status),
+   * `chaos.delay_ms` (a fault's `delayMs`).
+   */
+  chaosInjected: "dataverse.chaos.injected",
 } as const;

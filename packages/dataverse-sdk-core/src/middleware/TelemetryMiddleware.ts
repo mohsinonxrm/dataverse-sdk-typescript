@@ -88,25 +88,34 @@ export class TelemetryMiddleware implements Middleware {
       else delete request.headers.tracestate;
     }
 
+    // ChaosMiddleware (inside this one) marks the attempt it injects a fault into (#475).
+    ctx.chaos = undefined;
     let res: Response;
     try {
       res = await dependency.run(() => next(request, ctx));
     } catch (err) {
+      const chaos = chaosProperties(ctx);
       dependency.end({
         target,
         method,
         url,
         durationMs: Date.now() - start,
         success: false,
-        properties: { ...properties, "error.type": err instanceof Error ? err.name : "Unknown" },
+        properties: {
+          ...properties,
+          "error.type": err instanceof Error ? err.name : "Unknown",
+          ...chaos,
+        },
       });
       telemetry.trackException(err, {
         "correlation.id": correlationId,
         "request.method": method,
         "request.url": url,
+        ...chaos,
       });
       throw err;
     }
+    const chaos = chaosProperties(ctx);
     dependency.end({
       target,
       method,
@@ -115,7 +124,7 @@ export class TelemetryMiddleware implements Middleware {
       // A 304 (If-None-Match) or another 3xx is an answer, not a failure (#378).
       success: res.status < 400,
       resultCode: String(res.status),
-      properties,
+      properties: { ...properties, ...chaos },
     });
     if (res.status === 429) {
       await trackThrottle(telemetry, res, {
@@ -123,6 +132,7 @@ export class TelemetryMiddleware implements Middleware {
         "request.method": method,
         "request.url": url,
         attempt,
+        chaos,
       });
     }
     return res;
@@ -141,12 +151,20 @@ const THROTTLE_LIMITS: Record<string, string> = {
   "0x80072326": "concurrent_requests",
 };
 
+/** `chaos.injected` and `chaos.fault` when ChaosMiddleware injected a fault into the attempt. */
+function chaosProperties(ctx: MiddlewareContext): Record<string, string> {
+  return ctx.chaos ? { "chaos.injected": "true", "chaos.fault": ctx.chaos.fault } : {};
+}
+
 async function trackThrottle(
   telemetry: SafeTelemetry,
   res: Response,
-  info: Record<"correlation.id" | "request.method" | "request.url", string> & { attempt: number }
+  info: Record<"correlation.id" | "request.method" | "request.url", string> & {
+    attempt: number;
+    chaos: Record<string, string>;
+  }
 ): Promise<void> {
-  const { attempt, ...props } = info;
+  const { attempt, chaos, ...props } = info;
   const measurements: Record<string, number> = { "retry.attempt": attempt };
   const retryAfterMs = parseRetryAfter(res.headers.get("retry-after"));
   if (retryAfterMs !== undefined) measurements["retry.after_ms"] = retryAfterMs;
@@ -160,6 +178,7 @@ async function trackThrottle(
       ...props,
       ...(code !== undefined ? { "error.code": code } : {}),
       ...(limit !== undefined ? { "throttle.limit": limit } : {}),
+      ...chaos,
     },
     measurements
   );

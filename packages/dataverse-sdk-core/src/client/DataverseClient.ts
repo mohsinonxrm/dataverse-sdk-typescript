@@ -92,6 +92,15 @@ export class DataverseClient {
     return this.baseUrl;
   }
 
+  /**
+   * The `name` of each middleware in this client's pipeline, outermost first (the order a request
+   * goes through them), e.g. `["ODataHeadersMiddleware", "RetryMiddleware", …]`. For tests and
+   * support: check that a `ChaosMiddleware` is (or isn't) there, or where your own middleware sits.
+   */
+  describePipeline(): string[] {
+    return this.pipeline.describe();
+  }
+
   api(pathOrAbsoluteUrl: string): DataverseRequestBuilder {
     return new DataverseRequestBuilder(this, pathOrAbsoluteUrl);
   }
