@@ -398,15 +398,19 @@ complex type called `<Name>Output`) gets a suffix (`<Name>Output_2`).
 
 `"output": { "incremental": true }` regenerates only the tables whose metadata changed. A stamp
 file in the output folder, `.dataverse-gen-stamp.json`, records a hash of each table's schema model
-(its columns, lookups, constraints, labels, …), a hash of the settings every file depends on (the
-options, the templates and the names of the generated types), and the files the run wrote. On the
+(its columns, lookups, constraints, labels, …) and of the enums and complex types it uses, a hash of
+the settings every table depends on (the options, the templates and the names of the generated
+tables), and the files the run wrote. On the
 next run, a table whose hash is unchanged and whose files are still there is skipped: its
 `entities/<Entity>.ts` (and `forms/<Entity>Form.ts`) keep their content and timestamps, which
 keeps watchers, incremental builds and diffs quiet. The CLI prints the tables it kept;
 `generateCode()` returns them as `unchangedTables`.
 
-- A change of options, templates, generator version, or of which tables, enums and complex types
-  are generated regenerates every table.
+- A change of options, templates, generator version, or of which tables are generated regenerates
+  every table.
+- A change to an enum (a choice) or a complex type regenerates only the tables that use it. One
+  that no generated table uses, such as a global choice added to or removed from the org, doesn't
+  regenerate any table.
 - The files that aren't per table (enums, actions, functions, complex types, `metadata.ts`,
   indexes) are written on every run.
 - Files the previous run wrote that this one doesn't (a table removed from `entities`, an enum that
