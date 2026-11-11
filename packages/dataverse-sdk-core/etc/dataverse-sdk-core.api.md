@@ -173,9 +173,10 @@ export interface BulkheadRequestOptions extends MiddlewareOptions {
 // @public
 export interface ChaosFault {
     body?: unknown;
+    delayMs?: number;
     headers?: Record<string, string>;
     retryAfterSeconds?: number;
-    status: number | "network";
+    status: number | "network" | "latency" | "hang";
 }
 
 // @public
@@ -189,6 +190,8 @@ export class ChaosMiddleware implements Middleware {
 
 // @public
 export interface ChaosOptions {
+    clock?: Clock;
+    enabled?: boolean | ((request: RequestInformation) => boolean);
     faults?: readonly ChaosFault[];
     match?: RegExp | ((request: RequestInformation) => boolean);
     onFault?: (fault: ChaosFault, request: RequestInformation) => void;
@@ -196,6 +199,14 @@ export interface ChaosOptions {
     random?: () => number;
     script?: (request: RequestInformation, info: ChaosScriptInfo) => ChaosFault | undefined;
 }
+
+// @public
+export const ChaosPresets: {
+    serviceProtection(options?: ServiceProtectionChaosOptions): ChaosFault[];
+    gatewayOutage(): ChaosFault[];
+    flakyNetwork(): ChaosFault[];
+    slowOrg(options?: SlowOrgChaosOptions): ChaosFault[];
+};
 
 // @public
 export interface ChaosRequestOptions extends MiddlewareOptions {
@@ -239,6 +250,12 @@ export interface CircuitStateChange {
     from: CircuitState;
     // (undocumented)
     to: CircuitState;
+}
+
+// @public
+export interface Clock {
+    now(): number;
+    sleep(ms: number, signal?: AbortSignal): Promise<void>;
 }
 
 // @public (undocumented)
@@ -356,6 +373,7 @@ export class DataverseClient {
     api(pathOrAbsoluteUrl: string): DataverseRequestBuilder;
     bind(navigationProperty: string, entitySetName: string, id: ODataKey): Record<string, string>;
     changesSince<T = Record<string, unknown>>(deltaLink: string, options?: TrackChangesOptions): Promise<TrackedChanges<T>>;
+    describePipeline(): string[];
     // (undocumented)
     execute<T>(request: Executable<T>, options?: RequestOptions): Promise<T>;
     fetchXml<T = Record<string, unknown>>(entitySetName: string, fetchXml: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
@@ -795,6 +813,10 @@ export interface MiddlewareConcurrencyOptions extends MiddlewareOptions {
 // @public (undocumented)
 export interface MiddlewareContext {
     attempt?: number;
+    chaos?: {
+        fault: "status" | "network" | "latency" | "hang";
+        status?: number;
+    };
     // (undocumented)
     correlationId?: string;
     deadline?: number;
@@ -950,6 +972,7 @@ export function parseRetryAfter(retryAfter: string | null | undefined): number |
 // @public (undocumented)
 export class Pipeline {
     constructor(middleware: Middleware[]);
+    describe(): string[];
     // (undocumented)
     execute(request: RequestInformation, ctx: MiddlewareContext, terminal: (r: RequestInformation, c: MiddlewareContext) => Promise<Response>): Promise<Response>;
 }
@@ -1077,7 +1100,20 @@ export const SDK_VERSION: string;
 export function serializeContent(content: unknown): BodyInit;
 
 // @public
+export interface ServiceProtectionChaosOptions {
+    retryAfterSeconds?: number;
+}
+
+// @public
 export function setRequestHeader(headers: HeadersLike, key: string, value: string): HeadersLike;
+
+// @public
+export interface SlowOrgChaosOptions {
+    delayMs?: number;
+}
+
+// @public
+export const systemClock: Clock;
 
 // @public
 export interface TelemetryClient {
@@ -1094,6 +1130,7 @@ export const TelemetryEvents: {
     readonly concurrencyWait: "dataverse.concurrency.wait";
     readonly concurrencyLimit: "dataverse.concurrency.limit";
     readonly batch: "dataverse.batch";
+    readonly chaosInjected: "dataverse.chaos.injected";
 };
 
 // @public

@@ -11,6 +11,7 @@ export const guide = [
       ["docs/browser.md", "browser", "In the browser"],
       ["docs/migration-2.0.md", "migration-2.0", "Migrating to 2.0"],
       ["docs/SDK-USAGE-PATTERNS.md", "usage-patterns", "Usage patterns"],
+      ["docs/testing-resilience.md", "testing-resilience", "Testing your app's resilience"],
       ["docs/api/metadata-operations.md", "metadata-operations", "Metadata operations"],
       ["docs/samples/README.md", "samples", "Samples"],
       ["docs/site.md", "explorer-site", "The explorer site"],

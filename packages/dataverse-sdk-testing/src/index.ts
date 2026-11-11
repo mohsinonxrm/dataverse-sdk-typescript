@@ -14,9 +14,10 @@
  * expect(fake.last().headers["authorization"]).toBe("Bearer test-token");
  * ```
  */
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, systemClock } from "@mohsinonxrm/dataverse-sdk-core";
 import type {
   AccessTokenProvider,
+  Clock,
   DataverseClientOptions,
   FetchProvider,
 } from "@mohsinonxrm/dataverse-sdk-core";
@@ -266,12 +267,167 @@ export function odataError(
 
 /** A 429 service-protection response. */
 export function throttled(retryAfterSeconds: number): Response {
-  return odataError(
-    429,
-    "0x80072322",
-    "Number of requests exceeded the limit of 6000 over time window of 300 seconds.",
-    { "retry-after": String(retryAfterSeconds) }
-  );
+  return serviceProtectionError("requests", retryAfterSeconds);
+}
+
+/** Which service-protection limit a 429 reports. */
+export type ServiceProtectionLimit = "requests" | "execution_time" | "concurrent_requests";
+
+/**
+ * Error code and message of each service-protection limit, as Dataverse sends them: the same
+ * bodies as core's `ChaosPresets.serviceProtection()`.
+ */
+export const SERVICE_PROTECTION_ERRORS: Readonly<
+  Record<ServiceProtectionLimit, { code: string; message: string }>
+> = {
+  requests: {
+    code: "0x80072322",
+    message: "Number of requests exceeded the limit of 6000 over time window of 300 seconds.",
+  },
+  execution_time: {
+    code: "0x80072321",
+    message:
+      "Combined execution time of incoming requests exceeded limit of 1,200,000 milliseconds over time window of 300 seconds. Decrease number of concurrent requests or reduce the duration of requests and try again later.",
+  },
+  concurrent_requests: {
+    code: "0x80072326",
+    message: "Number of concurrent requests exceeded the limit of 52.",
+  },
+};
+
+/** A 429 for one of the three service-protection limits, with `Retry-After` (1 s by default). */
+export function serviceProtectionError(
+  limit: ServiceProtectionLimit,
+  retryAfterSeconds = 1
+): Response {
+  const { code, message } = SERVICE_PROTECTION_ERRORS[limit];
+  return odataError(429, code, message, { "retry-after": String(retryAfterSeconds) });
+}
+
+/** A gateway failure: 502, 503 or 504, with a Dataverse-style error body. */
+export function gatewayError(status: 502 | 503 | 504 = 503): Response {
+  const text = { 502: "Bad Gateway", 503: "Service Unavailable", 504: "Gateway Timeout" }[status];
+  return odataError(status, String(status), text);
+}
+
+/**
+ * Throw what `fetch` throws for a dropped connection (`TypeError: fetch failed`, caused by an
+ * `ECONNRESET`), so the SDK sees no response. Use it in a route: `fake.on("GET", "/x", connectionReset)`.
+ */
+export function connectionReset(): never {
+  throw new TypeError("fetch failed", {
+    cause: Object.assign(new Error("read ECONNRESET"), { code: "ECONNRESET" }),
+  });
+}
+
+/**
+ * A route that answers like `respond`, `ms` later on `clock` (a slow org). Like fetch, the fake
+ * still rejects at once when the request's signal aborts during the wait.
+ */
+export function slowResponse(
+  respond: Responder,
+  ms: number,
+  clock: Clock = systemClock
+): Responder {
+  return async (request) => {
+    await clock.sleep(ms);
+    return respond(request);
+  };
+}
+
+// ───────────────────────────── fake clock ─────────────────────────────
+
+/** A `Clock` that only moves when told to: for testing waits without waiting. */
+export interface FakeClock extends Clock {
+  /**
+   * Move time forward by `ms`: every sleep that ends by then resolves, in order, each at its own
+   * time (`now()` reads that time), with pending promise callbacks run in between.
+   */
+  advance(ms: number): Promise<void>;
+  /** How many sleeps are waiting. */
+  readonly pending: number;
+}
+
+interface FakeTimer {
+  at: number;
+  seq: number;
+  resolve: () => void;
+}
+
+/**
+ * A fake {@link Clock}, starting at `start` (ms since the epoch). `sleep` waits until
+ * {@link FakeClock.advance} passes its end, and rejects at once when its signal aborts.
+ *
+ * @example
+ * ```ts
+ * const clock = fakeClock();
+ * const chaos = new ChaosMiddleware({ enabled: true, percentage: 100, faults: ChaosPresets.slowOrg(), clock });
+ * const pending = client.api("WhoAmI").get();
+ * await clock.advance(2000);
+ * await pending;
+ * ```
+ */
+export function fakeClock(start = 0): FakeClock {
+  let now = start;
+  let seq = 0;
+  const timers: FakeTimer[] = [];
+  return {
+    now: () => now,
+    get pending() {
+      return timers.length;
+    },
+    sleep(ms, signal) {
+      if (signal?.aborted) return Promise.reject(signalError(signal));
+      if (ms <= 0) return Promise.resolve();
+      return new Promise<void>((resolve, reject) => {
+        const onAbort = (): void => {
+          const i = timers.indexOf(timer);
+          if (i >= 0) timers.splice(i, 1);
+          reject(signalError(signal));
+        };
+        const timer: FakeTimer = {
+          at: now + ms,
+          seq: seq++,
+          resolve: () => {
+            signal?.removeEventListener("abort", onAbort);
+            resolve();
+          },
+        };
+        timers.push(timer);
+        signal?.addEventListener("abort", onAbort, { once: true });
+      });
+    },
+    async advance(ms) {
+      const target = now + ms;
+      await settle();
+      for (;;) {
+        const due = timers
+          .filter((t) => t.at <= target)
+          .sort((a, b) => a.at - b.at || a.seq - b.seq)
+          .at(0);
+        if (!due) break;
+        timers.splice(timers.indexOf(due), 1);
+        now = due.at;
+        due.resolve();
+        await settle();
+      }
+      now = target;
+      await settle();
+    },
+  };
+}
+
+/** The error a wait rejects with when `signal` aborts, as core's waits do. */
+function signalError(signal: AbortSignal | undefined): Error {
+  const reason: unknown = signal?.reason;
+  return reason instanceof Error && reason.name === "TimeoutError"
+    ? reason
+    : new DOMException("Aborted", "AbortError");
+}
+
+/** Let pending promise callbacks run (a few rounds of microtasks). */
+async function settle(): Promise<void> {
+  for (let i = 0; i < 50; i++) await Promise.resolve();
 }
 
 /** One part of a `$batch` response. */
