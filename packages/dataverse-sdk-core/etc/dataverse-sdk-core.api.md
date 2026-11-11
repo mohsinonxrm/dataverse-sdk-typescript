@@ -221,11 +221,20 @@ export interface ChaosScriptInfo {
 }
 
 // @public
+export interface CircuitBreakDurationInfo {
+    consecutiveOpens: number;
+    failures: number;
+}
+
+// @public
 export class CircuitBreakerMiddleware implements Middleware {
     constructor(options?: CircuitBreakerOptions);
+    close(): void;
     get consecutiveFailures(): number;
     // (undocumented)
     execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    isolate(): void;
+    get isolated(): boolean;
     // (undocumented)
     name: string;
     reset(): void;
@@ -234,10 +243,15 @@ export class CircuitBreakerMiddleware implements Middleware {
 
 // @public
 export interface CircuitBreakerOptions {
-    breakDurationMs?: number;
+    breakDurationMs?: number | ((info: CircuitBreakDurationInfo) => number);
+    failureRatio?: number;
     failureThreshold?: number;
     isFailure?: (status: number, error?: Error) => boolean;
+    minimumThroughput?: number;
+    mode?: "consecutive" | "ratio";
+    now?: () => number;
     onStateChange?: (change: CircuitStateChange) => void;
+    samplingDurationMs?: number;
 }
 
 // @public
@@ -1084,6 +1098,9 @@ export interface RetryAttempt {
 }
 
 // @public
+export type RetryBackoff = "exponential" | "linear" | "constant";
+
+// @public
 export interface RetryInfo {
     attempt: number;
     correlationId?: string;
@@ -1104,18 +1121,21 @@ export class RetryMiddleware implements Middleware {
     name: string;
 }
 
-// @public (undocumented)
+// @public
 export interface RetryOptions {
+    backoff?: RetryBackoff;
     baseDelayMs?: number;
-    jitter?: boolean;
+    jitter?: boolean | "decorrelated";
     maxDelayMs?: number;
     maxRetries?: number;
     maxRetryAfterMs?: number;
     onRetry?: (info: RetryInfo) => void;
     retryableStatusCodes?: number[];
+    retryAfterJitterMs?: number;
+    retryAttemptTimeouts?: boolean;
     retryNetworkErrors?: boolean;
     retryNonIdempotent?: boolean;
-    shouldRetry?: (statusCode: number, error?: Error) => boolean;
+    shouldRetry?: (statusCode: number, error: Error | undefined, info: ShouldRetryInfo) => boolean;
 }
 
 // @public
@@ -1131,6 +1151,13 @@ export interface ServiceProtectionChaosOptions {
 
 // @public
 export function setRequestHeader(headers: HeadersLike, key: string, value: string): HeadersLike;
+
+// @public
+export interface ShouldRetryInfo {
+    attempt: number;
+    request: RequestInformation;
+    response?: Response;
+}
 
 // @public
 export interface SlowOrgChaosOptions {
@@ -1155,6 +1182,7 @@ export const TelemetryEvents: {
     readonly concurrencyWait: "dataverse.concurrency.wait";
     readonly concurrencyLimit: "dataverse.concurrency.limit";
     readonly batch: "dataverse.batch";
+    readonly circuitState: "dataverse.circuit.state";
     readonly chaosInjected: "dataverse.chaos.injected";
     readonly throttleDelay: "dataverse.throttle.delay";
 };

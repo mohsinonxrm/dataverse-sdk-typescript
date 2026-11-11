@@ -137,8 +137,9 @@ const client = new DataverseClient({
    waited for a slot and `dataverse.concurrency.limit` when the limit changed, with
    `concurrency.reason` `dop_hint`, `throttle` (halved after a `0x80072326` 429) or `recovery` (from
    the concurrency middleware), `dataverse.throttle.delay` when adaptive throttling held a request
-   back (#477), and `dataverse.batch` for each `$batch` (from the batch package, through
-   `DataverseClient.trackEvent`).
+   back (#477), `dataverse.batch` for each `$batch` (from the batch package, through
+   `DataverseClient.trackEvent`), and `dataverse.circuit.state` when an opt-in
+   `CircuitBreakerMiddleware` changes state (closed, open, half-open or isolated, with the reason).
 4. **Per request:** `new MiddlewareRequestOptions([{ type: "telemetry", disable: true }])` turns
    tracking (and the events) off for one request; `customProperties` adds properties to its
    dependency.

@@ -60,6 +60,7 @@ export type { RawBody } from "./utils/body.js";
 // Opt-in resilience middleware (#343).
 export {
   CircuitBreakerMiddleware,
+  type CircuitBreakDurationInfo,
   type CircuitBreakerOptions,
   type CircuitState,
   type CircuitStateChange,
