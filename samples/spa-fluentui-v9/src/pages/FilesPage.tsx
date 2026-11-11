@@ -11,7 +11,7 @@ import {
   SpinButton,
   tokens,
 } from "@fluentui/react-components";
-import { DocumentArrowUp20Regular } from "@fluentui/react-icons";
+import { DocumentArrowUpRegular } from "@fluentui/react-icons";
 import type { UploadProgress } from "@mohsinonxrm/dataverse-sdk-files";
 import { Scenario } from "../components/Scenario";
 import { ScenarioPage } from "../components/ScenarioPage";
@@ -116,9 +116,9 @@ export default function FilesPage() {
         run={(sdk, signal) => files.firstAccount(sdk, signal)}
         onResult={(r) => setRecordId(r.id)}
         renderResult={(r) => (
-          <>
+          <Body1>
             {r.name}: {r.id}
-          </>
+          </Body1>
         )}
       />
 
@@ -140,9 +140,9 @@ export default function FilesPage() {
         disabledReason={needsRecord}
         successMessage={(r) => `Uploaded ${r.uploaded}`}
         renderResult={(r) => (
-          <>
+          <Body1>
             {r.uploaded}: {r.bytes.toLocaleString()} bytes.
-          </>
+          </Body1>
         )}
       >
         <Field label="Table (entity set)">
@@ -172,7 +172,7 @@ export default function FilesPage() {
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               aria-label="File to upload"
             />
-            <Button icon={<DocumentArrowUp20Regular />} onClick={() => input.current?.click()}>
+            <Button icon={<DocumentArrowUpRegular />} onClick={() => input.current?.click()}>
               Choose a file
             </Button>
             <Caption1 className={styles.muted}>

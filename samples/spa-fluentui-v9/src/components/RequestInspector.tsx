@@ -6,9 +6,9 @@ import {
   AccordionPanel,
   Badge,
   Caption1,
+  Caption1Strong,
   makeStyles,
   tokens,
-  Text,
 } from "@fluentui/react-components";
 import type { Exchange } from "../sdk/inspector";
 import { CodeBlock } from "./CodeBlock";
@@ -128,28 +128,20 @@ export function RequestInspector({ exchanges }: { exchanges: Exchange[] }) {
             </span>
           </AccordionHeader>
           <AccordionPanel className={styles.panel}>
-            <Text weight="semibold" size={200}>
-              URL
-            </Text>
+            <Caption1Strong>URL</Caption1Strong>
             <span className={styles.fullUrl}>{e.url}</span>
             {e.error && (
               <>
-                <Text weight="semibold" size={200}>
-                  Error
-                </Text>
+                <Caption1Strong>Error</Caption1Strong>
                 <span className={styles.fullUrl}>{e.error}</span>
               </>
             )}
-            <Text weight="semibold" size={200}>
-              Request headers
-            </Text>
+            <Caption1Strong>Request headers</Caption1Strong>
             <HeaderList headers={e.requestHeaders} />
             {e.requestBody && <CodeBlock code={e.requestBody} plain label="Request body" />}
             {e.responseHeaders && (
               <>
-                <Text weight="semibold" size={200}>
-                  Response headers
-                </Text>
+                <Caption1Strong>Response headers</Caption1Strong>
                 <HeaderList headers={e.responseHeaders} />
               </>
             )}

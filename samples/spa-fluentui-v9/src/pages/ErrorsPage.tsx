@@ -9,7 +9,6 @@ import {
   makeStyles,
   SpinButton,
   Subtitle1,
-  tokens,
 } from "@fluentui/react-components";
 import { ErrorBoundary } from "../components/ErrorBoundary";
 import { spinValue } from "../lib/fields";
@@ -20,11 +19,7 @@ import * as errors from "../scenarios/errors";
 import source from "../scenarios/errors.ts?raw";
 
 const useStyles = makeStyles({
-  card: {
-    padding: tokens.spacingHorizontalL,
-    gap: tokens.spacingVerticalM,
-    alignItems: "flex-start",
-  },
+  card: { alignItems: "flex-start" },
 });
 
 function Thrower(): never {
@@ -35,7 +30,7 @@ function BoundaryDemo() {
   const styles = useStyles();
   const [broken, setBroken] = useState(false);
   return (
-    <Card className={styles.card} role="region" aria-labelledby="boundary-heading">
+    <Card size="large" className={styles.card} role="region" aria-labelledby="boundary-heading">
       <CardHeader
         header={
           <Subtitle1 as="h2" id="boundary-heading">

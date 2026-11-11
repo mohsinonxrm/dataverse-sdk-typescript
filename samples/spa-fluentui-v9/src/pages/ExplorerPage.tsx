@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import {
   Body1,
+  Body1Strong,
   Button,
   Caption1,
   Card,
@@ -17,7 +18,6 @@ import {
   Subtitle1,
   Tab,
   TabList,
-  Text,
   Textarea,
   tokens,
 } from "@fluentui/react-components";
@@ -69,25 +69,27 @@ import { draftValues, type ValueError } from "../explorer/values";
 import { useRun } from "../hooks/useRun";
 import type { Sdk } from "../sdk/createSdk";
 import { useSdkContext } from "../sdk/SdkProvider";
+import { MEDIA_MEDIUM, MEDIA_SMALL } from "../theme/layout";
+import { useCommonStyles } from "../theme/styles";
 
 const useStyles = makeStyles({
   layout: {
     display: "grid",
     gridTemplateColumns: "minmax(15rem, 20rem) minmax(0, 1fr)",
-    gap: tokens.spacingHorizontalL,
+    rowGap: tokens.spacingVerticalL,
+    columnGap: tokens.spacingHorizontalL,
     alignItems: "start",
-    "@media (max-width: 63.99em)": { gridTemplateColumns: "minmax(0, 1fr)" },
+    [MEDIA_MEDIUM]: { gridTemplateColumns: "minmax(0, 1fr)" },
   },
-  picker: { padding: tokens.spacingHorizontalM, minWidth: 0 },
   column: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalL, minWidth: 0 },
-  card: { padding: tokens.spacingHorizontalL, gap: tokens.spacingVerticalM, minWidth: 0 },
-  heading: { margin: 0 },
+  card: { minWidth: 0 },
   bar: {
     display: "grid",
     gridTemplateColumns: "7rem minmax(0, 1fr) auto",
-    gap: tokens.spacingHorizontalS,
+    rowGap: tokens.spacingVerticalS,
+    columnGap: tokens.spacingHorizontalS,
     alignItems: "end",
-    "@media (max-width: 47.99em)": { gridTemplateColumns: "minmax(0, 1fr)" },
+    [MEDIA_SMALL]: { gridTemplateColumns: "minmax(0, 1fr)" },
   },
   url: { fontFamily: tokens.fontFamilyMonospace },
   opHeader: {
@@ -97,9 +99,6 @@ const useStyles = makeStyles({
     gap: tokens.spacingHorizontalS,
     minWidth: 0,
   },
-  opName: { fontFamily: tokens.fontFamilyMonospace, overflowWrap: "anywhere" },
-  muted: { color: tokens.colorNeutralForeground3 },
-  mono: { fontFamily: tokens.fontFamilyMonospace, overflowWrap: "anywhere" },
   actions: {
     display: "flex",
     flexWrap: "wrap",
@@ -153,6 +152,7 @@ let nextHistoryId = Date.now();
 
 export default function ExplorerPage() {
   const styles = useStyles();
+  const common = useCommonStyles();
   const { connection, session } = useSdkContext();
   const environmentUrl = connection.environmentUrl;
   const apiRoot = `${environmentUrl}/api/data/v9.2`;
@@ -456,7 +456,7 @@ export default function ExplorerPage() {
         <>
           Build a Web API request or pick a typed action, function or message, see the SDK code for
           it, run it and inspect the request and response. Requests go to{" "}
-          <span className={styles.mono}>{host}</span>
+          <span className={common.mono}>{host}</span>
           {session.mode === "demo"
             ? ", the in-browser demo environment: nothing leaves your browser."
             : ", your environment, as you: write requests change real data."}
@@ -464,7 +464,10 @@ export default function ExplorerPage() {
       }
     >
       <div className={styles.layout}>
-        <Card className={styles.picker} role="region" aria-label="Requests to try">
+        <Card className={styles.card} size="large" role="region" aria-labelledby="picker-heading">
+          <Subtitle1 as="h2" id="picker-heading">
+            Requests to try
+          </Subtitle1>
           <OperationPicker
             tab={pickerTab}
             onTabChange={setPickerTab}
@@ -480,8 +483,13 @@ export default function ExplorerPage() {
         </Card>
 
         <div className={styles.column}>
-          <Card className={styles.card} role="region" aria-labelledby="request-heading">
-            <Subtitle1 as="h2" id="request-heading" className={styles.heading}>
+          <Card
+            className={styles.card}
+            size="large"
+            role="region"
+            aria-labelledby="request-heading"
+          >
+            <Subtitle1 as="h2" id="request-heading">
               Request
             </Subtitle1>
             {selecting && !selecting.error && (
@@ -512,8 +520,8 @@ export default function ExplorerPage() {
                     </Field>
                     <div>{runButton}</div>
                   </div>
-                  <Caption1 className={styles.muted}>
-                    Relative to <span className={styles.mono}>{apiRoot}/</span>
+                  <Caption1 className={common.muted}>
+                    Relative to <span className={common.mono}>{apiRoot}/</span>
                   </Caption1>
                   <TabList
                     selectedValue={requestTab}
@@ -564,12 +572,10 @@ export default function ExplorerPage() {
                 <>
                   <div className={styles.opHeader}>
                     <MethodBadge method={target.op.method} />
-                    <Text weight="semibold" className={styles.opName}>
-                      {target.op.className}
-                    </Text>
-                    <Caption1 className={styles.muted}>{PACKAGE_OF[target.op.kind]}</Caption1>
+                    <Body1Strong className={common.mono}>{target.op.className}</Body1Strong>
+                    <Caption1 className={common.muted}>{PACKAGE_OF[target.op.kind]}</Caption1>
                   </div>
-                  <Caption1 className={styles.mono}>
+                  <Caption1 className={common.mono}>
                     {target.op.method} {target.op.route}
                   </Caption1>
                   <TabList
@@ -603,11 +609,11 @@ export default function ExplorerPage() {
               )}
               {requestTab === "preview" && (
                 <section className={styles.tabPanel} aria-label="Request preview">
-                  <Caption1 className={styles.muted}>
+                  <Caption1 className={common.muted}>
                     The request the SDK will send, built by the SDK without sending it.
                   </Caption1>
                   {!built.ok ? (
-                    <Caption1 className={styles.muted}>{built.reason}</Caption1>
+                    <Caption1 className={common.muted}>{built.reason}</Caption1>
                   ) : !preview ? (
                     <Spinner size="tiny" label="Building the request…" />
                   ) : preview.error !== undefined ? (
@@ -627,8 +633,13 @@ export default function ExplorerPage() {
             </form>
           </Card>
 
-          <Card className={styles.card} role="region" aria-labelledby="response-heading">
-            <Subtitle1 as="h2" id="response-heading" className={styles.heading}>
+          <Card
+            className={styles.card}
+            size="large"
+            role="region"
+            aria-labelledby="response-heading"
+          >
+            <Subtitle1 as="h2" id="response-heading">
               Response
             </Subtitle1>
             <div className={styles.status}>
@@ -658,7 +669,7 @@ export default function ExplorerPage() {
             {responseTab === "response" && (
               <section className={styles.tabPanel} aria-label="Response preview">
                 {run.state.status === "idle" && (
-                  <Caption1 className={styles.muted}>Run the request to see its result.</Caption1>
+                  <Caption1 className={common.muted}>Run the request to see its result.</Caption1>
                 )}
                 {run.state.status === "running" && <Spinner size="small" label="Waiting…" />}
                 {run.state.status === "done" &&
@@ -675,7 +686,7 @@ export default function ExplorerPage() {
                 {lastExchange?.responseHeaders ? (
                   <HeaderList headers={lastExchange.responseHeaders} />
                 ) : (
-                  <Caption1 className={styles.muted}>No response yet.</Caption1>
+                  <Caption1 className={common.muted}>No response yet.</Caption1>
                 )}
               </section>
             )}
@@ -698,7 +709,7 @@ export default function ExplorerPage() {
                 ) : built.ok ? null : built.loading ? (
                   <Spinner size="tiny" label="Loading the package…" />
                 ) : (
-                  <Caption1 className={styles.muted}>{built.reason}</Caption1>
+                  <Caption1 className={common.muted}>{built.reason}</Caption1>
                 )}
               </section>
             )}

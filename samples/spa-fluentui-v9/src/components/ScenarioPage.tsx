@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { Body1, makeStyles, Title2, tokens } from "@fluentui/react-components";
 import { APP_NAME } from "../config";
+import { PAGE_MAX_WIDTH, TEXT_MAX_WIDTH } from "../theme/layout";
 
 const useStyles = makeStyles({
   root: {
@@ -9,13 +10,13 @@ const useStyles = makeStyles({
     flexDirection: "column",
     gap: tokens.spacingVerticalXL,
     width: "100%",
-    maxWidth: "80rem",
+    maxWidth: PAGE_MAX_WIDTH,
     marginInline: "auto",
     minWidth: 0,
   },
   header: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalS },
   title: { margin: 0 },
-  description: { color: tokens.colorNeutralForeground2, maxWidth: "70ch" },
+  description: { color: tokens.colorNeutralForeground2, maxWidth: TEXT_MAX_WIDTH },
 });
 
 interface ScenarioPageProps {

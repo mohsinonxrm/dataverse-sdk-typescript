@@ -11,6 +11,7 @@ import {
   ToastTitle,
 } from "@fluentui/react-components";
 import { CopyRegular } from "@fluentui/react-icons";
+import { useCommonStyles } from "../theme/styles";
 import { TOASTER_ID } from "./toaster";
 
 const useStyles = makeStyles({
@@ -22,8 +23,10 @@ const useStyles = makeStyles({
   },
   pre: {
     margin: 0,
-    padding: tokens.spacingVerticalM,
-    paddingRight: tokens.spacingHorizontalXXXL,
+    paddingBlock: tokens.spacingVerticalM,
+    paddingInlineStart: tokens.spacingHorizontalM,
+    // Room for the copy button, so it never covers the first line.
+    paddingInlineEnd: tokens.spacingHorizontalXXXL,
     overflowX: "auto",
     fontFamily: tokens.fontFamilyMonospace,
     fontSize: tokens.fontSizeBase200,
@@ -31,15 +34,11 @@ const useStyles = makeStyles({
     color: tokens.colorNeutralForeground1,
     tabSize: 2,
     maxHeight: "28rem",
-    ":focus-visible": {
-      outline: `${tokens.strokeWidthThick} solid ${tokens.colorStrokeFocus2}`,
-      outlineOffset: `calc(${tokens.strokeWidthThick} * -1)`,
-    },
   },
   copy: {
     position: "absolute",
     top: tokens.spacingVerticalXS,
-    right: tokens.spacingHorizontalXS,
+    insetInlineEnd: tokens.spacingHorizontalXS,
     // Hides the code scrolling under it.
     backgroundColor: tokens.colorNeutralBackground3,
   },
@@ -84,9 +83,13 @@ interface CodeBlockProps {
   className?: string;
 }
 
-/** A scrollable, keyboard-focusable code block with a copy button. */
+/**
+ * A scrollable, keyboard-focusable code block with a copy button. Read-only code everywhere in the
+ * app goes through this component (and `JsonView`), so an editor can replace it in one place.
+ */
 export function CodeBlock({ code, plain, label, className }: CodeBlockProps) {
   const styles = useStyles();
+  const common = useCommonStyles();
   const { dispatchToast } = useToastController(TOASTER_ID);
   const content = useMemo(() => (plain ? code : highlight(code, styles)), [code, plain, styles]);
 
@@ -111,7 +114,11 @@ export function CodeBlock({ code, plain, label, className }: CodeBlockProps) {
 
   return (
     <div className={mergeClasses(styles.root, className)}>
-      <pre className={styles.pre} tabIndex={0} aria-label={label}>
+      <pre
+        className={mergeClasses(styles.pre, common.focusableRegion)}
+        tabIndex={0}
+        aria-label={label}
+      >
         <code>{content}</code>
       </pre>
       <Tooltip content={`Copy ${label.toLowerCase()}`} relationship="label">
