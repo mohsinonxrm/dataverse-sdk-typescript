@@ -68,7 +68,8 @@
       "@typescript-eslint/typescript-estree>minimatch": "^11.0.5",
       "@azure/msal-node>uuid": "^11.1.1",
       "vitepress>vite": "6.4.5",
-      "@vitejs/plugin-vue>vite": "6.4.5"
+      "@vitejs/plugin-vue>vite": "6.4.5",
+      "monaco-editor>dompurify": "^3.4.17"
     }
   }
 }

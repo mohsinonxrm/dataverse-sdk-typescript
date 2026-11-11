@@ -17,5 +17,11 @@ function stringify(value: unknown): string {
 
 /** A value as formatted JSON (Maps, Blobs and errors made readable). */
 export function JsonView({ value, label = "Result" }: { value: unknown; label?: string }) {
-  return <CodeBlock code={stringify(value)} plain label={label} />;
+  return (
+    <CodeBlock
+      code={stringify(value)}
+      language={value === undefined ? "plaintext" : "json"}
+      label={label}
+    />
+  );
 }

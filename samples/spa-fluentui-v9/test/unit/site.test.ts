@@ -46,6 +46,12 @@ describe("staticwebapp.config.json", () => {
     expect(csp.get("base-uri")).toEqual(["'self'"]);
   });
 
+  it("runs workers from the site only: the code editor's worker is a file, not a blob", () => {
+    // Without worker-src, workers fall back to script-src (then default-src).
+    const workers = csp.get("worker-src") ?? csp.get("script-src") ?? csp.get("default-src");
+    expect(workers).toEqual(["'self'"]);
+  });
+
   it("lets the browser call Dataverse and Microsoft sign-in, and nothing else", () => {
     expect(csp.get("connect-src")).toEqual([
       "'self'",

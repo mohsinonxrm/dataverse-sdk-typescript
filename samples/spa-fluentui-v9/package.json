@@ -27,6 +27,8 @@
     "@mohsinonxrm/dataverse-sdk-messages": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-metadata": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-xrm": "workspace:*",
+    "jsonc-parser": "^3.3.1",
+    "monaco-editor": "^0.57.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.18.5"

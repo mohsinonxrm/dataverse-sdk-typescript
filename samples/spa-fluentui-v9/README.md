@@ -218,15 +218,27 @@ default app registration and its redirect URIs) is in [docs/site.md](../../docs/
   destructive runs, `Badge` for methods and HTTP status.
 - **Accessibility:** a skip link, one `h1` per page and `h2` per scenario, labelled fields, focus
   moved to the page after navigation, and an `aria-live` summary of each run.
-- **Code splitting:** the sign-in page, the environment picker, the shell, MSAL, demo mode and
-  every page are separate chunks, loaded with `React.lazy` when first needed.
+- **Code:** the [Monaco editor](https://github.com/microsoft/monaco-editor), bundled with the site
+  (no CDN) and loaded the first time code is shown, with a `Skeleton` in its place until then
+  (`src/editor/`). Read-only code (SDK code, request previews, responses, the scenarios' code) has
+  highlighting, line numbers, folding, find and a copy button; the explorer's request body is an
+  editable JSON field with validation and **Format** (Shift+Alt+F). Only TypeScript (highlighting,
+  no language service), JSON, an HTTP request language and plain text are included. Its themes are
+  made from the Fluent light, dark and high-contrast tokens and follow the theme toggle and
+  Windows high contrast. Tab moves the focus out of every editor (no keyboard trap); each has its
+  own accessible name and Monaco's screen-reader support on. Its worker is a file served from the
+  site, so the CSP needs no `blob:` workers and no `unsafe-eval`.
+- **Code splitting:** the sign-in page, the environment picker, the shell, MSAL, demo mode, the code
+  editor and every page are separate chunks, loaded with `React.lazy` when first needed. The e2e
+  tests hold the first page's JavaScript and the editor's chunk to a size budget.
 
 ## Layout
 
 ```
 src/
 ├── auth/         # AuthProvider; MSAL sign-in (msalSession.ts, loaded on demand); environment discovery
-├── components/   # Scenario (the page pattern), CodeBlock, RequestInspector, ErrorCard, ErrorBoundary
+├── components/   # Scenario (the page pattern), CodeBlock, JsonEditor, RequestInspector, ErrorCard
+├── editor/       # The Monaco editor (loaded on demand): languages, Fluent themes, JSON validation
 ├── demo/         # Demo mode: an in-browser fake of the Web API and the Global Discovery Service
 ├── explorer/     # The explorer: catalog, raw requests, code generation, preview, samples, history
 ├── lib/          # Snippet extraction, error classification, safe storage
