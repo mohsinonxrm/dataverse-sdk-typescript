@@ -220,8 +220,9 @@ export class DataverseClient {
       ...this.baseCtx,
       correlationId: request.correlationId ?? generateUUID(),
       attempt: 0,
-      // The retry middleware won't start a wait that ends after the deadline (#471).
-      deadline: deadline?.at,
+      // The retry middleware won't start a wait that ends after the deadline (#471), whether it
+      // comes from timeoutMs or from the caller's own (one timeoutMs for a whole $batch execution).
+      deadline: earliest(deadline?.at, request.deadline),
       middlewareOptions: request.middlewareOptions,
     };
     try {
@@ -237,6 +238,12 @@ export class DataverseClient {
       deadline?.dispose();
     }
   }
+}
+
+/** The earlier of two optional deadlines (ms since the epoch). */
+function earliest(a: number | undefined, b: number | undefined): number | undefined {
+  if (a === undefined) return b;
+  return b === undefined ? a : Math.min(a, b);
 }
 
 function applyOptions(req: RequestInformation, opt?: RequestOptions) {

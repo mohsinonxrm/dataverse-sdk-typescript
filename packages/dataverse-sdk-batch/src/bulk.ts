@@ -91,6 +91,8 @@ export interface BulkOperationOptions {
   /**
    * Time limit for the whole operation, in ms: every request, with its retries and waits. When it
    * passes, the operation stops as with `signal`, with `DataverseNetworkError` (`RequestTimeout`).
+   * A retry whose wait (`Retry-After` or backoff) would end after it is not attempted: the
+   * request fails at once with its own error (`DataverseThrottleError` for a 429).
    */
   timeoutMs?: number;
 
@@ -405,7 +407,7 @@ async function runChunks(
       try {
         outcomes =
           plan.strategy === "bulk"
-            ? await sendBulk(plan, chunk, execution.signal)
+            ? await sendBulk(plan, chunk, execution)
             : await sendBatch(plan, chunk, execution.signal);
       } catch (caught) {
         // The request failed as a whole (network, auth, throttling after the retries, an abort):
@@ -450,9 +452,10 @@ async function runChunks(
 async function sendBulk(
   plan: Plan,
   chunk: number[],
-  signal: AbortSignal | undefined
+  execution: ExecutionSignal
 ): Promise<Outcome[]> {
   const { client, table, options } = plan;
+  const { signal, deadline } = execution;
   const targets = chunk.map((index) => ({
     "@odata.type": `Microsoft.Dynamics.CRM.${table.logicalName}`,
     ...plan.records[index],
@@ -472,7 +475,9 @@ async function sendBulk(
     url: `${table.entitySetName}/Microsoft.Dynamics.CRM.${plan.message}`,
     headers,
     body: { Targets: targets },
+    // timeoutMs is the whole operation's: it is in `signal`, and its deadline goes along (#487).
     ...(signal ? { signal } : {}),
+    ...(deadline !== undefined ? { deadline } : {}),
     ...(options.attemptTimeoutMs !== undefined
       ? { attemptTimeoutMs: options.attemptTimeoutMs }
       : {}),

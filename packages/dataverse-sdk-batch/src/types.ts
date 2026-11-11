@@ -182,7 +182,9 @@ export interface BatchExecutionOptions {
   /**
    * Time limit for the whole execution, in ms: every `$batch` of a split batch, with its retries
    * and waits. When it passes, `execute()` rejects with `DataverseNetworkError` (`RequestTimeout`),
-   * wrapped like an abort once a `$batch` has run (see `signal`).
+   * wrapped like an abort once a `$batch` has run (see `signal`). A retry whose wait
+   * (`Retry-After` or backoff) would end after it is not attempted: a 429 then throws
+   * `DataverseThrottleError` with `retryAfterMs` at once.
    */
   timeoutMs?: number;
 

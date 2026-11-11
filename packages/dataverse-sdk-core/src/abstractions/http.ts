@@ -17,6 +17,14 @@ export interface RequestInformation {
   timeoutMs?: number;
   /** Time limit for each attempt, in ms. A timed-out attempt is not retried. */
   attemptTimeoutMs?: number;
+  /**
+   * When a time limit the caller enforces itself (through `signal`) runs out, in ms since the
+   * epoch (as `Date.now()`): for example one `timeoutMs` for several requests. It doesn't abort
+   * anything; like `timeoutMs`, it stops the retry middleware from starting a wait that would end
+   * after it, so the failed response is returned at once. With `timeoutMs` too, the earlier one
+   * counts.
+   */
+  deadline?: number;
   signal?: AbortSignal;
   /** Correlation id for this request (sent as `x-ms-correlation-id`). A new one is generated when omitted. */
   correlationId?: string;
@@ -142,8 +150,8 @@ export interface MiddlewareContext {
   /** Used by retry middleware for diagnostics */
   attempt?: number;
   /**
-   * When the request's `timeoutMs` runs out, in ms since the epoch (as `Date.now()`); unset without
-   * `timeoutMs`. The retry middleware doesn't start a wait that would end after it: it returns the
+   * When the request's `timeoutMs` (or its `deadline`, if earlier) runs out, in ms since the epoch
+   * (as `Date.now()`); unset without either. The retry middleware doesn't start a wait that would end after it: it returns the
    * response (or throws the network error) at once instead.
    */
   deadline?: number;
