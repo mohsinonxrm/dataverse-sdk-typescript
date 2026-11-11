@@ -421,7 +421,7 @@ export class BatchRequestBuilder {
       const stopped = execution.signal?.aborted ?? false;
       try {
         if (stopped) throw stopError(execution, options.timeoutMs);
-        chunkResult = await this.executeSingleBatch(chunk, options, execution.signal);
+        chunkResult = await this.executeSingleBatch(chunk, options, execution);
       } catch (caught) {
         const err = fromStop(caught, execution, options.timeoutMs);
         if (index === 0) throw err;
@@ -483,13 +483,15 @@ export class BatchRequestBuilder {
    *
    * @param items - The requests and changesets of this batch
    * @param options - Execution options
+   * @param execution - The execution's signal and deadline
    * @returns The result for these items (never throws for per-request failures)
    */
   private async executeSingleBatch(
     items: BatchItem[],
     options: BatchExecutionOptions,
-    signal: AbortSignal | undefined
+    execution: ExecutionSignal
   ): Promise<BatchExecutionResult> {
+    const { signal, deadline } = execution;
     const boundary = generateBoundary();
     const batchBody = encodeBatchRequest(this.resolveItems(items), boundary);
 
@@ -512,8 +514,10 @@ export class BatchRequestBuilder {
       url: "$batch",
       headers,
       body: batchBody,
-      // timeoutMs is the whole execution's: it is in `signal`, with the caller's signal.
+      // timeoutMs is the whole execution's: it is in `signal`, with the caller's signal. Its
+      // deadline lets the retry middleware give up on a wait that would outlast it (#487).
       ...(signal ? { signal } : {}),
+      ...(deadline !== undefined ? { deadline } : {}),
       ...(options.attemptTimeoutMs !== undefined
         ? { attemptTimeoutMs: options.attemptTimeoutMs }
         : {}),

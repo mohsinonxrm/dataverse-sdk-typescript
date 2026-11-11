@@ -995,6 +995,7 @@ export interface RequestInformation {
     // (undocumented)
     body?: unknown;
     correlationId?: string;
+    deadline?: number;
     // (undocumented)
     headers: Record<string, string>;
     idempotent?: boolean;

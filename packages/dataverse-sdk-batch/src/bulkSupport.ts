@@ -8,6 +8,7 @@ import {
   parseODataError,
   type DataverseClient,
 } from "@mohsinonxrm/dataverse-sdk-core";
+import { deadlineOf } from "./stop.js";
 
 /** Which bulk-operation messages a table supports. */
 export interface BulkOperationSupport {
@@ -175,12 +176,16 @@ async function getJson(
   query: Record<string, string>,
   options: BulkOperationSupportOptions
 ): Promise<unknown> {
+  // Called by createMultiple()/updateMultiple() with their execution's signal: its timeoutMs
+  // deadline goes along, so a long Retry-After fails at once instead of at the timeout (#487).
+  const deadline = deadlineOf(options.signal);
   const response = await client.send({
     method: "GET",
     url,
     query,
     headers: { accept: "application/json" },
     ...(options.signal ? { signal: options.signal } : {}),
+    ...(deadline !== undefined ? { deadline } : {}),
     ...(options.timeoutMs !== undefined ? { timeoutMs: options.timeoutMs } : {}),
   });
   if (!response.ok) throw await parseODataError(response);

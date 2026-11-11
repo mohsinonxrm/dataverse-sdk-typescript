@@ -128,7 +128,7 @@ execute(options?: BatchExecutionOptions): Promise<BatchExecutionResult>
 - **batchSize**: Maximum requests per `$batch`, 1 to 1000 (default: 1000, the Dataverse limit). Larger batches are split, keeping each changeset whole.
 - **headers**: Additional HTTP headers for the `$batch` request
 - **signal**: Cancels the execution: the `$batch` in flight is aborted and no later `$batch` of a split batch is sent. Requests Dataverse already ran aren't undone.
-- **timeoutMs**: Time limit for the whole execution, in ms, every `$batch` of a split batch and its retries included. It covers the whole execution, not each `$batch`.
+- **timeoutMs**: Time limit for the whole execution, in ms, every `$batch` of a split batch and its retries included. It covers the whole execution, not each `$batch`. A retry whose wait (`Retry-After` or backoff) would end after it isn't attempted, so a 429 with a long `Retry-After` throws `DataverseThrottleError` at once instead of a timeout later.
 - **attemptTimeoutMs**: Time limit for each attempt of each `$batch` request, in ms
 - **correlationId**: Sent with every `$batch` request (`x-ms-correlation-id`), so the requests of a split batch can be found together. A new one is generated per `$batch` when omitted.
 
