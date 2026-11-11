@@ -36,8 +36,8 @@ for (const entry of readdirSync(dist, { recursive: true })) {
   if (!entry.endsWith(".html")) continue;
   pages++;
   const html = readFileSync(path.join(dist, entry), "utf8");
-  // Case-insensitive, and `</script >` too: HTML tag names aren't case-sensitive
-  for (const [, attrs, body] of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
+  // Case-insensitive, and any end tag a browser accepts (`</script >`, `</script\n foo>`)
+  for (const [, attrs, body] of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\b[^>]*>/gi)) {
     if (/\bsrc\s*=/i.test(attrs) || /type\s*=\s*"application\/(ld\+)?json"/i.test(attrs)) continue;
     const hash = `'sha256-${createHash("sha256").update(body, "utf8").digest("base64")}'`;
     if (!scriptSrc.includes(hash)) blocked.set(hash, `${entry}: ${body.slice(0, 80)}`);

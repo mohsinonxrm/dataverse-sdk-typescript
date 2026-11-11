@@ -100,16 +100,24 @@ function anchors(md) {
   return result;
 }
 
-/** Heading text as it renders: no links, code ticks or emphasis markers. */
+/** Heading text as it renders: no links, code ticks, emphasis markers or tags. */
 function stripInline(text) {
-  return (
-    text
-      .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
-      .replace(/[`*_]/g, "")
-      .replace(/<[^>]+>/g, "")
-      // Heading text for an anchor, not markup: drop any angle bracket a tag left behind
-      .replace(/[<>]/g, "")
-  );
+  return withoutTags(text.replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/[`*_]/g, ""));
+}
+
+/**
+ * `text` without anything from a `<` to the next `>` (and no unmatched `<` or `>`). It only
+ * builds heading anchors; a character scan rather than a regex, so no tag can survive in pieces.
+ */
+function withoutTags(text) {
+  let out = "";
+  let inTag = false;
+  for (const ch of text) {
+    if (ch === "<") inTag = true;
+    else if (ch === ">") inTag = false;
+    else if (!inTag) out += ch;
+  }
+  return out;
 }
 
 function forEachProseLine(md, fn) {
