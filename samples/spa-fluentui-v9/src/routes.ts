@@ -207,11 +207,12 @@ export const ROUTES: AppRoute[] = [
     component: lazy(() => import("./pages/ErrorsPage")),
   },
   {
-    path: "/docs",
+    // Not "/docs": the documentation site is served there, next to the app
+    path: "/documentation",
     title: "Documentation",
     group: "Docs",
     icon: BookOpenIcon,
-    summary: "Getting started, the guides and the API reference, on GitHub.",
+    summary: "Getting started, the guides and the API reference, on the documentation site.",
     component: lazy(() => import("./pages/DocsPage")),
   },
 ];
