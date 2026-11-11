@@ -9,7 +9,7 @@ import * as path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
-import { live, liveClient, runId } from "./env.js";
+import { attemptId, live, liveClient, runId } from "./env.js";
 import {
   compileToJs,
   generateLive,
@@ -94,7 +94,9 @@ describe.skipIf(!live)("live: generated typed client (#312)", () => {
         createTypedClient: (client: DataverseClient) => Typed;
       }>(dir, "client.js");
       const typed = createTypedClient(liveClient().client);
-      const name = `${runId}-typed-client`;
+      // Unique to this attempt: list() below looks the account up by name. It's the contact's
+      // lastname too, so at most 50 characters (runId is 31).
+      const name = `${runId}-typed-${attemptId()}`;
 
       const contactId = await typed.contacts.create({ lastname: name });
       created.push({ set: "contacts", id: contactId });

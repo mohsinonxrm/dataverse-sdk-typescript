@@ -13,6 +13,11 @@ out/
 # Turbo
 .turbo/
 
+# Docs site: built from docs/ and the packages (apps/docs/scripts/content.mjs, TypeDoc)
+apps/docs/content/
+apps/docs/.vitepress/cache/
+apps/docs/.vitepress/.temp/
+
 # Testing
 coverage/
 *.lcov

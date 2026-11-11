@@ -36,6 +36,15 @@ export const runId = `sdk-it-${new Date().toISOString().replace(/[-:.TZ]/g, "")}
   .toString(36)
   .slice(2, 8)}`;
 
+/**
+ * A short id unique to one attempt of a test. A test that creates records in its body and then
+ * looks them up by name puts it in the names, so it finds only the records of this attempt, never
+ * those of an earlier one that timed out after creating them.
+ */
+export function attemptId(): string {
+  return Math.random().toString(36).slice(2, 8);
+}
+
 let cached: { client: DataverseClient; tokenProvider: MsalNodeTokenProvider } | undefined;
 
 /** A real DataverseClient authenticated with client credentials through the SDK's msal-node provider. */
