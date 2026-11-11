@@ -94,8 +94,9 @@ describe.skipIf(!live)("live: generated typed client (#312)", () => {
         createTypedClient: (client: DataverseClient) => Typed;
       }>(dir, "client.js");
       const typed = createTypedClient(liveClient().client);
-      // Unique to this attempt: list() below looks the account up by name
-      const name = `${runId}-typed-client-${attemptId()}`;
+      // Unique to this attempt: list() below looks the account up by name. It's the contact's
+      // lastname too, so at most 50 characters (runId is 31).
+      const name = `${runId}-typed-${attemptId()}`;
 
       const contactId = await typed.contacts.create({ lastname: name });
       created.push({ set: "contacts", id: contactId });

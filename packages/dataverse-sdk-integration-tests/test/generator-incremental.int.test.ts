@@ -6,6 +6,10 @@
  * It uses contact and task because no other live test changes them: the suite runs files in
  * parallel, and metadata-builders and metadata-create add lookups to account, which change
  * account's metadata (and so its hash) between this test's two runs.
+ *
+ * It's read-only and each attempt generates into a new directory, so it may retry once
+ * (`{ retry: 1 }`): in the run for #496 the second generation found contact and task changed,
+ * although no test in that run touched them. The flaky reporter lists it if it needs the retry.
  */
 import { readFile, stat } from "node:fs/promises";
 import * as path from "node:path";
@@ -22,6 +26,7 @@ describe.skipIf(!live)("live: incremental generation (#347)", () => {
 
   it(
     "a second run over unchanged metadata keeps every table",
+    { timeout: SLOW, retry: 1 },
     async () => {
       const selection = { entities: ["contact", "task"], formContext: true };
       const dir = await generateLive({ entities: ["contact"] });
@@ -36,7 +41,6 @@ describe.skipIf(!live)("live: incremental generation (#347)", () => {
       expect((await stat(contact)).mtimeMs).toBe(before);
       expect(await readFile(contact, "utf-8")).toBe(text);
       expect(await typecheck(dir)).toEqual([]);
-    },
-    SLOW
+    }
   );
 });
