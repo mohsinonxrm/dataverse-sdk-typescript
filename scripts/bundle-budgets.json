@@ -4,12 +4,12 @@
     {
       "name": "core: DataverseClient",
       "code": "import { DataverseClient } from \"@mohsinonxrm/dataverse-sdk-core\"; globalThis.keep = DataverseClient;",
-      "budget": 16384
+      "budget": 17408
     },
     {
       "name": "client + one action + one function",
       "code": "import { DataverseClient } from \"@mohsinonxrm/dataverse-sdk-core\"; import { WinOpportunityAction } from \"@mohsinonxrm/dataverse-sdk-actions\"; import { WhoAmIFunction } from \"@mohsinonxrm/dataverse-sdk-functions\"; globalThis.keep = [DataverseClient, WinOpportunityAction, WhoAmIFunction];",
-      "budget": 16896
+      "budget": 17920
     },
     {
       "name": "actions: one operation",

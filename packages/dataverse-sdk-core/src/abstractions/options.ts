@@ -14,14 +14,6 @@ export const Prefer = {
   },
 } as const;
 
-/**
- * Retry policy, used both for the client (`DataverseClientOptions.retry`) and per request
- * (`new MiddlewareRequestOptions([{ type: "retry", ... }])`). A per-request value overrides the
- * client's value for that request only.
- *
- * The delay before retry `n` (0-based) is `min(maxDelayMs, baseDelayMs * 2^n)`, with ±20% jitter
- * when `jitter` is on. When the response carries `Retry-After`, that wait is used as is instead.
- */
 /** One attempt of a request, as recorded by the retry middleware. */
 export interface RetryAttempt {
   /** 0 for the first attempt, 1 for the first retry, and so on. */
@@ -48,7 +40,10 @@ export interface RetryInfo {
   error?: Error;
   /** How long the SDK waits before the retry, in ms. */
   delayMs: number;
-  /** `Retry-After` of the failed response, in ms, when it had one (then `delayMs` equals it). */
+  /**
+   * `Retry-After` of the failed response, in ms, when it had one. `delayMs` then equals it, plus
+   * up to `retryAfterJitterMs`.
+   */
   retryAfterMs?: number;
   /** The request being retried. Treat it as read-only. */
   request: import("./http.js").RequestInformation;
@@ -56,13 +51,52 @@ export interface RetryInfo {
   correlationId?: string;
 }
 
+/** What `RetryOptions.shouldRetry` receives as its third argument. */
+export interface ShouldRetryInfo {
+  /** The request that failed. Treat it as read-only. */
+  request: import("./http.js").RequestInformation;
+  /**
+   * The response that failed, when there was one (absent for a network error or a timed-out
+   * attempt). Don't read its body: the SDK releases it before a retry, or returns it to the caller.
+   */
+  response?: Response;
+  /** The attempt that failed: 0 for the first attempt, 1 for the first retry, and so on. */
+  attempt: number;
+}
+
+/**
+ * How the computed delay grows from one retry to the next (`baseDelayMs` is `b`, retry `n` is
+ * 0-based): `"exponential"` waits `b * 2^n`, `"linear"` waits `b * (n + 1)`, `"constant"` waits
+ * `b` every time. Each is capped at `maxDelayMs`.
+ */
+export type RetryBackoff = "exponential" | "linear" | "constant";
+
+/**
+ * Retry policy, used both for the client (`DataverseClientOptions.retry`) and per request
+ * (`new MiddlewareRequestOptions([{ type: "retry", ... }])`). A per-request value overrides the
+ * client's value for that request only.
+ *
+ * By default the delay before retry `n` (0-based) is `min(maxDelayMs, baseDelayMs * 2^n)`, with
+ * ±20% jitter (`backoff` and `jitter` change that). When the response carries `Retry-After`, that
+ * wait is used instead (plus up to `retryAfterJitterMs`).
+ */
 export interface RetryOptions {
   /** Retries after the first attempt. @default 6 */
   maxRetries?: number;
-  /** Base of the exponential backoff, in ms. @default 3000 */
+  /**
+   * The first delay, in ms, which `backoff` scales for later retries. With
+   * `jitter: "decorrelated"`, the median of the first delay. @default 3000
+   */
   baseDelayMs?: number;
-  /** Upper bound of the computed backoff, in ms. @default 30000 */
+  /** Upper bound of the computed backoff, in ms (jitter included). @default 30000 */
   maxDelayMs?: number;
+  /**
+   * How the computed delay grows: `"exponential"` (`baseDelayMs * 2^n` before retry `n`, 0-based),
+   * `"linear"` (`baseDelayMs * (n + 1)`) or `"constant"` (`baseDelayMs` every time), capped at
+   * `maxDelayMs`. `Retry-After` replaces it when the response carries one.
+   * @default "exponential"
+   */
+  backoff?: RetryBackoff;
   /**
    * Longest `Retry-After` the SDK waits out, in ms. When the server asks for a longer wait, the
    * response is returned at once (as a `DataverseThrottleError` with `retryAfterMs` for a 429),
@@ -70,8 +104,29 @@ export interface RetryOptions {
    * @default maxDelayMs (30000 unless changed)
    */
   maxRetryAfterMs?: number;
-  /** Add ±20% random jitter to the computed backoff (never to `Retry-After`). @default true */
-  jitter?: boolean;
+  /**
+   * Randomise the computed backoff (never `Retry-After`; see `retryAfterJitterMs` for that), so
+   * clients that failed together don't retry together.
+   *
+   * - `true`: ±20%, uniformly, around the `backoff` delay.
+   * - `false`: the `backoff` delay exactly.
+   * - `"decorrelated"`: with `backoff: "exponential"`, Polly v8's decorrelated jitter
+   *   (`DecorrelatedJitterBackoffV2`): delays spread between 0 and roughly
+   *   `baseDelayMs * (2^(n+1) - 2^(n-1))` before retry `n`, with medians near `baseDelayMs * 2^n`
+   *   and fewer clusters than uniform jitter. Each delay is capped at `maxDelayMs`. With
+   *   `"linear"` or `"constant"` it acts as `true`, as in Polly.
+   *
+   * @default true
+   */
+  jitter?: boolean | "decorrelated";
+  /**
+   * Add a random 0 to `retryAfterJitterMs` ms to each `Retry-After` wait, so requests throttled at
+   * the same moment don't all retry at the same moment. The added time never pushes the wait past
+   * the request's deadline (`timeoutMs`): it shrinks to fit. `maxRetryAfterMs` is compared with
+   * `Retry-After` itself.
+   * @default 0
+   */
+  retryAfterJitterMs?: number;
   /** Status codes that are retried. @default [429, 502, 503, 504] */
   retryableStatusCodes?: number[];
   /**
@@ -92,20 +147,42 @@ export interface RetryOptions {
    * - `true`: the same, and with `retryNonIdempotent: true` every request is retried.
    * - `false`: never retried; the error is thrown at once (the 1.x behaviour).
    *
-   * Aborts, timeouts and requests with a stream body are never retried.
+   * Aborts, timeouts (see `retryAttemptTimeouts`) and requests with a stream body are never
+   * retried.
    * @default undefined (idempotent requests are retried)
    */
   retryNetworkErrors?: boolean;
   /**
+   * Retry an attempt that ran out of `attemptTimeoutMs` (a `DataverseNetworkError` named
+   * `RequestTimeout`). Only idempotent requests are retried: GET, HEAD, OPTIONS, PUT, DELETE, a
+   * PATCH with `If-Match`, or a request marked `idempotent`; a POST or another PATCH may have been
+   * applied before the attempt timed out, so it is retried only with `retryNonIdempotent: true`
+   * as well. The request's own `timeoutMs` (its deadline) still ends it: a timed-out request, an
+   * abort, or a retry whose wait would end after the deadline is never retried. With
+   * `shouldRetry`, it must also return `true` (it gets status `0` and the timeout error).
+   * @default false (a timed-out attempt fails the request)
+   */
+  retryAttemptTimeouts?: boolean;
+  /**
    * Decide which failures are worth retrying. Replaces `retryableStatusCodes` and
-   * `retryNetworkErrors`: for a network error it is called with status `0` and the error.
+   * `retryNetworkErrors`: for a network error it is called with status `0` and the error. The
+   * third argument has the request, the failed response (when there was one) and the attempt
+   * number (0 for the first attempt); a predicate that takes one or two arguments works as before.
    *
    * It does not decide which requests may be replayed. A POST, or a PATCH without `If-Match`, is
    * still not retried after a 5xx or a network error, nor a `$batch` whose 429 response has
    * per-request results, unless `retryNonIdempotent` is `true`. `maxRetries`, the delays,
    * `maxRetryAfterMs` and the request's `timeoutMs` still apply.
+   *
+   * @example
+   * ```typescript
+   * // Retry 5xx, but not on the bulk endpoint, and only twice for anything but a GET.
+   * shouldRetry: (status, _error, { request, attempt }) =>
+   *   status >= 500 && !request.url.includes("CreateMultiple") &&
+   *   (request.method === "GET" || attempt < 2)
+   * ```
    */
-  shouldRetry?: (statusCode: number, error?: Error) => boolean;
+  shouldRetry?: (statusCode: number, error: Error | undefined, info: ShouldRetryInfo) => boolean;
   /**
    * Called once before each retry, after the delay is known and before the SDK waits. Use it to
    * show progress ("Throttled, retrying in 12 s (2/6)") or count retries. It must not throw; an
@@ -219,7 +296,10 @@ export interface RequestOptions {
    * `DataverseThrottleError` with `retryAfterMs`. Reading the body afterwards isn't limited.
    */
   timeoutMs?: number;
-  /** Time limit for each attempt, in ms. A timed-out attempt is not retried. */
+  /**
+   * Time limit for each attempt, in ms. A timed-out attempt is not retried, unless the retry
+   * option `retryAttemptTimeouts` is on (idempotent requests only).
+   */
   attemptTimeoutMs?: number;
   signal?: AbortSignal;
   /** Correlation id for this request. A new one is generated per request when omitted. */
