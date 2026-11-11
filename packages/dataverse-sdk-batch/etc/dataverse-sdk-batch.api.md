@@ -191,6 +191,9 @@ export interface DataverseBulkOperationErrorInit {
 export function decodeBatchResponse(responseBody: string, contentType: string): BatchResponsePart[];
 
 // @public
+export function deleteMultiple(client: DataverseClient, table: BulkTable, records: ReadonlyArray<string | object>, options?: BulkOperationOptions): Promise<BulkOperationResult>;
+
+// @public
 export interface EncodeBatchOptions {
     changesetBoundary?: (index: number) => string;
 }
@@ -226,6 +229,9 @@ export const JSON_PART_CONTENT_TYPE = "application/json; type=entry";
 
 // @public
 export function updateMultiple(client: DataverseClient, table: BulkTable, records: readonly object[], options?: BulkOperationOptions): Promise<BulkOperationResult>;
+
+// @public
+export function upsertMultiple(client: DataverseClient, table: BulkTable, records: readonly object[], options?: BulkOperationOptions): Promise<BulkOperationResult>;
 
 // (No @packageDocumentation comment for this package)
 
