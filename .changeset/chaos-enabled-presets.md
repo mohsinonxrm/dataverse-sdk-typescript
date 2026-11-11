@@ -1,6 +1,5 @@
 ---
 "@mohsinonxrm/dataverse-sdk-core": minor
-"@mohsinonxrm/dataverse-sdk-testing": minor
 ---
 
 `ChaosMiddleware` gets an off-switch, telemetry, and latency and hang faults (#475); Dataverse chaos presets, a clock and `describePipeline()` (#478). Chaos is for dev and test environments only, never a live production environment.
@@ -10,4 +9,4 @@
 - **core:** each injected fault is tracked as a `dataverse.chaos.injected` event (`TelemetryEvents.chaosInjected`), and the attempt's dependency (and its exception or `dataverse.throttle` event) carries `chaos.injected: "true"` and `chaos.fault`. `MiddlewareContext.chaos` carries the mark from the chaos middleware to the telemetry middleware.
 - **core:** `ChaosPresets.serviceProtection()` (the three service-protection 429s, `0x80072322`, `0x80072321` and `0x80072326`, with `Retry-After` and Dataverse's error body), `gatewayOutage()` (502/503/504), `flakyNetwork()` (dropped connections) and `slowOrg()` (latency).
 - **core:** the `Clock` type (`now()`, `sleep(ms, signal)`) and `systemClock`; `client.describePipeline()` lists the middleware names in order.
-- **testing:** `fakeClock()`, `serviceProtectionError()`, `gatewayError()`, `connectionReset` and `slowResponse()` for the fake fetch.
+- **testing** (the private, unpublished test harness): `fakeClock()`, `serviceProtectionError()`, `gatewayError()`, `connectionReset` and `slowResponse()` for the fake fetch.
