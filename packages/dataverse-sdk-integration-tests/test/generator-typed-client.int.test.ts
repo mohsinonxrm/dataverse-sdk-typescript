@@ -134,12 +134,13 @@ describe.skipIf(!live)("live: generated typed client (#312)", () => {
         expand: { primarycontactid: { select: ["lastname"] } },
       });
       expect(expanded.primarycontactid).toMatchObject({ contactid: contactId, lastname: name });
-      const [contact] = await typed.contacts.list({
+      const contacts = await typed.contacts.list({
         select: ["lastname"],
         filter: `contactid eq ${contactId}`,
         expand: { account_primary_contact: { select: ["name"] } },
       });
-      expect(contact?.account_primary_contact).toEqual([
+      expect(contacts).toHaveLength(1);
+      expect(contacts[0].account_primary_contact).toEqual([
         expect.objectContaining({ accountid: accountId, name }),
       ]);
 
