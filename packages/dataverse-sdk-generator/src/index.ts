@@ -25,6 +25,12 @@ export type {
   TypeScriptType,
   EnumMember,
   EntityKeyType,
+  FormLayoutKind,
+  FormLayoutType,
+  FormTabType,
+  FormSectionType,
+  FormControlKind,
+  FormControlType,
 } from "./types.js";
 export type {
   RetrieveMetadataChangesResponse,
@@ -37,6 +43,7 @@ export type {
   OptionMetadata,
   EntityKeyMetadata,
   RelationshipMetadata,
+  SystemFormRecord,
 } from "./metadata-service.js";
 
 export { DEFAULT_CONFIG } from "./types.js";

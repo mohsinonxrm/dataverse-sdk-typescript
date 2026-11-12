@@ -5,6 +5,7 @@
  */
 
 import * as xmljs from "xml-js";
+import { compareFormLayouts, toFormLayout } from "./form-xml.js";
 import type {
   DataverseGenConfig,
   EntityType,
@@ -93,6 +94,12 @@ export class SchemaModel {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private metadata: any;
 
+  /**
+   * With `formLayouts`: each table's columns and their `AttributeTypeName` (`PartyListType`, …),
+   * every column, including those `$metadata` has no property for (a party list).
+   */
+  private readonly columnTypes = new Map<EntityType, Map<string, string>>();
+
   constructor(
     private metadataService: MetadataService,
     private config: DataverseGenConfig
@@ -123,7 +130,23 @@ export class SchemaModel {
     await this.loadEdmxMetadata();
     this.filter();
     await this.enrichWithDetailedMetadata();
+    if (this.config.formLayouts === true) await this.readFormLayouts();
     this.resolveTypes();
+  }
+
+  /**
+   * With `formLayouts` (#430): each table's active main and quick create forms, from their FormXml,
+   * with the type of each column a control is bound to.
+   */
+  private async readFormLayouts(): Promise<void> {
+    for (const entityType of this.EntityTypes) {
+      const records = await this.metadataService.getSystemForms(entityType.LogicalName);
+      const columnTypes = this.columnTypes.get(entityType) ?? new Map<string, string>();
+      entityType.Forms = records
+        .map((record) => toFormLayout(record, columnTypes))
+        .filter((form) => form !== undefined)
+        .sort(compareFormLayouts);
+    }
   }
 
   /**
@@ -206,6 +229,7 @@ export class SchemaModel {
       this.TableMetadata.set(entityType.LogicalName, detail);
 
       const entityMetadata = canonicalOrder(detail);
+      if (this.config.formLayouts === true) this.recordColumnTypes(entityType, entityMetadata);
 
       // Set metadata properties not available in EDMX
       entityType.SchemaName = entityMetadata.SchemaName ?? entityType.LogicalName;
@@ -417,6 +441,21 @@ export class SchemaModel {
       }
     }
     return { tables, skipped };
+  }
+
+  /**
+   * `formLayouts`: record the type of each of the table's columns, as `AttributeTypeName`
+   * (`AttributeType` + `Type` when it's missing).
+   */
+  private recordColumnTypes(entityType: EntityType, metadata: EntityMetadataDetail): void {
+    const types = new Map<string, string>();
+    for (const attribute of metadata.Attributes ?? []) {
+      const type =
+        attribute.AttributeTypeName?.Value ??
+        (attribute.AttributeType ? `${attribute.AttributeType}Type` : undefined);
+      if (attribute.LogicalName && type) types.set(attribute.LogicalName, type);
+    }
+    this.columnTypes.set(entityType, types);
   }
 
   /**

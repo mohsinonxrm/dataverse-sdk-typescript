@@ -200,6 +200,39 @@ ${await response.text()}`
   }
 
   /**
+   * The active main (type 2) and quick create (type 7) forms of a table, with their FormXml
+   * (`formLayouts`, #430): the `systemform` records whose `objecttypecode` is the table.
+   */
+  async getSystemForms(logicalName: string): Promise<SystemFormRecord[]> {
+    const filter =
+      `objecttypecode eq '${logicalName.replace(/'/g, "''")}'` +
+      " and (type eq 2 or type eq 7) and formactivationstate eq 1";
+    let url: string | undefined =
+      `${this.baseUrl}/systemforms?$select=formid,name,type,formxml` +
+      `&$filter=${encodeURIComponent(filter)}&$orderby=name,formid`;
+
+    const headers = this.jsonHeaders();
+
+    const forms: SystemFormRecord[] = [];
+    while (url) {
+      const response = await this.fetchWithRetry(url, { method: "GET", headers }, () => false);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to retrieve the forms of ${logicalName}: ${String(response.status)} ${response.statusText}\n${errorText}`
+        );
+      }
+      const page = (await response.json()) as {
+        value?: SystemFormRecord[];
+        "@odata.nextLink"?: string;
+      };
+      forms.push(...(page.value ?? []));
+      url = page["@odata.nextLink"];
+    }
+    return forms;
+  }
+
+  /**
    * Incremental generation (#429): what changed in the tables' metadata since `clientVersionStamp`
    * (the `ServerVersionStamp` of an earlier response), with the same properties as
    * {@link getEntityMetadata}. `EntityMetadata` lists the tables that changed or were added, with
@@ -334,6 +367,18 @@ export interface RetrieveMetadataChangesResponse {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DeletedMetadata?: any;
+}
+
+/** A `systemform` record as {@link MetadataService.getSystemForms} reads it. */
+export interface SystemFormRecord {
+  /** The form's id. */
+  formid?: string;
+  /** The form's name. */
+  name?: string;
+  /** The form type: 2 = main, 7 = quick create (the only ones read). */
+  type?: number;
+  /** The form's layout. */
+  formxml?: string;
 }
 
 /**

@@ -224,6 +224,10 @@ program
         errors.push("formContext must be true or false");
       }
 
+      if (config.formLayouts !== undefined && typeof config.formLayouts !== "boolean") {
+        errors.push("formLayouts must be true or false");
+      }
+
       if (config.typedClient !== undefined && typeof config.typedClient !== "boolean") {
         errors.push("typedClient must be true or false");
       }
@@ -309,7 +313,12 @@ program
         chalk.cyan(`  Output: ${config.output?.outputRoot ?? DEFAULT_CONFIG.output?.outputRoot}`)
       );
       console.log(chalk.cyan(`  Strict nulls: ${config.strictNulls === true ? "on" : "off"}`));
-      console.log(chalk.cyan(`  Form contexts: ${config.formContext === true ? "on" : "off"}`));
+      console.log(
+        chalk.cyan(
+          `  Form contexts: ${config.formContext === true || config.formLayouts === true ? "on" : "off"}`
+        )
+      );
+      console.log(chalk.cyan(`  Form layouts: ${config.formLayouts === true ? "on" : "off"}`));
       console.log(chalk.cyan(`  Typed client: ${config.typedClient === true ? "on" : "off"}`));
       console.log(
         chalk.cyan(`  Incremental: ${config.output?.incremental === true ? "on" : "off"}`)
