@@ -11,6 +11,7 @@ import {
 } from "@fluentui/react-components";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "../components/ErrorBoundary";
+import { PreviewBanner } from "../components/PreviewBanner";
 import { TOASTER_ID } from "../components/toaster";
 import { useMediaQuery } from "../hooks/useMediaQuery";
 import { ROUTES } from "../routes";
@@ -37,6 +38,8 @@ const useStyles = makeStyles({
     boxShadow: tokens.shadow8,
     ":focus": { top: tokens.spacingVerticalS },
   },
+  // Square, full width, between the header and the page.
+  preview: { flexShrink: 0, borderRadius: 0 },
   body: { display: "flex", flex: 1, minHeight: 0 },
   main: {
     flex: 1,
@@ -119,6 +122,7 @@ export default function AppShell() {
         Skip to content
       </a>
       <AppHeader navOpen={navOpen} onToggleNav={() => setNavOpen((o) => !o)} />
+      <PreviewBanner className={styles.preview} />
       <div className={styles.body}>
         <AppNav open={navOpen} overlay={narrow} onOpenChange={setNavOpen} />
         <main id="main" ref={main} tabIndex={-1} className={styles.main}>

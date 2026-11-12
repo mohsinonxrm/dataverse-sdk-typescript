@@ -82,6 +82,8 @@ export function editorTheme(theme: Theme, base: editor.BuiltinTheme): editor.ISt
     colors: {
       "editor.background": "#00000000",
       "editor.foreground": c("colorNeutralForeground1"),
+      // Fluent's placeholder colour (an Input's): Monaco's own lacks contrast.
+      "editor.placeholder.foreground": c("colorNeutralForeground4"),
       "editorGutter.background": "#00000000",
       "editorLineNumber.foreground": c("colorNeutralForeground3"),
       "editorLineNumber.activeForeground": c("colorNeutralForeground1"),

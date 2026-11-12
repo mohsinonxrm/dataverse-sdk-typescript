@@ -124,6 +124,27 @@ page, where each step is a separate scenario.
   `https://<org>.crm.dynamics.com` in the demo), the OData headers it sends, and `<TOKEN>` for
   the access token (`src/explorer/copyAs.ts`).
 
+  Above the panels:
+  - **Environment**: the signed-in user's environments from the Global Discovery Service
+    (listed when the dropdown first opens, once per session; demo mode's fake one in demo mode).
+    Choosing one switches the client and keeps the request being built; nothing runs until you
+    run it. **All environments…** opens the full picker.
+  - **Web API version**: v9.2 (the SDK's default), v9.1 or v9.0, kept per environment in
+    `localStorage`. The client, the preview and Copy as use it, and the SDK code shows the
+    `apiVersion` option when it isn't the default (`src/explorer/apiVersion.ts`).
+  - **Browse tables**: a drawer with the environment's tables (`EntityDefinitions` with a light
+    `$select`, read when the drawer first opens and cached for the session), then a table's
+    columns (type, requirement, maximum length), alternate keys and relationships (with the
+    navigation properties for `$expand`). Tick columns for `$select` and **Query this table**
+    fills in `GET <entityset>?$select=…&$top=10`, without running it (`src/explorer/tables.ts`).
+
+  **Token** (a response tab) decodes the access token the explorer's requests carry, in the
+  browser: its header and claims (audience, tenant, user, object id, application, scopes or roles,
+  issued and expiry times with how long ago or from now), never its signature. The raw token isn't
+  shown, kept in the page's state or logged; **Copy the raw token** fetches and copies it only when
+  clicked, under a warning that it is a secret. Demo mode's token is a made-up, unsigned JWT
+  (`src/explorer/token.ts`, `src/demo/demoToken.ts`).
+
   The operation catalog is read from the actions, functions and messages packages' source at
   build time (`src/explorer/catalog/parse.ts`, run by the Vite plugin in `vite.config.ts`), one
   chunk per package (about 40 KB gzipped each), loaded when you open that package's list. Each

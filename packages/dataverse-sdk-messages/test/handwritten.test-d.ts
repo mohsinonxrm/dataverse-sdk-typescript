@@ -4,6 +4,8 @@
 import { expectAssignable, expectError, expectType } from "tsd";
 import type { Executable } from "@mohsinonxrm/dataverse-sdk-core";
 import {
+  CheckPrivilegeRequest,
+  CheckPrivilegeResponse,
   CreateRequest,
   CreateResponse,
   DeleteRequest,
@@ -14,12 +16,18 @@ import {
   OrganizationRequest,
   RetrieveEntityRequest,
   RetrieveMultipleRequest,
+  RetrievePrincipalAccessRequest,
+  RetrievePrincipalAccessResponse,
   RetrieveRequest,
   UpdateRequest,
+  UpsertRequest,
+  UpsertResponse,
   WhoAmIRequest,
   WhoAmIResponse,
   createEntityReference,
+  type EntityReference,
   type ExecuteMultipleResponseItem,
+  type PrivilegeDepthName,
   type RetrieveMultipleResult,
   type RetrieveResult,
   type WhoAmIResult,
@@ -80,3 +88,46 @@ expectAssignable<ExecuteMultipleResponseItem<WhoAmIResponse | CreateResponse>>(
   multiple.Responses[0]
 );
 expectError(new ExecuteMultipleRequest({ Requests: [{ name: "not a request" }] }));
+
+// Upsert (#435): a GUID or an alternate key; the response says whether it created the record
+const upsert = await execute(
+  new UpsertRequest({
+    Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Contoso" },
+    Key: { accountnumber: "A-1" },
+  })
+);
+expectType<UpsertResponse>(upsert);
+expectType<boolean>(upsert.RecordCreated);
+expectType<EntityReference>(upsert.Target);
+new UpsertRequest({ Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: "1" } });
+expectError(new UpsertRequest({ Target: { name: "no table" }, Key: "1" }));
+expectError(new UpsertRequest({ Target: { "@odata.type": "a" }, Key: { n: { nested: 1 } } }));
+
+// RetrievePrincipalAccess (#435): the principal is a reference; the rights are a number
+const access = await execute(
+  new RetrievePrincipalAccessRequest({
+    Principal: createEntityReference("systemuser", "00000000-0000-0000-0000-000000000002"),
+    Target: account,
+  })
+);
+expectType<RetrievePrincipalAccessResponse>(access);
+expectType<number>(access.AccessRights);
+expectType<string | number>(access.result.AccessRights);
+expectError(new RetrievePrincipalAccessRequest({ Target: account }));
+expectError(
+  new RetrievePrincipalAccessRequest({
+    Principal: { logicalName: "team", id: "1" },
+    Target: account,
+  })
+);
+
+// CheckPrivilege (#435)
+const privilege = await execute(
+  new CheckPrivilegeRequest({ UserId: "1", PrivilegeName: "prvCreateAccount", Depth: "Local" })
+);
+expectType<CheckPrivilegeResponse>(privilege);
+expectType<boolean>(privilege.HasPrivilege);
+expectType<PrivilegeDepthName | undefined>(privilege.Depth);
+new CheckPrivilegeRequest({ UserId: "1", PrivilegeName: "p", Depth: 3 });
+expectError(new CheckPrivilegeRequest({ UserId: "1", PrivilegeName: "p", Depth: "Everywhere" }));
+expectError(new CheckPrivilegeRequest({ UserId: "1" }));
