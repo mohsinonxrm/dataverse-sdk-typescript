@@ -225,6 +225,7 @@ export interface EnumMember {
 
 // @public
 export interface EnumType {
+    IsCsdlEnum?: boolean;
     IsFlags?: boolean;
     IsGlobal: boolean;
     Members: EnumMember[];

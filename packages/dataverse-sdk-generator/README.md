@@ -821,12 +821,48 @@ for the checks.
 
 ```typescript
 // generated/enums/account_industrycode.ts
-export const enum account_industrycode {
-  Accounting = 1,
-  AgricultureAndNonPetrolNaturalResourceExtraction = 2,
+export const account_industrycode = {
+  Accounting: 1,
+  AgricultureAndNonPetrolNaturalResourceExtraction: 2,
   // ...
-}
+} as const;
+
+export type account_industrycode = (typeof account_industrycode)[keyof typeof account_industrycode];
+
+// generated/enums/contoso_Priority.ts (an EnumType of $metadata)
+export const contoso_Priority = {
+  /** 0 */
+  Low: "Low",
+  /** 1 */
+  High: "High",
+} as const;
+
+export type contoso_Priority = (typeof contoso_Priority)[keyof typeof contoso_Priority];
+
+// generated/enums/AccessRights.ts (IsFlags="true")
+export const AccessRights = {
+  None: 0,
+  ReadAccess: 1,
+  WriteAccess: 2,
+  // ...
+} as const;
+
+export type AccessRights = number;
 ```
+
+An enum is a const object and a type of the same name, not a TypeScript `enum` (#479), so the
+generated code compiles with `erasableSyntaxOnly` and runs under Node's type stripping.
+`account_industrycode.Accounting` and `x: account_industrycode` work as with an enum, and the type
+takes the plain value too (`1`, `"High"`); only an enum's reverse mapping
+(`account_industrycode[1]`) is gone.
+
+- A choice's option set has its numbers, which Dataverse stores. So does a `$metadata` enum that a
+  choice column uses as its (global) option set.
+- An `EnumType` of `$metadata` has its member names, which the Web API reads and writes: an action
+  body or a function parameter sends `contoso_Priority.High` as it is, and a returned value is
+  typed with the enum. Each member's comment gives its number.
+- A flags enum (`IsFlags="true"`, such as `AccessRights`) keeps its numbers, typed `number`, so
+  members combine with `|`; actions and functions send the value as member names.
 
 Option labels become PascalCase identifiers; a label that isn't usable (empty, or a duplicate)
 falls back to `Value<n>` or gets the value appended.
@@ -852,8 +888,11 @@ export interface WinOpportunityActionParameters {
 }
 
 export class WinOpportunityAction extends ActionBase<void> {
-  constructor(public readonly parameters: WinOpportunityActionParameters) {
+  public readonly parameters: WinOpportunityActionParameters;
+
+  constructor(parameters: WinOpportunityActionParameters) {
     super();
+    this.parameters = parameters;
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -892,12 +931,13 @@ await client.execute(
 ```
 
 The request body is what the Web API reads, as the classes in `@mohsinonxrm/dataverse-sdk-actions`
-send it. Parameters that can hold an enum or an entity go through `bodyValue()`, from the generated
-`internal/actionBody.ts`:
+send it. Parameters that can hold a flags enum or an entity go through `bodyValue()`, from the
+generated `internal/actionBody.ts`:
 
-- an enum value is sent as its member name: `AccessRights.ReadAccess | AccessRights.WriteAccess`
-  becomes `"ReadAccess, WriteAccess"` (the Web API rejects a number), also inside complex types
-  such as `GrantAccess`'s `PrincipalAccess.AccessMask`;
+- an enum value is sent as its member name (the Web API rejects a number). Other enums' values are
+  their member names already; a flags value is turned into them:
+  `AccessRights.ReadAccess | AccessRights.WriteAccess` becomes `"ReadAccess, WriteAccess"`, also
+  inside complex types such as `GrantAccess`'s `PrincipalAccess.AccessMask`;
 - an entity parameter takes an `EntityReference` or a record. A reference is sent as `@odata.type`
   and its primary key. A record of a generated table goes through `formatEntityForWrite()`
   (`@odata.type`, and a lookup set with an `EntityReference` becomes
@@ -925,7 +965,7 @@ resolve for the same operation (#300):
 | ---------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | none                                     | `204 No Content`                                          | none: `execute()` resolves `undefined` (`void`)                               |
 | primitive (`Edm.String`, `Edm.Int32`, …) | `{ "@odata.context", "value": … }`                        | the value: `string`, `number`, `boolean`                                      |
-| enum                                     | `{ "@odata.context", "value": "Member" }`                 | `string`: the member name (`"A, B"` for flags)                                |
+| enum                                     | `{ "@odata.context", "value": "Member" }`                 | the enum (its member names); `string` for flags (`"A, B"`)                    |
 | collection (`Collection(…)`)             | `{ "@odata.context", "value": [ … ] }`, or 204 when unset | the array, `[]` for a 204; entity records add `@odata.etag` and `@odata.type` |
 | complex type                             | the properties, with `@odata.context`                     | `interface … extends <ComplexType> { "@odata.context"?: string }`             |
 | entity (or `crmbaseentity`)              | the record, with its annotations, or 204 when unset       | `(<Entity> & { "@odata.context"?, "@odata.etag"?, "@odata.type"? }) \| null`  |
@@ -957,8 +997,9 @@ value is written as the OData literal for its type by `formatParameterAlias()` f
 - strings are quoted, with `'` doubled: `'O''Brien'`;
 - GUIDs, numbers and booleans are written bare; `Date` values become ISO strings (`Edm.Date` takes
   only the date part);
-- enum values become enum literals: `Microsoft.Dynamics.CRM.EntityFilters'1'`;
-- collections and complex values are written as JSON, with the enum values in them as member
+- enum values become enum literals: `Microsoft.Dynamics.CRM.EntityFilters'1'`,
+  `Microsoft.Dynamics.CRM.contoso_Priority'High'`;
+- collections and complex values are written as JSON, with the flags enum values in them as member
   names (`{"Rights":"ReadAccess, WriteAccess"}`: Dataverse reads an enum in JSON only by name),
   through `parameterValue()` from the generated `internal/functionParameters.ts`; an entity
   reference is written as `{"@odata.id":"accounts(<id>)"}`.
@@ -975,11 +1016,16 @@ export interface RetrieveUserPrivilegeByPrivilegeNameFunctionParameters {
 }
 
 export class RetrieveUserPrivilegeByPrivilegeNameFunction extends FunctionBase<RetrieveUserPrivilegeByPrivilegeNameResponse> {
+  public readonly systemuserId: string;
+  public readonly parameters: RetrieveUserPrivilegeByPrivilegeNameFunctionParameters;
+
   constructor(
-    public readonly systemuserId: string,
-    public readonly parameters: RetrieveUserPrivilegeByPrivilegeNameFunctionParameters
+    systemuserId: string,
+    parameters: RetrieveUserPrivilegeByPrivilegeNameFunctionParameters
   ) {
     super();
+    this.systemuserId = systemuserId;
+    this.parameters = parameters;
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {

@@ -219,18 +219,30 @@ describe("FeatureUsageTracker", () => {
 
     it("handles all flags", () => {
       // Add all features
-      for (const key in FeatureUsageFlag) {
-        if (
-          typeof FeatureUsageFlag[key] === "number" &&
-          FeatureUsageFlag[key] !== FeatureUsageFlag.NONE
-        ) {
-          tracker.addFeature(FeatureUsageFlag[key]);
-        }
-      }
+      for (const flag of Object.values(FeatureUsageFlag)) tracker.addFeature(flag);
 
       // Verify all are present
       expect(tracker.hasFeature(FeatureUsageFlag.RETRY_ENABLED)).toBe(true);
       expect(tracker.hasFeature(FeatureUsageFlag.OTEL_TELEMETRY)).toBe(true);
+      expect(tracker.getEnabledFeatures()).toHaveLength(Object.keys(FeatureUsageFlag).length - 1);
+    });
+  });
+
+  // #479: a const object, not an enum, so there is no reverse mapping to skip
+  describe("FeatureUsageFlag as a const object", () => {
+    it("has only the named flags as keys", () => {
+      expect(Object.keys(FeatureUsageFlag)).toContain("RETRY_ENABLED");
+      expect(Object.keys(FeatureUsageFlag).every((k) => Number.isNaN(Number(k)))).toBe(true);
+    });
+
+    it("names every enabled flag, in declaration order, from a combined value", () => {
+      tracker.setFlags(FeatureUsageFlag.OTEL_TELEMETRY | FeatureUsageFlag.RETRY_ENABLED | 0x40000);
+      expect(tracker.getEnabledFeatures()).toEqual(["RETRY_ENABLED", "OTEL_TELEMETRY"]);
+    });
+
+    it("takes a combination of flags where a flag is expected", () => {
+      tracker.addFeature(FeatureUsageFlag.BATCH_ENABLED | FeatureUsageFlag.XRM_FACADE);
+      expect(tracker.getEnabledFeatures()).toEqual(["BATCH_ENABLED", "XRM_FACADE"]);
     });
   });
 });

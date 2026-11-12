@@ -51,6 +51,18 @@ const TYPED_CLIENT_FACTORY = "createTypedClient";
 
 type Folder = "entities" | "enums" | "actions" | "functions" | "complextypes" | "forms";
 
+/**
+ * A constructor argument of a generated action or function, kept as a public readonly field. The
+ * templates declare the field and assign it, rather than use a parameter property, which
+ * `erasableSyntaxOnly` and Node's type stripping don't allow (#479).
+ */
+interface ConstructorParameter {
+  name: string;
+  type: string;
+  /** Source of the default value (`{}` when every parameter is optional). */
+  defaultValue?: string;
+}
+
 /** The names of an entity's form types (`formContext`, #347). */
 interface FormNames {
   attributes: string;
@@ -1039,8 +1051,9 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
     const name = `${className}Response`;
     const ref = returnType.reference;
     let element: "primitive" | "enum" | "entity" | "complex" = "primitive";
+    const enumType = this.model.EnumTypes.find((e) => e.Name === ref);
     if (ref !== undefined) {
-      if (this.model.EnumTypes.some((e) => e.Name === ref)) element = "enum";
+      if (enumType) element = "enum";
       else if (this.model.AllEntityTypeNames.has(ref)) element = "entity";
       else if (this.model.ComplexTypes.some((c) => c.Name === ref)) element = "complex";
     }
@@ -1052,6 +1065,10 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
         this.outputReference(ref, folder, imports) ?? this.resolveReference(ref, folder, imports)
       );
     };
+    // An enum value is read as its member name: the enum's type, whose values are the names
+    // (#479), or a string for a flags enum (`"ReadAccess, WriteAccess"`)
+    const enumValue = (): string =>
+      enumType?.IsCsdlEnum === true && enumType.IsFlags !== true ? resolved() : "string";
     // strictNulls: the CSDL leaves the value (or a collection's items) nullable
     const orNull = this.strictNulls && nullable === true && element !== "entity";
     // Dataverse answers 204 although the CSDL declares the return (a primitive or complex value)
@@ -1066,7 +1083,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
     if (returnType.isArray) {
       kind = "collection";
       let item: string;
-      if (element === "enum") item = "string";
+      if (element === "enum") item = enumValue();
       else if (element === "entity") item = `${resolved()} & { ${RECORD_ANNOTATIONS} }`;
       else item = resolved();
       doc += " * The collection, read from the `value` of the response body.\n";
@@ -1105,7 +1122,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
       }
       if (noContent) doc += noContentDoc(operation);
       else if (orNull) doc += NULLABLE_DOC;
-      const value = element === "enum" ? "string" : resolved();
+      const value = element === "enum" ? enumValue() : resolved();
       declaration = `export type ${name} = ${orNull || noContent ? `${value} | null` : value};\n`;
     }
 
@@ -1238,7 +1255,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
     };
 
     // The record or collection a bound operation is called on: the first constructor argument.
-    let bindingDeclaration = "";
+    let binding: ConstructorParameter | undefined;
     let bindingDoc = "";
     let target = "";
     if (op.IsBound && op.BindingEntity) {
@@ -1247,7 +1264,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
         if (set) {
           target = `/${set}`;
         } else {
-          bindingDeclaration = "public readonly entitySetName: string";
+          binding = { name: "entitySetName", type: "string" };
           bindingDoc =
             'The first argument is the entity set to call it on, for example "accounts".';
           target = "/${this.entitySetName}";
@@ -1255,13 +1272,13 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
       } else if (set) {
         imports.value("formatParameterAlias", RUNTIME_PACKAGE);
         const idName = `${toSafeIdentifier(op.BindingEntity)}Id`;
-        bindingDeclaration = `public readonly ${idName}: string`;
+        binding = { name: idName, type: "string" };
         bindingDoc = `The first argument is the id of the ${toDocText(op.BindingEntity)} record to call it on.`;
         target = `/${set}(\${formatParameterAlias(this.${idName}, "Edm.Guid")})`;
       } else {
         imports.value("formatRecordPath", RUNTIME_PACKAGE);
         imports.type("EntityReference", RUNTIME_PACKAGE);
-        bindingDeclaration = "public readonly target: EntityReference";
+        binding = { name: "target", type: "EntityReference" };
         bindingDoc = "The first argument is the record to call it on, with its entitySetName.";
         target = "/${formatRecordPath(this.target)}";
       }
@@ -1272,11 +1289,24 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
     if (isFunction && params.length > 0) imports.value("formatParameterAlias", RUNTIME_PACKAGE);
 
     const parametersName = `${className}Parameters`;
-    const optional = params.every((p) => p.Nullable === true) ? " = {}" : "";
-    const constructorArguments = [
-      ...(bindingDeclaration ? [bindingDeclaration] : []),
-      ...(params.length > 0 ? [`public readonly parameters: ${parametersName}${optional}`] : []),
+    const optional = params.every((p) => p.Nullable === true);
+    const constructorParameters: ConstructorParameter[] = [
+      ...(binding ? [binding] : []),
+      ...(params.length > 0
+        ? [
+            {
+              name: "parameters",
+              type: parametersName,
+              ...(optional ? { defaultValue: "{}" } : {}),
+            },
+          ]
+        : []),
     ];
+    // As parameter properties, for custom templates written before constructorParameters
+    const constructorArguments = constructorParameters.map(
+      (p) =>
+        `public readonly ${p.name}: ${p.type}${p.defaultValue !== undefined ? ` = ${p.defaultValue}` : ""}`
+    );
 
     return {
       ...this.operationReturn(
@@ -1290,6 +1320,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
       ),
       bindingDoc,
       constructorArguments,
+      constructorParameters,
       operationPath,
       parametersName,
       parameterType,

@@ -206,6 +206,10 @@ export class SchemaModel {
           // Global option set - should already exist in EnumTypes
           existingProp.IsEnum = true;
           existingProp.EnumName = attribute.OptionSet.Name;
+          // A column's choice is a number, so a $metadata enum used as its option set keeps its
+          // numbers rather than its member names (#479)
+          const global = this.EnumTypes.find((e) => e.Name === attribute.OptionSet?.Name);
+          if (global?.IsCsdlEnum === true) global.IsCsdlEnum = false;
         }
 
         // Handle date/time format
@@ -524,6 +528,7 @@ export class SchemaModel {
         Name: this.getAttribute(enumType, "Name"),
         IsGlobal: true,
         IsFlags: this.getAttribute(enumType, "IsFlags") === "true",
+        IsCsdlEnum: true,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         Members: members.map((m: any) => ({
           Name: this.getAttribute(m, "Name"),
