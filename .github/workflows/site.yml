@@ -6,6 +6,11 @@ name: Site
 # as the AZURE_STATIC_WEB_APPS_API_TOKEN secret (docs/site.md), the site is still built, and the
 # deploy step is skipped with a notice.
 #
+# Pull requests from this repository that change the site get a preview environment (#427): the
+# deploy action uploads it, comments its URL on the pull request, and the close job deletes it
+# when the pull request is closed or merged. Pull requests from forks never run these jobs: the
+# deployment token is a secret (and GitHub doesn't give it to fork pull requests anyway).
+#
 # The site has no backend and no secrets: visitors sign in to their own environment with MSAL in
 # the browser. Optional repository variables give the sign-in form its defaults:
 # EXPLORER_CLIENT_ID (a multi-tenant SPA app registration) and EXPLORER_TENANT_ID.
@@ -13,21 +18,40 @@ name: Site
 on:
   push:
     branches: [main]
+  pull_request:
+    # closed: delete the preview environment
+    types: [opened, synchronize, reopened, closed]
+    paths:
+      - "samples/spa-fluentui-v9/**"
+      - "apps/docs/**"
+      - "docs/**"
+      - "packages/**"
+      - ".github/workflows/site.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# One deployment at a time; a newer push replaces a queued one
+# Production: one deployment at a time, a newer push replaces a queued one. A pull request: its
+# own group, where a newer push (or closing it) cancels the run in progress.
 concurrency:
-  group: site
-  cancel-in-progress: false
+  group: site-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'production' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   deploy:
     name: Build and deploy the site
+    # Not when a pull request closes, and never for a pull request from a fork.
+    if: >-
+      github.event_name != 'pull_request' ||
+      (github.event.action != 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: read
+      # The deploy action comments the preview URL on the pull request.
+      pull-requests: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
@@ -56,18 +80,24 @@ jobs:
           TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
         run: |
           if [ -z "$TOKEN" ]; then
-            echo "::notice title=Site not deployed::The AZURE_STATIC_WEB_APPS_API_TOKEN secret isn't set, so the site was built but not deployed. See docs/site.md."
+            echo "::notice title=Site not deployed::The AZURE_STATIC_WEB_APPS_API_TOKEN secret isn't set (or isn't given to this run, as for Dependabot), so the site was built but not deployed. See docs/site.md."
             echo "present=false" >> "$GITHUB_OUTPUT"
           else
             echo "present=true" >> "$GITHUB_OUTPUT"
           fi
       # Uploads the built site, docs included, as it is (no Oryx build). staticwebapp.config.json
-      # is in the build output, copied from samples/spa-fluentui-v9/public.
+      # is in the build output, copied from samples/spa-fluentui-v9/public. On a pull request, the
+      # action deploys a preview environment named after it and comments its URL there.
       - name: Deploy to Azure Static Web Apps
+        id: deploy
         if: steps.token.outputs.present == 'true'
+        # The Free plan has 3 preview environments: when they are taken, a preview fails without
+        # failing the pull request (see the next step).
+        continue-on-error: ${{ github.event_name == 'pull_request' }}
         uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: upload
           app_location: samples/spa-fluentui-v9/dist
           api_location: ""
@@ -76,3 +106,34 @@ jobs:
           skip_api_build: true
           # A run by hand on another branch deploys a preview environment, not production
           production_branch: main
+      - name: Report a preview that wasn't deployed
+        if: github.event_name == 'pull_request' && steps.deploy.outcome == 'failure'
+        run: echo "::warning title=No preview::The preview environment wasn't deployed. The Free plan allows 3 at a time; closing another site pull request frees one. See docs/site.md."
+
+  close:
+    name: Delete the preview environment
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check for the deployment token
+        id: token
+        env:
+          TOKEN: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::notice title=Nothing to delete::The AZURE_STATIC_WEB_APPS_API_TOKEN secret isn't set, so no preview environment was deployed."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Delete the pull request's preview environment
+        if: steps.token.outputs.present == 'true'
+        uses: Azure/static-web-apps-deploy@1a947af9992250f3bc2e68ad0754c0b0c11566c9 # v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: close
+          app_location: ""

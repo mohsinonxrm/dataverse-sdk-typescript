@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { useAuth } from "../auth/AuthProvider";
 import { ErrorCard } from "../components/ErrorCard";
+import { PreviewBanner } from "../components/PreviewBanner";
 import {
   adminConsentUrl,
   APP_NAME,
@@ -123,6 +124,7 @@ export default function SignInPage() {
             </Title2>
           }
         />
+        <PreviewBanner />
         <Body1>
           Try the <span className={common.mono}>@mohsinonxrm/dataverse-sdk</span> packages in your
           browser: build a Web API request or pick one of more than 2,300 typed actions, functions
