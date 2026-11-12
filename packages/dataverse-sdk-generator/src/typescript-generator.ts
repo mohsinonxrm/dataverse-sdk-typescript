@@ -264,7 +264,9 @@ export class TypescriptGenerator {
       for (const entity of this.model.EntityTypes) {
         const files = this.tableFiles(entity);
         const hash = hashOf(JSON.stringify(entity), JSON.stringify(this.tableDependencies(entity)));
-        const metadata = versionStamp ? this.model.TableMetadata.get(entity.LogicalName) : undefined;
+        const metadata = versionStamp
+          ? this.model.TableMetadata.get(entity.LogicalName)
+          : undefined;
         tables[entity.LogicalName] = { hash, files, ...(metadata && { metadata }) };
         const before = previous?.tables[entity.LogicalName];
         if (

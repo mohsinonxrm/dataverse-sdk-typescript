@@ -78,12 +78,10 @@ function tablesOf(url: string): string[] {
 async function generate(dir: string): Promise<Run> {
   const urls: string[] = [];
   const realFetch = globalThis.fetch;
-  globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
-    urls.push(
-      typeof input === "string" ? input : input instanceof URL ? input.href : input.url
-    );
+  globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
+    urls.push(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
     return realFetch(input, init);
-  }) as typeof fetch;
+  };
   try {
     const result = await generateLiveInto(dir, selection, { incremental: true });
     const metadataRequests = urls.filter((u) => u.includes("/RetrieveMetadataChanges("));
@@ -101,9 +99,8 @@ async function generate(dir: string): Promise<Run> {
 
 interface Stamp {
   metadata?: { versionStamp: string };
-  tables: Record<
-    string,
-    { files: string[]; metadata?: { Attributes?: Array<{ LogicalName?: string }> } }
+  tables: Partial<
+    Record<string, { files: string[]; metadata?: { Attributes?: Array<{ LogicalName?: string }> } }>
   >;
 }
 

@@ -374,9 +374,13 @@ export class SchemaModel {
     }
     const deleted = deletedIds(changes.DeletedMetadata);
     if (deleted.size > 0) {
-      const isDeleted = (id: string | undefined) => id !== undefined && deleted.has(id.toLowerCase());
+      const isDeleted = (id: string | undefined) =>
+        id !== undefined && deleted.has(id.toLowerCase());
       for (const [name, detail] of tables) {
-        if (isDeleted(detail.MetadataId) || detail.Attributes?.some((a) => isDeleted(a.MetadataId))) {
+        if (
+          isDeleted(detail.MetadataId) ||
+          detail.Attributes?.some((a) => isDeleted(a.MetadataId))
+        ) {
           tables.delete(name);
         }
       }
