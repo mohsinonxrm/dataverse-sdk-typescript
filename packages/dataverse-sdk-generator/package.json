@@ -42,7 +42,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "@azure/msal-node": "^2.16.3",
+    "@azure/msal-node": "^7.2.1",
     "@mohsinonxrm/dataverse-sdk-auth-msal-node": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-entities-runtime": "workspace:*",
@@ -50,7 +50,7 @@
     "chalk": "^5.6.2",
     "commander": "^14.0.3",
     "ejs": "^3.1.10",
-    "ora": "^8.2.0",
+    "ora": "^10.0.0",
     "xml-js": "^1.6.11"
   },
   "peerDependencies": {
@@ -66,7 +66,7 @@
     "@types/ejs": "^3.1.5",
     "@types/node": "^22.20.5",
     "@types/xrm": "^9.0.97",
-    "eslint": "^9.39.5",
+    "eslint": "^10.14.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"

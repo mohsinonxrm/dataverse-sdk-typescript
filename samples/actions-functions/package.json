@@ -13,7 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@azure/msal-node": "^2.16.3",
+    "@azure/msal-node": "^7.2.1",
     "@mohsinonxrm/dataverse-sdk-actions": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-auth-msal-node": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-core": "workspace:*",
