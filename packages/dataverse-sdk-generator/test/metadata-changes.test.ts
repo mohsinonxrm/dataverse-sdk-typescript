@@ -15,6 +15,7 @@ import type {
   RetrieveMetadataChangesResponse,
 } from "../src/metadata-service.js";
 import { MetadataService as RealMetadataService } from "../src/metadata-service.js";
+import { metadataSource } from "../src/incremental.js";
 import { SchemaModel } from "../src/schema-model.js";
 import { TypescriptGenerator } from "../src/typescript-generator.js";
 import type { DataverseGenConfig } from "../src/types.js";
@@ -384,6 +385,25 @@ describe("incremental generation: only changed tables are read (#429)", () => {
     const third = await run(dir, org, { entities: [] });
     expect(third.calls.tables).toEqual(["systemuser"]);
     expect(await exists(path.join(dir, "entities/SystemUser.ts"))).toBe(true);
+  });
+});
+
+describe("metadataSource (#429)", () => {
+  it("drops any number of trailing slashes and ignores case", () => {
+    const source = (environmentUrl: string, apiVersion?: DataverseGenConfig["apiVersion"]) =>
+      metadataSource({ environmentUrl, apiVersion });
+    const expected = "https://contoso.crm.dynamics.com/api/data/v9.2";
+    expect(source("https://contoso.crm.dynamics.com")).toBe(expected);
+    expect(source("https://contoso.crm.dynamics.com/")).toBe(expected);
+    expect(source("https://Contoso.crm.dynamics.com///")).toBe(expected);
+    expect(source("https://contoso.crm.dynamics.com/", "v9.1")).toBe(
+      "https://contoso.crm.dynamics.com/api/data/v9.1"
+    );
+    expect(source("///")).toBe("/api/data/v9.2");
+    // Linear on long input
+    expect(source(`https://contoso.crm.dynamics.com${"/".repeat(100_000)}x`)).toMatch(
+      /x\/api\/data/
+    );
   });
 });
 

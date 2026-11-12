@@ -65,8 +65,11 @@ export interface StampMetadata {
 
 /** The org and Web API version the metadata comes from, e.g. `https://contoso.crm.dynamics.com/api/data/v9.2`. */
 export function metadataSource(config: DataverseGenConfig): string {
-  const url = config.environmentUrl.replace(/\/+$/, "").toLowerCase();
-  return `${url}/api/data/${config.apiVersion ?? "v9.2"}`;
+  // Trailing slashes dropped with an index scan (a `/\/+$/` regex is polynomial on long input)
+  const url = config.environmentUrl;
+  let end = url.length;
+  while (end > 0 && url[end - 1] === "/") end--;
+  return `${url.slice(0, end).toLowerCase()}/api/data/${config.apiVersion ?? "v9.2"}`;
 }
 
 /**
