@@ -251,22 +251,49 @@ validateEntity({ statecode: 1 }, AccountMetadata, { mode: "update" }); // [] —
 It reads the body as `formatEntityForWrite()` takes it (columns by logical name, lookups by
 navigation property with an `EntityReference`) and reports, by `code`:
 
-| `code`                                    | When                                                                                                 |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `required`                                | a business-required (ApplicationRequired) column or lookup is `null`, or left out of a create        |
-| `notValidForCreate` / `notValidForUpdate` | the column or lookup can't be set in that mode (`IsValidForCreate` / `IsValidForUpdate`)             |
-| `maxLength`                               | text longer than the column's `MaxLength`                                                            |
-| `minValue` / `maxValue`                   | a number outside the column's `MinValue` / `MaxValue`                                                |
-| `notAnInteger`                            | a fraction in a whole-number column                                                                  |
-| `invalidOption`                           | a value that isn't one of a choice column's options (each comma-separated value of a choices column) |
-| `invalidType`                             | the wrong type for the column (text for a number, …), or a lookup that isn't an `EntityReference`    |
+| `code`                                    | When                                                                                                                         |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `required`                                | a business-required (ApplicationRequired) column or lookup is `null`, or left out of a create                                |
+| `notValidForCreate` / `notValidForUpdate` | the column or lookup can't be set in that mode (`IsValidForCreate` / `IsValidForUpdate`)                                     |
+| `maxLength`                               | text longer than the column's `MaxLength`                                                                                    |
+| `minValue` / `maxValue`                   | a number outside the column's `MinValue` / `MaxValue`                                                                        |
+| `notAnInteger`                            | a fraction in a whole-number column                                                                                          |
+| `invalidOption`                           | a value that isn't one of a choice column's options (each comma-separated value of a choices column)                         |
+| `precision`                               | more decimal places than a decimal or currency column keeps (`precision`; see below)                                         |
+| `invalidDate`                             | a date-only column given anything but `yyyy-mm-dd` text; a date and time column given anything but ISO 8601 text or a `Date` |
+| `dateOutOfRange`                          | a date before 1753-01-01 or after 9999-12-31 (in UTC for a date and time)                                                    |
+| `maxSize`                                 | a file or image (base64 text, `ArrayBuffer`, typed array or `Blob`) larger than `maxSizeInKB`                                |
+| `invalidStatus`                           | the body sets `statecode` and a `statuscode` that belongs to another state (`optionStates`)                                  |
+| `invalidType`                             | the wrong type for the column (text for a number, …), or a lookup that isn't an `EntityReference`                            |
 
-The constraints are the `maxLength`, `minValue`, `maxValue`, `optionValues`, `isRequired`,
-`isValidForCreate` and `isValidForUpdate` of `EntityMetadata.attributes`, and the `lookupAttribute`,
-`isRequired`, `isValidForCreate` and `isValidForUpdate` of a lookup's `EntityMetadata.navigation`
-entry; `dataverse-gen` fills them in. Properties the metadata doesn't describe, annotations and
-`undefined` values are skipped. Dataverse checks the same things when the request arrives, except
+The constraints are the `maxLength`, `minValue`, `maxValue`, `optionValues`, `optionStates`,
+`precision`, `maxSizeInKB`, `isRequired`, `isValidForCreate` and `isValidForUpdate` of
+`EntityMetadata.attributes` (with `odataType` `Edm.Date` marking a date-only column), and the
+`lookupAttribute`, `isRequired`, `isValidForCreate` and `isValidForUpdate` of a lookup's
+`EntityMetadata.navigation` entry; `dataverse-gen` fills them in. Properties the metadata doesn't
+describe, annotations and `undefined` values are skipped; `null` is only checked against
+business-required columns. Dataverse checks the same things when the request arrives, except
 business-required columns, which only forms enforce.
+
+**Currency precision.** A currency column's decimal places come from its `PrecisionSource`
+([MoneyAttributeMetadata.PrecisionSource](https://learn.microsoft.com/dotnet/api/microsoft.xrm.sdk.metadata.moneyattributemetadata.precisionsource)):
+the column's own `Precision` (`precision: 2`), the organization's pricing decimal precision
+(`precision: "pricing"`, used by price columns such as a product's list price) or the precision of
+the record's transaction currency (`precision: "currency"`, most currency columns). The last two
+aren't part of the table's metadata, so `validateEntity()` checks them only when you pass them:
+
+```typescript
+validateEntity(product, ProductMetadata, {
+  pricingPrecision: organization.pricingdecimalprecision, // for precision: "pricing"
+  currencyPrecision: currency.currencyprecision, // the record's transactioncurrency, for "currency"
+});
+```
+
+Decimal places are counted as JavaScript writes the number, so `0.1 + 0.2` (`0.30000000000000004`)
+has 17: round a computed value before you check it. Floating point columns aren't checked.
+
+**Status reasons.** A `statuscode` is checked against `statecode` only when the body sets both;
+otherwise the record's state isn't known here.
 
 ---
 

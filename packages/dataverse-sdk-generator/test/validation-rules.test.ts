@@ -2,7 +2,8 @@
  * #347: the generated entity metadata carries each column's constraints (MaxLength,
  * MinValue/MaxValue, option values, IsValidForCreate/IsValidForUpdate) and each lookup's
  * (RequiredLevel, IsValidForCreate/IsValidForUpdate), so the runtime's opt-in `validateEntity()`
- * can check a body before it's sent.
+ * can check a body before it's sent. #433 adds a decimal or currency column's precision, a file or
+ * image column's MaxSizeInKB and the state of each status reason.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import * as fs from "node:fs/promises";
@@ -20,6 +21,7 @@ import {
   scratchFolders,
   typecheck,
 } from "./fixtures/compile.js";
+import { VALIDATION_EDMX, VALIDATION_ENTITY_METADATA } from "./fixtures/validation-metadata.js";
 import { WRITE_EDMX, WRITE_ENTITY_METADATA } from "./fixtures/write-metadata.js";
 
 const scratch = scratchFolders("validation-rules");
@@ -128,5 +130,111 @@ describe("validation rules in the generated metadata (#347)", () => {
     const source = await fs.readFile(path.join(dir, "entities", "Account.ts"), "utf-8");
     expect(source).not.toContain("isValidForCreate: true");
     expect(source).toContain("maxLength: 160,");
+  });
+
+  it("a table without #433's columns is written as before", async () => {
+    // account's creditlimit is a currency column without a PrecisionSource
+    for (const file of ["Account.ts", "Contact.ts"]) {
+      const source = await fs.readFile(path.join(dir, "entities", file), "utf-8");
+      expect(source).not.toMatch(/precision:|maxSizeInKB:|optionStates:/);
+    }
+  });
+});
+
+describe("more validation rules in the generated metadata (#433)", () => {
+  let dir = "";
+  let order: EntityMetadata;
+  let source = "";
+
+  beforeAll(async () => {
+    dir = await scratch.create();
+    await generateFixture(
+      fixtureMetadataService(VALIDATION_EDMX, VALIDATION_ENTITY_METADATA),
+      dir,
+      {
+        entities: ["contoso_order"],
+      }
+    );
+    await compileToJs(dir);
+    order = (
+      await importGenerated<{ contoso_OrderMetadata: EntityMetadata }>(dir, "entities/index.js")
+    ).contoso_OrderMetadata;
+    source = await fs.readFile(path.join(dir, "entities", "contoso_Order.ts"), "utf-8");
+  });
+
+  it("the metadata with the new constraints type-checks", async () => {
+    expect(await typecheck(dir)).toEqual([]);
+  });
+
+  it("decimal and currency columns carry their precision", () => {
+    expect(order.attributes?.contoso_discount).toMatchObject({ precision: 2, maxValue: 100 });
+    // PrecisionSource 0, 1 and 2
+    expect(order.attributes?.contoso_amount.precision).toBe(1);
+    expect(order.attributes?.contoso_listprice.precision).toBe("pricing");
+    expect(order.attributes?.contoso_total.precision).toBe("currency");
+    // A floating point column doesn't
+    expect(order.attributes?.contoso_weight.precision).toBeUndefined();
+    expect(source).toContain('precision: "currency",');
+  });
+
+  it("a date-only column is an Edm.Date; nothing else is written for dates", () => {
+    expect(order.attributes?.contoso_duedate).toMatchObject({
+      attributeType: "DateTime",
+      odataType: "Edm.Date",
+    });
+    expect(order.attributes?.contoso_shippedon.odataType).toBe("Edm.DateTimeOffset");
+  });
+
+  it("image and file columns carry their largest size", () => {
+    expect(order.attributes?.contoso_photo.maxSizeInKB).toBe(1);
+    expect(order.attributes?.contoso_contract.maxSizeInKB).toBe(32768);
+  });
+
+  it("a status reason column carries the state of each option", () => {
+    expect(order.attributes?.statuscode).toMatchObject({
+      optionValues: [1, 2, 3],
+      optionStates: { 1: 0, 2: 1, 3: 1 },
+    });
+    expect(order.attributes?.statecode.optionStates).toBeUndefined();
+  });
+
+  it("validateEntity checks a body against them", () => {
+    const valid = {
+      contoso_discount: 12.5,
+      contoso_amount: 10.5,
+      contoso_total: 99.99,
+      contoso_duedate: "2024-12-31",
+      contoso_shippedon: "2024-12-31T09:30:00Z",
+      contoso_photo: btoa("x".repeat(1024)),
+      statecode: 1,
+      statuscode: 2,
+    };
+    expect(validateEntity(valid, order, { currencyPrecision: 2 })).toEqual([]);
+
+    const issues = validateEntity(
+      {
+        contoso_discount: 12.555,
+        contoso_amount: 10.55,
+        contoso_listprice: 1.23456,
+        contoso_total: 99.999,
+        contoso_duedate: "2024-12-31T00:00:00Z",
+        contoso_shippedon: "1700-01-01T00:00:00Z",
+        contoso_photo: btoa("x".repeat(1025)),
+        statecode: 0,
+        statuscode: 2,
+      },
+      order,
+      { pricingPrecision: 4, currencyPrecision: 2 }
+    );
+    expect(issues.map((i) => [i.property, i.code])).toEqual([
+      ["contoso_discount", "precision"],
+      ["contoso_amount", "precision"],
+      ["contoso_listprice", "precision"],
+      ["contoso_total", "precision"],
+      ["contoso_duedate", "invalidDate"],
+      ["contoso_shippedon", "dateOutOfRange"],
+      ["contoso_photo", "maxSize"],
+      ["statuscode", "invalidStatus"],
+    ]);
   });
 });

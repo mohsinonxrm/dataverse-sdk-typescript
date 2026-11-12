@@ -238,6 +238,23 @@ export class SchemaModel {
             .filter((v): v is number => typeof v === "number")
             .sort((a, b) => a - b);
         }
+        // More constraints (#433): decimal places, file and image sizes, status reasons' states
+        const precision = columnPrecision(attribute);
+        if (precision !== undefined) existingProp.Precision = precision;
+        if (typeof attribute.MaxSizeInKB === "number") {
+          existingProp.MaxSizeInKB = attribute.MaxSizeInKB;
+        }
+        if (attribute.AttributeType === "Status" && Array.isArray(options)) {
+          const states = options
+            .filter(
+              (o): o is { Value: number; State: number } =>
+                typeof o.Value === "number" && typeof o.State === "number"
+            )
+            .sort((a, b) => a.Value - b.Value);
+          if (states.length > 0) {
+            existingProp.OptionStates = Object.fromEntries(states.map((o) => [o.Value, o.State]));
+          }
+        }
       }
 
       // Apply polymorphic lookup consolidation
@@ -996,6 +1013,31 @@ export class SchemaModel {
 
     // Default to primitive
     return "PrimitiveType";
+  }
+}
+
+/**
+ * The decimal places a decimal or currency column keeps (#433). A decimal column's is its
+ * `Precision`. A currency column's comes from its `PrecisionSource`: 0 is its own `Precision`,
+ * 1 the organization's pricing decimal precision (`"pricing"`), 2 the precision of the record's
+ * transaction currency (`"currency"`); neither of those is known when generating. Floating point
+ * columns are left out: their values seldom have an exact number of decimal places.
+ */
+function columnPrecision(
+  attribute: AttributeMetadataDetail
+): number | "pricing" | "currency" | undefined {
+  const precision = typeof attribute.Precision === "number" ? attribute.Precision : undefined;
+  if (attribute.AttributeType === "Decimal") return precision;
+  if (attribute.AttributeType !== "Money") return undefined;
+  switch (attribute.PrecisionSource) {
+    case 0:
+      return precision;
+    case 1:
+      return "pricing";
+    case 2:
+      return "currency";
+    default:
+      return undefined;
   }
 }
 

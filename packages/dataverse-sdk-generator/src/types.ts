@@ -294,6 +294,19 @@ export interface PropertyType {
   /** The values of a choice or choices column's options, in order. */
   OptionValues?: number[];
 
+  /**
+   * Decimal places a decimal or currency column keeps (`Precision`). For a currency column whose
+   * `PrecisionSource` isn't the column: `"pricing"` (the organization's pricing decimal precision)
+   * or `"currency"` (the precision of the record's transaction currency).
+   */
+  Precision?: number | "pricing" | "currency";
+
+  /** Largest file or image a file or image column takes, in KB (`MaxSizeInKB`). */
+  MaxSizeInKB?: number;
+
+  /** A status reason column: the state (`statecode` value) each of its options belongs to. */
+  OptionStates?: Record<number, number>;
+
   /** Source type (`AttributeSourceType`): 0=simple, 1=calculated, 2=rollup, 3=formula, 4=prompt */
   SourceType?: AttributeSourceType | (number & {});
 

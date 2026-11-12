@@ -63,6 +63,7 @@ export interface AttributeMetadataDetail {
     LogicalName?: string;
     // (undocumented)
     MaxLength?: number;
+    MaxSizeInKB?: number;
     // (undocumented)
     MaxValue?: number;
     // (undocumented)
@@ -71,6 +72,7 @@ export interface AttributeMetadataDetail {
     OptionSet?: OptionSetMetadata;
     // (undocumented)
     Precision?: number;
+    PrecisionSource?: 0 | 1 | 2 | (number & {});
     RequiredLevel?: {
         Value?: AttributeRequiredLevel;
         CanBeChanged?: boolean;
@@ -316,6 +318,7 @@ export interface OptionMetadata {
     Label?: Label;
     // (undocumented)
     MetadataId?: string | null;
+    State?: number;
     // (undocumented)
     Value?: number;
 }
@@ -368,12 +371,15 @@ export interface PropertyType {
     IsValidForUpdate?: boolean;
     LogicalName: string;
     MaxLength?: number;
+    MaxSizeInKB?: number;
     MaxValue?: number;
     MinValue?: number;
     Name: string;
     Nullable?: boolean;
     OptionSetType?: string;
+    OptionStates?: Record<number, number>;
     OptionValues?: number[];
+    Precision?: number | "pricing" | "currency";
     RequiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
     SchemaName?: string;
     SourceType?: AttributeSourceType | (number & {});
