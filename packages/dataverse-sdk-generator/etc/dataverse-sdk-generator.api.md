@@ -293,10 +293,10 @@ export interface NavigationPropertyType {
     IsValidForUpdate?: boolean;
     LookupAttribute?: string;
     LookupTargets?: string[];
-    Members?: {
+    Members?: Array<{
         Name: string;
         TargetType: string;
-    }[];
+    }>;
     Name: string;
     ReferencedProperty?: string;
     ReferencingProperty?: string;
