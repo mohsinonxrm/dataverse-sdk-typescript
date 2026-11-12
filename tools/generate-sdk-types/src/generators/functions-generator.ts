@@ -23,17 +23,22 @@ import {
 import { coreImport, isRecordBound } from "../utils/binding.js";
 import { ENUM_BODY_MODULE, enumBodySource } from "../utils/enum-body.js";
 import {
+  functionHelperImports,
+  functionRequestMethod,
   functionSignature,
-  functionUrlStatements,
   ODATA_LITERAL_MODULE,
   ODATA_LITERAL_SOURCE,
 } from "../utils/function-request.js";
 import {
   bindingDoc,
-  parametersArgument,
   parametersInterface,
   parametersInterfaceName,
 } from "../utils/operation-parameters.js";
+import {
+  constructorArguments,
+  splitArguments,
+  typeImportLine,
+} from "../utils/operation-request.js";
 import {
   QUERY_FUNCTIONS_MODULE,
   isQueryFunction,
@@ -145,9 +150,6 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
   const className = `${stem}Function`;
   const responseInterfaceName = `${stem}Response`;
 
-  // Collect all complex type and entity type references used in this file
-  const complexTypesUsed = new Set<string>();
-
   // Return type: the value execute() resolves (#300)
   const ret = operationReturn(
     csdl,
@@ -157,29 +159,19 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
     [],
     func.name
   );
-  for (const t of ret.imports) complexTypesUsed.add(t);
 
   // The constructor arguments: the record or entity set a bound function runs on (in the URL),
   // then one object with the CSDL parameters (#96)
   const signature = functionSignature(csdl, func, (table) => `${table}Id`);
-  for (const t of signature.typeImports) complexTypesUsed.add(t);
+  const request = functionRequestMethod(csdl, func, signature.args, "this.parameters", "functions");
 
-  const core = coreImport(isRecordBound(func));
-  let code = core;
+  let code = coreImport(isRecordBound(func));
+  code += functionHelperImports(request);
   // EntityReference is needed by the return type's declaration or by a parameter
-  const needsEntityReference = ret.needsEntityReference || signature.needsEntityReference;
-
-  if (needsEntityReference) {
+  if (ret.needsEntityReference || signature.needsEntityReference) {
     code += ENTITY_REFERENCE_IMPORT;
   }
-
-  // Import complex types from types folder (excluding EntityReference)
-  const complexTypesToImport = Array.from(complexTypesUsed)
-    .filter((t) => t !== "EntityReference")
-    .sort();
-  if (complexTypesToImport.length > 0) {
-    code += `import type { ${complexTypesToImport.join(", ")} } from './types/index.js';\n`;
-  }
+  code += typeImportLine([...ret.imports, ...signature.typeImports]);
 
   code += `\n`;
 
@@ -187,11 +179,9 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
   code += ret.declaration;
   code += `\n`;
 
-  const constructorParams = signature.args;
-  const bindingParams = constructorParams.filter((p) => p.isBinding);
-  const aliasParams = constructorParams
-    .filter((p) => !p.isBinding)
-    .map((p) => ({ name: p.tsName, type: p.type, optional: p.optional === true }));
+  const split = splitArguments(signature.args);
+  const bindingParams = split.binding;
+  const aliasParams = split.parameters;
   const parametersName = parametersInterfaceName(className);
   if (aliasParams.length > 0) {
     code += parametersInterface(parametersName, `${func.name} function`, aliasParams);
@@ -210,45 +200,21 @@ function generateFunctionClass(csdl: CsdlSchema, func: CsdlFunction, stem = func
   code += ` */\n`;
   code += `export class ${className} implements Executable<${responseInterfaceName}> {\n`;
 
-  const ctorArgs = [
-    ...bindingParams.map((p) => `public readonly ${p.name}: ${p.type}`),
-    ...(aliasParams.length > 0
-      ? [parametersArgument("public readonly", parametersName, aliasParams)]
-      : []),
-  ];
+  const ctorArgs = constructorArguments(split, parametersName, "public readonly");
   if (ctorArgs.length > 0) {
     code += `  constructor(\n`;
     for (const arg of ctorArgs) code += `    ${arg},\n`;
     code += `  ) {}\n\n`;
   }
 
-  // Generate toRequestInformation method
-  code += `  toRequestInformation(baseUrl: string): RequestInformation {\n`;
-
-  const url = functionUrlStatements(csdl, func, constructorParams, "this.parameters", "functions");
-  code += url.code;
-
-  code += `    return {\n`;
-  code += `      method: 'GET',\n`;
-  code += `      url,\n`;
-  code += `      headers: {\n`;
-  code += `        'Accept': 'application/json',\n`;
-  code += `      },\n`;
-  code += `    };\n`;
-  code += `  }\n\n`;
+  // GET with the parameters in aliases (shared with the function-backed messages)
+  code += request.code;
+  code += `\n`;
 
   // Generate parseResponse method
   code += parseResponseMethod(ret, responseInterfaceName);
 
   code += `}\n`;
-
-  if (url.usesAliasLiteral) {
-    code =
-      core +
-      (url.usesEnumBody ? `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n` : "") +
-      `import { formatParameterAlias } from './${ODATA_LITERAL_MODULE}.js';\n` +
-      code.slice(core.length);
-  }
 
   return code;
 }

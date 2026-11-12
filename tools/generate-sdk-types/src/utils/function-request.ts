@@ -1,18 +1,21 @@
 /**
  * The request of a Web API function: `GET /{name}(P1=@p1,…)?@p1=…`, with each parameter in a
  * parameter alias. Shared by the functions package (`<Name>Function`) and the function-backed
- * messages (`<Name>Request`, #344), so both send the same URL for the same parameters.
+ * messages (`<Name>Request`, #344), so both send the same URL for the same parameters. The
+ * constructor arguments, the URL of the operation and the headers are built as for actions
+ * (`utils/operation-request.ts`, #440).
  */
 import type { CsdlFunction, CsdlSchema } from "../parsers/csdl-types.js";
-import { bodyEnumType, type EnumBodyScope } from "./enum-body.js";
-import { collectionBinding, ENTITY_SET_PARAM, recordSegment } from "./binding.js";
-import { polymorphicParameterType } from "./polymorphism.js";
+import { bodyEnumType, ENUM_BODY_MODULE, type EnumBodyScope } from "./enum-body.js";
 import {
-  csdlTypeToTs,
-  extractEntityTypeName,
-  getEntitySetName,
-  isCollectionType,
-} from "./typescript-writer.js";
+  operationArguments,
+  type OperationArgument,
+  operationUrlStatement,
+  parameterImports,
+  requestInformationMethod,
+} from "./operation-request.js";
+import { polymorphicParameterType } from "./polymorphism.js";
+import { csdlTypeToTs, isCollectionType } from "./typescript-writer.js";
 
 /** Generated runtime helpers for parameter-alias literals, relative to the package `src` folder. */
 export const ODATA_LITERAL_MODULE = "internal/odataLiteral";
@@ -149,72 +152,13 @@ function aliasValue(
   return { code: `formatParameterAlias(${value}, '${paramType}'${enumKind})`, usesEnumBody: false };
 }
 
-/** One argument of a function's constructor: the binding (in the URL) or a parameter (an alias). */
-export interface FunctionArgument {
-  /** Name of the constructor argument or of the parameters property. */
-  name: string;
-  /** The CSDL parameter name. */
-  tsName: string;
-  isBinding: boolean;
-  /** TypeScript type. */
-  type: string;
-  /** A parameter the CSDL doesn't declare `Nullable="false"`: it may be left out (#68). */
-  optional?: boolean;
-}
-
-/** System entities that are filtered out and typed as records of any table. */
-const SYSTEM_ENTITIES = ["crmbaseentity", "principal", "crmmodelbaseentity", "expando"];
-
-/**
- * Map Complex* types to their non-Complex EntityType equivalents.
- * Per Microsoft Web API documentation, use EntityMetadata (not ComplexEntityMetadata) for requests/responses.
- * EXCEPTION: ComplexLookupAttributeMetadata for customer lookup columns (per Microsoft docs).
- */
-export function mapComplexTypeToEntityType(typeName: string): string {
-  // EXCEPTION: These Complex* types must remain as-is for customer relationship operations
-  if (
-    typeName === "ComplexLookupAttributeMetadata" ||
-    typeName === "ComplexOneToManyRelationshipMetadata"
-  ) {
-    return typeName;
-  }
-
-  // Map Complex* metadata types to non-Complex versions
-  const complexToEntityMap: Record<string, string> = {
-    ComplexEntityMetadata: "EntityMetadata",
-    ComplexAttributeMetadata: "AttributeMetadata",
-    ComplexBigIntAttributeMetadata: "BigIntAttributeMetadata",
-    ComplexBooleanAttributeMetadata: "BooleanAttributeMetadata",
-    ComplexDateTimeAttributeMetadata: "DateTimeAttributeMetadata",
-    ComplexDecimalAttributeMetadata: "DecimalAttributeMetadata",
-    ComplexDoubleAttributeMetadata: "DoubleAttributeMetadata",
-    ComplexIntegerAttributeMetadata: "IntegerAttributeMetadata",
-    ComplexLookupAttributeMetadata: "LookupAttributeMetadata",
-    ComplexMemoAttributeMetadata: "MemoAttributeMetadata",
-    ComplexMoneyAttributeMetadata: "MoneyAttributeMetadata",
-    ComplexStringAttributeMetadata: "StringAttributeMetadata",
-    ComplexFileAttributeMetadata: "FileAttributeMetadata",
-    ComplexImageAttributeMetadata: "ImageAttributeMetadata",
-    ComplexEnumAttributeMetadata: "EnumAttributeMetadata",
-    ComplexPicklistAttributeMetadata: "PicklistAttributeMetadata",
-    ComplexManagedPropertyAttributeMetadata: "ManagedPropertyAttributeMetadata",
-    ComplexUniqueIdentifierAttributeMetadata: "UniqueIdentifierAttributeMetadata",
-    ComplexOneToManyRelationshipMetadata: "OneToManyRelationshipMetadata",
-    ComplexManyToManyRelationshipMetadata: "ManyToManyRelationshipMetadata",
-    ComplexOptionSetMetadata: "OptionSetMetadata",
-    ComplexBooleanOptionSetMetadata: "BooleanOptionSetMetadata",
-  };
-
-  return complexToEntityMap[typeName] || typeName;
-}
-
 /** A function's constructor arguments, and what their types import. */
 export interface FunctionSignature {
   /**
    * The record or entity set a bound function runs on (in the URL), then one entry per CSDL
    * parameter, which go in one parameters object (#96).
    */
-  args: FunctionArgument[];
+  args: OperationArgument[];
   /** Types the parameters use, from `./types/index.js`. */
   typeImports: string[];
   /** A parameter is an `EntityReference`. */
@@ -232,78 +176,20 @@ export function functionSignature(
   func: CsdlFunction,
   recordIdName: (table: string) => string
 ): FunctionSignature {
-  const typeImports = new Set<string>();
-  for (const param of func.parameters) {
-    // A parameter of a base type takes the Typed<Base> union of its derived types (#73)
-    const polymorphic = polymorphicParameterType(csdl, param.type);
-    if (polymorphic) {
-      typeImports.add(polymorphic.union);
-      continue;
-    }
-    const typeName = csdlTypeToTs(param.type);
-    const baseType = typeName.replace("[]", "");
-    if (
-      !["string", "number", "boolean", "any", "unknown"].includes(baseType) &&
-      baseType !== "EntityReference" &&
-      !SYSTEM_ENTITIES.includes(baseType.toLowerCase())
-    ) {
-      // Map Complex* types to non-Complex EntityType versions
-      typeImports.add(mapComplexTypeToEntityType(baseType));
-    }
-  }
-
-  // Single entity references, not Collections
+  // A function has no body: its parameters import their types, and a single entity reference
+  // (not a Collection) imports EntityReference
+  const { typeImports } = parameterImports(csdl, func);
   const needsEntityReference = func.parameters.some(
     (p) => !isCollectionType(p.type) && csdlTypeToTs(p.type, false) === "EntityReference"
   );
-
-  const args: FunctionArgument[] = [];
-  const isCollectionBound =
-    func.isBound && func.bindingParameter && isCollectionType(func.bindingParameter.type);
-  if (func.isBound && func.bindingParameter && !isCollectionBound) {
-    // Single-entity bound: First parameter is the entity ID
-    const entityTypeName = extractEntityTypeName(func.bindingParameter.type);
-    args.push({
-      name: recordIdName(entityTypeName),
-      type: "string",
-      tsName: func.bindingParameter.name,
-      isBinding: true,
-    });
-  }
-  // Collection-bound: called on an entity set (#69)
-  if (
-    isCollectionBound &&
-    func.bindingParameter &&
-    collectionBinding(csdl, func.bindingParameter.type).needsEntitySetName
-  ) {
-    // Bound to Collection(mscrm.crmbaseentity): the caller names the entity set
-    args.push({
-      name: ENTITY_SET_PARAM,
-      type: "string",
-      tsName: func.bindingParameter.name,
-      isBinding: true,
-    });
-  }
-
-  for (const param of func.parameters) {
-    if (!param.name) continue; // Skip unnamed parameters
-    // Skip binding parameter (it's already handled above as the record id)
-    if (param.name === func.bindingParameter?.name && !isCollectionBound) continue;
-    args.push({
-      name: param.name,
-      type: functionParameterTsType(csdl, param.type),
-      tsName: param.name,
-      isBinding: false,
-      // In CSDL a parameter without Nullable="false" may be left out (#68)
-      optional: param.nullable !== false,
-    });
-  }
-
-  return { args, typeImports: [...typeImports], needsEntityReference };
+  const args = operationArguments(csdl, func, recordIdName, (type) =>
+    functionParameterTsType(csdl, type)
+  );
+  return { args, typeImports, needsEntityReference };
 }
 
-/** The statements of `toRequestInformation` that build `url`, and the helpers they call. */
-export interface FunctionUrl {
+/** The `toRequestInformation` method of a function, and the helpers it calls. */
+export interface FunctionRequest {
   code: string;
   /** The code calls `formatParameterAlias` (from {@link ODATA_LITERAL_MODULE}). */
   usesAliasLiteral: boolean;
@@ -312,23 +198,23 @@ export interface FunctionUrl {
 }
 
 /**
- * The statements that build `let url` for a function call: the function on its record, entity set
- * or the service root, then one parameter alias per parameter that is set.
+ * The `toRequestInformation` method of a function, or of a function-backed message: `GET` the
+ * function on its record, entity set or the service root (as an action's URL), with one parameter
+ * alias per parameter that is set.
  *
  * @param args - The constructor's arguments, binding first, as the class declares them.
  * @param source - Where the parameter values are read: `this.parameters` (functions package) or
  *   `this.Parameters` (messages).
  * @param scope - The `enumBody` tables of the package the code goes into.
  */
-export function functionUrlStatements(
+export function functionRequestMethod(
   csdl: CsdlSchema,
   func: CsdlFunction,
-  args: readonly FunctionArgument[],
+  args: readonly OperationArgument[],
   source: string,
   scope: EnumBodyScope
-): FunctionUrl {
+): FunctionRequest {
   const uses = { aliasLiteral: false, enumBody: false };
-  let code = "";
 
   /** The statements that add one parameter alias, when the parameter is set. */
   const aliasStatement = (name: string, alias: string, paramType: string): string => {
@@ -361,40 +247,22 @@ export function functionUrlStatements(
     return out;
   };
 
-  const isCollectionBound =
-    func.isBound && func.bindingParameter && isCollectionType(func.bindingParameter.type);
+  // The URL is built as for an action (`let`: the aliases follow), then `GET` with JSON accepted
+  const statements = operationUrlStatement(csdl, func, args, "function") + aliasStatements();
+  return {
+    code: requestInformationMethod(statements, "GET"),
+    usesAliasLiteral: uses.aliasLiteral,
+    usesEnumBody: uses.enumBody,
+  };
+}
 
-  if (func.isBound && func.bindingParameter && !isCollectionBound) {
-    // Single-entity bound function - construct URL with entity ID
-    const bindingParam = args.find((p) => p.isBinding);
-    if (!bindingParam) {
-      throw new Error(`Bound function ${func.name} missing binding parameter`);
-    }
-
-    code += `    // Bound function\n`;
-
-    // Get entity set name from binding parameter type
-    const entitySetName = getEntitySetName(func.bindingParameter.type, csdl.entitySetMap);
-
-    if (entitySetName) {
-      code += `    let url = \`\${baseUrl}/${recordSegment(entitySetName, bindingParam.name)}/Microsoft.Dynamics.CRM.${func.name}\`;\n\n`;
-    } else {
-      // Fallback: extract entity type name from binding parameter type
-      const entityTypeName = extractEntityTypeName(func.bindingParameter.type);
-      code += `    // WARNING: Entity set not found in metadata, using entity type name as fallback\n`;
-      code += `    let url = \`\${baseUrl}/${recordSegment(`${entityTypeName}s`, bindingParam.name)}/Microsoft.Dynamics.CRM.${func.name}\`;\n\n`;
-    }
-  } else if (isCollectionBound && func.bindingParameter) {
-    // Collection-bound function: GET /{entityset}/Microsoft.Dynamics.CRM.{name}(...) (#69)
-    const collection = collectionBinding(csdl, func.bindingParameter.type);
-    code += `    // Bound function (entity collection)\n`;
-    if (collection.warning) code += `    // ${collection.warning}\n`;
-    code += `    let url = \`\${baseUrl}/${collection.segment}/Microsoft.Dynamics.CRM.${func.name}\`;\n\n`;
-  } else {
-    // Unbound function
-    code += `    let url = \`\${baseUrl}/${func.name}\`;\n\n`;
+/** The import lines of the helpers a function's request calls (`enumBody`, `formatParameterAlias`). */
+export function functionHelperImports(request: FunctionRequest): string {
+  let code = "";
+  if (request.usesEnumBody)
+    code += `import { enumBody } from './internal/${ENUM_BODY_MODULE}.js';\n`;
+  if (request.usesAliasLiteral) {
+    code += `import { formatParameterAlias } from './${ODATA_LITERAL_MODULE}.js';\n`;
   }
-  code += aliasStatements();
-
-  return { code, usesAliasLiteral: uses.aliasLiteral, usesEnumBody: uses.enumBody };
+  return code;
 }
