@@ -142,6 +142,23 @@ export interface AttributeMetadata {
   /** The values of a choice or choices column's options. */
   optionValues?: number[];
 
+  /**
+   * A status reason (`statuscode`) column: the state (`statecode` value) each of its options
+   * belongs to, keyed by option value.
+   */
+  optionStates?: Record<number, number>;
+
+  /**
+   * Decimal places a decimal or currency column keeps (`Precision`). A currency column whose
+   * `PrecisionSource` isn't the column has `"pricing"` (the organization's pricing decimal
+   * precision) or `"currency"` (the precision of the record's transaction currency) instead;
+   * `validateEntity()` takes those numbers as options.
+   */
+  precision?: number | "pricing" | "currency";
+
+  /** Largest file or image a file or image column takes, in KB (`MaxSizeInKB`). */
+  maxSizeInKB?: number;
+
   /** `false` when a create can't set the column (`IsValidForCreate`); unset when it can. */
   isValidForCreate?: boolean;
 

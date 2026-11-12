@@ -9,6 +9,7 @@ import { ApiVersion } from '@mohsinonxrm/dataverse-sdk-core';
 import { AttributeSourceType } from '@mohsinonxrm/dataverse-sdk-metadata';
 import { AttributeTypeCode } from '@mohsinonxrm/dataverse-sdk-metadata';
 import { AttributeTypeDisplayName } from '@mohsinonxrm/dataverse-sdk-metadata';
+import { AttributeTypeDisplayNameValue } from '@mohsinonxrm/dataverse-sdk-metadata';
 import { DateTimeBehavior } from '@mohsinonxrm/dataverse-sdk-metadata';
 import { DateTimeBehaviorValue } from '@mohsinonxrm/dataverse-sdk-metadata';
 import { DateTimeFormat } from '@mohsinonxrm/dataverse-sdk-metadata';
@@ -63,14 +64,17 @@ export interface AttributeMetadataDetail {
     LogicalName?: string;
     // (undocumented)
     MaxLength?: number;
+    MaxSizeInKB?: number;
     // (undocumented)
     MaxValue?: number;
+    MetadataId?: string;
     // (undocumented)
     MinValue?: number;
     // (undocumented)
     OptionSet?: OptionSetMetadata;
     // (undocumented)
     Precision?: number;
+    PrecisionSource?: 0 | 1 | 2 | (number & {});
     RequiredLevel?: {
         Value?: AttributeRequiredLevel;
         CanBeChanged?: boolean;
@@ -121,6 +125,7 @@ export interface DataverseGenConfig {
     entities?: string[];
     environmentUrl: string;
     formContext?: boolean;
+    formLayouts?: boolean;
     functions?: string[];
     output?: {
         outputRoot?: string;
@@ -209,6 +214,7 @@ export interface EntityMetadataDetail {
 // @public
 export interface EntityType {
     EntitySetName: string;
+    Forms?: FormLayoutType[];
     IsCustomEntity: boolean;
     KeyName: string;
     Keys?: EntityKeyType[];
@@ -237,6 +243,43 @@ export interface EnumType {
 }
 
 // @public
+export type FormControlKind = "column" | "subgrid" | "webResource" | "iframe" | "quickView" | "timeline" | "other";
+
+// @public
+export interface FormControlType {
+    ColumnType?: AttributeTypeDisplayNameValue | (string & {});
+    DataField?: string;
+    Id: string;
+    Kind: FormControlKind;
+    Location: "body" | "header";
+}
+
+// @public
+export type FormLayoutKind = "main" | "quickCreate";
+
+// @public
+export interface FormLayoutType {
+    Controls: FormControlType[];
+    FormId: string;
+    Kind: FormLayoutKind;
+    Name: string;
+    Tabs: FormTabType[];
+}
+
+// @public
+export interface FormSectionType {
+    Label?: string;
+    Name: string;
+}
+
+// @public
+export interface FormTabType {
+    Label?: string;
+    Name: string;
+    Sections: FormSectionType[];
+}
+
+// @public
 export interface FunctionType {
     BindingEntity?: string;
     BindingEntitySetName?: string;
@@ -254,6 +297,7 @@ export interface FunctionType {
 export function generateCode(config: DataverseGenConfig, accessToken?: string): Promise<{
     warnings: string[];
     unchangedTables: string[];
+    fetchedTables: string[];
 }>;
 
 // @public
@@ -277,6 +321,9 @@ export class MetadataService {
     constructor(config: DataverseGenConfig, accessToken?: string);
     getEdmxMetadata(): Promise<string>;
     getEntityMetadata(logicalName: string): Promise<RetrieveMetadataChangesResponse>;
+    getGlobalOptionSetValues(): Promise<Map<string, number[]>>;
+    getMetadataChanges(clientVersionStamp: string, logicalNames?: readonly string[]): Promise<RetrieveMetadataChangesResponse | undefined>;
+    getSystemForms(logicalName: string): Promise<SystemFormRecord[]>;
     setAccessToken(token: string): void;
     sleep: MetadataServiceSleep;
 }
@@ -320,6 +367,7 @@ export interface OptionMetadata {
     Label?: Label;
     // (undocumented)
     MetadataId?: string | null;
+    State?: number;
     // (undocumented)
     Value?: number;
 }
@@ -372,12 +420,15 @@ export interface PropertyType {
     IsValidForUpdate?: boolean;
     LogicalName: string;
     MaxLength?: number;
+    MaxSizeInKB?: number;
     MaxValue?: number;
     MinValue?: number;
     Name: string;
     Nullable?: boolean;
     OptionSetType?: string;
+    OptionStates?: Record<number, number>;
     OptionValues?: number[];
+    Precision?: number | "pricing" | "currency";
     RequiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
     SchemaName?: string;
     SourceType?: AttributeSourceType | (number & {});
@@ -406,7 +457,6 @@ export interface RelationshipMetadata {
 
 // @public
 export interface RetrieveMetadataChangesResponse {
-    // (undocumented)
     DeletedMetadata?: any;
     // (undocumented)
     EntityMetadata?: EntityMetadataDetail[];
@@ -426,17 +476,29 @@ export class SchemaModel {
     EntityTypes: EntityType[];
     // (undocumented)
     EnumTypes: EnumType[];
+    FetchedTables: string[];
     // (undocumented)
     Functions: FunctionType[];
     generate(): Promise<void>;
     getStructuralType(type: string): string;
     loadEdmxMetadata(): Promise<void>;
+    MetadataVersionStamp: string | undefined;
     QueryFunctionNames: Set<string>;
+    SkippedTables: string[];
+    TableMetadata: Map<string, EntityMetadataDetail>;
     Warnings: string[];
 }
 
 // @public
-export const TEMPLATE_NAMES: readonly ["action.ejs", "client.ejs", "complextype.ejs", "entity.ejs", "enum.ejs", "form.ejs", "function.ejs", "metadata.ejs"];
+export interface SystemFormRecord {
+    formid?: string;
+    formxml?: string;
+    name?: string;
+    type?: number;
+}
+
+// @public
+export const TEMPLATE_NAMES: readonly ["action.ejs", "client.ejs", "complextype.ejs", "entity.ejs", "enum.ejs", "form-layouts.ejs", "form.ejs", "function.ejs", "metadata.ejs"];
 
 // @public
 export type TemplateName = (typeof TEMPLATE_NAMES)[number];
