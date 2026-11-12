@@ -123,8 +123,103 @@ describe("account import", () => {
 To recover from a fault instead, turn retries on and use a `script` that fails only the first
 attempts: `script: (_request, { attempt }) => (attempt < 2 ? { status: 503 } : undefined)`.
 
-The waits of `ChaosMiddleware` run on a `Clock` (`now()` and `sleep(ms, signal)`). It is
-`systemClock` by default, which fake timers control; pass `clock` to use your own instead.
+The waits of `ChaosMiddleware` run on a `Clock` (`now()` and `sleep(ms, signal)`). It is the
+client's `clock` by default, `systemClock` unless you set one, which fake timers control; pass
+`clock` to use your own instead.
+
+### With a fake clock
+
+The client's `clock` option times the `timeoutMs` deadline, the retry middleware's waits
+(`Retry-After` and backoff) and its deadline checks. `ChaosMiddleware`, `CircuitBreakerMiddleware`
+and `AdaptiveThrottlingMiddleware` use it too, unless they are given a `clock` of their own. Give
+the client a clock that moves only when the test says so, and retries and timeouts run without
+waiting and without fake timers. `attemptTimeoutMs` stays on real time.
+
+A fake clock is a few lines (the repository's own tests use the internal testing package's
+`fakeClock()`, which works the same way):
+
+```typescript
+import type { Clock } from "@mohsinonxrm/dataverse-sdk-core";
+
+function fakeClock(start = 0) {
+  let now = start;
+  const timers: Array<{ at: number; resolve: () => void }> = [];
+  const clock: Clock = {
+    now: () => now,
+    sleep: (ms, signal) =>
+      new Promise((resolve, reject) => {
+        const timer = { at: now + ms, resolve };
+        timers.push(timer);
+        signal?.addEventListener("abort", () => {
+          timers.splice(timers.indexOf(timer), 1);
+          reject(new DOMException("Aborted", "AbortError"));
+        });
+      }),
+  };
+  /** Move time forward, ending every sleep that is due, in order. */
+  async function advance(ms: number) {
+    const target = now + ms;
+    for (;;) {
+      await new Promise((r) => setImmediate(r)); // let the request reach its next wait
+      const due = timers.filter((t) => t.at <= target).sort((a, b) => a.at - b.at)[0];
+      if (!due) break;
+      timers.splice(timers.indexOf(due), 1);
+      now = due.at;
+      due.resolve();
+    }
+    now = target;
+  }
+  return { clock, advance };
+}
+
+it("retries a 429 after its Retry-After, without waiting", async () => {
+  const { clock, advance } = fakeClock();
+  const client = new DataverseClient({
+    baseUrl,
+    tokenProvider,
+    clock,
+    retry: { maxRetries: 1 },
+    middleware: {
+      append: [
+        new ChaosMiddleware({
+          enabled: true,
+          // The first attempt is throttled for 5 s; the retry goes through.
+          script: (_request, { attempt }) =>
+            attempt === 0 ? { status: 429, retryAfterSeconds: 5 } : undefined,
+        }),
+      ],
+    },
+  });
+  const pending = client.api("WhoAmI").get();
+  await advance(5000); // the retry is sent once the clock passes the Retry-After
+  await pending;
+});
+
+it("times out on the same clock", async () => {
+  const { clock, advance } = fakeClock();
+  const hang = new ChaosMiddleware({
+    enabled: true,
+    percentage: 100,
+    faults: [{ status: "hang" }],
+  });
+  const client = new DataverseClient({
+    baseUrl,
+    tokenProvider,
+    clock,
+    middleware: { append: [hang] },
+  });
+  const timedOut = expect(client.api("WhoAmI").get({ timeoutMs: 10_000 })).rejects.toMatchObject({
+    name: "RequestTimeout",
+  });
+  await advance(10_000);
+  await timedOut;
+});
+```
+
+With `timeoutMs`, a retry whose wait would end after the deadline isn't started, on the same
+clock: a 429 whose `Retry-After` is longer than the time left rejects at once with
+`DataverseThrottleError`. `waitForAsyncOperation()` waits between its reads, and measures its own
+`timeoutMs`, on the client's clock as well.
 
 ## In a dev or test environment
 

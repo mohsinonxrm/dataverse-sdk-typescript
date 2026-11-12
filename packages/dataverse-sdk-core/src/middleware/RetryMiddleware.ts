@@ -10,7 +10,7 @@ import type {
 } from "../abstractions/options.js";
 import { DataverseNetworkError } from "../errors/NamedErrors.js";
 import { withJitter } from "../utils/jitter.js";
-import { sleep } from "../utils/sleep.js";
+import { systemClock } from "../utils/clock.js";
 import { isStreamBody } from "../utils/body.js";
 import { parseRetryAfter, isStreamContent } from "../utils/HeaderUtils.js";
 import { TelemetryEvents } from "../telemetry/events.js";
@@ -76,6 +76,8 @@ export class RetryMiddleware implements Middleware {
     // Decorrelated jitter carries a value from one delay to the next, per request (as Polly does).
     const backoff: BackoffState = { prev: 0 };
     const telemetry = requestTelemetry(this.options, ctx);
+    // The client's clock (DataverseClientOptions.clock): the waits and deadline checks use it.
+    const clock = ctx.clock ?? systemClock;
     /** Record the attempt, tell telemetry and `onRetry`, then wait. */
     const waitBeforeRetry = async (entry: RetryAttempt, delayMs: number) => {
       history.push({ ...entry, delayMs });
@@ -115,7 +117,7 @@ export class RetryMiddleware implements Middleware {
           ctx.logger?.warn("onRetry threw; ignoring", { error: String(hookError) });
         }
       }
-      await sleep(delayMs, request.signal);
+      await clock.sleep(delayMs, request.signal);
       attempt++;
     };
     const done = (res: Response): Response => {
@@ -143,7 +145,7 @@ export class RetryMiddleware implements Middleware {
         }
         const delay = computeBackoff(opt, attempt, backoff);
         // Waiting would only end in a timeout: report the network error itself (#471).
-        if (endsAfterDeadline(ctx, delay)) throw err;
+        if (endsAfterDeadline(ctx, clock.now(), delay)) throw err;
         ctx.logger?.debug("Retrying request after a network error", {
           attempt: attempt + 1,
           maxRetries: opt.maxRetries,
@@ -211,7 +213,7 @@ export class RetryMiddleware implements Middleware {
           ? computeBackoff(opt, attempt, backoff)
           : 0;
       let delay = retryAfterMs ?? computed;
-      if (endsAfterDeadline(ctx, delay)) {
+      if (endsAfterDeadline(ctx, clock.now(), delay)) {
         // The request would time out while waiting: hand the response back now, so a 429 becomes
         // DataverseThrottleError with retryAfterMs instead of a RequestTimeout later (#471).
         ctx.logger?.debug("Not retrying: the wait would end after the request's deadline", {
@@ -225,7 +227,7 @@ export class RetryMiddleware implements Middleware {
         // so much that the wait ends after the deadline.
         const room = Math.min(
           opt.retryAfterJitterMs,
-          (ctx.deadline ?? Infinity) - Date.now() - delay - 1
+          (ctx.deadline ?? Infinity) - clock.now() - delay - 1
         );
         if (room > 0) delay += Math.round(Math.random() * room);
       }
@@ -329,9 +331,9 @@ function computeBackoff(opt: ResolvedOptions, attempt: number, state: BackoffSta
   return jitter ? Math.min(max, withJitter(v)) : v;
 }
 
-/** Whether waiting `delayMs` from now would end after the request's `timeoutMs` deadline. */
-function endsAfterDeadline(ctx: MiddlewareContext, delayMs: number): boolean {
-  return ctx.deadline !== undefined && Date.now() + delayMs >= ctx.deadline;
+/** Whether waiting `delayMs` from `now` would end after the request's `timeoutMs` deadline. */
+function endsAfterDeadline(ctx: MiddlewareContext, now: number, delayMs: number): boolean {
+  return ctx.deadline !== undefined && now + delayMs >= ctx.deadline;
 }
 
 /** Drop undefined values so they don't override client-level settings when spread. */

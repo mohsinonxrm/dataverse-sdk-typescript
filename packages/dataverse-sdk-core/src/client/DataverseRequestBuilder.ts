@@ -743,6 +743,7 @@ export class DataverseRequestBuilder {
       body,
       timeoutMs: options?.timeoutMs,
       attemptTimeoutMs: options?.attemptTimeoutMs,
+      deadline: options?.deadline,
       signal: options?.signal,
       correlationId: options?.correlationId,
       middlewareOptions: options?.middlewareOptions,

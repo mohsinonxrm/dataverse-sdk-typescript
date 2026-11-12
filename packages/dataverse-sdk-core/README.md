@@ -216,6 +216,15 @@ away instead of a timeout later. `attemptTimeoutMs` limits a single attempt; a t
 `RequestTimeout`, and its `TimeoutError` is the `cause`. Neither the SDK's timers nor its listeners stay
 on your `signal` after the request, so one signal can be shared by any number of requests.
 
+When you enforce a time limit yourself through `signal` (one budget for several requests, say),
+pass when it runs out as `deadline` (ms since the epoch, on the client's `clock`): it aborts nothing,
+but like `timeoutMs` it stops a retry wait that would end after it, so a long `Retry-After` comes
+back as `DataverseThrottleError` at once. With `timeoutMs` too, the earlier one counts.
+
+The client measures `timeoutMs`, `deadline` and the retry waits on its `clock` (`systemClock`, the
+real one, by default). Pass a fake one (see [Testing](#testing)) to test retries and timeouts without
+waiting. `attemptTimeoutMs` always runs on real time.
+
 ### Fluent API Enhancements
 
 #### Prefer Header Builder
@@ -1041,7 +1050,10 @@ try {
   waited for like any other.
 - **Bounds:** no time limit by default. `timeoutMs` rejects with `reason: "timeout"` (and the last
   state as `operation`); `signal` rejects with `DataverseAbortError`. Either way, only the waiting
-  stops: the job keeps running in Dataverse.
+  stops: the job keeps running in Dataverse. Each read carries the time left as its `deadline`, so
+  a read throttled with a `Retry-After` longer than that rejects at once with
+  `DataverseThrottleError` rather than with a timeout later. The waits and `timeoutMs` run on the
+  client's `clock`.
 - **Read errors** pass through: a job that doesn't exist (or that was deleted when it succeeded, as
   workflows set to delete completed jobs do) rejects with `DataverseODataError`, status 404.
 - `AsyncOperationStateCode` and `AsyncOperationStatusCode` name the `statecode` and `statuscode`
@@ -1327,7 +1339,7 @@ throttle.status; // { requestsRemaining, requestBudget, timeRemaining, timeBudge
   sends a request without waiting for the spacing or a 429's pause, and without taking a turn; its
   response still updates the budgets.
 - **Testing:** `clock` (a `Clock`) replaces `Date.now()` and the waits, so a test can move time
-  without fake timers.
+  without fake timers. Without it, the client's `clock` is used.
 
 #### Adaptive Concurrency
 
@@ -1478,7 +1490,7 @@ try {
 - **Testing:** `clock` (a `Clock`, e.g. the one you give `ChaosMiddleware`) or `now: () => number`
   (which takes precedence) replaces the breaker's clock (`Date.now()`) for everything it times:
   break durations, the sampling window and `retryAfterMs`. Move your own clock forward instead of
-  using fake timers.
+  using fake timers. Without either, the client's `clock` is used.
 
 **Bulkhead** (`BulkheadMiddleware`):
 
@@ -1807,6 +1819,8 @@ export interface RequestInformation {
   timeoutMs?: number;
   /** Limit for each attempt */
   attemptTimeoutMs?: number;
+  /** When a time limit you enforce through signal runs out (ms since the epoch, on the client's clock) */
+  deadline?: number;
   signal?: AbortSignal;
   /** Sent as x-ms-correlation-id; a new one is generated when omitted */
   correlationId?: string;
@@ -1901,7 +1915,7 @@ new ChaosMiddleware({
   for that attempt). Both waits end at once when the request is aborted, and a delay of
   `attemptTimeoutMs` or more times the attempt out, as a slow response would. `delayMs` on a
   status or network fault makes it a slow failure. `clock` takes a fake clock for tests
-  (`Clock`: `now()` and `sleep(ms, signal)`; `systemClock` by default).
+  (`Clock`: `now()` and `sleep(ms, signal)`; the client's `clock` by default).
 - **Presets:** `ChaosPresets.serviceProtection({ retryAfterSeconds? })` (the three
   service-protection 429s: `0x80072322` number of requests, `0x80072321` execution time,
   `0x80072326` concurrent requests, each with `Retry-After` and Dataverse's error body),
