@@ -570,6 +570,8 @@ export class SchemaModel {
         Type: attribute.Targets.join(","),
         Targets: attribute.Targets,
         IsPolymorphic: true,
+        // The navigation properties it stands for, which the Web API knows (for `expand`, #431)
+        Members: relatedNav.map((nav) => ({ Name: nav.Name, TargetType: nav.TargetType })),
       };
 
       // Remove all but keep the consolidated one

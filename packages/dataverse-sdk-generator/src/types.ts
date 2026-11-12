@@ -122,7 +122,8 @@ export interface DataverseGenConfig {
    * `createTypedClient(client)`, which returns one `EntitySetClient` per generated table, keyed by
    * entity set name: `typed.accounts.byId(id).get({ select: ["name"] })`, `.list()`,
    * `.create()`, `.byId(id).update()`, `.byId(id).delete()`, typed by the table's interface, its
-   * create and update types, and a union of its column names (`AccountColumn`).
+   * create and update types, a union of its column names (`AccountColumn`, for `select`, which
+   * narrows the result) and its navigation properties (`AccountNavigation`, for `expand`, #431).
    */
   typedClient?: boolean;
 
@@ -439,6 +440,13 @@ export interface NavigationPropertyType {
 
   /** Is this a polymorphic lookup? */
   IsPolymorphic?: boolean;
+
+  /**
+   * For a polymorphic lookup consolidated into one property (`parentcustomerid`): the
+   * single-valued navigation properties of the CSDL it stands for, one per target
+   * (`parentcustomerid_account`, `parentcustomerid_contact`). The Web API expands those.
+   */
+  Members?: Array<{ Name: string; TargetType: string }>;
 
   /** Is this a collection? */
   IsCollection: boolean;

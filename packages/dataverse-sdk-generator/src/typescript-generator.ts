@@ -71,6 +71,14 @@ interface ConstructorParameter {
   defaultValue?: string;
 }
 
+/** The names of an entity's typed client types (`typedClient`, #312, #431). */
+interface ClientTypeNames {
+  /** The union of its column names, for `select`: `AccountColumn`. */
+  column: string;
+  /** Its navigation properties, for `expand`: `AccountNavigation`. */
+  navigation: string;
+}
+
 /** The names of an entity's form types (`formContext`, #347). */
 interface FormNames {
   attributes: string;
@@ -307,7 +315,7 @@ export class TypescriptGenerator {
   private writeTypeNamesCache?: Map<EntityType, { create: string; update: string }>;
   private formNamesCache?: Map<EntityType, FormNames>;
   private formLayoutNamesCache?: Map<EntityType, FormLayoutNames[]>;
-  private columnTypeNamesCache?: Map<EntityType, string>;
+  private clientTypeNamesCache?: Map<EntityType, ClientTypeNames>;
   /** Every file this run wrote or kept, relative to the output folder, with `/`. */
   private readonly written = new Set<string>();
   /** Incremental generation: the tables whose files are kept as they are. */
@@ -597,13 +605,14 @@ export class TypescriptGenerator {
   }
 
   /**
-   * With `typedClient`, the name of each entity's column union (#312): `<Entity>Column`, with a
-   * `_2` suffix when another generated type has that name. Empty without the option.
+   * With `typedClient`, the names of each entity's column union (#312) and navigation type
+   * (#431): `<Entity>Column` and `<Entity>Navigation`, with a `_2` suffix when another generated
+   * type has that name. Empty without the option.
    */
-  private get columnTypeNames(): Map<EntityType, string> {
-    if (this.columnTypeNamesCache) return this.columnTypeNamesCache;
-    const names = new Map<EntityType, string>();
-    this.columnTypeNamesCache = names;
+  private get clientTypeNames(): Map<EntityType, ClientTypeNames> {
+    if (this.clientTypeNamesCache) return this.clientTypeNamesCache;
+    const names = new Map<EntityType, ClientTypeNames>();
+    this.clientTypeNamesCache = names;
     if (this.config.typedClient !== true) return names;
     const taken = new Set<string>([
       ...this.model.EntityTypes.flatMap((e) => {
@@ -617,14 +626,67 @@ export class TypescriptGenerator {
       TYPED_CLIENT,
       TYPED_CLIENT_FACTORY,
     ]);
-    for (const entity of this.model.EntityTypes) {
-      const stem = `${this.entityTypeName(entity)}Column`;
+    const unique = (stem: string): string => {
       let name = stem;
       for (let i = 2; taken.has(name); i++) name = `${stem}_${String(i)}`;
       taken.add(name);
-      names.set(entity, name);
+      return name;
+    };
+    for (const entity of this.model.EntityTypes) {
+      const typeName = this.entityTypeName(entity);
+      names.set(entity, {
+        column: unique(`${typeName}Column`),
+        navigation: unique(`${typeName}Navigation`),
+      });
     }
     return names;
+  }
+
+  /**
+   * With `typedClient` (#431): the navigation properties of `entity` the Web API expands, by
+   * name, each with its runtime type: `SingleNavigation<Contact, ContactColumn,
+   * ContactNavigation>` for a lookup to a generated table, `CollectionNavigation<…>` for a
+   * one-to-many collection, `ManyToManyNavigation<…>` for a many-to-many one (its own partner),
+   * and the bare kind (any column) for a table that isn't generated. A consolidated polymorphic lookup (`parentcustomerid`) isn't a Web API
+   * property: the ones it stands for (`parentcustomerid_account`, …) are listed instead.
+   */
+  private clientNavigation(
+    entity: EntityType,
+    imports: ImportCollector
+  ): Array<{ key: string; type: string }> {
+    const byName = new Map(this.model.EntityTypes.map((e) => [e.Name, e]));
+    const navigation = new Map<string, string>();
+    const add = (
+      name: string,
+      targetType: string,
+      kind: "SingleNavigation" | "CollectionNavigation" | "ManyToManyNavigation"
+    ): void => {
+      if (navigation.has(name)) return;
+      imports.type(kind, RUNTIME_PACKAGE);
+      const target = byName.get(targetType);
+      const names = target ? this.clientTypeNames.get(target) : undefined;
+      navigation.set(
+        name,
+        target && names
+          ? `${kind}<${this.entityTypeName(target)}, ${names.column}, ${names.navigation}>`
+          : kind
+      );
+    };
+    for (const nav of entity.NavigationProperties) {
+      if (nav.Members) {
+        for (const member of nav.Members) add(member.Name, member.TargetType, "SingleNavigation");
+      } else if (!nav.IsCollection) {
+        add(nav.Name, nav.TargetType, "SingleNavigation");
+      } else {
+        // A many-to-many navigation property is its own partner (Learn: "Web API navigation
+        // properties"); Dataverse refuses a nested $expand inside one
+        const manyToMany = nav.RelationshipName === nav.Name;
+        add(nav.Name, nav.TargetType, manyToMany ? "ManyToManyNavigation" : "CollectionNavigation");
+      }
+    }
+    return [...navigation]
+      .sort(([a], [b]) => compareCodeUnits(a, b))
+      .map(([key, type]) => ({ key, type }));
   }
 
   /**
@@ -649,14 +711,17 @@ export class TypescriptGenerator {
       imports.type(write.create, module);
       imports.type(write.update, module);
       imports.value(metadataName, module);
+      const names = this.clientTypeNames.get(entity);
       return {
         entity,
         typeName,
         metadataName,
         createName: write.create,
         updateName: write.update,
-        columnName: this.columnTypeNames.get(entity) ?? `${typeName}Column`,
+        columnName: names?.column ?? `${typeName}Column`,
         columns: [...new Set(entity.Properties.map((p) => p.Name))],
+        navigationName: names?.navigation ?? `${typeName}Navigation`,
+        navigation: this.clientNavigation(entity, imports),
       };
     });
     const first = tables.at(0);
@@ -668,6 +733,7 @@ export class TypescriptGenerator {
       factoryName: TYPED_CLIENT_FACTORY,
       sample: first?.entity.EntitySetName ?? "accounts",
       sampleColumn: first?.entity.PrimaryNameAttribute ?? first?.columns.at(0) ?? "name",
+      sampleNavigation: first?.navigation.find((n) => n.type.includes("<"))?.key,
     });
     await this.writeFile(this.outputRoot, "client", imports, body);
   }
@@ -934,7 +1000,7 @@ export class TypescriptGenerator {
       ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
       ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
       ...[...this.formNames.values()].flatMap((n) => [n.attributes, n.controls, n.context]),
-      ...this.columnTypeNames.values(),
+      ...[...this.clientTypeNames.values()].flatMap((n) => [n.column, n.navigation]),
       ...this.outputNames.values(),
       ...(this.config.typedClient === true ? [TYPED_CLIENT, TYPED_CLIENT_FACTORY] : []),
     ]);
@@ -1650,7 +1716,7 @@ ${this.formContext ? "export * from './forms/index.js';\n" : ""}${
       ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
       ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
       ...[...this.formNames.values()].flatMap((n) => [n.attributes, n.controls, n.context]),
-      ...this.columnTypeNames.values(),
+      ...[...this.clientTypeNames.values()].flatMap((n) => [n.column, n.navigation]),
       ...(this.config.typedClient === true ? [TYPED_CLIENT, TYPED_CLIENT_FACTORY] : []),
     ]);
     for (const type of this.model.ComplexTypes) {

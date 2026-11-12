@@ -70,6 +70,67 @@ describe("EntitySetClient (#312)", () => {
     expect(url.searchParams.get("$expand")).toBe("primarycontactid($select=fullname)");
   });
 
+  it("expand as an object sends what core's expand(name, options) sends (#431)", async () => {
+    const { set, fake, client } = accounts();
+    fake.on("GET", `/accounts(${id})`, () => jsonResponse({ accountid: id }));
+    fake.on("GET", "/accounts", () => jsonResponse({ value: [] }));
+    const expand = {
+      primarycontactid: { select: ["fullname"] },
+      contact_customer_accounts: {
+        select: ["fullname", "emailaddress1"],
+        filter: "statecode eq 0",
+        orderBy: ["fullname asc", "createdon desc"],
+        top: 5,
+        expand: {
+          parentcustomerid_account: true,
+          owninguser: { select: ["fullname"], expand: ["businessunitid($select=name)"] },
+        },
+      },
+      createdby: true,
+    } as const;
+
+    await set.byId(id).get({ select: ["name"], expand });
+    const typed = fake.last().url;
+    await client
+      .api(`accounts(${id})`)
+      .select("name")
+      .expand(
+        "primarycontactid",
+        { select: ["fullname"] },
+        "contact_customer_accounts",
+        {
+          select: ["fullname", "emailaddress1"],
+          filter: "statecode eq 0",
+          orderBy: ["fullname asc", "createdon desc"],
+          top: 5,
+          expand: {
+            parentcustomerid_account: true,
+            owninguser: { select: ["fullname"], expand: "businessunitid($select=name)" },
+          },
+        },
+        "createdby"
+      )
+      .get();
+    expect(typed).toBe(fake.last().url);
+    expect(new URL(typed).searchParams.get("$expand")).toBe(
+      "primarycontactid($select=fullname)," +
+        "contact_customer_accounts($select=fullname,emailaddress1;$filter=statecode eq 0;" +
+        "$orderby=fullname asc,createdon desc;$top=5;" +
+        "$expand=parentcustomerid_account,owninguser($select=fullname;$expand=businessunitid($select=name)))," +
+        "createdby"
+    );
+
+    // list() too; an empty object or array expands nothing
+    await set.list({ expand: { primarycontactid: { select: ["fullname"] } } });
+    expect(new URL(fake.last().url).searchParams.get("$expand")).toBe(
+      "primarycontactid($select=fullname)"
+    );
+    await set.list({ expand: {} });
+    expect(new URL(fake.last().url).searchParams.has("$expand")).toBe(false);
+    await set.byId(id).get({ expand: [] });
+    expect(new URL(fake.last().url).searchParams.has("$expand")).toBe(false);
+  });
+
   it("byId() takes an alternate key and a braced id", () => {
     const { set } = accounts();
     expect(set.byId({ accountnumber: "A'1" }).path).toBe("accounts(accountnumber='A''1')");

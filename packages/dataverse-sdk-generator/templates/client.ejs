@@ -6,17 +6,28 @@ export type <%- t.columnName %> =<%- t.columns.length === 0 ? ' never' : '' %>
 <%_ }) _%>
 ;
 
+/** The navigation properties of <%- doc(t.entity.LogicalName) %>, for `expand`: the related table's record, columns and navigation properties. */
+<%_ if (t.navigation.length === 0) { _%>
+export type <%- t.navigationName %> = Record<never, never>;
+<%_ } else { _%>
+export interface <%- t.navigationName %> {
+<%_ t.navigation.forEach(function(nav){ _%>
+  readonly <%- propertyKey(nav.key) %>: <%- nav.type %>;
+<%_ }) _%>
+}
+<%_ } _%>
+
 <%_ }) _%>
 /**
  * One typed request builder per generated table, by entity set name:
- * `client.<%- doc(sample) %>.byId(id).get({ select })`, `.list()`, `.create()`, `.byId(id).update()`,
+ * `client.<%- doc(sample) %>.byId(id).get({ select, expand })`, `.list()`, `.create()`, `.byId(id).update()`,
  * `.byId(id).delete()`.
  */
 export interface <%- clientName %> {
 <%_ tables.forEach(function(t){ _%>
 
   /** The <%- doc(t.entity.LogicalName) %> table (<%- doc(t.entity.EntitySetName) %>) */
-  readonly <%- propertyKey(t.entity.EntitySetName) %>: EntitySetClient<<%- t.typeName %>, <%- t.createName %>, <%- t.updateName %>, <%- t.columnName %>>;
+  readonly <%- propertyKey(t.entity.EntitySetName) %>: EntitySetClient<<%- t.typeName %>, <%- t.createName %>, <%- t.updateName %>, <%- t.columnName %>, <%- t.navigationName %>>;
 <%_ }) _%>
 }
 
@@ -26,7 +37,16 @@ export interface <%- clientName %> {
  * ```typescript
  * const typed = <%- factoryName %>(client);
  * const record = await typed.<%- doc(sample) %>.byId(id).get({ select: [<%- doc(literal(sampleColumn)) %>] });
+<%_ if (sampleNavigation) { _%>
+ * const withRelated = await typed.<%- doc(sample) %>.byId(id).get({
+ *   select: [<%- doc(literal(sampleColumn)) %>],
+ *   expand: { <%- doc(propertyKey(sampleNavigation)) %>: true },
+ * });
+<%_ } _%>
  * ```
+ *
+ * A literal `select` narrows the record to those columns, and `expand` adds the expanded
+ * navigation properties, typed by the related table.
  *
  * Lookups in a create or an update take an `EntityReference`; the generated `EntityMetadataCache`
  * gives the entity set of any generated table it points to.
@@ -35,7 +55,7 @@ export function <%- factoryName %>(client: DataverseClient): <%- clientName %> {
   const options = { metadataCache: EntityMetadataCache };
   return {
 <%_ tables.forEach(function(t){ _%>
-    <%- propertyKey(t.entity.EntitySetName) %>: new EntitySetClient<<%- t.typeName %>, <%- t.createName %>, <%- t.updateName %>, <%- t.columnName %>>(
+    <%- propertyKey(t.entity.EntitySetName) %>: new EntitySetClient<<%- t.typeName %>, <%- t.createName %>, <%- t.updateName %>, <%- t.columnName %>, <%- t.navigationName %>>(
       client,
       <%- t.metadataName %>,
       options
