@@ -66,7 +66,8 @@ const cache = new WeakMap<DataverseClient, Map<string, BulkOperationSupport>>();
  * cached per client and table for the life of the client; pass `refresh: true` to read it again
  * (for example after a solution adds bulk support to a custom table).
  *
- * `createMultiple()` and `updateMultiple()` use it with `strategy: "auto"`.
+ * `createMultiple()`, `updateMultiple()`, `upsertMultiple()` and `deleteMultiple()` use it with
+ * `strategy: "auto"` (and `deleteMultiple()` with `"bulk"`, to reject a standard table).
  *
  * @param client - The client to send the lookups with
  * @param logicalName - The table's logical name, e.g. `"account"`
@@ -176,7 +177,7 @@ async function getJson(
   query: Record<string, string>,
   options: BulkOperationSupportOptions
 ): Promise<unknown> {
-  // Called by createMultiple()/updateMultiple() with their execution's signal: its timeoutMs
+  // Called by the bulk helpers with their execution's signal: its timeoutMs
   // deadline goes along, so a long Retry-After fails at once instead of at the timeout (#487).
   const deadline = deadlineOf(options.signal);
   const response = await client.send({

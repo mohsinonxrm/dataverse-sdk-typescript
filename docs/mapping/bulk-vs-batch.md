@@ -355,12 +355,14 @@ for (const r of result.results) {
 
 ## Bulk helpers
 
-`createMultiple()` and `updateMultiple()` (`@mohsinonxrm/dataverse-sdk-batch`) split a long list
-of records into chunks (`batchSize`, default 100), send each with `CreateMultiple` /
-`UpdateMultiple`, or with `$batch` for a table without them (`strategy: "batch"`), and report
+`createMultiple()`, `updateMultiple()`, `upsertMultiple()` and `deleteMultiple()`
+(`@mohsinonxrm/dataverse-sdk-batch`) split a long list of records into chunks (`batchSize`,
+default 100), send each with `CreateMultiple` / `UpdateMultiple` / `UpsertMultiple` /
+`DeleteMultiple`, or with `$batch` for a table without them (`strategy: "batch"`), and report
 each record's id or error. `strategy: "auto"` picks between the two with
 `getBulkOperationSupport()`, which reads the table's `sdkmessagefilters` once and caches the
-answer. See the
+answer; it is the default for `deleteMultiple()`, which sends `$batch` `DELETE`s for a standard
+table (`DeleteMultiple` exists for elastic tables only). See the
 [batch package README](../../packages/dataverse-sdk-batch/README.md#bulk-create-and-update).
 
 ### $batch with continue-on-error

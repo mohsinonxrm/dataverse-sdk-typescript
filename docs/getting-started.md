@@ -706,6 +706,10 @@ for (const r of updated.results) {
 }
 ```
 
+`upsertMultiple()` (each record named by its primary key or an `@odata.id` such as
+`accounts(accountnumber='A-1')`) and `deleteMultiple()` (ids; `DeleteMultiple` on an elastic
+table, a `$batch` of `DELETE`s otherwise) work the same way.
+
 `getBulkOperationSupport(client, "account")` tells which bulk messages a table supports. To send
 one bulk request yourself, use the action:
 

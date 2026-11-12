@@ -13,7 +13,7 @@ Batch operations support for the Dataverse SDK, enabling multiple requests to be
 - **Error Handling**: Comprehensive error handling with per-request error tracking
 - **Continue on Error**: Optional continue-on-error semantics for partial success scenarios
 - **Auto-Split**: More than 1000 requests (or `batchSize`) are sent as several `$batch` requests, one after the other, without splitting a changeset
-- **Bulk Helpers**: `createMultiple()` and `updateMultiple()` send many records of one table in chunks, with `CreateMultiple` / `UpdateMultiple` or `$batch`, and report each record's id or error
+- **Bulk Helpers**: `createMultiple()`, `updateMultiple()`, `upsertMultiple()` and `deleteMultiple()` send many records of one table in chunks, with `CreateMultiple` / `UpdateMultiple` / `UpsertMultiple` / `DeleteMultiple` or `$batch`, and report each record's id or error
 - **Bulk Support Detection**: `getBulkOperationSupport()` tells which bulk messages a table supports, from `sdkmessagefilters` and its table type, cached per table
 
 ## Installation
@@ -464,6 +464,34 @@ if (!updated.success) {
 - **Chunks**: `batchSize` is 1 to 1000. Without `continueOnError`, no chunk is sent after one with a failure, and its records are `"skipped"`. `maxParallel` (default 1) sends that many chunks at once; the client's concurrency limit and retry policy apply to every request.
 - **Cancellation**: `signal`, `timeoutMs` (the whole operation), `attemptTimeoutMs` and `correlationId` work as for `execute()`. Stopped before any request finished, the helpers reject with `DataverseAbortError` (or `DataverseNetworkError` named `RequestTimeout`); after that, with `DataverseBulkOperationError`, whose `result` holds every record's outcome so far and whose `cause` is the abort error. An abort doesn't undo records Dataverse already wrote.
 - **Headers**: `headers` go on every request, e.g. `{ [DataverseHeaders.BypassCustomPluginExecution]: "true" }` (`DataverseHeaders` is in core).
+
+### Upsert and delete
+
+`upsertMultiple()` and `deleteMultiple()` take the same table, options and results as `createMultiple()` / `updateMultiple()`:
+
+```typescript
+import { deleteMultiple, upsertMultiple } from "@mohsinonxrm/dataverse-sdk-batch";
+import { odataKey } from "@mohsinonxrm/dataverse-sdk-core";
+
+const account = { logicalName: "account", entitySetName: "accounts" };
+
+// Each record names its row: by primary key, or by "@odata.id" (primary or alternate key).
+const upserted = await upsertMultiple(
+  client,
+  account,
+  [
+    { accountid: "5531d753-95af-e711-a94e-000d3a11e605", name: "Contoso" },
+    { "@odata.id": `accounts(${odataKey({ accountnumber: "A-2" })})`, name: "Fabrikam" },
+  ],
+  { strategy: "auto" }
+);
+
+// Ids, or objects with the primary key (and partitionid on an elastic table).
+const deleted = await deleteMultiple(client, account, accountIds);
+```
+
+- **`upsertMultiple()`**: `"bulk"` sends `UpsertMultiple`; `"batch"` sends one `PATCH <set>(<key>)` per record without `If-Match`, which Dataverse treats as an upsert (the key is left out of the body). `"auto"` picks `"bulk"` when the table supports both `CreateMultiple` and `UpdateMultiple` (as `UpsertMultiple` needs; every elastic table does). A record that names no row, or two records naming the same row (which `UpsertMultiple` rejects), throw `DataverseInvalidRequestError` before anything is sent. A record's `id` is its primary key, the GUID in its `@odata.id`, or (with `"batch"`) the id in the response; an upsert by alternate key with `"bulk"` has none.
+- **`deleteMultiple()`**: Dataverse has `DeleteMultiple` for elastic tables only, so the default strategy is `"auto"`: `DeleteMultiple` for an elastic table, otherwise one `$batch` per chunk with one `DELETE <set>(<id>)` per record. `"bulk"` on a standard table throws `DataverseInvalidRequestError` before anything is deleted. A row that doesn't exist is a `"failed"` record (404), not a thrown error; the others are still deleted. With `"batch"`, a record's `partitionid` goes into the row's key (`<set>(<primary key>=<id>,partitionid='<p>')`).
 
 ### Which tables support bulk operations
 

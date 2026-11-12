@@ -31,6 +31,8 @@ export { entityIdFromBatchResponse, type EntityIdFromBatchResponseOptions } from
 export {
   createMultiple,
   updateMultiple,
+  upsertMultiple,
+  deleteMultiple,
   DataverseBulkOperationError,
   type BulkTable,
   type BulkStrategy,
