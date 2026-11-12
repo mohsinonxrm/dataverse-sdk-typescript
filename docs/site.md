@@ -30,6 +30,7 @@ their browser's storage.
 | The site                                              | `samples/spa-fluentui-v9` (`pnpm --filter spa-fluentui-v9-sample dev` runs it locally)                                                         |
 | Response headers, SPA fallback                        | [`samples/spa-fluentui-v9/public/staticwebapp.config.json`](../samples/spa-fluentui-v9/public/staticwebapp.config.json), copied into the build |
 | Build and deploy                                      | [`.github/workflows/site.yml`](../.github/workflows/site.yml): on every push to `main` (the stable release), and by hand                       |
+| Previews of pull requests                             | The same workflow, for pull requests that change the site (see [Preview deployments](#preview-deployments))                                    |
 | Tests (demo mode, under the site's headers, with axe) | `pnpm --filter spa-fluentui-v9-sample test:e2e`, in CI's `browser-tests` job                                                                   |
 | The documentation site, at `/docs`                    | [`apps/docs`](../apps/docs) (`pnpm --filter docs-site dev` runs it locally), built in CI's `docs-site` job                                     |
 
@@ -38,7 +39,33 @@ documentation into the site's `dist/docs`, then uploads `samples/spa-fluentui-v9
 with [`Azure/static-web-apps-deploy`](https://github.com/Azure/static-web-apps-deploy) (no Oryx
 build). Until the deployment token secret exists, it builds the site and skips the deploy with a
 notice, so the workflow stays green before the Azure side is set up. A run by hand on a branch
-other than `main` deploys a preview environment instead of production.
+other than `main` deploys a preview environment instead of production, and so does a pull request
+that changes the site (see [Preview deployments](#preview-deployments)).
+
+## Preview deployments
+
+A pull request **from this repository** that changes the site (`samples/spa-fluentui-v9/**`,
+`apps/docs/**`, `docs/**`, `packages/**` or the workflow) builds the site and the documentation
+as production does and uploads them to a Static Web Apps **preview environment**:
+
+- The deploy action names the environment after the pull request and **comments its URL** on the
+  pull request (`https://<name>-<number>.<region>.azurestaticapps.net`, with `/docs` as on
+  production). Each push to the pull request updates it.
+- **Closing or merging** the pull request deletes it (the workflow's `close` job).
+- **Pull requests from forks** don't run the deploy or close jobs: the deployment token is a
+  secret, and the workflow uses `pull_request` (never `pull_request_target`), so a fork's code
+  never runs with it. Dependabot's pull requests don't get the secret either; they build the site
+  and skip the upload with a notice.
+- The **Free plan has 3 preview environments**. When they are all in use, the upload fails
+  without failing the pull request's checks, and the run says so in a warning; closing another
+  site pull request frees one.
+- **Sign-in on a preview is not set up.** Microsoft Entra ID needs each redirect URI listed on the
+  app registration, without wildcards, and every preview has its own URL. Previews are for demo
+  mode: the app shows a "Preview — sign-in may not work" banner on a preview host
+  (`isPreviewHost()` in `src/preview.ts`). To sign in on one, add its URL as a redirect URI of the
+  app registration (step 4 below), and remove it when the pull request closes.
+- A preview has production's headers and Content-Security-Policy (the same
+  `staticwebapp.config.json`) and is public, like the site.
 
 The Content-Security-Policy allows scripts from the site only (no inline script, no `eval`; the
 SDK's browser tests check the bundles under the same rule, and the documentation site's build
