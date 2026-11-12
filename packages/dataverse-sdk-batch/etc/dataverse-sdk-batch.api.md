@@ -9,6 +9,7 @@ import { DataverseBatchError as DataverseBatchError_2 } from '@mohsinonxrm/datav
 import { DataverseBatchErrorInit as DataverseBatchErrorInit_2 } from '@mohsinonxrm/dataverse-sdk-core';
 import { DataverseClient } from '@mohsinonxrm/dataverse-sdk-core';
 import { DataverseError } from '@mohsinonxrm/dataverse-sdk-core';
+import { HttpMethod } from '@mohsinonxrm/dataverse-sdk-core';
 
 // @public
 export interface BatchChangeset {
@@ -44,9 +45,12 @@ export interface BatchExecutionResult {
 export type BatchItem = BatchRequestStep | BatchChangeset;
 
 // @public
+export type BatchMethod = HttpMethod | Lowercase<HttpMethod>;
+
+// @public
 export class BatchRequestBuilder {
     constructor(client: DataverseClient);
-    addRequest(id: string, method: string, url: string, headers?: Record<string, string>, body?: unknown, dependsOn?: string[]): this;
+    addRequest(id: string, method: BatchMethod, url: string, headers?: Record<string, string>, body?: unknown, dependsOn?: string[]): this;
     beginChangeset(): this;
     clear(): this;
     encode(boundary: string): string;
@@ -61,7 +65,7 @@ export interface BatchRequestStep {
     dependsOn?: string[];
     headers?: Record<string, string>;
     id: string;
-    method: string;
+    method: BatchMethod;
     url: string;
 }
 

@@ -3,7 +3,7 @@
  * properties come back, so the rows are `Pick<OrganizationDetail, K>`, not full rows.
  */
 import { expectAssignable, expectError, expectNotAssignable, expectType } from "tsd";
-import { toEnvironment } from "../src/index.js";
+import { OrganizationState, OrganizationType, toEnvironment } from "../src/index.js";
 import type { DiscoveryClient, DiscoveryOptions, OrganizationDetail } from "../src/index.js";
 
 declare const discovery: DiscoveryClient;
@@ -35,3 +35,16 @@ expectError(await discovery.listOrganizations({ select: ["Endpoints"] }));
 declare const options: DiscoveryOptions;
 expectType<Array<Partial<OrganizationDetail>>>(await discovery.listOrganizations(options));
 expectAssignable<DiscoveryOptions>({ select: ["Id", "State"] });
+
+// #482: State and OrganizationType suggest their known values and take any number, so typed JSON
+// (and values Dataverse adds) still type-checks
+declare const org: OrganizationDetail;
+expectType<OrganizationState | (number & {})>(org.State);
+declare const someNumber: number;
+expectAssignable<OrganizationDetail["State"]>(someNumber);
+expectNotAssignable<OrganizationState>(2);
+expectType<0>(OrganizationState.Enabled);
+expectType<OrganizationType | (number & {}) | undefined>(org.OrganizationType);
+expectType<13>(OrganizationType.Developer);
+expectAssignable<OrganizationDetail["OrganizationType"]>(99);
+expectNotAssignable<OrganizationType>(99);

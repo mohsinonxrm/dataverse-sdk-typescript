@@ -195,7 +195,27 @@ interface TypeOverride {
   /** Lines emitted first in the interface body, as written (indented, with a trailing newline). */
   leading?: string;
   properties?: Partial<Record<string, PropertyOverride>>;
+  /** Types the overrides use from the `metadata-values` helper file (metadata-helpers.ts). */
+  values?: readonly string[];
 }
+
+/** Known values of a string property; other strings are accepted, for values Dataverse adds. */
+const openString = (known: string): PropertyOverride => ({ type: `${known} | (string & {})` });
+
+/** Known values of a number property; other numbers are accepted, for values Dataverse adds. */
+const openNumber = (known: string, doc: string): PropertyOverride => ({
+  type: `${known} | (number & {})`,
+  doc,
+});
+
+const SOURCE_TYPE = openNumber(
+  "AttributeSourceType",
+  "What fills the column: see `AttributeSourceType`."
+);
+const RELATIONSHIP_BEHAVIOR = openNumber(
+  "RelationshipBehavior",
+  "The relationship's type of behavior: see `RelationshipBehavior`."
+);
 
 /**
  * Corrections to generated metadata types (#171, #209).
@@ -204,8 +224,38 @@ interface TypeOverride {
  *   derived type, and create payloads need it (the create types in metadata-helpers.ts require it).
  * - A label is only valid with its text and language, though CSDL marks both nullable, and
  *   `UserLocalizedLabel` comes back as `null` when the user's language has no label.
+ * - Properties CSDL types as `Edm.String` or `Edm.Int32` that take known values (#482): the
+ *   unions in the `metadata-values` helper file, open to values Dataverse adds later.
  */
 const TYPE_OVERRIDES: Partial<Record<string, TypeOverride>> = {
+  DateTimeBehavior: {
+    values: ["DateTimeBehaviorValue"],
+    properties: { Value: openString("DateTimeBehaviorValue") },
+  },
+  MemoFormatName: {
+    values: ["MemoFormatNameValue"],
+    properties: { Value: openString("MemoFormatNameValue") },
+  },
+  AttributeTypeDisplayName: {
+    values: ["AttributeTypeDisplayNameValue"],
+    properties: { Value: openString("AttributeTypeDisplayNameValue") },
+  },
+  AttributeMetadata: {
+    values: ["AttributeSourceType"],
+    properties: { SourceType: SOURCE_TYPE },
+  },
+  ComplexAttributeMetadata: {
+    values: ["AttributeSourceType"],
+    properties: { SourceType: SOURCE_TYPE },
+  },
+  OneToManyRelationshipMetadata: {
+    values: ["RelationshipBehavior"],
+    properties: { RelationshipBehavior: RELATIONSHIP_BEHAVIOR },
+  },
+  ComplexOneToManyRelationshipMetadata: {
+    values: ["RelationshipBehavior"],
+    properties: { RelationshipBehavior: RELATIONSHIP_BEHAVIOR },
+  },
   MetadataBase: {
     leading:
       "  /**\n" +
@@ -231,6 +281,24 @@ const TYPE_OVERRIDES: Partial<Record<string, TypeOverride>> = {
     },
   },
 };
+
+/**
+ * The import lines of a generated type, followed by a blank line: the types it references (not
+ * itself), then the `metadata-values` types its TYPE_OVERRIDES use.
+ */
+function importLines(typeName: string, imports: Set<string>): string {
+  let code = "";
+  for (const imp of Array.from(imports)
+    .filter((i) => i !== typeName)
+    .sort()) {
+    code += `import type { ${imp} } from './${imp}.js';\n`;
+  }
+  const values = TYPE_OVERRIDES[typeName]?.values ?? [];
+  if (values.length > 0) {
+    code += `import type { ${[...values].sort().join(", ")} } from './metadata-values.js';\n`;
+  }
+  return code === "" ? "" : `${code}\n`;
+}
 
 /**
  * Generate the property lines of an entity or complex type, applying TYPE_OVERRIDES.
@@ -276,17 +344,7 @@ function generateEntityTypeInterface(entityType: CsdlEntityType): string {
     if (importType) imports.add(importType);
   }
 
-  // Generate imports (exclude self-reference)
-  let code = "";
-  const filteredImports = Array.from(imports)
-    .filter((i) => i !== entityType.name)
-    .sort();
-  if (filteredImports.length > 0) {
-    for (const imp of filteredImports) {
-      code += `import type { ${imp} } from './${imp}.js';\n`;
-    }
-    code += "\n";
-  }
+  let code = importLines(entityType.name, imports);
 
   code += `/**\n * ${entityType.name}\n`;
   if (entityType.baseType) {
@@ -334,17 +392,7 @@ function generateComplexTypeInterface(complexType: CsdlComplexType): string {
     if (importType) imports.add(importType);
   }
 
-  // Generate imports (exclude self-reference)
-  let code = "";
-  const filteredImports = Array.from(imports)
-    .filter((i) => i !== complexType.name)
-    .sort();
-  if (filteredImports.length > 0) {
-    for (const imp of filteredImports) {
-      code += `import type { ${imp} } from './${imp}.js';\n`;
-    }
-    code += "\n";
-  }
+  let code = importLines(complexType.name, imports);
 
   code += `/**\n * ${complexType.name}\n`;
   if (complexType.baseType) {

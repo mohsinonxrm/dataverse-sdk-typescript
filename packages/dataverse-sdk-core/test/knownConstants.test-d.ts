@@ -1,9 +1,24 @@
 /**
  * #481: type tests (tsd) for the known Dataverse constants: literal unions, the open
  * `Known | (string & {})` parameters that still take any string, and the per-class `name` types.
+ * #480, #482: the unions that replaced plain `string` and `number` fields and parameters.
  */
 import { expectAssignable, expectError, expectNotAssignable, expectType } from "tsd";
 import {
+  AsyncOperationStateCode,
+  AsyncOperationStatusCode,
+  TelemetryEvents,
+  odataLiteral,
+  waitForAsyncOperation,
+  type AsyncOperation,
+  type DependencyTelemetry,
+  type EdmPrimitiveType,
+  type HttpMethod,
+  type LoggingOptions,
+  type LogLevel,
+  type ODataTypeName,
+  type TelemetryClient,
+  type TelemetryEventName,
   Annotations,
   DataverseAbortError,
   DataverseAuthenticationError,
@@ -105,3 +120,47 @@ export class AppAuthError extends DataverseAuthenticationError {
     this.name = "AppSpecific";
   }
 }
+
+// #480: HttpMethod for response() and DependencyTelemetry.method.
+expectType<Promise<Response>>(client.api("accounts").response("PATCH", { name: "A" }));
+expectError(client.api("accounts").response("PATHC"));
+expectError(client.api("accounts").response(someString));
+expectType<HttpMethod | undefined>(({} as DependencyTelemetry).method);
+expectNotAssignable<DependencyTelemetry>({ method: "HEAD" });
+
+// #480: LogLevel in LoggingOptions.
+expectType<LogLevel | undefined>(({} as LoggingOptions).logLevel);
+
+// #480: event names. The SDK's are suggested; any other name is still allowed.
+expectType<"dataverse.throttle">(TelemetryEvents.throttle);
+expectAssignable<TelemetryEventName>("dataverse.batch");
+expectNotAssignable<TelemetryEventName>("dataverse.batches");
+client.trackEvent(TelemetryEvents.retry);
+client.trackEvent("my.app.event", { a: "1" });
+client.trackEvent(someString);
+// A telemetry client written with `name: string` still implements the interface.
+expectAssignable<TelemetryClient>({
+  trackEvent: (_name: string) => undefined,
+  startDependency: () => ({ end: () => undefined }),
+  trackException: () => undefined,
+});
+
+// #480: a system job's statecode and statuscode suggest the known values and take any number, so
+// typed JSON still type-checks (a status the SDK doesn't know counts as a failure).
+declare const job: AsyncOperation;
+expectType<AsyncOperationStateCode | (number & {})>(job.statecode);
+expectType<AsyncOperationStatusCode | (number & {})>(job.statuscode);
+expectType<3>(AsyncOperationStateCode.Completed);
+expectAssignable<AsyncOperationStatusCode>(30);
+expectNotAssignable<AsyncOperationStatusCode>(33);
+expectNotAssignable<AsyncOperationStateCode>(4);
+declare const someNumber: number;
+expectAssignable<AsyncOperation>({ asyncoperationid: "x", statecode: someNumber, statuscode: 99 });
+expectType<Promise<AsyncOperation>>(waitForAsyncOperation(client, "id"));
+
+// #482: OData type names: the Edm primitives are suggested; other type names still work.
+expectAssignable<EdmPrimitiveType>("Edm.Int32");
+expectNotAssignable<EdmPrimitiveType>("Edm.Int");
+expectAssignable<ODataTypeName>("Microsoft.Dynamics.CRM.EntityFilters");
+expectType<string>(odataLiteral.parameter(1, "Edm.Int32"));
+expectType<string>(odataLiteral.parameter(1, someString));

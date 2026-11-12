@@ -145,8 +145,7 @@ export interface AttributeMetadata extends MetadataBase {
     SchemaName?: string;
     // (undocumented)
     Settings?: EntitySetting[];
-    // (undocumented)
-    SourceType?: number;
+    SourceType?: AttributeSourceType | (number & {});
 }
 
 // @public
@@ -296,6 +295,18 @@ export interface AttributeRequiredLevelManagedProperty {
 }
 
 // @public
+export const AttributeSourceType: {
+    readonly Simple: 0;
+    readonly Calculated: 1;
+    readonly Rollup: 2;
+    readonly Formula: 3;
+    readonly Prompt: 4;
+};
+
+// @public
+export type AttributeSourceType = (typeof AttributeSourceType)[keyof typeof AttributeSourceType];
+
+// @public
 export const AttributeTypeCode: {
     readonly Boolean: "Boolean";
     readonly Customer: "Customer";
@@ -326,8 +337,39 @@ export type AttributeTypeCode = (typeof AttributeTypeCode)[keyof typeof Attribut
 // @public
 export interface AttributeTypeDisplayName {
     // (undocumented)
-    Value?: string;
+    Value?: AttributeTypeDisplayNameValue | (string & {});
 }
+
+// @public
+export const AttributeTypeDisplayNameValue: {
+    readonly BigIntType: "BigIntType";
+    readonly BooleanType: "BooleanType";
+    readonly CalendarRulesType: "CalendarRulesType";
+    readonly CustomerType: "CustomerType";
+    readonly DateTimeType: "DateTimeType";
+    readonly DecimalType: "DecimalType";
+    readonly DoubleType: "DoubleType";
+    readonly EntityNameType: "EntityNameType";
+    readonly FileType: "FileType";
+    readonly ImageType: "ImageType";
+    readonly IntegerType: "IntegerType";
+    readonly LookupType: "LookupType";
+    readonly ManagedPropertyType: "ManagedPropertyType";
+    readonly MemoType: "MemoType";
+    readonly MoneyType: "MoneyType";
+    readonly MultiSelectPicklistType: "MultiSelectPicklistType";
+    readonly OwnerType: "OwnerType";
+    readonly PartyListType: "PartyListType";
+    readonly PicklistType: "PicklistType";
+    readonly StateType: "StateType";
+    readonly StatusType: "StatusType";
+    readonly StringType: "StringType";
+    readonly UniqueidentifierType: "UniqueidentifierType";
+    readonly VirtualType: "VirtualType";
+};
+
+// @public
+export type AttributeTypeDisplayNameValue = (typeof AttributeTypeDisplayNameValue)[keyof typeof AttributeTypeDisplayNameValue];
 
 // @public
 export interface BigIntAttributeMetadata extends AttributeMetadata {
@@ -564,8 +606,7 @@ export interface ComplexAttributeMetadata {
     SchemaName?: string;
     // (undocumented)
     Settings?: EntitySetting[];
-    // (undocumented)
-    SourceType?: number;
+    SourceType?: AttributeSourceType | (number & {});
 }
 
 // @public
@@ -1126,8 +1167,7 @@ export interface ComplexOneToManyRelationshipMetadata {
     ReferencingEntityNavigationPropertyName?: string;
     // (undocumented)
     RelationshipAttributes?: RelationshipAttribute[];
-    // (undocumented)
-    RelationshipBehavior?: number;
+    RelationshipBehavior?: RelationshipBehavior | (number & {});
     // (undocumented)
     RelationshipType?: RelationshipType;
     // (undocumented)
@@ -1277,8 +1317,18 @@ export type DateTimeAttributeMetadataCreate = AttributeMetadataCreate<DateTimeAt
 // @public
 export interface DateTimeBehavior {
     // (undocumented)
-    Value?: string;
+    Value?: DateTimeBehaviorValue | (string & {});
 }
+
+// @public
+export const DateTimeBehaviorValue: {
+    readonly UserLocal: "UserLocal";
+    readonly DateOnly: "DateOnly";
+    readonly TimeZoneIndependent: "TimeZoneIndependent";
+};
+
+// @public
+export type DateTimeBehaviorValue = (typeof DateTimeBehaviorValue)[keyof typeof DateTimeBehaviorValue];
 
 // @public
 export type DateTimeColumnOptions = DateAndTimeColumnOptions | DateOnlyColumnOptions;
@@ -2171,8 +2221,20 @@ export interface MemoColumnOptions extends ColumnOptions {
 // @public
 export interface MemoFormatName {
     // (undocumented)
-    Value?: string;
+    Value?: MemoFormatNameValue | (string & {});
 }
+
+// @public
+export const MemoFormatNameValue: {
+    readonly Email: "Email";
+    readonly Json: "Json";
+    readonly RichText: "RichText";
+    readonly Text: "Text";
+    readonly TextArea: "TextArea";
+};
+
+// @public
+export type MemoFormatNameValue = (typeof MemoFormatNameValue)[keyof typeof MemoFormatNameValue];
 
 // @public
 export const Metadata: MetadataBuilders;
@@ -2423,8 +2485,7 @@ export interface OneToManyRelationshipMetadata extends RelationshipMetadataBase 
     ReferencingEntityNavigationPropertyName?: string;
     // (undocumented)
     RelationshipAttributes?: RelationshipAttribute[];
-    // (undocumented)
-    RelationshipBehavior?: number;
+    RelationshipBehavior?: RelationshipBehavior | (number & {});
 }
 
 // @public
@@ -2613,6 +2674,16 @@ export interface RelationshipAttribute {
     // (undocumented)
     ReferencingAttributeName?: string;
 }
+
+// @public
+export const RelationshipBehavior: {
+    readonly Referential: 0;
+    readonly Parental: 1;
+    readonly Custom: 2;
+};
+
+// @public
+export type RelationshipBehavior = (typeof RelationshipBehavior)[keyof typeof RelationshipBehavior];
 
 // @public
 export interface RelationshipMetadataBase extends MetadataBase {

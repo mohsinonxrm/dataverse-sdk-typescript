@@ -1,3 +1,6 @@
+import type { TelemetryEventName } from "../telemetry/events.js";
+
+/** The HTTP methods the Web API uses. */
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
 export interface RequestInformation {
@@ -90,7 +93,8 @@ export interface Logger {
 export interface DependencyTelemetry {
   /** Host of the request URL. */
   target?: string;
-  method?: string;
+  /** The request's HTTP method. */
+  method?: HttpMethod;
   /** The request URL, redacted with the client's `redactUrl` (see `DataverseClientOptions`). */
   url?: string;
   durationMs?: number;
@@ -130,10 +134,11 @@ export interface DependencyHandle {
 export interface TelemetryClient {
   /**
    * A named event: throttling, retries, waits for a concurrency slot and `$batch` executions
-   * (see `TelemetryEvents`), or your own. String properties, numeric measurements.
+   * (see `TelemetryEvents`), or your own. String properties, numeric measurements. `name` is a
+   * `TelemetryEventName` when the SDK sends the event; an implementation may type it `string`.
    */
   trackEvent(
-    name: string,
+    name: TelemetryEventName | (string & {}),
     props?: Record<string, string>,
     measurements?: Record<string, number>
   ): void;

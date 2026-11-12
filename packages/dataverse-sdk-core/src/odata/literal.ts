@@ -195,7 +195,11 @@ export const odataLiteral = {
    * isn't one, `NaN`, an enum member with a quote) throws `DataverseInvalidRequestError` instead of
    * sending a request the Web API rejects.
    */
-  parameter(value: unknown, odataType: string, kind: ODataParameterKind = "PrimitiveType"): string {
+  parameter(
+    value: unknown,
+    odataType: ODataTypeName,
+    kind: ODataParameterKind = "PrimitiveType"
+  ): string {
     if (value === null || value === undefined) return "null";
 
     if (kind === "Collection" || Array.isArray(value) || odataType.startsWith("Collection(")) {
@@ -283,6 +287,33 @@ export const odataLiteral = {
 /** Structural kind of an operation parameter, as the code generators classify it. */
 export type ODataParameterKind =
   "PrimitiveType" | "EnumerationType" | "ComplexType" | "EntityType" | "Collection";
+
+/** An OData primitive type, as `$metadata` names it: `Edm.String`, `Edm.Int32`, `Edm.Guid`, … */
+export type EdmPrimitiveType = `Edm.${
+  | "Binary"
+  | "Boolean"
+  | "Byte"
+  | "Date"
+  | "DateTimeOffset"
+  | "Decimal"
+  | "Double"
+  | "Duration"
+  | "Guid"
+  | "Int16"
+  | "Int32"
+  | "Int64"
+  | "SByte"
+  | "Single"
+  | "Stream"
+  | "String"
+  | "TimeOfDay"}`;
+
+/**
+ * The OData type of a property or parameter: an `Edm.*` primitive (which the editor suggests), or
+ * any other type name, such as `Microsoft.Dynamics.CRM.EntityFilters`, `mscrm.crmbaseentity` or
+ * `Collection(Edm.String)`.
+ */
+export type ODataTypeName = EdmPrimitiveType | (string & {});
 
 /** A record to bind an operation to, or to pass as an entity-typed parameter. */
 export interface ODataRecordReference {

@@ -92,8 +92,8 @@ export interface AsyncOperation {
     name?: string | null;
     operationtype?: number | null;
     startedon?: string | null;
-    statecode: number;
-    statuscode: number;
+    statecode: AsyncOperationStateCode | (number & {});
+    statuscode: AsyncOperationStatusCode | (number & {});
 }
 
 // @public
@@ -121,6 +121,9 @@ export const AsyncOperationStateCode: {
 };
 
 // @public
+export type AsyncOperationStateCode = (typeof AsyncOperationStateCode)[keyof typeof AsyncOperationStateCode];
+
+// @public
 export const AsyncOperationStatusCode: {
     readonly WaitingForResources: 0;
     readonly Waiting: 10;
@@ -131,6 +134,9 @@ export const AsyncOperationStatusCode: {
     readonly Failed: 31;
     readonly Canceled: 32;
 };
+
+// @public
+export type AsyncOperationStatusCode = (typeof AsyncOperationStatusCode)[keyof typeof AsyncOperationStatusCode];
 
 // @public (undocumented)
 export class AuthMiddleware implements Middleware {
@@ -443,7 +449,7 @@ export class DataverseClient {
     savedQuery<T = Record<string, unknown>>(entitySetName: string, savedQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
     // (undocumented)
     send(request: RequestInformation): Promise<Response>;
-    trackEvent(name: string, properties?: Record<string, string>, measurements?: Record<string, number>): void;
+    trackEvent(name: TelemetryEventName | (string & {}), properties?: Record<string, string>, measurements?: Record<string, number>): void;
     userQuery<T = Record<string, unknown>>(entitySetName: string, userQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
 }
 
@@ -687,7 +693,7 @@ export class DataverseRequestBuilder {
     preferRaw(value: string): this;
     // (undocumented)
     put<T = unknown>(body?: unknown, options?: RequestOptions): Promise<T>;
-    response(method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE", body?: unknown, options?: RequestOptions): Promise<Response>;
+    response(method?: HttpMethod, body?: unknown, options?: RequestOptions): Promise<Response>;
     savedQuery<T = Record<string, unknown>>(savedQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
     // (undocumented)
     select(...fields: string[]): this;
@@ -753,8 +759,7 @@ export interface DependencyHandle {
 export interface DependencyTelemetry {
     // (undocumented)
     durationMs?: number;
-    // (undocumented)
-    method?: string;
+    method?: HttpMethod;
     // (undocumented)
     properties?: Record<string, string>;
     resultCode?: string;
@@ -781,6 +786,9 @@ export interface DuplicateRecord {
     // (undocumented)
     [key: string]: unknown;
 }
+
+// @public
+export type EdmPrimitiveType = `Edm.${"Binary" | "Boolean" | "Byte" | "Date" | "DateTimeOffset" | "Decimal" | "Double" | "Duration" | "Guid" | "Int16" | "Int32" | "Int64" | "SByte" | "Single" | "Stream" | "String" | "TimeOfDay"}`;
 
 // @public
 export function entityIdFromResponse(res: Response): string;
@@ -903,7 +911,7 @@ export type HeadersLike = Headers | Array<[string, string]> | Record<string, str
 // @public
 export function headersToObject(headers: Headers): Record<string, string>;
 
-// @public (undocumented)
+// @public
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
 // @public
@@ -941,7 +949,7 @@ export class LoggingMiddleware implements Middleware {
 // @public
 export interface LoggingOptions extends MiddlewareOptions {
     disable?: boolean;
-    logLevel?: "debug" | "info" | "warn" | "error";
+    logLevel?: LogLevel;
 }
 
 // @public
@@ -1081,7 +1089,7 @@ export const odataLiteral: {
     readonly recordPath: (reference: ODataRecordReference) => string;
     readonly reference: (reference: ODataRecordReference) => string;
     readonly json: (value: unknown) => string;
-    readonly parameter: (value: unknown, odataType: string, kind?: ODataParameterKind) => string;
+    readonly parameter: (value: unknown, odataType: ODataTypeName, kind?: ODataParameterKind) => string;
     readonly value: (value: ODataScalar) => string;
 };
 
@@ -1097,6 +1105,9 @@ export interface ODataRecordReference {
 
 // @public
 export type ODataScalar = string | number | bigint | boolean | Date | null;
+
+// @public
+export type ODataTypeName = EdmPrimitiveType | (string & {});
 
 // @public
 export class PageIterator<T> implements AsyncIterable<T> {
@@ -1294,10 +1305,13 @@ export const systemClock: Clock;
 // @public
 export interface TelemetryClient {
     startDependency(name: string, data: DependencyTelemetry): DependencyHandle;
-    trackEvent(name: string, props?: Record<string, string>, measurements?: Record<string, number>): void;
+    trackEvent(name: TelemetryEventName | (string & {}), props?: Record<string, string>, measurements?: Record<string, number>): void;
     // (undocumented)
     trackException(error: unknown, props?: Record<string, string>): void;
 }
+
+// @public
+export type TelemetryEventName = (typeof TelemetryEvents)[keyof typeof TelemetryEvents];
 
 // @public
 export const TelemetryEvents: {

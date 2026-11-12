@@ -4,6 +4,7 @@
  */
 
 import type { RetryOptions } from "../abstractions/options.js";
+import type { LogLevel } from "../utils/consoleLogger.js";
 import type { AdaptiveThrottlingRequestOptions } from "./AdaptiveThrottlingMiddleware.js";
 import type { BulkheadRequestOptions } from "./BulkheadMiddleware.js";
 import type { ChaosRequestOptions } from "./ChaosMiddleware.js";
@@ -59,7 +60,7 @@ export interface LoggingOptions extends MiddlewareOptions {
   /**
    * Custom log level for this request
    */
-  logLevel?: "debug" | "info" | "warn" | "error";
+  logLevel?: LogLevel;
 }
 
 /**

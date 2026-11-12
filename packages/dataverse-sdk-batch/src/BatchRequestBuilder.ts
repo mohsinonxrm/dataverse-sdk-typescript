@@ -10,9 +10,11 @@ import {
   normalizeHeaders,
   parseODataError,
   TelemetryEvents,
+  type HttpMethod,
 } from "@mohsinonxrm/dataverse-sdk-core";
 import type {
   BatchItem,
+  BatchMethod,
   BatchRequestStep,
   BatchExecutionOptions,
   BatchExecutionResult,
@@ -141,7 +143,7 @@ export class BatchRequestBuilder {
    *   set it is also the part's `Content-ID`, so later requests in the same change set can refer
    *   to the entity it creates as `$<id>` (in the URL or in an `@odata.bind` value); there it may
    *   only contain letters, digits, `.`, `_`, `~` and `-`.
-   * @param method - HTTP method (GET, POST, PATCH, DELETE, etc.)
+   * @param method - HTTP method: `GET`, `POST`, `PATCH`, `PUT` or `DELETE` (lower case works too)
    * @param url - Request URL: relative to the Web API root (`accounts`, `/accounts`), absolute,
    *   or a `$<id>` reference inside a change set
    * @param headers - Optional request headers
@@ -164,7 +166,7 @@ export class BatchRequestBuilder {
    */
   addRequest(
     id: string,
-    method: string,
+    method: BatchMethod,
     url: string,
     headers?: Record<string, string>,
     body?: unknown,
@@ -218,7 +220,7 @@ export class BatchRequestBuilder {
 
     const request: BatchRequestStep = {
       id,
-      method: method.toUpperCase(),
+      method: method.toUpperCase() as HttpMethod,
       url,
       headers,
       body,

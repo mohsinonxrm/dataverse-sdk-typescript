@@ -1,6 +1,8 @@
+import type { AttributeTypeDisplayNameValue } from "./metadata-values.js";
+
 /**
  * AttributeTypeDisplayName
  */
 export interface AttributeTypeDisplayName {
-  Value?: string;
+  Value?: AttributeTypeDisplayNameValue | (string & {});
 }

@@ -6,10 +6,12 @@
 
 import { DataverseClient } from '@mohsinonxrm/dataverse-sdk-core';
 import { DataverseRequestBuilder } from '@mohsinonxrm/dataverse-sdk-core';
+import { EdmPrimitiveType } from '@mohsinonxrm/dataverse-sdk-core';
 import { Executable } from '@mohsinonxrm/dataverse-sdk-core';
 import { ODataKey } from '@mohsinonxrm/dataverse-sdk-core';
 import { ODataParameterKind } from '@mohsinonxrm/dataverse-sdk-core';
 import { ODataRecordReference } from '@mohsinonxrm/dataverse-sdk-core';
+import { ODataTypeName } from '@mohsinonxrm/dataverse-sdk-core';
 import { RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
 import { RequestOptions } from '@mohsinonxrm/dataverse-sdk-core';
 
@@ -23,7 +25,7 @@ export abstract class ActionBase<TResponse = void> implements Executable<TRespon
 
 // @public
 export interface AttributeMetadata {
-    attributeType: string;
+    attributeType: AttributeTypeCodeName | EdmPrimitiveType | (string & {});
     isMultiSelect?: boolean;
     isPrimaryKey?: boolean;
     isReadOnly?: boolean;
@@ -34,7 +36,7 @@ export interface AttributeMetadata {
     maxLength?: number;
     maxValue?: number;
     minValue?: number;
-    odataType?: string;
+    odataType?: ODataTypeName;
     optionSetType?: string;
     optionValues?: number[];
     requiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
@@ -45,12 +47,15 @@ export interface AttributeMetadata {
 }
 
 // @public
+export type AttributeTypeCodeName = "BigInt" | "Boolean" | "CalendarRules" | "Customer" | "DateTime" | "Decimal" | "Double" | "EntityName" | "Integer" | "Lookup" | "ManagedProperty" | "Memo" | "Money" | "Owner" | "PartyList" | "Picklist" | "State" | "Status" | "String" | "Uniqueidentifier" | "Virtual";
+
+// @public
 export function createEntityReference(logicalName: string, id: string, options?: EntityReferenceOptions): EntityReference;
 
 // @public
 export interface EntityMetadata {
     attributes?: Record<string, AttributeMetadata>;
-    attributeTypes: Record<string, string>;
+    attributeTypes: Record<string, ODataTypeName>;
     collectionName: string;
     logicalName: string;
     navigation: Record<string, NavigationMetadata>;
@@ -123,7 +128,7 @@ export interface FormatEntityForWriteOptions {
 }
 
 // @public
-export function formatParameterAlias(value: unknown, odataType: string, kind?: ParameterKind): string;
+export function formatParameterAlias(value: unknown, odataType: ODataTypeName, kind?: ParameterKind): string;
 
 // @public
 export function formatRecordPath(reference: ODataRecordReference): string;

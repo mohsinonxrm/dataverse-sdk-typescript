@@ -3,6 +3,7 @@ import type { CascadeConfiguration } from "./CascadeConfiguration.js";
 import type { LookupAttributeMetadata } from "./LookupAttributeMetadata.js";
 import type { RelationshipAttribute } from "./RelationshipAttribute.js";
 import type { RelationshipMetadataBase } from "./RelationshipMetadataBase.js";
+import type { RelationshipBehavior } from "./metadata-values.js";
 
 /**
  * OneToManyRelationshipMetadata
@@ -23,6 +24,7 @@ export interface OneToManyRelationshipMetadata extends RelationshipMetadataBase 
   ReferencingEntity?: string;
   ReferencingEntityNavigationPropertyName?: string;
   RelationshipAttributes?: RelationshipAttribute[];
-  RelationshipBehavior?: number;
+  /** The relationship's type of behavior: see `RelationshipBehavior`. */
+  RelationshipBehavior?: RelationshipBehavior | (number & {});
   Lookup?: LookupAttributeMetadata;
 }

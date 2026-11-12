@@ -106,17 +106,19 @@ export {
 export { Annotations, type AnnotationTerm } from "./client/annotations.js";
 
 export * from "./telemetry/FeatureUsageTracker.js";
-export { TelemetryEvents } from "./telemetry/events.js";
+export { TelemetryEvents, type TelemetryEventName } from "./telemetry/events.js";
 
 export { odata, type EqValue } from "./odata/filter.js";
 export type { ExpandOptions } from "./odata/expand.js";
 export {
   odataLiteral,
   odataKey,
+  type EdmPrimitiveType,
   type ODataKey,
   type ODataParameterKind,
   type ODataRecordReference,
   type ODataScalar,
+  type ODataTypeName,
 } from "./odata/literal.js";
 
 // Change tracking (#319)
