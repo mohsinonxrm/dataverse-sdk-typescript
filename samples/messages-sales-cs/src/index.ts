@@ -711,17 +711,28 @@ async function cleanup(orgService: OrganizationService, client: DataverseClient)
       }
     }
     for (const id of toDelete) {
-      try {
-        await orgService.delete(set, id);
-        deletedCount++;
-        console.log(
-          `${chalk.green("✓")} Deleted ${label} ${chalk.dim(id.substring(0, 8) + "...")}`
-        );
-      } catch (error: unknown) {
-        // Already gone counts as deleted
-        if (error instanceof DataverseError && error.status === 404) continue;
-        ok = false;
-        console.log(`${chalk.red("✗")} Failed to delete ${label} ${id}: ${errorMessage(error)}`);
+      // Dataverse sometimes fails a delete once ("There is no active transaction", seen on an
+      // opportunity just after the demos closed it) and accepts it moments later, so a failed
+      // delete is tried up to three times before it counts as left behind.
+      for (let attempt = 1; ; attempt++) {
+        try {
+          await orgService.delete(set, id);
+          deletedCount++;
+          console.log(
+            `${chalk.green("✓")} Deleted ${label} ${chalk.dim(id.substring(0, 8) + "...")}`
+          );
+          break;
+        } catch (error: unknown) {
+          // Already gone counts as deleted
+          if (error instanceof DataverseError && error.status === 404) break;
+          if (attempt < 3) {
+            await new Promise((resolve) => setTimeout(resolve, attempt * 5000));
+            continue;
+          }
+          ok = false;
+          console.log(`${chalk.red("✗")} Failed to delete ${label} ${id}: ${errorMessage(error)}`);
+          break;
+        }
       }
     }
   }
