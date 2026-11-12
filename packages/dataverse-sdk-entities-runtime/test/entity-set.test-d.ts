@@ -13,6 +13,7 @@ import {
   type EntityReference,
   EntitySetClient,
   type IEntity,
+  type ManyToManyNavigation,
   type RecordAnnotations,
   type SingleNavigation,
 } from "../src/index.js";
@@ -27,6 +28,7 @@ interface Account extends IEntity {
 }
 type AccountColumn = "accountid" | "name" | "creditlimit" | "_primarycontactid_value";
 interface AccountNavigation {
+  readonly contoso_account_contact: ManyToManyNavigation<Contact, ContactColumn, ContactNavigation>;
   readonly primarycontactid: SingleNavigation<Contact, ContactColumn, ContactNavigation>;
   readonly contact_customer_accounts: CollectionNavigation<
     Contact,
@@ -44,6 +46,11 @@ interface Contact extends IEntity {
 }
 type ContactColumn = "contactid" | "fullname" | "emailaddress1";
 interface ContactNavigation {
+  readonly contact_customer_accounts_nested: CollectionNavigation<
+    Account,
+    AccountColumn,
+    AccountNavigation
+  >;
   readonly parentcustomerid_account: SingleNavigation<Account, AccountColumn, AccountNavigation>;
   readonly parentcustomerid_contact: SingleNavigation<Contact, ContactColumn, ContactNavigation>;
 }
@@ -183,6 +190,65 @@ expectError(
 );
 // filter, orderBy and top only on a collection
 expectError(accounts.byId(id).get({ expand: { primarycontactid: { top: 1 } } }));
+// ...and not with a nested expand (Dataverse refuses $top / $orderby with a nested $expand)
+expectError(
+  accounts.byId(id).get({
+    expand: { contact_customer_accounts: { top: 5, expand: { parentcustomerid_account: true } } },
+  })
+);
+expectError(
+  accounts.byId(id).get({
+    expand: {
+      contact_customer_accounts: {
+        orderBy: ["fullname asc"],
+        expand: { parentcustomerid_account: true },
+      },
+    },
+  })
+);
+// A collection inside another expansion takes select, filter and expand only
+const nestedCollection = await accounts.byId(id).get({
+  select: ["name"],
+  expand: {
+    primarycontactid: {
+      select: ["fullname"],
+      expand: { contact_customer_accounts_nested: { select: ["name"], filter: "statecode eq 0" } },
+    },
+  },
+});
+expectType<string | null | undefined>(
+  nestedCollection.primarycontactid?.contact_customer_accounts_nested[0].name
+);
+expectError(
+  accounts.byId(id).get({
+    expand: {
+      primarycontactid: { expand: { contact_customer_accounts_nested: { top: 1 } } },
+    },
+  })
+);
+// filter with a nested expand is fine
+await accounts.byId(id).get({
+  expand: {
+    contact_customer_accounts: {
+      filter: "statecode eq 0",
+      expand: { parentcustomerid_account: true },
+    },
+  },
+});
+// A many-to-many collection takes top and orderBy, but no nested expand
+await accounts
+  .byId(id)
+  .get({ expand: { contoso_account_contact: { top: 5, orderBy: ["fullname"] } } });
+expectError(
+  accounts.byId(id).get({
+    expand: { contoso_account_contact: { expand: { parentcustomerid_account: true } } },
+  })
+);
+const manyToMany = await accounts.byId(id).get({
+  select: ["name"],
+  expand: { contoso_account_contact: { select: ["fullname"] } },
+});
+expectType<string | null | undefined>(manyToMany.contoso_account_contact[0].fullname);
 
 // Without a navigation type, expand takes any name and the result keeps the interface's types
 const untyped = new EntitySetClient<Account, Partial<Account>, Partial<Account>, AccountColumn>(
