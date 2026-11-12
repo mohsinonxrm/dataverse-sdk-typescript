@@ -8,6 +8,7 @@ import type { ApiVersion } from "@mohsinonxrm/dataverse-sdk-core";
 import type {
   AttributeSourceType,
   AttributeTypeCode,
+  AttributeTypeDisplayNameValue,
   DateTimeBehaviorValue,
   DateTimeFormat,
 } from "@mohsinonxrm/dataverse-sdk-metadata";
@@ -103,6 +104,18 @@ export interface DataverseGenConfig {
    * namespace of `@types/xrm`, which the app then needs.
    */
   formContext?: boolean;
+
+  /**
+   * Generate a form context type per form layout (default: `false`, #430): reads each table's
+   * active main and quick create forms (`systemform` records and their FormXml) and writes
+   * `forms/<Entity>Forms.ts`, with per form `<Entity><Kind>_<Form>Attributes`, `…Controls`,
+   * `…Tabs` and `…FormContext`. `getAttribute()` and `getControl()` take the names on that form
+   * (duplicate controls such as `name1`, `header_` controls, subgrids, web resources, quick view
+   * forms) and return their Xrm types without `| null`; `ui.tabs.get()` takes its tab names, and a
+   * tab's `sections.get()` its section names. Turns on {@link formContext} too, whose table-wide
+   * types the per-form ones build on. Needs `@types/xrm`, and read access to `systemform`.
+   */
+  formLayouts?: boolean;
 
   /**
    * Generate typed request builders per entity set (default: `false`, #312): `client.ts` with
@@ -207,6 +220,85 @@ export interface EntityType {
 
   /** Is this a custom entity? */
   IsCustomEntity: boolean;
+
+  /**
+   * With `formLayouts` (#430): the table's active main and quick create forms, read from their
+   * FormXml; main forms first, then by name.
+   */
+  Forms?: FormLayoutType[];
+}
+
+/** The kind of a form layout (`formLayouts`): a main form (type 2) or a quick create form (7). */
+export type FormLayoutKind = "main" | "quickCreate";
+
+/** A model-driven form of a table, read from its `systemform` record and FormXml (#430). */
+export interface FormLayoutType {
+  /** The form's id (`formid`). */
+  FormId: string;
+
+  /** The form's name, as the form selector shows it. */
+  Name: string;
+
+  /** Main or quick create. */
+  Kind: FormLayoutKind;
+
+  /** The tabs that have a name, in form order, with their named sections. */
+  Tabs: FormTabType[];
+
+  /**
+   * The controls in the body and the header that have an id (the name `getControl()` takes), in
+   * form order. Footer controls aren't included: `getControl()` doesn't reach them.
+   */
+  Controls: FormControlType[];
+}
+
+/** A tab of a form layout. */
+export interface FormTabType {
+  /** The tab's name, which `ui.tabs.get()` takes. */
+  Name: string;
+
+  /** The tab's label (in English when the form has one, else its first label). */
+  Label?: string;
+
+  /** The tab's sections that have a name, in form order. */
+  Sections: FormSectionType[];
+}
+
+/** A section of a form tab. */
+export interface FormSectionType {
+  /** The section's name, which `tab.sections.get()` takes. */
+  Name: string;
+
+  /** The section's label. */
+  Label?: string;
+}
+
+/**
+ * What a form control shows, from its `classid`: a column, a subgrid, a web resource, an IFRAME,
+ * a quick view form, the timeline, or something else (a spacer, a map, …).
+ */
+export type FormControlKind =
+  "column" | "subgrid" | "webResource" | "iframe" | "quickView" | "timeline" | "other";
+
+/** A control of a form layout. */
+export interface FormControlType {
+  /** The control's id in the FormXml: its name in the Client API (`name`, `name1`, `header_name`). */
+  Id: string;
+
+  /** Body or header. */
+  Location: "body" | "header";
+
+  /** What the control shows. */
+  Kind: FormControlKind;
+
+  /** The column a column control is bound to (`datafieldname`). */
+  DataField?: string;
+
+  /**
+   * The bound column's `AttributeTypeName` from RetrieveMetadataChanges (`PartyListType`,
+   * `FileType`, …), when the table has the column.
+   */
+  ColumnType?: AttributeTypeDisplayNameValue | (string & {});
 }
 
 /**

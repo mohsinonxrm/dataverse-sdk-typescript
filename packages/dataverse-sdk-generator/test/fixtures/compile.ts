@@ -11,6 +11,7 @@ import ts from "typescript";
 import type {
   MetadataService,
   RetrieveMetadataChangesResponse,
+  SystemFormRecord,
 } from "../../src/metadata-service.js";
 import { SchemaModel } from "../../src/schema-model.js";
 import { TypescriptGenerator } from "../../src/typescript-generator.js";
@@ -18,16 +19,22 @@ import type { DataverseGenConfig } from "../../src/types.js";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-/** A MetadataService stand-in that serves a fixture instead of calling Dataverse. */
+/**
+ * A MetadataService stand-in that serves a fixture instead of calling Dataverse: the `$metadata`
+ * document, each table's RetrieveMetadataChanges response, and each table's forms (`formLayouts`).
+ */
 export function fixtureMetadataService(
   edmx: string,
-  entities: Record<string, RetrieveMetadataChangesResponse>
+  entities: Record<string, RetrieveMetadataChangesResponse>,
+  forms: Record<string, SystemFormRecord[]> = {}
 ): MetadataService {
-  const service: Pick<MetadataService, "getEdmxMetadata" | "getEntityMetadata"> = {
-    getEdmxMetadata: () => Promise.resolve(edmx),
-    getEntityMetadata: (logicalName: string) =>
-      Promise.resolve(entities[logicalName] ?? { EntityMetadata: [] }),
-  };
+  const service: Pick<MetadataService, "getEdmxMetadata" | "getEntityMetadata" | "getSystemForms"> =
+    {
+      getEdmxMetadata: () => Promise.resolve(edmx),
+      getEntityMetadata: (logicalName: string) =>
+        Promise.resolve(entities[logicalName] ?? { EntityMetadata: [] }),
+      getSystemForms: (logicalName: string) => Promise.resolve(forms[logicalName] ?? []),
+    };
   return service as MetadataService;
 }
 

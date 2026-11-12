@@ -183,6 +183,46 @@ ${await response.text()}`
   }
 
   /**
+   * The active main (type 2) and quick create (type 7) forms of a table, with their FormXml
+   * (`formLayouts`, #430): the `systemform` records whose `objecttypecode` is the table.
+   */
+  async getSystemForms(logicalName: string): Promise<SystemFormRecord[]> {
+    const filter =
+      `objecttypecode eq '${logicalName.replace(/'/g, "''")}'` +
+      " and (type eq 2 or type eq 7) and formactivationstate eq 1";
+    let url: string | undefined =
+      `${this.baseUrl}/systemforms?$select=formid,name,type,formxml` +
+      `&$filter=${encodeURIComponent(filter)}&$orderby=name,formid`;
+
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "OData-MaxVersion": "4.0",
+      "OData-Version": "4.0",
+    };
+    if (this.accessToken) {
+      headers.Authorization = `Bearer ${this.accessToken}`;
+    }
+
+    const forms: SystemFormRecord[] = [];
+    while (url) {
+      const response = await this.fetchWithRetry(url, { method: "GET", headers }, () => false);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to retrieve the forms of ${logicalName}: ${String(response.status)} ${response.statusText}\n${errorText}`
+        );
+      }
+      const page = (await response.json()) as {
+        value?: SystemFormRecord[];
+        "@odata.nextLink"?: string;
+      };
+      forms.push(...(page.value ?? []));
+      url = page["@odata.nextLink"];
+    }
+    return forms;
+  }
+
+  /**
    * `fetch`, tried up to {@link ATTEMPTS} times: again after a dropped connection, a 429, a 5xx,
    * or a status `retryAlso` accepts, waiting {@link BACKOFF_MS} (or Retry-After) in between.
    * Returns the last response; throws the last network error.
@@ -219,6 +259,16 @@ export interface RetrieveMetadataChangesResponse {
   ServerVersionStamp?: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DeletedMetadata?: any;
+}
+
+/** A `systemform` record as {@link MetadataService.getSystemForms} reads it. */
+export interface SystemFormRecord {
+  formid?: string;
+  name?: string;
+  /** The form type: 2 = main, 7 = quick create (the only ones read). */
+  type?: number;
+  /** The form's layout. */
+  formxml?: string;
 }
 
 /**

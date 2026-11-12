@@ -1,0 +1,85 @@
+<%_ if (forms.length === 0) { _%>
+// The <%- doc(entity.LogicalName) %> table has no active main or quick create form.
+export {};
+<%_ } _%>
+<%_ forms.forEach(function(f, index){ _%>
+<%_ if (index > 0) { _%>
+
+<%_ } _%>
+/**
+ * The columns on the <%- doc(f.kindLabel) %> form "<%- doc(f.form.Name) %>" of the <%- doc(entity.LogicalName) %> table
+ * (in its body or header), by logical name, typed with their Xrm attribute types (@types/xrm).
+ */
+export interface <%- f.names.attributes %> {
+<%_ f.attributes.forEach(function(item){ _%>
+
+  /** <%- doc(item.doc) %> */
+  <%- propertyKey(item.key) %>: <%- item.type %>;
+<%_ }) _%>
+}
+
+/**
+ * The controls of the <%- doc(f.kindLabel) %> form "<%- doc(f.form.Name) %>", by name: a column's
+ * control by the column's logical name, a second one as `<column>1`, one in the header as
+ * `header_<column>`; a subgrid, web resource, IFRAME or quick view form by its name.
+ */
+export interface <%- f.names.controls %> {
+<%_ f.controls.forEach(function(item){ _%>
+
+  /** <%- doc(item.doc) %> */
+  <%- propertyKey(item.key) %>: <%- item.type %>;
+<%_ }) _%>
+}
+
+/** The tabs of the <%- doc(f.kindLabel) %> form "<%- doc(f.form.Name) %>", by name, with the names of their sections. */
+export interface <%- f.names.tabs %> {
+<%_ f.tabs.forEach(function(item){ _%>
+
+  /** <%- doc(item.doc) %> */
+  <%- propertyKey(item.key) %>: <%- item.sections %>;
+<%_ }) _%>
+}
+
+/**
+ * The form context of the <%- doc(f.kindLabel) %> form "<%- doc(f.form.Name) %>" of the <%- doc(entity.LogicalName) %> table
+ * (form id <%- doc(f.form.FormId) %>). `getAttribute()` and `getControl()` take the names on this
+ * form and return their Xrm types (not `null`: they're on the form); another column of the table is
+ * `| null` (in a business process flow, for example), and so is a business process flow control
+ * (`header_process_<column>`). `ui.tabs.get()` takes the form's tab names, and a tab's
+ * `sections.get()` its section names. Everything else is `Xrm.FormContext`.
+ *
+ * ```typescript
+ * export function onLoad(executionContext: Xrm.Events.EventContext): void {
+ *   const form = executionContext.getFormContext() as <%- f.names.context %>;
+<%_ if (f.sampleAttribute) { _%>
+ *   form.getAttribute("<%- doc(f.sampleAttribute) %>").getValue();
+<%_ } _%>
+<%_ if (f.sampleTab) { _%>
+ *   form.ui.tabs.get("<%- doc(f.sampleTab) %>").setVisible(true);
+<%_ } _%>
+ * }
+ * ```
+ */
+export type <%- f.names.context %> = Omit<Xrm.FormContext, "getAttribute" | "getControl" | "ui"> & {
+  /** The attribute of a column on the form. */
+  getAttribute<K extends keyof <%- f.names.attributes %>>(name: K): <%- f.names.attributes %>[K];
+  /** The attribute of another column of the table, or `null` when the form doesn't have it. */
+  getAttribute<K extends keyof <%- tableAttributes %>>(name: K): <%- tableAttributes %>[K] | null;
+  /** Every attribute of the form, or those `delegateFunction` matches. */
+  getAttribute(
+    delegateFunction?: Xrm.Collection.MatchingDelegate<Xrm.Attributes.Attribute>
+  ): Xrm.Attributes.Attribute[];
+  /** A control on the form. */
+  getControl<K extends keyof <%- f.names.controls %>>(name: K): <%- f.names.controls %>[K];
+  /** The control of a column in the business process flow, or `null`. */
+  getControl<K extends keyof <%- tableControls %>>(
+    name: `header_process_${K}`
+  ): <%- tableControls %>[K] | null;
+  /** Every control of the form, or those `delegateFunction` matches. */
+  getControl(
+    delegateFunction?: Xrm.Collection.MatchingDelegate<Xrm.Controls.Control>
+  ): Xrm.Controls.Control[];
+  /** `formContext.ui`, whose `tabs.get()` takes the form's tab names. */
+  ui: <%- uiType %><<%- f.names.tabs %>>;
+};
+<%_ }) _%>
