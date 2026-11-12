@@ -26,7 +26,8 @@ import {
 } from "./store";
 
 export const DEMO_API_URL = `${DEMO_ENVIRONMENT_URL}/api/data/v9.2`;
-const API_PATH = "/api/data/v9.2/";
+/** The Web API root of any version the explorer offers (v9.0, v9.1, v9.2). */
+const API_PATH = /^\/api\/data\/v9\.[0-2]\//;
 
 export interface FakeRequest {
   method: string;
@@ -758,9 +759,9 @@ export async function handle(state: DemoState, req: FakeRequest): Promise<FakeRe
 async function route(state: DemoState, req: FakeRequest): Promise<FakeResponse> {
   if (req.url.hostname.startsWith("globaldisco.")) return discoveryResponse(req);
   const path = decodeURIComponent(req.url.pathname);
-  if (!path.startsWith(API_PATH))
-    return odataError(404, "0x80060888", `Resource not found: ${path}`);
-  const rest = path.slice(API_PATH.length);
+  const root = API_PATH.exec(path)?.[0];
+  if (!root) return odataError(404, "0x80060888", `Resource not found: ${path}`);
+  const rest = path.slice(root.length);
   const { method } = req;
 
   if (rest === "$batch" && method === "POST") return handleBatch(state, req);

@@ -4,6 +4,7 @@
  * `OrganizationService.execute()`, or the `client.api()` chain of the request it sends. The run
  * button runs the same thing (rawRequest.ts, operations.ts), so the code is what ran.
  */
+import type { ApiVersion } from "@mohsinonxrm/dataverse-sdk-core";
 import type { ChainCall, RawPlan } from "./rawRequest";
 import { PACKAGE_OF, type CatalogOperation, type CodeFlavour } from "./types";
 import { hasReference, ReferenceValue, type OperationValues } from "./values";
@@ -53,8 +54,20 @@ function callText(call: ChainCall): string {
 export const CLIENT_NOTE =
   "// `client` is a DataverseClient for your environment (see Getting started).";
 
+/**
+ * The comment on what `client` is: with a Web API version other than the SDK's default (v9.2),
+ * how to create the client with it.
+ */
+export function clientNote(apiVersion: ApiVersion = "v9.2"): string {
+  if (apiVersion === "v9.2") return CLIENT_NOTE;
+  return [
+    `// \`client\` is a DataverseClient for your environment on Web API ${apiVersion}:`,
+    `// new DataverseClient({ baseUrl, tokenProvider, apiVersion: ${str(apiVersion)} })`,
+  ].join("\n");
+}
+
 /** The `client.api()` chain of a raw request. */
-export function rawCode(plan: RawPlan): string {
+export function rawCode(plan: RawPlan, apiVersion?: ApiVersion): string {
   const body = plan.terminal === "post" || plan.terminal === "patch" || plan.terminal === "put";
   const terminal = `.${plan.terminal}(${body && plan.body !== undefined ? tsLiteral(plan.body, 1) : ""})`;
   const lead = plan.terminal === "delete" ? "await client" : "const result = await client";
@@ -64,7 +77,7 @@ export function rawCode(plan: RawPlan): string {
     flat.length <= WIDTH && !flat.includes("\n")
       ? flat
       : `${lead}\n${steps.map((s) => `  ${s}`).join("\n")};`;
-  return `${CLIENT_NOTE}\n${code}`;
+  return `${clientNote(apiVersion)}\n${code}`;
 }
 
 /** `new XAction(…)` for the operation and its values. */
@@ -85,11 +98,12 @@ export function operationCode(
   op: CatalogOperation,
   values: OperationValues,
   flavour: CodeFlavour,
-  plan?: RawPlan
+  plan?: RawPlan,
+  apiVersion?: ApiVersion
 ): string {
   if (flavour === "fluent") {
     if (!plan) throw new Error("The client.api() flavour needs the operation's request.");
-    return rawCode(plan);
+    return rawCode(plan, apiVersion);
   }
   const names = [op.className];
   if (hasReference(values.parameters)) names.push("createEntityReference");
@@ -106,10 +120,10 @@ export function operationCode(
     return [
       ...imports,
       "",
-      CLIENT_NOTE,
+      clientNote(apiVersion),
       "const service = new OrganizationService(client);",
       call("service.execute"),
     ].join("\n");
   }
-  return [...imports, "", CLIENT_NOTE, call("client.execute")].join("\n");
+  return [...imports, "", clientNote(apiVersion), call("client.execute")].join("\n");
 }

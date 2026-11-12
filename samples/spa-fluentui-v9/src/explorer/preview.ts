@@ -4,7 +4,7 @@
  * going anywhere, so the preview shows the URL, headers and body exactly as the SDK pipeline
  * builds them (query encoding, `OData-Version`, `Prefer`, impersonation headers, …).
  */
-import { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, type ApiVersion } from "@mohsinonxrm/dataverse-sdk-core";
 
 export interface RequestPreview {
   method: string;
@@ -29,16 +29,18 @@ export interface PreviewResult {
 }
 
 /**
- * The requests `send` makes with a client for `environmentUrl`, without sending them.
- * `Authorization` is masked.
+ * The requests `send` makes with a client for `environmentUrl` (on Web API `apiVersion`, by
+ * default the SDK's), without sending them. `Authorization` is masked.
  */
 export async function previewRequests(
   environmentUrl: string,
-  send: (client: DataverseClient) => Promise<unknown>
+  send: (client: DataverseClient) => Promise<unknown>,
+  apiVersion?: ApiVersion
 ): Promise<PreviewResult> {
   const captured: RequestPreview[] = [];
   const client = new DataverseClient({
     baseUrl: environmentUrl,
+    apiVersion,
     tokenProvider: { getToken: () => Promise.resolve("preview") },
     retry: { maxRetries: 0 },
     fetchProvider: {

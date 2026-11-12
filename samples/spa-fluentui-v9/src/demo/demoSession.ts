@@ -1,5 +1,6 @@
 import type { AuthSession } from "../auth/session";
 import { DEMO_ENVIRONMENT_URL } from "../config";
+import { demoAccessToken } from "./demoToken";
 import { createFakeDataverse } from "./fakeDataverse";
 import { DEMO_USER } from "./store";
 
@@ -13,7 +14,8 @@ export function createDemoSession(): AuthSession {
     user: { name: DEMO_USER.fullname, username: DEMO_USER.internalemailaddress },
     accountId: "demo",
     environmentUrl: DEMO_ENVIRONMENT_URL,
-    tokenProvider: { getToken: () => Promise.resolve("demo-token") },
+    // A made-up, unsigned JWT, so the explorer's Token tab has claims to show.
+    tokenProvider: { getToken: (scopes) => Promise.resolve(demoAccessToken(scopes)) },
     scopesFor: (url) => [`${new URL(url).origin}/.default`],
     fetchProvider: createFakeDataverse(),
     signOut: () => Promise.resolve(),
