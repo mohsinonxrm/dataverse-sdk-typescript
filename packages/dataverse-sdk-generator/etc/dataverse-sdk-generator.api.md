@@ -9,6 +9,7 @@ import { ApiVersion } from '@mohsinonxrm/dataverse-sdk-core';
 import { AttributeSourceType } from '@mohsinonxrm/dataverse-sdk-metadata';
 import { AttributeTypeCode } from '@mohsinonxrm/dataverse-sdk-metadata';
 import { AttributeTypeDisplayName } from '@mohsinonxrm/dataverse-sdk-metadata';
+import { AttributeTypeDisplayNameValue } from '@mohsinonxrm/dataverse-sdk-metadata';
 import { DateTimeBehavior } from '@mohsinonxrm/dataverse-sdk-metadata';
 import { DateTimeBehaviorValue } from '@mohsinonxrm/dataverse-sdk-metadata';
 import { DateTimeFormat } from '@mohsinonxrm/dataverse-sdk-metadata';
@@ -121,6 +122,7 @@ export interface DataverseGenConfig {
     entities?: string[];
     environmentUrl: string;
     formContext?: boolean;
+    formLayouts?: boolean;
     functions?: string[];
     output?: {
         outputRoot?: string;
@@ -209,6 +211,7 @@ export interface EntityMetadataDetail {
 // @public
 export interface EntityType {
     EntitySetName: string;
+    Forms?: FormLayoutType[];
     IsCustomEntity: boolean;
     KeyName: string;
     Keys?: EntityKeyType[];
@@ -234,6 +237,43 @@ export interface EnumType {
     IsGlobal: boolean;
     Members: EnumMember[];
     Name: string;
+}
+
+// @public
+export type FormControlKind = "column" | "subgrid" | "webResource" | "iframe" | "quickView" | "timeline" | "other";
+
+// @public
+export interface FormControlType {
+    ColumnType?: AttributeTypeDisplayNameValue | (string & {});
+    DataField?: string;
+    Id: string;
+    Kind: FormControlKind;
+    Location: "body" | "header";
+}
+
+// @public
+export type FormLayoutKind = "main" | "quickCreate";
+
+// @public
+export interface FormLayoutType {
+    Controls: FormControlType[];
+    FormId: string;
+    Kind: FormLayoutKind;
+    Name: string;
+    Tabs: FormTabType[];
+}
+
+// @public
+export interface FormSectionType {
+    Label?: string;
+    Name: string;
+}
+
+// @public
+export interface FormTabType {
+    Label?: string;
+    Name: string;
+    Sections: FormSectionType[];
 }
 
 // @public
@@ -277,6 +317,7 @@ export class MetadataService {
     constructor(config: DataverseGenConfig, accessToken?: string);
     getEdmxMetadata(): Promise<string>;
     getEntityMetadata(logicalName: string): Promise<RetrieveMetadataChangesResponse>;
+    getSystemForms(logicalName: string): Promise<SystemFormRecord[]>;
     setAccessToken(token: string): void;
     sleep: MetadataServiceSleep;
 }
@@ -432,7 +473,15 @@ export class SchemaModel {
 }
 
 // @public
-export const TEMPLATE_NAMES: readonly ["action.ejs", "client.ejs", "complextype.ejs", "entity.ejs", "enum.ejs", "form.ejs", "function.ejs", "metadata.ejs"];
+export interface SystemFormRecord {
+    formid?: string;
+    formxml?: string;
+    name?: string;
+    type?: number;
+}
+
+// @public
+export const TEMPLATE_NAMES: readonly ["action.ejs", "client.ejs", "complextype.ejs", "entity.ejs", "enum.ejs", "form-layouts.ejs", "form.ejs", "function.ejs", "metadata.ejs"];
 
 // @public
 export type TemplateName = (typeof TEMPLATE_NAMES)[number];

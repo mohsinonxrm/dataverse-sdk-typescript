@@ -163,10 +163,10 @@ describe("FormXml (#430)", () => {
 
   it("reads main and quick create forms only, with each bound column's type", () => {
     const columnTypes = new Map([["contoso_attendees", "PartyListType"]]);
-    const [quickCreate, main, , card] = FORM_RECORDS.account ?? [];
-    expect(toFormLayout(card ?? {}, columnTypes)).toBeUndefined();
-    expect(toFormLayout(quickCreate ?? {}, columnTypes)?.Kind).toBe("quickCreate");
-    const layout = toFormLayout(main ?? {}, columnTypes);
+    const [quickCreate, main, , card] = FORM_RECORDS.account;
+    expect(toFormLayout(card, columnTypes)).toBeUndefined();
+    expect(toFormLayout(quickCreate, columnTypes)?.Kind).toBe("quickCreate");
+    const layout = toFormLayout(main, columnTypes);
     expect(layout).toMatchObject({ FormId: "11111111-1111-1111-1111-111111111111", Kind: "main" });
     expect(layout?.Controls.find((c) => c.Id === "contoso_attendees")?.ColumnType).toBe(
       "PartyListType"
@@ -223,7 +223,7 @@ describe("per-form types (#430)", () => {
       expect(source).toContain(line);
     }
     // The footer, a spacer without an id, a tab without a name
-    expect(source).not.toMatch(/footer_statecode|UNNAMED_TAB_SECTION|  statecode:/);
+    expect(source).not.toMatch(/footer_statecode|UNNAMED_TAB_SECTION| {2}statecode:/);
     // A column is an attribute once, however many controls it has
     expect(source.match(/^ {2}name: AccountAttributes\["name"\];$/gm)).toHaveLength(2);
 
@@ -271,7 +271,7 @@ describe("per-form types (#430)", () => {
 
     // The quick create form gains a column
     const changed = structuredClone(FORM_RECORDS);
-    const quickCreate = changed.account?.find((f) => f.type === 7);
+    const quickCreate = changed.account.find((f) => f.type === 7);
     if (quickCreate?.formxml) {
       quickCreate.formxml = quickCreate.formxml.replace(
         "</rows>",

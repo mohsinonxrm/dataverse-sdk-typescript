@@ -886,7 +886,7 @@ export class TypescriptGenerator {
           ? tab.Sections.map((s) => JSON.stringify(s.Name)).join(" | ")
           : "never",
       doc:
-        `${tab.Label ? `${tab.Label}: ` : ""}` +
+        (tab.Label ? `${tab.Label}: ` : "") +
         (tab.Sections.length > 0
           ? `sections ${tab.Sections.map((s) => (s.Label ? `${s.Name} (${s.Label})` : s.Name)).join(", ")}`
           : "no named sections"),
@@ -930,10 +930,11 @@ export class TypescriptGenerator {
       const forms = (entity.Forms ?? []).map((form) => {
         const stem = `${typeName}${form.Kind === "main" ? "Main" : "QuickCreate"}_${pascalCase(form.Name)}`;
         let candidate = this.formLayoutBaseNames(stem);
-        for (let i = 2; Object.values(candidate).some((n) => taken.has(n)); i++) {
+        const all = (n: FormLayoutNames): string[] => [n.attributes, n.controls, n.tabs, n.context];
+        for (let i = 2; all(candidate).some((n) => taken.has(n)); i++) {
           candidate = this.formLayoutBaseNames(`${stem}_${String(i)}`);
         }
-        for (const name of Object.values(candidate)) taken.add(name);
+        for (const name of all(candidate)) taken.add(name);
         return candidate;
       });
       names.set(entity, forms);

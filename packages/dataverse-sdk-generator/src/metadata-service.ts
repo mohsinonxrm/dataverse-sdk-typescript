@@ -263,7 +263,9 @@ export interface RetrieveMetadataChangesResponse {
 
 /** A `systemform` record as {@link MetadataService.getSystemForms} reads it. */
 export interface SystemFormRecord {
+  /** The form's id. */
   formid?: string;
+  /** The form's name. */
   name?: string;
   /** The form type: 2 = main, 7 = quick create (the only ones read). */
   type?: number;
