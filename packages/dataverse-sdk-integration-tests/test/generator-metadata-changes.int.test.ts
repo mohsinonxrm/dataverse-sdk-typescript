@@ -66,6 +66,8 @@ interface Run {
   changes: number;
   unchangedTables: string[];
   fetchedTables: string[];
+  /** Why each table was read again (#429). */
+  fetchReasons: Record<string, string>;
   warnings: string[];
 }
 
@@ -128,8 +130,28 @@ async function tableFile(dir: string): Promise<string> {
 let tableId: string | undefined;
 let globalChoiceId: string | undefined;
 let dir = "";
-/** Every table any run read with a per-table request after the first full read. */
-const readAgain = new Set<string>();
+/**
+ * Every table any run read with a per-table request after the first full read, with why each run
+ * read it again (the generator's `fetchReasons`). The live run's log and the failure messages show
+ * them, since only the org can say what RetrieveMetadataChanges listed.
+ */
+const readAgain = new Map<string, string[]>();
+
+/** Record what a run read again, and log it. */
+function noteRun(step: string, run: Run): void {
+  for (const name of run.perTable) {
+    const reasons = readAgain.get(name) ?? [];
+    reasons.push(`${step}: ${run.fetchReasons[name] ?? "?"}`);
+    readAgain.set(name, reasons);
+  }
+  console.log(
+    `[#429 ${step}] read again: ${JSON.stringify(run.fetchReasons)}; ` +
+      `warnings: ${JSON.stringify(run.warnings)}`
+  );
+}
+
+/** The tables read again so far and why, for failure messages. */
+const reads = (): string => JSON.stringify(Object.fromEntries(readAgain));
 
 /**
  * Delete the table. Only a 204 or several 404s in a row count as gone: right after a create, a
@@ -232,12 +254,12 @@ describe.skipIf(!live)("live: incremental generation reads only changed tables (
 
       await eventually(async () => {
         const run = await generate(dir);
-        for (const name of run.perTable) readAgain.add(name);
+        noteRun("new column", run);
         expect(run.warnings).toEqual([]);
         expect(await keptColumns(dir)).toContain("new_added");
         expect(await tableFile(dir)).toContain("new_added");
       });
-      expect([...readAgain]).toEqual([table]);
+      expect([...readAgain.keys()], reads()).toEqual([table]);
     },
     SLOW
   );
@@ -272,7 +294,7 @@ describe.skipIf(!live)("live: incremental generation reads only changed tables (
       // Until the column is generated, then until a run reads nothing again
       await eventually(async () => {
         const run = await generate(dir);
-        for (const name of run.perTable) readAgain.add(name);
+        noteRun("global choice column", run);
         expect(await tableFile(dir)).toMatch(/new_color[\s\S]*optionValues: \[100000, ?100001\]/);
       });
       await eventually(async () => {
@@ -301,11 +323,11 @@ describe.skipIf(!live)("live: incremental generation reads only changed tables (
 
       await eventually(async () => {
         const run = await generate(dir);
-        for (const name of run.perTable) readAgain.add(name);
+        noteRun("global choice option", run);
         expect(run.warnings).toEqual([]);
         expect(await tableFile(dir)).toMatch(/optionValues: \[100000, ?100001, ?100002\]/);
       });
-      expect(readAgain.has("task")).toBe(false);
+      expect(readAgain.has("task"), reads()).toBe(false);
 
       const changes = await service.getMetadataChanges(before, [table]);
       console.info(
@@ -327,12 +349,12 @@ describe.skipIf(!live)("live: incremental generation reads only changed tables (
 
       await eventually(async () => {
         const run = await generate(dir);
-        for (const name of run.perTable) readAgain.add(name);
+        noteRun("deleted column", run);
         expect(await keptColumns(dir)).not.toContain("new_added");
         expect(await tableFile(dir)).not.toContain("new_added");
       });
       expect(await keptColumns(dir)).toContain("new_code");
-      expect(readAgain.has("task")).toBe(false);
+      expect(readAgain.has("task"), reads()).toBe(false);
       expect(await typecheck(dir)).toEqual([]);
     },
     SLOW
@@ -353,12 +375,12 @@ describe.skipIf(!live)("live: incremental generation reads only changed tables (
         expect(Object.keys((await stampOf(dir)).tables)).toEqual(["task"]);
         return result;
       });
-      for (const name of run.perTable) readAgain.add(name);
+      noteRun("deleted table", run);
       // task's metadata is kept (its files are regenerated: the set of generated tables changed)
       expect(run.perTable).toEqual([]);
       expect(run.changes).toBe(1);
       await expect(readFile(path.join(dir, file), "utf-8")).rejects.toThrow();
-      expect(readAgain.has("task")).toBe(false);
+      expect(readAgain.has("task"), reads()).toBe(false);
       expect(await typecheck(dir)).toEqual([]);
     },
     SLOW

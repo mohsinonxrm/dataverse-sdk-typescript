@@ -429,7 +429,16 @@ keeps watchers, incremental builds and diffs quiet. The CLI prints the tables it
   choices (one `GlobalOptionSetDefinitions` request) and reads again the tables whose global
   choices have other values now. A deleted table is gone from
   `$metadata` too, so it isn't generated and its files are deleted. The CLI prints the tables it
-  read; `generateCode()` returns them as `fetchedTables`.
+  read and why, such as `contact: changed: new_added` or `contact: deleted: new_code`;
+  `generateCode()` returns them as `fetchedTables` and `fetchReasons`.
+- Right after a change, the request that reads a table again can reach a Dataverse server whose
+  metadata cache is behind and get the table as it was. The run checks each table it read again
+  against what RetrieveMetadataChanges listed: the columns and options it listed are there, the
+  deleted columns are gone, and the global choices have their new values. (A changed property of
+  a column that was already there, such as its maximum length, isn't checked.) When one doesn't
+  show the change yet, the run generates it as returned, keeps the previous run's version stamp
+  (so the next run is told about the change again and reads the table again), and a warning says
+  so.
 - Every table is read again when there is nothing to reuse: no stamp (or one from before this
   feature), another generator version, another `environmentUrl` or `apiVersion`, or a version
   stamp Dataverse no longer has (the `ExpiredVersionStamp` error, after 90 days by default or

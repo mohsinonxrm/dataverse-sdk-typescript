@@ -77,12 +77,18 @@ import { acquireCliToken } from "./auth.js";
  * generated, such as a listed query function. With `output.incremental`, `unchangedTables` lists
  * the tables whose files were kept as they were. `fetchedTables` lists the tables whose metadata
  * was read from Dataverse: with `output.incremental`, only the ones that changed since the last
- * run (#429).
+ * run (#429), and `fetchReasons` says why each was read again (`"changed: new_added"`,
+ * `"deleted: new_code"`, `"global choice new_color changed"`, `"not kept"`, ...).
  */
 export async function generateCode(
   config: DataverseGenConfig,
   accessToken?: string
-): Promise<{ warnings: string[]; unchangedTables: string[]; fetchedTables: string[] }> {
+): Promise<{
+  warnings: string[];
+  unchangedTables: string[];
+  fetchedTables: string[];
+  fetchReasons: Record<string, string>;
+}> {
   const { SchemaModel } = await import("./schema-model.js");
   const { TypescriptGenerator } = await import("./typescript-generator.js");
   const { MetadataService } = await import("./metadata-service.js");
@@ -99,5 +105,6 @@ export async function generateCode(
     warnings: model.Warnings,
     unchangedTables: generator.unchangedTables,
     fetchedTables: model.FetchedTables,
+    fetchReasons: Object.fromEntries(model.FetchReasons),
   };
 }

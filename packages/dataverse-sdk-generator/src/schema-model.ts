@@ -26,7 +26,10 @@ import type {
 } from "./metadata-service.js";
 import { optionValues } from "./metadata-service.js";
 import {
+  type ChangeExpectation,
+  changedColumns,
   deletedIds,
+  staleReasons,
   GENERATOR_VERSION,
   metadataSource,
   readStamp,
@@ -81,6 +84,14 @@ export class SchemaModel {
    * is nothing to reuse); otherwise every table.
    */
   FetchedTables: string[] = [];
+
+  /**
+   * After {@link generate} with `output.incremental` and a previous run to build on (#429): why
+   * each table in {@link FetchedTables} was read again, by logical name. For example
+   * `"changed: new_added"`, `"deleted: new_code"`, `"global choice new_color changed"` or
+   * `"not kept"` (no metadata from the previous run, such as a table added to the selection).
+   */
+  FetchReasons = new Map<string, string>();
 
   /**
    * After {@link generate} in all-tables mode: the entity types RetrieveMetadataChanges has no
@@ -190,6 +201,7 @@ export class SchemaModel {
     this.TableMetadata.clear();
     this.SkippedTables = [];
     this.FetchedTables = [];
+    this.FetchReasons.clear();
     this.MetadataVersionStamp = undefined;
     if (this.EntityTypes.length === 0) return;
 
@@ -199,6 +211,8 @@ export class SchemaModel {
     // made while the run reads the other tables is newer, so the next run asks about it again.
     let stampTaken = kept !== undefined;
     const skipped: string[] = [];
+    // Tables read again whose metadata doesn't show the change yet (#429)
+    const stale: string[] = [];
     for (const entityType of [...this.EntityTypes]) {
       let detail: EntityMetadataDetail | undefined;
       if (kept?.tables.has(entityType.LogicalName)) {
@@ -212,6 +226,14 @@ export class SchemaModel {
         }
         const first = response.EntityMetadata?.[0];
         detail = first ? withoutNulls(first) : undefined;
+        if (kept) {
+          if (!this.FetchReasons.has(entityType.LogicalName)) {
+            this.FetchReasons.set(entityType.LogicalName, "not kept");
+          }
+          const expected = kept.expected.get(entityType.LogicalName);
+          const reasons = detail && expected ? staleReasons(detail, expected, kept.deleted) : [];
+          if (reasons.length > 0) stale.push(`${entityType.LogicalName} (${reasons.join("; ")})`);
+        }
       }
 
       if (!detail) {
@@ -343,6 +365,21 @@ export class SchemaModel {
       this.ensureUniqueMemberNames(entityType);
     }
 
+    // Only the tables read have a reason (a deleted table is in neither $metadata nor the run)
+    for (const name of [...this.FetchReasons.keys()]) {
+      if (!this.FetchedTables.includes(name)) this.FetchReasons.delete(name);
+    }
+
+    // A table read again from a server that hadn't caught up with the change: keep the previous
+    // version stamp, so the next run is told about the change again and reads the table again.
+    if (kept && stale.length > 0) {
+      this.MetadataVersionStamp = kept.previousStamp;
+      this.Warnings.push(
+        `Incremental: Dataverse hadn't finished updating the metadata of ${stale.join(", ")}, ` +
+          `so it was generated as Dataverse returned it and the next run reads it again.`
+      );
+    }
+
     this.SkippedTables = skipped;
     if (skipped.length > 0) {
       this.Warnings.push(
@@ -363,9 +400,19 @@ export class SchemaModel {
    * stamp of another generator version or org, or a version stamp Dataverse no longer has
    * (`ExpiredVersionStamp`). When asking for the changes fails otherwise, a warning says so.
    */
-  private async keptMetadata(
-    allTables: boolean
-  ): Promise<{ tables: Map<string, EntityMetadataDetail>; skipped: Set<string> } | undefined> {
+  private async keptMetadata(allTables: boolean): Promise<
+    | {
+        tables: Map<string, EntityMetadataDetail>;
+        skipped: Set<string>;
+        /** The previous run's version stamp, kept when a table read again is behind (#429). */
+        previousStamp: string;
+        /** The MetadataIds deleted since then, lower case. */
+        deleted: Set<string>;
+        /** What each table read again because of a change must show. */
+        expected: Map<string, ChangeExpectation>;
+      }
+    | undefined
+  > {
     if (this.config.output?.incremental !== true) return undefined;
     const stamp = await readStamp(this.config.output.outputRoot ?? "./generated");
     const previous = stamp?.metadata;
@@ -409,22 +456,46 @@ export class SchemaModel {
     if (!changes?.ServerVersionStamp) return undefined;
     this.MetadataVersionStamp = changes.ServerVersionStamp;
 
-    for (const entity of changes.EntityMetadata ?? []) {
-      if (entity.LogicalName) {
-        tables.delete(entity.LogicalName);
-        skipped.delete(entity.LogicalName);
+    const expected = new Map<string, ChangeExpectation>();
+    const expectationOf = (name: string): ChangeExpectation => {
+      let entry = expected.get(name);
+      if (!entry) {
+        entry = { columns: new Map(), globalChoices: new Map() };
+        expected.set(name, entry);
       }
+      return entry;
+    };
+    for (const entity of changes.EntityMetadata ?? []) {
+      if (!entity.LogicalName) continue;
+      const columns = changedColumns(entity);
+      if (tables.has(entity.LogicalName) || skipped.has(entity.LogicalName)) {
+        this.FetchReasons.set(
+          entity.LogicalName,
+          columns.size > 0 ? `changed: ${[...columns.keys()].join(", ")}` : "changed"
+        );
+        for (const [column, values] of columns)
+          expectationOf(entity.LogicalName).columns.set(column, values);
+      }
+      tables.delete(entity.LogicalName);
+      skipped.delete(entity.LogicalName);
     }
     const deleted = deletedIds(changes.DeletedMetadata);
     if (deleted.size > 0) {
       const isDeleted = (id: string | undefined) =>
         id !== undefined && deleted.has(id.toLowerCase());
       for (const [name, detail] of tables) {
-        if (
-          isDeleted(detail.MetadataId) ||
-          detail.Attributes?.some((a) => isDeleted(a.MetadataId))
-        ) {
+        if (isDeleted(detail.MetadataId)) {
+          this.FetchReasons.set(name, "the table was deleted");
           tables.delete(name);
+        } else {
+          const columns = (detail.Attributes ?? []).filter((a) => isDeleted(a.MetadataId));
+          if (columns.length > 0) {
+            this.FetchReasons.set(
+              name,
+              `deleted: ${columns.map((a) => a.LogicalName ?? a.MetadataId).join(", ")}`
+            );
+            tables.delete(name);
+          }
         }
       }
     }
@@ -451,13 +522,28 @@ export class SchemaModel {
         return undefined;
       }
       for (const [name, detail] of tables) {
-        const changed = globalChoices(detail).some(
+        const changed = globalChoices(detail).filter(
           (choice) => current.get(choice.name)?.join(",") !== choice.values.join(",")
         );
-        if (changed) tables.delete(name);
+        if (changed.length === 0) continue;
+        this.FetchReasons.set(
+          name,
+          changed
+            .map((choice) =>
+              current.has(choice.name)
+                ? `global choice ${choice.name} changed`
+                : `global choice ${choice.name} not found`
+            )
+            .join("; ")
+        );
+        for (const choice of changed) {
+          const values = current.get(choice.name);
+          if (values) expectationOf(name).globalChoices.set(choice.name, values);
+        }
+        tables.delete(name);
       }
     }
-    return { tables, skipped };
+    return { tables, skipped, previousStamp: previous.versionStamp, deleted, expected };
   }
 
   /**

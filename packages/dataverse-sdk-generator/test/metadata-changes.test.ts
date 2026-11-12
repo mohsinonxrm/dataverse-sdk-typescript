@@ -15,7 +15,7 @@ import type {
   RetrieveMetadataChangesResponse,
 } from "../src/metadata-service.js";
 import { MetadataService as RealMetadataService } from "../src/metadata-service.js";
-import { metadataSource } from "../src/incremental.js";
+import { metadataSource, staleReasons } from "../src/incremental.js";
 import { SchemaModel } from "../src/schema-model.js";
 import { TypescriptGenerator } from "../src/typescript-generator.js";
 import type { DataverseGenConfig } from "../src/types.js";
@@ -98,6 +98,10 @@ interface Org {
   globalChoices: Record<string, number[]>;
   /** Fail the global choices request. */
   failGlobalChoices?: boolean;
+  /** The columns a change lists, by table (default: the table's first column). */
+  changedColumns?: Record<string, string[]>;
+  /** Tables a server whose cache is behind returns as they were, by logical name. */
+  lagging?: Record<string, EntityMetadataDetail>;
 }
 
 function newOrg(): Org {
@@ -137,7 +141,9 @@ function fakeService(org: Org, calls: Calls): MetadataService {
     getEdmxMetadata: () => Promise.resolve(org.edmx),
     getEntityMetadata: (logicalName) => {
       calls.tables.push(logicalName);
-      const table = logicalName in org.tables ? org.tables[logicalName] : undefined;
+      const table =
+        org.lagging?.[logicalName] ??
+        (logicalName in org.tables ? org.tables[logicalName] : undefined);
       return Promise.resolve({
         EntityMetadata: table ? [structuredClone(table)] : [],
         ServerVersionStamp: stamp(),
@@ -152,7 +158,9 @@ function fakeService(org: Org, calls: Calls): MetadataService {
         EntityMetadata: org.changed.map((name) => ({
           LogicalName: name,
           MetadataId: idOf("t", name),
-          Attributes: (name in org.tables ? (org.tables[name].Attributes ?? []) : []).slice(0, 1),
+          Attributes: (name in org.tables ? (org.tables[name].Attributes ?? []) : []).filter(
+            (a, i) => org.changedColumns?.[name]?.includes(a.LogicalName ?? "") ?? i === 0
+          ),
         })),
         DeletedMetadata: {
           Count: org.deleted.length > 0 ? 1 : 0,
@@ -188,6 +196,7 @@ async function run(
   org.version++;
   org.changed = [];
   org.deleted = [];
+  org.changedColumns = undefined;
   return { generator, model, calls };
 }
 
@@ -292,6 +301,8 @@ describe("incremental generation: only changed tables are read (#429)", () => {
     const second = await run(dir, org);
     expect(second.calls.tables).toEqual(["contact"]);
     expect(second.model.FetchedTables).toEqual(["contact"]);
+    expect([...second.model.FetchReasons.keys()]).toEqual(["contact"]);
+    expect(second.model.FetchReasons.get("contact")).toMatch(/^changed: \w+$/);
     expect(second.generator.unchangedTables).toEqual(["account", "systemuser"]);
     expect(await isKept(dir, "entities/Contact.ts")).toBe(false);
     expect(await fs.readFile(path.join(dir, "entities/Contact.ts"), "utf-8")).toContain(
@@ -319,6 +330,9 @@ describe("incremental generation: only changed tables are read (#429)", () => {
     setGlobalChoice(org, [1, 2, 3]);
     const second = await run(dir, org);
     expect(second.calls.tables).toEqual(["contact"]);
+    expect(Object.fromEntries(second.model.FetchReasons)).toEqual({
+      contact: "global choice contoso_method changed",
+    });
     expect(second.generator.unchangedTables).toEqual(["account", "systemuser"]);
     expect(await fs.readFile(path.join(dir, "entities/Contact.ts"), "utf-8")).toMatch(
       /optionValues: \[1, ?2, ?3\]/
@@ -371,6 +385,10 @@ describe("incremental generation: only changed tables are read (#429)", () => {
     org.deleted = [idOf("c", "contact.firstname").toUpperCase(), idOf("c", "lead.firstname")];
     const second = await run(dir, org);
     expect(second.calls.tables).toEqual(["contact"]);
+    expect(Object.fromEntries(second.model.FetchReasons)).toEqual({
+      contact: "deleted: firstname",
+    });
+    expect(second.model.Warnings).toEqual([]);
     expect(second.generator.unchangedTables).toEqual(["account", "systemuser"]);
     expect(await fs.readFile(path.join(dir, "entities/Contact.ts"), "utf-8")).not.toContain(
       "firstname"
@@ -378,6 +396,67 @@ describe("incremental generation: only changed tables are read (#429)", () => {
     const kept = (await stampOf(dir)).tables.contact.metadata?.Attributes ?? [];
     expect(kept.map((a) => a.LogicalName)).not.toContain("firstname");
     expect(await typecheck(dir)).toEqual([]);
+  });
+
+  it("a table read again from a server that is behind keeps the previous version stamp, and the next run reads it again", async () => {
+    const dir = await scratch.create();
+    const org = newOrg();
+    await run(dir, org);
+    await mark(dir, ...TABLE_FILES);
+
+    // A new contact column; the per-table read reaches a server that doesn't have it yet
+    const before = structuredClone(org.tables.contact);
+    org.tables.contact.Attributes?.push({
+      MetadataId: idOf("c", "contact.contoso_added"),
+      LogicalName: "contoso_added",
+      SchemaName: "contoso_Added",
+      AttributeType: "String",
+      MaxLength: 40,
+    });
+    org.lagging = { contact: before };
+    org.changed = ["contact"];
+    org.changedColumns = { contact: ["contoso_added"] };
+    const second = await run(dir, org);
+    expect(second.calls.changes.map((c) => c.stamp)).toEqual(["1!stamp"]);
+    expect(second.calls.tables).toEqual(["contact"]);
+    expect(Object.fromEntries(second.model.FetchReasons)).toEqual({
+      contact: "changed: contoso_added",
+    });
+    expect(second.model.Warnings).toEqual([
+      "Incremental: Dataverse hadn't finished updating the metadata of contact (no column " +
+        "contoso_added), so it was generated as Dataverse returned it and the next run reads it again.",
+    ]);
+    // Not the stamp of this run's changes request ("2!stamp"): the change would be lost
+    expect((await stampOf(dir)).metadata?.versionStamp).toBe("1!stamp");
+
+    // The server has caught up; Dataverse lists the change again since that stamp
+    org.lagging = undefined;
+    org.changed = ["contact"];
+    org.changedColumns = { contact: ["contoso_added"] };
+    const third = await run(dir, org);
+    expect(third.calls.changes.map((c) => c.stamp)).toEqual(["1!stamp"]);
+    expect(third.calls.tables).toEqual(["contact"]);
+    expect(third.model.Warnings).toEqual([]);
+    expect((await stampOf(dir)).metadata?.versionStamp).toBe("3!stamp");
+    const kept = (await stampOf(dir)).tables.contact.metadata?.Attributes ?? [];
+    expect(kept.map((a) => a.LogicalName)).toContain("contoso_added");
+  });
+
+  it("a table read again for a global choice from a server that is behind is read again next run", async () => {
+    const dir = await scratch.create();
+    const org = newOrg();
+    await run(dir, org);
+    const before = structuredClone(org.tables.contact);
+    setGlobalChoice(org, [1, 2, 3]);
+    org.lagging = { contact: before };
+    const second = await run(dir, org);
+    expect(second.calls.tables).toEqual(["contact"]);
+    expect(second.model.Warnings).toEqual([
+      "Incremental: Dataverse hadn't finished updating the metadata of contact (global choice " +
+        "contoso_method has other option values), so it was generated as Dataverse returned it " +
+        "and the next run reads it again.",
+    ]);
+    expect((await stampOf(dir)).metadata?.versionStamp).toBe("1!stamp");
   });
 
   it("drops a deleted table without reading anything", async () => {
@@ -603,5 +682,51 @@ describe("MetadataService.getMetadataChanges (#429)", () => {
     await expect(refused.svc.getMetadataChanges("1!stamp")).rejects.toThrow(
       /metadata changes: 400[\s\S]*bad query/
     );
+  });
+});
+
+describe("staleReasons (#429)", () => {
+  const fresh: EntityMetadataDetail = {
+    LogicalName: "contact",
+    Attributes: [
+      { MetadataId: "AAAAAAAA-0000-4000-8000-000000000001", LogicalName: "firstname" },
+      {
+        LogicalName: "contoso_kind",
+        OptionSet: { Name: "contoso_kind", Options: [{ Value: 1 }, { Value: 2 }] },
+      },
+      {
+        LogicalName: "contoso_method",
+        OptionSet: { Name: "contoso_method", IsGlobal: true, Options: [{ Value: 1 }] },
+      },
+    ],
+  };
+
+  it("is empty when the read shows every listed column and option", () => {
+    const expected = {
+      columns: new Map([
+        ["firstname", []],
+        ["contoso_kind", [2]],
+      ]),
+      globalChoices: new Map([["contoso_method", [1]]]),
+    };
+    expect(staleReasons(fresh, expected, new Set())).toEqual([]);
+  });
+
+  it("names a missing column, a missing option, a deleted column and a global choice behind", () => {
+    const expected = {
+      columns: new Map([
+        ["contoso_added", []],
+        ["contoso_kind", [2, 3]],
+      ]),
+      globalChoices: new Map([["contoso_method", [1, 2]]]),
+    };
+    expect(
+      staleReasons(fresh, expected, new Set(["aaaaaaaa-0000-4000-8000-000000000001"]))
+    ).toEqual([
+      "no column contoso_added",
+      "contoso_kind has no option 3",
+      "deleted column firstname still there",
+      "global choice contoso_method has other option values",
+    ]);
   });
 });

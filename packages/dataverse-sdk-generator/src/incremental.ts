@@ -12,7 +12,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { EntityMetadataDetail } from "./metadata-service.js";
+import { type EntityMetadataDetail, optionValues } from "./metadata-service.js";
 import type { DataverseGenConfig } from "./types.js";
 
 /** The stamp file, in the output folder. */
@@ -106,6 +106,71 @@ export function deletedIds(deletedMetadata: unknown): Set<string> {
   };
   visit(deletedMetadata);
   return ids;
+}
+
+/**
+ * What a table read again because of a change must show (#429): the columns (logical names, with
+ * the option values listed for each) that RetrieveMetadataChanges listed as changed, and the
+ * current option values of the global choices that changed.
+ */
+export interface ChangeExpectation {
+  columns: Map<string, number[]>;
+  globalChoices: Map<string, number[]>;
+}
+
+/**
+ * The columns a RetrieveMetadataChanges change lists for a table, by logical name, each with the
+ * option values listed for it (a new option is listed under its column). The change holds only
+ * what changed, so these are columns that exist now and options they have now.
+ */
+export function changedColumns(change: EntityMetadataDetail): Map<string, number[]> {
+  const columns = new Map<string, number[]>();
+  for (const attribute of change.Attributes ?? []) {
+    if (!attribute.LogicalName) continue;
+    const values = (attribute.OptionSet?.Options ?? [])
+      .map((o) => o.Value)
+      .filter((v): v is number => typeof v === "number");
+    columns.set(attribute.LogicalName, values);
+  }
+  return columns;
+}
+
+/**
+ * Why a table read again because of a change doesn't show it yet (#429): a listed column or
+ * option missing, a deleted column still there, or a global choice with other values. Empty when
+ * the read is current. Right after a change, a request can reach a server whose metadata cache is
+ * behind, which answers with the table as it was.
+ */
+export function staleReasons(
+  fresh: EntityMetadataDetail,
+  expected: ChangeExpectation,
+  deleted: ReadonlySet<string>
+): string[] {
+  const reasons: string[] = [];
+  const byName = new Map((fresh.Attributes ?? []).map((a) => [a.LogicalName, a]));
+  for (const [column, values] of expected.columns) {
+    const attribute = byName.get(column);
+    if (!attribute) {
+      reasons.push(`no column ${column}`);
+      continue;
+    }
+    const has = new Set((attribute.OptionSet?.Options ?? []).map((o) => o.Value));
+    const missing = values.filter((v) => !has.has(v));
+    if (missing.length > 0) reasons.push(`${column} has no option ${missing.join(", ")}`);
+  }
+  for (const attribute of fresh.Attributes ?? []) {
+    if (attribute.MetadataId && deleted.has(attribute.MetadataId.toLowerCase())) {
+      reasons.push(`deleted column ${attribute.LogicalName ?? attribute.MetadataId} still there`);
+    }
+  }
+  for (const [name, values] of expected.globalChoices) {
+    const columns = (fresh.Attributes ?? []).filter((a) => a.OptionSet?.Name === name);
+    const current = values.join(",");
+    if (columns.some((a) => optionValues(a.OptionSet?.Options).join(",") !== current)) {
+      reasons.push(`global choice ${name} has other option values`);
+    }
+  }
+  return reasons;
 }
 
 /** SHA-256 of the parts, hex. */

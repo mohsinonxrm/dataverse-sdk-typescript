@@ -298,6 +298,7 @@ export function generateCode(config: DataverseGenConfig, accessToken?: string): 
     warnings: string[];
     unchangedTables: string[];
     fetchedTables: string[];
+    fetchReasons: Record<string, string>;
 }>;
 
 // @public
@@ -477,6 +478,7 @@ export class SchemaModel {
     // (undocumented)
     EnumTypes: EnumType[];
     FetchedTables: string[];
+    FetchReasons: Map<string, string>;
     // (undocumented)
     Functions: FunctionType[];
     generate(): Promise<void>;
