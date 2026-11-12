@@ -12,7 +12,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { parseEdmx } from "../src/parsers/edmx-parser.js";
 import { generateActions } from "../src/generators/actions-generator.js";
 import { generateFunctions } from "../src/generators/functions-generator.js";
-import { generateMessages } from "../src/generators/messages-generator.js";
+import { generateMessages, HAND_WRITTEN_MESSAGES } from "../src/generators/messages-generator.js";
 import {
   exportedNames,
   exportedTypeNames,
@@ -259,11 +259,13 @@ describe("the committed packages (#333)", () => {
       const reexported = new Set(typeOnlyTypesExports(index));
       expect(reexported.size).toBeGreaterThan(0);
       const typeNames = typeOnlyTypesExports(typesIndex, "*");
-      const responses = new Set(
-        [...index.matchAll(/from "\.\/(\w+)(?:Action|Function|Message)\.js";/g)].flatMap((m) =>
+      const responses = new Set([
+        ...[...index.matchAll(/from "\.\/(\w+)(?:Action|Function|Message)\.js";/g)].flatMap((m) =>
           pkg === "messages" ? [`${m[1]}Response`, `${m[1]}Result`] : [`${m[1]}Response`]
-        )
-      );
+        ),
+        // The hand-written messages' responses (#435: Upsert, RetrievePrincipalAccess)
+        ...(pkg === "messages" ? HAND_WRITTEN_MESSAGES.names.map((name) => `${name}Response`) : []),
+      ]);
       const missing = typeNames.filter((t) => !reexported.has(t) && !responses.has(t));
       expect(missing).toEqual([]);
       // The shadowed ones are exactly the operations' responses, which the root exports

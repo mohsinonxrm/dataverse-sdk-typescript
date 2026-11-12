@@ -37,8 +37,9 @@ Run it with `client.execute(request)`, or with `OrganizationService.execute` fro
   AssignRequest or SetStateRequest (.NET names): assign by updating `ownerid@odata.bind`, and change
   state by updating `statecode` / `statuscode`.
 - An operation declared with several bindings has one pair per binding,
-  `<Name>_<table>Request` (for example `AddItemCampaign_listRequest`, or
-  `RetrievePrincipalAccess_systemuserRequest` for the .NET `RetrievePrincipalAccessRequest`).
+  `<Name>_<table>Request` (for example `AddItemCampaign_listRequest`). RetrievePrincipalAccess
+  also has the .NET shape, `RetrievePrincipalAccessRequest`, whose `Principal` reference picks the
+  binding ([below](#upsert-retrieveprincipalaccess-and-checkprivilege)).
 
 ## Usage
 
@@ -249,6 +250,7 @@ snapshot doesn't know); a new record is the Web API payload, with `@odata.type` 
 | `new CreateRequest({ Target, EntitySetName? })`                      | `POST /{set}`                                              | `id` (also `result`): the new id     |
 | `new RetrieveRequest({ Target, ColumnSet? })`                        | `GET /{set}({id})?$select=…`                               | `Entity` (also `result`): the record |
 | `new UpdateRequest({ Target, Attributes, ETag? })`                   | `PATCH /{set}({id})` with `If-Match` (never creates)       |                                      |
+| `new UpsertRequest({ Target, Key?, EntitySetName? })`                | `PATCH /{set}({key})` without `If-Match` (see below)       | `RecordCreated`, `Target`            |
 | `new DeleteRequest({ Target, ETag? })`                               | `DELETE /{set}({id})`                                      |                                      |
 | `new AssociateRequest({ Target, Relationship, RelatedEntities })`    | `POST /{set}({id})/{Relationship}/$ref` per record         |                                      |
 | `new DisassociateRequest({ Target, Relationship, RelatedEntities })` | `DELETE /{set}({id})/{Relationship}({id})/$ref` per record |                                      |
@@ -304,6 +306,63 @@ for (const item of batch.Responses) {
 }
 ```
 
+### Upsert, RetrievePrincipalAccess and CheckPrivilege
+
+Also hand-written (#435), because the generated messages don't have the .NET shape:
+
+| Message                                                        | Web API request                                                                                                                               | `response`                                |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| `new UpsertRequest({ Target, Key?, EntitySetName? })`          | `PATCH /{set}({key})?$select={primary key}` with `Prefer: return=representation`, no `If-Match`                                               | `RecordCreated`, `Target` (a reference)   |
+| `new RetrievePrincipalAccessRequest({ Principal, Target })`    | `GET /{systemusers, teams or organizations}({id})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)?@p1={"@odata.id":"{set}({id})"}` | `AccessRights` (flags as a number)        |
+| `new CheckPrivilegeRequest({ UserId, PrivilegeName, Depth? })` | `GET /systemusers({id})/Microsoft.Dynamics.CRM.RetrieveUserPrivilegeByPrivilegeName(PrivilegeName=@p1)?@p1='{name}'`                          | `HasPrivilege`, `Depth`, `RolePrivileges` |
+
+- **Upsert.** `Key` is a GUID or an alternate key (`{ accountnumber: "A-1" }`); without it, the
+  primary key column of `Target` is the key. The Web API answers a plain upsert `204` whether it
+  created or updated, so the request asks for the primary key back: Dataverse answers `201 Created`
+  for a create and `200 OK` for an update, which is `RecordCreated`. That is one more retrieve on
+  the server; `client.api(...).patch(record)` sends the plain upsert when you don't need to know.
+- **RetrievePrincipalAccess.** The Web API declares the function once per binding, so the generated
+  messages are `RetrievePrincipalAccess_systemuserRequest`,
+  `RetrievePrincipalAccess_teamRequest` and `RetrievePrincipalAccess_organizationRequest`. `RetrievePrincipalAccessRequest` takes the principal as a reference, as
+  .NET does, and reads the rights the Web API sends as names (`"ReadAccess, WriteAccess"`) into the
+  `AccessRights` flags: `(response.AccessRights & AccessRights.WriteAccess) !== 0`.
+- **CheckPrivilege** isn't a Dataverse message (neither the Web API nor the .NET SDK has one). It
+  runs RetrieveUserPrivilegeByPrivilegeName, the check Microsoft documents in
+  [Verifying access in code](https://learn.microsoft.com/power-apps/developer/data-platform/security-access-coding#check-a-users-security-privileges):
+  the user has the privilege, through their roles or their teams' roles, when the function lists a
+  grant of it. `Depth` (`"Local"`, …) asks for that depth or deeper.
+
+```typescript
+import {
+  AccessRights,
+  CheckPrivilegeRequest,
+  RetrievePrincipalAccessRequest,
+  UpsertRequest,
+  WhoAmIRequest,
+  createEntityReference,
+} from "@mohsinonxrm/dataverse-sdk-messages";
+
+const { RecordCreated, Target } = await orgService.execute(
+  new UpsertRequest({
+    Target: { "@odata.type": "Microsoft.Dynamics.CRM.account", name: "Contoso" },
+    Key: { accountnumber: "A-1" },
+  })
+);
+
+const { UserId } = (await orgService.execute(new WhoAmIRequest())).result;
+const access = await orgService.execute(
+  new RetrievePrincipalAccessRequest({
+    Principal: createEntityReference("systemuser", UserId),
+    Target,
+  })
+);
+const canWrite = (access.AccessRights & AccessRights.WriteAccess) !== 0;
+
+const { HasPrivilege } = await orgService.execute(
+  new CheckPrivilegeRequest({ UserId, PrivilegeName: "prvCreateAccount", Depth: "Global" })
+);
+```
+
 ---
 
 ## Web API mapping
@@ -313,6 +372,7 @@ for (const item of batch.Responses) {
 | A Web API action (POST)          | `<Name>Request` here, or `<Name>Action` in the actions package                  |
 | A Web API function (GET)         | `<Name>Request` here, or `<Name>Function` in the functions package              |
 | Create, retrieve, update, delete | `CreateRequest`… here, `client.api(...)`, or `OrganizationService` (xrm)        |
+| Create or update (upsert)        | `UpsertRequest` here, or `client.api(...).patch(...)` without `If-Match`        |
 | Several operations in one call   | `ExecuteMultipleRequest` here, or `$batch` (`@mohsinonxrm/dataverse-sdk-batch`) |
 
 ## Choice (option set) values

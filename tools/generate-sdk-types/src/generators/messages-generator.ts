@@ -57,8 +57,10 @@ import { isQueryFunction } from "./query-functions-generator.js";
 
 /**
  * The hand-written messages, in `src/handwritten/` of the messages package (#344). They aren't Web
- * API actions or functions, so the CSDL can't describe them: the CRUD messages are HTTP verbs on
- * entity sets, and ExecuteMultiple / ExecuteTransaction are `$batch` requests. The generator keeps
+ * API actions or functions, so the CSDL can't describe them: the CRUD messages (and Upsert, #435)
+ * are HTTP verbs on entity sets, and ExecuteMultiple / ExecuteTransaction are `$batch` requests.
+ * RetrievePrincipalAccess is one message for the function's three bindings, as in .NET, and
+ * CheckPrivilege runs RetrieveUserPrivilegeByPrivilegeName (#435). The generator keeps
  * the folder when it purges, re-exports `exports` from the index, and refuses a generated message
  * named like one of them.
  */
@@ -68,6 +70,7 @@ export const HAND_WRITTEN_MESSAGES = {
   /** Message names: each has `<Name>Request` and `<Name>Response`. */
   names: [
     "Associate",
+    "CheckPrivilege",
     "Create",
     "Delete",
     "Disassociate",
@@ -75,13 +78,22 @@ export const HAND_WRITTEN_MESSAGES = {
     "ExecuteTransaction",
     "Retrieve",
     "RetrieveMultiple",
+    "RetrievePrincipalAccess",
     "Update",
+    "Upsert",
   ],
   /** What the index re-exports from the folder's `index.ts`. */
   exports: [
     "AssociateRequest",
     "type AssociateRequestParameters",
     "AssociateResponse",
+    "type CheckPrivilegeGrant",
+    "CheckPrivilegeRequest",
+    "type CheckPrivilegeRequestParameters",
+    "CheckPrivilegeResponse",
+    "type CheckPrivilegeResult",
+    "type PrivilegeDepthName",
+    "type PrivilegeDepthValue",
     "CreateRequest",
     "type CreateRequestParameters",
     "CreateResponse",
@@ -102,6 +114,10 @@ export const HAND_WRITTEN_MESSAGES = {
     "ExecuteTransactionRequest",
     "type ExecuteTransactionRequestParameters",
     "ExecuteTransactionResponse",
+    "RetrievePrincipalAccessRequest",
+    "type RetrievePrincipalAccessRequestParameters",
+    "RetrievePrincipalAccessResponse",
+    "type RetrievePrincipalAccessResult",
     "RetrieveRequest",
     "type RetrieveRequestParameters",
     "RetrieveResponse",
@@ -113,6 +129,10 @@ export const HAND_WRITTEN_MESSAGES = {
     "UpdateRequest",
     "type UpdateRequestParameters",
     "UpdateResponse",
+    "UpsertRequest",
+    "type UpsertRequestParameters",
+    "UpsertResponse",
+    "type UpsertResult",
   ],
 } as const;
 

@@ -60,6 +60,17 @@ export function entitySetOf(logicalName: string, entitySetName?: string): string
   );
 }
 
+/**
+ * The primary key column of a table: `primaryIdAttribute` when given, else the one in the SDK's
+ * `$metadata` snapshot (as `createEntityReference` finds it), else `<logicalName>id`.
+ */
+export function primaryKeyOf(logicalName: string, primaryIdAttribute?: string): string {
+  if (primaryIdAttribute) return primaryIdAttribute;
+  // A reference's enumerable properties are `@odata.type` and the primary key
+  const reference = createEntityReference(logicalName, "");
+  return Object.keys(reference).find((key) => key !== "@odata.type") ?? `${logicalName}id`;
+}
+
 /** `<entity set>(<id>)` of a record; the id must be a GUID (braces are removed). */
 export function recordPath(reference: EntityReference): string {
   return `${getEntitySetNameFromReference(reference)}(${odataLiteral.guid(reference.id)})`;
