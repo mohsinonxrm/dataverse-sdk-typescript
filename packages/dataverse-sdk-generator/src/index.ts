@@ -75,12 +75,14 @@ import { acquireCliToken } from "./auth.js";
  * Without an access token, a token is acquired from `config.auth` (device code or client
  * credentials), as the CLI does. The result's `warnings` say what in the configuration was not
  * generated, such as a listed query function. With `output.incremental`, `unchangedTables` lists
- * the tables whose files were kept as they were.
+ * the tables whose files were kept as they were. `fetchedTables` lists the tables whose metadata
+ * was read from Dataverse: with `output.incremental`, only the ones that changed since the last
+ * run (#429).
  */
 export async function generateCode(
   config: DataverseGenConfig,
   accessToken?: string
-): Promise<{ warnings: string[]; unchangedTables: string[] }> {
+): Promise<{ warnings: string[]; unchangedTables: string[]; fetchedTables: string[] }> {
   const { SchemaModel } = await import("./schema-model.js");
   const { TypescriptGenerator } = await import("./typescript-generator.js");
   const { MetadataService } = await import("./metadata-service.js");
@@ -93,5 +95,9 @@ export async function generateCode(
 
   const generator = new TypescriptGenerator(model, config);
   await generator.generate();
-  return { warnings: model.Warnings, unchangedTables: generator.unchangedTables };
+  return {
+    warnings: model.Warnings,
+    unchangedTables: generator.unchangedTables,
+    fetchedTables: model.FetchedTables,
+  };
 }

@@ -66,6 +66,7 @@ export interface AttributeMetadataDetail {
     MaxLength?: number;
     // (undocumented)
     MaxValue?: number;
+    MetadataId?: string;
     // (undocumented)
     MinValue?: number;
     // (undocumented)
@@ -294,6 +295,7 @@ export interface FunctionType {
 export function generateCode(config: DataverseGenConfig, accessToken?: string): Promise<{
     warnings: string[];
     unchangedTables: string[];
+    fetchedTables: string[];
 }>;
 
 // @public
@@ -317,6 +319,8 @@ export class MetadataService {
     constructor(config: DataverseGenConfig, accessToken?: string);
     getEdmxMetadata(): Promise<string>;
     getEntityMetadata(logicalName: string): Promise<RetrieveMetadataChangesResponse>;
+    getGlobalOptionSetValues(): Promise<Map<string, number[]>>;
+    getMetadataChanges(clientVersionStamp: string, logicalNames?: readonly string[]): Promise<RetrieveMetadataChangesResponse | undefined>;
     getSystemForms(logicalName: string): Promise<SystemFormRecord[]>;
     setAccessToken(token: string): void;
     sleep: MetadataServiceSleep;
@@ -443,7 +447,6 @@ export interface RelationshipMetadata {
 
 // @public
 export interface RetrieveMetadataChangesResponse {
-    // (undocumented)
     DeletedMetadata?: any;
     // (undocumented)
     EntityMetadata?: EntityMetadataDetail[];
@@ -463,12 +466,16 @@ export class SchemaModel {
     EntityTypes: EntityType[];
     // (undocumented)
     EnumTypes: EnumType[];
+    FetchedTables: string[];
     // (undocumented)
     Functions: FunctionType[];
     generate(): Promise<void>;
     getStructuralType(type: string): string;
     loadEdmxMetadata(): Promise<void>;
+    MetadataVersionStamp: string | undefined;
     QueryFunctionNames: Set<string>;
+    SkippedTables: string[];
+    TableMetadata: Map<string, EntityMetadataDetail>;
     Warnings: string[];
 }
 

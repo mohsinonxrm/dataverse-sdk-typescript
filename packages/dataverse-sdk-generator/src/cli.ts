@@ -117,10 +117,17 @@ program
 
       // Generate code
       spinner.text = "Fetching $metadata...";
-      const { warnings, unchangedTables } = await generateCode(config, accessToken);
+      const { warnings, unchangedTables, fetchedTables } = await generateCode(config, accessToken);
 
       spinner.succeed(chalk.green("✓ Code generation complete!"));
       if (config.output?.incremental === true) {
+        const read = fetchedTables.length;
+        console.log(
+          chalk.dim(
+            `Incremental: read the metadata of ${String(read)} table${read === 1 ? "" : "s"}` +
+              (read > 0 && read <= 10 ? ` (${fetchedTables.join(", ")})` : "")
+          )
+        );
         const kept = unchangedTables.length;
         console.log(
           chalk.dim(
