@@ -463,7 +463,7 @@ if (!updated.success) {
 - **`strategy: "auto"`**: `"bulk"` when the table supports the message, otherwise `"batch"`, from `getBulkOperationSupport()` (below; looked up once per client and table). `result.strategy` says which was used. With `"auto"`, `updateMultiple()` needs every record's primary key up front.
 - **Chunks**: `batchSize` is 1 to 1000. Without `continueOnError`, no chunk is sent after one with a failure, and its records are `"skipped"`. `maxParallel` (default 1) sends that many chunks at once; the client's concurrency limit and retry policy apply to every request.
 - **Cancellation**: `signal`, `timeoutMs` (the whole operation), `attemptTimeoutMs` and `correlationId` work as for `execute()`. Stopped before any request finished, the helpers reject with `DataverseAbortError` (or `DataverseNetworkError` named `RequestTimeout`); after that, with `DataverseBulkOperationError`, whose `result` holds every record's outcome so far and whose `cause` is the abort error. An abort doesn't undo records Dataverse already wrote.
-- **Headers**: `headers` go on every request, e.g. `{ "MSCRM.BypassCustomPluginExecution": "true" }`.
+- **Headers**: `headers` go on every request, e.g. `{ [DataverseHeaders.BypassCustomPluginExecution]: "true" }` (`DataverseHeaders` is in core).
 
 ### Which tables support bulk operations
 

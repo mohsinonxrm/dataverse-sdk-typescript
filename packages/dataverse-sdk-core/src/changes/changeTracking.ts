@@ -1,6 +1,7 @@
 import type { PreferOption, RequestOptions } from "../abstractions/options.js";
 import type { DataverseClient } from "../client/DataverseClient.js";
 import { DataverseError } from "../errors/DataverseError.js";
+import { hasErrorCode, type DataverseErrorCode } from "../errors/errorCodes.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 
 /**
@@ -52,9 +53,6 @@ export interface TrackChangesOptions extends RequestOptions {
   maxPageSize?: number;
 }
 
-/** Dataverse's `ExpiredVersionStamp` error: the delta link is older than the org keeps changes. */
-const EXPIRED_VERSION_STAMP = "0x80044352";
-
 /**
  * Whether `error` says a delta link has expired. Dataverse keeps changes for
  * `ExpireChangeTrackingInDays` (an organization setting, 7 days by default); a delta link older
@@ -62,9 +60,10 @@ const EXPIRED_VERSION_STAMP = "0x80044352";
  * the client has expired. Please perform a full sync."). Start over with `trackChanges()`.
  */
 export function isDeltaLinkExpired(error: unknown): boolean {
+  // ExpiredVersionStamp, in hex or (-2147204270) decimal.
   return (
     error instanceof DataverseError &&
-    (error.code?.toLowerCase() === EXPIRED_VERSION_STAMP || error.code === "-2147204270")
+    hasErrorCode(error, "0x80044352" satisfies DataverseErrorCode)
   );
 }
 

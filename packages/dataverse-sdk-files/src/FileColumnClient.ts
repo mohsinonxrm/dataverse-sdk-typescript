@@ -1,6 +1,8 @@
 import {
+  DataverseErrorCode,
   DataverseInvalidRequestError,
   DataverseODataError,
+  hasErrorCode,
   type DataverseClient,
   type RequestAdapter,
   type RequestInformation,
@@ -60,7 +62,10 @@ function withFileName(url: string, fileName: string): string {
  * stored where it can't be read in parts (on-premises, or an environment with a self-managed key).
  */
 function isChunkingNotSupported(error: unknown): boolean {
-  return error instanceof DataverseODataError && error.code?.toLowerCase() === "0x80090017";
+  return (
+    error instanceof DataverseODataError &&
+    hasErrorCode(error, DataverseErrorCode.UploadingAndDownloadingInMultipleChunksNotSupported)
+  );
 }
 
 /** Remove trailing `/` characters in linear time. */
@@ -505,7 +510,7 @@ export class FileColumnClient {
     return {
       method: "GET",
       url: `${this.baseUrl}/${entitySetName}(${normalizeGuid(recordId)})/${columnName}/$value${size}`,
-      // A column with no file is a 404 DataverseODataError (code 0x80040217).
+      // A column with no file is a 404 DataverseODataError (DataverseErrorCode.ObjectDoesNotExist).
       headers: { Accept: "application/octet-stream", ...headers },
     };
   }

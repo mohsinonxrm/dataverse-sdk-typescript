@@ -6,6 +6,50 @@
 import { DataverseError } from "./DataverseError.js";
 import { headersToRecord, requestIdFrom } from "./responseDetails.js";
 
+/*
+ * Each class's `name` is typed as the names the SDK gives it, so the editor completes them in
+ * `err.name === "…"` and `switch (err.name)`. Other strings stay allowed (`| (string & {})`): the
+ * auth packages subclass these classes and set their own names, and so may an app.
+ */
+
+/** The `name`s of a `DataverseAuthenticationError`. */
+export type DataverseAuthenticationErrorName =
+  | "DataverseAuthenticationError"
+  | "EmptyAccessToken"
+  | "TokenAcquisitionFailed"
+  | "Unauthorized"
+  | "Forbidden";
+
+/**
+ * The `name`s of a `DataverseInvalidRequestError`. `InvalidTenantId` and `InvalidCloud` come from
+ * the MSAL auth packages.
+ */
+export type DataverseInvalidRequestErrorName =
+  | "DataverseInvalidRequestError"
+  | "EmptyScopes"
+  | "InvalidBaseUrl"
+  | "MissingParameter"
+  | "InvalidParameter"
+  | "TokenOriginRefused"
+  | "SerializationFailed"
+  | "InvalidTenantId"
+  | "InvalidCloud";
+
+/** The `name`s of a `DataverseServiceError`, by HTTP status. */
+export type DataverseServiceErrorName =
+  | "DataverseServiceError"
+  | "BadRequest"
+  | "NotFound"
+  | "TooManyRequests"
+  | "InternalServerError"
+  | "ServiceUnavailable"
+  | "ClientError"
+  | "ServerError";
+
+/** The `name`s of a `DataverseNetworkError`. */
+export type DataverseNetworkErrorName =
+  "DataverseNetworkError" | "ConnectionFailed" | "RequestTimeout" | "RequestAborted";
+
 /**
  * Authentication/authorization errors
  * Thrown when token acquisition fails or access is denied
@@ -17,6 +61,9 @@ import { headersToRecord, requestIdFrom } from "./responseDetails.js";
  * ```
  */
 export class DataverseAuthenticationError extends DataverseError {
+  /** A name the SDK gives this error (see the type), or one a subclass sets. */
+  declare name: DataverseAuthenticationErrorName | (string & {});
+
   constructor(message?: string, baseError?: Error) {
     super(message, baseError);
     Object.setPrototypeOf(this, DataverseAuthenticationError.prototype);
@@ -75,6 +122,9 @@ export class DataverseAuthenticationError extends DataverseError {
  * ```
  */
 export class DataverseInvalidRequestError extends DataverseError {
+  /** A name the SDK gives this error (see the type), or one a subclass sets. */
+  declare name: DataverseInvalidRequestErrorName | (string & {});
+
   constructor(message?: string, baseError?: Error) {
     super(message, baseError);
     Object.setPrototypeOf(this, DataverseInvalidRequestError.prototype);
@@ -153,6 +203,9 @@ export class DataverseInvalidRequestError extends DataverseError {
  * ```
  */
 export class DataverseServiceError extends DataverseError {
+  /** A name the SDK gives this error (see the type), or one a subclass sets. */
+  declare name: DataverseServiceErrorName | (string & {});
+
   constructor(statusCode: number, message?: string, baseError?: Error) {
     super(message, baseError);
     Object.setPrototypeOf(this, DataverseServiceError.prototype);
@@ -265,6 +318,9 @@ export class DataverseServiceError extends DataverseError {
  * ```
  */
 export class DataverseNetworkError extends DataverseError {
+  /** A name the SDK gives this error (see the type), or one a subclass sets. */
+  declare name: DataverseNetworkErrorName | (string & {});
+
   constructor(message?: string, baseError?: Error) {
     super(message, baseError);
     Object.setPrototypeOf(this, DataverseNetworkError.prototype);
@@ -315,6 +371,9 @@ export class DataverseNetworkError extends DataverseError {
  * original error is `cause`.
  */
 export class DataverseAbortError extends DataverseError {
+  /** A name the SDK gives this error (see the type), or one a subclass sets. */
+  declare name: "AbortError" | (string & {});
+
   constructor(message?: string, cause?: unknown) {
     super(message ?? "The request was aborted", cause !== undefined ? { cause } : undefined);
     Object.setPrototypeOf(this, DataverseAbortError.prototype);

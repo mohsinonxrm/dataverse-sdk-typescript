@@ -232,18 +232,18 @@ waiting. `attemptTimeoutMs` always runs on real time.
 Build complex `Prefer` headers using either fluent PreferBuilder or typed Prefer helper.
 
 ```typescript
-import { Prefer } from "@mohsinonxrm/dataverse-sdk-core";
+import { Annotations, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
 
 // Method 1: Prefer helper values (chains like any other builder method)
 await client
   .api("/accounts")
-  .prefer(Prefer.returnRepresentation(), Prefer.includeAnnotations("*"))
+  .prefer(Prefer.returnRepresentation(), Prefer.includeAnnotations(Annotations.All))
   .post({ name: "Contoso" });
 
 // The same values as an array
 await client
   .api("/accounts")
-  .prefer([Prefer.returnRepresentation(), Prefer.includeAnnotations("*")])
+  .prefer([Prefer.returnRepresentation(), Prefer.includeAnnotations(Annotations.All)])
   .post({ name: "Contoso" });
 
 // Method 2: Raw string, for a preference without a helper
@@ -270,9 +270,16 @@ await client
 
 // Prefer helper values available:
 Prefer.returnRepresentation(); // 'return=representation'
-Prefer.includeAnnotations("*"); // 'odata.include-annotations="*"'
+Prefer.includeAnnotations(Annotations.All); // 'odata.include-annotations="*"'
+Prefer.includeAnnotations(Annotations.LookupLogicalName); // "Microsoft.Dynamics.CRM.lookuplogicalname"
 Prefer.continueOnError(); // 'odata.continue-on-error'
 ```
+
+`Annotations` names the annotation terms: `All`, `FormattedValue`, `AllDynamicsCrm`,
+`LookupLogicalName`, `AssociatedNavigationProperty`, `FetchXmlPagingCookie`, `MoreRecords`,
+`TotalRecordCount`, `TotalRecordCountLimitExceeded` and `ErrorDetails`. `includeAnnotations()` and
+`formattedValues()` take one of them, the literal (your editor suggests them), a wildcard such as
+`"Microsoft.Dynamics.CRM.*"`, or several joined with commas.
 
 `DataverseClientOptions.defaultPrefer` adds `Prefer` values to every request; a request that sets
 the same preference keeps its own value.
@@ -355,7 +362,8 @@ await client.api("/accounts").post({ name: "Contoso" });
 - Default: Duplicate detection is **suppressed** (matches Dataverse defaults)
 - `.detectDuplicates()` explicitly enables detection
 - Returns `DataverseDuplicateError` (extends `DataverseError`) for a 412 with Dataverse's
-  duplicate code `0x80040333`. Any other 412, such as an `If-Match` etag mismatch (`0x80060882`),
+  duplicate code `0x80040333` (`DataverseErrorCode.DuplicateRecordsFound`). Any other 412, such as
+  an `If-Match` etag mismatch (`0x80060882`, `ConcurrencyVersionMismatch`),
   rejects with the usual `DataverseODataError`, even with `.detectDuplicates()` on
 - Error includes `duplicates` array with record details from `error.innererror.duplicaterecords`,
   when Dataverse sends them (a plain duplicate-detection 412 carries only the code and message, so
@@ -724,6 +732,51 @@ Every `DataverseError` has `status?`, `code?`, `message`, `headers?`, `body?` (a
 `innerError?`, `requestId?`, `correlationId?`, `cause?` and `date`. Errors thrown by your own
 middleware or token provider are passed through unchanged.
 
+**Error codes.** `code` is Dataverse's error code, typed `DataverseErrorCode | (string & {})`: the
+codes the SDK knows complete in your editor, and any other code Dataverse returns is still a valid
+value. Compare with `hasErrorCode()`, which ignores the case of hex codes and also matches the
+signed decimal form (`"-2147220969"`) some responses carry:
+
+```typescript
+import { DataverseErrorCode, hasErrorCode } from "@mohsinonxrm/dataverse-sdk-core";
+
+async function findAccount(id: string) {
+  try {
+    return await client.api(`accounts(${id})`).get();
+  } catch (error) {
+    if (hasErrorCode(error, DataverseErrorCode.ObjectDoesNotExist)) return undefined;
+    throw error;
+  }
+}
+```
+
+| `DataverseErrorCode`                                  | Code         | Meaning                                                                   |
+| ----------------------------------------------------- | ------------ | ------------------------------------------------------------------------- |
+| `ObjectDoesNotExist`                                  | `0x80040217` | The record (or file) doesn't exist (404)                                  |
+| `DuplicateRecordsFound`                               | `0x80040333` | A duplicate detection rule matched (412, `DataverseDuplicateError`)       |
+| `ExpiredVersionStamp`                                 | `0x80044352` | A change-tracking delta link expired (`isDeltaLinkExpired()`)             |
+| `ConcurrencyVersionMismatch`                          | `0x80060882` | An `If-Match` etag no longer matches (412)                                |
+| `ServiceProtectionRequests`                           | `0x80072322` | Service protection: number of requests (429)                              |
+| `ServiceProtectionExecutionTime`                      | `0x80072321` | Service protection: combined execution time (429)                         |
+| `ServiceProtectionConcurrentRequests`                 | `0x80072326` | Service protection: concurrent requests (429)                             |
+| `UploadingAndDownloadingInMultipleChunksNotSupported` | `0x80090017` | The file can't be read or written in parts (the files package falls back) |
+
+**Error names.** The named error classes type `name` with the names the SDK gives them
+(`DataverseAuthenticationErrorName`, `DataverseInvalidRequestErrorName`,
+`DataverseServiceErrorName`, `DataverseNetworkErrorName`), so `error.name === "..."` and
+`switch (error.name)` complete them. Other names stay valid: the auth packages subclass these
+classes with their own.
+
+```typescript
+if (error instanceof DataverseNetworkError) {
+  switch (error.name) {
+    case "ConnectionFailed": // DNS, TLS, CORS, offline
+    case "RequestTimeout": // timeoutMs, attemptTimeoutMs or AbortSignal.timeout()
+    case "RequestAborted":
+  }
+}
+```
+
 **Error hierarchy:**
 
 ```
@@ -910,29 +963,56 @@ await client
 
 #### Custom Headers
 
-Set Dataverse-specific or custom HTTP headers per request.
+Set Dataverse-specific or custom HTTP headers per request. `DataverseHeaders` names Dataverse's
+optional-parameter headers; for those, `header()` suggests the documented values (`"CustomSync"`,
+`"Strong"`, `"true"`, ...) and still takes any other string.
 
 ```typescript
-// Suppress duplicate detection (default)
-await client
-  .api("/accounts")
-  .header("MSCRM.SuppressDuplicateDetection", "true") // Default behavior
-  .post({ name: "Contoso" });
+import { DataverseHeaders } from "@mohsinonxrm/dataverse-sdk-core";
 
-// Bypass custom plugin execution
+// Skip custom synchronous and asynchronous logic (plug-ins, workflows); needs prvBypassCustomBusinessLogic
 await client
   .api("/accounts")
-  .header("MSCRM.BypassCustomPluginExecution", "true")
+  .header(DataverseHeaders.BypassBusinessLogicExecution, "CustomSync,CustomAsync")
   .post({ name: "Test Account" });
 
-// Solution-aware operations
+// Skip custom synchronous plug-ins only (MSCRM.BypassCustomPluginExecution); needs prvBypassCustomPlugins
 await client
   .api("/accounts")
-  .header("MSCRM.SolutionUniqueName", "MySolution")
-  .post({ name: "Solution-Specific Account" });
+  .header(DataverseHeaders.BypassCustomPluginExecution, "true")
+  .post({ name: "Test Account" });
 
-// Merge labels (for localization)
-await client.api("/accounts").header("MSCRM.MergeLabels", "true").patch({ name: "Updated" });
+// Don't trigger Power Automate flows
+await client
+  .api("/accounts")
+  .header(DataverseHeaders.SuppressCallbackRegistrationExpanderJob, "true")
+  .post({ name: "Imported Account" });
+
+// Add a new solution component to an unmanaged solution
+await client
+  .api("EntityDefinitions")
+  .header(DataverseHeaders.SolutionUniqueName, "MySolution")
+  .post(entityDefinition);
+
+// Merge labels with the other languages' labels when updating a definition
+await client
+  .api("EntityDefinitions(LogicalName='account')")
+  .header(DataverseHeaders.MergeLabels, "true")
+  .put(definition);
+
+// Read metadata from the database, not a cached copy
+await client
+  .api("EntityDefinitions(LogicalName='account')")
+  .header(DataverseHeaders.Consistency, "Strong")
+  .get();
+
+// The same names work as keys of RequestOptions.headers (and of the batch and bulk options)
+await client
+  .api("/accounts")
+  .post(
+    { name: "Contoso" },
+    { headers: { [DataverseHeaders.BypassCustomPluginExecution]: "true" } }
+  );
 
 // Chain multiple headers
 await client

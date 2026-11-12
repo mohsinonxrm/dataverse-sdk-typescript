@@ -57,6 +57,23 @@ export interface AdaptiveThrottlingStatus {
 }
 
 // @public
+export const Annotations: {
+    readonly All: "*";
+    readonly FormattedValue: "OData.Community.Display.V1.FormattedValue";
+    readonly AllDynamicsCrm: "Microsoft.Dynamics.CRM.*";
+    readonly LookupLogicalName: "Microsoft.Dynamics.CRM.lookuplogicalname";
+    readonly AssociatedNavigationProperty: "Microsoft.Dynamics.CRM.associatednavigationproperty";
+    readonly FetchXmlPagingCookie: "Microsoft.Dynamics.CRM.fetchxmlpagingcookie";
+    readonly MoreRecords: "Microsoft.Dynamics.CRM.morerecords";
+    readonly TotalRecordCount: "Microsoft.Dynamics.CRM.totalrecordcount";
+    readonly TotalRecordCountLimitExceeded: "Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded";
+    readonly ErrorDetails: "Microsoft.PowerApps.CDS.ErrorDetails.*";
+};
+
+// @public
+export type AnnotationTerm = (typeof Annotations)[keyof typeof Annotations];
+
+// @public
 export type ApiVersion = `v${number}.${number}`;
 
 // @public
@@ -334,6 +351,7 @@ export interface CreateAndGetIdOptions extends RequestOptions {
 // @public
 export class DataverseAbortError extends DataverseError {
     constructor(message?: string, cause?: unknown);
+    name: "AbortError" | (string & {});
 }
 
 // @public
@@ -355,9 +373,13 @@ export class DataverseAuthenticationError extends DataverseError {
     constructor(message?: string, baseError?: Error);
     static emptyAccessToken(): DataverseAuthenticationError;
     static forbidden(message?: string): DataverseAuthenticationError;
+    name: DataverseAuthenticationErrorName | (string & {});
     static tokenAcquisitionFailed(details?: string): DataverseAuthenticationError;
     static unauthorized(message?: string): DataverseAuthenticationError;
 }
+
+// @public
+export type DataverseAuthenticationErrorName = "DataverseAuthenticationError" | "EmptyAccessToken" | "TokenAcquisitionFailed" | "Unauthorized" | "Forbidden";
 
 // @public
 export class DataverseBatchError<TResult = unknown, TStep = unknown> extends DataverseError {
@@ -469,8 +491,7 @@ export class DataverseError extends Error {
     constructor(message?: string, init?: DataverseErrorInit | Error);
     get body(): unknown;
     set body(value: unknown);
-    // (undocumented)
-    code?: string;
+    code?: DataverseErrorCode | (string & {});
     // (undocumented)
     correlationId?: string;
     date: Date;
@@ -485,10 +506,25 @@ export class DataverseError extends Error {
     status?: number;
 }
 
+// @public
+export const DataverseErrorCode: {
+    readonly ObjectDoesNotExist: "0x80040217";
+    readonly DuplicateRecordsFound: "0x80040333";
+    readonly ExpiredVersionStamp: "0x80044352";
+    readonly ConcurrencyVersionMismatch: "0x80060882";
+    readonly ServiceProtectionRequests: "0x80072322";
+    readonly ServiceProtectionExecutionTime: "0x80072321";
+    readonly ServiceProtectionConcurrentRequests: "0x80072326";
+    readonly UploadingAndDownloadingInMultipleChunksNotSupported: "0x80090017";
+};
+
+// @public
+export type DataverseErrorCode = (typeof DataverseErrorCode)[keyof typeof DataverseErrorCode];
+
 // @public (undocumented)
 export interface DataverseErrorInit {
     cause?: unknown;
-    code?: string;
+    code?: DataverseErrorCode | (string & {});
     correlationId?: string;
     headers?: Record<string, string>;
     // (undocumented)
@@ -496,6 +532,43 @@ export interface DataverseErrorInit {
     raw?: unknown;
     requestId?: string;
     status?: number;
+}
+
+// @public
+export const DataverseHeaders: {
+    readonly BypassBusinessLogicExecution: "MSCRM.BypassBusinessLogicExecution";
+    readonly BypassBusinessLogicExecutionStepIds: "MSCRM.BypassBusinessLogicExecutionStepIds";
+    readonly BypassCustomPluginExecution: "MSCRM.BypassCustomPluginExecution";
+    readonly SuppressCallbackRegistrationExpanderJob: "MSCRM.SuppressCallbackRegistrationExpanderJob";
+    readonly SuppressDuplicateDetection: "MSCRM.SuppressDuplicateDetection";
+    readonly SolutionUniqueName: "MSCRM.SolutionUniqueName";
+    readonly MergeLabels: "MSCRM.MergeLabels";
+    readonly SessionToken: "MSCRM.SessionToken";
+    readonly Consistency: "Consistency";
+    readonly CallerObjectId: "CallerObjectId";
+    readonly CallerId: "MSCRMCallerID";
+};
+
+// @public
+export type DataverseHeaders = (typeof DataverseHeaders)[keyof typeof DataverseHeaders];
+
+// @public
+export type DataverseHeaderValue<TName extends string> = TName extends keyof DataverseHeaderValues ? DataverseHeaderValues[TName] | (string & {}) : string;
+
+// @public
+export interface DataverseHeaderValues {
+    // (undocumented)
+    "MSCRM.BypassBusinessLogicExecution": "CustomSync" | "CustomAsync" | "CustomSync,CustomAsync";
+    // (undocumented)
+    "MSCRM.BypassCustomPluginExecution": "true" | "false";
+    // (undocumented)
+    "MSCRM.MergeLabels": "true" | "false";
+    // (undocumented)
+    "MSCRM.SuppressCallbackRegistrationExpanderJob": "true" | "false";
+    // (undocumented)
+    "MSCRM.SuppressDuplicateDetection": "true" | "false";
+    // (undocumented)
+    Consistency: "Strong";
 }
 
 // @public
@@ -517,17 +590,25 @@ export class DataverseInvalidRequestError extends DataverseError {
     static invalidBaseUrl(url: string): DataverseInvalidRequestError;
     static invalidParameter(paramName: string, reason: string): DataverseInvalidRequestError;
     static missingParameter(paramName: string): DataverseInvalidRequestError;
+    name: DataverseInvalidRequestErrorName | (string & {});
     static serializationFailed(details?: string): DataverseInvalidRequestError;
     static tokenOriginRefused(reason: string): DataverseInvalidRequestError;
 }
+
+// @public
+export type DataverseInvalidRequestErrorName = "DataverseInvalidRequestError" | "EmptyScopes" | "InvalidBaseUrl" | "MissingParameter" | "InvalidParameter" | "TokenOriginRefused" | "SerializationFailed" | "InvalidTenantId" | "InvalidCloud";
 
 // @public
 export class DataverseNetworkError extends DataverseError {
     constructor(message?: string, baseError?: Error);
     static aborted(): DataverseNetworkError;
     static connectionFailed(details?: string, cause?: unknown): DataverseNetworkError;
+    name: DataverseNetworkErrorName | (string & {});
     static timeout(timeoutMs?: number, cause?: unknown): DataverseNetworkError;
 }
+
+// @public
+export type DataverseNetworkErrorName = "DataverseNetworkError" | "ConnectionFailed" | "RequestTimeout" | "RequestAborted";
 
 // @public (undocumented)
 export class DataverseODataError extends DataverseError {
@@ -584,8 +665,7 @@ export class DataverseRequestBuilder {
     }): Promise<T[]>;
     // (undocumented)
     getPage<T = unknown>(options?: RequestOptions): Promise<PageResponse<T>>;
-    // (undocumented)
-    header(name: string, value: string): this;
+    header<TName extends DataverseHeaders | (string & {})>(name: TName, value: DataverseHeaderValue<TName>): this;
     ifMatch(etag: string): this;
     ifNoneMatch(etag?: string): this;
     impersonate(userId: string, options?: {
@@ -625,9 +705,13 @@ export class DataverseServiceError extends DataverseError {
     constructor(statusCode: number, message?: string, baseError?: Error);
     static badRequest(message: string): DataverseServiceError;
     static fromResponse(response: Response, body?: unknown): Promise<DataverseServiceError>;
+    name: DataverseServiceErrorName | (string & {});
     static notFound(entityType?: string, id?: string): DataverseServiceError;
     static throttled(retryAfter?: number): DataverseServiceError;
 }
+
+// @public
+export type DataverseServiceErrorName = "DataverseServiceError" | "BadRequest" | "NotFound" | "TooManyRequests" | "InternalServerError" | "ServiceUnavailable" | "ClientError" | "ServerError";
 
 // @public (undocumented)
 export class DataverseThrottleError extends DataverseError {
@@ -806,6 +890,9 @@ export function getRequestHeader(headers: HeadersLike | undefined, key: string):
 
 // @public
 export function getRetryAttempts(res: Response): readonly RetryAttempt[] | undefined;
+
+// @public
+export function hasErrorCode(error: unknown, code: DataverseErrorCode | (string & {})): boolean;
 
 // @public
 export type HeadersLike = Headers | Array<[string, string]> | Record<string, string>;
@@ -1052,7 +1139,7 @@ export class Pipeline {
 // @public (undocumented)
 export const Prefer: {
     readonly returnRepresentation: () => PreferOption;
-    readonly includeAnnotations: (term: string) => PreferOption;
+    readonly includeAnnotations: (term: AnnotationTerm | (string & {})) => PreferOption;
     readonly continueOnError: () => PreferOption;
 };
 
@@ -1064,7 +1151,7 @@ export class PreferBuilder<TParent = undefined> {
     build(): string;
     continueOnError(): this;
     done(): TParent;
-    formattedValues(annotations?: string): this;
+    formattedValues(annotations?: AnnotationTerm | (string & {})): this;
     maxPageSize(size: number): this;
     returnRepresentation(): this;
     trackChanges(): this;

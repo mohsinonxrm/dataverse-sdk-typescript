@@ -64,7 +64,7 @@ export function isPopupBlockedError(error: unknown): boolean;
 // @public
 export class MsalBrowserAuthenticationError extends DataverseAuthenticationError {
     constructor(message: string, init: {
-        name: string;
+        name: MsalBrowserAuthenticationErrorName | (string & {});
         code?: string;
         cause?: unknown;
     });
@@ -75,11 +75,15 @@ export class MsalBrowserAuthenticationError extends DataverseAuthenticationError
     readonly errorCode?: string;
     // (undocumented)
     readonly errorNo?: string;
+    name: MsalBrowserAuthenticationErrorName | (string & {});
     static popupBlocked(cause: unknown): MsalBrowserAuthenticationError;
     // (undocumented)
     readonly subError?: string;
     static tokenAcquisitionFailed(cause: unknown): MsalBrowserAuthenticationError;
 }
+
+// @public
+export type MsalBrowserAuthenticationErrorName = "TokenAcquisitionFailed" | "PopupBlocked";
 
 // @public
 export class MsalBrowserTokenProvider implements AccessTokenProvider {

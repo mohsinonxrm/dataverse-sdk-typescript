@@ -1,3 +1,4 @@
+import type { AnnotationTerm } from "../client/annotations.js";
 import type { Middleware } from "./middleware.js";
 
 export type PreferOption = string & { __brand: "PreferOption" };
@@ -6,7 +7,11 @@ export const Prefer = {
   returnRepresentation(): PreferOption {
     return "return=representation" as PreferOption;
   },
-  includeAnnotations(term: string): PreferOption {
+  /**
+   * `odata.include-annotations="<term>"`: a term from `Annotations` (`Annotations.FormattedValue`,
+   * `"*"`, …), a wildcard such as `"Microsoft.Dynamics.CRM.*"`, or several joined with commas.
+   */
+  includeAnnotations(term: AnnotationTerm | (string & {})): PreferOption {
     return `odata.include-annotations="${term}"` as PreferOption;
   },
   continueOnError(): PreferOption {

@@ -1,3 +1,5 @@
+import type { DataverseErrorCode } from "./errorCodes.js";
+
 /** Dataverse's `error.innererror` (present when the org returns details, e.g. in dev orgs). */
 export interface DataverseInnerError {
   message?: string;
@@ -9,8 +11,8 @@ export interface DataverseInnerError {
 export interface DataverseErrorInit {
   /** HTTP status code. */
   status?: number;
-  /** Dataverse error code, e.g. `"0x80040217"`. */
-  code?: string;
+  /** Dataverse error code, e.g. `"0x80040217"` (`DataverseErrorCode.ObjectDoesNotExist`). */
+  code?: DataverseErrorCode | (string & {});
   /** Dataverse's id for the request (`x-ms-service-request-id`, then `req_id`, then `x-ms-request-id`). */
   requestId?: string;
   /** The SDK's correlation id for the request (`x-ms-correlation-id`). */
@@ -30,7 +32,11 @@ export interface DataverseErrorInit {
  */
 export class DataverseError extends Error {
   status?: number;
-  code?: string;
+  /**
+   * Dataverse error code, e.g. `"0x80040217"`: one of `DataverseErrorCode`, or any other code
+   * Dataverse returns. Compare it with `hasErrorCode()`, which ignores case.
+   */
+  code?: DataverseErrorCode | (string & {});
   requestId?: string;
   correlationId?: string;
   /** Response body: parsed JSON, or the text when it isn't JSON. Same value as `body`. */

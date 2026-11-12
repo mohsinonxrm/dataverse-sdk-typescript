@@ -1,3 +1,5 @@
+import type { AnnotationTerm } from "./annotations.js";
+
 /**
  * Fluent builder for Prefer header options. From `request.prefer()`, `done()` returns the request
  * builder, so the chain can go on: `.prefer().allAnnotations().done().get()`.
@@ -29,9 +31,12 @@ export class PreferBuilder<TParent = undefined> {
 
   /**
    * Include formatted values for OptionSets, Lookups, etc.
-   * @param annotations - Specific annotation or '*' for all
+   * @param annotations - The annotation term (`Annotations.FormattedValue` by default), `"*"`
+   *   (`Annotations.All`) for all, a wildcard, or several joined with commas.
    */
-  formattedValues(annotations = "OData.Community.Display.V1.FormattedValue"): this {
+  formattedValues(
+    annotations: AnnotationTerm | (string & {}) = "OData.Community.Display.V1.FormattedValue"
+  ): this {
     this.options.push(`odata.include-annotations="${annotations}"`);
     return this;
   }
