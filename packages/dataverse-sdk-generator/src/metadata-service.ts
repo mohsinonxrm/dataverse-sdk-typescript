@@ -28,6 +28,84 @@ export type MetadataServiceSleep = (ms: number) => Promise<void>;
 const defaultSleep: MetadataServiceSleep = (ms) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * The most tables {@link MetadataService.getMetadataChanges} names in its query; with more it asks
+ * for every table's changes, so the GET's URL stays well under the length Dataverse accepts.
+ */
+const MAX_CHANGE_CONDITIONS = 50;
+
+/**
+ * The RetrieveMetadataChanges query (an `EntityQueryExpression`) for the properties the generator
+ * reads: of the tables named in `logicalNames`, or of every table when it's `undefined`.
+ * `LogicalName`, `MetadataId` and `HasChanged` come back without being asked for.
+ */
+function metadataQuery(logicalNames: readonly string[] | undefined): unknown {
+  return {
+    ...(logicalNames && {
+      Criteria: {
+        Conditions: logicalNames.map((logicalName) => ({
+          PropertyName: "LogicalName",
+          ConditionOperator: "Equals",
+          Value: {
+            Value: logicalName,
+            Type: "System.String",
+          },
+        })),
+        FilterOperator: logicalNames.length === 1 ? "And" : "Or",
+      },
+    }),
+    Properties: {
+      PropertyNames: [
+        "Attributes",
+        "SchemaName",
+        "EntitySetName",
+        "Keys",
+        "PrimaryIdAttribute",
+        "PrimaryNameAttribute",
+      ],
+    },
+    AttributeQuery: {
+      Properties: {
+        PropertyNames: [
+          "SchemaName",
+          "LogicalName",
+          "OptionSet",
+          "RequiredLevel",
+          "AttributeType",
+          "AttributeTypeName",
+          "SourceType",
+          "Targets",
+          "DisplayName",
+          "Description",
+          "AttributeOf",
+          "DateTimeBehavior",
+          "Format",
+          "MaxLength",
+          "MinValue",
+          "MaxValue",
+          "Precision",
+          "IsPrimaryId",
+          "IsPrimaryName",
+          "IsValidForRead",
+          "IsValidForCreate",
+          "IsValidForUpdate",
+          "IsValidForAdvancedFind",
+        ],
+      },
+    },
+  };
+}
+
+/** The numeric values of a choice's options, sorted. */
+export function optionValues(
+  options: ReadonlyArray<{ Value?: number | null }> | null | undefined
+): number[] {
+  return (options ?? [])
+    .map((o) => o.Value)
+    .filter((v): v is number => typeof v === "number")
+    .sort((a, b) => a - b);
+}
+
 /** Seconds or an HTTP date in a Retry-After header, as ms; undefined when absent or unreadable. */
 function retryAfterMs(header: string | null): number | undefined {
   if (!header) return undefined;
@@ -101,75 +179,14 @@ ${await response.text()}`
    * a parameter alias: `RetrieveMetadataChanges(Query=@q)?@q={...}`.
    */
   async getEntityMetadata(logicalName: string): Promise<RetrieveMetadataChangesResponse> {
-    const query = {
-      Criteria: {
-        Conditions: [
-          {
-            PropertyName: "LogicalName",
-            ConditionOperator: "Equals",
-            Value: {
-              Value: logicalName,
-              Type: "System.String",
-            },
-          },
-        ],
-        FilterOperator: "And",
-      },
-      Properties: {
-        PropertyNames: [
-          "Attributes",
-          "SchemaName",
-          "EntitySetName",
-          "Keys",
-          "PrimaryIdAttribute",
-          "PrimaryNameAttribute",
-        ],
-      },
-      AttributeQuery: {
-        Properties: {
-          PropertyNames: [
-            "SchemaName",
-            "LogicalName",
-            "OptionSet",
-            "RequiredLevel",
-            "AttributeType",
-            "AttributeTypeName",
-            "SourceType",
-            "Targets",
-            "DisplayName",
-            "Description",
-            "AttributeOf",
-            "DateTimeBehavior",
-            "Format",
-            "MaxLength",
-            "MinValue",
-            "MaxValue",
-            "Precision",
-            "IsPrimaryId",
-            "IsPrimaryName",
-            "IsValidForRead",
-            "IsValidForCreate",
-            "IsValidForUpdate",
-            "IsValidForAdvancedFind",
-          ],
-        },
-      },
-    };
-
-    const url = `${this.baseUrl}/RetrieveMetadataChanges(Query=@q)?@q=${encodeURIComponent(JSON.stringify(query))}`;
-
-    const headers: Record<string, string> = {
-      Accept: "application/json",
-      "OData-MaxVersion": "4.0",
-      "OData-Version": "4.0",
-    };
-
-    if (this.accessToken) {
-      headers.Authorization = `Bearer ${this.accessToken}`;
-    }
+    const url = `${this.baseUrl}/RetrieveMetadataChanges(Query=@q)?@q=${encodeURIComponent(JSON.stringify(metadataQuery([logicalName])))}`;
 
     // A 400 here is a query Dataverse refuses: not retried. 429, 5xx and dropped connections are.
-    const response = await this.fetchWithRetry(url, { method: "GET", headers }, () => false);
+    const response = await this.fetchWithRetry(
+      url,
+      { method: "GET", headers: this.jsonHeaders() },
+      () => false
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -180,6 +197,100 @@ ${await response.text()}`
 
     const result = await response.json();
     return result as RetrieveMetadataChangesResponse;
+  }
+
+  /**
+   * Incremental generation (#429): what changed in the tables' metadata since `clientVersionStamp`
+   * (the `ServerVersionStamp` of an earlier response), with the same properties as
+   * {@link getEntityMetadata}. `EntityMetadata` lists the tables that changed or were added, with
+   * only the parts that changed; `DeletedMetadata` has the MetadataIds of the tables and columns
+   * deleted since then (`DeletedMetadataFilters` `Default` and `Attribute`), across the whole
+   * org; the new `ServerVersionStamp` is for the next call.
+   *
+   * With `logicalNames` (at most {@link MAX_CHANGE_CONDITIONS}), only those tables' changes are
+   * asked for; without, or with more, the changes of every table, so the URL stays short.
+   *
+   * Returns `undefined` when Dataverse no longer has the changes since that stamp (the
+   * `ExpiredVersionStamp` error, 0x80044352: older than the org's `ExpireSubscriptionsInDays`, 90
+   * days by default, or invalidated by maintenance): read the metadata again in full.
+   */
+  async getMetadataChanges(
+    clientVersionStamp: string,
+    logicalNames?: readonly string[]
+  ): Promise<RetrieveMetadataChangesResponse | undefined> {
+    const tables =
+      logicalNames && logicalNames.length > 0 && logicalNames.length <= MAX_CHANGE_CONDITIONS
+        ? logicalNames
+        : undefined;
+    const query = encodeURIComponent(JSON.stringify(metadataQuery(tables)));
+    const stamp = encodeURIComponent(`'${clientVersionStamp.replace(/'/g, "''")}'`);
+    const filters = encodeURIComponent(
+      "Microsoft.Dynamics.CRM.DeletedMetadataFilters'Default,Attribute'"
+    );
+    const url =
+      `${this.baseUrl}/RetrieveMetadataChanges(Query=@q,ClientVersionStamp=@s,DeletedMetadataFilters=@d)` +
+      `?@q=${query}&@s=${stamp}&@d=${filters}`;
+
+    const response = await this.fetchWithRetry(
+      url,
+      { method: "GET", headers: this.jsonHeaders() },
+      () => false
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      if (/0x80044352|ExpiredVersionStamp/i.test(errorText)) return undefined;
+      throw new Error(
+        `Failed to retrieve metadata changes: ${String(response.status)} ${response.statusText}\n${errorText}`
+      );
+    }
+
+    return (await response.json()) as RetrieveMetadataChangesResponse;
+  }
+
+  /**
+   * Incremental generation (#429): the option values of every global choice (picklist option
+   * set), by name, sorted. One request for the whole org: `GlobalOptionSetDefinitions` can't be
+   * filtered, only read whole or one at a time.
+   *
+   * RetrieveMetadataChanges lists a table whose column's own options changed, but the docs don't
+   * say it lists the tables using a global choice that changed, so the kept tables' global
+   * choices are compared with these values.
+   */
+  async getGlobalOptionSetValues(): Promise<Map<string, number[]>> {
+    const url = `${this.baseUrl}/GlobalOptionSetDefinitions/Microsoft.Dynamics.CRM.OptionSetMetadata?$select=Name,Options`;
+    const response = await this.fetchWithRetry(
+      url,
+      { method: "GET", headers: this.jsonHeaders() },
+      () => false
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Failed to retrieve the global choices: ${String(response.status)} ${response.statusText}\n${await response.text()}`
+      );
+    }
+    const body = (await response.json()) as {
+      value?: Array<{ Name?: string; Options?: Array<{ Value?: number | null }> | null }>;
+    };
+    const values = new Map<string, number[]>();
+    for (const optionSet of body.value ?? []) {
+      if (!optionSet.Name) continue;
+      values.set(optionSet.Name, optionValues(optionSet.Options));
+    }
+    return values;
+  }
+
+  /** The headers of a JSON request, with the access token. */
+  private jsonHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      Accept: "application/json",
+      "OData-MaxVersion": "4.0",
+      "OData-Version": "4.0",
+    };
+    if (this.accessToken) {
+      headers.Authorization = `Bearer ${this.accessToken}`;
+    }
+    return headers;
   }
 
   /**
@@ -217,6 +328,10 @@ ${await response.text()}`
 export interface RetrieveMetadataChangesResponse {
   EntityMetadata?: EntityMetadataDetail[];
   ServerVersionStamp?: string;
+  /**
+   * With a version stamp and `DeletedMetadataFilters`: the MetadataIds of what was deleted since
+   * then, per `DeletedMetadataFilters` member (`Keys`, with the ids of each in `Values`).
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   DeletedMetadata?: any;
 }
@@ -245,6 +360,8 @@ export type AttributeRequiredLevel =
  * Detailed attribute metadata
  */
 export interface AttributeMetadataDetail {
+  /** The column's id: incremental generation matches deleted columns by it (#429). */
+  MetadataId?: string;
   LogicalName?: string;
   SchemaName?: string;
   AttributeType?: AttributeTypeCode | (string & {});

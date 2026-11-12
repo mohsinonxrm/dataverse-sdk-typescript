@@ -21,6 +21,7 @@ import {
   GENERATOR_VERSION,
   type GenerationStamp,
   hashOf,
+  metadataSource,
   readStamp,
   removeStale,
   writeStamp,
@@ -256,12 +257,17 @@ export class TypescriptGenerator {
     const previous = incremental ? await readStamp(this.outputRoot) : undefined;
     const tables: GenerationStamp["tables"] = {};
     const settings = incremental ? await this.settingsHash() : "";
+    // The tables' metadata is kept only with a version stamp to ask for the changes since (#429)
+    const versionStamp = this.model.MetadataVersionStamp;
     if (incremental) {
       const reusable = previous?.generator === GENERATOR_VERSION && previous.settings === settings;
       for (const entity of this.model.EntityTypes) {
         const files = this.tableFiles(entity);
         const hash = hashOf(JSON.stringify(entity), JSON.stringify(this.tableDependencies(entity)));
-        tables[entity.LogicalName] = { hash, files };
+        const metadata = versionStamp
+          ? this.model.TableMetadata.get(entity.LogicalName)
+          : undefined;
+        tables[entity.LogicalName] = { hash, files, ...(metadata && { metadata }) };
         const before = previous?.tables[entity.LogicalName];
         if (
           reusable &&
@@ -297,6 +303,13 @@ export class TypescriptGenerator {
         settings,
         tables,
         files: [...this.written].sort(),
+        ...(versionStamp && {
+          metadata: {
+            source: metadataSource(this.config),
+            versionStamp,
+            skipped: [...this.model.SkippedTables].sort(),
+          },
+        }),
       });
     }
   }
