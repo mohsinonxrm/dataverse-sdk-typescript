@@ -894,6 +894,9 @@ returns, for the runtime's opt-in `validateEntity()`:
     numberofemployees: { /* ... */ minValue: 0, maxValue: 1000000000 },
     industrycode: { /* ... */ optionValues: [1, 2, 3 /* … */] },
     createdon: { /* ... */ isValidForCreate: false, isValidForUpdate: false },
+    creditlimit: { /* ... */ precision: "currency" },
+    entityimage: { /* ... */ maxSizeInKB: 10240 },
+    statuscode: { /* ... */ optionValues: [1, 2], optionStates: {"1":0,"2":1} },
   },
   navigation: {
     primarycontactid: {
@@ -906,6 +909,14 @@ returns, for the runtime's opt-in `validateEntity()`:
 
 - `maxLength` (text), `minValue` / `maxValue` (numbers) and `optionValues` (choice and choices
   columns, global option sets included) when the column has them;
+- `precision` for decimal and currency columns: the column's `Precision`, or, for a currency
+  column whose `PrecisionSource` is the organization's pricing precision or the record currency's
+  precision, `"pricing"` or `"currency"` (`validateEntity()` takes those numbers as options);
+  floating point columns get none;
+- `maxSizeInKB` for file and image columns;
+- `optionStates` for the status reason column: the state each status reason belongs to;
+- nothing for dates: a date-only column is the one whose `odataType` is `Edm.Date`, and every
+  date column takes Dataverse's range, 1753-01-01 to 9999-12-31, so `validateEntity()` knows both;
 - `isValidForCreate: false` / `isValidForUpdate: false` only when false;
 - a lookup's `RequiredLevel` and valid-for flags on its navigation property, next to
   `lookupAttribute`.

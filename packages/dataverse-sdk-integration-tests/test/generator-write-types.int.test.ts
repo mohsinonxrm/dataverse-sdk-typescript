@@ -188,4 +188,20 @@ describe.skipIf(!live)("live: generated create and update types (#347)", () => {
       expect.objectContaining({ property: "lastname", code: "required" })
     );
   });
+
+  it("the metadata carries precision, sizes and status reasons' states (#433)", () => {
+    // RetrieveMetadataChanges accepted PrecisionSource and MaxSizeInKB in the attribute query.
+    const account = gen.AccountMetadata;
+    // A currency column: its own precision, or the pricing or the currency precision
+    expect(account.attributes?.creditlimit.precision).toBeDefined();
+    expect(typeof account.attributes?.entityimage.maxSizeInKB).toBe("number");
+    // Active (0) / Active (1), Inactive (1) / Inactive (2)
+    expect(account.attributes?.statuscode.optionStates).toMatchObject({ 1: 0, 2: 1 });
+    expect(
+      validateEntity({ statecode: 0, statuscode: 2 }, account, { mode: "update" }).map((i) => [
+        i.property,
+        i.code,
+      ])
+    ).toEqual([["statuscode", "invalidStatus"]]);
+  });
 });

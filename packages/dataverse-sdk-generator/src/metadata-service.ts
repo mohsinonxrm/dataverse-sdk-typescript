@@ -84,6 +84,8 @@ function metadataQuery(logicalNames: readonly string[] | undefined): unknown {
           "MinValue",
           "MaxValue",
           "Precision",
+          "PrecisionSource",
+          "MaxSizeInKB",
           "IsPrimaryId",
           "IsPrimaryName",
           "IsValidForRead",
@@ -443,6 +445,14 @@ export interface AttributeMetadataDetail {
   MaxValue?: number;
   // Decimal/Money-specific
   Precision?: number;
+  /**
+   * Where a currency column's precision comes from (`MoneyAttributeMetadata.PrecisionSource`):
+   * 0 = its `Precision`, 1 = the organization's `PricingDecimalPrecision`, 2 = the
+   * `CurrencyPrecision` of the record's transaction currency.
+   */
+  PrecisionSource?: 0 | 1 | 2 | (number & {});
+  /** File and image columns: the largest file or image, in KB. */
+  MaxSizeInKB?: number;
   // Additional type-specific metadata can be added as needed
 }
 
@@ -482,6 +492,8 @@ export interface OptionSetMetadata {
  */
 export interface OptionMetadata {
   Value?: number;
+  /** A status reason option (`StatusOptionMetadata`): the state (`statecode` value) it belongs to. */
+  State?: number;
   Label?: Label;
   Color?: string | null;
   IsManaged?: boolean;

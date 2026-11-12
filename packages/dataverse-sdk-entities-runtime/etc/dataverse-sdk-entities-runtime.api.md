@@ -34,11 +34,14 @@ export interface AttributeMetadata {
     isValidForUpdate?: boolean;
     logicalName: string;
     maxLength?: number;
+    maxSizeInKB?: number;
     maxValue?: number;
     minValue?: number;
     odataType?: ODataTypeName;
     optionSetType?: string;
+    optionStates?: Record<number, number>;
     optionValues?: number[];
+    precision?: number | "pricing" | "currency";
     requiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
     schemaName: string;
     sourceType?: "calculated" | "rollup";
@@ -208,7 +211,9 @@ export function validateEntity(entity: object, metadata: EntityMetadata, options
 
 // @public
 export interface ValidateEntityOptions {
+    currencyPrecision?: number;
     mode?: "create" | "update";
+    pricingPrecision?: number;
 }
 
 // @public
@@ -236,6 +241,19 @@ export type ValidationIssueCode =
 | "notAnInteger"
 /** A choice (or choices) column was given a value that isn't one of its options. */
 | "invalidOption"
+/** The number has more decimal places than the decimal or currency column keeps (`Precision`). */
+| "precision"
+/**
+* Not a date: a date-only column takes `yyyy-mm-dd` text, a date and time column an ISO 8601
+* date and time (or a `Date`).
+*/
+| "invalidDate"
+/** The date is outside the range Dataverse stores: 1753-01-01 to 9999-12-31. */
+| "dateOutOfRange"
+/** The file or image is larger than the column's `MaxSizeInKB`. */
+| "maxSize"
+/** The status reason (`statuscode`) doesn't belong to the state (`statecode`) the body sets. */
+| "invalidStatus"
 /** The value has the wrong type for the column: text for a number, an id for a lookup, … */
 | "invalidType";
 
