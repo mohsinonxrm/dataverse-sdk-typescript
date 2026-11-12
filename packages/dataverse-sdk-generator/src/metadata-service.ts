@@ -96,6 +96,16 @@ function metadataQuery(logicalNames: readonly string[] | undefined): unknown {
   };
 }
 
+/** The numeric values of a choice's options, sorted. */
+export function optionValues(
+  options: ReadonlyArray<{ Value?: number | null }> | null | undefined
+): number[] {
+  return (options ?? [])
+    .map((o) => o.Value)
+    .filter((v): v is number => typeof v === "number")
+    .sort((a, b) => a - b);
+}
+
 /** Seconds or an HTTP date in a Retry-After header, as ms; undefined when absent or unreadable. */
 function retryAfterMs(header: string | null): number | undefined {
   if (!header) return undefined;
@@ -236,6 +246,38 @@ ${await response.text()}`
     }
 
     return (await response.json()) as RetrieveMetadataChangesResponse;
+  }
+
+  /**
+   * Incremental generation (#429): the option values of every global choice (picklist option
+   * set), by name, sorted. One request for the whole org: `GlobalOptionSetDefinitions` can't be
+   * filtered, only read whole or one at a time.
+   *
+   * RetrieveMetadataChanges lists a table whose column's own options changed, but the docs don't
+   * say it lists the tables using a global choice that changed, so the kept tables' global
+   * choices are compared with these values.
+   */
+  async getGlobalOptionSetValues(): Promise<Map<string, number[]>> {
+    const url = `${this.baseUrl}/GlobalOptionSetDefinitions/Microsoft.Dynamics.CRM.OptionSetMetadata?$select=Name,Options`;
+    const response = await this.fetchWithRetry(
+      url,
+      { method: "GET", headers: this.jsonHeaders() },
+      () => false
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Failed to retrieve the global choices: ${String(response.status)} ${response.statusText}\n${await response.text()}`
+      );
+    }
+    const body = (await response.json()) as {
+      value?: Array<{ Name?: string; Options?: Array<{ Value?: number | null }> | null }>;
+    };
+    const values = new Map<string, number[]>();
+    for (const optionSet of body.value ?? []) {
+      if (!optionSet.Name) continue;
+      values.set(optionSet.Name, optionValues(optionSet.Options));
+    }
+    return values;
   }
 
   /** The headers of a JSON request, with the access token. */

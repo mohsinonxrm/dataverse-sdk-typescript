@@ -279,6 +279,7 @@ export class MetadataService {
     constructor(config: DataverseGenConfig, accessToken?: string);
     getEdmxMetadata(): Promise<string>;
     getEntityMetadata(logicalName: string): Promise<RetrieveMetadataChangesResponse>;
+    getGlobalOptionSetValues(): Promise<Map<string, number[]>>;
     getMetadataChanges(clientVersionStamp: string, logicalNames?: readonly string[]): Promise<RetrieveMetadataChangesResponse | undefined>;
     setAccessToken(token: string): void;
     sleep: MetadataServiceSleep;

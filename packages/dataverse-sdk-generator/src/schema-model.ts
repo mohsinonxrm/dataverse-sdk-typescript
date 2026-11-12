@@ -23,6 +23,7 @@ import type {
   MetadataService,
   RetrieveMetadataChangesResponse,
 } from "./metadata-service.js";
+import { optionValues } from "./metadata-service.js";
 import {
   deletedIds,
   GENERATOR_VERSION,
@@ -313,8 +314,9 @@ export class SchemaModel {
   /**
    * Incremental generation (#429): the tables' metadata the previous run kept in the stamp file
    * that is still current, after asking Dataverse what changed since that run's version stamp. A
-   * table that changed or was added, or whose table or column was deleted, isn't in it, so it's
-   * read again; a deleted table isn't in `$metadata` either, so it isn't generated.
+   * table that changed or was added, whose table or column was deleted, or one of whose global
+   * choices has other option values now, isn't in it, so it's read again; a deleted table isn't
+   * in `$metadata` either, so it isn't generated.
    *
    * `undefined` (read every table) when there is nothing to reuse: not incremental, no stamp, a
    * stamp of another generator version or org, or a version stamp Dataverse no longer has
@@ -383,6 +385,35 @@ export class SchemaModel {
         ) {
           tables.delete(name);
         }
+      }
+    }
+
+    // A global choice used by a kept table: compare its option values with the kept ones, since
+    // the docs don't say RetrieveMetadataChanges lists the tables using a global choice that
+    // changed. One request, made only when a kept table uses a global choice.
+    const globalChoices = (detail: EntityMetadataDetail) =>
+      (detail.Attributes ?? []).flatMap((a) =>
+        a.OptionSet?.IsGlobal === true && a.OptionSet.Name && Array.isArray(a.OptionSet.Options)
+          ? [{ name: a.OptionSet.Name, values: optionValues(a.OptionSet.Options) }]
+          : []
+      );
+    if ([...tables.values()].some((detail) => globalChoices(detail).length > 0)) {
+      let current: Map<string, number[]>;
+      try {
+        current = await this.metadataService.getGlobalOptionSetValues();
+      } catch (error: unknown) {
+        this.Warnings.push(
+          `Incremental: couldn't read the global choices to compare them, so every table's ` +
+            `metadata was read again: ${error instanceof Error ? error.message : String(error)}`
+        );
+        this.MetadataVersionStamp = undefined;
+        return undefined;
+      }
+      for (const [name, detail] of tables) {
+        const changed = globalChoices(detail).some(
+          (choice) => current.get(choice.name)?.join(",") !== choice.values.join(",")
+        );
+        if (changed) tables.delete(name);
       }
     }
     return { tables, skipped };

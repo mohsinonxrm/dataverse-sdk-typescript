@@ -420,7 +420,11 @@ keeps watchers, incremental builds and diffs quiet. The CLI prints the tables it
   of the run. The next run reads `$metadata`, then sends one RetrieveMetadataChanges request with
   that version stamp (`ClientVersionStamp`, and `DeletedMetadataFilters` for deleted tables and
   columns) and reads again only the tables it says changed, or whose table or column was deleted.
-  A run over unchanged metadata makes no per-table request. A deleted table is gone from
+  A run over unchanged metadata makes no per-table request. The docs don't say that
+  RetrieveMetadataChanges lists the tables that use a global choice whose options changed, so when
+  a kept table uses a global choice, the run also reads the option values of the org's global
+  choices (one `GlobalOptionSetDefinitions` request) and reads again the tables whose global
+  choices have other values now. A deleted table is gone from
   `$metadata` too, so it isn't generated and its files are deleted. The CLI prints the tables it
   read; `generateCode()` returns them as `fetchedTables`.
 - Every table is read again when there is nothing to reuse: no stamp (or one from before this

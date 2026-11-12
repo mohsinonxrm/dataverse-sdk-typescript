@@ -6,19 +6,22 @@
  *
  * A temporary table (`new_sdkitmc<run>`, which the sweeper lists) is generated with task, which no
  * other live test changes. Then: a run over unchanged metadata makes no per-table request; a new
- * column on the table reads that table again, never task; a deleted column and then the deleted
- * table are handled. Every request is counted by wrapping `fetch` while the generator runs.
+ * column on the table reads that table again, never task; a column bound to a temporary global
+ * choice (`new_sdkitmcgc<run>`, also listed by the sweeper) gets the option added to that choice;
+ * a deleted column and then the deleted table are handled. Every request is counted by wrapping
+ * `fetch` while the generator runs.
  *
  * New metadata reaches `$metadata` and the org's servers' metadata caches over several seconds to
- * minutes, so each step retries its run until the change shows (`eventually()`). The table is
- * deleted in `afterAll` if the last test didn't delete it.
+ * minutes, so each step retries its run until the change shows (`eventually()`). The table and
+ * the global choice are deleted in `afterAll` if the tests didn't delete them.
  */
 import { readFile } from "node:fs/promises";
 import * as path from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import { DataverseODataError } from "@mohsinonxrm/dataverse-sdk-core";
+import { MetadataService } from "@mohsinonxrm/dataverse-sdk-generator";
 import { Metadata, MetadataClient } from "@mohsinonxrm/dataverse-sdk-metadata";
-import { live, liveClient, runId } from "./env.js";
+import { live, liveClient, orgUrl, runId } from "./env.js";
 import { generateLive, generateLiveInto, removeGenerated, typecheck } from "./generated.js";
 
 // A table create takes 30 to 70 seconds, a delete up to two minutes; $metadata catches up later.
@@ -27,6 +30,7 @@ const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const tag = (runId.split("-").at(-1) ?? "x").toLowerCase();
 const table = `new_sdkitmc${tag}`;
+const globalChoice = `new_sdkitmcgc${tag}`;
 const description = `Created by SDK integration run ${runId}; safe to delete.`;
 const selection = { entities: [table, "task"] };
 const STAMP = ".dataverse-gen-stamp.json";
@@ -122,6 +126,7 @@ async function tableFile(dir: string): Promise<string> {
 }
 
 let tableId: string | undefined;
+let globalChoiceId: string | undefined;
 let dir = "";
 /** Every table any run read with a per-table request after the first full read. */
 const readAgain = new Set<string>();
@@ -149,8 +154,22 @@ async function deleteTable(): Promise<boolean> {
 afterAll(async () => {
   if (!live) return;
   await removeGenerated();
-  if (tableId && !(await deleteTable())) {
-    throw new Error(`Could not delete the temporary table ${table}; delete it by hand.`);
+  const failures: string[] = [];
+  if (tableId && !(await deleteTable())) failures.push(`the table ${table}`);
+  // The global choice last: Dataverse refuses to delete it while a column uses it
+  if (globalChoiceId) {
+    const id = globalChoiceId;
+    try {
+      await eventually(
+        () => liveClient().client.api(`/GlobalOptionSetDefinitions(${id})`).delete<undefined>(),
+        180_000
+      );
+    } catch {
+      failures.push(`the global choice ${globalChoice}`);
+    }
+  }
+  if (failures.length > 0) {
+    throw new Error(`Could not delete ${failures.join(", ")}; delete them by hand.`);
   }
 }, SLOW);
 
@@ -219,6 +238,83 @@ describe.skipIf(!live)("live: incremental generation reads only changed tables (
         expect(await tableFile(dir)).toContain("new_added");
       });
       expect([...readAgain]).toEqual([table]);
+    },
+    SLOW
+  );
+
+  it(
+    "an option added to a global choice reads the table using it again",
+    async () => {
+      if (!tableId || !dir) throw new Error("The table wasn't created.");
+      const md = metadata();
+      globalChoiceId = await md.createGlobalOptionSet(
+        Metadata.globalOptionSet(globalChoice, {
+          displayName: `SDK metadata changes ${tag}`,
+          description,
+          options: [
+            { value: 100000, label: "Red" },
+            { value: 100001, label: "Blue" },
+          ],
+        })
+      );
+      expect(globalChoiceId).toMatch(GUID);
+      const choiceId = globalChoiceId;
+      await eventually(
+        () =>
+          md.createAttributeDefinition(
+            table,
+            Metadata.picklist("new_Color", { displayName: "Color", globalOptionSetId: choiceId })
+          ),
+        180_000,
+        refused
+      );
+
+      // Until the column is generated, then until a run reads nothing again
+      await eventually(async () => {
+        const run = await generate(dir);
+        for (const name of run.perTable) readAgain.add(name);
+        expect(await tableFile(dir)).toMatch(/new_color[\s\S]*optionValues: \[100000, ?100001\]/);
+      });
+      await eventually(async () => {
+        expect((await generate(dir)).perTable).toEqual([]);
+      }, 180_000);
+
+      // What RetrieveMetadataChanges itself reports for a global choice change (logged: the docs
+      // don't say, and the generator compares the global choices' options either way)
+      const { tokenProvider } = liveClient();
+      const service = new MetadataService(
+        { environmentUrl: orgUrl },
+        await tokenProvider.getToken()
+      );
+      const before = (await stampOf(dir)).metadata?.versionStamp ?? "";
+
+      await eventually(
+        () =>
+          md.insertOptionValue({
+            OptionSetName: globalChoice,
+            Value: 100002,
+            Label: { LocalizedLabels: [{ Label: "Green", LanguageCode: 1033 }] },
+          }),
+        120_000,
+        refused
+      );
+
+      await eventually(async () => {
+        const run = await generate(dir);
+        for (const name of run.perTable) readAgain.add(name);
+        expect(run.warnings).toEqual([]);
+        expect(await tableFile(dir)).toMatch(/optionValues: \[100000, ?100001, ?100002\]/);
+      });
+      expect(readAgain.has("task")).toBe(false);
+
+      const changes = await service.getMetadataChanges(before, [table]);
+      console.info(
+        `RetrieveMetadataChanges after an option was added to a global choice: ${
+          changes?.EntityMetadata?.some((e) => e.LogicalName === table)
+            ? "lists the table that uses it"
+            : "doesn't list the table that uses it"
+        }`
+      );
     },
     SLOW
   );

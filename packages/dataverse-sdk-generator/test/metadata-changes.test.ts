@@ -48,7 +48,34 @@ function orgTables(): Record<string, EntityMetadataDetail> {
     Object.assign(table, { HasChanged: null, IconVectorName: null });
     tables[name] = table;
   }
+  // A contact column whose option set is a global choice
+  tables.contact.Attributes?.push({
+    MetadataId: idOf("c", "contact.contoso_method"),
+    LogicalName: "contoso_method",
+    SchemaName: "contoso_Method",
+    AttributeType: "Picklist",
+    IsValidForCreate: true,
+    IsValidForUpdate: true,
+    OptionSet: {
+      Name: "contoso_method",
+      IsGlobal: true,
+      Options: [{ Value: 2 }, { Value: 1 }],
+    },
+  });
   return tables;
+}
+
+/** The fixture's `$metadata`, with the contact column that uses the global choice. */
+const EDMX = WRITE_EDMX.replace(
+  '<Property Name="fullname" Type="Edm.String" Unicode="false" />',
+  '<Property Name="fullname" Type="Edm.String" Unicode="false" />\n        <Property Name="contoso_method" Type="Edm.Int32" />'
+);
+
+/** Set the option values of the global choice, in the org and in the column that uses it. */
+function setGlobalChoice(org: Org, values: number[]): void {
+  org.globalChoices.contoso_method = values;
+  const column = org.tables.contact.Attributes?.find((a) => a.LogicalName === "contoso_method");
+  if (column?.OptionSet) column.OptionSet.Options = values.map((Value) => ({ Value }));
 }
 
 /** A fake org: its `$metadata`, its tables, and what changed since the last version stamp. */
@@ -67,24 +94,46 @@ interface Org {
   fail?: boolean;
   /** Return no version stamps. */
   noStamps?: boolean;
+  /** The global choices' option values, by name. */
+  globalChoices: Record<string, number[]>;
+  /** Fail the global choices request. */
+  failGlobalChoices?: boolean;
 }
 
 function newOrg(): Org {
-  return { edmx: WRITE_EDMX, tables: orgTables(), version: 1, changed: [], deleted: [] };
+  return {
+    edmx: EDMX,
+    tables: orgTables(),
+    version: 1,
+    changed: [],
+    deleted: [],
+    globalChoices: { contoso_method: [1, 2], contoso_unrelated: [7] },
+  };
 }
 
 /** What a run asked the fake org. */
 interface Calls {
   tables: string[];
   changes: Array<{ stamp: string; names: readonly string[] | undefined }>;
+  /** Global choices requests. */
+  globalChoices: number;
 }
 
 function fakeService(org: Org, calls: Calls): MetadataService {
   const stamp = () => (org.noStamps ? undefined : `${String(org.version)}!stamp`);
   const service: Pick<
     MetadataService,
-    "getEdmxMetadata" | "getEntityMetadata" | "getMetadataChanges"
+    "getEdmxMetadata" | "getEntityMetadata" | "getMetadataChanges" | "getGlobalOptionSetValues"
   > = {
+    getGlobalOptionSetValues: () => {
+      calls.globalChoices++;
+      if (org.failGlobalChoices) return Promise.reject(new Error("Failed: 400"));
+      return Promise.resolve(
+        new Map(
+          Object.entries(org.globalChoices).map(([name, v]) => [name, [...v].sort((a, b) => a - b)])
+        )
+      );
+    },
     getEdmxMetadata: () => Promise.resolve(org.edmx),
     getEntityMetadata: (logicalName) => {
       calls.tables.push(logicalName);
@@ -131,7 +180,7 @@ async function run(
     ...config,
     output: { outputRoot, incremental: true, ...config.output },
   };
-  const calls: Calls = { tables: [], changes: [] };
+  const calls: Calls = { tables: [], changes: [], globalChoices: 0 };
   const model = new SchemaModel(fakeService(org, calls), full);
   await model.generate();
   const generator = new TypescriptGenerator(model, full);
@@ -199,6 +248,9 @@ describe("incremental generation: only changed tables are read (#429)", () => {
     expect(second.generator.unchangedTables).toEqual(["account", "contact", "systemuser"]);
     for (const file of TABLE_FILES) expect(await isKept(dir, file)).toBe(true);
     expect(second.model.Warnings).toEqual([]);
+    // contact uses a global choice: its option values were compared, in one request
+    expect(first.calls.globalChoices).toBe(0);
+    expect(second.calls.globalChoices).toBe(1);
     // The next run asks for the changes since this one
     expect((await stampOf(dir)).metadata?.versionStamp).toBe("2!stamp");
     expect(await typecheck(dir)).toEqual([]);
@@ -252,6 +304,55 @@ describe("incremental generation: only changed tables are read (#429)", () => {
     expect(third.calls.tables).toEqual([]);
     expect(third.generator.unchangedTables).toEqual(["account", "contact", "systemuser"]);
     expect(await isKept(dir, "entities/Contact.ts")).toBe(true);
+  });
+
+  it("reads again a table whose global choice has other options, even when no change lists it", async () => {
+    const dir = await scratch.create();
+    const org = newOrg();
+    await run(dir, org);
+    expect(await fs.readFile(path.join(dir, "entities/Contact.ts"), "utf-8")).toMatch(
+      /optionValues: \[1, ?2\]/
+    );
+    await mark(dir, ...TABLE_FILES);
+
+    // An option added to the global choice; RetrieveMetadataChanges lists nothing
+    setGlobalChoice(org, [1, 2, 3]);
+    const second = await run(dir, org);
+    expect(second.calls.tables).toEqual(["contact"]);
+    expect(second.generator.unchangedTables).toEqual(["account", "systemuser"]);
+    expect(await fs.readFile(path.join(dir, "entities/Contact.ts"), "utf-8")).toMatch(
+      /optionValues: \[1, ?2, ?3\]/
+    );
+
+    // A global choice no kept table uses changes: nothing is read
+    org.globalChoices.contoso_unrelated = [7, 8];
+    const third = await run(dir, org);
+    expect(third.calls.tables).toEqual([]);
+  });
+
+  it("asks about global choices only when a kept table uses one", async () => {
+    const dir = await scratch.create();
+    const org = newOrg();
+    const config = { entities: ["account", "systemuser"] };
+    await run(dir, org, config);
+    const second = await run(dir, org, config);
+    expect(second.calls.changes).toHaveLength(1);
+    expect(second.calls.globalChoices).toBe(0);
+    expect(second.calls.tables).toEqual([]);
+  });
+
+  it("reads every table again, with a warning, when reading the global choices fails", async () => {
+    const dir = await scratch.create();
+    const org = newOrg();
+    await run(dir, org);
+    org.failGlobalChoices = true;
+    const second = await run(dir, org);
+    expect(second.calls.tables).toEqual(["account", "contact", "systemuser"]);
+    expect(second.model.Warnings).toEqual([
+      expect.stringMatching(/^Incremental: couldn't read the global choices/),
+    ]);
+    // The version stamp is that of the full read
+    expect((await stampOf(dir)).metadata?.versionStamp).toBe("2!stamp");
   });
 
   it("reads again a table whose column was deleted", async () => {
@@ -460,6 +561,31 @@ describe("MetadataService.getMetadataChanges (#429)", () => {
     const url = new URL(urls[0] ?? "");
     expect(url.searchParams.get("@s")).toBe("'1!it''s'");
     expect(JSON.parse(url.searchParams.get("@q") ?? "")).not.toHaveProperty("Criteria");
+  });
+
+  it("reads the option values of every global choice in one request", async () => {
+    const { svc, urls } = service(
+      () =>
+        new Response(
+          JSON.stringify({
+            value: [
+              { Name: "contoso_method", Options: [{ Value: 10 }, { Value: 2 }, { Value: null }] },
+              { Name: "contoso_empty", Options: null },
+            ],
+          }),
+          { status: 200 }
+        )
+    );
+    const values = await svc.getGlobalOptionSetValues();
+    expect([...values]).toEqual([
+      ["contoso_method", [2, 10]],
+      ["contoso_empty", []],
+    ]);
+    const url = new URL(urls[0] ?? "");
+    expect(url.pathname).toBe(
+      "/api/data/v9.2/GlobalOptionSetDefinitions/Microsoft.Dynamics.CRM.OptionSetMetadata"
+    );
+    expect(url.searchParams.get("$select")).toBe("Name,Options");
   });
 
   it("returns undefined for an expired version stamp, and throws other errors", async () => {
