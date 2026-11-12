@@ -32,6 +32,16 @@ export async function run(client: DataverseClient, id: string): Promise<void> {
   await typed.accounts.create({ name: "Contoso", primarycontactid: createEntityReference("contact", contactId) });
   const account = await typed.accounts.byId(id).get({ select: ["name", "_primarycontactid_value"] });
   console.log(account.name, await typed.contacts.list({ select: ["fullname"], top: 5 }));
+  // #431: expand by the org's navigation properties; select narrows
+  const expanded = await typed.accounts.byId(id).get({
+    select: ["name"],
+    expand: { primarycontactid: { select: ["fullname"] }, contact_customer_accounts: { select: ["fullname"], top: 5 } },
+  });
+  console.log(expanded.primarycontactid?.fullname, expanded.contact_customer_accounts.length);
+  // @ts-expect-error not selected
+  console.log(expanded.accountnumber);
+  // @ts-expect-error not a navigation property of account
+  await typed.accounts.byId(id).get({ expand: { primarycontact: true } });
   await typed.accounts.byId(id).update({ name: "Contoso Ltd", primarycontactid: null });
   await typed.accounts.byId(id).delete();
   // @ts-expect-error not a column of account
@@ -117,6 +127,21 @@ describe.skipIf(!live)("live: generated typed client (#312)", () => {
         filter: `name eq '${name}'`,
       });
       expect(listed.map((a) => a.name)).toEqual([name]);
+
+      // #431: a typed expand of the lookup and of the contact's side of a collection
+      const expanded = await typed.accounts.byId(accountId).get({
+        select: ["name"],
+        expand: { primarycontactid: { select: ["lastname"] } },
+      });
+      expect(expanded.primarycontactid).toMatchObject({ contactid: contactId, lastname: name });
+      const [contact] = await typed.contacts.list({
+        select: ["lastname"],
+        filter: `contactid eq ${contactId}`,
+        expand: { account_primary_contact: { select: ["name"] } },
+      });
+      expect(contact?.account_primary_contact).toEqual([
+        expect.objectContaining({ accountid: accountId, name }),
+      ]);
 
       await typed.accounts.byId(accountId).update({ primarycontactid: null });
       const updated = await typed.accounts

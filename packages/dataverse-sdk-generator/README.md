@@ -446,8 +446,8 @@ template change regenerates every table.
 `"typedClient": true` generates `client.ts` with `createTypedClient(client)`: one typed request
 builder per generated table, keyed by entity set name, in the style of the Graph (Kiota) SDKs. The
 builders are entities-runtime's `EntitySetClient`, a thin layer over core's request builder, typed
-by the table's interface, its create and update types, and a union of its columns
-(`AccountColumn`) for `select`. See
+by the table's interface, its create and update types, a union of its columns (`AccountColumn`)
+for `select`, and its navigation properties (`AccountNavigation`) for `expand`. See
 [ADR 0009](../../docs/adr/0009-typed-request-builders.md) for the design.
 
 <!-- no-check -->
@@ -463,7 +463,27 @@ const id = await typed.accounts.create({
   name: "Contoso",
   primarycontactid: createEntityReference("contact", contactId), // sent as @odata.bind
 });
-const account = await typed.accounts.byId(id).get({ select: ["name", "creditlimit"] }); // Account
+const account = await typed.accounts.byId(id).get({ select: ["name", "creditlimit"] });
+account.creditlimit; // number | null | undefined
+account.description; // error: not selected
+
+// expand: the related record (or null), or an array of them, typed by the related table
+const withContacts = await typed.accounts.byId(id).get({
+  select: ["name"],
+  expand: {
+    primarycontactid: { select: ["fullname"] },
+    contact_customer_accounts: {
+      select: ["fullname", "emailaddress1"],
+      filter: "statecode eq 0",
+      orderBy: ["fullname asc"],
+      top: 10,
+      expand: { owninguser: { select: ["fullname"] } },
+    },
+  },
+});
+withContacts.primarycontactid?.fullname; // string | null | undefined
+withContacts.contact_customer_accounts[0].owninguser?.fullname;
+
 const active = await typed.accounts.list({
   select: ["name"],
   filter: "statecode eq 0",
@@ -486,6 +506,17 @@ const count = await typed.accounts.query().count().top(0).get(); // core's build
 | `typed.<set>.byId(key).update(entity, { etag })`                       | `PATCH` with `If-Match: *` (or the etag): never creates a record |
 | `typed.<set>.byId(key).delete({ etag })`                               | `DELETE`, with `If-Match` for an etag                            |
 | `typed.<set>.query()` / `.byId(key).request()`                         | core's `DataverseRequestBuilder` for the set or the record       |
+
+A literal `select` narrows the record to the selected columns (and its annotations, such as
+`@odata.etag` and formatted values); without `select`, the record is the table's interface.
+`expand` takes an object, one key per navigation property with `true` or its options (`select`,
+`expand`, and on a collection `filter`, `orderBy` and `top`), checked against the related table;
+or, as before, an array of names, with inline options written in OData syntax
+(`["primarycontactid($select=fullname)"]`, not checked inside the parentheses). Each expanded
+property is added to the record: a lookup as the related record or `null`, a collection as an
+array. A polymorphic lookup that the table's interface shows as one property (`parentcustomerid`)
+is expanded by the Web API's property for each target (`parentcustomerid_account`,
+`parentcustomerid_contact`). The requests are what core's `expand(name, options)` sends.
 
 `key` is a GUID or an alternate key object. Every method takes core's request options
 (`signal`, `headers`, `prefer`, `timeoutMs`, …) last. `client.ts` imports every generated table's

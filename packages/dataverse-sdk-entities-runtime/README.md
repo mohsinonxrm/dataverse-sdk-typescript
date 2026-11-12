@@ -307,6 +307,12 @@ const all = await accounts.list({ filter: "statecode eq 0", maxItems: 100 });
 - Writes go through `formatEntityForWrite()` with the options given to the constructor. `update()`
   sends `If-Match: *` (or the `etag`), so it never creates a record.
 - Every method takes core's `RequestOptions` last.
+- A fifth type argument, the table's navigation properties (the generated `AccountNavigation`, an
+  interface of `SingleNavigation<Contact, ContactColumn, ContactNavigation>` /
+  `CollectionNavigation<…>` members), types `expand`:
+  `get({ select: ["name"], expand: { primarycontactid: { select: ["fullname"] } } })`. A literal
+  `select` narrows the result to those columns and each expanded property is added, typed by its
+  own options (`ReadResult`). Without the navigation type, `expand` takes any name, as before.
 
 ---
 
