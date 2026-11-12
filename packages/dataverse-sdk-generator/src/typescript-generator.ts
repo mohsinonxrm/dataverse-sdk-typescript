@@ -69,6 +69,8 @@ interface ClientTypeNames {
   column: string;
   /** Its navigation properties, for `expand`: `AccountNavigation`. */
   navigation: string;
+  /** Its bound actions and functions (#432): `AccountOperations`. */
+  operations: string;
 }
 
 /** The names of an entity's form types (`formContext`, #347). */
@@ -529,9 +531,55 @@ export class TypescriptGenerator {
       names.set(entity, {
         column: unique(`${typeName}Column`),
         navigation: unique(`${typeName}Navigation`),
+        operations: unique(`${typeName}Operations`),
       });
     }
     return names;
+  }
+
+  /**
+   * With `typedClient` (#432): the generated actions and functions bound to one record of
+   * `entity` or to its entity set, as the class names `<Entity>Operations` lists by operation
+   * name, importing each class. Only operations bound to the table itself whose entity set is
+   * known: their classes take the record id (or nothing) before the parameters. Undefined when
+   * there are none.
+   */
+  private clientOperations(
+    entity: EntityType,
+    imports: ImportCollector
+  ):
+    | Record<"record" | "collection", Record<"actions" | "functions", Array<[string, string]>>>
+    | undefined {
+    const groups = {
+      record: { actions: [] as Array<[string, string]>, functions: [] as Array<[string, string]> },
+      collection: {
+        actions: [] as Array<[string, string]>,
+        functions: [] as Array<[string, string]>,
+      },
+    };
+    const add = (
+      ops: Array<ActionType | FunctionType>,
+      kind: "actions" | "functions",
+      suffix: "Action" | "Function"
+    ): void => {
+      const names = this.operationNames(ops);
+      for (const op of ops) {
+        if (!op.IsBound || op.BindingEntity !== entity.Name || !op.BindingEntitySetName) continue;
+        const className = `${names.get(op) ?? toSafeIdentifier(op.Name)}${suffix}`;
+        const group = groups[op.IsCollectionBound ? "collection" : "record"][kind];
+        const key = group.some(([k]) => k === op.Name) ? className : op.Name;
+        imports.value(className, `./${kind}/${className}${this.fileSuffix}.js`);
+        group.push([key, className]);
+      }
+    };
+    add(this.model.Actions, "actions", "Action");
+    add(this.model.Functions, "functions", "Function");
+    const lists = Object.values(groups).flatMap((binding) => Object.values(binding));
+    if (lists.every((list) => list.length === 0)) return undefined;
+    for (const binding of Object.values(groups)) {
+      for (const group of Object.values(binding)) group.sort(([a], [b]) => compareCodeUnits(a, b));
+    }
+    return groups;
   }
 
   /**
@@ -606,6 +654,8 @@ export class TypescriptGenerator {
         columns: [...new Set(entity.Properties.map((p) => p.Name))],
         navigationName: names?.navigation ?? `${typeName}Navigation`,
         navigation: this.clientNavigation(entity, imports),
+        operationsName: names?.operations ?? `${typeName}Operations`,
+        operations: this.clientOperations(entity, imports),
       };
     });
     const first = tables.at(0);
@@ -1422,7 +1472,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
       ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
       ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
       ...[...this.formNames.values()].flatMap((n) => [n.attributes, n.controls, n.context]),
-      ...[...this.clientTypeNames.values()].flatMap((n) => [n.column, n.navigation]),
+      ...[...this.clientTypeNames.values()].flatMap((n) => [n.column, n.navigation, n.operations]),
       ...(this.config.typedClient === true ? [TYPED_CLIENT, TYPED_CLIENT_FACTORY] : []),
     ]);
     for (const type of this.model.ComplexTypes) {

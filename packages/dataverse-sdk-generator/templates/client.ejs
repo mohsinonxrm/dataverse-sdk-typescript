@@ -16,18 +16,45 @@ export interface <%- t.navigationName %> {
 <%_ }) _%>
 }
 <%_ } _%>
+<%_ if (t.operations) { _%>
+
+/**
+ * The actions and functions bound to <%- doc(t.entity.LogicalName) %>, for `typed.<%- doc(t.entity.EntitySetName) %>.byId(id).actions` / `.functions`
+ * (bound to a record) and `typed.<%- doc(t.entity.EntitySetName) %>.actions` / `.functions` (bound to the entity set).
+ */
+export const <%- t.operationsName %> = {
+<%_ ['record', 'collection'].forEach(function(binding){ _%>
+  <%- binding %>: {
+<%_ ['actions', 'functions'].forEach(function(kind){ _%>
+<%_ const group = t.operations[binding][kind]; _%>
+<%_ if (group.length === 0) { _%>
+    <%- kind %>: {},
+<%_ } else { _%>
+    <%- kind %>: {
+<%_ group.forEach(function(entry){ _%>
+      <%- propertyKey(entry[0]) %>: <%- entry[1] %>,
+<%_ }) _%>
+    },
+<%_ } _%>
+<%_ }) _%>
+  },
+<%_ }) _%>
+};
+<%_ } _%>
 
 <%_ }) _%>
 /**
  * One typed request builder per generated table, by entity set name:
- * `client.<%- doc(sample) %>.byId(id).get({ select, expand })`, `.list()`, `.create()`, `.byId(id).update()`,
- * `.byId(id).delete()`.
+ * `client.<%- doc(sample) %>.byId(id).get({ select, expand })`, `.list()`, `.iterate()`, `.listPage()`,
+ * `.create()`, `.upsert(key, entity)`, `.byId(id).update()`, `.byId(id).delete()`,
+ * `.byId(id).nav(name)`, `.byId(id).associate(name, target)` / `.disassociate()`, and the bound
+ * operations as `.actions` / `.functions`.
  */
 export interface <%- clientName %> {
 <%_ tables.forEach(function(t){ _%>
 
   /** The <%- doc(t.entity.LogicalName) %> table (<%- doc(t.entity.EntitySetName) %>) */
-  readonly <%- propertyKey(t.entity.EntitySetName) %>: EntitySetClient<<%- t.typeName %>, <%- t.createName %>, <%- t.updateName %>, <%- t.columnName %>, <%- t.navigationName %>>;
+  readonly <%- propertyKey(t.entity.EntitySetName) %>: EntitySetClient<<%- t.typeName %>, <%- t.createName %>, <%- t.updateName %>, <%- t.columnName %>, <%- t.navigationName %><%- t.operations ? ', typeof ' + t.operationsName : '' %>>;
 <%_ }) _%>
 }
 
@@ -55,10 +82,10 @@ export function <%- factoryName %>(client: DataverseClient): <%- clientName %> {
   const options = { metadataCache: EntityMetadataCache };
   return {
 <%_ tables.forEach(function(t){ _%>
-    <%- propertyKey(t.entity.EntitySetName) %>: new EntitySetClient<<%- t.typeName %>, <%- t.createName %>, <%- t.updateName %>, <%- t.columnName %>, <%- t.navigationName %>>(
+    <%- propertyKey(t.entity.EntitySetName) %>: new EntitySetClient<<%- t.typeName %>, <%- t.createName %>, <%- t.updateName %>, <%- t.columnName %>, <%- t.navigationName %><%- t.operations ? ', typeof ' + t.operationsName : '' %>>(
       client,
       <%- t.metadataName %>,
-      options
+      <%- t.operations ? '{ ...options, operations: ' + t.operationsName + ' }' : 'options' %>
     ),
 <%_ }) _%>
   };

@@ -8,13 +8,19 @@
  * anything they don't cover.
  */
 import {
+  type BindManyExecutor,
   type DataverseClient,
+  DataverseInvalidRequestError,
   type DataverseRequestBuilder,
+  entityIdFromResponse,
+  type Executable,
   type ExpandOptions,
   odataKey,
   type ODataKey,
+  parseODataError,
   type RequestOptions,
 } from "@mohsinonxrm/dataverse-sdk-core";
+import { type EntityReference, entitySetNameOf, isEntityReference } from "./entity-reference.js";
 import {
   type EntityMetadata,
   type FormatEntityForWriteOptions,
@@ -265,14 +271,221 @@ export interface WriteRecordOptions extends RequestOptions {
   etag?: string;
 }
 
+/** Options for {@link EntitySetClient.iterate} (#432). */
+export interface IterateRecordsOptions<
+  TColumn extends string = string,
+  TNavigation extends object = UntypedNavigation,
+> extends ListRecordsOptions<TColumn, TNavigation> {
+  /** Records per page (`Prefer: odata.maxpagesize`); Dataverse's default is 5,000. */
+  readonly pageSize?: number;
+}
+
+/** Options for {@link EntitySetClient.listPage} (#432). */
+export interface ListPageOptions<
+  TColumn extends string = string,
+  TNavigation extends object = UntypedNavigation,
+> extends GetRecordOptions<TColumn, TNavigation> {
+  /** `$filter`, e.g. `"statecode eq 0"`. */
+  readonly filter?: string;
+  /** `$orderby` clauses, e.g. `["name asc"]`. */
+  readonly orderBy?: readonly string[];
+  /** `$top`: at most this many records, with no next page. */
+  readonly top?: number;
+  /** Records per page (`Prefer: odata.maxpagesize`); Dataverse's default is 5,000. */
+  readonly pageSize?: number;
+  /** `$count=true`: the page carries the number of matching records (up to 5,000). */
+  readonly count?: boolean;
+  /**
+   * The {@link RecordPage.nextLink} of the page before: request the page after it. The query is
+   * in the link, so the other options only type the result (and `pageSize` is sent again).
+   */
+  readonly nextLink?: string;
+}
+
+/** One page of records, from {@link EntitySetClient.listPage} (#432). */
+export interface RecordPage<T> {
+  /** The page's records. */
+  readonly records: T[];
+  /** `@odata.nextLink`: pass it as `nextLink` for the next page. Absent on the last page. */
+  readonly nextLink?: string;
+  /** `@odata.count`, with `count: true`. */
+  readonly count?: number;
+}
+
+/** How {@link EntitySetClient.upsert} writes (#432). */
+export type UpsertMode =
+  /** Update the record if it exists, else create it (no `If-Match`). */
+  | "upsert"
+  /** Create the record; fail with 412 if it exists (`If-None-Match: *`). */
+  | "createOnly"
+  /** Update the record; fail with 404 if it doesn't exist (`If-Match: *`). */
+  | "updateOnly";
+
+/** Options for {@link EntitySetClient.upsert} (#432). */
+export interface UpsertRecordOptions extends RequestOptions {
+  /** Default `"upsert"`. */
+  readonly mode?: UpsertMode;
+}
+
+/**
+ * What an upsert sets: the columns valid both in a create and in an update, since Dataverse
+ * decides which it is. (The key is in the URL.)
+ */
+export type UpsertEntity<TCreate, TUpdate> = Pick<TCreate, Extract<keyof TCreate, keyof TUpdate>>;
+
+/**
+ * The record a navigation property is associated with: its id or alternate key (the related
+ * table's entity set comes from the generated metadata), or an `EntityReference`.
+ */
+export type AssociateTarget = ODataKey | EntityReference;
+
+/** Options for associating records with a collection-valued navigation property (#432). */
+export interface AssociateOptions extends RequestOptions {
+  /**
+   * For several records: how to send them, such as `createBindManyExecutor()` from
+   * `@mohsinonxrm/dataverse-sdk-batch` (one `$batch`). Default: one request per record.
+   */
+  readonly executor?: BindManyExecutor;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Bound operations (#432). `dataverse-gen` generates, for a table with bound actions or
+// functions, an `<Entity>Operations` object of their generated classes, which the typed client
+// turns into methods: `typed.accounts.byId(id).actions.contoso_Recalculate(parameters)`.
+// ---------------------------------------------------------------------------------------------
+
+/** A generated action or function class. */
+export type OperationClass = abstract new (...args: never[]) => Executable<unknown>;
+
+/** Bound actions and functions, by name: the generated classes. */
+export interface OperationGroup {
+  readonly actions?: Readonly<Record<string, OperationClass>>;
+  readonly functions?: Readonly<Record<string, OperationClass>>;
+}
+
+/**
+ * The operations bound to a table: to one record (`record`, constructed with the record id first)
+ * and to its entity set (`collection`).
+ */
+export interface BoundOperations {
+  readonly record?: OperationGroup;
+  readonly collection?: OperationGroup;
+}
+
+/**
+ * A bound operation as a method: `(parameters, requestOptions?)`, or `(requestOptions?)` for one
+ * without parameters; it resolves the operation's response.
+ */
+export type BoundOperationMethod<
+  TArgs extends readonly unknown[],
+  TResult,
+> = TArgs extends readonly []
+  ? (requestOptions?: RequestOptions) => Promise<TResult>
+  : [] extends TArgs
+    ? (parameters?: TArgs[0], requestOptions?: RequestOptions) => Promise<TResult>
+    : (parameters: TArgs[0], requestOptions?: RequestOptions) => Promise<TResult>;
+
+/** Record-bound operation classes (constructed with the record id first) as methods. */
+export type RecordOperationMethods<TClasses> = {
+  readonly [K in keyof TClasses]: TClasses[K] extends abstract new (
+    id: string,
+    ...args: infer TArgs
+  ) => Executable<infer TResult>
+    ? BoundOperationMethod<TArgs, TResult>
+    : never;
+};
+
+/** Collection-bound operation classes as methods. */
+export type CollectionOperationMethods<TClasses> = {
+  readonly [K in keyof TClasses]: TClasses[K] extends abstract new (
+    ...args: infer TArgs
+  ) => Executable<infer TResult>
+    ? BoundOperationMethod<TArgs, TResult>
+    : never;
+};
+
+/** The classes of `TOperations[TBinding][TKind]`, or none. */
+export type OperationClasses<
+  TOperations,
+  TBinding extends keyof BoundOperations,
+  TKind extends keyof OperationGroup,
+> =
+  TOperations extends Readonly<Record<TBinding, infer TGroup>>
+    ? TGroup extends Readonly<Record<TKind, infer TClasses>>
+      ? TClasses
+      : NoOperationClasses
+    : NoOperationClasses;
+
+/**
+ * No operation classes: a table without bound operations has no methods in `actions` /
+ * `functions`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- no keys, on purpose
+export interface NoOperationClasses {}
+
+/** Options for an {@link EntitySetClient}: `formatEntityForWrite()`'s, and the bound operations. */
+export interface EntitySetClientOptions extends FormatEntityForWriteOptions {
+  /** The table's bound actions and functions (the generated `<Entity>Operations`). */
+  readonly operations?: BoundOperations;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Record navigation (#432): `typed.accounts.byId(id).nav("contact_customer_accounts").list()`.
+// ---------------------------------------------------------------------------------------------
+
+/**
+ * The client {@link EntityRecordClient.nav} returns for a navigation property: a
+ * {@link RelatedCollectionClient} for a collection, a {@link RelatedRecordClient} for a lookup.
+ */
+export type RelatedClient<TProperty> = TProperty extends {
+  readonly collection: true;
+  readonly entity: infer TEntity extends object;
+  readonly column: infer TColumn extends string;
+  readonly navigation: infer TNavigation extends object;
+}
+  ? RelatedCollectionClient<TEntity, TColumn, TNavigation>
+  : TProperty extends {
+        readonly entity: infer TEntity extends object;
+        readonly column: infer TColumn extends string;
+        readonly navigation: infer TNavigation extends object;
+      }
+    ? RelatedRecordClient<TEntity, TColumn, TNavigation>
+    : never;
+
+/** What `associate()` takes for a navigation property: several records only for a collection. */
+export type AssociateTargets<TProperty> = TProperty extends { readonly collection: true }
+  ? AssociateTarget | ReadonlyArray<string | EntityReference>
+  : AssociateTarget;
+
+/** What `disassociate()` takes after the name: the record for a collection, nothing for a lookup. */
+export type DisassociateArguments<TProperty> = TProperty extends { readonly collection: true }
+  ? [target: AssociateTarget, requestOptions?: RequestOptions]
+  : [requestOptions?: RequestOptions];
+
+/**
+ * What a {@link RelatedCollectionClient} or {@link RelatedRecordClient} needs from the record it
+ * starts from; {@link EntityRecordClient.nav} makes it.
+ */
+export interface RelatedClientContext {
+  readonly client: DataverseClient;
+  readonly metadata: EntityMetadata;
+  /** The record's path, e.g. `accounts(<id>)`. */
+  readonly recordPath: string;
+  /** The navigation property, e.g. `contact_customer_accounts`. */
+  readonly name: string;
+  readonly options: EntitySetClientOptions;
+}
+
 /**
  * One table's entity set: list and create records, and reach one with {@link byId}.
  *
  * - `TEntity`: the table's interface (`Account`), what `get()` and `list()` resolve.
  * - `TCreate` / `TUpdate`: what `create()` and `update()` take (`AccountCreate`, `AccountUpdate`).
  * - `TColumn`: the names `select` takes (the generated `AccountColumn` union).
- * - `TNavigation`: the navigation properties `expand` takes (the generated `AccountNavigation`);
- *   without it, `expand` takes any name and doesn't narrow the result.
+ * - `TNavigation`: the navigation properties `expand` and `nav()` take (the generated
+ *   `AccountNavigation`); without it, any name, and `expand` doesn't narrow the result.
+ * - `TOperations`: the bound actions and functions (the generated `AccountOperations`), as the
+ *   `actions` and `functions` methods.
  *
  * Writes go through {@link formatEntityForWrite}, so a lookup is set with an `EntityReference`.
  */
@@ -282,6 +495,7 @@ export class EntitySetClient<
   TUpdate extends object = TCreate,
   TColumn extends string = string,
   TNavigation extends object = UntypedNavigation,
+  TOperations extends BoundOperations = BoundOperations,
 > {
   /** The entity set name, e.g. `accounts`. */
   readonly entitySetName: string;
@@ -290,13 +504,13 @@ export class EntitySetClient<
    * @param client - The client requests are sent with.
    * @param metadata - The table's generated metadata (`AccountMetadata`).
    * @param writeOptions - For `formatEntityForWrite()`: the generated `EntityMetadataCache`, so a
-   *   lookup to a custom table finds its entity set.
+   *   lookup to a custom table finds its entity set; and the table's bound `operations`.
    */
   constructor(
     private readonly client: DataverseClient,
     /** The table's generated metadata. */
     readonly metadata: EntityMetadata,
-    private readonly writeOptions: FormatEntityForWriteOptions = {}
+    private readonly writeOptions: EntitySetClientOptions = {}
   ) {
     this.entitySetName = metadata.collectionName;
   }
@@ -305,12 +519,13 @@ export class EntitySetClient<
    * One record, by its id or by an alternate key (`{ accountnumber: "A-1" }`); nothing is sent
    * until a method of the result is called.
    */
-  byId(key: ODataKey): EntityRecordClient<TEntity, TUpdate, TColumn, TNavigation> {
+  byId(key: ODataKey): EntityRecordClient<TEntity, TUpdate, TColumn, TNavigation, TOperations> {
     return new EntityRecordClient(
       this.client,
       this.metadata,
       `${this.entitySetName}(${odataKey(key)})`,
-      this.writeOptions
+      this.writeOptions,
+      key
     );
   }
 
@@ -328,16 +543,48 @@ export class EntitySetClient<
     options?: TOptions,
     requestOptions?: RequestOptions
   ): Promise<Array<ReadResult<TEntity, TNavigation, TOptions>>> {
-    const read: ListRecordsOptions = options ?? {};
-    const builder = this.query();
-    applyRead(builder, read);
-    if (read.filter !== undefined) builder.filter(read.filter);
-    if (read.orderBy?.length) builder.orderBy(...read.orderBy);
-    if (read.top !== undefined) builder.top(read.top);
-    return builder.getAll<ReadResult<TEntity, TNavigation, TOptions>>({
-      ...requestOptions,
-      ...(read.maxItems !== undefined ? { maxItems: read.maxItems } : {}),
-    });
+    return listRecords(this.query(), options, requestOptions);
+  }
+
+  /**
+   * The records that match, one at a time, following `@odata.nextLink` as they're read (#432).
+   * Nothing is sent until the first record is read; `maxItems` stops early.
+   *
+   * ```typescript
+   * for await (const account of typed.accounts.iterate({ select: ["name"], pageSize: 500 })) { … }
+   * ```
+   */
+  iterate<
+    const TOptions extends IterateRecordsOptions<TColumn, TNavigation> = IterateRecordsOptions<
+      TColumn,
+      TNavigation
+    >,
+  >(
+    options?: TOptions,
+    requestOptions?: RequestOptions
+  ): AsyncIterable<ReadResult<TEntity, TNavigation, TOptions>> {
+    return iterateRecords(this.query(), options, requestOptions);
+  }
+
+  /**
+   * One page of the records that match, and the link to the next (#432): pass `nextLink` back
+   * with the same options for the page after.
+   *
+   * ```typescript
+   * const page = await typed.accounts.listPage({ select: ["name"], pageSize: 50 });
+   * const next = page.nextLink && (await typed.accounts.listPage({ select: ["name"], pageSize: 50, nextLink: page.nextLink }));
+   * ```
+   */
+  async listPage<
+    const TOptions extends ListPageOptions<TColumn, TNavigation> = ListPageOptions<
+      TColumn,
+      TNavigation
+    >,
+  >(
+    options?: TOptions,
+    requestOptions?: RequestOptions
+  ): Promise<RecordPage<ReadResult<TEntity, TNavigation, TOptions>>> {
+    return listRecordPage(this.client, this.query(), options, requestOptions);
   }
 
   /** Create a record and return its id. */
@@ -348,24 +595,81 @@ export class EntitySetClient<
     );
   }
 
+  /**
+   * Create or update the record with this id or alternate key (#432): `PATCH` without
+   * `If-Match`, so Dataverse creates the record when it doesn't exist. `mode: "createOnly"`
+   * sends `If-None-Match: *` (412 if it exists), `mode: "updateOnly"` sends `If-Match: *` (404 if
+   * it doesn't). Resolves the record's id, from the `OData-EntityId` header.
+   *
+   * ```typescript
+   * const id = await typed.accounts.upsert({ accountnumber: "A-1" }, { name: "Contoso" });
+   * ```
+   */
+  async upsert(
+    key: ODataKey,
+    entity: UpsertEntity<TCreate, TUpdate>,
+    options: UpsertRecordOptions = {}
+  ): Promise<string> {
+    const { mode = "upsert", ...requestOptions } = options;
+    const builder = this.byId(key).request();
+    if (mode === "createOnly") builder.ifNoneMatch("*");
+    else if (mode === "updateOnly") builder.ifMatch("*");
+    const response = await builder.response(
+      "PATCH",
+      formatEntityForWrite(entity, this.metadata, this.writeOptions),
+      requestOptions
+    );
+    if (!response.ok) throw await parseODataError(response);
+    return typeof key === "string" && !response.headers.has("odata-entityid")
+      ? odataKey(key)
+      : entityIdFromResponse(response);
+  }
+
+  /** The actions bound to the entity set (the generated `<Entity>Operations`), as methods (#432). */
+  get actions(): CollectionOperationMethods<
+    OperationClasses<TOperations, "collection", "actions">
+  > {
+    return operationMethods(
+      this.client,
+      this.writeOptions.operations?.collection?.actions,
+      []
+    ) as CollectionOperationMethods<OperationClasses<TOperations, "collection", "actions">>;
+  }
+
+  /** The functions bound to the entity set, as methods (#432). */
+  get functions(): CollectionOperationMethods<
+    OperationClasses<TOperations, "collection", "functions">
+  > {
+    return operationMethods(
+      this.client,
+      this.writeOptions.operations?.collection?.functions,
+      []
+    ) as CollectionOperationMethods<OperationClasses<TOperations, "collection", "functions">>;
+  }
+
   /** Core's request builder for the entity set, for what the methods here don't cover. */
   query(): DataverseRequestBuilder {
     return this.client.api(this.entitySetName);
   }
 }
 
-/** One record of an entity set: `get()`, `update()` and `delete()` it. */
+/**
+ * One record of an entity set: `get()`, `update()` and `delete()` it; reach its related records
+ * with {@link nav}, and call its bound operations with {@link actions} and {@link functions}.
+ */
 export class EntityRecordClient<
   TEntity extends object,
   TUpdate extends object = Partial<TEntity>,
   TColumn extends string = string,
   TNavigation extends object = UntypedNavigation,
+  TOperations extends BoundOperations = BoundOperations,
 > {
   /**
    * @param client - The client requests are sent with.
    * @param metadata - The table's generated metadata.
    * @param path - The record's path, e.g. `accounts(<id>)`.
-   * @param writeOptions - For `formatEntityForWrite()` in `update()`.
+   * @param writeOptions - For `formatEntityForWrite()` in `update()`, and the bound operations.
+   * @param key - The record's id or alternate key (a bound operation needs the id).
    */
   constructor(
     private readonly client: DataverseClient,
@@ -373,7 +677,8 @@ export class EntityRecordClient<
     readonly metadata: EntityMetadata,
     /** The record's path, relative to the Web API root, e.g. `accounts(<id>)`. */
     readonly path: string,
-    private readonly writeOptions: FormatEntityForWriteOptions = {}
+    private readonly writeOptions: EntitySetClientOptions = {},
+    private readonly key?: ODataKey
   ) {}
 
   /**
@@ -414,10 +719,428 @@ export class EntityRecordClient<
     await builder.delete(requestOptions);
   }
 
+  /**
+   * The records related through a navigation property (#432): for a collection
+   * (`contact_customer_accounts`) a {@link RelatedCollectionClient} to list, page, associate and
+   * disassociate them; for a lookup (`primarycontactid`) a {@link RelatedRecordClient} to get,
+   * set or clear it. Nothing is sent until a method of the result is called.
+   */
+  nav<TName extends keyof TNavigation & string>(name: TName): RelatedClient<TNavigation[TName]> {
+    const context: RelatedClientContext = {
+      client: this.client,
+      metadata: this.metadata,
+      recordPath: this.path,
+      name,
+      options: this.writeOptions,
+    };
+    const info = navigationInfo(this.metadata, name);
+    if (!info) {
+      throw DataverseInvalidRequestError.invalidParameter(
+        "navigation",
+        `'${name}' is not a navigation property of ${this.metadata.logicalName}`
+      );
+    }
+    return (
+      info.collection ? new RelatedCollectionClient(context) : new RelatedRecordClient(context)
+    ) as RelatedClient<TNavigation[TName]>;
+  }
+
+  /**
+   * Associate records through a navigation property (#432): add them to a collection
+   * (`POST <nav>/$ref`, or core's `bindMany()` for several, with an optional `$batch` executor),
+   * or set a lookup (`PATCH` with `<nav>@odata.bind`). A target is an id or alternate key of the
+   * related table, or an `EntityReference`.
+   */
+  async associate<TName extends keyof TNavigation & string>(
+    navigation: TName,
+    target: AssociateTargets<TNavigation[TName]>,
+    options?: AssociateOptions
+  ): Promise<void> {
+    const related = this.nav(navigation) as unknown as
+      RelatedCollectionClient<object> | RelatedRecordClient<object>;
+    if (related instanceof RelatedCollectionClient) {
+      await related.associate(target, options);
+    } else {
+      await related.set(target as AssociateTarget, options);
+    }
+  }
+
+  /**
+   * Disassociate a record (#432): remove it from a collection (`DELETE <nav>(<id>)/$ref`), or
+   * clear a lookup (`DELETE <nav>/$ref`, no target).
+   */
+  async disassociate<TName extends keyof TNavigation & string>(
+    navigation: TName,
+    ...args: DisassociateArguments<TNavigation[TName]>
+  ): Promise<void> {
+    const related = this.nav(navigation) as unknown as
+      RelatedCollectionClient<object> | RelatedRecordClient<object>;
+    if (related instanceof RelatedCollectionClient) {
+      const [target, requestOptions] = args as [AssociateTarget, RequestOptions | undefined];
+      await related.disassociate(target, requestOptions);
+    } else {
+      await related.clear(args[0] as RequestOptions | undefined);
+    }
+  }
+
+  /** The actions bound to this record (the generated `<Entity>Operations`), as methods (#432). */
+  get actions(): RecordOperationMethods<OperationClasses<TOperations, "record", "actions">> {
+    return operationMethods(this.client, this.writeOptions.operations?.record?.actions, () => [
+      this.recordId(),
+    ]) as RecordOperationMethods<OperationClasses<TOperations, "record", "actions">>;
+  }
+
+  /** The functions bound to this record, as methods (#432). */
+  get functions(): RecordOperationMethods<OperationClasses<TOperations, "record", "functions">> {
+    return operationMethods(this.client, this.writeOptions.operations?.record?.functions, () => [
+      this.recordId(),
+    ]) as RecordOperationMethods<OperationClasses<TOperations, "record", "functions">>;
+  }
+
   /** Core's request builder for the record, for what the methods here don't cover. */
   request(): DataverseRequestBuilder {
     return this.client.api(this.path);
   }
+
+  /** The record's id, for a bound operation's class (which binds by id, not alternate key). */
+  private recordId(): string {
+    if (typeof this.key !== "string") {
+      throw DataverseInvalidRequestError.invalidParameter(
+        "key",
+        "a bound operation is called on a record by its id; byId() was given an alternate key"
+      );
+    }
+    return odataKey(this.key);
+  }
+}
+
+/**
+ * The records related to one record through a collection-valued navigation property (#432):
+ * `typed.accounts.byId(id).nav("contact_customer_accounts")`. `list()`, `iterate()` and
+ * `listPage()` read `GET <record>/<nav>`, typed by the related table; `associate()` and
+ * `disassociate()` add and remove records (`$ref`).
+ */
+export class RelatedCollectionClient<
+  TEntity extends object,
+  TColumn extends string = string,
+  TNavigation extends object = UntypedNavigation,
+> {
+  /** The path of the related records, e.g. `accounts(<id>)/contact_customer_accounts`. */
+  readonly path: string;
+
+  constructor(private readonly context: RelatedClientContext) {
+    this.path = `${context.recordPath}/${context.name}`;
+  }
+
+  /** The related records, following `@odata.nextLink` (or until `maxItems`). */
+  async list<
+    const TOptions extends ListRecordsOptions<TColumn, TNavigation> = ListRecordsOptions<
+      TColumn,
+      TNavigation
+    >,
+  >(
+    options?: TOptions,
+    requestOptions?: RequestOptions
+  ): Promise<Array<ReadResult<TEntity, TNavigation, TOptions>>> {
+    return listRecords(this.query(), options, requestOptions);
+  }
+
+  /** The related records, one at a time, following `@odata.nextLink` as they're read. */
+  iterate<
+    const TOptions extends IterateRecordsOptions<TColumn, TNavigation> = IterateRecordsOptions<
+      TColumn,
+      TNavigation
+    >,
+  >(
+    options?: TOptions,
+    requestOptions?: RequestOptions
+  ): AsyncIterable<ReadResult<TEntity, TNavigation, TOptions>> {
+    return iterateRecords(this.query(), options, requestOptions);
+  }
+
+  /** One page of the related records, and the link to the next. */
+  async listPage<
+    const TOptions extends ListPageOptions<TColumn, TNavigation> = ListPageOptions<
+      TColumn,
+      TNavigation
+    >,
+  >(
+    options?: TOptions,
+    requestOptions?: RequestOptions
+  ): Promise<RecordPage<ReadResult<TEntity, TNavigation, TOptions>>> {
+    return listRecordPage(this.context.client, this.query(), options, requestOptions);
+  }
+
+  /**
+   * Add records to the collection: `POST <nav>/$ref` (core's `associate()`), or for several,
+   * core's `bindMany()`, through `options.executor` when given (a `$batch`).
+   */
+  async associate(
+    target: AssociateTarget | ReadonlyArray<string | EntityReference>,
+    options: AssociateOptions = {}
+  ): Promise<void> {
+    const { executor, ...requestOptions } = options;
+    const record = this.context.client.api(this.context.recordPath);
+    if (isTargetList(target)) {
+      const targets = target.map((t) => resolveTarget(this.context, t));
+      const sets = new Set(targets.map((t) => t.entitySetName));
+      for (const entitySetName of sets) {
+        const ids = targets
+          .filter((t) => t.entitySetName === entitySetName)
+          .map((t) => odataKey(t.key));
+        await record.bindMany(this.context.name, entitySetName, ids, executor, requestOptions);
+      }
+      return;
+    }
+    const { entitySetName, key } = resolveTarget(this.context, target);
+    await record.associate(this.context.name, entitySetName, key, requestOptions);
+  }
+
+  /** Remove a record from the collection: `DELETE <nav>(<id>)/$ref` (core's `disassociate()`). */
+  async disassociate(target: AssociateTarget, requestOptions?: RequestOptions): Promise<void> {
+    const key = isEntityReference(target) ? target.id : target;
+    await this.context.client
+      .api(this.context.recordPath)
+      .disassociate(this.context.name, key, requestOptions);
+  }
+
+  /** Core's request builder for the related records, for what the methods here don't cover. */
+  query(): DataverseRequestBuilder {
+    return this.context.client.api(this.path);
+  }
+}
+
+/**
+ * The record a single-valued navigation property (a lookup) points to (#432):
+ * `typed.accounts.byId(id).nav("primarycontactid")`. `get()` reads it, typed by the related
+ * table; `set()` and `clear()` change the lookup.
+ */
+export class RelatedRecordClient<
+  TEntity extends object,
+  TColumn extends string = string,
+  TNavigation extends object = UntypedNavigation,
+> {
+  /** The path of the related record, e.g. `accounts(<id>)/primarycontactid`. */
+  readonly path: string;
+
+  constructor(private readonly context: RelatedClientContext) {
+    this.path = `${context.recordPath}/${context.name}`;
+  }
+
+  /**
+   * The related record (`GET <record>/<nav>`), or `null` when Dataverse answers that the lookup
+   * is empty (204 No Content). A literal `select` narrows it, as in `get()` of the table.
+   */
+  async get<
+    const TOptions extends GetRecordOptions<TColumn, TNavigation> = GetRecordOptions<
+      TColumn,
+      TNavigation
+    >,
+  >(
+    options?: TOptions,
+    requestOptions?: RequestOptions
+  ): Promise<ReadResult<TEntity, TNavigation, TOptions> | null> {
+    const builder = this.request();
+    applyRead(builder, options ?? {});
+    const record = await builder.get<ReadResult<TEntity, TNavigation, TOptions> | undefined>(
+      requestOptions
+    );
+    return record ?? null;
+  }
+
+  /**
+   * Point the lookup at a record: `PATCH <record>` with `<nav>@odata.bind` and `If-Match: *`
+   * (core's `bind()`), so it never creates the record it starts from.
+   */
+  async set(target: AssociateTarget, requestOptions?: RequestOptions): Promise<void> {
+    const { entitySetName, key } = resolveTarget(this.context, target);
+    await this.context.client
+      .api(this.context.recordPath)
+      .bind(this.context.name, entitySetName, key)
+      .ifMatch("*")
+      .patch({}, requestOptions);
+  }
+
+  /** Clear the lookup: `DELETE <record>/<nav>/$ref`. */
+  async clear(requestOptions?: RequestOptions): Promise<void> {
+    await this.context.client.api(`${this.path}/$ref`).delete(requestOptions);
+  }
+
+  /** Core's request builder for the related record, for what the methods here don't cover. */
+  request(): DataverseRequestBuilder {
+    return this.context.client.api(this.path);
+  }
+}
+
+/** `list()`: the query's records, every page. */
+async function listRecords<T>(
+  builder: DataverseRequestBuilder,
+  options: ListRecordsOptions | undefined,
+  requestOptions: RequestOptions | undefined
+): Promise<T[]> {
+  const read = options ?? {};
+  applyQuery(builder, read);
+  return builder.getAll<T>({
+    ...requestOptions,
+    ...(read.maxItems !== undefined ? { maxItems: read.maxItems } : {}),
+  });
+}
+
+/** `iterate()`: core's `iterate()`, stopping after `maxItems`. */
+function iterateRecords<T>(
+  builder: DataverseRequestBuilder,
+  options: IterateRecordsOptions | undefined,
+  requestOptions: RequestOptions | undefined
+): AsyncIterable<T> {
+  const read = options ?? {};
+  applyQuery(builder, read);
+  if (read.pageSize !== undefined) builder.prefer((p) => p.maxPageSize(read.pageSize ?? 0));
+  const records = builder.iterate<T>(requestOptions);
+  const { maxItems } = read;
+  if (maxItems === undefined) return records;
+  return {
+    async *[Symbol.asyncIterator]() {
+      if (maxItems <= 0) return;
+      let count = 0;
+      for await (const record of records) {
+        yield record;
+        if (++count >= maxItems) return;
+      }
+    },
+  };
+}
+
+/** `listPage()`: one page, the first or the one `nextLink` points to. */
+async function listRecordPage<T>(
+  client: DataverseClient,
+  builder: DataverseRequestBuilder,
+  options: ListPageOptions | undefined,
+  requestOptions: RequestOptions | undefined
+): Promise<RecordPage<T>> {
+  const read = options ?? {};
+  let page = builder;
+  if (read.nextLink !== undefined) {
+    page = client.api(read.nextLink);
+  } else {
+    applyQuery(page, read);
+    if (read.count === true) page.count();
+  }
+  if (read.pageSize !== undefined) page.prefer((p) => p.maxPageSize(read.pageSize ?? 0));
+  const response = await page.getPage<T>(requestOptions);
+  const nextLink = response["@odata.nextLink"];
+  const count = (response as { "@odata.count"?: number })["@odata.count"];
+  return {
+    records: response.value,
+    ...(nextLink !== undefined ? { nextLink } : {}),
+    ...(count !== undefined ? { count } : {}),
+  };
+}
+
+/** `$select`, `$expand`, `$filter`, `$orderby` and `$top`. */
+function applyQuery(
+  builder: DataverseRequestBuilder,
+  options: Pick<ListRecordsOptions, "select" | "expand" | "filter" | "orderBy" | "top">
+): void {
+  applyRead(builder, options);
+  if (options.filter !== undefined) builder.filter(options.filter);
+  if (options.orderBy?.length) builder.orderBy(...options.orderBy);
+  if (options.top !== undefined) builder.top(options.top);
+}
+
+function isTargetList(
+  target: AssociateTarget | ReadonlyArray<string | EntityReference>
+): target is ReadonlyArray<string | EntityReference> {
+  return Array.isArray(target);
+}
+
+/**
+ * Whether a navigation property is a collection, and the table it points to (unknown for a
+ * consolidated polymorphic lookup), from the generated metadata. A polymorphic lookup's Web API
+ * properties (`parentcustomerid_account`) are found from the consolidated one.
+ */
+function navigationInfo(
+  metadata: EntityMetadata,
+  name: string
+): { collection: boolean; targetType?: string } | undefined {
+  const own = Object.hasOwn(metadata.navigation, name) ? metadata.navigation[name] : undefined;
+  if (own) {
+    return {
+      collection: own.isCollection,
+      ...(own.isPolymorphic ? {} : { targetType: own.targetType }),
+    };
+  }
+  for (const [key, nav] of Object.entries(metadata.navigation)) {
+    if (nav.isCollection || !nav.isPolymorphic) continue;
+    const target = nav.targets?.find((t) => `${nav.fullName ?? key}_${t}` === name);
+    if (target !== undefined) return { collection: false, targetType: target };
+  }
+  return undefined;
+}
+
+/** The entity set and key of the record a navigation property is associated with. */
+function resolveTarget(
+  context: RelatedClientContext,
+  target: AssociateTarget
+): { entitySetName: string; key: ODataKey } {
+  if (isEntityReference(target)) {
+    const entitySetName = target.entitySetName ?? entitySetOf(context.options, target.logicalName);
+    if (entitySetName !== undefined) return { entitySetName, key: target.id };
+    throw unknownEntitySet(target.logicalName);
+  }
+  const targetType = navigationInfo(context.metadata, context.name)?.targetType;
+  const entitySetName =
+    targetType === undefined ? undefined : entitySetOf(context.options, targetType);
+  if (entitySetName === undefined) {
+    throw DataverseInvalidRequestError.invalidParameter(
+      "target",
+      `the table '${context.name}' points to isn't known` +
+        (targetType === undefined ? "" : ` (${targetType})`) +
+        "; pass an EntityReference with its entitySetName"
+    );
+  }
+  return { entitySetName, key: target };
+}
+
+/** A table's entity set: from the options, then the generated metadata, then the snapshot. */
+function entitySetOf(options: EntitySetClientOptions, logicalName: string): string | undefined {
+  const names = options.entitySetNames;
+  if (names && Object.hasOwn(names, logicalName)) return names[logicalName];
+  const cache = options.metadataCache;
+  if (cache && Object.hasOwn(cache, logicalName)) return cache[logicalName].collectionName;
+  return entitySetNameOf(logicalName);
+}
+
+function unknownEntitySet(logicalName: string): DataverseInvalidRequestError {
+  return DataverseInvalidRequestError.invalidParameter(
+    "target",
+    `no entity set is known for '${logicalName}'; set entitySetName on the reference`
+  );
+}
+
+/**
+ * Methods that construct a bound operation's generated class (with `leading()` first: the record
+ * id) and run it with `client.execute()`. A class whose `parameterTypes` is empty takes no
+ * parameters, so its method takes the request options first.
+ */
+function operationMethods(
+  client: DataverseClient,
+  classes: Readonly<Record<string, OperationClass>> | undefined,
+  leading: unknown[] | (() => unknown[])
+): Record<string, (...args: unknown[]) => Promise<unknown>> {
+  const methods: Record<string, (...args: unknown[]) => Promise<unknown>> = {};
+  for (const [name, operation] of Object.entries(classes ?? {})) {
+    const parameterTypes = (operation as { parameterTypes?: object }).parameterTypes ?? {};
+    const takesParameters = Object.keys(parameterTypes).length > 0;
+    const Operation = operation as unknown as new (...args: unknown[]) => Executable<unknown>;
+    // async, so a missing record id rejects rather than throws
+    methods[name] = async (...args: unknown[]) => {
+      const first = typeof leading === "function" ? leading() : leading;
+      const [parameters, requestOptions] = takesParameters ? args : [undefined, args[0]];
+      const request = new Operation(...first, ...(takesParameters ? [parameters] : []));
+      return client.execute(request, requestOptions as RequestOptions | undefined);
+    };
+  }
+  return methods;
 }
 
 /** An `expand` of any table, as the methods read it. */
