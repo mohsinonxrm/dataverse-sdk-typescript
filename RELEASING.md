@@ -94,6 +94,9 @@ issue in the milestone for the stabilising checklist.
    ```
 
    Commit the result and PR it into `release/2.1`. Changesets numbers pre-releases from `.0`.
+   In pre mode `changeset version` moves the changesets it consumed into `.changeset/pre/`
+   (changesets 3), where the stable `changeset version` reads them again for the CHANGELOGs.
+   `changeset version` fails when there is no changeset to consume.
 
 2. Tag the merged commit on `release/2.1` and push the tag:
 
@@ -105,7 +108,7 @@ issue in the milestone for the stabilising checklist.
    `beta`, then creates a GitHub pre-release. Approve the `npm` environment when it asks.
 4. Fixes found in the beta go into `release/2.1` by PR, each with a changeset; ship them as the
    next beta. Merge `release/2.1` into `dev` after a batch of fixes (`merge/release-2.1-into-dev`).
-   `pre.json` comes along; `dev` never versions, so that's harmless.
+   `pre.json` and `.changeset/pre/` come along; `dev` never versions, so that's harmless.
 5. For a release candidate: `pnpm changeset pre exit`, `pnpm changeset pre enter rc`,
    `pnpm changeset version` (`2.1.0-rc.0`), and tag `v2.1.0-rc.0` the same way.
 
@@ -113,7 +116,8 @@ issue in the milestone for the stabilising checklist.
 
 1. On a branch from `release/2.1` (`chore/release-2.1.0`): `pnpm changeset pre exit`, then
    `pnpm changeset version`. All 16 packages become `2.1.0`, each CHANGELOG gets its `## 2.1.0`
-   section and `pre.json` and the changesets are removed. PR it into `release/2.1`.
+   section, and `pre.json`, the changesets and those in `.changeset/pre/` are removed. PR it into
+   `release/2.1`.
 2. Open a PR from `release/2.1` into `main` and merge it with a **merge commit**.
 3. Tag the merge commit on `main`:
 

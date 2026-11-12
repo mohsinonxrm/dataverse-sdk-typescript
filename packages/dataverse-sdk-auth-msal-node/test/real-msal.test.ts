@@ -1,16 +1,16 @@
 /**
  * @fileoverview #85 with real MSAL: a device code sign-in, then silent tokens from MSAL's own cache.
  *
- * The `PublicClientApplication` is real, from two separately installed majors (2.x as
- * `@azure/msal-node`, 7.x through an npm alias). Only its HTTP client is fake (MSAL's
+ * The `PublicClientApplication` is real, from two separately installed majors (7.x as
+ * `@azure/msal-node`, the 2.x peer floor through an npm alias). Only its HTTP client is fake (MSAL's
  * `system.networkClient`), standing in for Entra ID's device code and token endpoints. This shows
  * that the account the device code flow returns really gets tokens from `acquireTokenSilent`, and
  * that the provider accepts an MSAL copy it wasn't built against (no `instanceof`).
  */
 
 import { describe, expect, it } from "vitest";
-import * as msal2 from "@azure/msal-node";
-import * as msal7 from "msal-node-v7";
+import * as msal7 from "@azure/msal-node";
+import * as msal2 from "msal-node-v2";
 import { createTestClient, jsonResponse, odataError } from "@mohsinonxrm/dataverse-sdk-testing";
 import { MsalNodeTokenProvider } from "../src/index.js";
 

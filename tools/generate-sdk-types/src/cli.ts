@@ -41,7 +41,7 @@ program
       let config: SdkGeneratorConfig;
       try {
         config = await loadConfig(options.config);
-      } catch (_error) {
+      } catch (error) {
         // If config file doesn't exist, use environment variables
         const dataverseUrl = options.url ?? process.env.DATAVERSE_URL;
         if (!dataverseUrl && !options.fromCsdl) {
@@ -49,7 +49,8 @@ program
             "DATAVERSE_URL not configured. Either:\n" +
               "  1. Create .env file with DATAVERSE_URL\n" +
               "  2. Use --url flag\n" +
-              "  3. Create sdk-gen.config.json"
+              "  3. Create sdk-gen.config.json",
+            { cause: error }
           );
         }
 
