@@ -29,7 +29,13 @@ import { WRITE_EDMX, WRITE_ENTITY_METADATA } from "./fixtures/write-metadata.js"
 const scratch = scratchFolders("typed-client");
 afterAll(scratch.cleanup);
 
-const service = fixtureMetadataService(WRITE_EDMX, WRITE_ENTITY_METADATA);
+// #431: a many-to-many navigation property is its own partner
+const MANY_TO_MANY = `<NavigationProperty Name="contoso_account_contact" Type="Collection(mscrm.contact)" Partner="contoso_account_contact" />
+        <NavigationProperty Name="contact_customer_accounts"`;
+const service = fixtureMetadataService(
+  WRITE_EDMX.replace('<NavigationProperty Name="contact_customer_accounts"', MANY_TO_MANY),
+  WRITE_ENTITY_METADATA
+);
 const entities = ["account", "contact", "systemuser"];
 const id = "00000000-0000-0000-0000-000000000001";
 
@@ -98,6 +104,11 @@ export async function run(): Promise<void> {
   await typed.accounts.byId(id).get({ expand: { primarycontactid: { select: ["name"] } } });
   // @ts-expect-error $top only inside a collection's expansion
   await typed.accounts.byId(id).get({ expand: { primarycontactid: { top: 1 } } });
+  // @ts-expect-error $top isn't supported with a nested $expand
+  await typed.accounts.byId(id).get({ expand: { contact_customer_accounts: { top: 5, expand: { createdby: true } } } });
+  await typed.accounts.byId(id).get({ expand: { contoso_account_contact: { select: ["fullname"], top: 5 } } });
+  // @ts-expect-error no nested $expand inside a many-to-many collection
+  await typed.accounts.byId(id).get({ expand: { contoso_account_contact: { expand: { parentcustomerid_account: true } } } });
   // @ts-expect-error the consolidated lookup isn't a Web API navigation property
   await typed.contacts.list({ expand: { parentcustomerid: true } });
 
@@ -230,6 +241,9 @@ describe("typed per-entity-set request builders (#312)", () => {
       "  readonly primarycontactid: SingleNavigation<Contact, ContactColumn, ContactNavigation>;"
     );
     expect(source).toContain("  readonly ownerid: SingleNavigation;");
+    expect(source).toContain(
+      "  readonly contoso_account_contact: ManyToManyNavigation<Contact, ContactColumn, ContactNavigation>;"
+    );
     // The Web API's navigation properties of a consolidated polymorphic lookup
     expect(source).toContain(
       "  readonly parentcustomerid_account: SingleNavigation<Account, AccountColumn, AccountNavigation>;"

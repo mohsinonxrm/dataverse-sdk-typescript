@@ -181,8 +181,8 @@ export interface EntitySetClientOptions extends FormatEntityForWriteOptions {
 export { Executable }
 
 // @public
-export type Expand<TNavigation> = ReadonlyArray<(keyof TNavigation & string) | `${string}(${string})`> | {
-    readonly [K in keyof TNavigation & string]?: true | ExpandPropertyOptions<TNavigation[K]>;
+export type Expand<TNavigation, TNested extends boolean = false> = ReadonlyArray<(keyof TNavigation & string) | `${string}(${string})`> | {
+    readonly [K in keyof TNavigation & string]?: true | ExpandPropertyOptions<TNavigation[K], TNested>;
 };
 
 // @public
@@ -201,23 +201,48 @@ export type ExpandedValue<TProperty, TOptions> = TProperty extends {
 } ? TCollection extends true ? Array<ReadResult<TEntity, TNavigation, TOptions>> : ReadResult<TEntity, TNavigation, TOptions> | null : never;
 
 // @public
-export type ExpandPropertyOptions<TProperty> = TProperty extends {
+export interface ExpandFilterOption {
+    readonly filter?: string;
+}
+
+// @public
+export interface ExpandLimitOptions {
+    readonly orderBy?: readonly string[];
+    readonly top?: number;
+}
+
+// @public
+export interface ExpandNoLimitOptions {
+    // (undocumented)
+    readonly orderBy?: never;
+    // (undocumented)
+    readonly top?: never;
+}
+
+// @public
+export type ExpandPropertyOptions<TProperty, TNested extends boolean = false> = TProperty extends {
     readonly collection: true;
     readonly column: infer TColumn extends string;
     readonly navigation: infer TNavigation;
-} ? {
-    readonly select?: readonly TColumn[];
-    readonly filter?: string;
-    readonly orderBy?: readonly string[];
-    readonly top?: number;
-    readonly expand?: Expand<TNavigation>;
-} : TProperty extends {
+} ? TProperty extends {
+    readonly manyToMany: true;
+} ? ExpandSelectOption<TColumn> & ExpandFilterOption & (TNested extends true ? ExpandNoLimitOptions : ExpandLimitOptions) : TNested extends true ? ExpandSelectOption<TColumn> & ExpandFilterOption & ExpandNoLimitOptions & {
+    readonly expand?: Expand<TNavigation, true>;
+} : (ExpandSelectOption<TColumn> & ExpandFilterOption & ExpandLimitOptions & {
+    readonly expand?: never;
+}) | (ExpandSelectOption<TColumn> & ExpandFilterOption & ExpandNoLimitOptions & {
+    readonly expand?: Expand<TNavigation, true>;
+}) : TProperty extends {
     readonly column: infer TColumn extends string;
     readonly navigation: infer TNavigation;
-} ? {
-    readonly select?: readonly TColumn[];
-    readonly expand?: Expand<TNavigation>;
+} ? ExpandSelectOption<TColumn> & {
+    readonly expand?: Expand<TNavigation, true>;
 } : never;
+
+// @public
+export interface ExpandSelectOption<TColumn extends string> {
+    readonly select?: readonly TColumn[];
+}
 
 // @public
 export function formatEntityForWrite(entity: Partial<IEntity>, entityMetadata: EntityMetadata, options?: FormatEntityForWriteOptions): Record<string, unknown>;
@@ -297,6 +322,20 @@ export interface ListRecordsOptions<TColumn extends string = string, TNavigation
 }
 
 // @public
+export interface ManyToManyNavigation<TEntity extends object = IEntity, TColumn extends string = string, TNavigation extends object = UntypedNavigation> {
+    // (undocumented)
+    readonly collection: true;
+    // (undocumented)
+    readonly column: TColumn;
+    // (undocumented)
+    readonly entity: TEntity;
+    // (undocumented)
+    readonly manyToMany: true;
+    // (undocumented)
+    readonly navigation: TNavigation;
+}
+
+// @public
 export interface NavigationMetadata {
     fullName?: string;
     isCollection: boolean;
@@ -315,7 +354,7 @@ export interface NavigationMetadata {
 }
 
 // @public
-export type NavigationProperty = SingleNavigation | CollectionNavigation;
+export type NavigationProperty = SingleNavigation | CollectionNavigation | ManyToManyNavigation;
 
 // @public
 export interface NoOperationClasses {

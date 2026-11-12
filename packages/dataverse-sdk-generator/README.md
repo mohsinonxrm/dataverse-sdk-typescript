@@ -475,9 +475,7 @@ const withContacts = await typed.accounts.byId(id).get({
     contact_customer_accounts: {
       select: ["fullname", "emailaddress1"],
       filter: "statecode eq 0",
-      orderBy: ["fullname asc"],
-      top: 10,
-      expand: { owninguser: { select: ["fullname"] } },
+      expand: { owninguser: { select: ["fullname"] } }, // not with orderBy / top
     },
   },
 });
@@ -510,7 +508,10 @@ const count = await typed.accounts.query().count().top(0).get(); // core's build
 A literal `select` narrows the record to the selected columns (and its annotations, such as
 `@odata.etag` and formatted values); without `select`, the record is the table's interface.
 `expand` takes an object, one key per navigation property with `true` or its options (`select`,
-`expand`, and on a collection `filter`, `orderBy` and `top`), checked against the related table;
+`expand`, and on a collection `filter`, `orderBy` and `top`), checked against the related table
+and against what Dataverse accepts: `orderBy` / `top` not with a nested `expand` or inside
+another expansion (0x80060888), and no nested `expand` inside a many-to-many collection
+(`ManyToManyNavigation`, a navigation property that is its own partner);
 or, as before, an array of names, with inline options written in OData syntax
 (`["primarycontactid($select=fullname)"]`, not checked inside the parentheses). Each expanded
 property is added to the record: a lookup as the related record or `null`, a collection as an

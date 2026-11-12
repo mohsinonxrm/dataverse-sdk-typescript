@@ -2,7 +2,7 @@
 "@mohsinonxrm/dataverse-sdk-generator": minor
 ---
 
-The typed client (`"typedClient": true`) types `expand` and narrows `select` (#431). `client.ts` has an `<Entity>Navigation` interface per table, one member per navigation property the Web API expands, typed by the related table (`SingleNavigation<Contact, ContactColumn, ContactNavigation>`, `CollectionNavigation<…>`; a table that isn't generated takes any column), and passes it to `EntitySetClient`. A polymorphic lookup the table's interface shows as one property (`parentcustomerid`) is listed as the Web API's properties, one per target (`parentcustomerid_account`, `parentcustomerid_contact`).
+The typed client (`"typedClient": true`) types `expand` and narrows `select` (#431). `client.ts` has an `<Entity>Navigation` interface per table, one member per navigation property the Web API expands, typed by the related table (`SingleNavigation<Contact, ContactColumn, ContactNavigation>`, `CollectionNavigation<…>`, `ManyToManyNavigation<…>` for a navigation property that is its own partner; a table that isn't generated takes any column), and passes it to `EntitySetClient`. A polymorphic lookup the table's interface shows as one property (`parentcustomerid`) is listed as the Web API's properties, one per target (`parentcustomerid_account`, `parentcustomerid_contact`).
 
 ```typescript
 const account = await typed.accounts.byId(id).get({

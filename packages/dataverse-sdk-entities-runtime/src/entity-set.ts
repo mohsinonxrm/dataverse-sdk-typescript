@@ -51,8 +51,8 @@ export interface SingleNavigation<
 }
 
 /**
- * A collection-valued navigation property (one-to-many or many-to-many, such as
- * `contact_customer_accounts`). Expanded, it is an array of the related records.
+ * A one-to-many collection-valued navigation property (such as `contact_customer_accounts`).
+ * Expanded, it is an array of the related records.
  */
 export interface CollectionNavigation<
   TEntity extends object = IEntity,
@@ -65,8 +65,26 @@ export interface CollectionNavigation<
   readonly navigation: TNavigation;
 }
 
-/** A navigation property of either kind. */
-export type NavigationProperty = SingleNavigation | CollectionNavigation;
+/**
+ * A many-to-many collection-valued navigation property (its name is its own partner's, such as
+ * `teammembership_association`). Expanded, it is an array of the related records; Dataverse
+ * refuses a nested `$expand` inside it ("Only many-to-one relationships are supported for nested
+ * expansion"), so its expand options have no `expand`.
+ */
+export interface ManyToManyNavigation<
+  TEntity extends object = IEntity,
+  TColumn extends string = string,
+  TNavigation extends object = UntypedNavigation,
+> {
+  readonly collection: true;
+  readonly manyToMany: true;
+  readonly entity: TEntity;
+  readonly column: TColumn;
+  readonly navigation: TNavigation;
+}
+
+/** A navigation property of any kind. */
+export type NavigationProperty = SingleNavigation | CollectionNavigation | ManyToManyNavigation;
 
 /**
  * The navigation properties of a table the compiler knows nothing about: any name, any column.
@@ -75,37 +93,77 @@ export type NavigationProperty = SingleNavigation | CollectionNavigation;
  */
 export type UntypedNavigation = Readonly<Record<string, NavigationProperty>>;
 
+/** Options any expanded property takes: `$select` of the related table's columns. */
+export interface ExpandSelectOption<TColumn extends string> {
+  /** `$select` inside the expansion: the related table's columns. */
+  readonly select?: readonly TColumn[];
+}
+
+/** `$filter`, which an expanded collection takes. */
+export interface ExpandFilterOption {
+  /** `$filter` inside the expansion, e.g. `"statecode eq 0"`. */
+  readonly filter?: string;
+}
+
+/** `$orderby` and `$top`, which only a collection expanded at the top level, without a nested `$expand`, takes. */
+export interface ExpandLimitOptions {
+  /** `$orderby` inside the expansion, e.g. `["fullname asc"]`. */
+  readonly orderBy?: readonly string[];
+  /** `$top` inside the expansion. */
+  readonly top?: number;
+}
+
+/** No `$orderby` or `$top`: with a nested `$expand`, or inside another expansion. */
+export interface ExpandNoLimitOptions {
+  readonly orderBy?: never;
+  readonly top?: never;
+}
+
 /**
- * Options for one expanded navigation property: `select` takes the related table's columns and
- * `expand` its navigation properties. A collection-valued property also takes `filter`,
- * `orderBy` and `top`, which Dataverse supports only there.
+ * Options for one expanded navigation property, as Dataverse accepts them (Learn: "Join tables
+ * by using OData"):
+ *
+ * - a lookup: `select` and a nested `expand`;
+ * - a one-to-many collection: `select` and `filter`, plus either `orderBy` / `top` or a nested
+ *   `expand`, not both ($top and $orderby aren't supported with a nested $expand, 0x80060888);
+ *   inside another expansion (`TNested`), only `select`, `filter` and `expand`;
+ * - a many-to-many collection: no nested `expand`.
+ *
+ * Dataverse may also refuse `$top` / `$orderby` on one expanded collection when another part of
+ * the query has a nested `$expand`; the types check each property on its own.
  */
-export type ExpandPropertyOptions<TProperty> = TProperty extends {
+export type ExpandPropertyOptions<TProperty, TNested extends boolean = false> = TProperty extends {
   readonly collection: true;
   readonly column: infer TColumn extends string;
   readonly navigation: infer TNavigation;
 }
-  ? {
-      /** `$select` inside the expansion: the related table's columns. */
-      readonly select?: readonly TColumn[];
-      /** `$filter` inside the expansion, e.g. `"statecode eq 0"`. */
-      readonly filter?: string;
-      /** `$orderby` inside the expansion, e.g. `["fullname asc"]`. */
-      readonly orderBy?: readonly string[];
-      /** `$top` inside the expansion. */
-      readonly top?: number;
-      /** Nested expansions, of the related table's navigation properties. */
-      readonly expand?: Expand<TNavigation>;
-    }
+  ? TProperty extends { readonly manyToMany: true }
+    ? ExpandSelectOption<TColumn> &
+        ExpandFilterOption &
+        (TNested extends true ? ExpandNoLimitOptions : ExpandLimitOptions)
+    : TNested extends true
+      ? ExpandSelectOption<TColumn> &
+          ExpandFilterOption &
+          ExpandNoLimitOptions & {
+            /** Nested expansions, of the related table's navigation properties. */
+            readonly expand?: Expand<TNavigation, true>;
+          }
+      : | (ExpandSelectOption<TColumn> &
+            ExpandFilterOption &
+            ExpandLimitOptions & { readonly expand?: never })
+        | (ExpandSelectOption<TColumn> &
+            ExpandFilterOption &
+            ExpandNoLimitOptions & {
+              /** Nested expansions (no `orderBy` / `top` then). */
+              readonly expand?: Expand<TNavigation, true>;
+            })
   : TProperty extends {
         readonly column: infer TColumn extends string;
         readonly navigation: infer TNavigation;
       }
-    ? {
-        /** `$select` inside the expansion: the related table's columns. */
-        readonly select?: readonly TColumn[];
+    ? ExpandSelectOption<TColumn> & {
         /** Nested expansions, of the related table's navigation properties. */
-        readonly expand?: Expand<TNavigation>;
+        readonly expand?: Expand<TNavigation, true>;
       }
     : never;
 
@@ -120,13 +178,15 @@ export type ExpandPropertyOptions<TProperty> = TProperty extends {
  *   is slow to compile for a table with hundreds of navigation properties), and the result
  *   types it only when the name is the table's.
  *
- * The object form sends what core's `expand(name, options)` sends; the array form sends the
- * strings as they are.
+ * `TNested` is `true` inside another expansion (see {@link ExpandPropertyOptions}). The object
+ * form sends what core's `expand(name, options)` sends; the array form sends the strings as they
+ * are.
  */
-export type Expand<TNavigation> =
+export type Expand<TNavigation, TNested extends boolean = false> =
   | ReadonlyArray<(keyof TNavigation & string) | `${string}(${string})`>
   | {
-      readonly [K in keyof TNavigation & string]?: true | ExpandPropertyOptions<TNavigation[K]>;
+      readonly [K in keyof TNavigation & string]?:
+        true | ExpandPropertyOptions<TNavigation[K], TNested>;
     };
 
 /**

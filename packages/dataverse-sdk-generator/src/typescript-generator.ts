@@ -586,8 +586,8 @@ export class TypescriptGenerator {
    * With `typedClient` (#431): the navigation properties of `entity` the Web API expands, by
    * name, each with its runtime type: `SingleNavigation<Contact, ContactColumn,
    * ContactNavigation>` for a lookup to a generated table, `CollectionNavigation<…>` for a
-   * collection, and the bare `SingleNavigation` / `CollectionNavigation` (any column) for a table
-   * that isn't generated. A consolidated polymorphic lookup (`parentcustomerid`) isn't a Web API
+   * one-to-many collection, `ManyToManyNavigation<…>` for a many-to-many one (its own partner),
+   * and the bare kind (any column) for a table that isn't generated. A consolidated polymorphic lookup (`parentcustomerid`) isn't a Web API
    * property: the ones it stands for (`parentcustomerid_account`, …) are listed instead.
    */
   private clientNavigation(
@@ -596,9 +596,12 @@ export class TypescriptGenerator {
   ): Array<{ key: string; type: string }> {
     const byName = new Map(this.model.EntityTypes.map((e) => [e.Name, e]));
     const navigation = new Map<string, string>();
-    const add = (name: string, targetType: string, collection: boolean): void => {
+    const add = (
+      name: string,
+      targetType: string,
+      kind: "SingleNavigation" | "CollectionNavigation" | "ManyToManyNavigation"
+    ): void => {
       if (navigation.has(name)) return;
-      const kind = collection ? "CollectionNavigation" : "SingleNavigation";
       imports.type(kind, RUNTIME_PACKAGE);
       const target = byName.get(targetType);
       const names = target ? this.clientTypeNames.get(target) : undefined;
@@ -611,9 +614,14 @@ export class TypescriptGenerator {
     };
     for (const nav of entity.NavigationProperties) {
       if (nav.Members) {
-        for (const member of nav.Members) add(member.Name, member.TargetType, false);
+        for (const member of nav.Members) add(member.Name, member.TargetType, "SingleNavigation");
+      } else if (!nav.IsCollection) {
+        add(nav.Name, nav.TargetType, "SingleNavigation");
       } else {
-        add(nav.Name, nav.TargetType, nav.IsCollection);
+        // A many-to-many navigation property is its own partner (Learn: "Web API navigation
+        // properties"); Dataverse refuses a nested $expand inside one
+        const manyToMany = nav.RelationshipName === nav.Name;
+        add(nav.Name, nav.TargetType, manyToMany ? "ManyToManyNavigation" : "CollectionNavigation");
       }
     }
     return [...navigation]
