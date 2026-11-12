@@ -415,8 +415,26 @@ keeps watchers, incremental builds and diffs quiet. The CLI prints the tables it
   indexes) are written on every run.
 - Files the previous run wrote that this one doesn't (a table removed from `entities`, an enum that
   is gone) are deleted. Only files listed in the stamp are touched.
-- Metadata is still read in full: `$metadata` and RetrieveMetadataChanges for each table. To
-  regenerate everything, delete the stamp file.
+- Only the tables that changed are read. The stamp also keeps each table's metadata (as
+  RetrieveMetadataChanges returned it, without its `null` properties) and the `ServerVersionStamp`
+  of the run. The next run reads `$metadata`, then sends one RetrieveMetadataChanges request with
+  that version stamp (`ClientVersionStamp`, and `DeletedMetadataFilters` for deleted tables and
+  columns) and reads again only the tables it says changed, or whose table or column was deleted.
+  A run over unchanged metadata makes no per-table request. The docs don't say that
+  RetrieveMetadataChanges lists the tables that use a global choice whose options changed, so when
+  a kept table uses a global choice, the run also reads the option values of the org's global
+  choices (one `GlobalOptionSetDefinitions` request) and reads again the tables whose global
+  choices have other values now. A deleted table is gone from
+  `$metadata` too, so it isn't generated and its files are deleted. The CLI prints the tables it
+  read; `generateCode()` returns them as `fetchedTables`.
+- Every table is read again when there is nothing to reuse: no stamp (or one from before this
+  feature), another generator version, another `environmentUrl` or `apiVersion`, or a version
+  stamp Dataverse no longer has (the `ExpiredVersionStamp` error, after 90 days by default or
+  after maintenance). If the changes request fails otherwise, every table is read again and a
+  warning says why.
+- The stamp file grows with the metadata it keeps: with the number of tables and columns
+  generated, most with `"entities": []` (every table).
+- To regenerate and read everything, delete the stamp file.
 
 ### Custom templates
 
@@ -1391,7 +1409,7 @@ export function getLogicalName(schemaName: string): string | undefined {
 - ✅ MSAL authentication flows (device code, client credentials)
 - ✅ Create/Update types (`<Entity>Create`, `<Entity>Update`: writable columns only)
 - ✅ Custom templates (`"templates"`, `dataverse-gen eject`)
-- ✅ Incremental generation (`"output": { "incremental": true }`: only changed tables are rewritten; metadata is still read in full)
+- ✅ Incremental generation (`"output": { "incremental": true }`: only changed tables are rewritten, and only changed tables' metadata is read)
 - ✅ Validation rules (column constraints in the metadata, for `validateEntity()`)
 - ✅ Xrm.FormContext types (`"formContext": true`; per table, not per form layout)
 - ✅ Typed request builders per entity set (`"typedClient": true`: `createTypedClient()`, #312)
