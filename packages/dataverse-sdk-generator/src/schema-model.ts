@@ -5,6 +5,7 @@
  */
 
 import * as xmljs from "xml-js";
+import { compareFormLayouts, toFormLayout } from "./form-xml.js";
 import type {
   DataverseGenConfig,
   EntityType,
@@ -21,7 +22,16 @@ import type {
   AttributeMetadataDetail,
   EntityMetadataDetail,
   MetadataService,
+  RetrieveMetadataChangesResponse,
 } from "./metadata-service.js";
+import { optionValues } from "./metadata-service.js";
+import {
+  deletedIds,
+  GENERATOR_VERSION,
+  metadataSource,
+  readStamp,
+  withoutNulls,
+} from "./incremental.js";
 
 /**
  * Schema model that parses CSDL $metadata and builds type definitions
@@ -52,11 +62,43 @@ export class SchemaModel {
    */
   AllEntityTypeNames = new Set<string>();
 
+  /**
+   * After {@link generate}: each generated table's metadata from RetrieveMetadataChanges, by
+   * logical name. Incremental generation keeps it in the stamp file (#429).
+   */
+  TableMetadata = new Map<string, EntityMetadataDetail>();
+
+  /**
+   * After {@link generate}: the `ServerVersionStamp` the metadata in {@link TableMetadata} is
+   * current as of, for the next incremental run's `ClientVersionStamp` (#429). `undefined` when
+   * Dataverse returned none.
+   */
+  MetadataVersionStamp: string | undefined;
+
+  /**
+   * After {@link generate}: the tables whose metadata was read from Dataverse in this run. With
+   * `output.incremental`, the tables that changed since the last run (or every table, when there
+   * is nothing to reuse); otherwise every table.
+   */
+  FetchedTables: string[] = [];
+
+  /**
+   * After {@link generate} in all-tables mode: the entity types RetrieveMetadataChanges has no
+   * table for, which weren't generated.
+   */
+  SkippedTables: string[] = [];
+
   /** Entity types that are tables: not abstract, and with an entity set. */
   private tableEntityTypeNames = new Set<string>();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private metadata: any;
+
+  /**
+   * With `formLayouts`: each table's columns and their `AttributeTypeName` (`PartyListType`, …),
+   * every column, including those `$metadata` has no property for (a party list).
+   */
+  private readonly columnTypes = new Map<EntityType, Map<string, string>>();
 
   constructor(
     private metadataService: MetadataService,
@@ -88,7 +130,23 @@ export class SchemaModel {
     await this.loadEdmxMetadata();
     this.filter();
     await this.enrichWithDetailedMetadata();
+    if (this.config.formLayouts === true) await this.readFormLayouts();
     this.resolveTypes();
+  }
+
+  /**
+   * With `formLayouts` (#430): each table's active main and quick create forms, from their FormXml,
+   * with the type of each column a control is bound to.
+   */
+  private async readFormLayouts(): Promise<void> {
+    for (const entityType of this.EntityTypes) {
+      const records = await this.metadataService.getSystemForms(entityType.LogicalName);
+      const columnTypes = this.columnTypes.get(entityType) ?? new Map<string, string>();
+      entityType.Forms = records
+        .map((record) => toFormLayout(record, columnTypes))
+        .filter((form) => form !== undefined)
+        .sort(compareFormLayouts);
+    }
   }
 
   /**
@@ -129,14 +187,34 @@ export class SchemaModel {
    * Reference: scottdurow/dataverse-gen SchemaModel.ts#L138-L213
    */
   private async enrichWithDetailedMetadata(): Promise<void> {
+    this.TableMetadata.clear();
+    this.SkippedTables = [];
+    this.FetchedTables = [];
+    this.MetadataVersionStamp = undefined;
     if (this.EntityTypes.length === 0) return;
 
     const allTables = !this.config.entities || this.config.entities.length === 0;
+    const kept = await this.keptMetadata(allTables);
+    // The version stamp of a run that read everything is that of its first request: a change
+    // made while the run reads the other tables is newer, so the next run asks about it again.
+    let stampTaken = kept !== undefined;
     const skipped: string[] = [];
     for (const entityType of [...this.EntityTypes]) {
-      const response = await this.metadataService.getEntityMetadata(entityType.LogicalName);
+      let detail: EntityMetadataDetail | undefined;
+      if (kept?.tables.has(entityType.LogicalName)) {
+        detail = kept.tables.get(entityType.LogicalName);
+      } else if (!kept?.skipped.has(entityType.LogicalName)) {
+        const response = await this.metadataService.getEntityMetadata(entityType.LogicalName);
+        this.FetchedTables.push(entityType.LogicalName);
+        if (!stampTaken) {
+          this.MetadataVersionStamp = response.ServerVersionStamp;
+          stampTaken = true;
+        }
+        const first = response.EntityMetadata?.[0];
+        detail = first ? withoutNulls(first) : undefined;
+      }
 
-      if (!response.EntityMetadata || response.EntityMetadata.length === 0) {
+      if (!detail) {
         if (allTables) {
           // All-tables mode (#360): an entity type RetrieveMetadataChanges doesn't know isn't
           // generated (references to it are typed IEntity), instead of failing the whole run.
@@ -148,8 +226,10 @@ export class SchemaModel {
           `${entityType.LogicalName} is not a Dataverse entity, remove it from the .dataverse-gen.json`
         );
       }
+      this.TableMetadata.set(entityType.LogicalName, detail);
 
-      const entityMetadata = canonicalOrder(response.EntityMetadata[0]);
+      const entityMetadata = canonicalOrder(detail);
+      if (this.config.formLayouts === true) this.recordColumnTypes(entityType, entityMetadata);
 
       // Set metadata properties not available in EDMX
       entityType.SchemaName = entityMetadata.SchemaName ?? entityType.LogicalName;
@@ -246,12 +326,136 @@ export class SchemaModel {
       this.ensureUniqueMemberNames(entityType);
     }
 
+    this.SkippedTables = skipped;
     if (skipped.length > 0) {
       this.Warnings.push(
         `Not generated: ${skipped.join(", ")}. RetrieveMetadataChanges returns no table ` +
           `metadata for ${skipped.length === 1 ? "it" : "them"}.`
       );
     }
+  }
+
+  /**
+   * Incremental generation (#429): the tables' metadata the previous run kept in the stamp file
+   * that is still current, after asking Dataverse what changed since that run's version stamp. A
+   * table that changed or was added, whose table or column was deleted, or one of whose global
+   * choices has other option values now, isn't in it, so it's read again; a deleted table isn't
+   * in `$metadata` either, so it isn't generated.
+   *
+   * `undefined` (read every table) when there is nothing to reuse: not incremental, no stamp, a
+   * stamp of another generator version or org, or a version stamp Dataverse no longer has
+   * (`ExpiredVersionStamp`). When asking for the changes fails otherwise, a warning says so.
+   */
+  private async keptMetadata(
+    allTables: boolean
+  ): Promise<{ tables: Map<string, EntityMetadataDetail>; skipped: Set<string> } | undefined> {
+    if (this.config.output?.incremental !== true) return undefined;
+    const stamp = await readStamp(this.config.output.outputRoot ?? "./generated");
+    const previous = stamp?.metadata;
+    if (
+      !stamp ||
+      !previous ||
+      stamp.generator !== GENERATOR_VERSION ||
+      previous.source !== metadataSource(this.config) ||
+      typeof previous.versionStamp !== "string"
+    ) {
+      return undefined;
+    }
+
+    const wanted = new Set(this.EntityTypes.map((e) => e.LogicalName));
+    const tables = new Map<string, EntityMetadataDetail>();
+    for (const [name, table] of Object.entries(stamp.tables)) {
+      if (wanted.has(name) && table.metadata) tables.set(name, table.metadata);
+    }
+    // Entity types a previous all-tables run found no table for (and so didn't generate)
+    const skipped = new Set(
+      allTables && Array.isArray(previous.skipped)
+        ? previous.skipped.filter((name) => wanted.has(name))
+        : []
+    );
+    if (tables.size === 0 && skipped.size === 0) return undefined;
+
+    let changes: RetrieveMetadataChangesResponse | undefined;
+    try {
+      changes = await this.metadataService.getMetadataChanges(previous.versionStamp, [
+        ...tables.keys(),
+        ...skipped,
+      ]);
+    } catch (error: unknown) {
+      this.Warnings.push(
+        `Incremental: couldn't ask Dataverse what changed since the last run, so every table's ` +
+          `metadata was read again: ${error instanceof Error ? error.message : String(error)}`
+      );
+      return undefined;
+    }
+    // Expired version stamp, or (unexpected) no new one: read everything again
+    if (!changes?.ServerVersionStamp) return undefined;
+    this.MetadataVersionStamp = changes.ServerVersionStamp;
+
+    for (const entity of changes.EntityMetadata ?? []) {
+      if (entity.LogicalName) {
+        tables.delete(entity.LogicalName);
+        skipped.delete(entity.LogicalName);
+      }
+    }
+    const deleted = deletedIds(changes.DeletedMetadata);
+    if (deleted.size > 0) {
+      const isDeleted = (id: string | undefined) =>
+        id !== undefined && deleted.has(id.toLowerCase());
+      for (const [name, detail] of tables) {
+        if (
+          isDeleted(detail.MetadataId) ||
+          detail.Attributes?.some((a) => isDeleted(a.MetadataId))
+        ) {
+          tables.delete(name);
+        }
+      }
+    }
+
+    // A global choice used by a kept table: compare its option values with the kept ones, since
+    // the docs don't say RetrieveMetadataChanges lists the tables using a global choice that
+    // changed. One request, made only when a kept table uses a global choice.
+    const globalChoices = (detail: EntityMetadataDetail) =>
+      (detail.Attributes ?? []).flatMap((a) =>
+        a.OptionSet?.IsGlobal === true && a.OptionSet.Name && Array.isArray(a.OptionSet.Options)
+          ? [{ name: a.OptionSet.Name, values: optionValues(a.OptionSet.Options) }]
+          : []
+      );
+    if ([...tables.values()].some((detail) => globalChoices(detail).length > 0)) {
+      let current: Map<string, number[]>;
+      try {
+        current = await this.metadataService.getGlobalOptionSetValues();
+      } catch (error: unknown) {
+        this.Warnings.push(
+          `Incremental: couldn't read the global choices to compare them, so every table's ` +
+            `metadata was read again: ${error instanceof Error ? error.message : String(error)}`
+        );
+        this.MetadataVersionStamp = undefined;
+        return undefined;
+      }
+      for (const [name, detail] of tables) {
+        const changed = globalChoices(detail).some(
+          (choice) => current.get(choice.name)?.join(",") !== choice.values.join(",")
+        );
+        if (changed) tables.delete(name);
+      }
+    }
+    return { tables, skipped };
+  }
+
+  /**
+   * `formLayouts`: record the type of each of the table's columns, as `AttributeTypeName`
+   * (`AttributeType` + `Type` when it's missing).
+   */
+  private recordColumnTypes(entityType: EntityType, metadata: EntityMetadataDetail): void {
+    const types = new Map<string, string>();
+    for (const attribute of metadata.Attributes ?? []) {
+      const type =
+        attribute.AttributeTypeName?.Value ??
+        (attribute.AttributeType ? `${attribute.AttributeType}Type` : undefined);
+      if (attribute.LogicalName && type) types.set(attribute.LogicalName, type);
+    }
+    this.columnTypes.set(entityType, types);
   }
 
   /**

@@ -250,6 +250,9 @@ interface DataverseGenConfig {
   /** Typed Xrm form contexts for model-driven form scripts (default: false; see Form contexts) */
   formContext?: boolean;
 
+  /** Form context types per main and quick create form, from FormXml (default: false; see Form layouts) */
+  formLayouts?: boolean;
+
   /** Typed request builders per entity set: createTypedClient() (default: false; see Typed client) */
   typedClient?: boolean;
 
@@ -415,8 +418,26 @@ keeps watchers, incremental builds and diffs quiet. The CLI prints the tables it
   indexes) are written on every run.
 - Files the previous run wrote that this one doesn't (a table removed from `entities`, an enum that
   is gone) are deleted. Only files listed in the stamp are touched.
-- Metadata is still read in full: `$metadata` and RetrieveMetadataChanges for each table. To
-  regenerate everything, delete the stamp file.
+- Only the tables that changed are read. The stamp also keeps each table's metadata (as
+  RetrieveMetadataChanges returned it, without its `null` properties) and the `ServerVersionStamp`
+  of the run. The next run reads `$metadata`, then sends one RetrieveMetadataChanges request with
+  that version stamp (`ClientVersionStamp`, and `DeletedMetadataFilters` for deleted tables and
+  columns) and reads again only the tables it says changed, or whose table or column was deleted.
+  A run over unchanged metadata makes no per-table request. The docs don't say that
+  RetrieveMetadataChanges lists the tables that use a global choice whose options changed, so when
+  a kept table uses a global choice, the run also reads the option values of the org's global
+  choices (one `GlobalOptionSetDefinitions` request) and reads again the tables whose global
+  choices have other values now. A deleted table is gone from
+  `$metadata` too, so it isn't generated and its files are deleted. The CLI prints the tables it
+  read; `generateCode()` returns them as `fetchedTables`.
+- Every table is read again when there is nothing to reuse: no stamp (or one from before this
+  feature), another generator version, another `environmentUrl` or `apiVersion`, or a version
+  stamp Dataverse no longer has (the `ExpiredVersionStamp` error, after 90 days by default or
+  after maintenance). If the changes request fails otherwise, every table is read again and a
+  warning says why.
+- The stamp file grows with the metadata it keeps: with the number of tables and columns
+  generated, most with `"entities": []` (every table).
+- To regenerate and read everything, delete the stamp file.
 
 ### Custom templates
 
@@ -424,15 +445,16 @@ keeps watchers, incremental builds and diffs quiet. The CLI prints the tables it
 replaces the built-in one of the same name; the others stay built-in, so the directory needs only
 the ones you change. `dataverse-gen eject` copies all of them there to start from:
 
-| Template          | Renders                                                              |
-| ----------------- | -------------------------------------------------------------------- |
-| `entity.ejs`      | `entities/<Entity>.ts`: the interface, create/update types, metadata |
-| `enum.ejs`        | `enums/<OptionSet>.ts`                                               |
-| `action.ejs`      | `actions/<Name>Action.ts`                                            |
-| `function.ejs`    | `functions/<Name>Function.ts`                                        |
-| `complextype.ejs` | `complextypes/<Name>.ts`                                             |
-| `metadata.ejs`    | `metadata.ts`                                                        |
-| `form.ejs`        | `forms/<Entity>Form.ts` (with `formContext`)                         |
+| Template           | Renders                                                              |
+| ------------------ | -------------------------------------------------------------------- |
+| `entity.ejs`       | `entities/<Entity>.ts`: the interface, create/update types, metadata |
+| `enum.ejs`         | `enums/<OptionSet>.ts`                                               |
+| `action.ejs`       | `actions/<Name>Action.ts`                                            |
+| `function.ejs`     | `functions/<Name>Function.ts`                                        |
+| `complextype.ejs`  | `complextypes/<Name>.ts`                                             |
+| `metadata.ejs`     | `metadata.ts`                                                        |
+| `form.ejs`         | `forms/<Entity>Form.ts` (with `formContext`)                         |
+| `form-layouts.ejs` | `forms/<Entity>Forms.ts` (with `formLayouts`)                        |
 
 A template gets the same data as the built-in one (the schema model object, such as `entity` or
 `enumType`, the type names, and helpers such as `formatType()`, `propertyKey()`, `doc()` and
@@ -594,7 +616,93 @@ A choice column whose option set the generator didn't make an enum for (a global
 as forms name it, not by its navigation property. Primary keys, the read-only name columns beside a
 lookup, and other virtual, file and image columns aren't included. The types cover every column of
 the table, not one form's layout: a column that isn't on the form returns `null`, as in
-`@types/xrm`, and a control placed twice (`name1`) isn't typed.
+`@types/xrm`, and a control placed twice (`name1`) isn't typed; for that, see Form layouts.
+
+### Form layouts
+
+`"formLayouts": true` generates types per form, from each table's active main and quick create
+forms (their `systemform` records and FormXml): `forms/<Entity>Forms.ts` with, for each form,
+`<Entity><Kind>_<Form>Attributes`, `…Controls`, `…Tabs` and `…FormContext` (`AccountMain_Account`,
+`AccountMain_SalesInsights`, `AccountQuickCreate_AccountQuickCreate`; `_2` when a name is taken).
+It turns `formContext` on too: the per-form types build on the table-wide ones. Generating reads
+one more query per table (`systemforms`), so the signed-in user or app needs read access to forms.
+
+<!-- no-check -->
+
+```typescript
+// generated/forms/AccountForms.ts
+/// <reference types="xrm" />
+
+import type { AccountAttributes, AccountControls } from "./AccountForm.js";
+import type { FormLayoutUi } from "./form-layout.js";
+
+export interface AccountMain_AccountAttributes {
+  name: AccountAttributes["name"];
+  primarycontactid: AccountAttributes["primarycontactid"];
+  ownerid: AccountAttributes["ownerid"]; // in the header
+  // ...
+}
+
+export interface AccountMain_AccountControls {
+  name: AccountControls["name"];
+  name1: AccountControls["name"]; // the column's second control
+  header_ownerid: AccountControls["ownerid"];
+  Contacts: Xrm.Controls.GridControl; // a subgrid
+  WebResource_map: Xrm.Controls.IframeControl;
+  // ...
+}
+
+export interface AccountMain_AccountTabs {
+  SUMMARY_TAB: "ACCOUNT_INFORMATION" | "CONTACTS"; // the tab's sections
+  // ...
+}
+
+export type AccountMain_AccountFormContext = Omit<
+  Xrm.FormContext,
+  "getAttribute" | "getControl" | "ui"
+> & {
+  getAttribute<K extends keyof AccountMain_AccountAttributes>(
+    name: K
+  ): AccountMain_AccountAttributes[K];
+  getAttribute<K extends keyof AccountAttributes>(name: K): AccountAttributes[K] | null;
+  getControl<K extends keyof AccountMain_AccountControls>(name: K): AccountMain_AccountControls[K];
+  // also header_process_<column> controls (| null), and the delegate overloads
+  ui: FormLayoutUi<AccountMain_AccountTabs>; // tabs.get(name), tab.sections.get(name)
+};
+```
+
+<!-- no-check -->
+
+```typescript
+import type { AccountMain_AccountFormContext } from "./generated/forms/AccountForms.js";
+
+export function onLoad(executionContext: Xrm.Events.EventContext): void {
+  const form = executionContext.getFormContext() as AccountMain_AccountFormContext;
+  form.getAttribute("name").getValue(); // StringAttribute: on the form, so not null
+  form.getControl("name1").setVisible(false);
+  form.getControl("Contacts").refresh(); // GridControl
+  form.ui.tabs.get("SUMMARY_TAB").sections.get("ACCOUNT_INFORMATION").setVisible(true);
+  form.getAttribute("statecode")?.getValue(); // a column not on this form: | null
+  form.getControl("footer_statecode"); // error: not a control getControl() reaches
+  form.ui.tabs.get("DETAILS"); // error: not a tab of this form
+}
+```
+
+- **Names.** A control is keyed by its `id` in the FormXml, which is its Client API name: the
+  column's logical name, `<column>1`, `<column>2`, … for a column placed again, `header_<column>`
+  in the header; a subgrid, web resource, IFRAME or quick view form by the name it was given.
+  Footer controls aren't included (`getControl()` doesn't reach them), nor tabs and sections
+  without a name.
+- **Types.** A column the table-wide types have is typed as there (`AccountAttributes["name"]`, so
+  a choice keeps its enum). A party list column (`to`, `requiredattendees`) is a
+  `LookupAttribute` / `LookupControl`; a file or image column, which `@types/xrm` has no type for,
+  is an `Attribute` / `StandardControl`. A subgrid is a `GridControl`, a web resource or IFRAME an
+  `IframeControl`, a quick view form a `QuickFormControl`, the timeline a `TimelineWall`, any
+  other control a `Control`.
+- **Not null.** What's on the form is returned without `| null`. Another column of the table
+  (one only in the business process flow, say) is still there as `| null`, and so is a business
+  process flow control, `header_process_<column>`. Regenerate after changing a form; with
+  incremental generation, a changed form regenerates its table's files.
 
 ## 📂 Generated Output Structure
 
@@ -618,8 +726,10 @@ generated/
 ├── complextypes/
 │   ├── AuditDetail.ts
 │   └── index.ts
-├── forms/              # with "formContext": true
+├── forms/              # with "formContext": true (or "formLayouts": true)
 │   ├── AccountForm.ts
+│   ├── AccountForms.ts # with "formLayouts": true
+│   ├── form-layout.ts  # with "formLayouts": true (helper types, not exported)
 │   └── index.ts
 ├── client.ts           # with "typedClient": true
 ├── internal/
@@ -1412,9 +1522,9 @@ export function getLogicalName(schemaName: string): string | undefined {
 - ✅ MSAL authentication flows (device code, client credentials)
 - ✅ Create/Update types (`<Entity>Create`, `<Entity>Update`: writable columns only)
 - ✅ Custom templates (`"templates"`, `dataverse-gen eject`)
-- ✅ Incremental generation (`"output": { "incremental": true }`: only changed tables are rewritten; metadata is still read in full)
+- ✅ Incremental generation (`"output": { "incremental": true }`: only changed tables are rewritten, and only changed tables' metadata is read)
 - ✅ Validation rules (column constraints in the metadata, for `validateEntity()`)
-- ✅ Xrm.FormContext types (`"formContext": true`; per table, not per form layout)
+- ✅ Xrm.FormContext types (`"formContext": true`, per table; `"formLayouts": true`, per form)
 - ✅ Typed request builders per entity set (`"typedClient": true`: `createTypedClient()`, #312)
 
 ---

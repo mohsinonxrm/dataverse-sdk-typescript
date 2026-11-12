@@ -35,7 +35,7 @@ export async function generateLiveInto(
   outputRoot: string,
   selection: GenerateSelection,
   output: Omit<NonNullable<DataverseGenConfig["output"]>, "outputRoot"> = {}
-): Promise<{ warnings: string[]; unchangedTables: string[] }> {
+): Promise<{ warnings: string[]; unchangedTables: string[]; fetchedTables: string[] }> {
   const { tokenProvider } = liveClient();
   const token = await tokenProvider.getToken();
   return generateCode(
