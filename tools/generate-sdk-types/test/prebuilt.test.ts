@@ -309,6 +309,33 @@ describe("renderSolutionTable (#304)", () => {
       `x\n<!-- solutions -->\n\n${renderSolutionTable(FILTER)}\n\n<!-- /solutions -->\n`
     );
   });
+
+  it("escapes a backslash in a cell, so it can't swallow the escape of a pipe", () => {
+    const filter: PrebuiltFilter = {
+      operationSolutions: {},
+      prebuilt: { solutions: { Odd: { app: "A\\", prebuilt: false, note: "x\\|y" } } },
+    };
+    expect(renderSolutionTable(filter).split("\n")[3]).toBe(
+      "| `Odd` | A\\\\ | 0 | no | x\\\\\\|y |"
+    );
+  });
+
+  it("regenerates every block, and leaves an opening marker with no closing one as it is", () => {
+    const block = `<!-- solutions -->\n\n${renderSolutionTable(FILTER)}\n\n<!-- /solutions -->`;
+    expect(
+      renderSolutionBlocks(
+        "a <!-- solutions -->1<!-- /solutions --> b <!-- solutions -->2<!-- /solutions --> c <!-- solutions --> d",
+        FILTER
+      )
+    ).toBe(`a ${block} b ${block} c <!-- solutions --> d`);
+  });
+
+  it("stays linear on many opening markers with no closing one (CodeQL js/polynomial-redos)", () => {
+    const markdown = "<!-- solutions -->".repeat(50_000);
+    const start = performance.now();
+    expect(renderSolutionBlocks(markdown, FILTER)).toBe(markdown);
+    expect(performance.now() - start).toBeLessThan(1000);
+  });
 });
 
 describe("the committed solution data (#304)", () => {
