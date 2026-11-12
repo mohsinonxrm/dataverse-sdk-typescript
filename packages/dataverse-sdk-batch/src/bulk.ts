@@ -305,7 +305,9 @@ export function updateMultiple(
  *   by alternate key (`accounts(accountnumber='A-1')`; write the key as for any Web API URL, e.g.
  *   with `odataKey()` from the core package).
  *
- * Records are sent as given, with `@odata.type` added unless the record sets it. With `"batch"`,
+ * Records are sent as given, with `@odata.type` added unless the record sets it; in
+ * `UpsertMultiple` a row named by primary key in `@odata.id` is sent with its primary key column
+ * instead, since Dataverse reads `@odata.id` there only as an alternate key. With `"batch"`,
  * each record is a `PATCH <entitySet>(<key>)` without `If-Match`, which Dataverse treats as an
  * upsert; `@odata.id` (or, when it names the row, the primary key) is left out of the body.
  * Dataverse rejects two records naming the same row in one `UpsertMultiple`, so a list that does
@@ -886,7 +888,11 @@ function validate(
           }
           const { "@odata.id": _named, ...rest } = value;
           const keyId = guidOf(segment.key);
-          item = { target: value, body: rest, path: segment.path, ...idOf(id ?? keyId) };
+          // In UpsertMultiple, Dataverse reads `@odata.id` only as an alternate key: a primary key
+          // there fails with 0x80060890 ("The specified key attributes are not a defined key"),
+          // checked live. So a row named by primary key is sent with its primary key column.
+          const target = keyId ? { ...rest, [primaryIdAttribute]: id ?? keyId } : value;
+          item = { target, body: rest, path: segment.path, ...idOf(id ?? keyId) };
           row = keyId ? keyId.toLowerCase() : segment.key;
         }
         const earlier = rows.get(row);

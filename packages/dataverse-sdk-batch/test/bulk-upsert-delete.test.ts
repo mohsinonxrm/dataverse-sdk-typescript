@@ -98,6 +98,11 @@ describe("upsertMultiple() with UpsertMultiple (#434)", () => {
         name: "B",
       },
     ]);
+    // A row named by primary key in @odata.id goes as the primary key column: in UpsertMultiple
+    // Dataverse reads @odata.id only as an alternate key (0x80060890 otherwise; checked live)
+    expect(targetsOf(fake.requests[1])).toEqual([
+      { "@odata.type": "Microsoft.Dynamics.CRM.account", accountid: guid(3), name: "C" },
+    ]);
     expect(fake.requests[0].headers.prefer).toContain("Microsoft.PowerApps.CDS.ErrorDetails.*");
     expect(result).toMatchObject({ strategy: "bulk", success: true, succeeded: 3, requests: 2 });
     // The id is known by primary key, or from an @odata.id by GUID; not by alternate key.
