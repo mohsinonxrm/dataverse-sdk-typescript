@@ -122,6 +122,13 @@ export const <%- metadataName %>: <%- metadataType %> = {
       <%_ if (nav.IsPolymorphic) { _%>
       isPolymorphic: true,
       targets: <%- literal(nav.Targets || []) %>,
+      <%_ if (nav.Members && nav.Members.length > 0) { _%>
+      members: {
+        <%_ nav.Members.forEach(function(member){ _%>
+        <%- propertyKey(member.Name) %>: <%- literal(member.TargetType) %>,
+        <%_ }) _%>
+      },
+      <%_ } _%>
       <%_ } _%>
       isCollection: <%- nav.IsCollection ? 'true' : 'false' %>,
       relationshipName: <%- literal(nav.RelationshipName) %>,

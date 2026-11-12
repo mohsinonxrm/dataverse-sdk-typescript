@@ -541,6 +541,70 @@ array. A polymorphic lookup that the table's interface shows as one property (`p
 is expanded by the Web API's property for each target (`parentcustomerid_account`,
 `parentcustomerid_contact`). The requests are what core's `expand(name, options)` sends.
 
+Related records, upsert, bound operations and paging:
+
+<!-- no-check -->
+
+```typescript
+// Navigation: a collection lists, iterates and pages; a lookup gets (null when empty)
+const contacts = await typed.accounts
+  .byId(id)
+  .nav("contact_customer_accounts")
+  .list({ select: ["fullname"], filter: "statecode eq 0" });
+const primary = await typed.accounts
+  .byId(id)
+  .nav("primarycontactid")
+  .get({ select: ["fullname"] });
+
+// Associate / disassociate (a collection: $ref; a lookup: @odata.bind / DELETE $ref)
+await typed.accounts.byId(id).associate("contact_customer_accounts", contactId);
+await typed.accounts.byId(id).associate("contact_customer_accounts", [c1, c2], {
+  executor: createBindManyExecutor(), // optional, from @mohsinonxrm/dataverse-sdk-batch: one $batch
+});
+await typed.accounts.byId(id).disassociate("contact_customer_accounts", contactId);
+await typed.accounts.byId(id).associate("primarycontactid", contactId);
+await typed.accounts.byId(id).disassociate("primarycontactid");
+
+// Upsert by id or alternate key; mode: "createOnly" (If-None-Match: *) or "updateOnly"
+const accountId = await typed.accounts.upsert({ accountnumber: "A-1" }, { name: "Contoso" });
+
+// Bound actions and functions, from the generated classes
+const result = await typed.accounts.byId(id).actions.contoso_Recalculate({ Mode: "full" });
+const count = await typed.accounts.functions.contoso_CountActive({ State: 0 });
+
+// Paging: lazily, or one page at a time
+for await (const account of typed.accounts.iterate({ select: ["name"], pageSize: 500 })) {
+  // …
+}
+const page = await typed.accounts.listPage({ select: ["name"], pageSize: 50, count: true });
+const next = await typed.accounts.listPage({
+  select: ["name"],
+  pageSize: 50,
+  nextLink: page.nextLink, // the query is in the link; the other options type the result
+});
+```
+
+| Method                                                              | Request                                                                                                   |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `typed.<set>.byId(key).nav(name)`                                   | a client for `<set>(<key>)/<name>`: `list`/`iterate`/`listPage` or `get`                                  |
+| `.nav(collection).associate(target \| targets, { executor })`       | `POST <name>/$ref` (core's `associate()`), or core's `bindMany()` for several                             |
+| `.nav(collection).disassociate(target)`                             | `DELETE <name>(<id>)/$ref` (core's `disassociate()`)                                                      |
+| `.nav(lookup).set(target)` / `.clear()`                             | `PATCH` with `<name>@odata.bind` and `If-Match: *` / `DELETE <name>/$ref`                                 |
+| `typed.<set>.byId(key).associate(name, …)` / `.disassociate(name…)` | the same, by navigation property name                                                                     |
+| `typed.<set>.upsert(key, entity, { mode })`                         | `PATCH <set>(<key>)` without `If-Match`; resolves the id (by alternate key, from `return=representation`) |
+| `typed.<set>.byId(id).actions.<name>(parameters)` / `.functions`    | the generated class for the record, through `client.execute()`                                            |
+| `typed.<set>.actions.<name>(parameters)` / `.functions`             | the generated class bound to the entity set                                                               |
+| `typed.<set>.iterate(options)`                                      | core's `iterate()`: every page as it's read; `pageSize` sends `odata.maxpagesize`                         |
+| `typed.<set>.listPage(options)`                                     | one page (`GET`), `{ records, nextLink, count }`; `nextLink` in the options gets the next                 |
+
+A target is an id or alternate key of the related table (its entity set comes from the generated
+metadata) or an `EntityReference`. `upsert()` takes the columns valid in both a create and an
+update. `client.ts` has an `<Entity>Operations` object for each table with actions or functions
+bound to it (to a record of it, or to its entity set) among the generated ones; their methods take
+the parameters and then the request options, or only the options when there are no parameters. A
+bound operation's class binds by id, so a record reached by alternate key can't call one. `nav()`
+and the paging methods narrow by `select` and `expand` as `get()` and `list()` do.
+
 `key` is a GUID or an alternate key object. Every method takes core's request options
 (`signal`, `headers`, `prefer`, `timeoutMs`, …) last. `client.ts` imports every generated table's
 metadata, so in all-tables mode it's large; it's off by default.

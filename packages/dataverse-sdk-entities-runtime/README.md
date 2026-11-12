@@ -342,6 +342,13 @@ const all = await accounts.list({ filter: "statecode eq 0", maxItems: 100 });
   `get({ select: ["name"], expand: { primarycontactid: { select: ["fullname"] } } })`. A literal
   `select` narrows the result to those columns and each expanded property is added, typed by its
   own options (`ReadResult`). Without the navigation type, `expand` takes any name, as before.
+- `byId(key).nav(name)` returns a `RelatedCollectionClient` (`list`, `iterate`, `listPage`,
+  `associate`, `disassociate`) or a `RelatedRecordClient` (`get`, `set`, `clear`) for the related
+  records; `byId(key).associate(name, target)` / `.disassociate(name, …)` do the same by name.
+  `upsert(key, entity, { mode })`, `iterate(options)` and `listPage(options)` are on the set.
+- A sixth type argument and the `operations` option (the generated `<Entity>Operations`: the
+  bound actions' and functions' classes) add `byId(id).actions.<name>(parameters)` /
+  `.functions`, and `actions` / `functions` on the set for collection-bound ones.
 
 ---
 

@@ -188,6 +188,13 @@ export interface NavigationMetadata {
   /** For a polymorphic lookup: the logical names of the entities it can point to */
   targets?: string[];
 
+  /**
+   * For a polymorphic lookup: the Web API's navigation property for each target, by name, with
+   * the target's logical name (#432). Not always `<fullName>_<target>`: an activity's regarding
+   * lookup has `regardingobjectid_contact_task`. Metadata generated before it doesn't have it.
+   */
+  members?: Readonly<Record<string, string>>;
+
   /** Is this a collection? */
   isCollection: boolean;
 
@@ -301,9 +308,32 @@ export function isEntity(value: unknown): value is IEntity {
 export { formatParameterAlias, formatRecordPath, type ParameterKind } from "./parameters.js";
 
 export {
+  type AssociateOptions,
+  type AssociateTarget,
+  type AssociateTargets,
+  type BoundOperationMethod,
+  type BoundOperations,
   type CollectionNavigation,
+  type CollectionOperationMethods,
+  type DisassociateArguments,
   EntityRecordClient,
   EntitySetClient,
+  type EntitySetClientOptions,
+  type IterateRecordsOptions,
+  type ListPageOptions,
+  type NoOperationClasses,
+  type OperationClass,
+  type OperationClasses,
+  type OperationGroup,
+  type RecordOperationMethods,
+  type RecordPage,
+  type RelatedClient,
+  type RelatedClientContext,
+  RelatedCollectionClient,
+  RelatedRecordClient,
+  type UpsertEntity,
+  type UpsertMode,
+  type UpsertRecordOptions,
   type Expand,
   type ExpandedNames,
   type ExpandedProperties,
@@ -441,7 +471,10 @@ function bindingProperty(
     ? entityMetadata.navigation[key]
     : undefined;
   if (navigation?.isPolymorphic) {
-    return `${navigation.fullName ?? key}_${reference.logicalName}`;
+    const member = Object.entries(navigation.members ?? {}).find(
+      ([, target]) => target === reference.logicalName
+    );
+    return member ? member[0] : `${navigation.fullName ?? key}_${reference.logicalName}`;
   }
   if (navigation) return navigation.name;
   // A polymorphic lookup that wasn't consolidated: one navigation property per target.
@@ -466,6 +499,9 @@ function lookupNavigationProperties(key: string, entityMetadata: EntityMetadata)
   const navigation = own(key);
   if (navigation) {
     if (navigation.isCollection) return [];
+    if (navigation.members && Object.keys(navigation.members).length > 0) {
+      return Object.keys(navigation.members);
+    }
     if (navigation.isPolymorphic && navigation.targets?.length) {
       return navigation.targets.map((target) => `${navigation.fullName ?? key}_${target}`);
     }
