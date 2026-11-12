@@ -21,9 +21,18 @@ import {
   Tab,
   TabList,
   Textarea,
+  Toast,
+  ToastBody,
+  ToastTitle,
   tokens,
+  useToastController,
 } from "@fluentui/react-components";
-import { ArrowSwapRegular, DismissRegular, PlayRegular } from "@fluentui/react-icons";
+import {
+  ArrowSwapRegular,
+  DismissRegular,
+  PlayRegular,
+  TableSearchRegular,
+} from "@fluentui/react-icons";
 import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { CodeBlock } from "../components/CodeBlock";
@@ -34,9 +43,20 @@ import { HeaderList, RequestInspector } from "../components/RequestInspector";
 import { ScenarioPage } from "../components/ScenarioPage";
 import { MethodBadge, StatusBadge } from "../components/StatusBadge";
 import { useTabs } from "../components/tabs";
+import { TOASTER_ID } from "../components/toaster";
+import {
+  API_VERSIONS,
+  apiRootOf,
+  DEFAULT_API_VERSION,
+  isApiVersion,
+  readApiVersion,
+  writeApiVersion,
+  type ExplorerApiVersion,
+} from "../explorer/apiVersion";
 import { loadCatalog, loadPackage } from "../explorer/catalog/load";
 import { operationCode, rawCode } from "../explorer/codegen";
 import { CopyAsMenu } from "../explorer/components/CopyAsMenu";
+import { EnvironmentSwitcher } from "../explorer/components/EnvironmentSwitcher";
 import {
   OperationPicker,
   pickedHistory,
@@ -46,6 +66,8 @@ import {
 } from "../explorer/components/OperationPicker";
 import { ParameterForm } from "../explorer/components/ParameterForm";
 import { ShareRequest } from "../explorer/components/ShareRequest";
+import { TableBrowser } from "../explorer/components/TableBrowser";
+import { TokenPanel } from "../explorer/components/TokenPanel";
 import { ORG_PLACEHOLDER, withOrigin, type CopyAsRequest } from "../explorer/copyAs";
 import {
   addToHistory,
@@ -67,6 +89,7 @@ import {
   runRawPlan,
 } from "../explorer/rawRequest";
 import { SAMPLES, type Sample } from "../explorer/samples";
+import type { TableSummary } from "../explorer/tables";
 import {
   decodeShare,
   sharedRequestRisks,
@@ -87,7 +110,7 @@ import {
 } from "../explorer/types";
 import { draftValues, type ValueError } from "../explorer/values";
 import { useRun } from "../hooks/useRun";
-import type { Sdk } from "../sdk/createSdk";
+import { createClient, type Sdk } from "../sdk/createSdk";
 import { useSdkContext } from "../sdk/SdkProvider";
 import { MEDIA_MEDIUM, MEDIA_SMALL, MEDIUM } from "../theme/layout";
 import { useCommonStyles } from "../theme/styles";
@@ -148,6 +171,16 @@ const useStyles = makeStyles({
     columnGap: tokens.spacingHorizontalS,
   },
   codeBarEnd: { marginInlineStart: "auto" },
+  // Environment, Web API version and the table browser, above the request.
+  toolbar: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "end",
+    rowGap: tokens.spacingVerticalS,
+    columnGap: tokens.spacingHorizontalL,
+  },
+  // Five tabs: on a phone they wrap rather than widen the page.
+  wrapTabs: { flexWrap: "wrap" },
 });
 
 /** A request opened from a shared link, or why the link couldn't be opened. */
@@ -167,7 +200,7 @@ const EMPTY_INPUT: OperationInput = { args: {}, parameters: {} };
 type Target =
   { type: "raw"; title: string } | { type: "operation"; op: CatalogOperation; title: string };
 
-type ResponseTab = "response" | "headers" | "code" | "requests";
+type ResponseTab = "response" | "headers" | "code" | "requests" | "token";
 
 const FLAVOURS: Array<{ value: CodeFlavour; label: string }> = [
   { value: "typed", label: "client.execute()" },
@@ -195,8 +228,23 @@ export default function ExplorerPage() {
   const common = useCommonStyles();
   const { connection, session } = useSdkContext();
   const environmentUrl = connection.environmentUrl;
-  const apiRoot = `${environmentUrl}/api/data/v9.2`;
+  // The Web API version picked for this environment (kept per environment in this browser).
+  const [chosenVersion, setChosenVersion] = useState(() => ({
+    environmentUrl,
+    version: readApiVersion(environmentUrl),
+  }));
+  const apiVersion =
+    chosenVersion.environmentUrl === environmentUrl
+      ? chosenVersion.version
+      : readApiVersion(environmentUrl);
+  const changeApiVersion = (version: ExplorerApiVersion) => {
+    writeApiVersion(environmentUrl, version);
+    setChosenVersion({ environmentUrl, version });
+  };
+  const apiRoot = apiRootOf(environmentUrl, apiVersion);
   const host = new URL(environmentUrl).host;
+  const [tablesOpen, setTablesOpen] = useState(false);
+  const { dispatchToast } = useToastController(TOASTER_ID);
   const [searchParams, setSearchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -240,7 +288,7 @@ export default function ExplorerPage() {
         const plan = parseRawRequest(raw, environmentUrl);
         return {
           ok: true,
-          code: rawCode(plan),
+          code: rawCode(plan, apiVersion),
           send: (client, signal) => runRawPlan(client, plan, signal),
         };
       } catch (error) {
@@ -254,7 +302,10 @@ export default function ExplorerPage() {
       : "";
     // The typed and OrganizationService code need only the catalog; client.api() and running
     // need the package.
-    const early = flavour === "fluent" ? undefined : missing + operationCode(op, draft, flavour);
+    const early =
+      flavour === "fluent"
+        ? undefined
+        : missing + operationCode(op, draft, flavour, undefined, apiVersion);
     if (!pkg || pkg.kind !== op.kind)
       return { ok: false, code: early, reason: "Loading the package…", loading: true };
     if ("error" in pkg)
@@ -268,7 +319,7 @@ export default function ExplorerPage() {
           operation.toRequestInformation(apiRoot),
           apiRoot
         );
-        fluentCode = operationCode(op, draft, "fluent", fluentPlan(operation, apiRoot));
+        fluentCode = operationCode(op, draft, "fluent", fluentPlan(operation, apiRoot), apiVersion);
       } catch (error) {
         if (!draft.problems.length) throw error;
       }
@@ -295,7 +346,7 @@ export default function ExplorerPage() {
     } catch (error) {
       return { ok: false, reason: message(error) };
     }
-  }, [target, raw, opInput, flavour, pkg, environmentUrl, apiRoot]);
+  }, [target, raw, opInput, flavour, pkg, environmentUrl, apiRoot, apiVersion]);
 
   // The request preview: the SDK builds the request against a fetch that sends nothing.
   useEffect(() => {
@@ -305,7 +356,7 @@ export default function ExplorerPage() {
     }
     let cancelled = false;
     const timer = setTimeout(() => {
-      void previewRequests(environmentUrl, (client) => built.send(client)).then(
+      void previewRequests(environmentUrl, (client) => built.send(client), apiVersion).then(
         (result) => !cancelled && setPreview(result)
       );
     }, 250);
@@ -313,12 +364,15 @@ export default function ExplorerPage() {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [built, environmentUrl]);
+  }, [built, environmentUrl, apiVersion]);
 
+  // Runs with a client on the picked Web API version.
   const task = useCallback(
     (sdk: Sdk, signal: AbortSignal) =>
-      built.ok ? built.send(sdk.client, signal) : Promise.reject(new Error(built.reason)),
-    [built]
+      built.ok
+        ? built.send(sdk.createClient({ apiVersion }), signal)
+        : Promise.reject(new Error(built.reason)),
+    [built, apiVersion]
   );
   const run = useRun(task);
   const running = run.state.status === "running";
@@ -436,6 +490,31 @@ export default function ExplorerPage() {
         entry.flavour,
         entry.title
       );
+  };
+
+  // The table browser's "Query this table": the request is filled in, not run.
+  const queryTable = (request: RawRequestInput, table: TableSummary) => {
+    setShareNotice(undefined);
+    setPicked(undefined);
+    setSearchParams({ url: request.url }, { replace: true });
+    selectRaw(request, `Query ${table.entitySetName}`);
+    setTablesOpen(false);
+    requestAnimationFrame(() =>
+      document.getElementById("request-heading")?.scrollIntoView({ block: "start" })
+    );
+  };
+
+  // Another environment: the request stays as it is, and nothing runs until asked; the response
+  // of the last run (from the other environment) is cleared.
+  const environmentSwitched = (url: string) => {
+    run.reset();
+    dispatchToast(
+      <Toast>
+        <ToastTitle>Switched to {new URL(url).host}</ToastTitle>
+        <ToastBody>The request is kept. Run it when you&apos;re ready.</ToastBody>
+      </Toast>,
+      { intent: "info", timeout: 4000 }
+    );
   };
 
   // Links into the explorer: ?sample=<id>, ?op=<kind>/<name>, or ?method=GET&url=<path>.
@@ -583,6 +662,31 @@ export default function ExplorerPage() {
         </>
       }
     >
+      <div className={styles.toolbar}>
+        <EnvironmentSwitcher onSwitch={environmentSwitched} />
+        <Field label="Web API version">
+          <Select
+            value={apiVersion}
+            onChange={(_, d) => isApiVersion(d.value) && changeApiVersion(d.value)}
+          >
+            {API_VERSIONS.map((v) => (
+              <option key={v} value={v}>
+                {v === DEFAULT_API_VERSION ? `${v} (default)` : v}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Button icon={<TableSearchRegular />} onClick={() => setTablesOpen(true)}>
+          Browse tables
+        </Button>
+      </div>
+      <TableBrowser
+        open={tablesOpen}
+        onOpenChange={setTablesOpen}
+        createClient={() => createClient(connection, () => undefined, { apiVersion })}
+        cacheKey={`${session.accountId}|${apiRoot}`}
+        onQuery={queryTable}
+      />
       <div className={styles.layout}>
         <Card className={styles.card} size="large" role="region" aria-labelledby="picker-heading">
           <Subtitle1 as="h2" id="picker-heading">
@@ -838,11 +942,12 @@ export default function ExplorerPage() {
                 </Button>
               )}
             </div>
-            <TabList {...responseTabs.list}>
+            <TabList {...responseTabs.list} className={styles.wrapTabs}>
               <Tab {...responseTabs.tab("response")}>Response</Tab>
               <Tab {...responseTabs.tab("headers")}>Headers</Tab>
               <Tab {...responseTabs.tab("code")}>SDK code</Tab>
               <Tab {...responseTabs.tab("requests")}>Requests</Tab>
+              <Tab {...responseTabs.tab("token")}>Token</Tab>
             </TabList>
             <div {...responseTabs.panel} className={styles.tabPanel}>
               {responseTab === "response" && run.state.status === "idle" && (
@@ -896,6 +1001,7 @@ export default function ExplorerPage() {
                 </>
               )}
               {responseTab === "requests" && <RequestInspector exchanges={run.exchanges} />}
+              {responseTab === "token" && <TokenPanel />}
             </div>
           </Card>
         </div>

@@ -66,7 +66,15 @@ export interface TableDef {
   attributes: AttributeDef[];
   navigations: NavigationDef[];
   collections: CollectionNavigationDef[];
+  /** Alternate keys (metadata only: the fake doesn't address rows by them). */
+  keys?: KeyDef[];
   rows: Map<string, Row>;
+}
+
+export interface KeyDef {
+  logicalName: string;
+  displayName: string;
+  attributes: string[];
 }
 
 const STATE = [
@@ -327,6 +335,13 @@ export function createSchema(): Schema {
             referencingAttribute: "parentcustomerid",
           },
         ],
+        keys: [
+          {
+            logicalName: "new_accountnumberkey",
+            displayName: "Account number",
+            attributes: ["accountnumber"],
+          },
+        ],
       },
       accounts
     )
@@ -388,6 +403,13 @@ export function createSchema(): Schema {
           { name: "ownerid", attribute: "ownerid", target: "systemusers" },
         ],
         collections: [],
+        keys: [
+          {
+            logicalName: "new_emailkey",
+            displayName: "Email",
+            attributes: ["emailaddress1"],
+          },
+        ],
       },
       contacts
     )

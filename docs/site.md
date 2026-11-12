@@ -11,7 +11,8 @@ Anyone can open it and:
   Global Discovery Service returns for them (see [The visitor's flow](#the-visitors-flow));
 - in the **Explorer** page, build a raw Web API request or pick one of the typed actions,
   functions and messages, see the SDK code for it, preview the request the SDK will send, run it
-  and inspect the response; or try the sample queries;
+  and inspect the response; or try the sample queries; switch the environment or the Web API
+  version, browse the environment's tables and query one, and see the access token decoded;
 - follow the **Documentation** page to the guides and the API reference in this repository.
 
 The same Static Web App serves the **documentation site** at
