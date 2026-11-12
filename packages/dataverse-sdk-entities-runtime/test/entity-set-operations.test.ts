@@ -177,6 +177,60 @@ describe("record navigation (#432)", () => {
     expect(await related.get()).toBeNull();
   });
 
+  it("an activity's regarding lookup: the Web API names from the metadata's members", async () => {
+    const test = createTestClient();
+    const taskMetadata: EntityMetadata = {
+      typeName: "Microsoft.Dynamics.CRM.task",
+      logicalName: "task",
+      collectionName: "tasks",
+      primaryIdAttribute: "activityid",
+      attributeTypes: { subject: "Edm.String" },
+      navigation: {
+        regardingobjectid: {
+          name: "regardingobjectid",
+          fullName: "regardingobjectid",
+          targetType: "account",
+          isPolymorphic: true,
+          targets: ["account", "contact"],
+          members: {
+            regardingobjectid_account_task: "account",
+            regardingobjectid_contact_task: "contact",
+          },
+          isCollection: false,
+          relationshipName: "Account_Tasks",
+          lookupAttribute: "regardingobjectid",
+        },
+      },
+    };
+    const tasks = new EntitySetClient<IEntity>(test.client, taskMetadata);
+    const task = tasks.byId(id);
+    const regarding = task.nav("regardingobjectid_contact_task") as RelatedRecordClient<IEntity>;
+    expect(regarding).toBeInstanceOf(RelatedRecordClient);
+    expect(regarding.path).toBe(`tasks(${id})/regardingobjectid_contact_task`);
+
+    test.fake.on("PATCH", `/tasks(${id})`, () => noContent());
+    await task.associate("regardingobjectid_contact_task", contactId);
+    expect(JSON.parse(test.fake.last().bodyText ?? "")).toEqual({
+      "regardingobjectid_contact_task@odata.bind": `/contacts(${contactId})`,
+    });
+    test.fake.on("DELETE", `/tasks(${id})/regardingobjectid_contact_task/$ref`, () => noContent());
+    await task.disassociate("regardingobjectid_contact_task");
+    expect(test.fake.last().method).toBe("DELETE");
+
+    // A write through the consolidated lookup binds the member for the reference's table
+    await task.update({ regardingobjectid: createEntityReference("account", otherId) });
+    expect(JSON.parse(test.fake.last().bodyText ?? "")).toEqual({
+      "@odata.type": "Microsoft.Dynamics.CRM.task",
+      "regardingobjectid_account_task@odata.bind": `/accounts(${otherId})`,
+    });
+    await task.update({ regardingobjectid: null });
+    expect(JSON.parse(test.fake.last().bodyText ?? "")).toEqual({
+      "@odata.type": "Microsoft.Dynamics.CRM.task",
+      "regardingobjectid_account_task@odata.bind": null,
+      "regardingobjectid_contact_task@odata.bind": null,
+    });
+  });
+
   it("nav() finds a polymorphic lookup's Web API properties, and refuses an unknown name", () => {
     const { untyped } = accounts();
     expect(untyped.byId(id).nav("customerid_contact")).toBeInstanceOf(RelatedRecordClient);
@@ -271,16 +325,36 @@ describe("associate and disassociate (#432)", () => {
 });
 
 describe("upsert (#432)", () => {
-  it("PATCHes without If-Match and resolves the id from OData-EntityId", async () => {
+  it("by id: PATCHes without If-Match and resolves the id", async () => {
     const { set, fake } = accounts();
-    fake.on("PATCH", "/accounts(accountnumber='A-1')", () => createdResponse("accounts", id));
-    expect(await set.upsert({ accountnumber: "A-1" }, { name: "Contoso" })).toBe(id);
+    fake.on("PATCH", `/accounts(${id})`, () => createdResponse("accounts", id));
+    expect(await set.upsert(`{${id.toUpperCase()}}`, { name: "Contoso" })).toBe(id);
     expect(fake.last().headers["if-match"]).toBeUndefined();
     expect(fake.last().headers["if-none-match"]).toBeUndefined();
+    expect(fake.last().headers.prefer).toBeUndefined();
     expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({
       "@odata.type": "Microsoft.Dynamics.CRM.account",
       name: "Contoso",
     });
+  });
+
+  it("by alternate key: asks for the primary key, since OData-EntityId names the key", async () => {
+    const { set, fake } = accounts();
+    // What Dataverse answers: the record (201 created, 200 updated), the header in key form
+    const keyForm = {
+      "odata-entityid": `${TEST_API_URL}/accounts(accountnumber='A-1')`,
+    };
+    fake.on("PATCH", "/accounts(accountnumber='A-1')", () =>
+      jsonResponse({ accountid: id }, { status: 201, headers: keyForm })
+    );
+    expect(await set.upsert({ accountnumber: "A-1" }, { name: "Contoso" })).toBe(id);
+    expect(fake.last().headers.prefer).toContain("return=representation");
+    expect(new URL(fake.last().url).searchParams.get("$select")).toBe("accountid");
+
+    fake.on("PATCH", "/accounts(accountnumber='A-1')", () =>
+      jsonResponse({ accountid: otherId }, { status: 200, headers: keyForm })
+    );
+    expect(await set.upsert({ accountnumber: "A-1" }, { name: "Contoso" })).toBe(otherId);
   });
 
   it("createOnly sends If-None-Match: *, updateOnly If-Match: *; a failure rejects", async () => {

@@ -43,10 +43,71 @@ const OPERATIONS = `
         <ReturnType Type="Edm.Int32" Nullable="false" />
       </Function>
       <EntityContainer`;
-const EDMX = WRITE_EDMX.replace("<EntityContainer", OPERATIONS.trimStart());
+// An activity whose regarding lookup's navigation properties carry a suffix, as in the org:
+// regardingobjectid_account_task, not regardingobjectid_account
+const TASK = `
+      <EntityType Name="task" BaseType="mscrm.crmbaseentity">
+        <Key><PropertyRef Name="activityid" /></Key>
+        <Property Name="activityid" Type="Edm.Guid" />
+        <Property Name="subject" Type="Edm.String" Unicode="false" />
+        <Property Name="_regardingobjectid_value" Type="Edm.Guid" />
+        <NavigationProperty Name="regardingobjectid_account_task" Type="mscrm.account" Nullable="false" Partner="Account_Tasks">
+          <ReferentialConstraint Property="_regardingobjectid_value" ReferencedProperty="accountid" />
+        </NavigationProperty>
+        <NavigationProperty Name="regardingobjectid_contact_task" Type="mscrm.contact" Nullable="false" Partner="Contact_Tasks">
+          <ReferentialConstraint Property="_regardingobjectid_value" ReferencedProperty="contactid" />
+        </NavigationProperty>
+      </EntityType>
+      <EntityContainer Name="System">
+        <EntitySet Name="tasks" EntityType="Microsoft.Dynamics.CRM.task" />`;
+const EDMX = WRITE_EDMX.replace("<EntityContainer", OPERATIONS.trimStart()).replace(
+  '<EntityContainer Name="System">',
+  TASK.trimStart()
+);
 
-const service = fixtureMetadataService(EDMX, WRITE_ENTITY_METADATA);
-const entities = ["account", "contact", "systemuser"];
+const service = fixtureMetadataService(EDMX, {
+  ...WRITE_ENTITY_METADATA,
+  task: {
+    EntityMetadata: [
+      {
+        LogicalName: "task",
+        SchemaName: "Task",
+        EntitySetName: "tasks",
+        PrimaryIdAttribute: "activityid",
+        PrimaryNameAttribute: "subject",
+        Keys: [],
+        Attributes: [
+          {
+            LogicalName: "activityid",
+            SchemaName: "ActivityId",
+            AttributeType: "Uniqueidentifier",
+            IsValidForRead: true,
+            IsValidForCreate: true,
+            IsValidForUpdate: false,
+          },
+          {
+            LogicalName: "subject",
+            SchemaName: "Subject",
+            AttributeType: "String",
+            IsValidForRead: true,
+            IsValidForCreate: true,
+            IsValidForUpdate: true,
+          },
+          {
+            LogicalName: "regardingobjectid",
+            SchemaName: "RegardingObjectId",
+            AttributeType: "Lookup",
+            IsValidForRead: true,
+            IsValidForCreate: true,
+            IsValidForUpdate: true,
+            Targets: ["account", "contact"],
+          },
+        ],
+      },
+    ],
+  },
+});
+const entities = ["account", "contact", "systemuser", "task"];
 const id = "00000000-0000-0000-0000-000000000001";
 const contactId = "00000000-0000-0000-0000-000000000002";
 
@@ -67,6 +128,11 @@ export async function run(): Promise<unknown[]> {
   const primary = await typed.accounts.byId(id).nav("primarycontactid").get({ select: ["lastname"] });
   const lastname: string | null | undefined = primary?.lastname;
   const parent = await typed.contacts.byId(id).nav("parentcustomerid_account").get({ select: ["name"] });
+  // An activity's regarding lookup, by the Web API's names
+  const regarding = await typed.tasks.byId(id).nav("regardingobjectid_contact_task").get({ select: ["fullname"] });
+  await typed.tasks.byId(id).associate("regardingobjectid_account_task", id);
+  // @ts-expect-error the consolidated lookup isn't a Web API navigation property
+  typed.tasks.byId(id).nav("regardingobjectid");
   // @ts-expect-error not a column of contact
   await typed.accounts.byId(id).nav("contact_customer_accounts").list({ select: ["name"] });
   // @ts-expect-error a lookup has no list()
@@ -112,7 +178,7 @@ export async function run(): Promise<unknown[]> {
   // @ts-expect-error not selected
   page.records[0]?.creditlimit;
 
-  return [fullname, lastname, parent, upserted, total, count, names, nextName];
+  return [fullname, lastname, parent, regarding, upserted, total, count, names, nextName];
 }
 `;
 
@@ -199,5 +265,21 @@ describe("typed client operations (#432)", () => {
     );
     expect(await typed.accounts.upsert({ accountnumber: "A-1" }, { name: "Contoso" })).toBe(id);
     expect(fake.last().headers["if-match"]).toBeUndefined();
+
+    // The regarding lookup's members are in the generated metadata, by their Web API names
+    const task = (
+      typed as unknown as {
+        tasks: { byId(key: string): { associate(name: string, target: unknown): Promise<void> } };
+      }
+    ).tasks.byId(id);
+    fake.on("PATCH", `/tasks(${id})`, () => noContent());
+    await task.associate("regardingobjectid_contact_task", contactId);
+    expect(JSON.parse(fake.last().bodyText ?? "")).toEqual({
+      "regardingobjectid_contact_task@odata.bind": `/contacts(${contactId})`,
+    });
+    const taskSource = await fs.readFile(path.join(dir, "entities", "Task.ts"), "utf-8");
+    expect(taskSource).toMatch(
+      /members: \{\r?\n\s+regardingobjectid_account_task: "account",\r?\n\s+regardingobjectid_contact_task: "contact",/
+    );
   });
 });

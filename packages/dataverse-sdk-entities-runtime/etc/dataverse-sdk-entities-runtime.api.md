@@ -344,6 +344,7 @@ export interface NavigationMetadata {
     isValidForCreate?: boolean;
     isValidForUpdate?: boolean;
     lookupAttribute?: string;
+    members?: Readonly<Record<string, string>>;
     name: string;
     referencedProperty?: string;
     referencingProperty?: string;

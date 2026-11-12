@@ -14,4 +14,4 @@ for await (const account of typed.accounts.iterate({ select: ["name"], pageSize:
 const page = await typed.accounts.listPage({ select: ["name"], pageSize: 50 });
 ```
 
-`client.ts` has an `<Entity>Operations` object for each table with generated actions or functions bound to it (to one record, or to its entity set), passed to its `EntitySetClient`. Custom `client.ejs` templates ejected from an earlier version keep the old output: re-eject and compare (the template gets `operationsName` and `operations` per table).
+`client.ts` has an `<Entity>Operations` object for each table with generated actions or functions bound to it (to one record, or to its entity set), passed to its `EntitySetClient`. A polymorphic lookup's entry in the generated metadata lists its Web API navigation properties as `members` (`regardingobjectid_account_task: "account"`, …), so navigation, associate and lookup writes use the real names on activity tables. Custom `client.ejs` templates ejected from an earlier version keep the old output: re-eject and compare (the template gets `operationsName` and `operations` per table).

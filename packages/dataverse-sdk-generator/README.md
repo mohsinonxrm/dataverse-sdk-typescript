@@ -562,18 +562,18 @@ const next = await typed.accounts.listPage({
 });
 ```
 
-| Method                                                              | Request                                                                                   |
-| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `typed.<set>.byId(key).nav(name)`                                   | a client for `<set>(<key>)/<name>`: `list`/`iterate`/`listPage` or `get`                  |
-| `.nav(collection).associate(target \| targets, { executor })`       | `POST <name>/$ref` (core's `associate()`), or core's `bindMany()` for several             |
-| `.nav(collection).disassociate(target)`                             | `DELETE <name>(<id>)/$ref` (core's `disassociate()`)                                      |
-| `.nav(lookup).set(target)` / `.clear()`                             | `PATCH` with `<name>@odata.bind` and `If-Match: *` / `DELETE <name>/$ref`                 |
-| `typed.<set>.byId(key).associate(name, …)` / `.disassociate(name…)` | the same, by navigation property name                                                     |
-| `typed.<set>.upsert(key, entity, { mode })`                         | `PATCH <set>(<key>)` without `If-Match`; resolves the id (`OData-EntityId`)               |
-| `typed.<set>.byId(id).actions.<name>(parameters)` / `.functions`    | the generated class for the record, through `client.execute()`                            |
-| `typed.<set>.actions.<name>(parameters)` / `.functions`             | the generated class bound to the entity set                                               |
-| `typed.<set>.iterate(options)`                                      | core's `iterate()`: every page as it's read; `pageSize` sends `odata.maxpagesize`         |
-| `typed.<set>.listPage(options)`                                     | one page (`GET`), `{ records, nextLink, count }`; `nextLink` in the options gets the next |
+| Method                                                              | Request                                                                                                   |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `typed.<set>.byId(key).nav(name)`                                   | a client for `<set>(<key>)/<name>`: `list`/`iterate`/`listPage` or `get`                                  |
+| `.nav(collection).associate(target \| targets, { executor })`       | `POST <name>/$ref` (core's `associate()`), or core's `bindMany()` for several                             |
+| `.nav(collection).disassociate(target)`                             | `DELETE <name>(<id>)/$ref` (core's `disassociate()`)                                                      |
+| `.nav(lookup).set(target)` / `.clear()`                             | `PATCH` with `<name>@odata.bind` and `If-Match: *` / `DELETE <name>/$ref`                                 |
+| `typed.<set>.byId(key).associate(name, …)` / `.disassociate(name…)` | the same, by navigation property name                                                                     |
+| `typed.<set>.upsert(key, entity, { mode })`                         | `PATCH <set>(<key>)` without `If-Match`; resolves the id (by alternate key, from `return=representation`) |
+| `typed.<set>.byId(id).actions.<name>(parameters)` / `.functions`    | the generated class for the record, through `client.execute()`                                            |
+| `typed.<set>.actions.<name>(parameters)` / `.functions`             | the generated class bound to the entity set                                                               |
+| `typed.<set>.iterate(options)`                                      | core's `iterate()`: every page as it's read; `pageSize` sends `odata.maxpagesize`                         |
+| `typed.<set>.listPage(options)`                                     | one page (`GET`), `{ records, nextLink, count }`; `nextLink` in the options gets the next                 |
 
 A target is an id or alternate key of the related table (its entity set comes from the generated
 metadata) or an `EntityReference`. `upsert()` takes the columns valid in both a create and an

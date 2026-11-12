@@ -18,6 +18,7 @@ import {
   odataKey,
   type ODataKey,
   parseODataError,
+  Prefer,
   type RequestOptions,
 } from "@mohsinonxrm/dataverse-sdk-core";
 import { type EntityReference, entitySetNameOf, isEntityReference } from "./entity-reference.js";
@@ -659,7 +660,9 @@ export class EntitySetClient<
    * Create or update the record with this id or alternate key (#432): `PATCH` without
    * `If-Match`, so Dataverse creates the record when it doesn't exist. `mode: "createOnly"`
    * sends `If-None-Match: *` (412 if it exists), `mode: "updateOnly"` sends `If-Match: *` (404 if
-   * it doesn't). Resolves the record's id, from the `OData-EntityId` header.
+   * it doesn't). Resolves the record's id: by id, that id; by alternate key, the primary key
+   * Dataverse returns (the request asks for it with `Prefer: return=representation` and
+   * `$select=<primary key>`, since its `OData-EntityId` then names the record by the key).
    *
    * ```typescript
    * const id = await typed.accounts.upsert({ accountnumber: "A-1" }, { name: "Contoso" });
@@ -674,15 +677,26 @@ export class EntitySetClient<
     const builder = this.byId(key).request();
     if (mode === "createOnly") builder.ifNoneMatch("*");
     else if (mode === "updateOnly") builder.ifMatch("*");
+    const byId = typeof key === "string";
+    const primaryKey = this.metadata.primaryIdAttribute;
+    if (!byId) builder.select(primaryKey).prefer(Prefer.returnRepresentation());
     const response = await builder.response(
       "PATCH",
       formatEntityForWrite(entity, this.metadata, this.writeOptions),
       requestOptions
     );
     if (!response.ok) throw await parseODataError(response);
-    return typeof key === "string" && !response.headers.has("odata-entityid")
-      ? odataKey(key)
-      : entityIdFromResponse(response);
+    if (byId) {
+      await response.body?.cancel();
+      return odataKey(key);
+    }
+    // 201 (created) or 200 (updated) with the record; a 204 has only the header to go on
+    if (response.status !== 204) {
+      const record = (await response.json()) as Record<string, unknown>;
+      const id = record[primaryKey];
+      if (typeof id === "string") return id;
+    }
+    return entityIdFromResponse(response);
   }
 
   /** The actions bound to the entity set (the generated `<Entity>Operations`), as methods (#432). */
@@ -1131,8 +1145,13 @@ function navigationInfo(
   }
   for (const [key, nav] of Object.entries(metadata.navigation)) {
     if (nav.isCollection || !nav.isPolymorphic) continue;
-    const target = nav.targets?.find((t) => `${nav.fullName ?? key}_${t}` === name);
-    if (target !== undefined) return { collection: false, targetType: target };
+    // The Web API's names, which the generated metadata lists (`regardingobjectid_contact_task`
+    // on an activity); metadata generated before them is matched by `<lookup>_<target>`
+    const member =
+      nav.members && Object.hasOwn(nav.members, name)
+        ? nav.members[name]
+        : nav.targets?.find((t) => `${nav.fullName ?? key}_${t}` === name);
+    if (member !== undefined) return { collection: false, targetType: member };
   }
   return undefined;
 }

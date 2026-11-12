@@ -1,14 +1,19 @@
 /**
  * Live tests for the generated typed client's record navigation, associate/disassociate, upsert
- * and paging (#432), generated from the org's account and contact metadata. The account and
+ * and paging (#432), generated from the org's account, contact and task metadata. The account and
  * contacts are created in `beforeAll` and named with this run's `runId`; every record is deleted
  * in `afterAll`. See ./env.ts for configuration.
+ *
+ * Upsert by alternate key isn't tested live: no standard table has an alternate key in a default
+ * org. The unit tests cover what Dataverse answers to one (an `OData-EntityId` in key form, so the
+ * typed client asks for the primary key with `Prefer: return=representation`).
  */
 import { randomUUID } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 import * as path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { attemptId, live, liveClient, runId } from "./env.js";
 import {
   compileToJs,
@@ -23,10 +28,14 @@ const SLOW = 120_000;
 // Each @ts-expect-error must have an error under it, or the type-check fails.
 const USAGE = `
 import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
 import { createTypedClient } from "./client.js";
 
 export async function run(client: DataverseClient, id: string): Promise<unknown[]> {
   const typed = createTypedClient(client);
+  await typed.tasks.create({ subject: "x", regardingobjectid: createEntityReference("account", id) });
+  const regarding = await typed.tasks.byId(id).nav("regardingobjectid_contact_task").get({ select: ["fullname"] });
+  console.log(regarding?.fullname);
   const contacts = typed.accounts.byId(id).nav("contact_customer_accounts");
   const listed = await contacts.list({ select: ["lastname"] });
   const primary = await typed.accounts.byId(id).nav("primarycontactid").get({ select: ["lastname"] });
@@ -61,6 +70,14 @@ interface Typed {
       disassociate(name: string, ...args: unknown[]): Promise<void>;
     };
   };
+  tasks: {
+    create(entity: Record<string, unknown>): Promise<string>;
+    byId(id: string): {
+      nav(name: string): { get(options?: unknown): Promise<Record<string, unknown> | null> };
+      associate(name: string, target: unknown): Promise<void>;
+      disassociate(name: string, ...args: unknown[]): Promise<void>;
+    };
+  };
   contacts: {
     create(entity: Record<string, unknown>): Promise<string>;
     listPage(options?: unknown): Promise<Page>;
@@ -80,7 +97,7 @@ describe.skipIf(!live)("live: generated typed client operations (#432)", () => {
   const contactIds: string[] = [];
 
   beforeAll(async () => {
-    dir = await generateLive({ entities: ["account", "contact"], typedClient: true });
+    dir = await generateLive({ entities: ["account", "contact", "task"], typedClient: true });
     await compileToJs(dir);
     const { createTypedClient } = await importGenerated<{
       createTypedClient: (client: DataverseClient) => Typed;
@@ -148,6 +165,32 @@ describe.skipIf(!live)("live: generated typed client operations (#432)", () => {
       expect(await account.get({ select: ["_primarycontactid_value"] })).toMatchObject({
         _primarycontactid_value: null,
       });
+      // An empty lookup reads as null (Dataverse answers 204)
+      expect(await account.nav("primarycontactid").get({ select: ["lastname"] })).toBeNull();
+    },
+    SLOW
+  );
+
+  it(
+    "an activity's regarding lookup, by the Web API's suffixed names (regardingobjectid_account_task)",
+    async () => {
+      // Written through the consolidated lookup: the generated metadata's members give the name
+      const taskId = await typed.tasks.create({
+        subject: `${name}-task`,
+        regardingobjectid: createEntityReference("account", accountId),
+      });
+      created.unshift({ set: "tasks", id: taskId });
+      const task = typed.tasks.byId(taskId);
+      expect(
+        await task.nav("regardingobjectid_account_task").get({ select: ["name"] })
+      ).toMatchObject({ accountid: accountId, name });
+
+      await task.associate("regardingobjectid_contact_task", contactIds[0]);
+      expect(
+        await task.nav("regardingobjectid_contact_task").get({ select: ["lastname"] })
+      ).toMatchObject({ contactid: contactIds[0], lastname: `${name}-a` });
+      await task.disassociate("regardingobjectid_contact_task");
+      expect(await task.nav("regardingobjectid_contact_task").get()).toBeNull();
     },
     SLOW
   );
