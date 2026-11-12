@@ -21,7 +21,15 @@ import type {
   AttributeMetadataDetail,
   EntityMetadataDetail,
   MetadataService,
+  RetrieveMetadataChangesResponse,
 } from "./metadata-service.js";
+import {
+  deletedIds,
+  GENERATOR_VERSION,
+  metadataSource,
+  readStamp,
+  withoutNulls,
+} from "./incremental.js";
 
 /**
  * Schema model that parses CSDL $metadata and builds type definitions
@@ -51,6 +59,32 @@ export class SchemaModel {
    * to entities that were not generated (and abstract ones such as `crmbaseentity`) as `IEntity`.
    */
   AllEntityTypeNames = new Set<string>();
+
+  /**
+   * After {@link generate}: each generated table's metadata from RetrieveMetadataChanges, by
+   * logical name. Incremental generation keeps it in the stamp file (#429).
+   */
+  TableMetadata = new Map<string, EntityMetadataDetail>();
+
+  /**
+   * After {@link generate}: the `ServerVersionStamp` the metadata in {@link TableMetadata} is
+   * current as of, for the next incremental run's `ClientVersionStamp` (#429). `undefined` when
+   * Dataverse returned none.
+   */
+  MetadataVersionStamp: string | undefined;
+
+  /**
+   * After {@link generate}: the tables whose metadata was read from Dataverse in this run. With
+   * `output.incremental`, the tables that changed since the last run (or every table, when there
+   * is nothing to reuse); otherwise every table.
+   */
+  FetchedTables: string[] = [];
+
+  /**
+   * After {@link generate} in all-tables mode: the entity types RetrieveMetadataChanges has no
+   * table for, which weren't generated.
+   */
+  SkippedTables: string[] = [];
 
   /** Entity types that are tables: not abstract, and with an entity set. */
   private tableEntityTypeNames = new Set<string>();
@@ -129,14 +163,34 @@ export class SchemaModel {
    * Reference: scottdurow/dataverse-gen SchemaModel.ts#L138-L213
    */
   private async enrichWithDetailedMetadata(): Promise<void> {
+    this.TableMetadata.clear();
+    this.SkippedTables = [];
+    this.FetchedTables = [];
+    this.MetadataVersionStamp = undefined;
     if (this.EntityTypes.length === 0) return;
 
     const allTables = !this.config.entities || this.config.entities.length === 0;
+    const kept = await this.keptMetadata(allTables);
+    // The version stamp of a run that read everything is that of its first request: a change
+    // made while the run reads the other tables is newer, so the next run asks about it again.
+    let stampTaken = kept !== undefined;
     const skipped: string[] = [];
     for (const entityType of [...this.EntityTypes]) {
-      const response = await this.metadataService.getEntityMetadata(entityType.LogicalName);
+      let detail: EntityMetadataDetail | undefined;
+      if (kept?.tables.has(entityType.LogicalName)) {
+        detail = kept.tables.get(entityType.LogicalName);
+      } else if (!kept?.skipped.has(entityType.LogicalName)) {
+        const response = await this.metadataService.getEntityMetadata(entityType.LogicalName);
+        this.FetchedTables.push(entityType.LogicalName);
+        if (!stampTaken) {
+          this.MetadataVersionStamp = response.ServerVersionStamp;
+          stampTaken = true;
+        }
+        const first = response.EntityMetadata?.[0];
+        detail = first ? withoutNulls(first) : undefined;
+      }
 
-      if (!response.EntityMetadata || response.EntityMetadata.length === 0) {
+      if (!detail) {
         if (allTables) {
           // All-tables mode (#360): an entity type RetrieveMetadataChanges doesn't know isn't
           // generated (references to it are typed IEntity), instead of failing the whole run.
@@ -148,8 +202,9 @@ export class SchemaModel {
           `${entityType.LogicalName} is not a Dataverse entity, remove it from the .dataverse-gen.json`
         );
       }
+      this.TableMetadata.set(entityType.LogicalName, detail);
 
-      const entityMetadata = canonicalOrder(response.EntityMetadata[0]);
+      const entityMetadata = canonicalOrder(detail);
 
       // Set metadata properties not available in EDMX
       entityType.SchemaName = entityMetadata.SchemaName ?? entityType.LogicalName;
@@ -246,12 +301,87 @@ export class SchemaModel {
       this.ensureUniqueMemberNames(entityType);
     }
 
+    this.SkippedTables = skipped;
     if (skipped.length > 0) {
       this.Warnings.push(
         `Not generated: ${skipped.join(", ")}. RetrieveMetadataChanges returns no table ` +
           `metadata for ${skipped.length === 1 ? "it" : "them"}.`
       );
     }
+  }
+
+  /**
+   * Incremental generation (#429): the tables' metadata the previous run kept in the stamp file
+   * that is still current, after asking Dataverse what changed since that run's version stamp. A
+   * table that changed or was added, or whose table or column was deleted, isn't in it, so it's
+   * read again; a deleted table isn't in `$metadata` either, so it isn't generated.
+   *
+   * `undefined` (read every table) when there is nothing to reuse: not incremental, no stamp, a
+   * stamp of another generator version or org, or a version stamp Dataverse no longer has
+   * (`ExpiredVersionStamp`). When asking for the changes fails otherwise, a warning says so.
+   */
+  private async keptMetadata(
+    allTables: boolean
+  ): Promise<{ tables: Map<string, EntityMetadataDetail>; skipped: Set<string> } | undefined> {
+    if (this.config.output?.incremental !== true) return undefined;
+    const stamp = await readStamp(this.config.output.outputRoot ?? "./generated");
+    const previous = stamp?.metadata;
+    if (
+      !stamp ||
+      !previous ||
+      stamp.generator !== GENERATOR_VERSION ||
+      previous.source !== metadataSource(this.config) ||
+      typeof previous.versionStamp !== "string"
+    ) {
+      return undefined;
+    }
+
+    const wanted = new Set(this.EntityTypes.map((e) => e.LogicalName));
+    const tables = new Map<string, EntityMetadataDetail>();
+    for (const [name, table] of Object.entries(stamp.tables)) {
+      if (wanted.has(name) && table.metadata) tables.set(name, table.metadata);
+    }
+    // Entity types a previous all-tables run found no table for (and so didn't generate)
+    const skipped = new Set(
+      allTables && Array.isArray(previous.skipped)
+        ? previous.skipped.filter((name) => wanted.has(name))
+        : []
+    );
+    if (tables.size === 0 && skipped.size === 0) return undefined;
+
+    let changes: RetrieveMetadataChangesResponse | undefined;
+    try {
+      changes = await this.metadataService.getMetadataChanges(previous.versionStamp, [
+        ...tables.keys(),
+        ...skipped,
+      ]);
+    } catch (error: unknown) {
+      this.Warnings.push(
+        `Incremental: couldn't ask Dataverse what changed since the last run, so every table's ` +
+          `metadata was read again: ${error instanceof Error ? error.message : String(error)}`
+      );
+      return undefined;
+    }
+    // Expired version stamp, or (unexpected) no new one: read everything again
+    if (!changes?.ServerVersionStamp) return undefined;
+    this.MetadataVersionStamp = changes.ServerVersionStamp;
+
+    for (const entity of changes.EntityMetadata ?? []) {
+      if (entity.LogicalName) {
+        tables.delete(entity.LogicalName);
+        skipped.delete(entity.LogicalName);
+      }
+    }
+    const deleted = deletedIds(changes.DeletedMetadata);
+    if (deleted.size > 0) {
+      const isDeleted = (id: string | undefined) => id !== undefined && deleted.has(id.toLowerCase());
+      for (const [name, detail] of tables) {
+        if (isDeleted(detail.MetadataId) || detail.Attributes?.some((a) => isDeleted(a.MetadataId))) {
+          tables.delete(name);
+        }
+      }
+    }
+    return { tables, skipped };
   }
 
   /**
