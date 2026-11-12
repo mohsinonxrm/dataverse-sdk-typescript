@@ -2,6 +2,14 @@
  * @fileoverview Core types and interfaces for batch operations
  */
 
+import type { HttpMethod } from "@mohsinonxrm/dataverse-sdk-core";
+
+/**
+ * The HTTP method of a request in a batch: core's `HttpMethod`, in upper or lower case (it is sent
+ * upper-cased).
+ */
+export type BatchMethod = HttpMethod | Lowercase<HttpMethod>;
+
 /**
  * Represents a single request in a batch
  */
@@ -14,9 +22,9 @@ export interface BatchRequestStep {
   id: string;
 
   /**
-   * HTTP method for the request
+   * HTTP method for the request. `BatchRequestBuilder` stores it upper-cased.
    */
-  method: string;
+  method: BatchMethod;
 
   /**
    * Request URL: an absolute URL, a path relative to the Web API root (`accounts`), or a

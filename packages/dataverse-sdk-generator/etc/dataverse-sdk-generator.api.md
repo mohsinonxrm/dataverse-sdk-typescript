@@ -5,6 +5,16 @@
 ```ts
 
 import { AccessTokenProvider } from '@mohsinonxrm/dataverse-sdk-core';
+import { ApiVersion } from '@mohsinonxrm/dataverse-sdk-core';
+import { AttributeSourceType } from '@mohsinonxrm/dataverse-sdk-metadata';
+import { AttributeTypeCode } from '@mohsinonxrm/dataverse-sdk-metadata';
+import { AttributeTypeDisplayName } from '@mohsinonxrm/dataverse-sdk-metadata';
+import { DateTimeBehavior } from '@mohsinonxrm/dataverse-sdk-metadata';
+import { DateTimeBehaviorValue } from '@mohsinonxrm/dataverse-sdk-metadata';
+import { DateTimeFormat } from '@mohsinonxrm/dataverse-sdk-metadata';
+import { IntegerFormat } from '@mohsinonxrm/dataverse-sdk-metadata';
+import { OptionSetType } from '@mohsinonxrm/dataverse-sdk-metadata';
+import { StringFormat } from '@mohsinonxrm/dataverse-sdk-metadata';
 
 // @public
 export function acquireCliToken(config: DataverseGenConfig, token: string | undefined, options?: CliAuthOptions): Promise<string>;
@@ -27,21 +37,16 @@ export interface AttributeMetadataDetail {
     // (undocumented)
     AttributeOf?: string;
     // (undocumented)
-    AttributeType?: string;
+    AttributeType?: AttributeTypeCode | (string & {});
     // (undocumented)
-    AttributeTypeName?: {
-        Value?: string;
-    };
+    AttributeTypeName?: AttributeTypeDisplayName;
     // (undocumented)
-    DateTimeBehavior?: {
-        Value?: string;
-    };
+    DateTimeBehavior?: DateTimeBehavior;
     // (undocumented)
     Description?: Label;
     // (undocumented)
     DisplayName?: Label;
-    // (undocumented)
-    Format?: string;
+    Format?: DateTimeFormat | StringFormat | IntegerFormat | (string & {});
     // (undocumented)
     IsPrimaryId?: boolean;
     // (undocumented)
@@ -73,8 +78,7 @@ export interface AttributeMetadataDetail {
     };
     // (undocumented)
     SchemaName?: string;
-    // (undocumented)
-    SourceType?: number;
+    SourceType?: AttributeSourceType | (number & {});
     // (undocumented)
     Targets?: string[];
 }
@@ -112,7 +116,7 @@ export interface DataverseGenAuthConfig {
 // @public
 export interface DataverseGenConfig {
     actions?: string[];
-    apiVersion?: string;
+    apiVersion?: ApiVersion;
     auth?: DataverseGenAuthConfig;
     entities?: string[];
     environmentUrl: string;
@@ -335,7 +339,7 @@ export interface OptionSetMetadata {
     // (undocumented)
     Options?: OptionMetadata[];
     // (undocumented)
-    OptionSetType?: string;
+    OptionSetType?: OptionSetType | (string & {});
 }
 
 // @public
@@ -349,11 +353,11 @@ export interface ParameterType {
 // @public
 export interface PropertyType {
     AttributeOf?: string;
-    AttributeType?: string;
+    AttributeType?: AttributeTypeCode | (string & {});
     Description?: string;
     DisplayName?: string;
     EnumName?: string;
-    Format?: string;
+    Format?: DateTimeBehaviorValue | DateTimeFormat | (string & {});
     IsEnum?: boolean;
     IsMultiSelect?: boolean;
     IsNavigation?: boolean;
@@ -372,7 +376,7 @@ export interface PropertyType {
     OptionValues?: number[];
     RequiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
     SchemaName?: string;
-    SourceType?: number;
+    SourceType?: AttributeSourceType | (number & {});
     Targets?: string[];
     Type: string;
     TypeScriptType: TypeScriptType;

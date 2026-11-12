@@ -19,6 +19,7 @@ import { isTimeoutError, startDeadline } from "../utils/signals.js";
 import { systemClock, type Clock } from "../utils/clock.js";
 import { generateUUID, normalizeHeaders } from "../utils/HeaderUtils.js";
 import { FeatureUsageTracker } from "../telemetry/FeatureUsageTracker.js";
+import type { TelemetryEventName } from "../telemetry/events.js";
 import { guardTelemetry } from "../utils/telemetry.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 import { odataKey, type ODataKey } from "../odata/literal.js";
@@ -87,7 +88,7 @@ export class DataverseClient {
    * the client report their own events this way (the batch package's `dataverse.batch`).
    */
   trackEvent(
-    name: string,
+    name: TelemetryEventName | (string & {}),
     properties?: Record<string, string>,
     measurements?: Record<string, number>
   ): void {

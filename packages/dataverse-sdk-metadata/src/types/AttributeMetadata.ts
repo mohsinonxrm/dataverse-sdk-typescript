@@ -5,6 +5,7 @@ import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
 import type { EntitySetting } from "./EntitySetting.js";
 import type { Label } from "./Label.js";
 import type { MetadataBase } from "./MetadataBase.js";
+import type { AttributeSourceType } from "./metadata-values.js";
 
 /**
  * AttributeMetadata
@@ -57,5 +58,6 @@ export interface AttributeMetadata extends MetadataBase {
   RequiredLevel?: AttributeRequiredLevelManagedProperty;
   SchemaName?: string;
   Settings?: EntitySetting[];
-  SourceType?: number;
+  /** What fills the column: see `AttributeSourceType`. */
+  SourceType?: AttributeSourceType | (number & {});
 }

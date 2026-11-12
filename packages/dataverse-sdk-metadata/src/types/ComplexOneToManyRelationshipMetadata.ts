@@ -4,6 +4,7 @@ import type { CascadeConfiguration } from "./CascadeConfiguration.js";
 import type { RelationshipAttribute } from "./RelationshipAttribute.js";
 import type { RelationshipType } from "./RelationshipType.js";
 import type { SecurityTypes } from "./SecurityTypes.js";
+import type { RelationshipBehavior } from "./metadata-values.js";
 
 /**
  * ComplexOneToManyRelationshipMetadata
@@ -30,7 +31,8 @@ export interface ComplexOneToManyRelationshipMetadata {
   ReferencingEntity?: string;
   ReferencingEntityNavigationPropertyName?: string;
   RelationshipAttributes?: RelationshipAttribute[];
-  RelationshipBehavior?: number;
+  /** The relationship's type of behavior: see `RelationshipBehavior`. */
+  RelationshipBehavior?: RelationshipBehavior | (number & {});
   RelationshipType?: RelationshipType;
   SchemaName?: string;
   SecurityTypes?: SecurityTypes;

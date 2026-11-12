@@ -17,6 +17,10 @@ export const AsyncOperationStateCode = {
   Completed: 3,
 } as const;
 
+/** A `statecode` of a system job: one of the values of `AsyncOperationStateCode`. */
+export type AsyncOperationStateCode =
+  (typeof AsyncOperationStateCode)[keyof typeof AsyncOperationStateCode];
+
 /** `statuscode` of a system job (`asyncoperation`). The last three come with `Completed`. */
 export const AsyncOperationStatusCode = {
   WaitingForResources: 0,
@@ -29,6 +33,10 @@ export const AsyncOperationStatusCode = {
   Canceled: 32,
 } as const;
 
+/** A `statuscode` of a system job: one of the values of `AsyncOperationStatusCode`. */
+export type AsyncOperationStatusCode =
+  (typeof AsyncOperationStatusCode)[keyof typeof AsyncOperationStatusCode];
+
 /**
  * A system job (`asyncoperation`) as `waitForAsyncOperation()` reads it: the columns below, plus
  * any extra ones asked for with `select`.
@@ -40,9 +48,12 @@ export interface AsyncOperation {
   /** Type of the job, e.g. `13` for bulk delete or `10` for a workflow. */
   operationtype?: number | null;
   /** See `AsyncOperationStateCode`. */
-  statecode: number;
-  /** See `AsyncOperationStatusCode`. */
-  statuscode: number;
+  statecode: AsyncOperationStateCode | (number & {});
+  /**
+   * See `AsyncOperationStatusCode`. Another number is a status this SDK doesn't know; with
+   * `Completed`, it counts as a failure.
+   */
+  statuscode: AsyncOperationStatusCode | (number & {});
   /** The job's message: details of what went wrong, for a failed job. */
   message?: string | null;
   /** The job's message for people. */

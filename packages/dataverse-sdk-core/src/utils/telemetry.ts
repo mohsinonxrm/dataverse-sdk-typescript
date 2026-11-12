@@ -6,6 +6,7 @@ import type {
   TelemetryClient,
 } from "../abstractions/http.js";
 import type { DataverseClientOptions } from "../abstractions/options.js";
+import type { TelemetryEventName } from "../telemetry/events.js";
 
 /** A dependency in flight, as the SDK uses it: every member is safe to call. */
 export interface SafeDependency {
@@ -18,7 +19,7 @@ export interface SafeDependency {
 /** `TelemetryClient` calls that never throw into the request: a failure is logged and dropped. */
 export interface SafeTelemetry {
   trackEvent(
-    name: string,
+    name: TelemetryEventName | (string & {}),
     props?: Record<string, string>,
     measurements?: Record<string, number>
   ): void;

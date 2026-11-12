@@ -4,6 +4,7 @@ import type { AttributeTypeDisplayName } from "./AttributeTypeDisplayName.js";
 import type { BooleanManagedProperty } from "./BooleanManagedProperty.js";
 import type { EntitySetting } from "./EntitySetting.js";
 import type { Label } from "./Label.js";
+import type { AttributeSourceType } from "./metadata-values.js";
 
 /**
  * ComplexAttributeMetadata
@@ -57,5 +58,6 @@ export interface ComplexAttributeMetadata {
   RequiredLevel?: AttributeRequiredLevelManagedProperty;
   SchemaName?: string;
   Settings?: EntitySetting[];
-  SourceType?: number;
+  /** What fills the column: see `AttributeSourceType`. */
+  SourceType?: AttributeSourceType | (number & {});
 }

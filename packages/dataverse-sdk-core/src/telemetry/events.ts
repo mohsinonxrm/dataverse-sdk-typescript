@@ -70,3 +70,9 @@ export const TelemetryEvents = {
    */
   throttleDelay: "dataverse.throttle.delay",
 } as const;
+
+/**
+ * The name of an event the SDK sends to `TelemetryClient.trackEvent`: one of the values of
+ * `TelemetryEvents`, such as `"dataverse.throttle"`.
+ */
+export type TelemetryEventName = (typeof TelemetryEvents)[keyof typeof TelemetryEvents];

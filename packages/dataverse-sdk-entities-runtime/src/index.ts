@@ -8,7 +8,12 @@
  * @module
  */
 
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type {
+  EdmPrimitiveType,
+  Executable,
+  ODataTypeName,
+  RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
 import { type EntityReference, isEntityReference } from "./entity-reference.js";
 
@@ -50,6 +55,33 @@ export interface IEntity {
 }
 
 /**
+ * A Dataverse column type, as `AttributeMetadata.AttributeType` names it (the `AttributeTypeCode`
+ * member names). Choices, file and image columns are `Virtual`.
+ */
+export type AttributeTypeCodeName =
+  | "BigInt"
+  | "Boolean"
+  | "CalendarRules"
+  | "Customer"
+  | "DateTime"
+  | "Decimal"
+  | "Double"
+  | "EntityName"
+  | "Integer"
+  | "Lookup"
+  | "ManagedProperty"
+  | "Memo"
+  | "Money"
+  | "Owner"
+  | "PartyList"
+  | "Picklist"
+  | "State"
+  | "Status"
+  | "String"
+  | "Uniqueidentifier"
+  | "Virtual";
+
+/**
  * Metadata descriptor for an entity attribute.
  */
 export interface AttributeMetadata {
@@ -59,14 +91,17 @@ export interface AttributeMetadata {
   /** Schema name (PascalCase) */
   schemaName: string;
 
-  /** Dataverse attribute type (e.g. "Lookup", "Picklist"), or the OData type when unknown */
-  attributeType: string;
+  /**
+   * Dataverse attribute type (e.g. "Lookup", "Picklist"), or the OData type when unknown. Any
+   * other string is accepted too, for types Dataverse adds later.
+   */
+  attributeType: AttributeTypeCodeName | EdmPrimitiveType | (string & {});
 
   /** TypeScript type representation */
   typescriptType: string;
 
   /** OData type of the property (e.g. "Edm.String") */
-  odataType?: string;
+  odataType?: ODataTypeName;
 
   /** Business-required: a caller must supply a value (`RequiredLevel` is ApplicationRequired). */
   isRequired?: boolean;
@@ -189,7 +224,7 @@ export interface EntityMetadata {
   primaryNameAttribute?: string;
 
   /** Map of attribute logical names to their OData types (e.g. "Edm.String") */
-  attributeTypes: Record<string, string>;
+  attributeTypes: Record<string, ODataTypeName>;
 
   /** Map of navigation property names to target types and cardinality */
   navigation: Record<string, NavigationMetadata>;

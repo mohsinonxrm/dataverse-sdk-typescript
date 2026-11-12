@@ -4,6 +4,14 @@
  * the MIT License. See THIRD_PARTY_NOTICES.md in this package for the notice.
  */
 
+import type { ApiVersion } from "@mohsinonxrm/dataverse-sdk-core";
+import type {
+  AttributeSourceType,
+  AttributeTypeCode,
+  DateTimeBehaviorValue,
+  DateTimeFormat,
+} from "@mohsinonxrm/dataverse-sdk-metadata";
+
 /**
  * Configuration for the Dataverse code generator.
  */
@@ -16,7 +24,7 @@ export interface DataverseGenConfig {
   /**
    * API version to use (default: "v9.2")
    */
-  apiVersion?: string;
+  apiVersion?: ApiVersion;
 
   /**
    * Entity logical names to generate (empty array = all entities)
@@ -230,7 +238,7 @@ export interface PropertyType {
   Type: string;
 
   /** Dataverse attribute type from RetrieveMetadataChanges (e.g. "Lookup", "Picklist") */
-  AttributeType?: string;
+  AttributeType?: AttributeTypeCode | (string & {});
 
   /** TypeScript type */
   TypeScriptType: TypeScriptType;
@@ -286,8 +294,8 @@ export interface PropertyType {
   /** The values of a choice or choices column's options, in order. */
   OptionValues?: number[];
 
-  /** Source type: 0=simple, 1=calculated, 2=rollup */
-  SourceType?: number;
+  /** Source type (`AttributeSourceType`): 0=simple, 1=calculated, 2=rollup, 3=formula, 4=prompt */
+  SourceType?: AttributeSourceType | (number & {});
 
   /** Attribute this extends (for virtual attributes) */
   AttributeOf?: string;
@@ -298,8 +306,8 @@ export interface PropertyType {
   /** Description (localized) */
   Description?: string;
 
-  /** Date/time format */
-  Format?: string;
+  /** Date/time column: its `DateTimeBehavior`, else its `Format` */
+  Format?: DateTimeBehaviorValue | DateTimeFormat | (string & {});
 
   /**
    * A complex type's navigation property (`PrincipalAccess.Principal`, #361): an entity, or a

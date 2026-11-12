@@ -47,12 +47,44 @@ afterAll(() => {
   server.close();
 });
 
+/**
+ * The known values of properties CSDL types as strings or numbers (#482): constant objects too, but
+ * not enums ($metadata has no enum for them), and the numeric ones are sent as numbers.
+ */
+const KNOWN_VALUES = new Set([
+  "AttributeSourceType",
+  "AttributeTypeDisplayNameValue",
+  "DateTimeBehaviorValue",
+  "MemoFormatNameValue",
+  "RelationshipBehavior",
+]);
+
 /** The exported enum objects: plain objects whose every value is a string or number. */
 const enums = Object.entries(types).filter(
   (entry): entry is [string, Record<string, string | number>] =>
+    !KNOWN_VALUES.has(entry[0]) &&
     typeof entry[1] === "object" &&
     Object.values(entry[1] as object).every((v) => typeof v === "string" || typeof v === "number")
 );
+
+describe("#482: known values of string and number properties", () => {
+  it("are exported constant objects", () => {
+    expect(types.DateTimeBehaviorValue.DateOnly).toBe("DateOnly");
+    expect(types.MemoFormatNameValue.RichText).toBe("RichText");
+    expect(types.AttributeTypeDisplayNameValue.MultiSelectPicklistType).toBe(
+      "MultiSelectPicklistType"
+    );
+    expect(types.AttributeSourceType).toEqual({
+      Simple: 0,
+      Calculated: 1,
+      Rollup: 2,
+      Formula: 3,
+      Prompt: 4,
+    });
+    expect(types.RelationshipBehavior).toEqual({ Referential: 0, Parental: 1, Custom: 2 });
+    for (const name of KNOWN_VALUES) expect(name in types, name).toBe(true);
+  });
+});
 
 describe("#66: metadata enums are member names", () => {
   it("exports the generated enums", () => {

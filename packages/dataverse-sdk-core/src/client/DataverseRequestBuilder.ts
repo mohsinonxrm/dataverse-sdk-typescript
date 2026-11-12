@@ -1,4 +1,4 @@
-import type { RequestInformation } from "../abstractions/http.js";
+import type { HttpMethod, RequestInformation } from "../abstractions/http.js";
 import type {
   BindManyExecutor,
   CreateAndGetIdOptions,
@@ -426,7 +426,7 @@ export class DataverseRequestBuilder {
    * ```
    */
   async response(
-    method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE" = "GET",
+    method: HttpMethod = "GET",
     body?: unknown,
     options?: RequestOptions
   ): Promise<Response> {
@@ -695,7 +695,7 @@ export class DataverseRequestBuilder {
   }
 
   private buildRequest(
-    method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
+    method: HttpMethod,
     body: unknown,
     options: RequestOptions | undefined,
     { validate = true }: { validate?: boolean } = {}
@@ -779,7 +779,7 @@ export class DataverseRequestBuilder {
   }
 
   private async send(
-    method: "GET" | "POST" | "PATCH" | "PUT" | "DELETE",
+    method: HttpMethod,
     body?: unknown,
     options?: RequestOptions
   ): Promise<Response> {

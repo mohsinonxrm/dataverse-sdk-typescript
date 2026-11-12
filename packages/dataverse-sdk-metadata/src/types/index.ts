@@ -125,3 +125,4 @@ export * from "./StringFormatName.js";
 export * from "./UniqueIdentifierAttributeMetadata.js";
 export * from "./crmmodelbaseentity.js";
 export * from "./metadata-params.js";
+export * from "./metadata-values.js";

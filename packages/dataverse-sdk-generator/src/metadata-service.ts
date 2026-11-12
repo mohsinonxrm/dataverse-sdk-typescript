@@ -4,6 +4,16 @@
  * the MIT License. See THIRD_PARTY_NOTICES.md in this package for the notice.
  */
 
+import type {
+  AttributeSourceType,
+  AttributeTypeCode,
+  AttributeTypeDisplayName,
+  DateTimeBehavior,
+  DateTimeFormat,
+  IntegerFormat,
+  OptionSetType,
+  StringFormat,
+} from "@mohsinonxrm/dataverse-sdk-metadata";
 import type { DataverseGenConfig } from "./types.js";
 
 /** How many times a metadata request is tried before its error is thrown. */
@@ -237,9 +247,10 @@ export type AttributeRequiredLevel =
 export interface AttributeMetadataDetail {
   LogicalName?: string;
   SchemaName?: string;
-  AttributeType?: string;
-  AttributeTypeName?: { Value?: string };
-  SourceType?: number; // 0 = simple, 1 = calculated, 2 = rollup
+  AttributeType?: AttributeTypeCode | (string & {});
+  AttributeTypeName?: AttributeTypeDisplayName;
+  /** See `AttributeSourceType`: 0 = simple, 1 = calculated, 2 = rollup, 3 = formula, 4 = prompt. */
+  SourceType?: AttributeSourceType | (number & {});
   /** The Web API sends the AttributeRequiredLevel member name, not a number. */
   RequiredLevel?: {
     Value?: AttributeRequiredLevel;
@@ -260,8 +271,9 @@ export interface AttributeMetadataDetail {
   // Option Set-specific
   OptionSet?: OptionSetMetadata;
   // DateTime-specific
-  DateTimeBehavior?: { Value?: string };
-  Format?: string;
+  DateTimeBehavior?: DateTimeBehavior;
+  /** The column's format: a `DateTimeFormat`, `StringFormat` or `IntegerFormat` member name. */
+  Format?: DateTimeFormat | StringFormat | IntegerFormat | (string & {});
   // String-specific
   MaxLength?: number;
   // Number-specific (Integer, BigInt, Decimal, Double, Money)
@@ -296,7 +308,7 @@ export interface OptionSetMetadata {
   Name?: string;
   DisplayName?: Label;
   Description?: Label;
-  OptionSetType?: string; // "Picklist" or "State" or "Status"
+  OptionSetType?: OptionSetType | (string & {});
   IsGlobal?: boolean;
   IsManaged?: boolean;
   IsCustomOptionSet?: boolean;

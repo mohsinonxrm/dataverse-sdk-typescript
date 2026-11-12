@@ -6,12 +6,21 @@
 import { expectType, expectError, expectAssignable, expectNotAssignable } from "tsd";
 import {
   AttributeRequiredLevel,
+  AttributeSourceType,
+  AttributeTypeDisplayNameValue,
+  DateTimeBehaviorValue,
   DeletedMetadataFilters,
   LogicalOperator,
+  MemoFormatNameValue,
   OwnershipTypes,
+  RelationshipBehavior,
 } from "../src/types/index.js";
 import type { MetadataClient } from "../src/MetadataClient.js";
 import type {
+  AttributeMetadata,
+  AttributeTypeDisplayName,
+  DateTimeBehavior,
+  MemoFormatName,
   EntityMetadata,
   EntityMetadataCreate,
   EntityMetadataUpdate,
@@ -978,3 +987,31 @@ expectError(
 );
 // A label's language is a number (LCID).
 expectError(Metadata.label("Name", "en-US"));
+
+// ==================== Known values (#482) ====================
+
+// The known values are suggested; values Dataverse adds later still compile.
+expectType<"DateOnly">(DateTimeBehaviorValue.DateOnly);
+expectType<DateTimeBehaviorValue | (string & {}) | undefined>(({} as DateTimeBehavior).Value);
+expectAssignable<DateTimeBehavior>({ Value: DateTimeBehaviorValue.TimeZoneIndependent });
+expectAssignable<DateTimeBehavior>({ Value: "SomeFutureBehavior" });
+expectNotAssignable<DateTimeBehaviorValue>("Dateonly");
+expectType<MemoFormatNameValue | (string & {}) | undefined>(({} as MemoFormatName).Value);
+expectAssignable<MemoFormatNameValue>("RichText");
+expectType<AttributeTypeDisplayNameValue | (string & {}) | undefined>(
+  ({} as AttributeTypeDisplayName).Value
+);
+expectAssignable<AttributeTypeDisplayNameValue>("MultiSelectPicklistType");
+expectNotAssignable<AttributeTypeDisplayNameValue>("MultiSelectPicklist");
+
+declare const column: AttributeMetadata;
+expectType<AttributeSourceType | (number & {}) | undefined>(column.SourceType);
+expectType<3>(AttributeSourceType.Formula);
+expectAssignable<Partial<AttributeMetadata>>({ SourceType: AttributeSourceType.Calculated });
+expectAssignable<Partial<AttributeMetadata>>({ SourceType: 5 });
+expectError<Partial<AttributeMetadata>>({ SourceType: "1" });
+
+declare const relationship: OneToManyRelationshipMetadata;
+expectType<RelationshipBehavior | (number & {}) | undefined>(relationship.RelationshipBehavior);
+expectType<1>(RelationshipBehavior.Parental);
+expectNotAssignable<RelationshipBehavior>(3);

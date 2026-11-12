@@ -10,6 +10,7 @@ export {
   type DataverseBatchErrorConstructor,
 } from "./errors.js";
 export type {
+  BatchMethod,
   BatchRequestStep,
   BatchChangeset,
   BatchItem,
