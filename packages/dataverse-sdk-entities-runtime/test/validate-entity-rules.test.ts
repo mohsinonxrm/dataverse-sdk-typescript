@@ -83,7 +83,37 @@ describe("validateEntity: decimal places (#433)", () => {
 
   it("counts decimal places in exponent notation", () => {
     expect(codes({ contoso_discount: 1e-7 })).toEqual([["contoso_discount", "precision"]]);
+    expect(codes({ contoso_discount: 1.5e-7 })).toEqual([["contoso_discount", "precision"]]);
+    expect(codes({ contoso_discount: 1e-12 })).toEqual([["contoso_discount", "precision"]]);
+    expect(codes({ contoso_discount: 5e-3 })).toEqual([["contoso_discount", "precision"]]);
+    expect(codes({ contoso_discount: 2.5e-1 })).toEqual([]);
     expect(codes({ contoso_discount: 1e2 })).toEqual([]);
+    expect(codes({ contoso_amount: 1e21 })).toEqual([]);
+  });
+
+  it("floating point noise isn't a decimal place", () => {
+    // 0.30000000000000004 and 3.3000000000000003
+    expect(codes({ contoso_discount: 0.1 + 0.2 })).toEqual([]);
+    expect(codes({ contoso_discount: 1.1 * 3 })).toEqual([]);
+    expect(codes({ contoso_total: 19.99 * 3 }, { currencyPrecision: 2 })).toEqual([]);
+    expect(codes({ contoso_discount: 1.23 })).toEqual([]);
+    // A value with more decimal places than the column keeps still is one
+    expect(codes({ contoso_discount: 1.234 })).toEqual([["contoso_discount", "precision"]]);
+    expect(codes({ contoso_discount: 0.1 + 0.2 + 0.001 })).toEqual([
+      ["contoso_discount", "precision"],
+    ]);
+  });
+
+  it("large currency values", () => {
+    expect(codes({ contoso_total: 922_337_203_685_477 }, { currencyPrecision: 2 })).toEqual([]);
+    expect(codes({ contoso_total: 123_456_789_012.34 }, { currencyPrecision: 2 })).toEqual([]);
+    expect(codes({ contoso_total: 123_456_789_012.345 }, { currencyPrecision: 2 })).toEqual([
+      ["contoso_total", "precision"],
+    ]);
+    expect(codes({ contoso_amount: 1_234_567_890_123 })).toEqual([]);
+    expect(codes({ contoso_amount: 1_234_567_890_123.5 })).toEqual([
+      ["contoso_amount", "precision"],
+    ]);
   });
 
   it("a range issue is reported before the precision", () => {

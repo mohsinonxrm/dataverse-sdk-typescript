@@ -452,9 +452,15 @@ function decimalPlacesKept(
   return precision;
 }
 
-/** The decimal places of a number as JavaScript writes it (`1.25` → 2, `1.5e-7` → 8). */
+/**
+ * The decimal places of a number (`1.25` → 2, `1.5e-7` → 8), read from its 15 significant digits
+ * (all a double holds exactly) so that floating point noise doesn't count: `0.1 + 0.2`
+ * (`0.30000000000000004`) has 1, `1.1 * 3` (`3.3000000000000003`) has 1.
+ */
 function decimalPlaces(value: number): number {
-  const [mantissa, exponent = "0"] = String(value).toLowerCase().split("e");
+  const [mantissa, exponent = "0"] = String(Number(value.toPrecision(15)))
+    .toLowerCase()
+    .split("e");
   const fraction = mantissa.split(".")[1]?.length ?? 0;
   return Math.max(0, fraction - Number(exponent));
 }

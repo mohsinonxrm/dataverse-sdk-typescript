@@ -289,8 +289,10 @@ validateEntity(product, ProductMetadata, {
 });
 ```
 
-Decimal places are counted as JavaScript writes the number, so `0.1 + 0.2` (`0.30000000000000004`)
-has 17: round a computed value before you check it. Floating point columns aren't checked.
+Decimal places are counted in the number's first 15 significant digits (all a JavaScript number
+holds exactly), so floating point noise doesn't count: `0.1 + 0.2` (`0.30000000000000004`) and
+`1.1 * 3` (`3.3000000000000003`) pass a column that keeps 2, while `1.234` doesn't. Floating
+point columns aren't checked.
 
 **Status reasons.** A `statuscode` is checked against `statecode` only when the body sets both;
 otherwise the record's state isn't known here.
