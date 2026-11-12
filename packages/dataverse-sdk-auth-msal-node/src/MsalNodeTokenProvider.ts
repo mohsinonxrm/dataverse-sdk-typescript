@@ -652,6 +652,9 @@ export class MsalNodeTokenProvider implements AccessTokenProvider {
       ...target,
     };
 
+    // MSAL deprecated ROPC; the flow stays for the majors that still have it (the constructor
+    // checks that the method exists, see UsernamePasswordFlowOptions)
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return await pca.acquireTokenByUsernamePassword(usernamePasswordRequest);
   }
 
