@@ -208,11 +208,11 @@ describe("RetrievePrincipalAccessRequest (#435)", () => {
       Principal: createEntityReference("team", T1),
       Target: target,
     }).toRequestInformation(TEST_API_URL);
-    expect(team.url).toMatch(
-      new RegExp(
-        `^${TEST_API_URL}/teams\\(${T1}\\)/Microsoft\\.Dynamics\\.CRM\\.RetrievePrincipalAccess\\(Target=@p1\\)\\?`
+    expect(
+      team.url.startsWith(
+        `${TEST_API_URL}/teams(${T1})/Microsoft.Dynamics.CRM.RetrievePrincipalAccess(Target=@p1)?`
       )
-    );
+    ).toBe(true);
     expect(decodeURIComponent(team.url)).toContain(`{"@odata.id":"contacts(${A1})"}`);
     const organization = new RetrievePrincipalAccessRequest({
       Principal: createEntityReference("organization", T1),
