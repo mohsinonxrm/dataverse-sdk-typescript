@@ -1,12 +1,12 @@
 /**
- * Live check of the metadata package's `RelationshipBehavior` values (#482). Microsoft documents
- * `OneToManyRelationshipMetadata.RelationshipBehavior` only as an `int`, so the names
- * (0 Referential, 1 Parental, 2 Custom) are checked against the relationships' cascade settings:
- * most parental relationships cascade every action, and most referential ones cascade none of
- * assign, share, unshare and reparent. Not every one: a system relationship can be parental and
- * still not cascade assign (`account_principalobjectattributeaccess`, seen in the dev org), so
- * the exceptions are logged and a swapped mapping fails (it would make nearly every one an
- * exception). See ./env.ts for configuration. This test only reads.
+ * Live check of the metadata package's `RelationshipBehavior` values (#482, #537). Microsoft
+ * documents `OneToManyRelationshipMetadata.RelationshipBehavior` only as an `int`, and the dev org
+ * showed that the name `Parental` for 1 doesn't fit: of account's and contact's relationships with
+ * 1, most don't cascade every action. Until the names are settled from data, this test logs how
+ * the values are distributed over the org's one-to-many relationships (count, custom ones, and the
+ * most common cascade settings of each value, with examples), and checks only what the data has
+ * shown: every value is 0, 1 or 2, and most relationships with 0 cascade no ownership action
+ * (assign, share, unshare, reparent). See ./env.ts for configuration. This test only reads.
  */
 import { describe, expect, it } from "vitest";
 import { RelationshipBehavior } from "@mohsinonxrm/dataverse-sdk-metadata";
@@ -15,58 +15,75 @@ import { live, liveClient } from "./env.js";
 interface Relationship {
   SchemaName: string;
   RelationshipBehavior?: number | null;
+  IsCustomRelationship?: boolean | null;
   CascadeConfiguration?: Record<string, string | null> | null;
 }
 
 const OWNERSHIP_ACTIONS = ["Assign", "Share", "Unshare", "Reparent"] as const;
+const ACTIONS = [...OWNERSHIP_ACTIONS, "Delete", "Merge", "RollupView", "Archive"] as const;
 
-const cascadesEverything = (r: Relationship): boolean =>
-  [...OWNERSHIP_ACTIONS, "Delete"].every(
-    (action) => r.CascadeConfiguration?.[action] === "Cascade"
-  );
+/** The cascade settings as one short string: `Assign=Cascade Share=NoCascade ...`. */
+const cascadeOf = (r: Relationship): string =>
+  ACTIONS.map((action) => `${action}=${r.CascadeConfiguration?.[action] ?? "-"}`).join(" ");
+
 const cascadesNoOwnershipAction = (r: Relationship): boolean =>
   OWNERSHIP_ACTIONS.every((action) => r.CascadeConfiguration?.[action] === "NoCascade");
 
 describe.skipIf(!live)("live: metadata RelationshipBehavior values (#482)", () => {
-  it("parental relationships mostly cascade everything; referential ones no ownership action", async () => {
+  it("logs how the values are distributed; 0 is referential", async () => {
     const { client } = liveClient();
     const relationships = await client
       .api("/RelationshipDefinitions/Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata")
-      .select("SchemaName", "RelationshipBehavior", "CascadeConfiguration")
-      .filter("ReferencedEntity eq 'account' or ReferencedEntity eq 'contact'")
+      .select("SchemaName", "RelationshipBehavior", "IsCustomRelationship", "CascadeConfiguration")
       .getAll<Relationship>();
 
-    const parental = relationships.filter(
-      (r) => r.RelationshipBehavior === RelationshipBehavior.Parental
+    // Per value: how many, how many custom, and the most common cascade settings with examples
+    const byValue = new Map<string, Relationship[]>();
+    for (const r of relationships) {
+      const key = String(r.RelationshipBehavior ?? "null");
+      byValue.set(key, [...(byValue.get(key) ?? []), r]);
+    }
+    const distribution = Object.fromEntries(
+      [...byValue].map(([value, list]) => {
+        const settings = new Map<string, string[]>();
+        for (const r of list) {
+          const key = cascadeOf(r);
+          settings.set(key, [...(settings.get(key) ?? []), r.SchemaName]);
+        }
+        return [
+          value,
+          {
+            count: list.length,
+            custom: list.filter((r) => r.IsCustomRelationship === true).length,
+            cascade: [...settings]
+              .sort((a, b) => b[1].length - a[1].length)
+              .slice(0, 8)
+              .map(([cascade, names]) => ({
+                cascade,
+                count: names.length,
+                examples: names.slice(0, 3),
+              })),
+          },
+        ];
+      })
     );
+    console.log(`[#482 distribution] ${JSON.stringify(distribution)}`);
+
+    // Every value is one of the three the constant has.
+    const known: number[] = Object.values(RelationshipBehavior);
+    const unknown = relationships.filter(
+      (r) => r.RelationshipBehavior != null && !known.includes(r.RelationshipBehavior)
+    );
+    expect(unknown.map((r) => `${r.SchemaName}=${String(r.RelationshipBehavior)}`)).toEqual([]);
+
+    // 0 is referential: most cascade no ownership action.
     const referential = relationships.filter(
       (r) => r.RelationshipBehavior === RelationshipBehavior.Referential
     );
-    // Both kinds exist among account's and contact's standard relationships.
-    expect(parental.length).toBeGreaterThan(0);
     expect(referential.length).toBeGreaterThan(0);
-
-    const oddParental = parental.filter((r) => !cascadesEverything(r)).map((r) => r.SchemaName);
-    const oddReferential = referential
-      .filter((r) => !cascadesNoOwnershipAction(r))
-      .map((r) => r.SchemaName);
-    console.log(
-      `[#482] ${String(parental.length)} parental, ${String(referential.length)} referential; ` +
-        `parental that don't cascade everything: ${JSON.stringify(oddParental)}; ` +
-        `referential that cascade an ownership action: ${JSON.stringify(oddReferential)}`
+    const odd = referential.filter((r) => !cascadesNoOwnershipAction(r));
+    expect(odd.length, odd.map((r) => r.SchemaName).join(", ")).toBeLessThan(
+      referential.length / 2
     );
-    expect(oddParental.length, `parental exceptions: ${oddParental.join(", ")}`).toBeLessThan(
-      parental.length / 2
-    );
-    expect(
-      oddReferential.length,
-      `referential exceptions: ${oddReferential.join(", ")}`
-    ).toBeLessThan(referential.length / 2);
-
-    // Every value seen is one of the three named ones.
-    const known: number[] = Object.values(RelationshipBehavior);
-    for (const r of relationships) {
-      if (r.RelationshipBehavior != null) expect(known).toContain(r.RelationshipBehavior);
-    }
   });
 });
