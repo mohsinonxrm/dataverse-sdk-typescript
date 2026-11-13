@@ -378,7 +378,7 @@ describe.skipIf(!live)("live: incremental generation reads only changed tables (
   );
 
   it(
-    "a deleted table is no longer generated, and nothing is read",
+    "a deleted table is no longer generated, and isn't read",
     async () => {
       if (!tableId || !dir) throw new Error("The table wasn't created.");
       const file = (await stampOf(dir)).tables[table]?.files[0] ?? "";
@@ -393,8 +393,9 @@ describe.skipIf(!live)("live: incremental generation reads only changed tables (
         return result;
       });
       noteRun("deleted table", run);
-      // task's metadata is kept (its files are regenerated: the set of generated tables changed)
-      expect(run.perTable).toEqual([]);
+      // The deleted table isn't read; task's metadata is kept (its files are regenerated: the set
+      // of generated tables changed), unless Dataverse lists task as changed (checked below)
+      expect(run.perTable).not.toContain(table);
       expect(run.changes).toBe(1);
       await expect(readFile(path.join(dir, file), "utf-8")).rejects.toThrow();
       expect(unexplained(), reads()).toEqual([]);
