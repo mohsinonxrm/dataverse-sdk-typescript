@@ -1,89 +1,134 @@
 /**
- * Live check of the metadata package's `RelationshipBehavior` values (#482, #537). Microsoft
- * documents `OneToManyRelationshipMetadata.RelationshipBehavior` only as an `int`, and the dev org
- * showed that the name `Parental` for 1 doesn't fit: of account's and contact's relationships with
- * 1, most don't cascade every action. Until the names are settled from data, this test logs how
- * the values are distributed over the org's one-to-many relationships (count, custom ones, and the
- * most common cascade settings of each value, with examples), and checks only what the data has
- * shown: every value is 0, 1 or 2, and most relationships with 0 cascade no ownership action
- * (assign, share, unshare, reparent). See ./env.ts for configuration. This test only reads.
+ * Live survey of `OneToManyRelationshipMetadata.RelationshipBehavior` (#482, #537). Microsoft
+ * documents the property only as an `int`. The dev org has values 0, 1, 2, 4 and 12, and the
+ * names the metadata package gave them (0 Referential, 1 Parental, 2 Custom) don't match the
+ * relationships' cascade settings. To settle what the numbers mean, this test reads every
+ * one-to-many relationship (a many-to-one relationship is the same relationship seen from the
+ * other table) and logs, for each value:
+ *
+ * - the type of behavior its cascade settings amount to, as the maker portal names them:
+ *   Parental (assign, share, unshare, reparent and delete all cascade), Referential (none of
+ *   them cascades, delete removes the link), Referential, restrict delete (none cascades, delete
+ *   is restricted), or Custom (anything else);
+ * - its `SecurityTypes` (flags: Append 1, ParentChild 2, Pointer 4, Inheritance 8);
+ * - how many are custom, managed and hierarchical, with examples.
+ *
+ * Many-to-many relationships have neither `RelationshipBehavior` nor cascade settings; their
+ * number is logged too. The test checks only that the org answers; the log is the result. See
+ * ./env.ts for configuration. This test only reads.
  */
 import { describe, expect, it } from "vitest";
-import { RelationshipBehavior } from "@mohsinonxrm/dataverse-sdk-metadata";
 import { live, liveClient } from "./env.js";
 
 interface Relationship {
   SchemaName: string;
+  ReferencedEntity?: string | null;
+  ReferencingEntity?: string | null;
   RelationshipBehavior?: number | null;
+  SecurityTypes?: string | null;
   IsCustomRelationship?: boolean | null;
+  IsManaged?: boolean | null;
+  IsHierarchical?: boolean | null;
   CascadeConfiguration?: Record<string, string | null> | null;
 }
 
-const OWNERSHIP_ACTIONS = ["Assign", "Share", "Unshare", "Reparent"] as const;
-const ACTIONS = [...OWNERSHIP_ACTIONS, "Delete", "Merge", "RollupView", "Archive"] as const;
+const KEY_ACTIONS = ["Assign", "Share", "Unshare", "Reparent"] as const;
 
-/** The cascade settings as one short string: `Assign=Cascade Share=NoCascade ...`. */
-const cascadeOf = (r: Relationship): string =>
-  ACTIONS.map((action) => `${action}=${r.CascadeConfiguration?.[action] ?? "-"}`).join(" ");
+/** A cascade setting that passes the action on: Cascade All, Cascade Active, Cascade User-owned. */
+const CASCADING = new Set(["Cascade", "Active", "UserOwned"]);
 
-const cascadesNoOwnershipAction = (r: Relationship): boolean =>
-  OWNERSHIP_ACTIONS.every((action) => r.CascadeConfiguration?.[action] === "NoCascade");
+/**
+ * The maker portal's type of behavior the cascade settings amount to. The maker docs ("Create
+ * and edit relationships between tables") call a relationship parental when assign, share,
+ * unshare, reparent or delete cascades; the Parental preset cascades all of them.
+ */
+function typeOfBehavior(r: Relationship): string {
+  const c = r.CascadeConfiguration ?? {};
+  const keys = KEY_ACTIONS.map((action) => c[action] ?? "");
+  if (keys.every((v) => v === "Cascade") && c.Delete === "Cascade") return "Parental";
+  if (keys.every((v) => v === "NoCascade")) {
+    if (c.Delete === "RemoveLink") return "Referential, remove link";
+    if (c.Delete === "Restrict") return "Referential, restrict delete";
+  }
+  return keys.some((v) => CASCADING.has(v)) || c.Delete === "Cascade"
+    ? "Custom, something cascades (parental)"
+    : "Custom, nothing cascades";
+}
+
+/** Count `key` in `counts`. */
+function add(counts: Record<string, number>, key: string): void {
+  counts[key] = (counts[key] ?? 0) + 1;
+}
 
 describe.skipIf(!live)("live: metadata RelationshipBehavior values (#482)", () => {
-  it("logs how the values are distributed; 0 is referential", async () => {
+  it("logs what each RelationshipBehavior value goes with", async () => {
     const { client } = liveClient();
-    const relationships = await client
+    const oneToMany = await client
       .api("/RelationshipDefinitions/Microsoft.Dynamics.CRM.OneToManyRelationshipMetadata")
-      .select("SchemaName", "RelationshipBehavior", "IsCustomRelationship", "CascadeConfiguration")
+      .select(
+        "SchemaName",
+        "ReferencedEntity",
+        "ReferencingEntity",
+        "RelationshipBehavior",
+        "SecurityTypes",
+        "IsCustomRelationship",
+        "IsManaged",
+        "IsHierarchical",
+        "CascadeConfiguration"
+      )
       .getAll<Relationship>();
+    const manyToMany = await client
+      .api("/RelationshipDefinitions/Microsoft.Dynamics.CRM.ManyToManyRelationshipMetadata")
+      .select("SchemaName", "IsCustomRelationship")
+      .getAll<{ SchemaName: string; IsCustomRelationship?: boolean | null }>();
+    expect(oneToMany.length).toBeGreaterThan(0);
 
-    // Per value: how many, how many custom, and the most common cascade settings with examples
-    const byValue = new Map<string, Relationship[]>();
-    for (const r of relationships) {
-      const key = String(r.RelationshipBehavior ?? "null");
-      byValue.set(key, [...(byValue.get(key) ?? []), r]);
+    const byValue: Record<
+      string,
+      {
+        count: number;
+        custom: number;
+        managed: number;
+        hierarchical: number;
+        typeOfBehavior: Record<string, number>;
+        securityTypes: Record<string, number>;
+        examples: Record<string, string[]>;
+      }
+    > = {};
+    for (const r of oneToMany) {
+      const value = String(r.RelationshipBehavior ?? "null");
+      const entry = (byValue[value] ??= {
+        count: 0,
+        custom: 0,
+        managed: 0,
+        hierarchical: 0,
+        typeOfBehavior: {},
+        securityTypes: {},
+        examples: {},
+      });
+      entry.count++;
+      if (r.IsCustomRelationship === true) entry.custom++;
+      if (r.IsManaged === true) entry.managed++;
+      if (r.IsHierarchical === true) entry.hierarchical++;
+      const type = typeOfBehavior(r);
+      add(entry.typeOfBehavior, type);
+      add(entry.securityTypes, r.SecurityTypes ?? "null");
+      const examples = (entry.examples[type] ??= []);
+      if (examples.length < 4) {
+        examples.push(
+          `${r.SchemaName} (${r.ReferencedEntity ?? "?"} 1:N ${r.ReferencingEntity ?? "?"}, ` +
+            `${r.SecurityTypes ?? "?"}${r.IsCustomRelationship === true ? ", custom" : ""})`
+        );
+      }
     }
-    const distribution = Object.fromEntries(
-      [...byValue].map(([value, list]) => {
-        const settings = new Map<string, string[]>();
-        for (const r of list) {
-          const key = cascadeOf(r);
-          settings.set(key, [...(settings.get(key) ?? []), r.SchemaName]);
-        }
-        return [
-          value,
-          {
-            count: list.length,
-            custom: list.filter((r) => r.IsCustomRelationship === true).length,
-            cascade: [...settings]
-              .sort((a, b) => b[1].length - a[1].length)
-              .slice(0, 8)
-              .map(([cascade, names]) => ({
-                cascade,
-                count: names.length,
-                examples: names.slice(0, 3),
-              })),
-          },
-        ];
-      })
-    );
-    console.log(`[#482 distribution] ${JSON.stringify(distribution)}`);
-
-    // Every value is one of the three the constant has.
-    const known: number[] = Object.values(RelationshipBehavior);
-    const unknown = relationships.filter(
-      (r) => r.RelationshipBehavior != null && !known.includes(r.RelationshipBehavior)
-    );
-    expect(unknown.map((r) => `${r.SchemaName}=${String(r.RelationshipBehavior)}`)).toEqual([]);
-
-    // 0 is referential: most cascade no ownership action.
-    const referential = relationships.filter(
-      (r) => r.RelationshipBehavior === RelationshipBehavior.Referential
-    );
-    expect(referential.length).toBeGreaterThan(0);
-    const odd = referential.filter((r) => !cascadesNoOwnershipAction(r));
-    expect(odd.length, odd.map((r) => r.SchemaName).join(", ")).toBeLessThan(
-      referential.length / 2
+    console.log(`[#482 one-to-many] ${String(oneToMany.length)} relationships`);
+    for (const [value, entry] of Object.entries(byValue)) {
+      console.log(`[#482 value ${value}] ${JSON.stringify(entry)}`);
+    }
+    console.log(
+      `[#482 many-to-many] ${String(manyToMany.length)} relationships, ` +
+        `${String(manyToMany.filter((r) => r.IsCustomRelationship === true).length)} custom; ` +
+        `no RelationshipBehavior or cascade settings`
     );
   });
 });
