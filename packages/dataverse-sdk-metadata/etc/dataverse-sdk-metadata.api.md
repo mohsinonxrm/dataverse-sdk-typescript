@@ -1167,7 +1167,7 @@ export interface ComplexOneToManyRelationshipMetadata {
     ReferencingEntityNavigationPropertyName?: string;
     // (undocumented)
     RelationshipAttributes?: RelationshipAttribute[];
-    RelationshipBehavior?: RelationshipBehavior | (number & {});
+    RelationshipBehavior?: number;
     // (undocumented)
     RelationshipType?: RelationshipType;
     // (undocumented)
@@ -2485,7 +2485,7 @@ export interface OneToManyRelationshipMetadata extends RelationshipMetadataBase 
     ReferencingEntityNavigationPropertyName?: string;
     // (undocumented)
     RelationshipAttributes?: RelationshipAttribute[];
-    RelationshipBehavior?: RelationshipBehavior | (number & {});
+    RelationshipBehavior?: number;
 }
 
 // @public
@@ -2674,16 +2674,6 @@ export interface RelationshipAttribute {
     // (undocumented)
     ReferencingAttributeName?: string;
 }
-
-// @public
-export const RelationshipBehavior: {
-    readonly Referential: 0;
-    readonly Parental: 1;
-    readonly Custom: 2;
-};
-
-// @public
-export type RelationshipBehavior = (typeof RelationshipBehavior)[keyof typeof RelationshipBehavior];
 
 // @public
 export interface RelationshipMetadataBase extends MetadataBase {

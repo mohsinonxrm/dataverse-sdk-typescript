@@ -1,8 +1,10 @@
 /**
  * Live survey of `OneToManyRelationshipMetadata.RelationshipBehavior` (#482, #537). Microsoft
- * documents the property only as an `int`. The dev org has values 0, 1, 2, 4 and 12, and the
- * names the metadata package gave them (0 Referential, 1 Parental, 2 Custom) don't match the
- * relationships' cascade settings. To settle what the numbers mean, this test reads every
+ * documents the property only as an `int`, and the metadata package types it as a plain number.
+ * The first survey (2026-11-12, 29,534 relationships in the dev org) found that each value goes
+ * with one `SecurityTypes` (0 None, 1 Append, 2 ParentChild, 4 and 12 Pointer), with every type
+ * of behavior under each value, so the names the package once gave them (0 Referential,
+ * 1 Parental, 2 Custom) were dropped. To notice if that changes, this test reads every
  * one-to-many relationship (a many-to-one relationship is the same relationship seen from the
  * other table) and logs, for each value:
  *

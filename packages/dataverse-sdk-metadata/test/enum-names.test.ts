@@ -56,7 +56,6 @@ const KNOWN_VALUES = new Set([
   "AttributeTypeDisplayNameValue",
   "DateTimeBehaviorValue",
   "MemoFormatNameValue",
-  "RelationshipBehavior",
 ]);
 
 /** The exported enum objects: plain objects whose every value is a string or number. */
@@ -81,7 +80,8 @@ describe("#482: known values of string and number properties", () => {
       Formula: 3,
       Prompt: 4,
     });
-    expect(types.RelationshipBehavior).toEqual({ Referential: 0, Parental: 1, Custom: 2 });
+    // RelationshipBehavior has no names: it isn't the type of behavior (#537)
+    expect("RelationshipBehavior" in types).toBe(false);
     for (const name of KNOWN_VALUES) expect(name in types, name).toBe(true);
   });
 });
