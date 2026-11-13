@@ -10,5 +10,3 @@ Known values for metadata properties that `$metadata` types as plain strings or 
 - `AttributeSourceType` (`Simple` 0, `Calculated` 1, `Rollup` 2, `Formula` 3, `Prompt` 4) for `SourceType` of `AttributeMetadata` and `ComplexAttributeMetadata`.
 
 The properties are typed `Known | (string & {})` or `Known | (number & {})`: the editor suggests the known values, and any other string or number still compiles, since Dataverse adds values. Nothing narrows.
-
-`OneToManyRelationshipMetadata.RelationshipBehavior` stays a `number`, now documented: Microsoft doesn't document it, Dataverse sets it, and it isn't the relationship's type of behavior. Read `CascadeConfiguration` for what an action on the parent does to the children; in practice the value follows `SecurityTypes` (#537).
