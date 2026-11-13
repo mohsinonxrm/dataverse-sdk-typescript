@@ -212,10 +212,19 @@ const SOURCE_TYPE = openNumber(
   "AttributeSourceType",
   "What fills the column: see `AttributeSourceType`."
 );
-const RELATIONSHIP_BEHAVIOR = openNumber(
-  "RelationshipBehavior",
-  "The relationship's type of behavior: see `RelationshipBehavior`."
-);
+/**
+ * `RelationshipBehavior` (#537): Microsoft documents it only as an `int`, and it isn't the maker
+ * portal's type of behavior. In the dev org every one-to-many relationship's value follows its
+ * `SecurityTypes` (0 None, 1 Append, 2 ParentChild, 4 and 12 Pointer), whatever its cascade
+ * settings, and a create that sends one value reads back another.
+ */
+const RELATIONSHIP_BEHAVIOR: PropertyOverride = {
+  type: "number",
+  doc:
+    "Undocumented by Microsoft, and set by Dataverse. It isn't the relationship's type of " +
+    "behavior: what an action on the parent does to the children is in `CascadeConfiguration`. " +
+    "In practice it follows `SecurityTypes` (0 None, 1 Append, 2 ParentChild, 4 and 12 Pointer).",
+};
 
 /**
  * Corrections to generated metadata types (#171, #209).
@@ -249,11 +258,9 @@ const TYPE_OVERRIDES: Partial<Record<string, TypeOverride>> = {
     properties: { SourceType: SOURCE_TYPE },
   },
   OneToManyRelationshipMetadata: {
-    values: ["RelationshipBehavior"],
     properties: { RelationshipBehavior: RELATIONSHIP_BEHAVIOR },
   },
   ComplexOneToManyRelationshipMetadata: {
-    values: ["RelationshipBehavior"],
     properties: { RelationshipBehavior: RELATIONSHIP_BEHAVIOR },
   },
   MetadataBase: {

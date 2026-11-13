@@ -4,9 +4,11 @@
  * asks RetrieveMetadataChanges for the changes since then (`ClientVersionStamp`,
  * `DeletedMetadataFilters`) instead of reading every table.
  *
- * A temporary table (`new_sdkitmc<run>`, which the sweeper lists) is generated with task, which no
- * other live test changes. Then: a run over unchanged metadata makes no per-table request; a new
- * column on the table reads that table again, never task; a column bound to a temporary global
+ * A temporary table (`new_sdkitmc<run>`, which the sweeper lists) is generated with task. Then: a
+ * run over unchanged metadata makes no per-table request; a new column on the table reads that
+ * table again; task is read again only when RetrieveMetadataChanges lists it as changed (the dev
+ * org does list task's `scheduledend` and `subject` as changed between runs, though no test
+ * changes them), never for another reason; a column bound to a temporary global
  * choice (`new_sdkitmcgc<run>`, also listed by the sweeper) gets the option added to that choice;
  * a deleted column and then the deleted table are handled. Every request is counted by wrapping
  * `fetch` while the generator runs.
@@ -154,6 +156,18 @@ function noteRun(step: string, run: Run): void {
 const reads = (): string => JSON.stringify(Object.fromEntries(readAgain));
 
 /**
+ * The reads of a table other than the test table for a reason other than RetrieveMetadataChanges
+ * listing it as changed: a table the test doesn't change may change in the org, but it must not be
+ * read again because of a stale stamp, a global choice or a deletion that isn't its own.
+ */
+const unexplained = (): string[] =>
+  [...readAgain].flatMap(([name, reasons]) =>
+    name === table
+      ? []
+      : reasons.filter((r) => !/: changed(:|$)/.test(r)).map((r) => `${name} (${r})`)
+  );
+
+/**
  * Delete the table. Only a 204 or several 404s in a row count as gone: right after a create, a
  * server whose cache is behind answers 404 for a table that still exists.
  */
@@ -259,7 +273,10 @@ describe.skipIf(!live)("live: incremental generation reads only changed tables (
         expect(await keptColumns(dir)).toContain("new_added");
         expect(await tableFile(dir)).toContain("new_added");
       });
-      expect([...readAgain.keys()], reads()).toEqual([table]);
+      expect(readAgain.get(table) ?? [], reads()).toContainEqual(
+        expect.stringMatching(/changed: .*new_added/)
+      );
+      expect(unexplained(), reads()).toEqual([]);
     },
     SLOW
   );
@@ -327,7 +344,7 @@ describe.skipIf(!live)("live: incremental generation reads only changed tables (
         expect(run.warnings).toEqual([]);
         expect(await tableFile(dir)).toMatch(/optionValues: \[100000, ?100001, ?100002\]/);
       });
-      expect(readAgain.has("task"), reads()).toBe(false);
+      expect(unexplained(), reads()).toEqual([]);
 
       const changes = await service.getMetadataChanges(before, [table]);
       console.info(
@@ -354,14 +371,14 @@ describe.skipIf(!live)("live: incremental generation reads only changed tables (
         expect(await tableFile(dir)).not.toContain("new_added");
       });
       expect(await keptColumns(dir)).toContain("new_code");
-      expect(readAgain.has("task"), reads()).toBe(false);
+      expect(unexplained(), reads()).toEqual([]);
       expect(await typecheck(dir)).toEqual([]);
     },
     SLOW
   );
 
   it(
-    "a deleted table is no longer generated, and nothing is read",
+    "a deleted table is no longer generated, and isn't read",
     async () => {
       if (!tableId || !dir) throw new Error("The table wasn't created.");
       const file = (await stampOf(dir)).tables[table]?.files[0] ?? "";
@@ -376,11 +393,12 @@ describe.skipIf(!live)("live: incremental generation reads only changed tables (
         return result;
       });
       noteRun("deleted table", run);
-      // task's metadata is kept (its files are regenerated: the set of generated tables changed)
-      expect(run.perTable).toEqual([]);
+      // The deleted table isn't read; task's metadata is kept (its files are regenerated: the set
+      // of generated tables changed), unless Dataverse lists task as changed (checked below)
+      expect(run.perTable).not.toContain(table);
       expect(run.changes).toBe(1);
       await expect(readFile(path.join(dir, file), "utf-8")).rejects.toThrow();
-      expect(readAgain.has("task"), reads()).toBe(false);
+      expect(unexplained(), reads()).toEqual([]);
       expect(await typecheck(dir)).toEqual([]);
     },
     SLOW

@@ -13,7 +13,6 @@ import {
   LogicalOperator,
   MemoFormatNameValue,
   OwnershipTypes,
-  RelationshipBehavior,
 } from "../src/types/index.js";
 import type { MetadataClient } from "../src/MetadataClient.js";
 import type {
@@ -1012,6 +1011,5 @@ expectAssignable<Partial<AttributeMetadata>>({ SourceType: 5 });
 expectError<Partial<AttributeMetadata>>({ SourceType: "1" });
 
 declare const relationship: OneToManyRelationshipMetadata;
-expectType<RelationshipBehavior | (number & {}) | undefined>(relationship.RelationshipBehavior);
-expectType<1>(RelationshipBehavior.Parental);
-expectNotAssignable<RelationshipBehavior>(3);
+// Undocumented, and not the type of behavior (#537): a plain number
+expectType<number | undefined>(relationship.RelationshipBehavior);

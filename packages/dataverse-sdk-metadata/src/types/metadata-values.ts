@@ -82,19 +82,3 @@ export const AttributeSourceType = {
 
 /** One of the values of {@link AttributeSourceType}. */
 export type AttributeSourceType = (typeof AttributeSourceType)[keyof typeof AttributeSourceType];
-
-/**
- * `OneToManyRelationshipMetadata.RelationshipBehavior`: the relationship's type of behavior, as
- * the maker portal shows it. Microsoft doesn't document these values.
- */
-export const RelationshipBehavior = {
-  /** Referential: the cascade settings of a referential relationship. */
-  Referential: 0,
-  /** Parental: actions on the parent cascade to the children. */
-  Parental: 1,
-  /** Custom: cascade settings chosen one by one. */
-  Custom: 2,
-} as const;
-
-/** One of the values of {@link RelationshipBehavior}. */
-export type RelationshipBehavior = (typeof RelationshipBehavior)[keyof typeof RelationshipBehavior];
