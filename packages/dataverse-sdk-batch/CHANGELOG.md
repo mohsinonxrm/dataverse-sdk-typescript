@@ -1,5 +1,34 @@
 # @mohsinonxrm/dataverse-sdk-batch
 
+## 2.1.0
+
+### Minor Changes
+
+- 8dd4e44: `upsertMultiple()` and `deleteMultiple()` bulk helpers (#434), alongside `createMultiple()` / `updateMultiple()`, with the same options (`strategy`, `batchSize`, `maxParallel`, `continueOnError`, `headers`, `signal`, `timeoutMs`, `attemptTimeoutMs`, `correlationId`), per-record results (`BulkOperationResult`) and errors (`DataverseBulkOperationError`).
+  
+  - **`upsertMultiple(client, table, records, options?)`**: each record names its row by primary key or by `@odata.id` (`accounts(<id>)`, or an alternate key such as `accounts(accountnumber='A-1')`). `"bulk"` sends `UpsertMultiple`; `"batch"` sends one `PATCH <set>(<key>)` per record without `If-Match` (an upsert) in `$batch`; `"auto"` picks `"bulk"` when the table supports both `CreateMultiple` and `UpdateMultiple`. A record that names no row, or two records that name the same row (which `UpsertMultiple` rejects), throw `DataverseInvalidRequestError` before anything is sent.
+  - **`deleteMultiple(client, table, records, options?)`**: records are ids, or objects with the primary key (and `partitionid` on an elastic table). Dataverse has `DeleteMultiple` for elastic tables only, so the default strategy is `"auto"`: `DeleteMultiple` for an elastic table, `$batch` `DELETE`s otherwise. `"bulk"` on a standard table throws `DataverseInvalidRequestError` before anything is deleted. A row that doesn't exist is a failed record (404), not a thrown error.
+- 632b1cf: `BatchRequestBuilder.addRequest()` and `BatchRequestStep.method` take a `BatchMethod` (#480): core's `HttpMethod` (`GET`, `POST`, `PATCH`, `PUT`, `DELETE`) in upper or lower case, so a misspelt method is a compile error. `BatchMethod` is exported.
+  
+  What narrows: a method passed as a plain `string` variable, or one outside those five (such as `HEAD` or `MERGE`), no longer compiles. Nothing changes at run time: the method is still upper-cased and checked as an HTTP token.
+
+### Patch Changes
+
+- 7aa258b: `execute({ timeoutMs })` gives the retry middleware its deadline (#487).
+  
+  - **batch:** `BatchRequestBuilder.execute({ timeoutMs })`, and `createMultiple()` / `updateMultiple()` with `timeoutMs` (every `CreateMultiple`/`UpdateMultiple` request, the `$batch` of `strategy: "batch"` and the `strategy: "auto"` support lookup), now send the execution's deadline with each request. A retry whose wait (`Retry-After` or backoff) would end after it isn't started, as for a single request's `timeoutMs` since 2.0.1: a 429 with a long `Retry-After` rejects at once with `DataverseThrottleError` (wrapped in `DataverseBatchError` once an earlier `$batch` of a split batch has run) instead of `DataverseNetworkError` (`RequestTimeout`) when `timeoutMs` passes. A later `$batch` gets only the time left.
+  - **core:** `RequestInformation` has a new optional `deadline` (ms since the epoch) for callers that enforce their own time limit through `signal`. It doesn't abort anything; `client.send()` puts it, or the request's `timeoutMs` deadline if earlier, on `MiddlewareContext.deadline`.
+- Updated dependencies [b63be15]
+- Updated dependencies [7aa258b]
+- Updated dependencies [cffc7cf]
+- Updated dependencies [4761209]
+- Updated dependencies [08a709c]
+- Updated dependencies [83a2c45]
+- Updated dependencies [eb31ca3]
+- Updated dependencies [632b1cf]
+- Updated dependencies [372cd24]
+  - @mohsinonxrm/dataverse-sdk-core@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes

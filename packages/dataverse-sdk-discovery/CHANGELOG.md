@@ -1,5 +1,24 @@
 # @mohsinonxrm/dataverse-sdk-discovery
 
+## 2.1.0
+
+### Minor Changes
+
+- 632b1cf: Typed organization fields (#482): `OrganizationState` is also a type (`0 | 1`). A new `OrganizationType` constant object and type list Dataverse's organization types (`OrganizationType.Developer` is `13`). `OrganizationDetail.State` is `OrganizationState | (number & {})` and `OrganizationDetail.OrganizationType` is `OrganizationType | (number & {})`: the known values are suggested, and any number still type-checks (typed JSON, values Dataverse adds), so nothing narrows.
+
+### Patch Changes
+
+- Updated dependencies [b63be15]
+- Updated dependencies [7aa258b]
+- Updated dependencies [cffc7cf]
+- Updated dependencies [4761209]
+- Updated dependencies [08a709c]
+- Updated dependencies [83a2c45]
+- Updated dependencies [eb31ca3]
+- Updated dependencies [632b1cf]
+- Updated dependencies [372cd24]
+  - @mohsinonxrm/dataverse-sdk-core@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes

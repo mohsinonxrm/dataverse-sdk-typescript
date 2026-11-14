@@ -1,5 +1,41 @@
 # @mohsinonxrm/dataverse-sdk-messages
 
+## 2.1.0
+
+### Minor Changes
+
+- b63be15: The CSDL enums (`AttributeTypeCode`, `EntityFilters`, `AccessRights`, …) are const objects and a type of the same name instead of TypeScript `enum`s (#479). The values are the same numbers in 2.x, so `AttributeTypeCode.String`, `x: AttributeTypeCode` and `EntityFilters.Entity | EntityFilters.Attributes` compile and are sent exactly as before; a parameter still takes the member name too (`"Entity"`). A flags enum (`IsFlags="true"`, such as `EntityFilters` and `AccessRights`) is typed `number`; another enum's type is the union of its values.
+  
+  What no longer works: the reverse mapping (`AttributeTypeCode[14]` to get `"String"`), and assigning a plain `number` that isn't a member to a non-flags enum type. In 3.0 the values become the member names, which the Web API reads and writes (as the metadata package's enums already are).
+- 44180ea: `UpsertRequest`, `RetrievePrincipalAccessRequest` and `CheckPrivilegeRequest`, with the shapes of the .NET messages (#435).
+  
+  - `new UpsertRequest({ Target, Key? })` creates the record when no record has its key and updates it otherwise: `PATCH /<set>(<key>)` without `If-Match`. `Key` is a GUID or an alternate key (`{ accountnumber: "A-1" }`); without it, `Target`'s primary key column is the key. The response has `RecordCreated` and `Target` (a reference), as in .NET: the request sends `Prefer: return=representation` with `$select` of the primary key, and Dataverse answers `201 Created` for a create and `200 OK` for an update.
+  - `new RetrievePrincipalAccessRequest({ Principal, Target })` is one message for the function's three bindings: the `Principal` reference (a systemuser, team or organization) picks it. `response.AccessRights` is the rights as `AccessRights` flags (the Web API sends member names, `"ReadAccess, WriteAccess"`, which stay in `result.AccessRights`).
+  - `new CheckPrivilegeRequest({ UserId, PrivilegeName, Depth? })` answers whether a user has a privilege through their roles or their teams' roles (`HasPrivilege`, and the deepest `Depth`). Dataverse has no CheckPrivilege message: it runs RetrieveUserPrivilegeByPrivilegeName, as Microsoft's "Verifying access in code" does.
+  
+  The package root's `UpsertResponse` and `RetrievePrincipalAccessResponse` are now these messages' response classes. They were type-only exports of the CSDL complex types of the same names (`{ ResponseName?, Results? }` and `{ AccessRights? }`), which no message's `execute()` resolved (`UpsertMultipleResult.Results` keeps the complex type's shape).
+
+### Patch Changes
+
+- Updated dependencies [b63be15]
+- Updated dependencies [7aa258b]
+- Updated dependencies [8dd4e44]
+- Updated dependencies [cffc7cf]
+- Updated dependencies [4761209]
+- Updated dependencies [08a709c]
+- Updated dependencies [83a2c45]
+- Updated dependencies [eb31ca3]
+- Updated dependencies [212bbe4]
+- Updated dependencies [a1845c9]
+- Updated dependencies [632b1cf]
+- Updated dependencies [632b1cf]
+- Updated dependencies [632b1cf]
+- Updated dependencies [372cd24]
+- Updated dependencies [fcda713]
+  - @mohsinonxrm/dataverse-sdk-core@2.1.0
+  - @mohsinonxrm/dataverse-sdk-batch@2.1.0
+  - @mohsinonxrm/dataverse-sdk-entities-runtime@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes
