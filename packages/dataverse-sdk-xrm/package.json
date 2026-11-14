@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-xrm",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "C#-familiar facade over Dataverse Web API, providing OrganizationService-like operations",
   "publishConfig": {
     "access": "public",

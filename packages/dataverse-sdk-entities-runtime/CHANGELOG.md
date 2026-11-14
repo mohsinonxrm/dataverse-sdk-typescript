@@ -1,5 +1,47 @@
 # @mohsinonxrm/dataverse-sdk-entities-runtime
 
+## 2.1.0
+
+### Minor Changes
+
+- 212bbe4: `EntitySetClient` types `expand` and narrows reads to the selected columns (#431). A fifth type argument, the table's navigation properties (`SingleNavigation<Contact, ContactColumn, ContactNavigation>` / `CollectionNavigation<…>` / `ManyToManyNavigation<…>` members, which `dataverse-gen` generates as `<Entity>Navigation`), makes `expand` take an object keyed by navigation property, `true` or nested options checked against the related table (`select`, `expand`, and on a collection `filter`, `orderBy`, `top`); the array of names (with inline options) still works. The options follow what Dataverse accepts: `orderBy` / `top` only on a collection, and not together with a nested `expand` or inside another expansion (0x80060888); no nested `expand` inside a many-to-many collection. `get()` and `list()` now resolve `ReadResult<TEntity, TNavigation, TOptions>`: with a literal `select`, only those columns (plus annotations such as `@odata.etag`); each expanded property is the related record or `null` (a lookup) or an array of them (a collection), narrowed by its own options. New exports: `SingleNavigation`, `CollectionNavigation`, `NavigationProperty`, `UntypedNavigation`, `Expand`, `ExpandPropertyOptions`, `ReadResult` and its parts (`SelectedColumns`, `WithoutProperties`, `ExpandedNames`, `ExpandedProperties`, `ExpandedValue`), `RecordAnnotations`. The requests are unchanged: an object `expand` sends what core's `expand(name, options)` sends.
+  
+  **Breaking.** (types only) A read with a literal `select` no longer has the columns it didn't select, so code that read one (it was `undefined` at runtime) stops compiling: add the column to `select`. A narrowed record is still assignable to the table's interface. Without the fifth type argument, `expand` takes any name and the result keeps the interface's types, as before.
+- a1845c9: `EntitySetClient` gains record navigation, associate/disassociate, upsert, bound operations and paging (#432), each on top of core's request builder:
+  
+  - `byId(key).nav(name)`: a `RelatedCollectionClient` for a collection-valued navigation property (`list()`, `iterate()`, `listPage()` typed by the related table, `associate()` through core's `associate()` / `bindMany()` with an optional `$batch` executor, `disassociate()`), or a `RelatedRecordClient` for a lookup (`get()`, `null` for an empty lookup; `set()` with `@odata.bind`; `clear()` with `DELETE $ref`). `byId(key).associate(name, target)` and `.disassociate(name, …)` do the same by name, typed so that only a collection takes several records or needs one to remove. A target is an id or alternate key of the related table (entity set from the generated metadata) or an `EntityReference`.
+  - `upsert(key, entity, { mode })`: `PATCH` without `If-Match` (`"createOnly"`: `If-None-Match: *`, `"updateOnly"`: `If-Match: *`), taking the columns valid in both a create and an update; resolves the id (by alternate key, from the record Dataverse returns with `Prefer: return=representation` and `$select=<primary key>`, since its `OData-EntityId` then names the record by the key).
+  - `NavigationMetadata.members`: a polymorphic lookup's Web API navigation property per target, by name (`regardingobjectid_contact_task: "contact"`), which `nav()` / `associate()` and `formatEntityForWrite()` use; an activity's regarding lookup has suffixed names, not `<lookup>_<target>`. Metadata without it is matched by `<lookup>_<target>` as before.
+  - `iterate(options)` (core's `iterate()`, with `pageSize` and `maxItems`) and `listPage(options)` (`{ records, nextLink, count }`; pass `nextLink` back for the next page).
+  - Bound actions and functions: a sixth type argument and the `operations` option (`{ record, collection }` of generated classes) add `byId(id).actions.<name>(parameters, requestOptions?)` / `.functions` and `actions` / `functions` on the set, typed from the classes' constructors and responses, run with `client.execute()`.
+  
+  New exports: `RelatedCollectionClient`, `RelatedRecordClient`, `RelatedClient`, `EntitySetClientOptions`, `IterateRecordsOptions`, `ListPageOptions`, `RecordPage`, `UpsertMode`, `UpsertRecordOptions`, `UpsertEntity`, `AssociateTarget`, `AssociateTargets`, `AssociateOptions`, `DisassociateArguments`, `BoundOperations`, `OperationGroup`, `OperationClass`, `OperationClasses`, `NoOperationClasses`, `BoundOperationMethod`, `RecordOperationMethods`, `CollectionOperationMethods`. Existing code compiles as before: the new type arguments have defaults and the constructor option is optional.
+- 632b1cf: Typed attribute metadata (#482): `AttributeMetadata.attributeType` is `AttributeTypeCodeName | EdmPrimitiveType | (string & {})`, so the editor suggests the Dataverse attribute types (`"Picklist"`, `"Lookup"`, …, the new `AttributeTypeCodeName` type) and the OData primitives; `AttributeMetadata.odataType`, the values of `EntityMetadata.attributeTypes` and `formatParameterAlias()`'s `odataType` are core's `ODataTypeName`. Every string still compiles, so nothing narrows. `optionSetType` stays a `string`: it holds the generated enum's name.
+- fcda713: `validateEntity()` checks more (#433), with new issue codes:
+  
+  - `precision`: more decimal places than a decimal or currency column keeps. A column's metadata has `precision: number`, or, for a currency column whose `PrecisionSource` is the organization's pricing precision or the record currency's precision, `precision: "pricing"` or `"currency"`; those are checked only when you pass the number as the new `pricingPrecision` / `currencyPrecision` options.
+  - `invalidDate`: a date-only column (`odataType: "Edm.Date"`) given anything but `yyyy-mm-dd` text, or a date and time column given anything but ISO 8601 text or a valid `Date`.
+  - `dateOutOfRange`: a date before 1753-01-01 or after 9999-12-31, Dataverse's range for every date column (in UTC for a date and time).
+  - `maxSize`: a file or image (base64 text, `ArrayBuffer`, typed array or `Blob`) larger than the column's new `maxSizeInKB`.
+  - `invalidStatus`: a body that sets `statecode` and a `statuscode` of another state, from the status reason column's new `optionStates`.
+  
+  `AttributeMetadata` has the new optional `precision`, `maxSizeInKB` and `optionStates`; `ValidateEntityOptions` has `pricingPrecision` and `currencyPrecision`.
+  
+  Not breaking: `validateEntity()` is opt-in and reports what Dataverse rejects (or, for decimal places, doesn't store) anyway. The precision, size and status checks need the new metadata, which only a `dataverse-gen` of this version writes. The date checks need nothing new, so a body that `validateEntity()` passed before can now get `invalidDate` or `dateOutOfRange` for a date column; send dates as `yyyy-mm-dd` (date-only) or ISO 8601 text. Code that switches over every `ValidationIssueCode` gets five more members to handle.
+
+### Patch Changes
+
+- Updated dependencies [b63be15]
+- Updated dependencies [7aa258b]
+- Updated dependencies [cffc7cf]
+- Updated dependencies [4761209]
+- Updated dependencies [08a709c]
+- Updated dependencies [83a2c45]
+- Updated dependencies [eb31ca3]
+- Updated dependencies [632b1cf]
+- Updated dependencies [372cd24]
+  - @mohsinonxrm/dataverse-sdk-core@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes
