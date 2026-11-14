@@ -4,6 +4,11 @@ import type { MiddlewareContext, RequestInformation } from "../abstractions/http
 export class Pipeline {
   constructor(private middleware: Middleware[]) {}
 
+  /** The `name` of each middleware, outermost first. */
+  describe(): string[] {
+    return this.middleware.map((m) => m.name);
+  }
+
   async execute(
     request: RequestInformation,
     ctx: MiddlewareContext,

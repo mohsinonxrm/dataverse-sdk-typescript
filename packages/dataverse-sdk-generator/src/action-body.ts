@@ -2,16 +2,17 @@
  * Action request bodies (#361), the same contract as the in-repo actions (#232, #74):
  *
  * - The Web API reads an enum member in a JSON body only as a string: `"ReadAccess"`, or for a
- *   flags enum `"ReadAccess, WriteAccess"`. A number is rejected with 400. The generated enums are
- *   numeric, so enum values become member names.
+ *   flags enum `"ReadAccess, WriteAccess"`. A number is rejected with 400. A generated enum's
+ *   values are its member names (#479), except a flags enum's, which are numbers so that they
+ *   combine with `|`: flags values become member names.
  * - An entity parameter is sent as an entity: a reference (`createEntityReference()`) as
  *   `@odata.type` and its primary key, and a record with its lookups set with `@odata.bind`. A
  *   generated entity takes an `EntityReference` for a lookup, so a record goes through
  *   `formatEntityForWrite()`.
  *
  * The generated `internal/actionBody.ts` does both, from tables taken from the CSDL: the members
- * of each enum a body can hold, the entity types it can hold, and, for each complex type that holds
- * one of them (directly, below, or in a derived type), which properties do.
+ * of each flags enum a body can hold, the entity types it can hold, and, for each complex type that
+ * holds one of them (directly, below, or in a derived type), which properties do.
  */
 import type { SchemaModel } from "./schema-model.js";
 import type { ComplexType, PropertyType } from "./types.js";
@@ -21,8 +22,8 @@ export const ACTION_BODY_MODULE = "actionBody";
 
 /** What a request body can hold that has to be converted, reachable from the actions' parameters. */
 export interface ActionBodyTables {
-  /** Enum name -> flags, and members in CSDL order. */
-  enums: Map<string, { flags: boolean; members: Array<[string, number]> }>;
+  /** Flags enum name -> members in CSDL order. Other enums' values are already member names. */
+  enums: Map<string, Array<[string, number]>>;
   /** Complex type name -> property -> enum, entity or complex type name (sorted by property). */
   types: Map<string, Array<[string, string]>>;
   /** Entity types (tables and abstract ones such as `crmbaseentity`). */
@@ -53,7 +54,11 @@ export function actionBodyTables(
   model: SchemaModel,
   scope: BodyScope = "actions"
 ): ActionBodyTables {
-  const allEnums = new Map(model.EnumTypes.map((e) => [e.Name, e] as const));
+  const allEnums = new Set(model.EnumTypes.map((e) => e.Name));
+  // Only a flags enum's values are numbers to convert; the others are member names already (#479)
+  const flagsEnums = new Map(
+    model.EnumTypes.filter((e) => e.IsFlags === true).map((e) => [e.Name, e] as const)
+  );
   const complex = new Map<string, ComplexType>(model.ComplexTypes.map((c) => [c.Name, c]));
   const isEntity = (name: string): boolean =>
     scope === "actions" && model.AllEntityTypeNames.has(name);
@@ -72,8 +77,8 @@ export function actionBodyTables(
     return props;
   };
 
-  // A complex type holds something to convert when a property is an enum, an entity or such a
-  // complex type, or when a derived type does (a value of the base type can be one of them).
+  // A complex type holds something to convert when a property is a flags enum, an entity or such
+  // a complex type, or when a derived type does (a value of the base type can be one of them).
   // Iterate to a fixed point, so recursive types resolve.
   const holds = new Set<string>();
   for (let changed = true; changed;) {
@@ -83,7 +88,7 @@ export function actionBodyTables(
       const hit =
         propertiesOf(name).some((p) => {
           const t = elementName(p.Type);
-          return allEnums.has(t) || isEntity(t) || holds.has(t);
+          return flagsEnums.has(t) || isEntity(t) || holds.has(t);
         }) || (derived.get(name) ?? []).some((d) => holds.has(d));
       if (hit) {
         holds.add(name);
@@ -97,7 +102,7 @@ export function actionBodyTables(
   const entities = new Set<string>();
   const pending: string[] = [];
   const reach = (t: string): void => {
-    if (allEnums.has(t)) usedEnums.add(t);
+    if (flagsEnums.has(t)) usedEnums.add(t);
     else if (isEntity(t)) entities.add(t);
     else if (holds.has(t) && !types.has(t)) {
       types.set(t, []);
@@ -115,7 +120,7 @@ export function actionBodyTables(
     const members = new Map<string, string>();
     for (const p of propertiesOf(name)) {
       const t = elementName(p.Type);
-      if (allEnums.has(t) || isEntity(t) || holds.has(t)) members.set(p.Name, t);
+      if (flagsEnums.has(t) || isEntity(t) || holds.has(t)) members.set(p.Name, t);
       reach(t);
     }
     for (const d of derived.get(name) ?? []) reach(d);
@@ -124,12 +129,12 @@ export function actionBodyTables(
 
   const enums: ActionBodyTables["enums"] = new Map();
   for (const name of [...usedEnums].sort()) {
-    const e = allEnums.get(name);
+    const e = flagsEnums.get(name);
     if (!e) continue;
-    enums.set(name, {
-      flags: e.IsFlags === true,
-      members: e.Members.map((m) => [m.Name, m.Value] as [string, number]),
-    });
+    enums.set(
+      name,
+      e.Members.map((m) => [m.Name, m.Value] as [string, number])
+    );
   }
   return {
     enums,
@@ -179,9 +184,9 @@ function bodySource(
   entities?: { runtimePackage: string; metadataModule: string }
 ): string {
   const enumLines = [...tables.enums]
-    .map(([name, e]) => {
-      const members = e.members.map(([m, v]) => `${JSON.stringify(m)}: ${String(v)}`).join(", ");
-      return `  ${JSON.stringify(name)}: [${String(e.flags)}, { ${members} }],`;
+    .map(([name, members]) => {
+      const body = members.map(([m, v]) => `${JSON.stringify(m)}: ${String(v)}`).join(", ");
+      return `  ${JSON.stringify(name)}: { ${body} },`;
     })
     .join("\n");
   const typeLines = [...tables.types]
@@ -190,13 +195,16 @@ function bodySource(
       return `  ${JSON.stringify(name)}: ${body ? `{ ${body} }` : "{}"},`;
     })
     .join("\n");
-  const shared = `/** The enums ${entities ? "a body" : "a parameter"} can hold: whether it is a flags enum, and its members. */
-const ENUMS: Record<string, [flags: boolean, members: Record<string, number>]> = {
+  const shared = `/**
+ * The flags enums ${entities ? "a body" : "a parameter"} can hold, and their members. A flags enum's values are numbers,
+ * combined with \`|\`; the other enums' values are their member names already.
+ */
+const ENUMS: Record<string, Record<string, number>> = {
 ${enumLines}
 };
 
 /**
- * The complex types that can hold an enum${entities ? " or an entity" : ""}: each property that is one, or a complex
+ * The complex types that can hold a flags enum${entities ? " or an entity" : ""}: each property that is one, or a complex
  * type listed here. Inherited properties are included; a base type whose derived types hold one is
  * listed too, and the value's \`@odata.type\` picks the derived type.
  */
@@ -217,12 +225,12 @@ function annotatedType(record: Record<string, unknown>, fallback: string): strin
     : fallback;
 }
 
-/** The member name(s) of an enum value, or the number as a string when no member matches. */
-function enumName(value: number, [flags, members]: [boolean, Record<string, number>]): string {
+/** The member name(s) of a flags value, or the number as a string when the members don't make it up. */
+function enumName(value: number, members: Record<string, number>): string {
   const entries = Object.entries(members);
   const exact = entries.find(([, v]) => v === value);
   if (exact) return exact[0];
-  if (flags && Number.isInteger(value) && value > 0 && value <= 0x7fffffff) {
+  if (Number.isInteger(value) && value > 0 && value <= 0x7fffffff) {
     let rest = value;
     const names: Array<[string, number]> = [];
     for (const [name, v] of [...entries].sort((a, b) => b[1] - a[1])) {
@@ -278,13 +286,13 @@ ${entityLine}  const properties = own(TYPES, annotatedType(record, type));
  *
  * A complex or collection parameter is sent as JSON in a parameter alias (\`?@p1={...}\`), and
  * Dataverse reads an enum member there only by name: \`"ReadAccess"\`, or for a flags enum
- * \`"ReadAccess, WriteAccess"\`. The generated enums are numeric, so the generated functions pass
- * such a parameter through {@link parameterValue} before formatParameterAlias().
+ * \`"ReadAccess, WriteAccess"\`. A generated flags enum's values are numbers, so the generated
+ * functions pass such a parameter through {@link parameterValue} before formatParameterAlias().
  */
 
 ${shared}${walker(
       "parameterValue",
-      "A complex or collection function parameter with its enum values as member names. `type` is the parameter's enum or complex type.",
+      "A complex or collection function parameter with its flags enum values as member names. `type` is the parameter's enum or complex type.",
       ""
     )}`;
   }
@@ -297,9 +305,9 @@ ${shared}${walker(
  * The Web API reads an enum member in a JSON body only as a string: \`"ReadAccess"\`, or for a flags
  * enum \`"ReadAccess, WriteAccess"\`; it rejects a number. An entity parameter is an entity: a
  * reference is \`@odata.type\` and the primary key, and a lookup of a record is
- * \`"<navigation property>@odata.bind": "/<entity set>(<id>)"\`. The generated enums are numeric and
- * generated entities take an EntityReference for a lookup, so the generated actions pass each
- * parameter that can hold an enum or an entity through {@link bodyValue}.
+ * \`"<navigation property>@odata.bind": "/<entity set>(<id>)"\`. A generated flags enum's values are
+ * numbers and generated entities take an EntityReference for a lookup, so the generated actions
+ * pass each parameter that can hold a flags enum or an entity through {@link bodyValue}.
  */
 import {
   formatEntityForWrite,
@@ -341,7 +349,7 @@ function entityValue(record: Record<string, unknown>, type: string): unknown {
 }
 ${walker(
   "bodyValue",
-  "A body parameter as the Web API reads it: enum values as member names, and entities as entities (see {@link entityValue}). `type` is the parameter's enum, entity or complex type.",
+  "A body parameter as the Web API reads it: flags enum values as member names, and entities as entities (see {@link entityValue}). `type` is the parameter's enum, entity or complex type.",
   "  if (ENTITIES.has(type)) return entityValue(record, type);\n"
 )}`;
 }

@@ -12,7 +12,7 @@ import { randomBytes } from "node:crypto";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import chalk from "chalk";
-import { DataverseClient, DataverseError, odata } from "@mohsinonxrm/dataverse-sdk-core";
+import { DataverseClient, DataverseError, Prefer, odata } from "@mohsinonxrm/dataverse-sdk-core";
 import { MsalNodeTokenProvider } from "@mohsinonxrm/dataverse-sdk-auth-msal-node";
 import { BatchRequestBuilder } from "@mohsinonxrm/dataverse-sdk-batch";
 import { ConfidentialClientApplication } from "@azure/msal-node";
@@ -390,7 +390,7 @@ async function mixedOperationsDemo(client: DataverseClient): Promise<void> {
   console.log(chalk.gray("  Setting up: Creating test accounts..."));
   const testAccount = await client
     .api("/accounts")
-    .header("Prefer", "return=representation")
+    .prefer(Prefer.returnRepresentation())
     .post<{ accountid: string }>({
       name: named("Account to Update"),
       telephone1: "555-5001",

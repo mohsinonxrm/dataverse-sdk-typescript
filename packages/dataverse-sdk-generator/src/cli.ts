@@ -117,10 +117,24 @@ program
 
       // Generate code
       spinner.text = "Fetching $metadata...";
-      const { warnings, unchangedTables } = await generateCode(config, accessToken);
+      const { warnings, unchangedTables, fetchedTables, fetchReasons } = await generateCode(
+        config,
+        accessToken
+      );
 
       spinner.succeed(chalk.green("✓ Code generation complete!"));
       if (config.output?.incremental === true) {
+        const read = fetchedTables.length;
+        console.log(
+          chalk.dim(
+            `Incremental: read the metadata of ${String(read)} table${read === 1 ? "" : "s"}` +
+              (read > 0 && read <= 10
+                ? ` (${fetchedTables
+                    .map((name) => (fetchReasons[name] ? `${name}: ${fetchReasons[name]}` : name))
+                    .join("; ")})`
+                : "")
+          )
+        );
         const kept = unchangedTables.length;
         console.log(
           chalk.dim(
@@ -217,6 +231,10 @@ program
         errors.push("formContext must be true or false");
       }
 
+      if (config.formLayouts !== undefined && typeof config.formLayouts !== "boolean") {
+        errors.push("formLayouts must be true or false");
+      }
+
       if (config.typedClient !== undefined && typeof config.typedClient !== "boolean") {
         errors.push("typedClient must be true or false");
       }
@@ -302,7 +320,12 @@ program
         chalk.cyan(`  Output: ${config.output?.outputRoot ?? DEFAULT_CONFIG.output?.outputRoot}`)
       );
       console.log(chalk.cyan(`  Strict nulls: ${config.strictNulls === true ? "on" : "off"}`));
-      console.log(chalk.cyan(`  Form contexts: ${config.formContext === true ? "on" : "off"}`));
+      console.log(
+        chalk.cyan(
+          `  Form contexts: ${config.formContext === true || config.formLayouts === true ? "on" : "off"}`
+        )
+      );
+      console.log(chalk.cyan(`  Form layouts: ${config.formLayouts === true ? "on" : "off"}`));
       console.log(chalk.cyan(`  Typed client: ${config.typedClient === true ? "on" : "off"}`));
       console.log(
         chalk.cyan(`  Incremental: ${config.output?.incremental === true ? "on" : "off"}`)

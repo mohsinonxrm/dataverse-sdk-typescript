@@ -1,5 +1,32 @@
 # @mohsinonxrm/dataverse-sdk-metadata
 
+## 2.1.0
+
+### Minor Changes
+
+- 632b1cf: Known values for metadata properties that `$metadata` types as plain strings or numbers (#482), each a constant object and a type of the same name:
+  
+  - `DateTimeBehaviorValue` (`UserLocal`, `DateOnly`, `TimeZoneIndependent`) for `DateTimeBehavior.Value`;
+  - `MemoFormatNameValue` (`Email`, `Json`, `RichText`, `Text`, `TextArea`) for `MemoFormatName.Value`;
+  - `AttributeTypeDisplayNameValue` (`StringType`, `PicklistType`, `MultiSelectPicklistType`, …) for `AttributeTypeDisplayName.Value`;
+  - `AttributeSourceType` (`Simple` 0, `Calculated` 1, `Rollup` 2, `Formula` 3, `Prompt` 4) for `SourceType` of `AttributeMetadata` and `ComplexAttributeMetadata`.
+  
+  The properties are typed `Known | (string & {})` or `Known | (number & {})`: the editor suggests the known values, and any other string or number still compiles, since Dataverse adds values. Nothing narrows.
+
+### Patch Changes
+
+- d709a0c: `OneToManyRelationshipMetadata.RelationshipBehavior` (and `ComplexOneToManyRelationshipMetadata`'s) is documented: Microsoft doesn't document it, Dataverse sets it, and it isn't the relationship's type of behavior (#537). Read `CascadeConfiguration` for what an action on the parent does to the children; in practice the value follows `SecurityTypes` (0 None, 1 Append, 2 ParentChild, 4 and 12 Pointer). It stays a `number`.
+- Updated dependencies [b63be15]
+- Updated dependencies [7aa258b]
+- Updated dependencies [cffc7cf]
+- Updated dependencies [4761209]
+- Updated dependencies [08a709c]
+- Updated dependencies [83a2c45]
+- Updated dependencies [eb31ca3]
+- Updated dependencies [632b1cf]
+- Updated dependencies [372cd24]
+  - @mohsinonxrm/dataverse-sdk-core@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes

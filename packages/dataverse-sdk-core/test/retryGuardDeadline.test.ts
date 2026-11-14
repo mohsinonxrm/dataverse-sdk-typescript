@@ -277,6 +277,44 @@ describe("#471: a wait that ends after the deadline is not started", () => {
     expect(t.retries).toEqual([]);
   });
 
+  it("a caller's own deadline (RequestInformation.deadline) stops the wait too (#487)", async () => {
+    const t = setup([status(429, { "retry-after": "20" }), status(204)], { maxDelayMs: 30_000 });
+    const pending = send(t.client, "GET", { deadline: Date.now() + 10_000 });
+    const { settled, value } = await within(pending, 50);
+    expect(settled).toBe(true);
+    expect((value as Response).status).toBe(429);
+    expect(t.calls()).toBe(1);
+    expect(t.retries).toEqual([]);
+  });
+
+  it("with both timeoutMs and deadline, the earlier one counts (#487)", async () => {
+    const byDeadline = setup([status(429, { "retry-after": "5" }), status(204)], {
+      maxDelayMs: 30_000,
+    });
+    const first = send(byDeadline.client, "GET", {
+      timeoutMs: 10_000,
+      deadline: Date.now() + 2_000,
+    });
+    expect(((await within(first, 50)).value as Response).status).toBe(429);
+    expect(byDeadline.calls()).toBe(1);
+
+    const byTimeout = setup([status(429, { "retry-after": "5" }), status(204)], {
+      maxDelayMs: 30_000,
+    });
+    const second = send(byTimeout.client, "GET", {
+      timeoutMs: 2_000,
+      deadline: Date.now() + 10_000,
+    });
+    expect(((await within(second, 50)).value as Response).status).toBe(429);
+    expect(byTimeout.calls()).toBe(1);
+
+    const fits = setup([status(429, { "retry-after": "5" }), status(204)], { maxDelayMs: 30_000 });
+    const retried = send(fits.client, "GET", { timeoutMs: 10_000, deadline: Date.now() + 8_000 });
+    await vi.advanceTimersByTimeAsync(5_000);
+    expect((await retried).status).toBe(204);
+    expect(fits.calls()).toBe(2);
+  });
+
   it("without timeoutMs the wait is unchanged", async () => {
     const t = setup([status(429, { "retry-after": "20" }), status(204)], { maxDelayMs: 30_000 });
     const pending = send(t.client, "GET");

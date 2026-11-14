@@ -99,11 +99,11 @@ export interface OrganizationDetail {
     Id: string;
     IsUserSysAdmin?: boolean;
     LastUpdated: string;
-    OrganizationType?: number;
+    OrganizationType?: OrganizationType | (number & {});
     Purpose?: string | null;
     Region?: string | null;
     SchemaType?: string | null;
-    State: number;
+    State: OrganizationState | (number & {});
     StatusMessage?: number | null;
     TenantId?: string | null;
     TrialExpirationDate?: string | null;
@@ -118,6 +118,33 @@ export const OrganizationState: {
     readonly Enabled: 0;
     readonly Disabled: 1;
 };
+
+// @public
+export type OrganizationState = (typeof OrganizationState)[keyof typeof OrganizationState];
+
+// @public
+export const OrganizationType: {
+    readonly Customer: 0;
+    readonly Monitoring: 1;
+    readonly Support: 2;
+    readonly BackEnd: 3;
+    readonly Secondary: 4;
+    readonly CustomerTest: 5;
+    readonly CustomerFreeTest: 6;
+    readonly CustomerPreview: 7;
+    readonly Placeholder: 8;
+    readonly TestDrive: 9;
+    readonly MsftInvestigation: 10;
+    readonly EmailTrial: 11;
+    readonly Default: 12;
+    readonly Developer: 13;
+    readonly Trial: 14;
+    readonly Teams: 15;
+    readonly Platform: 16;
+};
+
+// @public
+export type OrganizationType = (typeof OrganizationType)[keyof typeof OrganizationType];
 
 // @public
 export function toEnvironment(org: OrganizationDetail): DiscoveredEnvironment;

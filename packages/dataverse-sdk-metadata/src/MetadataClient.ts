@@ -3,6 +3,7 @@
  */
 
 import {
+  DataverseHeaders,
   DataverseInvalidRequestError,
   odataKey,
   odataLiteral,
@@ -1192,7 +1193,7 @@ export class MetadataClient {
   ): Promise<void> {
     const current = await this.client
       .api(getPath)
-      .header("Consistency", "Strong")
+      .header(DataverseHeaders.Consistency, "Strong")
       .get<Record<string, unknown>>();
     const kept = Object.fromEntries(
       Object.entries(withoutAnnotations(current)).filter(([key]) => !omit.includes(key))
@@ -1207,13 +1208,15 @@ export class MetadataClient {
     body: unknown,
     options: MetadataWriteOptions | undefined
   ): Promise<void> {
-    await this.writeBuilder(path, options).header("MSCRM.MergeLabels", "true").put<undefined>(body);
+    await this.writeBuilder(path, options)
+      .header(DataverseHeaders.MergeLabels, "true")
+      .put<undefined>(body);
   }
 
   private writeBuilder(path: string, options: MetadataWriteOptions | undefined) {
     const builder = this.client.api(path).header("Content-Type", "application/json");
     return options?.solutionUniqueName
-      ? builder.header("MSCRM.SolutionUniqueName", options.solutionUniqueName)
+      ? builder.header(DataverseHeaders.SolutionUniqueName, options.solutionUniqueName)
       : builder;
   }
 

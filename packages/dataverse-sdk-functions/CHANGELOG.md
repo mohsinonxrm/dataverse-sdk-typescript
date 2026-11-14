@@ -1,5 +1,31 @@
 # @mohsinonxrm/dataverse-sdk-functions
 
+## 2.1.0
+
+### Minor Changes
+
+- b63be15: The CSDL enums (`AttributeTypeCode`, `EntityFilters`, `AccessRights`, …) are const objects and a type of the same name instead of TypeScript `enum`s (#479). The values are the same numbers in 2.x, so `AttributeTypeCode.String`, `x: AttributeTypeCode` and `EntityFilters.Entity | EntityFilters.Attributes` compile and are sent exactly as before; a parameter still takes the member name too (`"Entity"`). A flags enum (`IsFlags="true"`, such as `EntityFilters` and `AccessRights`) is typed `number`; another enum's type is the union of its values.
+  
+  What no longer works: the reverse mapping (`AttributeTypeCode[14]` to get `"String"`), and assigning a plain `number` that isn't a member to a non-flags enum type. In 3.0 the values become the member names, which the Web API reads and writes (as the metadata package's enums already are).
+
+### Patch Changes
+
+- Updated dependencies [b63be15]
+- Updated dependencies [7aa258b]
+- Updated dependencies [cffc7cf]
+- Updated dependencies [4761209]
+- Updated dependencies [08a709c]
+- Updated dependencies [83a2c45]
+- Updated dependencies [eb31ca3]
+- Updated dependencies [212bbe4]
+- Updated dependencies [a1845c9]
+- Updated dependencies [632b1cf]
+- Updated dependencies [632b1cf]
+- Updated dependencies [372cd24]
+- Updated dependencies [fcda713]
+  - @mohsinonxrm/dataverse-sdk-core@2.1.0
+  - @mohsinonxrm/dataverse-sdk-entities-runtime@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes

@@ -16,8 +16,10 @@ import { setResponseCorrelationId } from "../errors/responseDetails.js";
 import { DataverseError } from "../errors/DataverseError.js";
 import { DataverseAbortError, DataverseNetworkError } from "../errors/NamedErrors.js";
 import { isTimeoutError, startDeadline } from "../utils/signals.js";
+import { systemClock, type Clock } from "../utils/clock.js";
 import { generateUUID, normalizeHeaders } from "../utils/HeaderUtils.js";
 import { FeatureUsageTracker } from "../telemetry/FeatureUsageTracker.js";
+import type { TelemetryEventName } from "../telemetry/events.js";
 import { guardTelemetry } from "../utils/telemetry.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 import { odataKey, type ODataKey } from "../odata/literal.js";
@@ -38,6 +40,11 @@ export class DataverseClient {
   private readonly adapter: RequestAdapter;
   /** Shared by every request; each request gets its own copy (see send()). */
   private readonly baseCtx: MiddlewareContext;
+  /**
+   * The clock this client measures time with (`DataverseClientOptions.clock`, else
+   * `systemClock`). A deadline passed as a request's `deadline` is read on it.
+   */
+  readonly clock: Clock;
 
   constructor(private options: DataverseClientOptions) {
     if (!isAllowedBaseUrl(options.baseUrl)) {
@@ -56,9 +63,11 @@ export class DataverseClient {
     const middleware = buildMiddleware(options);
     this.pipeline = new Pipeline(middleware);
 
+    this.clock = options.clock ?? systemClock;
     this.baseCtx = {
       logger: options.logger,
       telemetry: options.telemetry,
+      clock: this.clock,
       // Per client, so feature flags from one client never leak into another's telemetry.
       featureTracker: new FeatureUsageTracker(),
     };
@@ -79,7 +88,7 @@ export class DataverseClient {
    * the client report their own events this way (the batch package's `dataverse.batch`).
    */
   trackEvent(
-    name: string,
+    name: TelemetryEventName | (string & {}),
     properties?: Record<string, string>,
     measurements?: Record<string, number>
   ): void {
@@ -90,6 +99,15 @@ export class DataverseClient {
 
   getBaseUrl(): string {
     return this.baseUrl;
+  }
+
+  /**
+   * The `name` of each middleware in this client's pipeline, outermost first (the order a request
+   * goes through them), e.g. `["ODataHeadersMiddleware", "RetryMiddleware", …]`. For tests and
+   * support: check that a `ChaosMiddleware` is (or isn't) there, or where your own middleware sits.
+   */
+  describePipeline(): string[] {
+    return this.pipeline.describe();
   }
 
   api(pathOrAbsoluteUrl: string): DataverseRequestBuilder {
@@ -201,7 +219,7 @@ export class DataverseClient {
     // timeoutMs covers the whole request, retries and waits included (#46): it becomes a deadline
     // signal that every attempt, retry wait and concurrency-slot wait sees.
     const deadline = request.timeoutMs
-      ? startDeadline(request.timeoutMs, request.signal)
+      ? startDeadline(request.timeoutMs, request.signal, this.clock)
       : undefined;
     // Work on a copy with lower-cased header names: middleware must never see (or send) two
     // casings of the same header, and the caller's object must not be mutated.
@@ -220,8 +238,9 @@ export class DataverseClient {
       ...this.baseCtx,
       correlationId: request.correlationId ?? generateUUID(),
       attempt: 0,
-      // The retry middleware won't start a wait that ends after the deadline (#471).
-      deadline: deadline?.at,
+      // The retry middleware won't start a wait that ends after the deadline (#471), whether it
+      // comes from timeoutMs or from the caller's own (one timeoutMs for a whole $batch execution).
+      deadline: earliest(deadline?.at, request.deadline),
       middlewareOptions: request.middlewareOptions,
     };
     try {
@@ -239,6 +258,12 @@ export class DataverseClient {
   }
 }
 
+/** The earlier of two optional deadlines (ms since the epoch). */
+function earliest(a: number | undefined, b: number | undefined): number | undefined {
+  if (a === undefined) return b;
+  return b === undefined ? a : Math.min(a, b);
+}
+
 function applyOptions(req: RequestInformation, opt?: RequestOptions) {
   if (!opt) return;
   req.headers = normalizeHeaders({
@@ -247,6 +272,7 @@ function applyOptions(req: RequestInformation, opt?: RequestOptions) {
   });
   if (opt.timeoutMs !== undefined) req.timeoutMs = opt.timeoutMs;
   if (opt.attemptTimeoutMs !== undefined) req.attemptTimeoutMs = opt.attemptTimeoutMs;
+  if (opt.deadline !== undefined) req.deadline = opt.deadline;
   if (opt.correlationId) req.correlationId = opt.correlationId;
   if (opt.middlewareOptions) req.middlewareOptions = opt.middlewareOptions;
   if (opt.signal) req.signal = opt.signal;

@@ -19,6 +19,7 @@ import {
   buildDefaultMiddleware,
   DataverseInvalidRequestError,
   DataverseThrottleError,
+  TelemetryEvents,
   type AdaptiveThrottlingDelay,
   type AdaptiveThrottlingOptions,
 } from "../src/index.js";
@@ -193,6 +194,64 @@ describe("#309: AdaptiveThrottlingMiddleware", () => {
     await send();
     await send();
     expect(calls()).toBe(2);
+  });
+
+  it("#477: reports each wait as a dataverse.throttle.delay event", async () => {
+    const events: Array<{ props?: Record<string, string>; measurements?: object }> = [];
+    let calls = 0;
+    const responses = [
+      { status: 429, headers: { "retry-after": "3" } },
+      { headers: live("8000") },
+      { headers: live("800") },
+    ];
+    const client = new DataverseClient({
+      baseUrl: BASE_URL,
+      retry: { maxRetries: 0 },
+      adaptiveThrottling: new AdaptiveThrottlingMiddleware(),
+      telemetry: {
+        trackEvent: (name, props, measurements) => {
+          if (name === TelemetryEvents.throttleDelay) events.push({ props, measurements });
+        },
+        trackException: () => undefined,
+        startDependency: () => ({ end: () => undefined }),
+      },
+      fetchProvider: {
+        fetch: () => {
+          const r: { status?: number; headers?: Record<string, string> } =
+            responses[Math.min(calls++, responses.length - 1)] ?? {};
+          return Promise.resolve(
+            new Response(null, { status: r.status ?? 204, headers: r.headers })
+          );
+        },
+      },
+    });
+    const send = (correlationId: string) =>
+      client.send({ method: "GET", url: "accounts", headers: {}, correlationId });
+    await send("c-429");
+    await send("c-paused"); // held for the Retry-After; learns the 8000 budget
+    vi.advanceTimersByTime(3000);
+    await send("c-low"); // learns 800 left
+    await send("c-starts"); // starts now, the next one 1 s later
+    await send("c-spaced");
+    expect(waits).toEqual([3000, 1000]);
+    expect(events).toEqual([
+      {
+        props: {
+          "correlation.id": "c-paused",
+          "request.method": "GET",
+          "throttle.reason": "retry-after",
+        },
+        measurements: { delay_ms: 3000, "throttle.pressure": 0 },
+      },
+      {
+        props: {
+          "correlation.id": "c-spaced",
+          "request.method": "GET",
+          "throttle.reason": "pressure",
+        },
+        measurements: { delay_ms: 1000, "throttle.pressure": 0.5 },
+      },
+    ]);
   });
 
   it.each<[AdaptiveThrottlingOptions]>([

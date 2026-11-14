@@ -1,6 +1,8 @@
+import type { DateTimeBehaviorValue } from "./metadata-values.js";
+
 /**
  * DateTimeBehavior
  */
 export interface DateTimeBehavior {
-  Value?: string;
+  Value?: DateTimeBehaviorValue | (string & {});
 }

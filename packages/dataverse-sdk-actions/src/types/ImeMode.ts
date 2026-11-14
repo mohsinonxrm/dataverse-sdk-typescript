@@ -1,9 +1,11 @@
 /**
  * ImeMode enum
  */
-export enum ImeMode {
-  Auto = 0,
-  Inactive = 1,
-  Active = 2,
-  Disabled = 3,
-}
+export const ImeMode = {
+  Auto: 0,
+  Inactive: 1,
+  Active: 2,
+  Disabled: 3,
+} as const;
+
+export type ImeMode = (typeof ImeMode)[keyof typeof ImeMode];

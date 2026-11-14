@@ -4,6 +4,15 @@
  * the MIT License. See THIRD_PARTY_NOTICES.md in this package for the notice.
  */
 
+import type { ApiVersion } from "@mohsinonxrm/dataverse-sdk-core";
+import type {
+  AttributeSourceType,
+  AttributeTypeCode,
+  AttributeTypeDisplayNameValue,
+  DateTimeBehaviorValue,
+  DateTimeFormat,
+} from "@mohsinonxrm/dataverse-sdk-metadata";
+
 /**
  * Configuration for the Dataverse code generator.
  */
@@ -16,7 +25,7 @@ export interface DataverseGenConfig {
   /**
    * API version to use (default: "v9.2")
    */
-  apiVersion?: string;
+  apiVersion?: ApiVersion;
 
   /**
    * Entity logical names to generate (empty array = all entities)
@@ -97,11 +106,24 @@ export interface DataverseGenConfig {
   formContext?: boolean;
 
   /**
+   * Generate a form context type per form layout (default: `false`, #430): reads each table's
+   * active main and quick create forms (`systemform` records and their FormXml) and writes
+   * `forms/<Entity>Forms.ts`, with per form `<Entity><Kind>_<Form>Attributes`, `…Controls`,
+   * `…Tabs` and `…FormContext`. `getAttribute()` and `getControl()` take the names on that form
+   * (duplicate controls such as `name1`, `header_` controls, subgrids, web resources, quick view
+   * forms) and return their Xrm types without `| null`; `ui.tabs.get()` takes its tab names, and a
+   * tab's `sections.get()` its section names. Turns on {@link formContext} too, whose table-wide
+   * types the per-form ones build on. Needs `@types/xrm`, and read access to `systemform`.
+   */
+  formLayouts?: boolean;
+
+  /**
    * Generate typed request builders per entity set (default: `false`, #312): `client.ts` with
    * `createTypedClient(client)`, which returns one `EntitySetClient` per generated table, keyed by
    * entity set name: `typed.accounts.byId(id).get({ select: ["name"] })`, `.list()`,
    * `.create()`, `.byId(id).update()`, `.byId(id).delete()`, typed by the table's interface, its
-   * create and update types, and a union of its column names (`AccountColumn`).
+   * create and update types, a union of its column names (`AccountColumn`, for `select`, which
+   * narrows the result) and its navigation properties (`AccountNavigation`, for `expand`, #431).
    */
   typedClient?: boolean;
 
@@ -199,6 +221,85 @@ export interface EntityType {
 
   /** Is this a custom entity? */
   IsCustomEntity: boolean;
+
+  /**
+   * With `formLayouts` (#430): the table's active main and quick create forms, read from their
+   * FormXml; main forms first, then by name.
+   */
+  Forms?: FormLayoutType[];
+}
+
+/** The kind of a form layout (`formLayouts`): a main form (type 2) or a quick create form (7). */
+export type FormLayoutKind = "main" | "quickCreate";
+
+/** A model-driven form of a table, read from its `systemform` record and FormXml (#430). */
+export interface FormLayoutType {
+  /** The form's id (`formid`). */
+  FormId: string;
+
+  /** The form's name, as the form selector shows it. */
+  Name: string;
+
+  /** Main or quick create. */
+  Kind: FormLayoutKind;
+
+  /** The tabs that have a name, in form order, with their named sections. */
+  Tabs: FormTabType[];
+
+  /**
+   * The controls in the body and the header that have an id (the name `getControl()` takes), in
+   * form order. Footer controls aren't included: `getControl()` doesn't reach them.
+   */
+  Controls: FormControlType[];
+}
+
+/** A tab of a form layout. */
+export interface FormTabType {
+  /** The tab's name, which `ui.tabs.get()` takes. */
+  Name: string;
+
+  /** The tab's label (in English when the form has one, else its first label). */
+  Label?: string;
+
+  /** The tab's sections that have a name, in form order. */
+  Sections: FormSectionType[];
+}
+
+/** A section of a form tab. */
+export interface FormSectionType {
+  /** The section's name, which `tab.sections.get()` takes. */
+  Name: string;
+
+  /** The section's label. */
+  Label?: string;
+}
+
+/**
+ * What a form control shows, from its `classid`: a column, a subgrid, a web resource, an IFRAME,
+ * a quick view form, the timeline, or something else (a spacer, a map, …).
+ */
+export type FormControlKind =
+  "column" | "subgrid" | "webResource" | "iframe" | "quickView" | "timeline" | "other";
+
+/** A control of a form layout. */
+export interface FormControlType {
+  /** The control's id in the FormXml: its name in the Client API (`name`, `name1`, `header_name`). */
+  Id: string;
+
+  /** Body or header. */
+  Location: "body" | "header";
+
+  /** What the control shows. */
+  Kind: FormControlKind;
+
+  /** The column a column control is bound to (`datafieldname`). */
+  DataField?: string;
+
+  /**
+   * The bound column's `AttributeTypeName` from RetrieveMetadataChanges (`PartyListType`,
+   * `FileType`, …), when the table has the column.
+   */
+  ColumnType?: AttributeTypeDisplayNameValue | (string & {});
 }
 
 /**
@@ -230,7 +331,7 @@ export interface PropertyType {
   Type: string;
 
   /** Dataverse attribute type from RetrieveMetadataChanges (e.g. "Lookup", "Picklist") */
-  AttributeType?: string;
+  AttributeType?: AttributeTypeCode | (string & {});
 
   /** TypeScript type */
   TypeScriptType: TypeScriptType;
@@ -286,8 +387,21 @@ export interface PropertyType {
   /** The values of a choice or choices column's options, in order. */
   OptionValues?: number[];
 
-  /** Source type: 0=simple, 1=calculated, 2=rollup */
-  SourceType?: number;
+  /**
+   * Decimal places a decimal or currency column keeps (`Precision`). For a currency column whose
+   * `PrecisionSource` isn't the column: `"pricing"` (the organization's pricing decimal precision)
+   * or `"currency"` (the precision of the record's transaction currency).
+   */
+  Precision?: number | "pricing" | "currency";
+
+  /** Largest file or image a file or image column takes, in KB (`MaxSizeInKB`). */
+  MaxSizeInKB?: number;
+
+  /** A status reason column: the state (`statecode` value) each of its options belongs to. */
+  OptionStates?: Record<number, number>;
+
+  /** Source type (`AttributeSourceType`): 0=simple, 1=calculated, 2=rollup, 3=formula, 4=prompt */
+  SourceType?: AttributeSourceType | (number & {});
 
   /** Attribute this extends (for virtual attributes) */
   AttributeOf?: string;
@@ -298,8 +412,8 @@ export interface PropertyType {
   /** Description (localized) */
   Description?: string;
 
-  /** Date/time format */
-  Format?: string;
+  /** Date/time column: its `DateTimeBehavior`, else its `Format` */
+  Format?: DateTimeBehaviorValue | DateTimeFormat | (string & {});
 
   /**
    * A complex type's navigation property (`PrincipalAccess.Principal`, #361): an entity, or a
@@ -326,6 +440,13 @@ export interface NavigationPropertyType {
 
   /** Is this a polymorphic lookup? */
   IsPolymorphic?: boolean;
+
+  /**
+   * For a polymorphic lookup consolidated into one property (`parentcustomerid`): the
+   * single-valued navigation properties of the CSDL it stands for, one per target
+   * (`parentcustomerid_account`, `parentcustomerid_contact`). The Web API expands those.
+   */
+  Members?: Array<{ Name: string; TargetType: string }>;
 
   /** Is this a collection? */
   IsCollection: boolean;
@@ -382,6 +503,14 @@ export interface EnumType {
 
   /** A CSDL enum with `IsFlags="true"`: a value can combine members (`ReadAccess, WriteAccess`). */
   IsFlags?: boolean;
+
+  /**
+   * An `EnumType` of the CSDL (`AccessRights`) that isn't a choice column's option set. Its members
+   * are generated with their names as values, which the Web API reads and writes (#479); a flags
+   * enum keeps its numbers, which combine with `|`. An option set (local, or a `$metadata` enum a
+   * choice column uses) keeps its numbers, which Dataverse stores.
+   */
+  IsCsdlEnum?: boolean;
 }
 
 /**

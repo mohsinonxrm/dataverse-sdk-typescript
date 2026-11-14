@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-auth-msal-node",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "type": "module",
   "author": "Mohsin On xRM",
   "license": "AGPL-3.0-only",
@@ -43,10 +43,10 @@
     "@azure/msal-node": "^2.16.3 || ^3.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"
   },
   "devDependencies": {
-    "@azure/msal-node": "^2.16.3",
+    "@azure/msal-node": "^7.2.1",
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
-    "eslint": "^9.39.5",
-    "msal-node-v7": "npm:@azure/msal-node@^7.2.0",
+    "eslint": "^10.14.0",
+    "msal-node-v2": "npm:@azure/msal-node@^2.16.3",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"

@@ -120,7 +120,7 @@ jobs:
       - name: Bundle-size budget
         run: pnpm check:size
       - name: Install Chromium for Playwright
-        run: pnpm --filter @mohsinonxrm/dataverse-sdk-browser-tests exec playwright install --with-deps chromium
+        run: bash scripts/install-playwright.sh @mohsinonxrm/dataverse-sdk-browser-tests
       - name: Browser smoke tests
         run: pnpm test:browser
       - name: Write the release notes

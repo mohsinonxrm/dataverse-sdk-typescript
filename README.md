@@ -485,8 +485,9 @@ console.log(job.statuscode); // 30: succeeded (failed and canceled jobs reject)
 
 ### Resilience middleware
 
-Retry with backoff, `Retry-After` and adaptive concurrency are on by default. Adaptive throttling,
-the circuit breaker, the bulkhead and fault injection are opt-in middleware
+Retry with backoff, `Retry-After` and adaptive concurrency (which also halves on Dataverse's
+too-many-concurrent-requests 429) are on by default. Adaptive throttling (the `adaptiveThrottling`
+option), the circuit breaker, the bulkhead and fault injection are opt-in
 ([core README](./packages/dataverse-sdk-core/README.md#resiliency-features)):
 
 <!-- live -->
@@ -496,6 +497,7 @@ import {
   AdaptiveThrottlingMiddleware,
   BulkheadMiddleware,
   ChaosMiddleware,
+  ChaosPresets,
   CircuitBreakerMiddleware,
   DataverseClient,
 } from "@mohsinonxrm/dataverse-sdk-core";
@@ -503,22 +505,24 @@ import {
 const resilient = new DataverseClient({
   baseUrl,
   tokenProvider,
+  // Slows down before a 429, from the service-protection headers, outside the concurrency slot
+  adaptiveThrottling: new AdaptiveThrottlingMiddleware(),
   middleware: {
-    // Outermost: at most 2 writes at once, whatever the reads do
-    prepend: [new BulkheadMiddleware({ limits: { read: 8, write: 2 } })],
+    // Outermost: at most 2 writes at once, whatever the reads do (and at most 100 waiting)
+    prepend: [new BulkheadMiddleware({ limits: { read: 8, write: 2 }, maxQueue: 100 })],
     append: [
-      // Slows down before a 429, from the service-protection headers
-      new AdaptiveThrottlingMiddleware(),
       // Fails fast after 5 failures in a row, for 30 s
       new CircuitBreakerMiddleware({ failureThreshold: 5, breakDurationMs: 30_000 }),
     ],
   },
 });
 
-// In tests: answer 20% of the requests with a fake 429 or 503
+// Dev and test environments only, never production: switched on by DATAVERSE_SDK_CHAOS=1,
+// it answers 5% of the requests with a fake service-protection 429 or a 503
 const chaos = new ChaosMiddleware({
-  percentage: 20,
-  faults: [{ status: 429, retryAfterSeconds: 1 }, { status: 503 }],
+  enabled: process.env.DATAVERSE_SDK_CHAOS === "1",
+  percentage: 5,
+  faults: [...ChaosPresets.serviceProtection(), { status: 503 }],
 });
 ```
 
@@ -730,13 +734,14 @@ In the order they run:
 
 - **ODataHeadersMiddleware**: Standard OData headers (Accept, OData-Version, OData-MaxVersion), plus `defaultHeaders` and `defaultPrefer`
 - **RetryMiddleware**: Retries 429 (throttling) for every request, and 502/503/504 for idempotent ones (GET, PUT, DELETE, PATCH with `If-Match`), with exponential backoff + jitter, honouring `Retry-After`
-- **ConcurrencyMiddleware**: Adaptive concurrency using `x-ms-dop-hint` from Dataverse
+- **AdaptiveThrottlingMiddleware** (with the `adaptiveThrottling` option): Holds requests back while a service-protection budget is low or a 429's `Retry-After` runs, without holding a concurrency slot
+- **ConcurrencyMiddleware**: Adaptive concurrency using `x-ms-dop-hint` from Dataverse, halved on the too-many-concurrent-requests 429 (`0x80072326`); `maxQueue` bounds the requests waiting
 - **AuthMiddleware**: Adds the bearer token; after a 401 gets a new one and retries once (when a token provider is set)
 - **TelemetryMiddleware**: Diagnostic headers and W3C trace context; a dependency per attempt, exceptions and the SDK's telemetry events
 - **LoggingMiddleware**: Request/response logging (when a `logger` is set)
 
-Opt-in, added with the `middleware` option: `AdaptiveThrottlingMiddleware`,
-`CircuitBreakerMiddleware`, `BulkheadMiddleware` and, for tests, `ChaosMiddleware` (see
+Opt-in, added with the `middleware` option: `CircuitBreakerMiddleware`, `BulkheadMiddleware` and,
+for tests, `ChaosMiddleware`; `AdaptiveThrottlingMiddleware` has its own `adaptiveThrottling` option (see
 [Resilience middleware](#resilience-middleware)).
 
 ### Custom Middleware
@@ -955,12 +960,17 @@ pnpm test
 
 # Lint
 pnpm lint
+
+# Documentation site, after pnpm build (http://localhost:5173/docs/)
+pnpm --filter docs-site dev
 ```
 
 ### Monorepo Structure
 
 ```
 dataverse-sdk-typescript/
+├── apps/
+│   └── docs/              # Documentation site (VitePress), served at /docs on the explorer site
 ├── packages/              # SDK packages
 │   ├── dataverse-sdk-core/
 │   ├── dataverse-sdk-auth-msal-node/

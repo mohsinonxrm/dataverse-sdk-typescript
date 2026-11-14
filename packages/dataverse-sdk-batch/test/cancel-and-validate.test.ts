@@ -212,8 +212,21 @@ describe("addRequest(): validation (#379)", () => {
     expect(() => b.addRequest("u", "GET", "accounts HTTP/1.1\r\n\r\nDELETE accounts(1)")).toThrow(
       DataverseInvalidRequestError
     );
+    // A method outside BatchMethod doesn't compile (#480); from JavaScript it throws.
+    // @ts-expect-error -- not an HTTP method
     expect(() => b.addRequest("m", "GET accounts", "accounts")).toThrow(/invalid method/);
+    // @ts-expect-error -- not an HTTP method
     expect(() => b.addRequest("m", "", "accounts")).toThrow(/invalid method/);
+  });
+
+  it("types the method as an HTTP method, in either case (#480)", () => {
+    const b = builder();
+    b.addRequest("upper", "PATCH", "accounts(1)").addRequest("lower", "delete", "accounts(2)");
+    expect(b.getTotalRequestCount()).toBe(2);
+    // @ts-expect-error -- a misspelt method is a compile error (at run time it's only a token)
+    b.addRequest("typo", "PATHC", "accounts(3)");
+    // @ts-expect-error -- so is a method Dataverse doesn't take in a batch
+    b.addRequest("head", "HEAD", "accounts");
   });
 
   it("accepts ordinary headers", () => {

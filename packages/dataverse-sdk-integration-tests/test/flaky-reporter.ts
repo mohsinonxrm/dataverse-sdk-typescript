@@ -1,7 +1,8 @@
 /**
- * Lists the live tests that failed once and passed when retried (`retry` in vitest.config.ts).
- * They count as passed, so a slow moment of the dev org doesn't fail a release run, but they're
- * not hidden: each one is printed at the end and, on GitHub Actions, raised as a warning
+ * Lists the live tests that failed once and passed when retried. There's no global `retry` (a
+ * test that creates records would create them again); only a read-only or idempotent test opts
+ * in, with `it(name, { retry: 1 }, fn)`. A test that passes on its retry counts as passed, but
+ * it isn't hidden: each one is printed at the end and, on GitHub Actions, raised as a warning
  * annotation on the run.
  */
 import { relative } from "node:path";

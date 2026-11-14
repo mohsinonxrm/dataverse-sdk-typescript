@@ -6,23 +6,58 @@ import { lazy } from "react";
 import type { ComponentType, LazyExoticComponent } from "react";
 import type { FluentIcon } from "@fluentui/react-icons";
 import {
+  bundleIcon,
+  BookDatabase20Filled,
   BookDatabase20Regular,
+  BookOpen20Filled,
   BookOpen20Regular,
+  BoxMultiple20Filled,
   BoxMultiple20Regular,
+  Code20Filled,
   Code20Regular,
+  DatabaseSearch20Filled,
   DatabaseSearch20Regular,
+  DocumentArrowUp20Filled,
   DocumentArrowUp20Regular,
+  ErrorCircle20Filled,
   ErrorCircle20Regular,
+  Flash20Filled,
   Flash20Regular,
+  Globe20Filled,
   Globe20Regular,
+  Home20Filled,
   Home20Regular,
+  LockClosed20Filled,
   LockClosed20Regular,
+  Options20Filled,
   Options20Regular,
+  Organization20Filled,
   Organization20Regular,
+  PersonSwap20Filled,
   PersonSwap20Regular,
+  Pulse20Filled,
   Pulse20Regular,
+  TableEdit20Filled,
   TableEdit20Regular,
 } from "@fluentui/react-icons";
+
+// Regular when idle, filled when selected or hovered, as Fluent 2's navigation shows them.
+const BookDatabaseIcon = bundleIcon(BookDatabase20Filled, BookDatabase20Regular);
+const BookOpenIcon = bundleIcon(BookOpen20Filled, BookOpen20Regular);
+const BoxMultipleIcon = bundleIcon(BoxMultiple20Filled, BoxMultiple20Regular);
+const CodeIcon = bundleIcon(Code20Filled, Code20Regular);
+const DatabaseSearchIcon = bundleIcon(DatabaseSearch20Filled, DatabaseSearch20Regular);
+const DocumentArrowUpIcon = bundleIcon(DocumentArrowUp20Filled, DocumentArrowUp20Regular);
+const ErrorCircleIcon = bundleIcon(ErrorCircle20Filled, ErrorCircle20Regular);
+const FlashIcon = bundleIcon(Flash20Filled, Flash20Regular);
+const GlobeIcon = bundleIcon(Globe20Filled, Globe20Regular);
+const HomeIcon = bundleIcon(Home20Filled, Home20Regular);
+const LockClosedIcon = bundleIcon(LockClosed20Filled, LockClosed20Regular);
+const OptionsIcon = bundleIcon(Options20Filled, Options20Regular);
+const OrganizationIcon = bundleIcon(Organization20Filled, Organization20Regular);
+const PersonSwapIcon = bundleIcon(PersonSwap20Filled, PersonSwap20Regular);
+const PulseIcon = bundleIcon(Pulse20Filled, Pulse20Regular);
+const TableEditIcon = bundleIcon(TableEdit20Filled, TableEdit20Regular);
 
 export const NAV_GROUPS = [
   "Overview",
@@ -53,7 +88,7 @@ export const ROUTES: AppRoute[] = [
     path: "/",
     title: "Overview",
     group: "Overview",
-    icon: Home20Regular,
+    icon: HomeIcon,
     summary: "What this app shows, how the client is set up, and a first request.",
     component: lazy(() => import("./pages/HomePage")),
   },
@@ -61,7 +96,7 @@ export const ROUTES: AppRoute[] = [
     path: "/explorer",
     title: "Explorer",
     group: "Explorer",
-    icon: Code20Regular,
+    icon: CodeIcon,
     summary:
       "Any Web API request or typed operation: its SDK code, a preview of the request, and the response.",
     component: lazy(() => import("./pages/ExplorerPage")),
@@ -70,7 +105,7 @@ export const ROUTES: AppRoute[] = [
     path: "/data/queries",
     title: "Queries",
     group: "Data",
-    icon: DatabaseSearch20Regular,
+    icon: DatabaseSearchIcon,
     summary:
       "$select, $filter, $expand with options, paging with iterate(), FetchXML and saved views.",
     component: lazy(() => import("./pages/QueriesPage")),
@@ -79,7 +114,7 @@ export const ROUTES: AppRoute[] = [
     path: "/data/crud",
     title: "Create, read, update, delete",
     group: "Data",
-    icon: TableEdit20Regular,
+    icon: TableEditIcon,
     summary: "One account through createAndGetId(), get(), patch() and delete().",
     component: lazy(() => import("./pages/CrudPage")),
   },
@@ -87,7 +122,7 @@ export const ROUTES: AppRoute[] = [
     path: "/data/concurrency",
     title: "Optimistic concurrency",
     group: "Data",
-    icon: LockClosed20Regular,
+    icon: LockClosedIcon,
     summary: "ifMatch(etag), the 412 for a stale update, and read-modify-write.",
     component: lazy(() => import("./pages/ConcurrencyPage")),
   },
@@ -95,7 +130,7 @@ export const ROUTES: AppRoute[] = [
     path: "/data/impersonation",
     title: "Impersonation",
     group: "Data",
-    icon: PersonSwap20Regular,
+    icon: PersonSwapIcon,
     summary: "impersonateByObjectId(): run requests as another user.",
     component: lazy(() => import("./pages/ImpersonationPage")),
   },
@@ -103,7 +138,7 @@ export const ROUTES: AppRoute[] = [
     path: "/data/prefer",
     title: "Prefer headers",
     group: "Data",
-    icon: Options20Regular,
+    icon: OptionsIcon,
     summary: "prefer(): return=representation, annotations and page size.",
     component: lazy(() => import("./pages/PreferPage")),
   },
@@ -111,7 +146,7 @@ export const ROUTES: AppRoute[] = [
     path: "/operations/batch",
     title: "$batch",
     group: "Operations",
-    icon: BoxMultiple20Regular,
+    icon: BoxMultipleIcon,
     summary: "Change sets, continueOnError and automatic splitting with BatchRequestBuilder.",
     component: lazy(() => import("./pages/BatchPage")),
   },
@@ -119,7 +154,7 @@ export const ROUTES: AppRoute[] = [
     path: "/operations/xrm",
     title: "OrganizationService",
     group: "Operations",
-    icon: Organization20Regular,
+    icon: OrganizationIcon,
     summary: "The C# SDK's IOrganizationService shape from @mohsinonxrm/dataverse-sdk-xrm.",
     component: lazy(() => import("./pages/XrmPage")),
   },
@@ -127,7 +162,7 @@ export const ROUTES: AppRoute[] = [
     path: "/operations/messages",
     title: "Actions, functions and messages",
     group: "Operations",
-    icon: Flash20Regular,
+    icon: FlashIcon,
     summary: "RetrieveTotalRecordCount, InitializeFrom, CanManyToMany and OrganizationRequest.",
     component: lazy(() => import("./pages/OperationsPage")),
   },
@@ -135,7 +170,7 @@ export const ROUTES: AppRoute[] = [
     path: "/metadata",
     title: "Metadata browser",
     group: "Metadata",
-    icon: BookDatabase20Regular,
+    icon: BookDatabaseIcon,
     summary: "Tables, then their columns, with typed attribute casts.",
     component: lazy(() => import("./pages/MetadataPage")),
   },
@@ -143,7 +178,7 @@ export const ROUTES: AppRoute[] = [
     path: "/files",
     title: "Files and images",
     group: "Files",
-    icon: DocumentArrowUp20Regular,
+    icon: DocumentArrowUpIcon,
     summary: "Upload in blocks with progress, download and delete with FileColumnClient.",
     component: lazy(() => import("./pages/FilesPage")),
   },
@@ -151,7 +186,7 @@ export const ROUTES: AppRoute[] = [
     path: "/environments",
     title: "Environments",
     group: "Environments",
-    icon: Globe20Regular,
+    icon: GlobeIcon,
     summary: "DiscoveryClient: list environments by region, test one and switch to it.",
     component: lazy(() => import("./pages/DiscoveryPage")),
   },
@@ -159,7 +194,7 @@ export const ROUTES: AppRoute[] = [
     path: "/diagnostics/telemetry",
     title: "Telemetry and logging",
     group: "Diagnostics",
-    icon: Pulse20Regular,
+    icon: PulseIcon,
     summary: "The logger, telemetry and retry hooks, in a live log.",
     component: lazy(() => import("./pages/TelemetryPage")),
   },
@@ -167,16 +202,17 @@ export const ROUTES: AppRoute[] = [
     path: "/diagnostics/errors",
     title: "Error handling",
     group: "Diagnostics",
-    icon: ErrorCircle20Regular,
+    icon: ErrorCircleIcon,
     summary: "Typed errors for OData failures, throttling, $batch, network failures and aborts.",
     component: lazy(() => import("./pages/ErrorsPage")),
   },
   {
-    path: "/docs",
+    // Not "/docs": the documentation site is served there, next to the app
+    path: "/documentation",
     title: "Documentation",
     group: "Docs",
-    icon: BookOpen20Regular,
-    summary: "Getting started, the guides and the API reference, on GitHub.",
+    icon: BookOpenIcon,
+    summary: "Getting started, the guides and the API reference, on the documentation site.",
     component: lazy(() => import("./pages/DocsPage")),
   },
 ];

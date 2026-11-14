@@ -8,7 +8,12 @@
  * @module
  */
 
-import type { Executable, RequestInformation } from "@mohsinonxrm/dataverse-sdk-core";
+import type {
+  EdmPrimitiveType,
+  Executable,
+  ODataTypeName,
+  RequestInformation,
+} from "@mohsinonxrm/dataverse-sdk-core";
 import { DataverseInvalidRequestError } from "@mohsinonxrm/dataverse-sdk-core";
 import { type EntityReference, isEntityReference } from "./entity-reference.js";
 
@@ -50,6 +55,33 @@ export interface IEntity {
 }
 
 /**
+ * A Dataverse column type, as `AttributeMetadata.AttributeType` names it (the `AttributeTypeCode`
+ * member names). Choices, file and image columns are `Virtual`.
+ */
+export type AttributeTypeCodeName =
+  | "BigInt"
+  | "Boolean"
+  | "CalendarRules"
+  | "Customer"
+  | "DateTime"
+  | "Decimal"
+  | "Double"
+  | "EntityName"
+  | "Integer"
+  | "Lookup"
+  | "ManagedProperty"
+  | "Memo"
+  | "Money"
+  | "Owner"
+  | "PartyList"
+  | "Picklist"
+  | "State"
+  | "Status"
+  | "String"
+  | "Uniqueidentifier"
+  | "Virtual";
+
+/**
  * Metadata descriptor for an entity attribute.
  */
 export interface AttributeMetadata {
@@ -59,14 +91,17 @@ export interface AttributeMetadata {
   /** Schema name (PascalCase) */
   schemaName: string;
 
-  /** Dataverse attribute type (e.g. "Lookup", "Picklist"), or the OData type when unknown */
-  attributeType: string;
+  /**
+   * Dataverse attribute type (e.g. "Lookup", "Picklist"), or the OData type when unknown. Any
+   * other string is accepted too, for types Dataverse adds later.
+   */
+  attributeType: AttributeTypeCodeName | EdmPrimitiveType | (string & {});
 
   /** TypeScript type representation */
   typescriptType: string;
 
   /** OData type of the property (e.g. "Edm.String") */
-  odataType?: string;
+  odataType?: ODataTypeName;
 
   /** Business-required: a caller must supply a value (`RequiredLevel` is ApplicationRequired). */
   isRequired?: boolean;
@@ -107,6 +142,23 @@ export interface AttributeMetadata {
   /** The values of a choice or choices column's options. */
   optionValues?: number[];
 
+  /**
+   * A status reason (`statuscode`) column: the state (`statecode` value) each of its options
+   * belongs to, keyed by option value.
+   */
+  optionStates?: Record<number, number>;
+
+  /**
+   * Decimal places a decimal or currency column keeps (`Precision`). A currency column whose
+   * `PrecisionSource` isn't the column has `"pricing"` (the organization's pricing decimal
+   * precision) or `"currency"` (the precision of the record's transaction currency) instead;
+   * `validateEntity()` takes those numbers as options.
+   */
+  precision?: number | "pricing" | "currency";
+
+  /** Largest file or image a file or image column takes, in KB (`MaxSizeInKB`). */
+  maxSizeInKB?: number;
+
   /** `false` when a create can't set the column (`IsValidForCreate`); unset when it can. */
   isValidForCreate?: boolean;
 
@@ -135,6 +187,13 @@ export interface NavigationMetadata {
 
   /** For a polymorphic lookup: the logical names of the entities it can point to */
   targets?: string[];
+
+  /**
+   * For a polymorphic lookup: the Web API's navigation property for each target, by name, with
+   * the target's logical name (#432). Not always `<fullName>_<target>`: an activity's regarding
+   * lookup has `regardingobjectid_contact_task`. Metadata generated before it doesn't have it.
+   */
+  members?: Readonly<Record<string, string>>;
 
   /** Is this a collection? */
   isCollection: boolean;
@@ -189,7 +248,7 @@ export interface EntityMetadata {
   primaryNameAttribute?: string;
 
   /** Map of attribute logical names to their OData types (e.g. "Edm.String") */
-  attributeTypes: Record<string, string>;
+  attributeTypes: Record<string, ODataTypeName>;
 
   /** Map of navigation property names to target types and cardinality */
   navigation: Record<string, NavigationMetadata>;
@@ -249,10 +308,51 @@ export function isEntity(value: unknown): value is IEntity {
 export { formatParameterAlias, formatRecordPath, type ParameterKind } from "./parameters.js";
 
 export {
+  type AssociateOptions,
+  type AssociateTarget,
+  type AssociateTargets,
+  type BoundOperationMethod,
+  type BoundOperations,
+  type CollectionNavigation,
+  type CollectionOperationMethods,
+  type DisassociateArguments,
   EntityRecordClient,
   EntitySetClient,
+  type EntitySetClientOptions,
+  type IterateRecordsOptions,
+  type ListPageOptions,
+  type NoOperationClasses,
+  type OperationClass,
+  type OperationClasses,
+  type OperationGroup,
+  type RecordOperationMethods,
+  type RecordPage,
+  type RelatedClient,
+  type RelatedClientContext,
+  RelatedCollectionClient,
+  RelatedRecordClient,
+  type UpsertEntity,
+  type UpsertMode,
+  type UpsertRecordOptions,
+  type Expand,
+  type ExpandedNames,
+  type ExpandedProperties,
+  type ExpandedValue,
+  type ExpandFilterOption,
+  type ExpandLimitOptions,
+  type ExpandNoLimitOptions,
+  type ExpandPropertyOptions,
+  type ExpandSelectOption,
   type GetRecordOptions,
   type ListRecordsOptions,
+  type ManyToManyNavigation,
+  type NavigationProperty,
+  type ReadResult,
+  type RecordAnnotations,
+  type SelectedColumns,
+  type SingleNavigation,
+  type UntypedNavigation,
+  type WithoutProperties,
   type WriteRecordOptions,
 } from "./entity-set.js";
 
@@ -371,7 +471,10 @@ function bindingProperty(
     ? entityMetadata.navigation[key]
     : undefined;
   if (navigation?.isPolymorphic) {
-    return `${navigation.fullName ?? key}_${reference.logicalName}`;
+    const member = Object.entries(navigation.members ?? {}).find(
+      ([, target]) => target === reference.logicalName
+    );
+    return member ? member[0] : `${navigation.fullName ?? key}_${reference.logicalName}`;
   }
   if (navigation) return navigation.name;
   // A polymorphic lookup that wasn't consolidated: one navigation property per target.
@@ -396,6 +499,9 @@ function lookupNavigationProperties(key: string, entityMetadata: EntityMetadata)
   const navigation = own(key);
   if (navigation) {
     if (navigation.isCollection) return [];
+    if (navigation.members && Object.keys(navigation.members).length > 0) {
+      return Object.keys(navigation.members);
+    }
     if (navigation.isPolymorphic && navigation.targets?.length) {
       return navigation.targets.map((target) => `${navigation.fullName ?? key}_${target}`);
     }

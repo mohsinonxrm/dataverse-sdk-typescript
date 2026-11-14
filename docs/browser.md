@@ -94,7 +94,7 @@ Any other response header is hidden from script in a browser. That changes three
 
 - **`WWW-Authenticate` can't be read**, so a claims challenge (Conditional Access, continuous access evaluation) is invisible to the SDK. After a 401, the SDK's recovery (`refreshTokenOn401`, on by default) therefore always calls `getToken()` with `forceRefresh: true` and resends the request once. `MsalBrowserTokenProvider` passes `forceRefresh` on to MSAL's `acquireTokenSilent`, so the resend gets a new token rather than the cached one ([#167](https://github.com/mohsinonxrm/dataverse-sdk-typescript/issues/167)).
 - **`x-ms-service-request-id` can't be read**, so `DataverseError.requestId` falls back to `REQ_ID`.
-- **`x-ms-dop-hint` can't be read**, so adaptive concurrency has nothing to adapt to: the limit stays at `concurrency.maxConcurrentRequests` (default 8).
+- **`x-ms-dop-hint` can't be read**, so adaptive concurrency has nothing to adapt to: the limit stays at `concurrency.maxConcurrentRequests` (default 8). The too-many-concurrent-requests 429 (`0x80072326`) still halves it (`concurrency.reduceOnThrottle`, on by default, as the error body is readable); after its `Retry-After` each successful response raises it by 1 back to where it was.
 
 `DataverseError.headers` likewise contains only the readable headers.
 

@@ -75,7 +75,7 @@ function TablesResult({
           },
           {
             key: "browse",
-            label: "",
+            label: "Action",
             render: (t) => (
               <Button size="small" appearance="subtle" onClick={() => onPick(t.logicalName)}>
                 Browse columns

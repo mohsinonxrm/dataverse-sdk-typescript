@@ -151,3 +151,11 @@ export const DEMO_ENVIRONMENT_URL = "https://contoso.crm.dynamics.com";
 
 /** Where the SDK's source and docs live. */
 export const REPO_URL = "https://github.com/mohsinonxrm/dataverse-sdk-typescript";
+
+/**
+ * The documentation site (VitePress, `apps/docs`). The deployed site serves it at `/docs/` next to
+ * the app; the dev server doesn't, so in development the links go to the live site.
+ */
+export const DOCS_URL = import.meta.env.DEV
+  ? "https://dataverse-sdk.mohsinonxrm.com/docs"
+  : "/docs";

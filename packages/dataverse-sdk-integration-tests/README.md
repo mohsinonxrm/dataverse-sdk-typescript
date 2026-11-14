@@ -13,7 +13,7 @@ These are live integration tests that run against a real Dataverse org. This pac
 
 - **The documentation's examples** (`test/docs-examples.int.test.ts`): see below.
 
-Each record a run creates has a unique `sdk-it-…` name and is deleted in `afterAll`. `it.fails("#NN: …")` pins a bug that reproduces live, and the PR that fixes the issue flips it to `it`.
+Each record a run creates has a name that starts with `sdk-it-…` (the run's id) or `sdk-int ` and contains the run's id, and is deleted in `afterAll`; anything a cancelled run leaves behind is removed by the sweeper (see [Sweeping leftovers](#sweeping-leftovers)). `it.fails("#NN: …")` pins a bug that reproduces live, and the PR that fixes the issue flips it to `it`.
 
 ## Documentation examples
 
@@ -71,4 +71,19 @@ Behind an HTTP proxy, Node's `fetch` ignores `HTTPS_PROXY` unless you run with `
 
 In CI, `.github/workflows/integration-tests.yml` runs nightly and on demand, using the repository secrets with the same names.
 
-A failed test runs **once more** before it fails the suite (`retry: 1` in `vitest.config.ts`), so a slow or busy moment of the org doesn't fail a release run. A test that passes only on the retry still passes, but it isn't hidden: `test/flaky-reporter.ts` lists it at the end of the run and, on GitHub Actions, adds a "Flaky live test (passed on retry)" warning to the run. A test that keeps showing up there needs fixing, not more retries.
+A failed test is **not retried**. Most tests create records, and a retry would create them again: in the 2.0.1 release run a test that created an account timed out while the org was slow, its retry created a second account with the same name, both tests then found two records instead of one, and the first account was never deleted (#496). Instead, each test gets 120 s (`testTimeout` and `hookTimeout` in `vitest.config.ts`), enough for the org's slow moments, and:
+
+- A test that creates records and then looks them up by name creates them in `beforeAll` (hooks aren't retried) or names them uniquely for the attempt, so it finds exactly its own records.
+- Every created id is kept in a list and deleted in `afterAll`, never only the last one.
+- Only a read-only or idempotent test may opt into a retry, with `it(name, { retry: 1 }, fn)`. `test/flaky-reporter.ts` lists any test that passed only on its retry and, on GitHub Actions, adds a "Flaky live test (passed on retry)" warning to the run. A test that keeps showing up there needs fixing, not more retries.
+
+### Sweeping leftovers
+
+A run that is cancelled or times out can leave records behind. `scripts/sweep.mjs` finds them, using the same `DATAVERSE_*` variables and the built SDK:
+
+```bash
+node packages/dataverse-sdk-integration-tests/scripts/sweep.mjs            # dry run: lists what it would delete
+node packages/dataverse-sdk-integration-tests/scripts/sweep.mjs --delete   # deletes it
+```
+
+It only touches records whose name starts with a prefix the live tests or the samples use (`sdk-it-`, `sdk-int `, `sdk-sample-`) **and** that were created more than 2 hours ago, so it never touches a run in progress: accounts and opportunities (`name`), contacts (`lastname`), leads (`subject`), teams (`name`), `msdyn_richtextfiles` (`msdyn_name`) and unmanaged solutions (`friendlyname`). Test tables (`new_sdkit…`) and global choices (`new_sdkitgc…`) are listed, never deleted: a choice has no creation date, so a run in progress can't be told apart, and deleting a table takes its data and relationships with it. Delete those by hand after checking no run is in progress. The nightly Integration Tests workflow runs the sweeper with `--delete` as its last step, also when the tests failed.

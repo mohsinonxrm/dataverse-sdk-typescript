@@ -4,12 +4,15 @@
 
 ```ts
 
+import { BindManyExecutor } from '@mohsinonxrm/dataverse-sdk-core';
 import { DataverseClient } from '@mohsinonxrm/dataverse-sdk-core';
 import { DataverseRequestBuilder } from '@mohsinonxrm/dataverse-sdk-core';
+import { EdmPrimitiveType } from '@mohsinonxrm/dataverse-sdk-core';
 import { Executable } from '@mohsinonxrm/dataverse-sdk-core';
 import { ODataKey } from '@mohsinonxrm/dataverse-sdk-core';
 import { ODataParameterKind } from '@mohsinonxrm/dataverse-sdk-core';
 import { ODataRecordReference } from '@mohsinonxrm/dataverse-sdk-core';
+import { ODataTypeName } from '@mohsinonxrm/dataverse-sdk-core';
 import { RequestInformation } from '@mohsinonxrm/dataverse-sdk-core';
 import { RequestOptions } from '@mohsinonxrm/dataverse-sdk-core';
 
@@ -22,8 +25,21 @@ export abstract class ActionBase<TResponse = void> implements Executable<TRespon
 }
 
 // @public
+export interface AssociateOptions extends RequestOptions {
+    readonly executor?: BindManyExecutor;
+}
+
+// @public
+export type AssociateTarget = ODataKey | EntityReference;
+
+// @public
+export type AssociateTargets<TProperty> = TProperty extends {
+    readonly collection: true;
+} ? AssociateTarget | ReadonlyArray<string | EntityReference> : AssociateTarget;
+
+// @public
 export interface AttributeMetadata {
-    attributeType: string;
+    attributeType: AttributeTypeCodeName | EdmPrimitiveType | (string & {});
     isMultiSelect?: boolean;
     isPrimaryKey?: boolean;
     isReadOnly?: boolean;
@@ -32,11 +48,14 @@ export interface AttributeMetadata {
     isValidForUpdate?: boolean;
     logicalName: string;
     maxLength?: number;
+    maxSizeInKB?: number;
     maxValue?: number;
     minValue?: number;
-    odataType?: string;
+    odataType?: ODataTypeName;
     optionSetType?: string;
+    optionStates?: Record<number, number>;
     optionValues?: number[];
+    precision?: number | "pricing" | "currency";
     requiredLevel?: "SystemRequired" | "ApplicationRequired" | "Recommended";
     schemaName: string;
     sourceType?: "calculated" | "rollup";
@@ -45,12 +64,48 @@ export interface AttributeMetadata {
 }
 
 // @public
+export type AttributeTypeCodeName = "BigInt" | "Boolean" | "CalendarRules" | "Customer" | "DateTime" | "Decimal" | "Double" | "EntityName" | "Integer" | "Lookup" | "ManagedProperty" | "Memo" | "Money" | "Owner" | "PartyList" | "Picklist" | "State" | "Status" | "String" | "Uniqueidentifier" | "Virtual";
+
+// @public
+export type BoundOperationMethod<TArgs extends readonly unknown[], TResult> = TArgs extends readonly [] ? (requestOptions?: RequestOptions) => Promise<TResult> : [] extends TArgs ? (parameters?: TArgs[0], requestOptions?: RequestOptions) => Promise<TResult> : (parameters: TArgs[0], requestOptions?: RequestOptions) => Promise<TResult>;
+
+// @public
+export interface BoundOperations {
+    // (undocumented)
+    readonly collection?: OperationGroup;
+    // (undocumented)
+    readonly record?: OperationGroup;
+}
+
+// @public
+export interface CollectionNavigation<TEntity extends object = IEntity, TColumn extends string = string, TNavigation extends object = UntypedNavigation> {
+    // (undocumented)
+    readonly collection: true;
+    // (undocumented)
+    readonly column: TColumn;
+    // (undocumented)
+    readonly entity: TEntity;
+    // (undocumented)
+    readonly navigation: TNavigation;
+}
+
+// @public
+export type CollectionOperationMethods<TClasses> = {
+    readonly [K in keyof TClasses]: TClasses[K] extends abstract new (...args: infer TArgs) => Executable<infer TResult> ? BoundOperationMethod<TArgs, TResult> : never;
+};
+
+// @public
 export function createEntityReference(logicalName: string, id: string, options?: EntityReferenceOptions): EntityReference;
+
+// @public
+export type DisassociateArguments<TProperty> = TProperty extends {
+    readonly collection: true;
+} ? [target: AssociateTarget, requestOptions?: RequestOptions] : [requestOptions?: RequestOptions];
 
 // @public
 export interface EntityMetadata {
     attributes?: Record<string, AttributeMetadata>;
-    attributeTypes: Record<string, string>;
+    attributeTypes: Record<string, ODataTypeName>;
     collectionName: string;
     logicalName: string;
     navigation: Record<string, NavigationMetadata>;
@@ -68,13 +123,18 @@ export interface EntityOperationOptions {
 }
 
 // @public
-export class EntityRecordClient<TEntity extends object, TUpdate extends object = Partial<TEntity>, TColumn extends string = string> {
+export class EntityRecordClient<TEntity extends object, TUpdate extends object = Partial<TEntity>, TColumn extends string = string, TNavigation extends object = UntypedNavigation, TOperations extends BoundOperations = BoundOperations> {
     constructor(client: DataverseClient,
     metadata: EntityMetadata,
-    path: string, writeOptions?: FormatEntityForWriteOptions);
+    path: string, writeOptions?: EntitySetClientOptions, key?: ODataKey | undefined);
+    get actions(): RecordOperationMethods<OperationClasses<TOperations, "record", "actions">>;
+    associate<TName extends keyof TNavigation & string>(navigation: TName, target: AssociateTargets<TNavigation[TName]>, options?: AssociateOptions): Promise<void>;
     delete(options?: WriteRecordOptions): Promise<void>;
-    get(options?: GetRecordOptions<TColumn>, requestOptions?: RequestOptions): Promise<TEntity>;
+    disassociate<TName extends keyof TNavigation & string>(navigation: TName, ...args: DisassociateArguments<TNavigation[TName]>): Promise<void>;
+    get functions(): RecordOperationMethods<OperationClasses<TOperations, "record", "functions">>;
+    get<const TOptions extends GetRecordOptions<TColumn, TNavigation> = GetRecordOptions<TColumn, TNavigation>>(options?: TOptions, requestOptions?: RequestOptions): Promise<ReadResult<TEntity, TNavigation, TOptions>>;
     readonly metadata: EntityMetadata;
+    nav<TName extends keyof TNavigation & string>(name: TName): RelatedClient<TNavigation[TName]>;
     readonly path: string;
     request(): DataverseRequestBuilder;
     update(entity: TUpdate, options?: WriteRecordOptions): Promise<void>;
@@ -100,18 +160,92 @@ export interface EntityReferenceOptions {
 }
 
 // @public
-export class EntitySetClient<TEntity extends object, TCreate extends object = Partial<TEntity>, TUpdate extends object = TCreate, TColumn extends string = string> {
+export class EntitySetClient<TEntity extends object, TCreate extends object = Partial<TEntity>, TUpdate extends object = TCreate, TColumn extends string = string, TNavigation extends object = UntypedNavigation, TOperations extends BoundOperations = BoundOperations> {
     constructor(client: DataverseClient,
-    metadata: EntityMetadata, writeOptions?: FormatEntityForWriteOptions);
-    byId(key: ODataKey): EntityRecordClient<TEntity, TUpdate, TColumn>;
+    metadata: EntityMetadata, writeOptions?: EntitySetClientOptions);
+    get actions(): CollectionOperationMethods<OperationClasses<TOperations, "collection", "actions">>;
+    byId(key: ODataKey): EntityRecordClient<TEntity, TUpdate, TColumn, TNavigation, TOperations>;
     create(entity: TCreate, requestOptions?: RequestOptions): Promise<string>;
     readonly entitySetName: string;
-    list(options?: ListRecordsOptions<TColumn>, requestOptions?: RequestOptions): Promise<TEntity[]>;
+    get functions(): CollectionOperationMethods<OperationClasses<TOperations, "collection", "functions">>;
+    iterate<const TOptions extends IterateRecordsOptions<TColumn, TNavigation> = IterateRecordsOptions<TColumn, TNavigation>>(options?: TOptions, requestOptions?: RequestOptions): AsyncIterable<ReadResult<TEntity, TNavigation, TOptions>>;
+    list<const TOptions extends ListRecordsOptions<TColumn, TNavigation> = ListRecordsOptions<TColumn, TNavigation>>(options?: TOptions, requestOptions?: RequestOptions): Promise<Array<ReadResult<TEntity, TNavigation, TOptions>>>;
+    listPage<const TOptions extends ListPageOptions<TColumn, TNavigation> = ListPageOptions<TColumn, TNavigation>>(options?: TOptions, requestOptions?: RequestOptions): Promise<RecordPage<ReadResult<TEntity, TNavigation, TOptions>>>;
     readonly metadata: EntityMetadata;
     query(): DataverseRequestBuilder;
+    upsert(key: ODataKey, entity: UpsertEntity<TCreate, TUpdate>, options?: UpsertRecordOptions): Promise<string>;
+}
+
+// @public
+export interface EntitySetClientOptions extends FormatEntityForWriteOptions {
+    readonly operations?: BoundOperations;
 }
 
 export { Executable }
+
+// @public
+export type Expand<TNavigation, TNested extends boolean = false> = ReadonlyArray<(keyof TNavigation & string) | `${string}(${string})`> | {
+    readonly [K in keyof TNavigation & string]?: true | ExpandPropertyOptions<TNavigation[K], TNested>;
+};
+
+// @public
+export type ExpandedNames<TExpand> = TExpand extends ReadonlyArray<infer TItem> ? TItem extends `${infer TName}(${string}` ? TName : TItem & string : keyof TExpand & string;
+
+// @public
+export type ExpandedProperties<TNavigation, TExpand> = {
+    [K in ExpandedNames<TExpand> & keyof TNavigation]: ExpandedValue<TNavigation[K], TExpand extends readonly unknown[] ? true : K extends keyof TExpand ? TExpand[K] : true>;
+};
+
+// @public
+export type ExpandedValue<TProperty, TOptions> = TProperty extends {
+    readonly collection: infer TCollection;
+    readonly entity: infer TEntity;
+    readonly navigation: infer TNavigation;
+} ? TCollection extends true ? Array<ReadResult<TEntity, TNavigation, TOptions>> : ReadResult<TEntity, TNavigation, TOptions> | null : never;
+
+// @public
+export interface ExpandFilterOption {
+    readonly filter?: string;
+}
+
+// @public
+export interface ExpandLimitOptions {
+    readonly orderBy?: readonly string[];
+    readonly top?: number;
+}
+
+// @public
+export interface ExpandNoLimitOptions {
+    // (undocumented)
+    readonly orderBy?: never;
+    // (undocumented)
+    readonly top?: never;
+}
+
+// @public
+export type ExpandPropertyOptions<TProperty, TNested extends boolean = false> = TProperty extends {
+    readonly collection: true;
+    readonly column: infer TColumn extends string;
+    readonly navigation: infer TNavigation;
+} ? TProperty extends {
+    readonly manyToMany: true;
+} ? ExpandSelectOption<TColumn> & ExpandFilterOption & (TNested extends true ? ExpandNoLimitOptions : ExpandLimitOptions) : TNested extends true ? ExpandSelectOption<TColumn> & ExpandFilterOption & ExpandNoLimitOptions & {
+    readonly expand?: Expand<TNavigation, true>;
+} : (ExpandSelectOption<TColumn> & ExpandFilterOption & ExpandLimitOptions & {
+    readonly expand?: never;
+}) | (ExpandSelectOption<TColumn> & ExpandFilterOption & ExpandNoLimitOptions & {
+    readonly expand?: Expand<TNavigation, true>;
+}) : TProperty extends {
+    readonly column: infer TColumn extends string;
+    readonly navigation: infer TNavigation;
+} ? ExpandSelectOption<TColumn> & {
+    readonly expand?: Expand<TNavigation, true>;
+} : never;
+
+// @public
+export interface ExpandSelectOption<TColumn extends string> {
+    readonly select?: readonly TColumn[];
+}
 
 // @public
 export function formatEntityForWrite(entity: Partial<IEntity>, entityMetadata: EntityMetadata, options?: FormatEntityForWriteOptions): Record<string, unknown>;
@@ -123,7 +257,7 @@ export interface FormatEntityForWriteOptions {
 }
 
 // @public
-export function formatParameterAlias(value: unknown, odataType: string, kind?: ParameterKind): string;
+export function formatParameterAlias(value: unknown, odataType: ODataTypeName, kind?: ParameterKind): string;
 
 // @public
 export function formatRecordPath(reference: ODataRecordReference): string;
@@ -149,9 +283,9 @@ export function getEntityUrl(entityMetadata: EntityMetadata, id: string, baseUrl
 export function getODataType(entityMetadata: EntityMetadata): string;
 
 // @public
-export interface GetRecordOptions<TColumn extends string = string> {
-    expand?: readonly string[];
-    select?: readonly TColumn[];
+export interface GetRecordOptions<TColumn extends string = string, TNavigation extends object = UntypedNavigation> {
+    readonly expand?: Expand<TNavigation>;
+    readonly select?: readonly TColumn[];
 }
 
 // @public
@@ -168,11 +302,40 @@ export function isEntity(value: unknown): value is IEntity;
 export function isEntityReference(value: unknown): value is EntityReference;
 
 // @public
-export interface ListRecordsOptions<TColumn extends string = string> extends GetRecordOptions<TColumn> {
-    filter?: string;
-    maxItems?: number;
-    orderBy?: readonly string[];
-    top?: number;
+export interface IterateRecordsOptions<TColumn extends string = string, TNavigation extends object = UntypedNavigation> extends ListRecordsOptions<TColumn, TNavigation> {
+    readonly pageSize?: number;
+}
+
+// @public
+export interface ListPageOptions<TColumn extends string = string, TNavigation extends object = UntypedNavigation> extends GetRecordOptions<TColumn, TNavigation> {
+    readonly count?: boolean;
+    readonly filter?: string;
+    readonly nextLink?: string;
+    readonly orderBy?: readonly string[];
+    readonly pageSize?: number;
+    readonly top?: number;
+}
+
+// @public
+export interface ListRecordsOptions<TColumn extends string = string, TNavigation extends object = UntypedNavigation> extends GetRecordOptions<TColumn, TNavigation> {
+    readonly filter?: string;
+    readonly maxItems?: number;
+    readonly orderBy?: readonly string[];
+    readonly top?: number;
+}
+
+// @public
+export interface ManyToManyNavigation<TEntity extends object = IEntity, TColumn extends string = string, TNavigation extends object = UntypedNavigation> {
+    // (undocumented)
+    readonly collection: true;
+    // (undocumented)
+    readonly column: TColumn;
+    // (undocumented)
+    readonly entity: TEntity;
+    // (undocumented)
+    readonly manyToMany: true;
+    // (undocumented)
+    readonly navigation: TNavigation;
 }
 
 // @public
@@ -184,6 +347,7 @@ export interface NavigationMetadata {
     isValidForCreate?: boolean;
     isValidForUpdate?: boolean;
     lookupAttribute?: string;
+    members?: Readonly<Record<string, string>>;
     name: string;
     referencedProperty?: string;
     referencingProperty?: string;
@@ -194,16 +358,147 @@ export interface NavigationMetadata {
 }
 
 // @public
+export type NavigationProperty = SingleNavigation | CollectionNavigation | ManyToManyNavigation;
+
+// @public
+export interface NoOperationClasses {
+}
+
+// @public
+export type OperationClass = abstract new (...args: never[]) => Executable<unknown>;
+
+// @public
+export type OperationClasses<TOperations, TBinding extends keyof BoundOperations, TKind extends keyof OperationGroup> = TOperations extends Readonly<Record<TBinding, infer TGroup>> ? TGroup extends Readonly<Record<TKind, infer TClasses>> ? TClasses : NoOperationClasses : NoOperationClasses;
+
+// @public
+export interface OperationGroup {
+    // (undocumented)
+    readonly actions?: Readonly<Record<string, OperationClass>>;
+    // (undocumented)
+    readonly functions?: Readonly<Record<string, OperationClass>>;
+}
+
+// @public
 export type ParameterKind = ODataParameterKind;
 
+// @public
+export type ReadResult<TEntity, TNavigation, TOptions> = TOptions extends {
+    readonly expand: infer TExpand;
+} ? string extends ExpandedNames<TExpand> ? TEntity : TOptions extends {
+    readonly select: infer TSelect extends readonly string[];
+} ? string extends TSelect[number] ? string extends keyof TNavigation ? TEntity : WithoutProperties<TEntity, ExpandedNames<TExpand>> & ExpandedProperties<TNavigation, TExpand> : string extends keyof TNavigation ? SelectedColumns<TEntity, TSelect[number] | ExpandedNames<TExpand>> : SelectedColumns<TEntity, TSelect[number]> & ExpandedProperties<TNavigation, TExpand> : string extends keyof TNavigation ? TEntity : WithoutProperties<TEntity, ExpandedNames<TExpand>> & ExpandedProperties<TNavigation, TExpand> : TOptions extends {
+    readonly select: infer TSelect extends readonly string[];
+} ? string extends TSelect[number] ? TEntity : SelectedColumns<TEntity, TSelect[number]> : TEntity;
+
+// @public
+export type RecordAnnotations = {
+    readonly "@odata.etag"?: string;
+    readonly [annotation: `${string}@${string}`]: unknown;
+};
+
+// @public
+export type RecordOperationMethods<TClasses> = {
+    readonly [K in keyof TClasses]: TClasses[K] extends abstract new (id: string, ...args: infer TArgs) => Executable<infer TResult> ? BoundOperationMethod<TArgs, TResult> : never;
+};
+
+// @public
+export interface RecordPage<T> {
+    readonly count?: number;
+    readonly nextLink?: string;
+    readonly records: T[];
+}
+
+// @public
+export type RelatedClient<TProperty> = TProperty extends {
+    readonly collection: true;
+    readonly entity: infer TEntity extends object;
+    readonly column: infer TColumn extends string;
+    readonly navigation: infer TNavigation extends object;
+} ? RelatedCollectionClient<TEntity, TColumn, TNavigation> : TProperty extends {
+    readonly entity: infer TEntity extends object;
+    readonly column: infer TColumn extends string;
+    readonly navigation: infer TNavigation extends object;
+} ? RelatedRecordClient<TEntity, TColumn, TNavigation> : never;
+
+// @public
+export interface RelatedClientContext {
+    // (undocumented)
+    readonly client: DataverseClient;
+    // (undocumented)
+    readonly metadata: EntityMetadata;
+    readonly name: string;
+    // (undocumented)
+    readonly options: EntitySetClientOptions;
+    readonly recordPath: string;
+}
+
+// @public
+export class RelatedCollectionClient<TEntity extends object, TColumn extends string = string, TNavigation extends object = UntypedNavigation> {
+    constructor(context: RelatedClientContext);
+    associate(target: AssociateTarget | ReadonlyArray<string | EntityReference>, options?: AssociateOptions): Promise<void>;
+    disassociate(target: AssociateTarget, requestOptions?: RequestOptions): Promise<void>;
+    iterate<const TOptions extends IterateRecordsOptions<TColumn, TNavigation> = IterateRecordsOptions<TColumn, TNavigation>>(options?: TOptions, requestOptions?: RequestOptions): AsyncIterable<ReadResult<TEntity, TNavigation, TOptions>>;
+    list<const TOptions extends ListRecordsOptions<TColumn, TNavigation> = ListRecordsOptions<TColumn, TNavigation>>(options?: TOptions, requestOptions?: RequestOptions): Promise<Array<ReadResult<TEntity, TNavigation, TOptions>>>;
+    listPage<const TOptions extends ListPageOptions<TColumn, TNavigation> = ListPageOptions<TColumn, TNavigation>>(options?: TOptions, requestOptions?: RequestOptions): Promise<RecordPage<ReadResult<TEntity, TNavigation, TOptions>>>;
+    readonly path: string;
+    query(): DataverseRequestBuilder;
+}
+
+// @public
+export class RelatedRecordClient<TEntity extends object, TColumn extends string = string, TNavigation extends object = UntypedNavigation> {
+    constructor(context: RelatedClientContext);
+    clear(requestOptions?: RequestOptions): Promise<void>;
+    get<const TOptions extends GetRecordOptions<TColumn, TNavigation> = GetRecordOptions<TColumn, TNavigation>>(options?: TOptions, requestOptions?: RequestOptions): Promise<ReadResult<TEntity, TNavigation, TOptions> | null>;
+    readonly path: string;
+    request(): DataverseRequestBuilder;
+    set(target: AssociateTarget, requestOptions?: RequestOptions): Promise<void>;
+}
+
 export { RequestInformation }
+
+// @public
+export type SelectedColumns<TEntity, TColumn> = Pick<TEntity, Extract<TColumn, keyof TEntity>> & RecordAnnotations;
+
+// @public
+export interface SingleNavigation<TEntity extends object = IEntity, TColumn extends string = string, TNavigation extends object = UntypedNavigation> {
+    // (undocumented)
+    readonly collection: false;
+    // (undocumented)
+    readonly column: TColumn;
+    // (undocumented)
+    readonly entity: TEntity;
+    // (undocumented)
+    readonly navigation: TNavigation;
+}
+
+// @public
+export type UntypedNavigation = Readonly<Record<string, NavigationProperty>>;
+
+// @public
+export type UpsertEntity<TCreate, TUpdate> = Pick<TCreate, Extract<keyof TCreate, keyof TUpdate>>;
+
+// @public
+export type UpsertMode =
+/** Update the record if it exists, else create it (no `If-Match`). */
+"upsert"
+/** Create the record; fail with 412 if it exists (`If-None-Match: *`). */
+| "createOnly"
+/** Update the record; fail with 404 if it doesn't exist (`If-Match: *`). */
+| "updateOnly";
+
+// @public
+export interface UpsertRecordOptions extends RequestOptions {
+    readonly mode?: UpsertMode;
+}
 
 // @public
 export function validateEntity(entity: object, metadata: EntityMetadata, options?: ValidateEntityOptions): ValidationIssue[];
 
 // @public
 export interface ValidateEntityOptions {
+    currencyPrecision?: number;
     mode?: "create" | "update";
+    pricingPrecision?: number;
 }
 
 // @public
@@ -231,6 +526,19 @@ export type ValidationIssueCode =
 | "notAnInteger"
 /** A choice (or choices) column was given a value that isn't one of its options. */
 | "invalidOption"
+/** The number has more decimal places than the decimal or currency column keeps (`Precision`). */
+| "precision"
+/**
+* Not a date: a date-only column takes `yyyy-mm-dd` text, a date and time column an ISO 8601
+* date and time (or a `Date`).
+*/
+| "invalidDate"
+/** The date is outside the range Dataverse stores: 1753-01-01 to 9999-12-31. */
+| "dateOutOfRange"
+/** The file or image is larger than the column's `MaxSizeInKB`. */
+| "maxSize"
+/** The status reason (`statuscode`) doesn't belong to the state (`statecode`) the body sets. */
+| "invalidStatus"
 /** The value has the wrong type for the column: text for a number, an id for a lookup, … */
 | "invalidType";
 
@@ -246,6 +554,11 @@ export interface WebApiEntityReference {
     // (undocumented)
     readonly logicalName?: never;
 }
+
+// @public
+export type WithoutProperties<TEntity, TKey> = {
+    [P in keyof TEntity as P extends TKey ? never : P]: TEntity[P];
+};
 
 // @public
 export interface WriteRecordOptions extends RequestOptions {

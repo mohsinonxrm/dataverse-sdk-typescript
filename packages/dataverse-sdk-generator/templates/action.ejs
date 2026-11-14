@@ -23,13 +23,20 @@ export interface <%- parametersName %> {
 <%_ } _%>
  */
 export class <%- className %> extends ActionBase<<%- responseType %>> {
-<%_ if (constructorArguments.length > 0) { _%>
+<%_ if (constructorParameters.length > 0) { _%>
+<%_ constructorParameters.forEach(function(p){ _%>
+  public readonly <%- p.name %>: <%- p.type %>;
+<%_ }) _%>
+
   constructor(
-<%_ constructorArguments.forEach(function(arg){ _%>
-    <%- arg %>,
+<%_ constructorParameters.forEach(function(p){ _%>
+    <%- p.name %>: <%- p.type %><%- p.defaultValue !== undefined ? ' = ' + p.defaultValue : '' %>,
 <%_ }) _%>
   ) {
     super();
+<%_ constructorParameters.forEach(function(p){ _%>
+    this.<%- p.name %> = <%- p.name %>;
+<%_ }) _%>
   }
 
 <%_ } _%>

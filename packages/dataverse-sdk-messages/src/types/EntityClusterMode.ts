@@ -1,9 +1,11 @@
 /**
  * EntityClusterMode enum
  */
-export enum EntityClusterMode {
-  Partitioned = 0,
-  Replicated = 1,
-  Local = 2,
-  Inherited = 3,
-}
+export const EntityClusterMode = {
+  Partitioned: 0,
+  Replicated: 1,
+  Local: 2,
+  Inherited: 3,
+} as const;
+
+export type EntityClusterMode = (typeof EntityClusterMode)[keyof typeof EntityClusterMode];

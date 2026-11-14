@@ -232,7 +232,7 @@ describe("#97: concurrency events", () => {
     expect(t.events).toEqual([
       {
         name: "dataverse.concurrency.limit",
-        props: { "correlation.id": "corr-3" },
+        props: { "correlation.id": "corr-3", "concurrency.reason": "dop_hint" },
         measurements: { "concurrency.limit": 4, "concurrency.previous_limit": 8, dop_hint: 4 },
       },
     ]);

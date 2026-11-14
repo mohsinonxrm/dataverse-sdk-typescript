@@ -250,6 +250,9 @@ interface DataverseGenConfig {
   /** Typed Xrm form contexts for model-driven form scripts (default: false; see Form contexts) */
   formContext?: boolean;
 
+  /** Form context types per main and quick create form, from FormXml (default: false; see Form layouts) */
+  formLayouts?: boolean;
+
   /** Typed request builders per entity set: createTypedClient() (default: false; see Typed client) */
   typedClient?: boolean;
 
@@ -398,21 +401,52 @@ complex type called `<Name>Output`) gets a suffix (`<Name>Output_2`).
 
 `"output": { "incremental": true }` regenerates only the tables whose metadata changed. A stamp
 file in the output folder, `.dataverse-gen-stamp.json`, records a hash of each table's schema model
-(its columns, lookups, constraints, labels, …), a hash of the settings every file depends on (the
-options, the templates and the names of the generated types), and the files the run wrote. On the
+(its columns, lookups, constraints, labels, …) and of the enums and complex types it uses, a hash of
+the settings every table depends on (the options, the templates and the names of the generated
+tables), and the files the run wrote. On the
 next run, a table whose hash is unchanged and whose files are still there is skipped: its
 `entities/<Entity>.ts` (and `forms/<Entity>Form.ts`) keep their content and timestamps, which
 keeps watchers, incremental builds and diffs quiet. The CLI prints the tables it kept;
 `generateCode()` returns them as `unchangedTables`.
 
-- A change of options, templates, generator version, or of which tables, enums and complex types
-  are generated regenerates every table.
+- A change of options, templates, generator version, or of which tables are generated regenerates
+  every table.
+- A change to an enum (a choice) or a complex type regenerates only the tables that use it. One
+  that no generated table uses, such as a global choice added to or removed from the org, doesn't
+  regenerate any table.
 - The files that aren't per table (enums, actions, functions, complex types, `metadata.ts`,
   indexes) are written on every run.
 - Files the previous run wrote that this one doesn't (a table removed from `entities`, an enum that
   is gone) are deleted. Only files listed in the stamp are touched.
-- Metadata is still read in full: `$metadata` and RetrieveMetadataChanges for each table. To
-  regenerate everything, delete the stamp file.
+- Only the tables that changed are read. The stamp also keeps each table's metadata (as
+  RetrieveMetadataChanges returned it, without its `null` properties) and the `ServerVersionStamp`
+  of the run. The next run reads `$metadata`, then sends one RetrieveMetadataChanges request with
+  that version stamp (`ClientVersionStamp`, and `DeletedMetadataFilters` for deleted tables and
+  columns) and reads again only the tables it says changed, or whose table or column was deleted.
+  A run over unchanged metadata makes no per-table request. The docs don't say that
+  RetrieveMetadataChanges lists the tables that use a global choice whose options changed, so when
+  a kept table uses a global choice, the run also reads the option values of the org's global
+  choices (one `GlobalOptionSetDefinitions` request) and reads again the tables whose global
+  choices have other values now. A deleted table is gone from
+  `$metadata` too, so it isn't generated and its files are deleted. The CLI prints the tables it
+  read and why, such as `contact: changed: new_added` or `contact: deleted: new_code`;
+  `generateCode()` returns them as `fetchedTables` and `fetchReasons`.
+- Right after a change, the request that reads a table again can reach a Dataverse server whose
+  metadata cache is behind and get the table as it was. The run checks each table it read again
+  against what RetrieveMetadataChanges listed: the columns and options it listed are there, the
+  deleted columns are gone, and the global choices have their new values. (A changed property of
+  a column that was already there, such as its maximum length, isn't checked.) When one doesn't
+  show the change yet, the run generates it as returned, keeps the previous run's version stamp
+  (so the next run is told about the change again and reads the table again), and a warning says
+  so.
+- Every table is read again when there is nothing to reuse: no stamp (or one from before this
+  feature), another generator version, another `environmentUrl` or `apiVersion`, or a version
+  stamp Dataverse no longer has (the `ExpiredVersionStamp` error, after 90 days by default or
+  after maintenance). If the changes request fails otherwise, every table is read again and a
+  warning says why.
+- The stamp file grows with the metadata it keeps: with the number of tables and columns
+  generated, most with `"entities": []` (every table).
+- To regenerate and read everything, delete the stamp file.
 
 ### Custom templates
 
@@ -420,15 +454,16 @@ keeps watchers, incremental builds and diffs quiet. The CLI prints the tables it
 replaces the built-in one of the same name; the others stay built-in, so the directory needs only
 the ones you change. `dataverse-gen eject` copies all of them there to start from:
 
-| Template          | Renders                                                              |
-| ----------------- | -------------------------------------------------------------------- |
-| `entity.ejs`      | `entities/<Entity>.ts`: the interface, create/update types, metadata |
-| `enum.ejs`        | `enums/<OptionSet>.ts`                                               |
-| `action.ejs`      | `actions/<Name>Action.ts`                                            |
-| `function.ejs`    | `functions/<Name>Function.ts`                                        |
-| `complextype.ejs` | `complextypes/<Name>.ts`                                             |
-| `metadata.ejs`    | `metadata.ts`                                                        |
-| `form.ejs`        | `forms/<Entity>Form.ts` (with `formContext`)                         |
+| Template           | Renders                                                              |
+| ------------------ | -------------------------------------------------------------------- |
+| `entity.ejs`       | `entities/<Entity>.ts`: the interface, create/update types, metadata |
+| `enum.ejs`         | `enums/<OptionSet>.ts`                                               |
+| `action.ejs`       | `actions/<Name>Action.ts`                                            |
+| `function.ejs`     | `functions/<Name>Function.ts`                                        |
+| `complextype.ejs`  | `complextypes/<Name>.ts`                                             |
+| `metadata.ejs`     | `metadata.ts`                                                        |
+| `form.ejs`         | `forms/<Entity>Form.ts` (with `formContext`)                         |
+| `form-layouts.ejs` | `forms/<Entity>Forms.ts` (with `formLayouts`)                        |
 
 A template gets the same data as the built-in one (the schema model object, such as `entity` or
 `enumType`, the type names, and helpers such as `formatType()`, `propertyKey()`, `doc()` and
@@ -442,8 +477,8 @@ template change regenerates every table.
 `"typedClient": true` generates `client.ts` with `createTypedClient(client)`: one typed request
 builder per generated table, keyed by entity set name, in the style of the Graph (Kiota) SDKs. The
 builders are entities-runtime's `EntitySetClient`, a thin layer over core's request builder, typed
-by the table's interface, its create and update types, and a union of its columns
-(`AccountColumn`) for `select`. See
+by the table's interface, its create and update types, a union of its columns (`AccountColumn`)
+for `select`, and its navigation properties (`AccountNavigation`) for `expand`. See
 [ADR 0009](../../docs/adr/0009-typed-request-builders.md) for the design.
 
 <!-- no-check -->
@@ -459,7 +494,25 @@ const id = await typed.accounts.create({
   name: "Contoso",
   primarycontactid: createEntityReference("contact", contactId), // sent as @odata.bind
 });
-const account = await typed.accounts.byId(id).get({ select: ["name", "creditlimit"] }); // Account
+const account = await typed.accounts.byId(id).get({ select: ["name", "creditlimit"] });
+account.creditlimit; // number | null | undefined
+account.description; // error: not selected
+
+// expand: the related record (or null), or an array of them, typed by the related table
+const withContacts = await typed.accounts.byId(id).get({
+  select: ["name"],
+  expand: {
+    primarycontactid: { select: ["fullname"] },
+    contact_customer_accounts: {
+      select: ["fullname", "emailaddress1"],
+      filter: "statecode eq 0",
+      expand: { owninguser: { select: ["fullname"] } }, // not with orderBy / top
+    },
+  },
+});
+withContacts.primarycontactid?.fullname; // string | null | undefined
+withContacts.contact_customer_accounts[0].owninguser?.fullname;
+
 const active = await typed.accounts.list({
   select: ["name"],
   filter: "statecode eq 0",
@@ -482,6 +535,84 @@ const count = await typed.accounts.query().count().top(0).get(); // core's build
 | `typed.<set>.byId(key).update(entity, { etag })`                       | `PATCH` with `If-Match: *` (or the etag): never creates a record |
 | `typed.<set>.byId(key).delete({ etag })`                               | `DELETE`, with `If-Match` for an etag                            |
 | `typed.<set>.query()` / `.byId(key).request()`                         | core's `DataverseRequestBuilder` for the set or the record       |
+
+A literal `select` narrows the record to the selected columns (and its annotations, such as
+`@odata.etag` and formatted values); without `select`, the record is the table's interface.
+`expand` takes an object, one key per navigation property with `true` or its options (`select`,
+`expand`, and on a collection `filter`, `orderBy` and `top`), checked against the related table
+and against what Dataverse accepts: `orderBy` / `top` not with a nested `expand` or inside
+another expansion (0x80060888), and no nested `expand` inside a many-to-many collection
+(`ManyToManyNavigation`, a navigation property that is its own partner);
+or, as before, an array of names, with inline options written in OData syntax
+(`["primarycontactid($select=fullname)"]`, not checked inside the parentheses). Each expanded
+property is added to the record: a lookup as the related record or `null`, a collection as an
+array. A polymorphic lookup that the table's interface shows as one property (`parentcustomerid`)
+is expanded by the Web API's property for each target (`parentcustomerid_account`,
+`parentcustomerid_contact`). The requests are what core's `expand(name, options)` sends.
+
+Related records, upsert, bound operations and paging:
+
+<!-- no-check -->
+
+```typescript
+// Navigation: a collection lists, iterates and pages; a lookup gets (null when empty)
+const contacts = await typed.accounts
+  .byId(id)
+  .nav("contact_customer_accounts")
+  .list({ select: ["fullname"], filter: "statecode eq 0" });
+const primary = await typed.accounts
+  .byId(id)
+  .nav("primarycontactid")
+  .get({ select: ["fullname"] });
+
+// Associate / disassociate (a collection: $ref; a lookup: @odata.bind / DELETE $ref)
+await typed.accounts.byId(id).associate("contact_customer_accounts", contactId);
+await typed.accounts.byId(id).associate("contact_customer_accounts", [c1, c2], {
+  executor: createBindManyExecutor(), // optional, from @mohsinonxrm/dataverse-sdk-batch: one $batch
+});
+await typed.accounts.byId(id).disassociate("contact_customer_accounts", contactId);
+await typed.accounts.byId(id).associate("primarycontactid", contactId);
+await typed.accounts.byId(id).disassociate("primarycontactid");
+
+// Upsert by id or alternate key; mode: "createOnly" (If-None-Match: *) or "updateOnly"
+const accountId = await typed.accounts.upsert({ accountnumber: "A-1" }, { name: "Contoso" });
+
+// Bound actions and functions, from the generated classes
+const result = await typed.accounts.byId(id).actions.contoso_Recalculate({ Mode: "full" });
+const count = await typed.accounts.functions.contoso_CountActive({ State: 0 });
+
+// Paging: lazily, or one page at a time
+for await (const account of typed.accounts.iterate({ select: ["name"], pageSize: 500 })) {
+  // …
+}
+const page = await typed.accounts.listPage({ select: ["name"], pageSize: 50, count: true });
+const next = await typed.accounts.listPage({
+  select: ["name"],
+  pageSize: 50,
+  nextLink: page.nextLink, // the query is in the link; the other options type the result
+});
+```
+
+| Method                                                              | Request                                                                                                   |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `typed.<set>.byId(key).nav(name)`                                   | a client for `<set>(<key>)/<name>`: `list`/`iterate`/`listPage` or `get`                                  |
+| `.nav(collection).associate(target \| targets, { executor })`       | `POST <name>/$ref` (core's `associate()`), or core's `bindMany()` for several                             |
+| `.nav(collection).disassociate(target)`                             | `DELETE <name>(<id>)/$ref` (core's `disassociate()`)                                                      |
+| `.nav(lookup).set(target)` / `.clear()`                             | `PATCH` with `<name>@odata.bind` and `If-Match: *` / `DELETE <name>/$ref`                                 |
+| `typed.<set>.byId(key).associate(name, …)` / `.disassociate(name…)` | the same, by navigation property name                                                                     |
+| `typed.<set>.upsert(key, entity, { mode })`                         | `PATCH <set>(<key>)` without `If-Match`; resolves the id (by alternate key, from `return=representation`) |
+| `typed.<set>.byId(id).actions.<name>(parameters)` / `.functions`    | the generated class for the record, through `client.execute()`                                            |
+| `typed.<set>.actions.<name>(parameters)` / `.functions`             | the generated class bound to the entity set                                                               |
+| `typed.<set>.iterate(options)`                                      | core's `iterate()`: every page as it's read; `pageSize` sends `odata.maxpagesize`                         |
+| `typed.<set>.listPage(options)`                                     | one page (`GET`), `{ records, nextLink, count }`; `nextLink` in the options gets the next                 |
+
+A target is an id or alternate key of the related table (its entity set comes from the generated
+metadata) or an `EntityReference`. `upsert()` takes the columns valid in both a create and an
+update. `client.ts` has an `<Entity>Operations` object for each table with actions or functions
+bound to it (to a record of it, or to its entity set) among the generated ones; their methods take
+the parameters and then the request options, or only the options when there are no parameters. A
+bound operation's class binds by id, so a record reached by alternate key can't call one. `nav()`
+and the paging methods narrow by `select` and `expand` as `get()` and `list()` do.
 
 `key` is a GUID or an alternate key object. Every method takes core's request options
 (`signal`, `headers`, `prefer`, `timeoutMs`, …) last. `client.ts` imports every generated table's
@@ -558,7 +689,93 @@ A choice column whose option set the generator didn't make an enum for (a global
 as forms name it, not by its navigation property. Primary keys, the read-only name columns beside a
 lookup, and other virtual, file and image columns aren't included. The types cover every column of
 the table, not one form's layout: a column that isn't on the form returns `null`, as in
-`@types/xrm`, and a control placed twice (`name1`) isn't typed.
+`@types/xrm`, and a control placed twice (`name1`) isn't typed; for that, see Form layouts.
+
+### Form layouts
+
+`"formLayouts": true` generates types per form, from each table's active main and quick create
+forms (their `systemform` records and FormXml): `forms/<Entity>Forms.ts` with, for each form,
+`<Entity><Kind>_<Form>Attributes`, `…Controls`, `…Tabs` and `…FormContext` (`AccountMain_Account`,
+`AccountMain_SalesInsights`, `AccountQuickCreate_AccountQuickCreate`; `_2` when a name is taken).
+It turns `formContext` on too: the per-form types build on the table-wide ones. Generating reads
+one more query per table (`systemforms`), so the signed-in user or app needs read access to forms.
+
+<!-- no-check -->
+
+```typescript
+// generated/forms/AccountForms.ts
+/// <reference types="xrm" />
+
+import type { AccountAttributes, AccountControls } from "./AccountForm.js";
+import type { FormLayoutUi } from "./form-layout.js";
+
+export interface AccountMain_AccountAttributes {
+  name: AccountAttributes["name"];
+  primarycontactid: AccountAttributes["primarycontactid"];
+  ownerid: AccountAttributes["ownerid"]; // in the header
+  // ...
+}
+
+export interface AccountMain_AccountControls {
+  name: AccountControls["name"];
+  name1: AccountControls["name"]; // the column's second control
+  header_ownerid: AccountControls["ownerid"];
+  Contacts: Xrm.Controls.GridControl; // a subgrid
+  WebResource_map: Xrm.Controls.IframeControl;
+  // ...
+}
+
+export interface AccountMain_AccountTabs {
+  SUMMARY_TAB: "ACCOUNT_INFORMATION" | "CONTACTS"; // the tab's sections
+  // ...
+}
+
+export type AccountMain_AccountFormContext = Omit<
+  Xrm.FormContext,
+  "getAttribute" | "getControl" | "ui"
+> & {
+  getAttribute<K extends keyof AccountMain_AccountAttributes>(
+    name: K
+  ): AccountMain_AccountAttributes[K];
+  getAttribute<K extends keyof AccountAttributes>(name: K): AccountAttributes[K] | null;
+  getControl<K extends keyof AccountMain_AccountControls>(name: K): AccountMain_AccountControls[K];
+  // also header_process_<column> controls (| null), and the delegate overloads
+  ui: FormLayoutUi<AccountMain_AccountTabs>; // tabs.get(name), tab.sections.get(name)
+};
+```
+
+<!-- no-check -->
+
+```typescript
+import type { AccountMain_AccountFormContext } from "./generated/forms/AccountForms.js";
+
+export function onLoad(executionContext: Xrm.Events.EventContext): void {
+  const form = executionContext.getFormContext() as AccountMain_AccountFormContext;
+  form.getAttribute("name").getValue(); // StringAttribute: on the form, so not null
+  form.getControl("name1").setVisible(false);
+  form.getControl("Contacts").refresh(); // GridControl
+  form.ui.tabs.get("SUMMARY_TAB").sections.get("ACCOUNT_INFORMATION").setVisible(true);
+  form.getAttribute("statecode")?.getValue(); // a column not on this form: | null
+  form.getControl("footer_statecode"); // error: not a control getControl() reaches
+  form.ui.tabs.get("DETAILS"); // error: not a tab of this form
+}
+```
+
+- **Names.** A control is keyed by its `id` in the FormXml, which is its Client API name: the
+  column's logical name, `<column>1`, `<column>2`, … for a column placed again, `header_<column>`
+  in the header; a subgrid, web resource, IFRAME or quick view form by the name it was given.
+  Footer controls aren't included (`getControl()` doesn't reach them), nor tabs and sections
+  without a name.
+- **Types.** A column the table-wide types have is typed as there (`AccountAttributes["name"]`, so
+  a choice keeps its enum). A party list column (`to`, `requiredattendees`) is a
+  `LookupAttribute` / `LookupControl`; a file or image column, which `@types/xrm` has no type for,
+  is an `Attribute` / `StandardControl`. A subgrid is a `GridControl`, a web resource or IFRAME an
+  `IframeControl`, a quick view form a `QuickFormControl`, the timeline a `TimelineWall`, any
+  other control a `Control`.
+- **Not null.** What's on the form is returned without `| null`. Another column of the table
+  (one only in the business process flow, say) is still there as `| null`, and so is a business
+  process flow control, `header_process_<column>`. Regenerate after changing a form; with
+  incremental generation, a changed form regenerates its table's files.
 
 ## 📂 Generated Output Structure
 
@@ -582,8 +799,10 @@ generated/
 ├── complextypes/
 │   ├── AuditDetail.ts
 │   └── index.ts
-├── forms/              # with "formContext": true
+├── forms/              # with "formContext": true (or "formLayouts": true)
 │   ├── AccountForm.ts
+│   ├── AccountForms.ts # with "formLayouts": true
+│   ├── form-layout.ts  # with "formLayouts": true (helper types, not exported)
 │   └── index.ts
 ├── client.ts           # with "typedClient": true
 ├── internal/
@@ -780,6 +999,9 @@ returns, for the runtime's opt-in `validateEntity()`:
     numberofemployees: { /* ... */ minValue: 0, maxValue: 1000000000 },
     industrycode: { /* ... */ optionValues: [1, 2, 3 /* … */] },
     createdon: { /* ... */ isValidForCreate: false, isValidForUpdate: false },
+    creditlimit: { /* ... */ precision: "currency" },
+    entityimage: { /* ... */ maxSizeInKB: 10240 },
+    statuscode: { /* ... */ optionValues: [1, 2], optionStates: {"1":0,"2":1} },
   },
   navigation: {
     primarycontactid: {
@@ -792,6 +1014,14 @@ returns, for the runtime's opt-in `validateEntity()`:
 
 - `maxLength` (text), `minValue` / `maxValue` (numbers) and `optionValues` (choice and choices
   columns, global option sets included) when the column has them;
+- `precision` for decimal and currency columns: the column's `Precision`, or, for a currency
+  column whose `PrecisionSource` is the organization's pricing precision or the record currency's
+  precision, `"pricing"` or `"currency"` (`validateEntity()` takes those numbers as options);
+  floating point columns get none;
+- `maxSizeInKB` for file and image columns;
+- `optionStates` for the status reason column: the state each status reason belongs to;
+- nothing for dates: a date-only column is the one whose `odataType` is `Edm.Date`, and every
+  date column takes Dataverse's range, 1753-01-01 to 9999-12-31, so `validateEntity()` knows both;
 - `isValidForCreate: false` / `isValidForUpdate: false` only when false;
 - a lookup's `RequiredLevel` and valid-for flags on its navigation property, next to
   `lookupAttribute`.
@@ -817,12 +1047,48 @@ for the checks.
 
 ```typescript
 // generated/enums/account_industrycode.ts
-export const enum account_industrycode {
-  Accounting = 1,
-  AgricultureAndNonPetrolNaturalResourceExtraction = 2,
+export const account_industrycode = {
+  Accounting: 1,
+  AgricultureAndNonPetrolNaturalResourceExtraction: 2,
   // ...
-}
+} as const;
+
+export type account_industrycode = (typeof account_industrycode)[keyof typeof account_industrycode];
+
+// generated/enums/contoso_Priority.ts (an EnumType of $metadata)
+export const contoso_Priority = {
+  /** 0 */
+  Low: "Low",
+  /** 1 */
+  High: "High",
+} as const;
+
+export type contoso_Priority = (typeof contoso_Priority)[keyof typeof contoso_Priority];
+
+// generated/enums/AccessRights.ts (IsFlags="true")
+export const AccessRights = {
+  None: 0,
+  ReadAccess: 1,
+  WriteAccess: 2,
+  // ...
+} as const;
+
+export type AccessRights = number;
 ```
+
+An enum is a const object and a type of the same name, not a TypeScript `enum` (#479), so the
+generated code compiles with `erasableSyntaxOnly` and runs under Node's type stripping.
+`account_industrycode.Accounting` and `x: account_industrycode` work as with an enum, and the type
+takes the plain value too (`1`, `"High"`); only an enum's reverse mapping
+(`account_industrycode[1]`) is gone.
+
+- A choice's option set has its numbers, which Dataverse stores. So does a `$metadata` enum that a
+  choice column uses as its (global) option set.
+- An `EnumType` of `$metadata` has its member names, which the Web API reads and writes: an action
+  body or a function parameter sends `contoso_Priority.High` as it is, and a returned value is
+  typed with the enum. Each member's comment gives its number.
+- A flags enum (`IsFlags="true"`, such as `AccessRights`) keeps its numbers, typed `number`, so
+  members combine with `|`; actions and functions send the value as member names.
 
 Option labels become PascalCase identifiers; a label that isn't usable (empty, or a duplicate)
 falls back to `Value<n>` or gets the value appended.
@@ -848,8 +1114,11 @@ export interface WinOpportunityActionParameters {
 }
 
 export class WinOpportunityAction extends ActionBase<void> {
-  constructor(public readonly parameters: WinOpportunityActionParameters) {
+  public readonly parameters: WinOpportunityActionParameters;
+
+  constructor(parameters: WinOpportunityActionParameters) {
     super();
+    this.parameters = parameters;
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -888,12 +1157,13 @@ await client.execute(
 ```
 
 The request body is what the Web API reads, as the classes in `@mohsinonxrm/dataverse-sdk-actions`
-send it. Parameters that can hold an enum or an entity go through `bodyValue()`, from the generated
-`internal/actionBody.ts`:
+send it. Parameters that can hold a flags enum or an entity go through `bodyValue()`, from the
+generated `internal/actionBody.ts`:
 
-- an enum value is sent as its member name: `AccessRights.ReadAccess | AccessRights.WriteAccess`
-  becomes `"ReadAccess, WriteAccess"` (the Web API rejects a number), also inside complex types
-  such as `GrantAccess`'s `PrincipalAccess.AccessMask`;
+- an enum value is sent as its member name (the Web API rejects a number). Other enums' values are
+  their member names already; a flags value is turned into them:
+  `AccessRights.ReadAccess | AccessRights.WriteAccess` becomes `"ReadAccess, WriteAccess"`, also
+  inside complex types such as `GrantAccess`'s `PrincipalAccess.AccessMask`;
 - an entity parameter takes an `EntityReference` or a record. A reference is sent as `@odata.type`
   and its primary key. A record of a generated table goes through `formatEntityForWrite()`
   (`@odata.type`, and a lookup set with an `EntityReference` becomes
@@ -921,7 +1191,7 @@ resolve for the same operation (#300):
 | ---------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | none                                     | `204 No Content`                                          | none: `execute()` resolves `undefined` (`void`)                               |
 | primitive (`Edm.String`, `Edm.Int32`, …) | `{ "@odata.context", "value": … }`                        | the value: `string`, `number`, `boolean`                                      |
-| enum                                     | `{ "@odata.context", "value": "Member" }`                 | `string`: the member name (`"A, B"` for flags)                                |
+| enum                                     | `{ "@odata.context", "value": "Member" }`                 | the enum (its member names); `string` for flags (`"A, B"`)                    |
 | collection (`Collection(…)`)             | `{ "@odata.context", "value": [ … ] }`, or 204 when unset | the array, `[]` for a 204; entity records add `@odata.etag` and `@odata.type` |
 | complex type                             | the properties, with `@odata.context`                     | `interface … extends <ComplexType> { "@odata.context"?: string }`             |
 | entity (or `crmbaseentity`)              | the record, with its annotations, or 204 when unset       | `(<Entity> & { "@odata.context"?, "@odata.etag"?, "@odata.type"? }) \| null`  |
@@ -953,8 +1223,9 @@ value is written as the OData literal for its type by `formatParameterAlias()` f
 - strings are quoted, with `'` doubled: `'O''Brien'`;
 - GUIDs, numbers and booleans are written bare; `Date` values become ISO strings (`Edm.Date` takes
   only the date part);
-- enum values become enum literals: `Microsoft.Dynamics.CRM.EntityFilters'1'`;
-- collections and complex values are written as JSON, with the enum values in them as member
+- enum values become enum literals: `Microsoft.Dynamics.CRM.EntityFilters'1'`,
+  `Microsoft.Dynamics.CRM.contoso_Priority'High'`;
+- collections and complex values are written as JSON, with the flags enum values in them as member
   names (`{"Rights":"ReadAccess, WriteAccess"}`: Dataverse reads an enum in JSON only by name),
   through `parameterValue()` from the generated `internal/functionParameters.ts`; an entity
   reference is written as `{"@odata.id":"accounts(<id>)"}`.
@@ -971,11 +1242,16 @@ export interface RetrieveUserPrivilegeByPrivilegeNameFunctionParameters {
 }
 
 export class RetrieveUserPrivilegeByPrivilegeNameFunction extends FunctionBase<RetrieveUserPrivilegeByPrivilegeNameResponse> {
+  public readonly systemuserId: string;
+  public readonly parameters: RetrieveUserPrivilegeByPrivilegeNameFunctionParameters;
+
   constructor(
-    public readonly systemuserId: string,
-    public readonly parameters: RetrieveUserPrivilegeByPrivilegeNameFunctionParameters
+    systemuserId: string,
+    parameters: RetrieveUserPrivilegeByPrivilegeNameFunctionParameters
   ) {
     super();
+    this.systemuserId = systemuserId;
+    this.parameters = parameters;
   }
 
   toRequestInformation(baseUrl: string): RequestInformation {
@@ -1330,9 +1606,9 @@ export function getLogicalName(schemaName: string): string | undefined {
 - ✅ MSAL authentication flows (device code, client credentials)
 - ✅ Create/Update types (`<Entity>Create`, `<Entity>Update`: writable columns only)
 - ✅ Custom templates (`"templates"`, `dataverse-gen eject`)
-- ✅ Incremental generation (`"output": { "incremental": true }`: only changed tables are rewritten; metadata is still read in full)
+- ✅ Incremental generation (`"output": { "incremental": true }`: only changed tables are rewritten, and only changed tables' metadata is read)
 - ✅ Validation rules (column constraints in the metadata, for `validateEntity()`)
-- ✅ Xrm.FormContext types (`"formContext": true`; per table, not per form layout)
+- ✅ Xrm.FormContext types (`"formContext": true`, per table; `"formLayouts": true`, per form)
 - ✅ Typed request builders per entity set (`"typedClient": true`: `createTypedClient()`, #312)
 
 ---

@@ -44,6 +44,15 @@ const EDMX = `<?xml version="1.0" encoding="utf-8"?>
         <Property Name="OwnershipType" Type="mscrm.OwnershipTypes" />
         <Property Name="DisplayName" Type="mscrm.Label" />
       </EntityType>
+      <EntityType Name="AttributeMetadata" BaseType="mscrm.MetadataBase">
+        <Property Name="SourceType" Type="Edm.Int32" />
+      </EntityType>
+      <EntityType Name="DateTimeAttributeMetadata" BaseType="mscrm.AttributeMetadata">
+        <Property Name="DateTimeBehavior" Type="mscrm.DateTimeBehavior" />
+      </EntityType>
+      <ComplexType Name="DateTimeBehavior">
+        <Property Name="Value" Type="Edm.String" />
+      </ComplexType>
       <ComplexType Name="Label">
         <Property Name="LocalizedLabels" Type="Collection(mscrm.LocalizedLabel)" />
         <Property Name="UserLocalizedLabel" Type="mscrm.LocalizedLabel" />
@@ -168,6 +177,37 @@ export { label, noText };
     const index = await read("index");
     expect(index).toContain("export * from './AttributeMetadataCreateTypes.js';");
   });
+
+  it("types string and number properties with known values, open to new ones (#482)", async () => {
+    const attribute = await read("AttributeMetadata");
+    expect(attribute).toContain(
+      "import type { AttributeSourceType } from './metadata-values.js';\n"
+    );
+    expect(attribute).toContain("  SourceType?: AttributeSourceType | (number & {});\n");
+    expect(await read("DateTimeBehavior")).toContain(
+      "  Value?: DateTimeBehaviorValue | (string & {});\n"
+    );
+    expect(await read("index")).toContain("export * from './metadata-values.js';");
+
+    const errors = await typecheck(
+      dir,
+      "use-values.ts",
+      `import { AttributeSourceType, DateTimeBehaviorValue } from "./metadata-values.js";
+import type { DateTimeAttributeMetadata } from "./DateTimeAttributeMetadata.js";
+const known: DateTimeAttributeMetadata = {
+  SourceType: AttributeSourceType.Formula,
+  DateTimeBehavior: { Value: DateTimeBehaviorValue.DateOnly },
+};
+const literal: DateTimeAttributeMetadata = { SourceType: 1, DateTimeBehavior: { Value: "UserLocal" } };
+// Values Dataverse adds later still compile.
+const future: DateTimeAttributeMetadata = { SourceType: 9, DateTimeBehavior: { Value: "Next" } };
+// @ts-expect-error a string isn't a source type
+const wrong: DateTimeAttributeMetadata = { SourceType: "1" };
+export { known, literal, future, wrong };
+`
+    );
+    expect(errors).toEqual([]);
+  });
 });
 
 describe("metadata generator matches the committed package (#230 drift guard)", () => {
@@ -190,8 +230,10 @@ describe("metadata generator matches the committed package (#230 drift guard)", 
     let enums = 0;
     for (const file of files) {
       const committed = await readFile(join(COMMITTED, file), "utf8");
-      if (!committed.includes("} as const;")) continue;
       const name = file.slice(0, -3);
+      // The hand-written known values (#482) are checked with the other helpers above.
+      if (!committed.includes("} as const;") || METADATA_HELPER_FILES.some((h) => h.name === name))
+        continue;
       const members = [...committed.matchAll(/\/\*\* (-?\d+) \*\/\s+(\w+): "\w+",/g)].map(
         ([, value, member]) => ({ name: member, value: Number(value) })
       );

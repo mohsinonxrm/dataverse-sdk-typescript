@@ -1,6 +1,7 @@
 /**
- * @fileoverview Bulk helpers (#310): `createMultiple()` and `updateMultiple()` split a list of
- * records into chunks, send each chunk as one `CreateMultiple` / `UpdateMultiple` request (or as
+ * @fileoverview Bulk helpers (#310, #434): `createMultiple()`, `updateMultiple()`,
+ * `upsertMultiple()` and `deleteMultiple()` split a list of records into chunks, send each chunk
+ * as one `CreateMultiple` / `UpdateMultiple` / `UpsertMultiple` / `DeleteMultiple` request (or as
  * one `$batch`), and report what happened to every record.
  */
 
@@ -20,12 +21,13 @@ import { executionSignal, fromStop, stopError, type ExecutionSignal } from "./st
 /**
  * How the records are sent.
  *
- * - `"bulk"`: one `CreateMultiple` / `UpdateMultiple` request per chunk. On a standard table a
- *   chunk succeeds or fails as a whole (Dataverse rolls it back); on an elastic table records
- *   fail one by one.
- * - `"batch"`: one `$batch` per chunk, with one create (`POST`) or update (`PATCH`) per record and
- *   `Prefer: odata.continue-on-error`, so every record succeeds or fails on its own. For tables
- *   that don't support the bulk messages.
+ * - `"bulk"`: one `CreateMultiple` / `UpdateMultiple` / `UpsertMultiple` / `DeleteMultiple`
+ *   request per chunk. On a standard table a chunk succeeds or fails as a whole (Dataverse rolls
+ *   it back); on an elastic table records fail one by one. `DeleteMultiple` exists for elastic
+ *   tables only.
+ * - `"batch"`: one `$batch` per chunk, with one create (`POST`), update or upsert (`PATCH`) or
+ *   delete (`DELETE`) per record and `Prefer: odata.continue-on-error`, so every record succeeds
+ *   or fails on its own. For tables that don't support the bulk messages.
  */
 export type BulkStrategy = "bulk" | "batch";
 
@@ -43,14 +45,18 @@ export interface BulkTable {
   primaryIdAttribute?: string;
 }
 
-/** Options for {@link createMultiple} and {@link updateMultiple}. */
+/**
+ * Options for {@link createMultiple}, {@link updateMultiple}, {@link upsertMultiple} and
+ * {@link deleteMultiple}.
+ */
 export interface BulkOperationOptions {
   /**
-   * How the records are sent: `"bulk"` (the `CreateMultiple` / `UpdateMultiple` messages),
-   * `"batch"` (`$batch`, for tables without bulk support), or `"auto"`: `"bulk"` when the table
-   * supports the message, otherwise `"batch"`, as `getBulkOperationSupport()` tells (looked up
-   * once per client and table, then cached). See {@link BulkStrategy}.
-   * @default "bulk"
+   * How the records are sent: `"bulk"` (the `CreateMultiple` / `UpdateMultiple` /
+   * `UpsertMultiple` / `DeleteMultiple` messages), `"batch"` (`$batch`, for tables without bulk
+   * support), or `"auto"`: `"bulk"` when the table supports the message, otherwise `"batch"`, as
+   * `getBulkOperationSupport()` tells (looked up once per client and table, then cached). See
+   * {@link BulkStrategy}.
+   * @default "bulk"; `"auto"` for {@link deleteMultiple}, since only elastic tables have `DeleteMultiple`
    */
   strategy?: BulkStrategy | "auto";
 
@@ -91,6 +97,8 @@ export interface BulkOperationOptions {
   /**
    * Time limit for the whole operation, in ms: every request, with its retries and waits. When it
    * passes, the operation stops as with `signal`, with `DataverseNetworkError` (`RequestTimeout`).
+   * A retry whose wait (`Retry-After` or backoff) would end after it is not attempted: the
+   * request fails at once with its own error (`DataverseThrottleError` for a 429).
    */
   timeoutMs?: number;
 
@@ -107,7 +115,7 @@ export interface BulkOperationOptions {
 /**
  * What happened to one record.
  *
- * - `"succeeded"`: Dataverse created or updated it.
+ * - `"succeeded"`: Dataverse created, updated, upserted or deleted it.
  * - `"failed"`: it wasn't written; `error` says why. On a standard table with `"bulk"`, every
  *   record of a chunk fails with the chunk's error, since Dataverse rolls the chunk back.
  * - `"skipped"`: it was never sent, because an earlier chunk failed (without `continueOnError`).
@@ -124,7 +132,9 @@ export interface BulkRecordResult {
 
   /**
    * The record id. For a create: the id Dataverse returned, or the primary key the record set.
-   * For an update: the record's primary key. Absent when neither is known.
+   * For an update or a delete: the record's primary key. For an upsert: the record's primary key,
+   * the GUID of its `@odata.id` (`accounts(<id>)`), or, with `"batch"`, the id in the response.
+   * Absent when none is known (e.g. an upsert by alternate key with `"bulk"`).
    */
   id?: string;
 
@@ -137,7 +147,7 @@ export interface BulkRecordResult {
   error?: Error;
 }
 
-/** Result of {@link createMultiple} or {@link updateMultiple}. */
+/** Result of {@link createMultiple}, {@link updateMultiple}, {@link upsertMultiple} or {@link deleteMultiple}. */
 export interface BulkOperationResult {
   /** How the records were sent. */
   strategy: BulkStrategy;
@@ -157,7 +167,7 @@ export interface BulkOperationResult {
   /** Number of records never sent. */
   skipped: number;
 
-  /** Requests sent: `CreateMultiple` / `UpdateMultiple` calls, or `$batch` requests (retries not counted). */
+  /** Requests sent: bulk-message calls (`CreateMultiple`, …), or `$batch` requests (retries not counted). */
   requests: number;
 
   /** True when chunks were left unsent because a chunk failed or the operation was stopped. */
@@ -173,7 +183,8 @@ export interface DataverseBulkOperationErrorInit {
 }
 
 /**
- * Thrown by {@link createMultiple} and {@link updateMultiple} when `signal` aborts or `timeoutMs`
+ * Thrown by the bulk helpers ({@link createMultiple}, {@link updateMultiple},
+ * {@link upsertMultiple}, {@link deleteMultiple}) when `signal` aborts or `timeoutMs`
  * passes after at least one request has finished. `result` holds every record's outcome: the
  * records of the requests in flight are `"failed"` with the abort error (Dataverse may still have
  * written them), and the records never sent are `"skipped"`. `cause` is the abort error.
@@ -282,10 +293,128 @@ export function updateMultiple(
   return runBulkOperation(client, "UpdateMultiple", table, records, options);
 }
 
+/**
+ * Creates or updates records in chunks with `UpsertMultiple`, or with `$batch`
+ * (`strategy: "batch"`), and reports the outcome of every record.
+ *
+ * Each record names the row it creates or updates, in one of two ways:
+ *
+ * - its primary key (`table.primaryIdAttribute`, `"<logicalName>id"` by default): a row with that
+ *   id is updated, or created with that id;
+ * - `@odata.id`, the row's URL relative to the Web API root, by primary key (`accounts(<id>)`) or
+ *   by alternate key (`accounts(accountnumber='A-1')`; write the key as for any Web API URL, e.g.
+ *   with `odataKey()` from the core package).
+ *
+ * Records are sent as given, with `@odata.type` added unless the record sets it; in
+ * `UpsertMultiple` a row named by primary key in `@odata.id` is sent with its primary key column
+ * instead, since Dataverse reads `@odata.id` there only as an alternate key. With `"batch"`,
+ * each record is a `PATCH <entitySet>(<key>)` without `If-Match`, which Dataverse treats as an
+ * upsert; `@odata.id` (or, when it names the row, the primary key) is left out of the body.
+ * Dataverse rejects two records naming the same row in one `UpsertMultiple`, so a list that does
+ * is rejected before anything is sent.
+ *
+ * `strategy: "auto"` sends `UpsertMultiple` when the table supports both `CreateMultiple` and
+ * `UpdateMultiple` (every elastic table does), otherwise `$batch`. Failed records don't make it
+ * throw: check `result.success` and each record's `status` and `error`. Requests go through the
+ * client, so its retry policy and concurrency limit apply.
+ *
+ * @param client - The client to send the requests with
+ * @param table - The table: logical name, entity set name and, when it isn't `<logicalName>id`,
+ *   the primary key column
+ * @param records - The records, each with its primary key or `@odata.id`
+ * @param options - Chunk size, strategy, parallelism and cancellation
+ * @returns The outcome of every record, in input order
+ * @throws DataverseInvalidRequestError for invalid input (a record that names no row, or two that
+ *   name the same row), before anything is sent
+ * @throws DataverseAbortError or DataverseNetworkError (`RequestTimeout`) when stopped before any
+ *   request finished, otherwise {@link DataverseBulkOperationError} with the result so far
+ *
+ * @example
+ * ```typescript
+ * import { upsertMultiple } from "@mohsinonxrm/dataverse-sdk-batch";
+ * import { odataKey } from "@mohsinonxrm/dataverse-sdk-core";
+ *
+ * const result = await upsertMultiple(
+ *   client,
+ *   { logicalName: "account", entitySetName: "accounts" },
+ *   rows.map((row) => ({
+ *     "@odata.id": `accounts(${odataKey({ accountnumber: row.number })})`,
+ *     name: row.name,
+ *   })),
+ *   { strategy: "auto" }
+ * );
+ * if (!result.success) console.error(`${result.failed} record(s) failed`);
+ * ```
+ */
+export function upsertMultiple(
+  client: DataverseClient,
+  table: BulkTable,
+  records: readonly object[],
+  options: BulkOperationOptions = {}
+): Promise<BulkOperationResult> {
+  return runBulkOperation(client, "UpsertMultiple", table, records, options);
+}
+
+/**
+ * Deletes records in chunks with `DeleteMultiple` (elastic tables), or with `$batch`, and reports
+ * the outcome of every record.
+ *
+ * Each record is the row's id (a GUID), or an object with its primary key
+ * (`table.primaryIdAttribute`, `"<logicalName>id"` by default) and, for an elastic table that
+ * uses partitions, its `partitionid`.
+ *
+ * Dataverse has `DeleteMultiple` for elastic tables only. The default strategy, `"auto"`, sends
+ * it for an elastic table and `$batch` otherwise, as `getBulkOperationSupport()` tells (looked up
+ * once per client and table). `"bulk"` on a standard table is rejected with
+ * `DataverseInvalidRequestError` before anything is deleted. With `"batch"`, each record is a
+ * `DELETE <entitySet>(<id>)` (`<entitySet>(<primaryIdAttribute>=<id>,partitionid='<p>')` with a
+ * `partitionid`), so a row that doesn't exist fails on its own (404) while the others are
+ * deleted.
+ *
+ * Failed records don't make it throw: check `result.success` and each record's `status` and
+ * `error`. Requests go through the client, so its retry policy and concurrency limit apply.
+ *
+ * @param client - The client to send the requests with
+ * @param table - The table: logical name, entity set name and, when it isn't `<logicalName>id`,
+ *   the primary key column
+ * @param records - The rows to delete: ids, or objects with the primary key (and `partitionid`)
+ * @param options - Chunk size, strategy (default `"auto"`), parallelism and cancellation
+ * @returns The outcome of every record, in input order; `id` is the row's id
+ * @throws DataverseInvalidRequestError for invalid input (a record without a GUID id), or for
+ *   `strategy: "bulk"` on a table that isn't elastic, before anything is deleted
+ * @throws DataverseAbortError or DataverseNetworkError (`RequestTimeout`) when stopped before any
+ *   request finished, otherwise {@link DataverseBulkOperationError} with the result so far
+ *
+ * @example
+ * ```typescript
+ * import { deleteMultiple } from "@mohsinonxrm/dataverse-sdk-batch";
+ *
+ * const result = await deleteMultiple(
+ *   client,
+ *   { logicalName: "account", entitySetName: "accounts" },
+ *   accountIds
+ * );
+ * for (const r of result.results) {
+ *   if (r.status === "failed") console.error(`Record ${r.id}:`, r.error?.message);
+ * }
+ * ```
+ */
+export function deleteMultiple(
+  client: DataverseClient,
+  table: BulkTable,
+  records: ReadonlyArray<string | object>,
+  options: BulkOperationOptions = {}
+): Promise<BulkOperationResult> {
+  return runBulkOperation(client, "DeleteMultiple", table, records, {
+    ...options,
+    strategy: options.strategy ?? "auto",
+  });
+}
+
 // ─────────────────────────────── implementation ───────────────────────────────
 
 /** The messages the helpers send. */
-type BulkMessage = "CreateMultiple" | "UpdateMultiple";
+type BulkMessage = "CreateMultiple" | "UpdateMultiple" | "UpsertMultiple" | "DeleteMultiple";
 
 /** The outcome of one record of a chunk (no `index`: the chunk knows it). */
 interface Outcome {
@@ -294,12 +423,24 @@ interface Outcome {
   error?: Error;
 }
 
+/** One record, checked and ready to send either way. */
+interface Item {
+  /** The bulk message's target, without `@odata.type` unless the record set it. */
+  target: Record<string, unknown>;
+  /** The record's own id (GUID), when it has one. */
+  id?: string;
+  /** For `$batch`: the URL of the row, relative to the Web API root (`accounts(<id>)`). */
+  path?: string;
+  /** For `$batch`: the body of the `POST` / `PATCH`. */
+  body?: Record<string, unknown>;
+}
+
 /** Everything a chunk needs to be sent. */
 interface Plan {
   client: DataverseClient;
   message: BulkMessage;
   table: Required<BulkTable>;
-  records: Array<Record<string, unknown>>;
+  items: Item[];
   strategy: BulkStrategy;
   options: BulkOperationOptions;
 }
@@ -317,24 +458,20 @@ async function runBulkOperation(
   client: DataverseClient,
   message: BulkMessage,
   table: BulkTable,
-  records: readonly object[],
+  records: readonly unknown[],
   options: BulkOperationOptions
 ): Promise<BulkOperationResult> {
   const { requested, ...checked } = validate(client, message, table, records, options);
   const batchSize = options.batchSize ?? DEFAULT_BATCH_SIZE;
-  const results: BulkRecordResult[] = checked.records.map((_, index) => ({
+  const count = checked.items.length;
+  const results: BulkRecordResult[] = checked.items.map((_, index) => ({
     index,
     status: "skipped",
   }));
 
   const chunks: number[][] = [];
-  for (let start = 0; start < checked.records.length; start += batchSize) {
-    chunks.push(
-      Array.from(
-        { length: Math.min(batchSize, checked.records.length - start) },
-        (_, i) => start + i
-      )
-    );
+  for (let start = 0; start < count; start += batchSize) {
+    chunks.push(Array.from({ length: Math.min(batchSize, count - start) }, (_, i) => start + i));
   }
 
   const execution = executionSignal(options.signal, options.timeoutMs);
@@ -349,15 +486,17 @@ async function runBulkOperation(
 /**
  * The strategy to send with. `"auto"` asks `getBulkOperationSupport()` (cached per client and
  * table) whether the table supports the message: `"bulk"` when it does, otherwise `"batch"`.
- * Nothing is looked up for an empty list.
+ * `"bulk"` for `DeleteMultiple` asks too, and rejects a table that isn't elastic before anything
+ * is deleted. Nothing is looked up for an empty list.
  */
 async function resolveStrategy(
   plan: Omit<Plan, "strategy">,
   requested: BulkStrategy | "auto",
   execution: ExecutionSignal
 ): Promise<BulkStrategy> {
-  if (requested !== "auto") return requested;
-  if (plan.records.length === 0) return "bulk";
+  if (plan.items.length === 0) return requested === "auto" ? "bulk" : requested;
+  if (requested === "batch") return "batch";
+  if (requested === "bulk" && plan.message !== "DeleteMultiple") return "bulk";
   let support: BulkOperationSupport;
   try {
     support = await getBulkOperationSupport(plan.client, plan.table.logicalName, {
@@ -366,8 +505,17 @@ async function resolveStrategy(
   } catch (caught) {
     throw fromStop(caught, execution, plan.options.timeoutMs);
   }
-  const supported =
-    plan.message === "CreateMultiple" ? support.createMultiple : support.updateMultiple;
+  const supported = {
+    CreateMultiple: support.createMultiple,
+    UpdateMultiple: support.updateMultiple,
+    UpsertMultiple: support.upsertMultiple,
+    DeleteMultiple: support.deleteMultiple,
+  }[plan.message];
+  if (requested === "bulk" && !supported) {
+    throw new DataverseInvalidRequestError(
+      `${plan.message}: "${plan.table.logicalName}" is not an elastic table, and Dataverse supports DeleteMultiple for elastic tables only. Use strategy "auto" (the default) or "batch" to delete the records with $batch.`
+    );
+  }
   return supported ? "bulk" : "batch";
 }
 
@@ -405,7 +553,7 @@ async function runChunks(
       try {
         outcomes =
           plan.strategy === "bulk"
-            ? await sendBulk(plan, chunk, execution.signal)
+            ? await sendBulk(plan, chunk, execution)
             : await sendBatch(plan, chunk, execution.signal);
       } catch (caught) {
         // The request failed as a whole (network, auth, throttling after the retries, an abort):
@@ -446,16 +594,17 @@ async function runChunks(
   return result;
 }
 
-/** Sends one chunk as a `CreateMultiple` / `UpdateMultiple` request. */
+/** Sends one chunk as a `CreateMultiple` / `UpdateMultiple` / `UpsertMultiple` / `DeleteMultiple` request. */
 async function sendBulk(
   plan: Plan,
   chunk: number[],
-  signal: AbortSignal | undefined
+  execution: ExecutionSignal
 ): Promise<Outcome[]> {
   const { client, table, options } = plan;
+  const { signal, deadline } = execution;
   const targets = chunk.map((index) => ({
     "@odata.type": `Microsoft.Dynamics.CRM.${table.logicalName}`,
-    ...plan.records[index],
+    ...plan.items[index].target,
   }));
 
   const headers = normalizeHeaders(options.headers);
@@ -472,7 +621,9 @@ async function sendBulk(
     url: `${table.entitySetName}/Microsoft.Dynamics.CRM.${plan.message}`,
     headers,
     body: { Targets: targets },
+    // timeoutMs is the whole operation's: it is in `signal`, and its deadline goes along (#487).
     ...(signal ? { signal } : {}),
+    ...(deadline !== undefined ? { deadline } : {}),
     ...(options.attemptTimeoutMs !== undefined
       ? { attemptTimeoutMs: options.attemptTimeoutMs }
       : {}),
@@ -481,7 +632,7 @@ async function sendBulk(
 
   if (!response.ok) return failedChunk(plan, chunk, await parseODataError(response));
 
-  // CreateMultiple returns the ids in the order of Targets; UpdateMultiple returns 204.
+  // CreateMultiple returns the ids in the order of Targets; the others return 204.
   let ids: unknown[] = [];
   if (plan.message === "CreateMultiple") {
     const body: unknown = await response.json().catch(() => undefined);
@@ -581,19 +732,23 @@ async function sendBatch(
   const batch = new BatchRequestBuilder(client);
   const key = table.primaryIdAttribute;
   for (const index of chunk) {
-    const record = plan.records[index];
-    if (plan.message === "CreateMultiple") {
-      batch.addRequest(`r${String(index)}`, "POST", table.entitySetName, undefined, record);
-    } else {
-      const { [key]: id, ...changes } = record;
-      // If-Match: * makes it an update only: a missing row fails instead of being created.
-      batch.addRequest(
-        `r${String(index)}`,
-        "PATCH",
-        `${table.entitySetName}(${String(id)})`,
-        { "if-match": "*" },
-        changes
-      );
+    const { path = "", body } = plan.items[index];
+    const requestId = `r${String(index)}`;
+    switch (plan.message) {
+      case "CreateMultiple":
+        batch.addRequest(requestId, "POST", table.entitySetName, undefined, body);
+        break;
+      case "UpdateMultiple":
+        // If-Match: * makes it an update only: a missing row fails instead of being created.
+        batch.addRequest(requestId, "PATCH", path, { "if-match": "*" }, body);
+        break;
+      case "UpsertMultiple":
+        // No If-Match: Dataverse creates the row when it doesn't exist.
+        batch.addRequest(requestId, "PATCH", path, undefined, body);
+        break;
+      case "DeleteMultiple":
+        batch.addRequest(requestId, "DELETE", path);
+        break;
     }
   }
 
@@ -617,14 +772,15 @@ async function sendBatch(
       return {
         status: "failed",
         error: new DataverseError(`Record ${String(index)} got no response in the $batch.`),
+        ...idOf(primaryKeyOf(plan, index)),
       };
     }
     let id = primaryKeyOf(plan, index);
-    if (plan.message === "CreateMultiple") {
+    if (plan.message === "CreateMultiple" || plan.message === "UpsertMultiple") {
       try {
         id = entityIdFromBatchResponse(step, { primaryIdAttribute: key });
       } catch {
-        // No id in the response: keep the record's own primary key, if it set one.
+        // No id in the response (or a URL by alternate key): keep the record's own id, if any.
       }
     }
     return { status: "succeeded", ...idOf(id) };
@@ -636,7 +792,7 @@ function validate(
   client: DataverseClient,
   message: BulkMessage,
   table: BulkTable,
-  records: readonly object[],
+  records: readonly unknown[],
   options: BulkOperationOptions
 ): Omit<Plan, "strategy"> & { requested: BulkStrategy | "auto" } {
   const invalid = (what: string): DataverseInvalidRequestError =>
@@ -675,37 +831,129 @@ function validate(
   }
   if (!Array.isArray(records)) throw invalid("records must be an array.");
 
-  const list = records.map((record, index) => {
+  const set = table.entitySetName;
+  const noKey = (index: number, what: string): DataverseInvalidRequestError =>
+    invalid(
+      `record ${String(index)} has no GUID in "${primaryIdAttribute}", the primary key that names the row to ${what}. Set table.primaryIdAttribute if the table's primary key has another name.`
+    );
+  /** For UpsertMultiple: the row each record names, to reject duplicates. */
+  const rows = new Map<string, number>();
+
+  const items = records.map((record, index): Item => {
+    if (message === "DeleteMultiple" && typeof record === "string") {
+      if (!GUID.test(record)) {
+        throw invalid(`record ${String(index)} is not a GUID, got ${JSON.stringify(record)}.`);
+      }
+      return { target: { [primaryIdAttribute]: record }, id: record, path: `${set}(${record})` };
+    }
     if (typeof record !== "object" || record === null || Array.isArray(record)) {
       throw invalid(`record ${String(index)} is not an object.`);
     }
     const value = record as Record<string, unknown>;
-    // "auto" may pick $batch, which needs the key for the URL.
-    if (message === "UpdateMultiple" && strategy !== "bulk") {
-      const id = value[primaryIdAttribute];
-      if (typeof id !== "string" || !GUID.test(id)) {
-        throw invalid(
-          `record ${String(index)} has no GUID in "${primaryIdAttribute}", the primary key that names the row to update. Set table.primaryIdAttribute if the table's primary key has another name.`
-        );
+    const id = guidOf(value[primaryIdAttribute]);
+    const { [primaryIdAttribute]: _key, ...changes } = value;
+
+    switch (message) {
+      case "CreateMultiple":
+        return { target: value, body: value, ...idOf(id) };
+
+      case "UpdateMultiple":
+        // "auto" may pick $batch, which needs the key for the URL.
+        if (!id && strategy !== "bulk") throw noKey(index, "update");
+        return {
+          target: value,
+          body: changes,
+          ...idOf(id),
+          ...(id ? { path: `${set}(${id})` } : {}),
+        };
+
+      case "UpsertMultiple": {
+        const named = value["@odata.id"];
+        let item: Item;
+        let row: string;
+        if (named === undefined) {
+          if (!id) {
+            throw invalid(
+              `record ${String(index)} names no row: set its primary key ("${primaryIdAttribute}", a GUID) or "@odata.id" (e.g. "${set}(<key>=<value>)" for an alternate key). Set table.primaryIdAttribute if the table's primary key has another name.`
+            );
+          }
+          item = { target: value, body: changes, id, path: `${set}(${id})` };
+          row = id.toLowerCase();
+        } else {
+          const segment = typeof named === "string" ? rowSegment(set, named) : undefined;
+          if (segment === undefined) {
+            throw invalid(
+              `record ${String(index)} has "@odata.id" ${JSON.stringify(named)}, which isn't a row of ${set}: write it as "${set}(<id>)" or "${set}(<key>=<value>)".`
+            );
+          }
+          const { "@odata.id": _named, ...rest } = value;
+          const keyId = guidOf(segment.key);
+          // In UpsertMultiple, Dataverse reads `@odata.id` only as an alternate key: a primary key
+          // there fails with 0x80060890 ("The specified key attributes are not a defined key"),
+          // checked live. So a row named by primary key is sent with its primary key column.
+          const target = keyId ? { ...rest, [primaryIdAttribute]: id ?? keyId } : value;
+          item = { target, body: rest, path: segment.path, ...idOf(id ?? keyId) };
+          row = keyId ? keyId.toLowerCase() : segment.key;
+        }
+        const earlier = rows.get(row);
+        if (earlier !== undefined) {
+          throw invalid(
+            `records ${String(earlier)} and ${String(index)} name the same row; Dataverse rejects an UpsertMultiple that names a row twice.`
+          );
+        }
+        rows.set(row, index);
+        return item;
+      }
+
+      case "DeleteMultiple": {
+        if (!id) throw noKey(index, "delete");
+        const partition = value.partitionid;
+        if (partition !== undefined && typeof partition !== "string") {
+          throw invalid(`record ${String(index)} has a "partitionid" that isn't a string.`);
+        }
+        const path =
+          partition === undefined
+            ? `${set}(${id})`
+            : `${set}(${primaryIdAttribute}=${id},partitionid='${encodeUnsafe(partition.replace(/'/g, "''"))}')`;
+        return { target: value, id, path };
       }
     }
-    return value;
   });
 
   return {
     client,
     message,
     table: { ...table, primaryIdAttribute },
-    records: list,
+    items,
     requested: strategy,
     options,
   };
 }
 
-/** The record's own primary key, when it sets one. */
+/**
+ * The row an `@odata.id` names in `set`: its URL relative to the Web API root (characters that
+ * can't go into a request line percent-encoded) and the text of its key. An absolute URL, or
+ * one with a leading `/`, is accepted when it ends with `<set>(<key>)`.
+ */
+function rowSegment(set: string, odataId: string): { path: string; key: string } | undefined {
+  const match = new RegExp(`(?:^|/)(${set}\\((.+)\\))$`).exec(odataId);
+  if (!match || /[\r\n\0]/.test(odataId)) return undefined;
+  return { path: encodeUnsafe(match[1]), key: match[2] };
+}
+
+/** Percent-encodes what can't go into a `$batch` request line as it is (spaces, non-ASCII). */
+function encodeUnsafe(text: string): string {
+  return text.replace(/[^\x21-\x7e]/gu, (c) => encodeURIComponent(c));
+}
+
+/** The value when it is a GUID. */
+function guidOf(value: unknown): string | undefined {
+  return typeof value === "string" && GUID.test(value) ? value : undefined;
+}
+
+/** The record's own id, when it has one. */
 function primaryKeyOf(plan: Plan, index: number): string | undefined {
-  const id = plan.records[index][plan.table.primaryIdAttribute];
-  return typeof id === "string" && GUID.test(id) ? id : undefined;
+  return plan.items[index].id;
 }
 
 /** `{ id }` when there is one, so results don't carry `id: undefined`. */

@@ -30,6 +30,7 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
 
 // @public
 export interface AdaptiveThrottlingOptions {
+    clock?: Clock;
     maxPauseMs?: number;
     maxSpacingMs?: number;
     onDelay?: (delay: AdaptiveThrottlingDelay) => void;
@@ -37,6 +38,11 @@ export interface AdaptiveThrottlingOptions {
     requestBudget?: number;
     threshold?: number;
     timeBudget?: number;
+}
+
+// @public
+export interface AdaptiveThrottlingRequestOptions extends MiddlewareOptions {
+    bypass?: boolean;
 }
 
 // @public
@@ -49,6 +55,23 @@ export interface AdaptiveThrottlingStatus {
     timeBudget?: number;
     timeRemaining?: number;
 }
+
+// @public
+export const Annotations: {
+    readonly All: "*";
+    readonly FormattedValue: "OData.Community.Display.V1.FormattedValue";
+    readonly AllDynamicsCrm: "Microsoft.Dynamics.CRM.*";
+    readonly LookupLogicalName: "Microsoft.Dynamics.CRM.lookuplogicalname";
+    readonly AssociatedNavigationProperty: "Microsoft.Dynamics.CRM.associatednavigationproperty";
+    readonly FetchXmlPagingCookie: "Microsoft.Dynamics.CRM.fetchxmlpagingcookie";
+    readonly MoreRecords: "Microsoft.Dynamics.CRM.morerecords";
+    readonly TotalRecordCount: "Microsoft.Dynamics.CRM.totalrecordcount";
+    readonly TotalRecordCountLimitExceeded: "Microsoft.Dynamics.CRM.totalrecordcountlimitexceeded";
+    readonly ErrorDetails: "Microsoft.PowerApps.CDS.ErrorDetails.*";
+};
+
+// @public
+export type AnnotationTerm = (typeof Annotations)[keyof typeof Annotations];
 
 // @public
 export type ApiVersion = `v${number}.${number}`;
@@ -69,8 +92,8 @@ export interface AsyncOperation {
     name?: string | null;
     operationtype?: number | null;
     startedon?: string | null;
-    statecode: number;
-    statuscode: number;
+    statecode: AsyncOperationStateCode | (number & {});
+    statuscode: AsyncOperationStatusCode | (number & {});
 }
 
 // @public
@@ -98,6 +121,9 @@ export const AsyncOperationStateCode: {
 };
 
 // @public
+export type AsyncOperationStateCode = (typeof AsyncOperationStateCode)[keyof typeof AsyncOperationStateCode];
+
+// @public
 export const AsyncOperationStatusCode: {
     readonly WaitingForResources: 0;
     readonly Waiting: 10;
@@ -108,6 +134,9 @@ export const AsyncOperationStatusCode: {
     readonly Failed: 31;
     readonly Canceled: 32;
 };
+
+// @public
+export type AsyncOperationStatusCode = (typeof AsyncOperationStatusCode)[keyof typeof AsyncOperationStatusCode];
 
 // @public (undocumented)
 export class AuthMiddleware implements Middleware {
@@ -135,13 +164,13 @@ export function buildUrl(req: RequestInformation): string;
 
 // @public
 export interface BuiltInMiddlewareOptions {
-    // (undocumented)
+    adaptiveThrottling: AdaptiveThrottlingRequestOptions;
+    bulkhead: BulkheadRequestOptions;
+    chaos: ChaosRequestOptions;
+    circuitBreaker: CircuitBreakerRequestOptions;
     concurrency: MiddlewareConcurrencyOptions;
-    // (undocumented)
     logging: LoggingOptions;
-    // (undocumented)
     retry: RetryOptions;
-    // (undocumented)
     telemetry: TelemetryOptions;
 }
 
@@ -173,9 +202,10 @@ export interface BulkheadRequestOptions extends MiddlewareOptions {
 // @public
 export interface ChaosFault {
     body?: unknown;
+    delayMs?: number;
     headers?: Record<string, string>;
     retryAfterSeconds?: number;
-    status: number | "network";
+    status: number | "network" | "latency" | "hang";
 }
 
 // @public
@@ -189,6 +219,8 @@ export class ChaosMiddleware implements Middleware {
 
 // @public
 export interface ChaosOptions {
+    clock?: Clock;
+    enabled?: boolean | ((request: RequestInformation) => boolean);
     faults?: readonly ChaosFault[];
     match?: RegExp | ((request: RequestInformation) => boolean);
     onFault?: (fault: ChaosFault, request: RequestInformation) => void;
@@ -196,6 +228,14 @@ export interface ChaosOptions {
     random?: () => number;
     script?: (request: RequestInformation, info: ChaosScriptInfo) => ChaosFault | undefined;
 }
+
+// @public
+export const ChaosPresets: {
+    serviceProtection(options?: ServiceProtectionChaosOptions): ChaosFault[];
+    gatewayOutage(): ChaosFault[];
+    flakyNetwork(): ChaosFault[];
+    slowOrg(options?: SlowOrgChaosOptions): ChaosFault[];
+};
 
 // @public
 export interface ChaosRequestOptions extends MiddlewareOptions {
@@ -210,11 +250,27 @@ export interface ChaosScriptInfo {
 }
 
 // @public
+export type CheckedMiddlewareOptionEntry<E> = E extends {
+    type: infer T;
+} ? T extends keyof BuiltInMiddlewareOptions ? {
+    type: T;
+} & BuiltInMiddlewareOptions[T] & Partial<Record<Exclude<keyof E, "type" | keyof BuiltInMiddlewareOptions[T]>, never>> : E : E;
+
+// @public
+export interface CircuitBreakDurationInfo {
+    consecutiveOpens: number;
+    failures: number;
+}
+
+// @public
 export class CircuitBreakerMiddleware implements Middleware {
     constructor(options?: CircuitBreakerOptions);
+    close(): void;
     get consecutiveFailures(): number;
     // (undocumented)
     execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    isolate(): void;
+    get isolated(): boolean;
     // (undocumented)
     name: string;
     reset(): void;
@@ -223,10 +279,21 @@ export class CircuitBreakerMiddleware implements Middleware {
 
 // @public
 export interface CircuitBreakerOptions {
-    breakDurationMs?: number;
+    breakDurationMs?: number | ((info: CircuitBreakDurationInfo) => number);
+    clock?: Clock;
+    failureRatio?: number;
     failureThreshold?: number;
     isFailure?: (status: number, error?: Error) => boolean;
+    minimumThroughput?: number;
+    mode?: "consecutive" | "ratio";
+    now?: () => number;
     onStateChange?: (change: CircuitStateChange) => void;
+    samplingDurationMs?: number;
+}
+
+// @public
+export interface CircuitBreakerRequestOptions extends MiddlewareOptions {
+    bypass?: boolean;
 }
 
 // @public
@@ -241,11 +308,18 @@ export interface CircuitStateChange {
     to: CircuitState;
 }
 
+// @public
+export interface Clock {
+    now(): number;
+    sleep(ms: number, signal?: AbortSignal): Promise<void>;
+}
+
 // @public (undocumented)
 export class ConcurrencyMiddleware implements Middleware {
     constructor(options: DataverseClientOptions);
     // (undocumented)
     execute(request: RequestInformation, ctx: MiddlewareContext, next: NextMiddleware): Promise<Response>;
+    get limit(): number;
     // (undocumented)
     name: string;
 }
@@ -255,7 +329,9 @@ export interface ConcurrencyOptions {
     adaptiveFromDopHint?: boolean;
     max?: number;
     maxConcurrentRequests?: number;
+    maxQueue?: number;
     min?: number;
+    reduceOnThrottle?: boolean;
 }
 
 // @public
@@ -281,6 +357,7 @@ export interface CreateAndGetIdOptions extends RequestOptions {
 // @public
 export class DataverseAbortError extends DataverseError {
     constructor(message?: string, cause?: unknown);
+    name: "AbortError" | (string & {});
 }
 
 // @public
@@ -302,9 +379,13 @@ export class DataverseAuthenticationError extends DataverseError {
     constructor(message?: string, baseError?: Error);
     static emptyAccessToken(): DataverseAuthenticationError;
     static forbidden(message?: string): DataverseAuthenticationError;
+    name: DataverseAuthenticationErrorName | (string & {});
     static tokenAcquisitionFailed(details?: string): DataverseAuthenticationError;
     static unauthorized(message?: string): DataverseAuthenticationError;
 }
+
+// @public
+export type DataverseAuthenticationErrorName = "DataverseAuthenticationError" | "EmptyAccessToken" | "TokenAcquisitionFailed" | "Unauthorized" | "Forbidden";
 
 // @public
 export class DataverseBatchError<TResult = unknown, TStep = unknown> extends DataverseError {
@@ -338,8 +419,8 @@ export interface DataverseBatchPartError {
 }
 
 // @public
-export class DataverseBulkheadRejectedError extends DataverseError {
-    constructor(message: string, category: string);
+export class DataverseBulkheadRejectedError extends DataverseQueueFullError {
+    constructor(message: string, category: string, details?: DataverseQueueFullDetails);
     readonly category: string;
 }
 
@@ -356,6 +437,8 @@ export class DataverseClient {
     api(pathOrAbsoluteUrl: string): DataverseRequestBuilder;
     bind(navigationProperty: string, entitySetName: string, id: ODataKey): Record<string, string>;
     changesSince<T = Record<string, unknown>>(deltaLink: string, options?: TrackChangesOptions): Promise<TrackedChanges<T>>;
+    readonly clock: Clock;
+    describePipeline(): string[];
     // (undocumented)
     execute<T>(request: Executable<T>, options?: RequestOptions): Promise<T>;
     fetchXml<T = Record<string, unknown>>(entitySetName: string, fetchXml: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
@@ -366,16 +449,18 @@ export class DataverseClient {
     savedQuery<T = Record<string, unknown>>(entitySetName: string, savedQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
     // (undocumented)
     send(request: RequestInformation): Promise<Response>;
-    trackEvent(name: string, properties?: Record<string, string>, measurements?: Record<string, number>): void;
+    trackEvent(name: TelemetryEventName | (string & {}), properties?: Record<string, string>, measurements?: Record<string, number>): void;
     userQuery<T = Record<string, unknown>>(entitySetName: string, userQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
 }
 
 // @public (undocumented)
 export interface DataverseClientOptions {
+    adaptiveThrottling?: AdaptiveThrottlingMiddleware;
     allowedTokenOrigins?: string[];
     apiVersion?: ApiVersion;
     // (undocumented)
     baseUrl: string;
+    clock?: Clock;
     // (undocumented)
     concurrency?: ConcurrencyOptions;
     defaultHeaders?: Record<string, string>;
@@ -412,8 +497,7 @@ export class DataverseError extends Error {
     constructor(message?: string, init?: DataverseErrorInit | Error);
     get body(): unknown;
     set body(value: unknown);
-    // (undocumented)
-    code?: string;
+    code?: DataverseErrorCode | (string & {});
     // (undocumented)
     correlationId?: string;
     date: Date;
@@ -428,10 +512,25 @@ export class DataverseError extends Error {
     status?: number;
 }
 
+// @public
+export const DataverseErrorCode: {
+    readonly ObjectDoesNotExist: "0x80040217";
+    readonly DuplicateRecordsFound: "0x80040333";
+    readonly ExpiredVersionStamp: "0x80044352";
+    readonly ConcurrencyVersionMismatch: "0x80060882";
+    readonly ServiceProtectionRequests: "0x80072322";
+    readonly ServiceProtectionExecutionTime: "0x80072321";
+    readonly ServiceProtectionConcurrentRequests: "0x80072326";
+    readonly UploadingAndDownloadingInMultipleChunksNotSupported: "0x80090017";
+};
+
+// @public
+export type DataverseErrorCode = (typeof DataverseErrorCode)[keyof typeof DataverseErrorCode];
+
 // @public (undocumented)
 export interface DataverseErrorInit {
     cause?: unknown;
-    code?: string;
+    code?: DataverseErrorCode | (string & {});
     correlationId?: string;
     headers?: Record<string, string>;
     // (undocumented)
@@ -439,6 +538,43 @@ export interface DataverseErrorInit {
     raw?: unknown;
     requestId?: string;
     status?: number;
+}
+
+// @public
+export const DataverseHeaders: {
+    readonly BypassBusinessLogicExecution: "MSCRM.BypassBusinessLogicExecution";
+    readonly BypassBusinessLogicExecutionStepIds: "MSCRM.BypassBusinessLogicExecutionStepIds";
+    readonly BypassCustomPluginExecution: "MSCRM.BypassCustomPluginExecution";
+    readonly SuppressCallbackRegistrationExpanderJob: "MSCRM.SuppressCallbackRegistrationExpanderJob";
+    readonly SuppressDuplicateDetection: "MSCRM.SuppressDuplicateDetection";
+    readonly SolutionUniqueName: "MSCRM.SolutionUniqueName";
+    readonly MergeLabels: "MSCRM.MergeLabels";
+    readonly SessionToken: "MSCRM.SessionToken";
+    readonly Consistency: "Consistency";
+    readonly CallerObjectId: "CallerObjectId";
+    readonly CallerId: "MSCRMCallerID";
+};
+
+// @public
+export type DataverseHeaders = (typeof DataverseHeaders)[keyof typeof DataverseHeaders];
+
+// @public
+export type DataverseHeaderValue<TName extends string> = TName extends keyof DataverseHeaderValues ? DataverseHeaderValues[TName] | (string & {}) : string;
+
+// @public
+export interface DataverseHeaderValues {
+    // (undocumented)
+    "MSCRM.BypassBusinessLogicExecution": "CustomSync" | "CustomAsync" | "CustomSync,CustomAsync";
+    // (undocumented)
+    "MSCRM.BypassCustomPluginExecution": "true" | "false";
+    // (undocumented)
+    "MSCRM.MergeLabels": "true" | "false";
+    // (undocumented)
+    "MSCRM.SuppressCallbackRegistrationExpanderJob": "true" | "false";
+    // (undocumented)
+    "MSCRM.SuppressDuplicateDetection": "true" | "false";
+    // (undocumented)
+    Consistency: "Strong";
 }
 
 // @public
@@ -460,22 +596,51 @@ export class DataverseInvalidRequestError extends DataverseError {
     static invalidBaseUrl(url: string): DataverseInvalidRequestError;
     static invalidParameter(paramName: string, reason: string): DataverseInvalidRequestError;
     static missingParameter(paramName: string): DataverseInvalidRequestError;
+    name: DataverseInvalidRequestErrorName | (string & {});
     static serializationFailed(details?: string): DataverseInvalidRequestError;
     static tokenOriginRefused(reason: string): DataverseInvalidRequestError;
 }
+
+// @public
+export type DataverseInvalidRequestErrorName = "DataverseInvalidRequestError" | "EmptyScopes" | "InvalidBaseUrl" | "MissingParameter" | "InvalidParameter" | "TokenOriginRefused" | "SerializationFailed" | "InvalidTenantId" | "InvalidCloud";
 
 // @public
 export class DataverseNetworkError extends DataverseError {
     constructor(message?: string, baseError?: Error);
     static aborted(): DataverseNetworkError;
     static connectionFailed(details?: string, cause?: unknown): DataverseNetworkError;
+    name: DataverseNetworkErrorName | (string & {});
     static timeout(timeoutMs?: number, cause?: unknown): DataverseNetworkError;
 }
+
+// @public
+export type DataverseNetworkErrorName = "DataverseNetworkError" | "ConnectionFailed" | "RequestTimeout" | "RequestAborted";
 
 // @public (undocumented)
 export class DataverseODataError extends DataverseError {
     constructor(message: string, init?: ConstructorParameters<typeof DataverseError>[1]);
 }
+
+// @public
+export interface DataverseQueueFullDetails {
+    inFlight: number;
+    limit: number;
+    maxQueue: number;
+    queued: number;
+}
+
+// @public
+export class DataverseQueueFullError extends DataverseError {
+    constructor(message: string, queue: DataverseQueueName, details: DataverseQueueFullDetails);
+    readonly inFlight: number;
+    readonly limit: number;
+    readonly maxQueue: number;
+    readonly queue: DataverseQueueName;
+    readonly queued: number;
+}
+
+// @public
+export type DataverseQueueName = "concurrency" | "bulkhead";
 
 // @public (undocumented)
 export class DataverseRequestBuilder {
@@ -506,8 +671,7 @@ export class DataverseRequestBuilder {
     }): Promise<T[]>;
     // (undocumented)
     getPage<T = unknown>(options?: RequestOptions): Promise<PageResponse<T>>;
-    // (undocumented)
-    header(name: string, value: string): this;
+    header<TName extends DataverseHeaders | (string & {})>(name: TName, value: DataverseHeaderValue<TName>): this;
     ifMatch(etag: string): this;
     ifNoneMatch(etag?: string): this;
     impersonate(userId: string, options?: {
@@ -529,7 +693,7 @@ export class DataverseRequestBuilder {
     preferRaw(value: string): this;
     // (undocumented)
     put<T = unknown>(body?: unknown, options?: RequestOptions): Promise<T>;
-    response(method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE", body?: unknown, options?: RequestOptions): Promise<Response>;
+    response(method?: HttpMethod, body?: unknown, options?: RequestOptions): Promise<Response>;
     savedQuery<T = Record<string, unknown>>(savedQueryId: string, options?: FetchXmlOptions): Promise<FetchXmlPage<T>>;
     // (undocumented)
     select(...fields: string[]): this;
@@ -547,9 +711,13 @@ export class DataverseServiceError extends DataverseError {
     constructor(statusCode: number, message?: string, baseError?: Error);
     static badRequest(message: string): DataverseServiceError;
     static fromResponse(response: Response, body?: unknown): Promise<DataverseServiceError>;
+    name: DataverseServiceErrorName | (string & {});
     static notFound(entityType?: string, id?: string): DataverseServiceError;
     static throttled(retryAfter?: number): DataverseServiceError;
 }
+
+// @public
+export type DataverseServiceErrorName = "DataverseServiceError" | "BadRequest" | "NotFound" | "TooManyRequests" | "InternalServerError" | "ServiceUnavailable" | "ClientError" | "ServerError";
 
 // @public (undocumented)
 export class DataverseThrottleError extends DataverseError {
@@ -591,8 +759,7 @@ export interface DependencyHandle {
 export interface DependencyTelemetry {
     // (undocumented)
     durationMs?: number;
-    // (undocumented)
-    method?: string;
+    method?: HttpMethod;
     // (undocumented)
     properties?: Record<string, string>;
     resultCode?: string;
@@ -621,6 +788,9 @@ export interface DuplicateRecord {
 }
 
 // @public
+export type EdmPrimitiveType = `Edm.${"Binary" | "Boolean" | "Byte" | "Date" | "DateTimeOffset" | "Decimal" | "Double" | "Duration" | "Guid" | "Int16" | "Int32" | "Int64" | "SByte" | "Single" | "Stream" | "String" | "TimeOfDay"}`;
+
+// @public
 export function entityIdFromResponse(res: Response): string;
 
 // @public
@@ -645,26 +815,29 @@ export interface ExpandOptions {
 }
 
 // @public
-export enum FeatureUsageFlag {
-    APPINSIGHTS_TELEMETRY = 32768,
-    BATCH_ENABLED = 4,// 1 (binary: 0001)
-    CONCURRENCY_ENABLED = 2,// 2 (binary: 0010)
-    CUSTOM_AUTH = 8,// 4 (binary: 0100)
-    DISCOVERY_SERVICE = 1024,// 8 (binary: 1000)
-    FILE_OPERATIONS = 256,// 16 (binary: 10000)
-    LOGGING_ENABLED = 32,// 32 (binary: 100000)
-    METADATA_OPERATIONS = 512,// 64 (binary: 1000000)
-    NONE = 0,// 128 (binary: 10000000)
-    OTEL_TELEMETRY = 65536,// 256 (binary: 100000000)
-    PAGING_ENABLED = 128,// 512 (binary: 1000000000)
-    REQUEST_OPTIONS_OVERRIDE = 64,// 1024 (binary: 10000000000)
-    RETRY_ENABLED = 1,// 2048 (binary: 100000000000)
-    SDK_MESSAGES = 4096,// 4096 (binary: 1000000000000)
-    TELEMETRY_ENABLED = 16,// 8192 (binary: 10000000000000)
-    TYPED_ACTIONS = 8192,// 16384 (binary: 100000000000000)
-    TYPED_FUNCTIONS = 16384,// 32768 (binary: 1000000000000000)
-    XRM_FACADE = 2048
-}
+export const FeatureUsageFlag: {
+    readonly NONE: 0;
+    readonly RETRY_ENABLED: 1;
+    readonly CONCURRENCY_ENABLED: 2;
+    readonly BATCH_ENABLED: 4;
+    readonly CUSTOM_AUTH: 8;
+    readonly TELEMETRY_ENABLED: 16;
+    readonly LOGGING_ENABLED: 32;
+    readonly REQUEST_OPTIONS_OVERRIDE: 64;
+    readonly PAGING_ENABLED: 128;
+    readonly FILE_OPERATIONS: 256;
+    readonly METADATA_OPERATIONS: 512;
+    readonly DISCOVERY_SERVICE: 1024;
+    readonly XRM_FACADE: 2048;
+    readonly SDK_MESSAGES: 4096;
+    readonly TYPED_ACTIONS: 8192;
+    readonly TYPED_FUNCTIONS: 16384;
+    readonly APPINSIGHTS_TELEMETRY: 32768;
+    readonly OTEL_TELEMETRY: 65536;
+};
+
+// @public
+export type FeatureUsageFlag = number;
 
 // @public
 export class FeatureUsageTracker {
@@ -730,12 +903,15 @@ export function getRequestHeader(headers: HeadersLike | undefined, key: string):
 export function getRetryAttempts(res: Response): readonly RetryAttempt[] | undefined;
 
 // @public
+export function hasErrorCode(error: unknown, code: DataverseErrorCode | (string & {})): boolean;
+
+// @public
 export type HeadersLike = Headers | Array<[string, string]> | Record<string, string>;
 
 // @public
 export function headersToObject(headers: Headers): Record<string, string>;
 
-// @public (undocumented)
+// @public
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
 // @public
@@ -773,7 +949,7 @@ export class LoggingMiddleware implements Middleware {
 // @public
 export interface LoggingOptions extends MiddlewareOptions {
     disable?: boolean;
-    logLevel?: "debug" | "info" | "warn" | "error";
+    logLevel?: LogLevel;
 }
 
 // @public
@@ -795,6 +971,11 @@ export interface MiddlewareConcurrencyOptions extends MiddlewareOptions {
 // @public (undocumented)
 export interface MiddlewareContext {
     attempt?: number;
+    chaos?: {
+        fault: "status" | "network" | "latency" | "hang";
+        status?: number;
+    };
+    clock?: Clock;
     // (undocumented)
     correlationId?: string;
     deadline?: number;
@@ -823,23 +1004,34 @@ export type MiddlewareOptionEntry = ({
 } & TelemetryOptions) | ({
     type: "logging";
 } & LoggingOptions) | ({
+    type: "chaos";
+} & ChaosRequestOptions) | ({
+    type: "bulkhead";
+} & BulkheadRequestOptions) | ({
+    type: "circuitBreaker";
+} & CircuitBreakerRequestOptions) | ({
+    type: "adaptiveThrottling";
+} & AdaptiveThrottlingRequestOptions) | ({
     type: string;
 } & Record<string, unknown>);
+
+// @public
+export type MiddlewareOptionKey = keyof BuiltInMiddlewareOptions | (string & {});
 
 // @public
 export interface MiddlewareOptions {
 }
 
-// @public (undocumented)
-export class MiddlewareRequestOptions {
-    constructor(options?: MiddlewareOptionEntry[]);
+// @public
+export class MiddlewareRequestOptions<E extends MiddlewareOptionEntry = MiddlewareOptionEntry> {
+    constructor(options?: ReadonlyArray<E & CheckedMiddlewareOptionEntry<E>>);
     clear(): void;
-    delete(middlewareType: string): boolean;
+    delete(middlewareType: MiddlewareOptionKey): boolean;
     get<K extends keyof BuiltInMiddlewareOptions>(middlewareType: K): BuiltInMiddlewareOptions[K] | undefined;
     // (undocumented)
-    get(middlewareType: string): MiddlewareOptions | undefined;
-    has(middlewareType: string): boolean;
-    set(middlewareType: string, options: MiddlewareOptions): void;
+    get(middlewareType: MiddlewareOptionKey): MiddlewareOptions | undefined;
+    has(middlewareType: MiddlewareOptionKey): boolean;
+    set<K extends MiddlewareOptionKey>(middlewareType: K, options: K extends keyof BuiltInMiddlewareOptions ? BuiltInMiddlewareOptions[K] : MiddlewareOptions): void;
 }
 
 // @public (undocumented)
@@ -897,7 +1089,7 @@ export const odataLiteral: {
     readonly recordPath: (reference: ODataRecordReference) => string;
     readonly reference: (reference: ODataRecordReference) => string;
     readonly json: (value: unknown) => string;
-    readonly parameter: (value: unknown, odataType: string, kind?: ODataParameterKind) => string;
+    readonly parameter: (value: unknown, odataType: ODataTypeName, kind?: ODataParameterKind) => string;
     readonly value: (value: ODataScalar) => string;
 };
 
@@ -913,6 +1105,9 @@ export interface ODataRecordReference {
 
 // @public
 export type ODataScalar = string | number | bigint | boolean | Date | null;
+
+// @public
+export type ODataTypeName = EdmPrimitiveType | (string & {});
 
 // @public
 export class PageIterator<T> implements AsyncIterable<T> {
@@ -950,6 +1145,7 @@ export function parseRetryAfter(retryAfter: string | null | undefined): number |
 // @public (undocumented)
 export class Pipeline {
     constructor(middleware: Middleware[]);
+    describe(): string[];
     // (undocumented)
     execute(request: RequestInformation, ctx: MiddlewareContext, terminal: (r: RequestInformation, c: MiddlewareContext) => Promise<Response>): Promise<Response>;
 }
@@ -957,7 +1153,7 @@ export class Pipeline {
 // @public (undocumented)
 export const Prefer: {
     readonly returnRepresentation: () => PreferOption;
-    readonly includeAnnotations: (term: string) => PreferOption;
+    readonly includeAnnotations: (term: AnnotationTerm | (string & {})) => PreferOption;
     readonly continueOnError: () => PreferOption;
 };
 
@@ -969,7 +1165,7 @@ export class PreferBuilder<TParent = undefined> {
     build(): string;
     continueOnError(): this;
     done(): TParent;
-    formattedValues(annotations?: string): this;
+    formattedValues(annotations?: AnnotationTerm | (string & {})): this;
     maxPageSize(size: number): this;
     returnRepresentation(): this;
     trackChanges(): this;
@@ -995,6 +1191,7 @@ export interface RequestInformation {
     // (undocumented)
     body?: unknown;
     correlationId?: string;
+    deadline?: number;
     // (undocumented)
     headers: Record<string, string>;
     idempotent?: boolean;
@@ -1012,6 +1209,7 @@ export interface RequestInformation {
 export interface RequestOptions {
     attemptTimeoutMs?: number;
     correlationId?: string;
+    deadline?: number;
     // (undocumented)
     headers?: Record<string, string>;
     middlewareOptions?: MiddlewareRequestOptions;
@@ -1035,6 +1233,9 @@ export interface RetryAttempt {
 }
 
 // @public
+export type RetryBackoff = "exponential" | "linear" | "constant";
+
+// @public
 export interface RetryInfo {
     attempt: number;
     correlationId?: string;
@@ -1055,18 +1256,21 @@ export class RetryMiddleware implements Middleware {
     name: string;
 }
 
-// @public (undocumented)
+// @public
 export interface RetryOptions {
+    backoff?: RetryBackoff;
     baseDelayMs?: number;
-    jitter?: boolean;
+    jitter?: boolean | "decorrelated";
     maxDelayMs?: number;
     maxRetries?: number;
     maxRetryAfterMs?: number;
     onRetry?: (info: RetryInfo) => void;
     retryableStatusCodes?: number[];
+    retryAfterJitterMs?: number;
+    retryAttemptTimeouts?: boolean;
     retryNetworkErrors?: boolean;
     retryNonIdempotent?: boolean;
-    shouldRetry?: (statusCode: number, error?: Error) => boolean;
+    shouldRetry?: (statusCode: number, error: Error | undefined, info: ShouldRetryInfo) => boolean;
 }
 
 // @public
@@ -1076,15 +1280,38 @@ export const SDK_VERSION: string;
 export function serializeContent(content: unknown): BodyInit;
 
 // @public
+export interface ServiceProtectionChaosOptions {
+    retryAfterSeconds?: number;
+}
+
+// @public
 export function setRequestHeader(headers: HeadersLike, key: string, value: string): HeadersLike;
+
+// @public
+export interface ShouldRetryInfo {
+    attempt: number;
+    request: RequestInformation;
+    response?: Response;
+}
+
+// @public
+export interface SlowOrgChaosOptions {
+    delayMs?: number;
+}
+
+// @public
+export const systemClock: Clock;
 
 // @public
 export interface TelemetryClient {
     startDependency(name: string, data: DependencyTelemetry): DependencyHandle;
-    trackEvent(name: string, props?: Record<string, string>, measurements?: Record<string, number>): void;
+    trackEvent(name: TelemetryEventName | (string & {}), props?: Record<string, string>, measurements?: Record<string, number>): void;
     // (undocumented)
     trackException(error: unknown, props?: Record<string, string>): void;
 }
+
+// @public
+export type TelemetryEventName = (typeof TelemetryEvents)[keyof typeof TelemetryEvents];
 
 // @public
 export const TelemetryEvents: {
@@ -1093,6 +1320,9 @@ export const TelemetryEvents: {
     readonly concurrencyWait: "dataverse.concurrency.wait";
     readonly concurrencyLimit: "dataverse.concurrency.limit";
     readonly batch: "dataverse.batch";
+    readonly circuitState: "dataverse.circuit.state";
+    readonly chaosInjected: "dataverse.chaos.injected";
+    readonly throttleDelay: "dataverse.throttle.delay";
 };
 
 // @public

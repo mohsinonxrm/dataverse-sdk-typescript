@@ -85,6 +85,7 @@ beforeAll(async () => {
     isolatedModules: true,
     noUnusedLocals: true,
     noUnusedParameters: true,
+    erasableSyntaxOnly: true,
     skipLibCheck: true,
     types: [],
     rootDir: path.join(outputRoot, "ts"),

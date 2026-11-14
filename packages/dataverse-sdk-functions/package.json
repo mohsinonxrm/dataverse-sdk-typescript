@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-functions",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Typed Web API functions for Dataverse (GET operations without side effects)",
   "publishConfig": {
     "access": "public",
@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
-    "eslint": "^9.39.5",
+    "eslint": "^10.14.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"

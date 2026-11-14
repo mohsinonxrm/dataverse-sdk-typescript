@@ -32,6 +32,19 @@ sent.bodyText; // exact bytes on the wire, decoded
 | `jsonResponse`, `noContent`, `createdResponse`, `odataError`, `throttled` | Responses that carry the headers a live org sends (`x-ms-service-request-id`, `req_id`, `x-ms-dop-hint`, rate-limit headers). `createdResponse(set, id, apiUrl?)` takes the Web API root for a client that doesn't use the default one                                      |
 | `batchResponse([...], { status?, boundary?, headers? })`                  | A Dataverse-format `multipart/mixed` `$batch` response, including change sets. Pass `status` for a stop-on-error `$batch`, which Dataverse answers with the failing request's status                                                                                        |
 
+### Failures and time
+
+For the SDK's own resilience tests (dev and test only; core's `ChaosPresets` are the
+`ChaosMiddleware` equivalents for apps):
+
+| Helper                                                 | Purpose                                                                                                                                            |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `serviceProtectionError(limit, retryAfterSeconds = 1)` | A service-protection 429 for `"requests"` (`0x80072322`), `"execution_time"` (`0x80072321`) or `"concurrent_requests"` (`0x80072326`)              |
+| `gatewayError(status = 503)`                           | A 502, 503 or 504                                                                                                                                  |
+| `connectionReset`                                      | A route that throws `TypeError: fetch failed` (an `ECONNRESET`), as `fetch` does for a dropped connection: `fake.on("GET", "/x", connectionReset)` |
+| `slowResponse(respond, ms, clock?)`                    | A route that answers like `respond`, `ms` later                                                                                                    |
+| `fakeClock(start?)`                                    | A `Clock` that moves only on `await clock.advance(ms)`, for `ChaosOptions.clock` and `slowResponse`: test waits without waiting                    |
+
 ## Known bugs: `it.fails`
 
 A contract test that pins a known bug uses `it.fails("#NN: …")` and names its issue. When the fix lands, that test starts passing, so `it.fails` reports it as a failure. Change it to `it` in the fixing PR. Never delete or skip these tests.

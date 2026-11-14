@@ -128,6 +128,12 @@ export interface MsalErrorDetails {
 }
 
 /**
+ * The `name`s of an `MsalBrowserAuthenticationError`: `TokenAcquisitionFailed` (MSAL failed to
+ * issue a token) and `PopupBlocked` (the browser blocked the sign-in popup).
+ */
+export type MsalBrowserAuthenticationErrorName = "TokenAcquisitionFailed" | "PopupBlocked";
+
+/**
  * A `DataverseAuthenticationError` that keeps what MSAL said: `code`, the MSAL `errorCode`,
  * `subError`, `correlationId`, and the original error as `cause`.
  *
@@ -143,8 +149,17 @@ export class MsalBrowserAuthenticationError extends DataverseAuthenticationError
   readonly subError?: string;
   readonly correlationId?: string;
   readonly errorNo?: string;
+  /** `TokenAcquisitionFailed` or `PopupBlocked`. */
+  declare name: MsalBrowserAuthenticationErrorName | (string & {});
 
-  constructor(message: string, init: { name: string; code?: string; cause?: unknown }) {
+  constructor(
+    message: string,
+    init: {
+      name: MsalBrowserAuthenticationErrorName | (string & {});
+      code?: string;
+      cause?: unknown;
+    }
+  ) {
     super(message);
     Object.setPrototypeOf(this, MsalBrowserAuthenticationError.prototype);
     this.name = init.name;

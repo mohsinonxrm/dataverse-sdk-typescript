@@ -18,7 +18,10 @@ export interface BulkheadOptions {
   categorize?: (request: RequestInformation) => string | undefined;
   /**
    * Most requests waiting per category. A request beyond it is refused at once with
-   * `DataverseBulkheadRejectedError`. `0` refuses every request over the limit instead of queueing it.
+   * `DataverseBulkheadRejectedError` (a `DataverseQueueFullError` with `queue: "bulkhead"`). `0`
+   * refuses every request over the limit instead of queueing it. Unbounded by default: on a
+   * server, set a bound so a burst of work can't pile up waiting requests (and their memory)
+   * without limit, and answer the rejected ones with a 503 or a retry later.
    * @default Infinity
    */
   maxQueue?: number;
@@ -115,7 +118,7 @@ export class BulkheadMiddleware implements Middleware {
     ctx: MiddlewareContext,
     next: NextMiddleware
   ): Promise<Response> {
-    const perRequest: BulkheadRequestOptions | undefined = ctx.middlewareOptions?.get("bulkhead");
+    const perRequest = ctx.middlewareOptions?.get("bulkhead");
     if (perRequest?.bypass) return next(request, ctx);
     const category = perRequest?.category ?? this.categorize(request);
     const compartment = category === undefined ? undefined : this.compartment(category);
@@ -158,8 +161,14 @@ export class BulkheadMiddleware implements Middleware {
     if (compartment.queue.length >= this.maxQueue) {
       return Promise.reject(
         new DataverseBulkheadRejectedError(
-          `Bulkhead "${category}" is full: ${String(compartment.inFlight)} in flight and ${String(compartment.queue.length)} waiting`,
-          category
+          `Bulkhead "${category}" is full: ${String(compartment.inFlight)} in flight and ${String(compartment.queue.length)} waiting (maxQueue ${String(this.maxQueue)})`,
+          category,
+          {
+            maxQueue: this.maxQueue,
+            queued: compartment.queue.length,
+            inFlight: compartment.inFlight,
+            limit: compartment.limit,
+          }
         )
       );
     }

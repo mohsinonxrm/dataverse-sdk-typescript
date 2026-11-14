@@ -9,6 +9,7 @@ import {
   DataGridHeaderCell,
   DataGridRow,
   makeStyles,
+  mergeClasses,
   TableCellLayout,
   tokens,
   type TableColumnDefinition,
@@ -20,7 +21,9 @@ const useStyles = makeStyles({
     border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke2}`,
     borderRadius: tokens.borderRadiusMedium,
   },
-  grid: { minWidth: "36rem" },
+  // Wide enough for its columns to stay readable; narrower grids fit a phone without scrolling.
+  three: { minWidth: "24rem" },
+  many: { minWidth: "36rem" },
   empty: { color: tokens.colorNeutralForeground3 },
 });
 
@@ -79,7 +82,10 @@ export function RecordsGrid<T extends object>({
   return (
     <div className={styles.wrap}>
       <DataGrid
-        className={styles.grid}
+        className={mergeClasses(
+          columns.length === 3 && styles.three,
+          columns.length > 3 && styles.many
+        )}
         items={rows}
         columns={definitions}
         sortable

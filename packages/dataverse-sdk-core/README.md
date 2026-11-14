@@ -111,7 +111,12 @@ const client = new DataverseClient({
     adaptiveFromDopHint: true, // Default: true (follows x-ms-dop-hint, within min..max)
     min: 2, // Default: 2 (lowest limit the hint can set)
     max: 16, // Default: maxConcurrentRequests when set, otherwise 16 (highest limit the hint can set)
+    reduceOnThrottle: true, // Default: true (halve the limit on the concurrent-requests 429, 0x80072326)
+    maxQueue: Infinity, // Default: unbounded (requests waiting for a slot; beyond it, DataverseQueueFullError)
   },
+
+  // Optional: Slow down from the service-protection headers (see "Adaptive Throttling")
+  adaptiveThrottling: new AdaptiveThrottlingMiddleware(), // Default: none (off)
 
   // Optional: Logger (implements Logger interface)
   logger: new ConsoleLogger(), // Default: none (the SDK logs nothing unless you pass a logger)
@@ -211,6 +216,15 @@ away instead of a timeout later. `attemptTimeoutMs` limits a single attempt; a t
 `RequestTimeout`, and its `TimeoutError` is the `cause`. Neither the SDK's timers nor its listeners stay
 on your `signal` after the request, so one signal can be shared by any number of requests.
 
+When you enforce a time limit yourself through `signal` (one budget for several requests, say),
+pass when it runs out as `deadline` (ms since the epoch, on the client's `clock`): it aborts nothing,
+but like `timeoutMs` it stops a retry wait that would end after it, so a long `Retry-After` comes
+back as `DataverseThrottleError` at once. With `timeoutMs` too, the earlier one counts.
+
+The client measures `timeoutMs`, `deadline` and the retry waits on its `clock` (`systemClock`, the
+real one, by default). Pass a fake one (see [Testing](#testing)) to test retries and timeouts without
+waiting. `attemptTimeoutMs` always runs on real time.
+
 ### Fluent API Enhancements
 
 #### Prefer Header Builder
@@ -218,18 +232,18 @@ on your `signal` after the request, so one signal can be shared by any number of
 Build complex `Prefer` headers using either fluent PreferBuilder or typed Prefer helper.
 
 ```typescript
-import { Prefer } from "@mohsinonxrm/dataverse-sdk-core";
+import { Annotations, Prefer } from "@mohsinonxrm/dataverse-sdk-core";
 
 // Method 1: Prefer helper values (chains like any other builder method)
 await client
   .api("/accounts")
-  .prefer(Prefer.returnRepresentation(), Prefer.includeAnnotations("*"))
+  .prefer(Prefer.returnRepresentation(), Prefer.includeAnnotations(Annotations.All))
   .post({ name: "Contoso" });
 
 // The same values as an array
 await client
   .api("/accounts")
-  .prefer([Prefer.returnRepresentation(), Prefer.includeAnnotations("*")])
+  .prefer([Prefer.returnRepresentation(), Prefer.includeAnnotations(Annotations.All)])
   .post({ name: "Contoso" });
 
 // Method 2: Raw string, for a preference without a helper
@@ -256,9 +270,16 @@ await client
 
 // Prefer helper values available:
 Prefer.returnRepresentation(); // 'return=representation'
-Prefer.includeAnnotations("*"); // 'odata.include-annotations="*"'
+Prefer.includeAnnotations(Annotations.All); // 'odata.include-annotations="*"'
+Prefer.includeAnnotations(Annotations.LookupLogicalName); // "Microsoft.Dynamics.CRM.lookuplogicalname"
 Prefer.continueOnError(); // 'odata.continue-on-error'
 ```
+
+`Annotations` names the annotation terms: `All`, `FormattedValue`, `AllDynamicsCrm`,
+`LookupLogicalName`, `AssociatedNavigationProperty`, `FetchXmlPagingCookie`, `MoreRecords`,
+`TotalRecordCount`, `TotalRecordCountLimitExceeded` and `ErrorDetails`. `includeAnnotations()` and
+`formattedValues()` take one of them, the literal (your editor suggests them), a wildcard such as
+`"Microsoft.Dynamics.CRM.*"`, or several joined with commas.
 
 `DataverseClientOptions.defaultPrefer` adds `Prefer` values to every request; a request that sets
 the same preference keeps its own value.
@@ -341,7 +362,8 @@ await client.api("/accounts").post({ name: "Contoso" });
 - Default: Duplicate detection is **suppressed** (matches Dataverse defaults)
 - `.detectDuplicates()` explicitly enables detection
 - Returns `DataverseDuplicateError` (extends `DataverseError`) for a 412 with Dataverse's
-  duplicate code `0x80040333`. Any other 412, such as an `If-Match` etag mismatch (`0x80060882`),
+  duplicate code `0x80040333` (`DataverseErrorCode.DuplicateRecordsFound`). Any other 412, such as
+  an `If-Match` etag mismatch (`0x80060882`, `ConcurrencyVersionMismatch`),
   rejects with the usual `DataverseODataError`, even with `.detectDuplicates()` on
 - Error includes `duplicates` array with record details from `error.innererror.duplicaterecords`,
   when Dataverse sends them (a plain duplicate-detection 412 carries only the code and message, so
@@ -681,6 +703,7 @@ import {
   DataverseInvalidRequestError, // refused before sending (e.g. TokenOriginRefused)
   DataverseAuthenticationError, // auth helpers (e.g. EmptyAccessToken)
   DataverseUrlError, // client-side URL validation
+  DataverseQueueFullError, // refused before sending: a full concurrency or bulkhead queue (maxQueue)
 } from "@mohsinonxrm/dataverse-sdk-core";
 
 try {
@@ -709,6 +732,51 @@ Every `DataverseError` has `status?`, `code?`, `message`, `headers?`, `body?` (a
 `innerError?`, `requestId?`, `correlationId?`, `cause?` and `date`. Errors thrown by your own
 middleware or token provider are passed through unchanged.
 
+**Error codes.** `code` is Dataverse's error code, typed `DataverseErrorCode | (string & {})`: the
+codes the SDK knows complete in your editor, and any other code Dataverse returns is still a valid
+value. Compare with `hasErrorCode()`, which ignores the case of hex codes and also matches the
+signed decimal form (`"-2147220969"`) some responses carry:
+
+```typescript
+import { DataverseErrorCode, hasErrorCode } from "@mohsinonxrm/dataverse-sdk-core";
+
+async function findAccount(id: string) {
+  try {
+    return await client.api(`accounts(${id})`).get();
+  } catch (error) {
+    if (hasErrorCode(error, DataverseErrorCode.ObjectDoesNotExist)) return undefined;
+    throw error;
+  }
+}
+```
+
+| `DataverseErrorCode`                                  | Code         | Meaning                                                                   |
+| ----------------------------------------------------- | ------------ | ------------------------------------------------------------------------- |
+| `ObjectDoesNotExist`                                  | `0x80040217` | The record (or file) doesn't exist (404)                                  |
+| `DuplicateRecordsFound`                               | `0x80040333` | A duplicate detection rule matched (412, `DataverseDuplicateError`)       |
+| `ExpiredVersionStamp`                                 | `0x80044352` | A change-tracking delta link expired (`isDeltaLinkExpired()`)             |
+| `ConcurrencyVersionMismatch`                          | `0x80060882` | An `If-Match` etag no longer matches (412)                                |
+| `ServiceProtectionRequests`                           | `0x80072322` | Service protection: number of requests (429)                              |
+| `ServiceProtectionExecutionTime`                      | `0x80072321` | Service protection: combined execution time (429)                         |
+| `ServiceProtectionConcurrentRequests`                 | `0x80072326` | Service protection: concurrent requests (429)                             |
+| `UploadingAndDownloadingInMultipleChunksNotSupported` | `0x80090017` | The file can't be read or written in parts (the files package falls back) |
+
+**Error names.** The named error classes type `name` with the names the SDK gives them
+(`DataverseAuthenticationErrorName`, `DataverseInvalidRequestErrorName`,
+`DataverseServiceErrorName`, `DataverseNetworkErrorName`), so `error.name === "..."` and
+`switch (error.name)` complete them. Other names stay valid: the auth packages subclass these
+classes with their own.
+
+```typescript
+if (error instanceof DataverseNetworkError) {
+  switch (error.name) {
+    case "ConnectionFailed": // DNS, TLS, CORS, offline
+    case "RequestTimeout": // timeoutMs, attemptTimeoutMs or AbortSignal.timeout()
+    case "RequestAborted":
+  }
+}
+```
+
 **Error hierarchy:**
 
 ```
@@ -722,6 +790,8 @@ DataverseError (base)
 ├── DataverseAbortError (cancelled; name "AbortError")
 ├── DataverseInvalidRequestError (refused before sending)
 ├── DataverseAuthenticationError (auth helpers)
+├── DataverseQueueFullError (a full queue: queue, maxQueue, queued, inFlight, limit)
+│   └── DataverseBulkheadRejectedError (queue "bulkhead", has category)
 └── DataverseServiceError (DataverseServiceError.fromResponse helper)
 ```
 
@@ -807,12 +877,13 @@ const inspector: Middleware = {
 1. **prepend** middleware (if any)
 2. **ODataHeadersMiddleware** - Sets `Accept`, `OData-Version`, `OData-MaxVersion`, a JSON `Content-Type` for JSON bodies, `defaultHeaders` and `defaultPrefer`
 3. **RetryMiddleware** - Handles 429/502/503/504 with exponential backoff + jitter
-4. **ConcurrencyMiddleware** - Semaphore-based rate limiting with adaptive concurrency, one slot per attempt
-5. **AuthMiddleware** - Adds `Authorization: Bearer <token>` on every attempt; after a 401 gets a new token (passing a claims challenge) and retries once (only when a token provider is set)
-6. **TelemetryMiddleware** - Diagnostic headers; tracks dependencies and exceptions
-7. **LoggingMiddleware** - Logs request/response details (only when a logger is set)
-8. **append** middleware (if any)
-9. **FetchRequestAdapter** - Final adapter that calls native `fetch()`
+4. **AdaptiveThrottlingMiddleware** - Holds requests back from the service-protection headers (only with the `adaptiveThrottling` option)
+5. **ConcurrencyMiddleware** - Semaphore-based rate limiting with adaptive concurrency, one slot per attempt
+6. **AuthMiddleware** - Adds `Authorization: Bearer <token>` on every attempt; after a 401 gets a new token (passing a claims challenge) and retries once (only when a token provider is set)
+7. **TelemetryMiddleware** - Diagnostic headers; tracks dependencies and exceptions
+8. **LoggingMiddleware** - Logs request/response details (only when a logger is set)
+9. **append** middleware (if any)
+10. **FetchRequestAdapter** - Final adapter that calls native `fetch()`
 
 **Middleware Features:**
 
@@ -822,6 +893,44 @@ const inspector: Middleware = {
 - Context (`MiddlewareContext`) provides access to logger and telemetry
 - Middleware can access attempt number via `ctx.attempt` (for retry scenarios)
 - Middleware can short-circuit by not calling `next()` (return early response)
+
+#### Per-request middleware options
+
+`middlewareOptions` (on `send()`, `execute()` and every builder terminal) takes a
+`MiddlewareRequestOptions` with one entry per middleware `type`. Each built-in middleware reads
+its own entry, and the entries are type-checked: a misspelt or mistyped field of a built-in entry
+is a compile error. Any other `type` is for your own middleware and takes any fields.
+
+```typescript
+import { MiddlewareRequestOptions } from "@mohsinonxrm/dataverse-sdk-core";
+
+await client.api("accounts").get({
+  middlewareOptions: new MiddlewareRequestOptions([
+    { type: "retry", maxRetries: 0 },
+    { type: "concurrency", bypass: true },
+    { type: "chaos", disable: true },
+    { type: "audit", tag: "nightly" }, // your own middleware
+  ]),
+});
+
+// In middleware: typed for the built-in types, MiddlewareOptions for your own
+const chaos = ctx.middlewareOptions?.get("chaos"); // ChaosRequestOptions | undefined
+```
+
+| `type`                 | Options type                       | Fields                                                                                                        |
+| ---------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `"retry"`              | `RetryOptions`                     | Any of the client's `retry` settings, for this request (`maxRetries`, `baseDelayMs`, `shouldRetry`, ...)      |
+| `"concurrency"`        | `MiddlewareConcurrencyOptions`     | `bypass`: send without waiting for a concurrency slot                                                         |
+| `"telemetry"`          | `TelemetryOptions`                 | `disable`: no diagnostic headers or telemetry; `customProperties`: added to the dependency                    |
+| `"logging"`            | `LoggingOptions`                   | `disable`: don't log the request; `logLevel`: a level other than `"debug"` silences it too (it logs at debug) |
+| `"chaos"`              | `ChaosRequestOptions`              | `disable`: never inject a fault; `fault`: always inject this one (while `enabled`)                            |
+| `"bulkhead"`           | `BulkheadRequestOptions`           | `category`: count the request in this category; `bypass`: no bulkhead slot                                    |
+| `"circuitBreaker"`     | `CircuitBreakerRequestOptions`     | `bypass`: send whatever the circuit's state (isolated included), and leave the outcome out of the count       |
+| `"adaptiveThrottling"` | `AdaptiveThrottlingRequestOptions` | `bypass`: don't wait for the spacing or a 429's pause, nor take a turn (the response still updates budgets)   |
+
+`BuiltInMiddlewareOptions` maps each built-in `type` to its options. `get`, `set`, `has` and
+`delete` take a `MiddlewareOptionKey`: a built-in type (your editor suggests them) or any other
+string. `set("chaos", { ... })` checks the options like the constructor does.
 
 ### Advanced Features
 
@@ -854,29 +963,56 @@ await client
 
 #### Custom Headers
 
-Set Dataverse-specific or custom HTTP headers per request.
+Set Dataverse-specific or custom HTTP headers per request. `DataverseHeaders` names Dataverse's
+optional-parameter headers; for those, `header()` suggests the documented values (`"CustomSync"`,
+`"Strong"`, `"true"`, ...) and still takes any other string.
 
 ```typescript
-// Suppress duplicate detection (default)
-await client
-  .api("/accounts")
-  .header("MSCRM.SuppressDuplicateDetection", "true") // Default behavior
-  .post({ name: "Contoso" });
+import { DataverseHeaders } from "@mohsinonxrm/dataverse-sdk-core";
 
-// Bypass custom plugin execution
+// Skip custom synchronous and asynchronous logic (plug-ins, workflows); needs prvBypassCustomBusinessLogic
 await client
   .api("/accounts")
-  .header("MSCRM.BypassCustomPluginExecution", "true")
+  .header(DataverseHeaders.BypassBusinessLogicExecution, "CustomSync,CustomAsync")
   .post({ name: "Test Account" });
 
-// Solution-aware operations
+// Skip custom synchronous plug-ins only (MSCRM.BypassCustomPluginExecution); needs prvBypassCustomPlugins
 await client
   .api("/accounts")
-  .header("MSCRM.SolutionUniqueName", "MySolution")
-  .post({ name: "Solution-Specific Account" });
+  .header(DataverseHeaders.BypassCustomPluginExecution, "true")
+  .post({ name: "Test Account" });
 
-// Merge labels (for localization)
-await client.api("/accounts").header("MSCRM.MergeLabels", "true").patch({ name: "Updated" });
+// Don't trigger Power Automate flows
+await client
+  .api("/accounts")
+  .header(DataverseHeaders.SuppressCallbackRegistrationExpanderJob, "true")
+  .post({ name: "Imported Account" });
+
+// Add a new solution component to an unmanaged solution
+await client
+  .api("EntityDefinitions")
+  .header(DataverseHeaders.SolutionUniqueName, "MySolution")
+  .post(entityDefinition);
+
+// Merge labels with the other languages' labels when updating a definition
+await client
+  .api("EntityDefinitions(LogicalName='account')")
+  .header(DataverseHeaders.MergeLabels, "true")
+  .put(definition);
+
+// Read metadata from the database, not a cached copy
+await client
+  .api("EntityDefinitions(LogicalName='account')")
+  .header(DataverseHeaders.Consistency, "Strong")
+  .get();
+
+// The same names work as keys of RequestOptions.headers (and of the batch and bulk options)
+await client
+  .api("/accounts")
+  .post(
+    { name: "Contoso" },
+    { headers: { [DataverseHeaders.BypassCustomPluginExecution]: "true" } }
+  );
 
 // Chain multiple headers
 await client
@@ -994,7 +1130,10 @@ try {
   waited for like any other.
 - **Bounds:** no time limit by default. `timeoutMs` rejects with `reason: "timeout"` (and the last
   state as `operation`); `signal` rejects with `DataverseAbortError`. Either way, only the waiting
-  stops: the job keeps running in Dataverse.
+  stops: the job keeps running in Dataverse. Each read carries the time left as its `deadline`, so
+  a read throttled with a `Retry-After` longer than that rejects at once with
+  `DataverseThrottleError` rather than with a timeout later. The waits and `timeoutMs` run on the
+  client's `clock`.
 - **Read errors** pass through: a job that doesn't exist (or that was deleted when it succeeded, as
   workflows set to delete completed jobs do) rejects with `DataverseODataError`, status 404.
 - `AsyncOperationStateCode` and `AsyncOperationStatusCode` name the `statecode` and `statuscode`
@@ -1044,6 +1183,7 @@ Middleware Chain (sequential execution)
    ├─ prepend middleware (user-provided, optional)
    ├─ ODataHeadersMiddleware (add OData headers, defaultHeaders, defaultPrefer)
    ├─ RetryMiddleware (retry on 429/502/503/504)
+   ├─ AdaptiveThrottlingMiddleware (with the adaptiveThrottling option: holds requests back)
    ├─ ConcurrencyMiddleware (rate limiting, a slot per attempt)
    ├─ AuthMiddleware (Bearer token per attempt; one refresh-and-retry after a 401)
    ├─ TelemetryMiddleware (diagnostic headers, a dependency and traceparent per attempt)
@@ -1070,12 +1210,13 @@ User Code (typed result)
 1. `prepend` middleware (if any)
 2. ODataHeadersMiddleware - Adds `Accept`, `Content-Type`, `OData-Version`, `OData-MaxVersion`, `defaultHeaders`, `defaultPrefer`
 3. RetryMiddleware - Wraps the rest of the chain with retry logic (adds `retry-attempt` on retries)
-4. ConcurrencyMiddleware - Acquires a semaphore slot for this attempt (blocks if at max concurrency)
-5. AuthMiddleware - Calls `tokenProvider.getToken()` (every attempt) and adds `Authorization` header
-6. TelemetryMiddleware - Adds diagnostic headers, starts the attempt's dependency and adds its `traceparent`
-7. LoggingMiddleware - Logs request details
-8. `append` middleware (if any)
-9. FetchRequestAdapter - Calls `fetch(url, { method, headers, body })`
+4. AdaptiveThrottlingMiddleware (with `adaptiveThrottling`) - Holds the attempt back while a budget is low or a 429's pause runs; it holds no slot and no token meanwhile
+5. ConcurrencyMiddleware - Acquires a semaphore slot for this attempt (blocks if at max concurrency; refuses it if `maxQueue` are already waiting)
+6. AuthMiddleware - Calls `tokenProvider.getToken()` (every attempt) and adds `Authorization` header
+7. TelemetryMiddleware - Adds diagnostic headers, starts the attempt's dependency and adds its `traceparent`
+8. LoggingMiddleware - Logs request details
+9. `append` middleware (if any)
+10. FetchRequestAdapter - Calls `fetch(url, { method, headers, body })`
 
 **Response Phase (bottom-up):**
 
@@ -1084,10 +1225,11 @@ User Code (typed result)
 3. LoggingMiddleware - Logs response status and duration
 4. TelemetryMiddleware - Ends the dependency with its result; a `dataverse.throttle` event for a 429
 5. AuthMiddleware - On a 401, gets a new token (with the claims challenge, if any) and resends once
-6. ConcurrencyMiddleware - Releases the semaphore slot, adjusts limit based on `x-ms-dop-hint` header
-7. RetryMiddleware - Checks status code, waits and retries if 429/502/503/504 and attempts < maxRetries (the wait holds no slot)
-8. ODataHeadersMiddleware - (no response processing)
-9. `prepend` middleware
+6. ConcurrencyMiddleware - Releases the semaphore slot; follows the `x-ms-dop-hint` header, and halves the limit on a concurrent-requests 429 (`0x80072326`)
+7. AdaptiveThrottlingMiddleware (with `adaptiveThrottling`) - Reads the service-protection headers; after a 429, pauses new requests for its `Retry-After`
+8. RetryMiddleware - Checks status code, waits and retries if 429/502/503/504 and attempts < maxRetries (the wait holds no slot)
+9. ODataHeadersMiddleware - (no response processing)
+10. `prepend` middleware
 
 ### Resiliency Features
 
@@ -1112,13 +1254,45 @@ User Code (typed result)
   - `baseDelayMs: 3000` (3 seconds)
   - `maxDelayMs: 30000` (30 seconds)
   - `maxRetryAfterMs`: same as `maxDelayMs`
+  - `backoff: "exponential"`
   - `jitter: true` (±20% on the computed backoff)
+  - `retryAfterJitterMs: 0` (`Retry-After` is waited out exactly)
   - `retryNonIdempotent: false`; `retryNetworkErrors` unset (idempotent requests are retried after a network error)
-- **Retry-After header:** Waited out exactly (no jitter) when it is at most `maxRetryAfterMs`. A longer
-  `Retry-After` is not waited out: the response is returned at once (a 429 throws
-  `DataverseThrottleError` with `retryAfterMs`), so your code decides whether to wait. Delta-seconds
-  (including decimals such as `1.5`) and HTTP-dates are both understood.
-- **Backoff formula:** `min(maxDelayMs, baseDelayMs * 2^attempt)`, then ±20% jitter (still capped at `maxDelayMs`)
+  - `retryAttemptTimeouts: false` (an attempt that runs out of `attemptTimeoutMs` fails the request)
+- **Retry-After header:** Waited out exactly when it is at most `maxRetryAfterMs` (plus a random
+  0 to `retryAfterJitterMs` ms when you set it). A longer `Retry-After` is not waited out: the
+  response is returned at once (a 429 throws `DataverseThrottleError` with `retryAfterMs`), so your
+  code decides whether to wait. Delta-seconds (including decimals such as `1.5`) and HTTP-dates are
+  both understood.
+- **Backoff formula:** by default `min(maxDelayMs, baseDelayMs * 2^attempt)`, then ±20% jitter
+  (still capped at `maxDelayMs`). `backoff` and `jitter` change it:
+
+  | `backoff`               | Delay before retry `n` (0-based) | With `jitter: true` |
+  | ----------------------- | -------------------------------- | ------------------- |
+  | `"exponential"` default | `baseDelayMs * 2^n`              | ±20%                |
+  | `"linear"`              | `baseDelayMs * (n + 1)`          | ±20%                |
+  | `"constant"`            | `baseDelayMs`                    | ±20%                |
+
+  Every delay is capped at `maxDelayMs`. `jitter: false` uses the delay as is. `jitter: "decorrelated"`
+  (with `"exponential"`) uses Polly v8's decorrelated jitter (`DecorrelatedJitterBackoffV2`):
+  delays spread from 0 to about `baseDelayMs * 2^(n+1)`, with medians near `baseDelayMs * 2^n` and
+  fewer clusters than uniform jitter, so many clients that failed together spread their retries out.
+  With `"linear"` or `"constant"` it acts as `true`.
+
+  ```typescript
+  const client = new DataverseClient({
+    baseUrl,
+    tokenProvider,
+    retry: {
+      backoff: "exponential",
+      jitter: "decorrelated", // 0..~2 s, then 0..~4 s, ... capped at maxDelayMs
+      baseDelayMs: 1000,
+      maxDelayMs: 20_000,
+      retryAfterJitterMs: 1000, // throttled requests wake up to 1 s apart instead of together
+    },
+  });
+  ```
+
 - **Methods:** 429 is retried for every method (Dataverse rejects throttled requests before doing any
   work). After 502/503/504 only idempotent requests are replayed: GET, HEAD, OPTIONS, PUT, DELETE, and
   PATCH with `If-Match`. The one exception for 429: a non-idempotent request (such as a `$batch`
@@ -1129,12 +1303,36 @@ User Code (typed result)
   DELETE, and PATCH with `If-Match`) are retried with backoff, as after a 503. POST and other PATCHes
   aren't, because the connection can drop after Dataverse applied them. They are retried only with both
   `retryNetworkErrors: true` and `retryNonIdempotent: true`. `retryNetworkErrors: false` turns
-  network-error retries off. Aborts, timeouts and requests with a stream body are never retried.
-- **`shouldRetry(statusCode, error?)`:** decides which failures are retried, in place of
-  `retryableStatusCodes` and `retryNetworkErrors` (called with status `0` for a network error). It
-  doesn't decide which requests may be replayed: POST and PATCH without `If-Match` are still not
-  retried after a 5xx or a network error, nor a `$batch` with a multipart 429, unless
-  `retryNonIdempotent: true`. The counts, delays, `maxRetryAfterMs` and `timeoutMs` still apply.
+  network-error retries off. Aborts and requests with a stream body are never retried.
+- **Timed-out attempts:** an attempt that runs out of `attemptTimeoutMs` (a `DataverseNetworkError`
+  named `RequestTimeout`) isn't retried by default. With `retryAttemptTimeouts: true` it is, for
+  idempotent requests (as for a dropped connection); a POST or a PATCH without `If-Match` takes
+  `retryNonIdempotent: true` as well, since it may have been applied. The request's own `timeoutMs`
+  still ends it: when the whole request times out, or the backoff would end after its deadline,
+  there is no retry.
+
+  ```typescript
+  // Give each attempt 10 s, and the whole request 45 s.
+  await client.api("accounts").get({ attemptTimeoutMs: 10_000, timeoutMs: 45_000 });
+  // with retry: { retryAttemptTimeouts: true } on the client
+  ```
+
+- **`shouldRetry(statusCode, error, { request, response, attempt })`:** decides which failures are
+  retried, in place of `retryableStatusCodes` and `retryNetworkErrors` (called with status `0` and
+  the error for a network error, with no `response`). `attempt` is 0 for the first attempt; a
+  predicate with one or two parameters works as before. It doesn't decide which requests may be
+  replayed: POST and PATCH without `If-Match` are still not retried after a 5xx or a network error,
+  nor a `$batch` with a multipart 429, unless `retryNonIdempotent: true`. The counts, delays,
+  `maxRetryAfterMs` and `timeoutMs` still apply.
+
+  ```typescript
+  retry: {
+    // 5xx only, and at most twice for anything other than a GET
+    shouldRetry: (status, _error, { request, attempt }) =>
+      status >= 500 && (request.method === "GET" || attempt < 2),
+  }
+  ```
+
 - **Watching retries:** `onRetry(info)` runs once before each retry, with `attempt`, `maxRetries`,
   `status` (0 for a network error), `delayMs`, `retryAfterMs`, `correlationId` and the request. A
   per-request `onRetry` replaces the client's; an error it throws is logged and ignored.
@@ -1185,12 +1383,21 @@ const throttle = new AdaptiveThrottlingMiddleware({
 const client = new DataverseClient({
   baseUrl,
   tokenProvider,
-  // append: it runs inside the retry middleware, so it sees every attempt's response, 429s included
-  middleware: { append: [throttle] },
+  adaptiveThrottling: throttle, // one instance per client
 });
 
 throttle.status; // { requestsRemaining, requestBudget, timeRemaining, timeBudget, pressure, spacingMs, pausedUntil? }
 ```
+
+- **Where it runs:** the `adaptiveThrottling` option (default: none) puts it
+  inside the retry middleware, so it sees every attempt's response, 429s included, and outside the
+  concurrency middleware, so a request it holds back holds no concurrency slot and no access token,
+  and the wait isn't counted in the attempt's dependency duration. Before this option it was added
+  with `middleware.append`; that still works, but there it runs inside the concurrency slot (a
+  30-second pause holds a slot and a token for 30 seconds), so the client logs a warning once
+  recommending the option.
+- **Telemetry:** each wait is a `dataverse.throttle.delay` event (`throttle.reason`, `delay_ms`,
+  `throttle.pressure`); see [TelemetryClient](#telemetryclient).
 
 - **Spacing:** while both budgets are above `threshold` of their full value, nothing changes. Below
   it, request starts are spaced out, in turn, by up to `maxSpacingMs` as the lower budget nears
@@ -1208,6 +1415,11 @@ throttle.status; // { requestsRemaining, requestBudget, timeRemaining, timeBudge
   handles the ones that come.
 - **Browsers:** Dataverse doesn't expose the two headers to CORS, so in a browser only the pause
   after a 429 applies (`Retry-After` is exposed).
+- **Per request:** `new MiddlewareRequestOptions([{ type: "adaptiveThrottling", bypass: true }])`
+  sends a request without waiting for the spacing or a 429's pause, and without taking a turn; its
+  response still updates the budgets.
+- **Testing:** `clock` (a `Clock`) replaces `Date.now()` and the waits, so a test can move time
+  without fake timers. Without it, the client's `clock` is used.
 
 #### Adaptive Concurrency
 
@@ -1227,6 +1439,36 @@ throttle.status; // { requestsRemaining, requestBudget, timeRemaining, timeBudge
   a slot again like any new request.
 - **Browsers:** `x-ms-dop-hint` isn't readable there (see [docs/browser.md](../../docs/browser.md)),
   so the limit stays at `maxConcurrentRequests`.
+- **Too many concurrent requests (`reduceOnThrottle`, default on):** a 429 with error `0x80072326`
+  (Dataverse's limit on concurrent requests per user, per web server; other clients signed in as
+  the same user count too) halves the limit, not below `min`. One burst of such 429s halves it
+  once: only a request sent after the halving can halve it again. The limit stays down until the
+  429's `Retry-After` has passed; then the next `x-ms-dop-hint` sets it again as usual, or, where
+  the hint isn't readable (browsers, `adaptiveFromDopHint: false`), each successful response raises
+  it by 1 back to where it was. The other service-protection 429s (`0x80072322` requests,
+  `0x80072321` execution time) leave the limit alone. Each change is a `dataverse.concurrency.limit`
+  event with `concurrency.reason` `throttle`, `dop_hint` or `recovery`. `reduceOnThrottle: false`
+  keeps the limit as it was before 2.1.
+- **Bounded queue (`maxQueue`, default unbounded):** at most this many requests wait for a slot; one
+  more is refused at once, without being sent, with `DataverseQueueFullError` (its `queue` is
+  `"concurrency"`; it also has `maxQueue`, `queued`, `inFlight` and `limit`). It isn't retried. On
+  a server, set a bound so a burst of incoming work can't pile up waiting requests (and their
+  memory) without limit, and answer the refused ones with a 503 or a retry later:
+
+  ```typescript
+  const client = new DataverseClient({
+    baseUrl,
+    tokenProvider,
+    concurrency: { maxConcurrentRequests: 8, maxQueue: 200 },
+  });
+  try {
+    await client.api("accounts").get();
+  } catch (err) {
+    if (err instanceof DataverseQueueFullError) {
+      // err.queue === "concurrency" (or "bulkhead"), err.maxQueue === 200
+    }
+  }
+  ```
 
 #### Circuit Breaker & Bulkhead
 
@@ -1244,7 +1486,8 @@ import {
 const breaker = new CircuitBreakerMiddleware({
   failureThreshold: 5, // failures in a row that open the circuit (default 5)
   breakDurationMs: 30_000, // how long it stays open before a probe (default 30 s)
-  onStateChange: ({ from, to }) => telemetry.trackEvent("dataverse.circuit", { from, to }),
+  // State changes also go to the client's telemetry as "dataverse.circuit.state".
+  onStateChange: ({ from, to }) => console.log(`circuit ${from} -> ${to}`),
 });
 
 const client = new DataverseClient({
@@ -1277,15 +1520,57 @@ try {
   throttling middleware's job, and a 4xx says the request was wrong, not that the service is
   healthy. `isFailure(status, error?)` replaces the failure rule (`status` is 0 when no response
   came back); a response it doesn't count is a success below 400 and neutral from 400 up.
+- **Failure ratio:** `mode: "ratio"` opens the circuit on the share of failures instead of a run of
+  them (Polly's advanced circuit breaker). Failures and successes go into a sliding window of
+  `samplingDurationMs` (default 30 s); neutral outcomes stay out of it. When a failure arrives and
+  the window holds at least `minimumThroughput` outcomes (default 10), of which at least
+  `failureRatio` (default 0.5) are failures, the circuit opens. The window starts empty again each
+  time the circuit closes. `failureThreshold` doesn't apply in this mode.
+
+  ```typescript
+  const breaker = new CircuitBreakerMiddleware({
+    mode: "ratio",
+    failureRatio: 0.5, // half of the requests that succeeded or failed...
+    minimumThroughput: 20, // ...out of at least 20...
+    samplingDurationMs: 60_000, // ...in the last minute
+  });
+  ```
+
 - **Open:** requests fail at once, without being sent, with `DataverseCircuitOpenError`.
   `retryAfterMs` says when a probe may go. Inside the retry middleware this ends the retries.
-- **Half-open:** after `breakDurationMs`, one request goes through as a probe, and others fail fast
-  while it is in flight (`retryAfterMs` is then `undefined`). A successful probe closes the
-  circuit. A failed probe opens it for another `breakDurationMs`. A neutral probe (a 429 or another
-  4xx) leaves it half-open, and the next request probes.
+- **Break duration:** `breakDurationMs` is a number (default 30 s) or a function called each time
+  the circuit opens with `{ failures, consecutiveOpens }` (`consecutiveOpens` is 1 the first time,
+  2 when the first probe fails, and so on), to back off while the service stays down:
+  `breakDurationMs: ({ consecutiveOpens }) => Math.min(300_000, 15_000 * 2 ** (consecutiveOpens - 1))`.
+  If the function throws or returns something other than a number of at least 0, 30 s is used.
+- **Half-open:** after the break duration, one request goes through as a probe, and others fail
+  fast while it is in flight, with `retryAfterMs` set to the rest of a break duration counted from
+  when the probe started. A probe still in flight after that no longer holds the circuit: the next
+  request probes as well (as in Polly). A successful probe closes the circuit. A failed probe opens
+  it for another break duration. A neutral probe (a 429 or another 4xx) leaves it half-open, and
+  the next request probes.
+- **Manual control:** `breaker.isolate()` holds the circuit open, sending nothing and no probe,
+  until `breaker.reset()` (or `breaker.close()`), e.g. while the environment is in administration
+  mode. Requests then fail with `DataverseCircuitOpenError` without `retryAfterMs`;
+  `breaker.isolated` is `true` and `breaker.state` reads `"open"`. `reset()` also closes a circuit
+  that opened on its own, and forgets the failures.
 - **State:** `breaker.state` (`"closed"`, `"open"` or `"half-open"`), `breaker.consecutiveFailures`
-  and `onStateChange({ from, to, consecutiveFailures })` are there for telemetry. `breaker.reset()`
-  closes it. The state belongs to the instance: use one breaker per client (org).
+  and `onStateChange({ from, to, consecutiveFailures })` are there for telemetry. The state belongs
+  to the instance: use one breaker per client (org).
+- **Telemetry:** each change goes to the client's `telemetry` as the event
+  `dataverse.circuit.state` (`TelemetryEvents.circuitState`), with `circuit.state` (`closed`,
+  `open`, `half-open` or `isolated`), `circuit.previous_state`, `circuit.reason`
+  (`failure_threshold`, `failure_ratio`, `probe_failed`, `probe_succeeded`, `break_elapsed`,
+  `isolate` or `reset`) and `circuit.mode`, and the measurements `circuit.failures`,
+  `circuit.break_ms` (when it opens) and `circuit.throughput` (ratio mode). `isolate()` and
+  `reset()` report through the telemetry client of the last request the breaker saw.
+- **Per request:** `new MiddlewareRequestOptions([{ type: "circuitBreaker", bypass: true }])`
+  sends a request whatever the circuit's state (isolated included), e.g. a health check, and
+  leaves its outcome out of the count.
+- **Testing:** `clock` (a `Clock`, e.g. the one you give `ChaosMiddleware`) or `now: () => number`
+  (which takes precedence) replaces the breaker's clock (`Date.now()`) for everything it times:
+  break durations, the sampling window and `retryAfterMs`. Move your own clock forward instead of
+  using fake timers. Without either, the client's `clock` is used.
 
 **Bulkhead** (`BulkheadMiddleware`):
 
@@ -1298,7 +1583,9 @@ try {
   Returning `undefined` leaves the request unlimited.
 - **Waiting:** requests over the limit wait for a slot, and leave the queue when their `signal`
   aborts. With `maxQueue` (default unlimited), a request beyond that many waiting is refused at once
-  with `DataverseBulkheadRejectedError` (with its `category`).
+  with `DataverseBulkheadRejectedError` (with its `category`), a `DataverseQueueFullError` with
+  `queue: "bulkhead"`, `maxQueue`, `queued`, `inFlight` and `limit`. On a server, set `maxQueue`
+  so a burst can't pile up waiting requests without limit.
 - **Per request:** `new MiddlewareRequestOptions([{ type: "bulkhead", category: "import" }])`
   counts a request in another category; `{ type: "bulkhead", bypass: true }` skips the bulkhead.
 - `bulkhead.inFlight(category)` and `bulkhead.queued(category)` show the current load.
@@ -1528,13 +1815,16 @@ active span, injected with your registered propagator.
 
 **Events (`TelemetryEvents`).** Every event carries `correlation.id`:
 
-| Event                         | When                                                      | Properties / measurements                                                                                                                                                           |
-| ----------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `dataverse.throttle`          | A 429 response, per attempt                               | `request.method`, `request.url`, `throttle.limit` (`requests`, `execution_time`, `concurrent_requests`) and `error.code` when known / `retry.attempt`, `retry.after_ms`, `dop_hint` |
-| `dataverse.retry`             | Before each retry wait (when `onRetry` runs)              | `request.method`, `request.url`, `retry.reason` (`status`, `network_error`), `error.type` / `retry.attempt`, `retry.max`, `retry.delay_ms`, `retry.after_ms`, `status`              |
-| `dataverse.concurrency.wait`  | A request waited for a concurrency slot                   | `request.method`, `request.url` / `wait_ms`, `concurrency.limit`, `concurrency.queued`                                                                                              |
-| `dataverse.concurrency.limit` | `x-ms-dop-hint` changed the concurrency limit             | `concurrency.limit`, `concurrency.previous_limit`, `dop_hint`                                                                                                                       |
-| `dataverse.batch`             | A `$batch` came back (`@mohsinonxrm/dataverse-sdk-batch`) | `batch.continue_on_error` / `batch.requests`, `batch.succeeded`, `batch.failed`, `duration_ms`, `status`                                                                            |
+| Event                         | When                                                          | Properties / measurements                                                                                                                                                              |
+| ----------------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `dataverse.throttle`          | A 429 response, per attempt                                   | `request.method`, `request.url`, `throttle.limit` (`requests`, `execution_time`, `concurrent_requests`) and `error.code` when known / `retry.attempt`, `retry.after_ms`, `dop_hint`    |
+| `dataverse.retry`             | Before each retry wait (when `onRetry` runs)                  | `request.method`, `request.url`, `retry.reason` (`status`, `network_error`), `error.type` / `retry.attempt`, `retry.max`, `retry.delay_ms`, `retry.after_ms`, `status`                 |
+| `dataverse.concurrency.wait`  | A request waited for a concurrency slot                       | `request.method`, `request.url` / `wait_ms`, `concurrency.limit`, `concurrency.queued`                                                                                                 |
+| `dataverse.concurrency.limit` | The concurrency limit changed                                 | `concurrency.reason` (`dop_hint`, `throttle`: halved after a `0x80072326` 429, `recovery`) / `concurrency.limit`, `concurrency.previous_limit`, `dop_hint` (when the response had one) |
+| `dataverse.batch`             | A `$batch` came back (`@mohsinonxrm/dataverse-sdk-batch`)     | `batch.continue_on_error` / `batch.requests`, `batch.succeeded`, `batch.failed`, `duration_ms`, `status`                                                                               |
+| `dataverse.chaos.injected`    | `ChaosMiddleware` injected a fault (dev and test only)        | `chaos.fault` (`status`, `network`, `latency`, `hang`), `request.method`, `error.type` / `retry.attempt`, `status`, `chaos.delay_ms`                                                   |
+| `dataverse.throttle.delay`    | Adaptive throttling held a request back (when `onDelay` runs) | `request.method`, `throttle.reason` (`pressure`, `retry-after`); no URL, match by `correlation.id` / `delay_ms`, `throttle.pressure`                                                   |
+| `dataverse.circuit.state`     | A `CircuitBreakerMiddleware` changed state                    | `circuit.state`, `circuit.previous_state`, `circuit.reason`, `circuit.mode` / `circuit.failures`, `circuit.break_ms`, `circuit.throughput`                                             |
 
 A request with `{ type: "telemetry", disable: true }` sends none of them.
 `client.trackEvent(name, props, measurements)` sends your own event to the client's telemetry,
@@ -1609,6 +1899,8 @@ export interface RequestInformation {
   timeoutMs?: number;
   /** Limit for each attempt */
   attemptTimeoutMs?: number;
+  /** When a time limit you enforce through signal runs out (ms since the epoch, on the client's clock) */
+  deadline?: number;
   signal?: AbortSignal;
   /** Sent as x-ms-correlation-id; a new one is generated when omitted */
   correlationId?: string;
@@ -1650,13 +1942,19 @@ pnpm --filter @mohsinonxrm/dataverse-sdk-core exec vitest  # Watch mode
 
 ### Fault Injection (ChaosMiddleware)
 
-To see how your app copes with throttling and outages, add `ChaosMiddleware` (modelled on the
-Microsoft Graph SDK's `ChaosHandler`). It answers some requests itself, with a fake 429 (with
-`Retry-After`), 502, 503 or 504, or fails them like a dropped connection, without sending them.
-It is never in the default pipeline; add it only in test or development builds.
+To see how your app copes with throttling, outages and slow responses, add `ChaosMiddleware`
+(modelled on the Microsoft Graph SDK's `ChaosHandler` and Polly's chaos strategies). It answers
+some requests itself, with a fake 429 (with `Retry-After`), 502, 503 or 504, fails them like a
+dropped connection without sending them, delays them, or never answers them.
+
+> **Dev and test environments only.** Chaos must never run in a live production environment.
+> Always set `enabled`, from something that is off in production (an environment variable, a
+> feature flag), so the same client setup can't fail real requests by accident. Without
+> `enabled` the middleware is on, as in 2.0, and logs a warning once through the client's
+> `logger`.
 
 ```typescript
-import { ChaosMiddleware, DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
+import { ChaosMiddleware, ChaosPresets, DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 
 const client = new DataverseClient({
   baseUrl,
@@ -1665,8 +1963,10 @@ const client = new DataverseClient({
     // append: it runs last, so its faults go through retry, concurrency and telemetry like real ones
     append: [
       new ChaosMiddleware({
-        percentage: 20, // default 10
-        faults: [{ status: 429, retryAfterSeconds: 2 }, { status: 503 }, { status: "network" }],
+        // Off unless switched on: DATAVERSE_SDK_CHAOS=1 in a dev or test environment
+        enabled: process.env.DATAVERSE_SDK_CHAOS === "1",
+        percentage: 5, // default 10; keep it low
+        faults: [...ChaosPresets.serviceProtection(), { status: 503 }, { status: "network" }],
         match: /\/accounts/, // only requests whose URL matches (default: every request)
       }),
     ],
@@ -1675,15 +1975,40 @@ const client = new DataverseClient({
 
 // A script decides instead of the percentage: here, the first two attempts of each request fail.
 new ChaosMiddleware({
+  enabled: true, // e.g. in a unit test
   script: (request, { attempt }) => (attempt < 2 ? { status: 503 } : undefined),
 });
 ```
 
+- **On and off:** `enabled` is `true`, `false`, or a function of the request asked for each
+  attempt (a feature flag, a header, a percentage of users). While it is off (or the function
+  returns anything but `true`, or throws), every request goes through untouched, per-request
+  `fault`s included.
 - **Faults:** `{ status }` with any status from 200 to 599, plus optional `retryAfterSeconds`
   (default 1 for a 429), `headers` and `body` (default: a Dataverse error body; for a 429 the
   service-protection error `0x80072322`). `status: "network"` throws a `DataverseNetworkError`
   named `ConnectionFailed`, as `fetch` failing does. The default faults are 429 (`Retry-After: 1`),
   502, 503 and 504, picked at random.
+- **Slow and hanging requests:** `{ status: "latency", delayMs }` sends the request after
+  `delayMs`; `{ status: "hang" }` never answers, so the request ends only when its `signal`
+  aborts, `timeoutMs` passes (`RequestTimeout`) or `attemptTimeoutMs` passes (`RequestTimeout`
+  for that attempt). Both waits end at once when the request is aborted, and a delay of
+  `attemptTimeoutMs` or more times the attempt out, as a slow response would. `delayMs` on a
+  status or network fault makes it a slow failure. `clock` takes a fake clock for tests
+  (`Clock`: `now()` and `sleep(ms, signal)`; the client's `clock` by default).
+- **Presets:** `ChaosPresets.serviceProtection({ retryAfterSeconds? })` (the three
+  service-protection 429s: `0x80072322` number of requests, `0x80072321` execution time,
+  `0x80072326` concurrent requests, each with `Retry-After` and Dataverse's error body),
+  `gatewayOutage()` (502, 503, 504), `flakyNetwork()` (dropped connections) and
+  `slowOrg({ delayMs? })` (latency, 2 s by default). Each returns `faults`; spread several into one
+  list.
+- **Rate:** the default `percentage` is 10 in 2.x. Polly's chaos strategies default to 0.1%; use a
+  low rate in a shared dev or test environment, and 100 (or a `script`) in a unit test.
+- **Telemetry:** each fault is tracked as a `dataverse.chaos.injected` event
+  (`TelemetryEvents.chaosInjected`), and the attempt's dependency (and its exception or
+  `dataverse.throttle` event) carries `chaos.injected: "true"` and `chaos.fault`, so dashboards
+  can filter injected faults out. `client.describePipeline()` lists the middleware in order, to
+  check where (and whether) the chaos middleware is.
 - **Choosing requests:** `percentage` (0 to 100) of the requests that pass `match` (a `RegExp`
   tested against the full URL, or a function of the request). A `script` replaces `percentage`
   and `faults`: it gets the request and `{ requestIndex, attempt }`, and returns a fault or
@@ -1691,6 +2016,11 @@ new ChaosMiddleware({
   about each fault.
 - **Per request:** `new MiddlewareRequestOptions([{ type: "chaos", disable: true }])` keeps a
   request clean; `{ type: "chaos", fault: { status: 504 } }` forces a fault on it (`ChaosRequestOptions`).
+
+**Planned for 3.0** (not in 2.x, which stays compatible): `enabled` defaults to off, so a
+`ChaosMiddleware` without it does nothing. Set `enabled` now and nothing changes for you then.
+
+See [Testing your app's resilience](../../docs/testing-resilience.md) for a walk-through.
 
 ## Bundle Size
 

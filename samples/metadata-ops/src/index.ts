@@ -152,11 +152,15 @@ async function eventually<T>(
 }
 
 /**
- * Dataverse refused the request (400 or 404), so nothing was created and it is safe to send it
- * again. Any other error (a timeout, a 5xx) is thrown, because the component may exist.
+ * Dataverse refused the request (400 or 404, or a 405 "not found in cache" for a table a server
+ * doesn't know yet), so nothing was created and it is safe to send it again. Any other error (a
+ * timeout, a 5xx) is thrown, because the component may exist.
  */
 const refused = (err: unknown): boolean =>
-  err instanceof DataverseODataError && (err.status === 400 || err.status === 404);
+  err instanceof DataverseODataError &&
+  (err.status === 400 ||
+    err.status === 404 ||
+    (err.status === 405 && /not found in cache/i.test(err.message)));
 
 /**
  * DELETE `apiPath`, retrying for up to four minutes. Only a 204, or several 404s in a row, count

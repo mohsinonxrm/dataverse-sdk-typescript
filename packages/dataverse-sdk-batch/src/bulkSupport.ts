@@ -8,6 +8,7 @@ import {
   parseODataError,
   type DataverseClient,
 } from "@mohsinonxrm/dataverse-sdk-core";
+import { deadlineOf } from "./stop.js";
 
 /** Which bulk-operation messages a table supports. */
 export interface BulkOperationSupport {
@@ -65,7 +66,8 @@ const cache = new WeakMap<DataverseClient, Map<string, BulkOperationSupport>>();
  * cached per client and table for the life of the client; pass `refresh: true` to read it again
  * (for example after a solution adds bulk support to a custom table).
  *
- * `createMultiple()` and `updateMultiple()` use it with `strategy: "auto"`.
+ * `createMultiple()`, `updateMultiple()`, `upsertMultiple()` and `deleteMultiple()` use it with
+ * `strategy: "auto"` (and `deleteMultiple()` with `"bulk"`, to reject a standard table).
  *
  * @param client - The client to send the lookups with
  * @param logicalName - The table's logical name, e.g. `"account"`
@@ -175,12 +177,16 @@ async function getJson(
   query: Record<string, string>,
   options: BulkOperationSupportOptions
 ): Promise<unknown> {
+  // Called by the bulk helpers with their execution's signal: its timeoutMs
+  // deadline goes along, so a long Retry-After fails at once instead of at the timeout (#487).
+  const deadline = deadlineOf(options.signal);
   const response = await client.send({
     method: "GET",
     url,
     query,
     headers: { accept: "application/json" },
     ...(options.signal ? { signal: options.signal } : {}),
+    ...(deadline !== undefined ? { deadline } : {}),
     ...(options.timeoutMs !== undefined ? { timeoutMs: options.timeoutMs } : {}),
   });
   if (!response.ok) throw await parseODataError(response);

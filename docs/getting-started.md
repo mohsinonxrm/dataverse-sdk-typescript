@@ -218,7 +218,7 @@ const account = {
 
 const newAccount = await client
   .api("/accounts")
-  .prefer(Prefer.returnRepresentation()) // or .header("Prefer", "return=representation")
+  .prefer(Prefer.returnRepresentation()) // Prefer: return=representation
   .post<{ accountid: string; name: string }>(account);
 
 console.log("Created account ID:", newAccount.accountid);
@@ -706,6 +706,10 @@ for (const r of updated.results) {
 }
 ```
 
+`upsertMultiple()` (each record named by its primary key or an `@odata.id` such as
+`accounts(accountnumber='A-1')`) and `deleteMultiple()` (ids; `DeleteMultiple` on an elastic
+table, a `$batch` of `DELETE`s otherwise) work the same way.
+
 `getBulkOperationSupport(client, "account")` tells which bulk messages a table supports. To send
 one bulk request yourself, use the action:
 
@@ -894,7 +898,7 @@ console.log(account.name);
 ### Explore Advanced Features
 
 - **Metadata Operations**: `MetadataClient` and the `Metadata` builders in `@mohsinonxrm/dataverse-sdk-metadata` create and update tables, columns, relationships and choices ([reference](./api/metadata-operations.md))
-- **Resilience**: opt-in adaptive throttling, circuit breaker and bulkhead middleware, and `ChaosMiddleware` to test your app against 429s and outages ([core README](../packages/dataverse-sdk-core/README.md#resiliency-features))
+- **Resilience**: opt-in adaptive throttling, circuit breaker and bulkhead middleware, and `ChaosMiddleware` to test your app against 429s, outages and slow responses in dev and test environments ([core README](../packages/dataverse-sdk-core/README.md#resiliency-features), [Testing your app's resilience](testing-resilience.md))
 - **Telemetry**: the OpenTelemetry and Application Insights adapters record a dependency per request attempt, with W3C trace context and the SDK's throttle, retry and batch events ([core README](../packages/dataverse-sdk-core/README.md#telemetryclient))
 - **FetchXML and views**: `client.fetchXml()`, `client.savedQuery()` and `client.userQuery()` ([core README](../packages/dataverse-sdk-core/README.md#fetchxml))
 - **Discovery**: find the environments a user can open, in every cloud (`@mohsinonxrm/dataverse-sdk-discovery`)
@@ -947,17 +951,22 @@ const client = new DataverseClient({
     maxRetries: 5, // default 6
     baseDelayMs: 1000, // default 3000; the backoff doubles per retry
     maxDelayMs: 30000, // default 30000
-    jitter: true, // default true (±20% on the computed backoff)
+    backoff: "exponential", // default; or "linear", "constant"
+    jitter: true, // default true (±20% on the computed backoff); or false, "decorrelated"
+    retryAfterJitterMs: 0, // default 0; up to this many ms added to each Retry-After wait
   },
 });
 ```
 
-`Retry-After` is waited out as sent when it's at most `maxRetryAfterMs` (default: `maxDelayMs`)
-and ends before the request's `timeoutMs`; otherwise the 429 is returned to you at once as a
-`DataverseThrottleError` with `retryAfterMs`. `shouldRetry` picks which statuses to retry; only
-`retryNonIdempotent` lets a create or an action be replayed after a 5xx. See the
+`Retry-After` is waited out as sent (plus up to `retryAfterJitterMs`) when it's at most
+`maxRetryAfterMs` (default: `maxDelayMs`) and ends before the request's `timeoutMs`; otherwise the
+429 is returned to you at once as a `DataverseThrottleError` with `retryAfterMs`. `shouldRetry`
+picks which statuses to retry; only `retryNonIdempotent` lets a create or an action be replayed
+after a 5xx. See the
 [core README](../packages/dataverse-sdk-core/README.md#retry-with-exponential-backoff) for
-`retryableStatusCodes`, `retryNonIdempotent`, `retryNetworkErrors`, `shouldRetry` and `onRetry`.
+`jitter: "decorrelated"`, `retryableStatusCodes`, `retryNonIdempotent`, `retryNetworkErrors`,
+`retryAttemptTimeouts`, `shouldRetry` and `onRetry`, and for the opt-in circuit breaker (by
+failures in a row, or by failure ratio).
 
 ### Type Safety
 

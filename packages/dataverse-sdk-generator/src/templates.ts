@@ -17,6 +17,7 @@ export const TEMPLATE_NAMES = [
   "complextype.ejs",
   "entity.ejs",
   "enum.ejs",
+  "form-layouts.ejs",
   "form.ejs",
   "function.ejs",
   "metadata.ejs",

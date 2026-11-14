@@ -1,7 +1,9 @@
 /**
  * OrderType enum
  */
-export enum OrderType {
-  Ascending = 0,
-  Descending = 1,
-}
+export const OrderType = {
+  Ascending: 0,
+  Descending: 1,
+} as const;
+
+export type OrderType = (typeof OrderType)[keyof typeof OrderType];

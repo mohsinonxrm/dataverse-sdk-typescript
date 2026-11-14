@@ -2,7 +2,10 @@ import type { Middleware, NextMiddleware } from "../abstractions/middleware.js";
 import type { MiddlewareContext, RequestInformation } from "../abstractions/http.js";
 import { DataverseInvalidRequestError } from "../errors/NamedErrors.js";
 import { parseRetryAfter } from "../utils/HeaderUtils.js";
-import { sleep } from "../utils/sleep.js";
+import { systemClock, type Clock } from "../utils/clock.js";
+import { TelemetryEvents } from "../telemetry/events.js";
+import { requestTelemetry } from "../utils/telemetry.js";
+import type { MiddlewareOptions } from "./RequestOptions.js";
 
 /** Remaining number of requests, per web server and user, in the 5-minute window. */
 const REQUESTS_HEADER = "x-ms-ratelimit-burst-remaining-xrm-requests";
@@ -45,6 +48,26 @@ export interface AdaptiveThrottlingOptions {
    * is ignored.
    */
   onDelay?: (delay: AdaptiveThrottlingDelay) => void;
+  /**
+   * The clock that reads the time (for the spacing, the pause after a 429 and the age of
+   * readings) and waits, e.g. the testing package's fake clock in tests.
+   * @default the client's `clock` (`DataverseClientOptions.clock`, as of its last request), else
+   *   `systemClock` (the real one)
+   */
+  clock?: Clock;
+}
+
+/**
+ * Per-request settings of `AdaptiveThrottlingMiddleware`:
+ * `new MiddlewareRequestOptions([{ type: "adaptiveThrottling", bypass: true }])`.
+ */
+export interface AdaptiveThrottlingRequestOptions extends MiddlewareOptions {
+  /**
+   * Send this request without waiting for the spacing or for a 429's pause, and without taking a
+   * turn (the next request's start isn't pushed back). Its response still updates the budgets.
+   * @default false
+   */
+  bypass?: boolean;
 }
 
 /** What `AdaptiveThrottlingOptions.onDelay` receives. */
@@ -118,9 +141,16 @@ class Budget {
  * requests, up to `maxSpacingMs` apart when a budget is used up. After a 429 with `Retry-After`,
  * it holds every new request until the wait has passed, not just the one that was throttled.
  *
- * Opt-in: it isn't part of the default pipeline. Add it with `middleware.append`, so it sees
- * every attempt's response, 429s included. Use one instance per client: the budgets belong to the
- * user the client signs in as.
+ * Opt-in: it isn't part of the default pipeline. Turn it on with the client's `adaptiveThrottling`
+ * option, which places it inside Retry (so it sees every attempt's response, 429s included) and
+ * outside Concurrency (so a request it holds back holds no concurrency slot and no access token,
+ * and the wait isn't counted in the attempt's dependency duration). Each wait is reported as a
+ * `dataverse.throttle.delay` telemetry event. Use one instance per client: the budgets belong to
+ * the user the client signs in as.
+ *
+ * Added with `middleware.append` instead (how it was added before `adaptiveThrottling` existed), it
+ * still works, but runs inside the concurrency slot; the client logs a warning once recommending
+ * the option.
  *
  * Microsoft documents the headers as being for debugging, not for controlling how many requests
  * to send. Each web server of an environment counts on its own, and without the affinity cookie
@@ -131,19 +161,13 @@ class Budget {
  *
  * @example
  * ```typescript
- * const client = new DataverseClient({
- *   baseUrl,
- *   tokenProvider,
- *   middleware: {
- *     append: [
- *       new AdaptiveThrottlingMiddleware({
- *         threshold: 0.2,
- *         maxSpacingMs: 2000,
- *         onDelay: ({ delayMs, reason }) => console.log(`Holding a request ${delayMs} ms (${reason})`),
- *       }),
- *     ],
- *   },
+ * const throttling = new AdaptiveThrottlingMiddleware({
+ *   threshold: 0.2,
+ *   maxSpacingMs: 2000,
+ *   onDelay: ({ delayMs, reason }) => console.log(`Holding a request ${delayMs} ms (${reason})`),
  * });
+ * const client = new DataverseClient({ baseUrl, tokenProvider, adaptiveThrottling: throttling });
+ * console.log(throttling.status.pressure);
  * ```
  */
 export class AdaptiveThrottlingMiddleware implements Middleware {
@@ -153,6 +177,8 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
   private readonly maxPauseMs: number;
   private readonly requests: Budget;
   private readonly time: Budget;
+  /** The last request's `ctx.clock`, used when the `clock` option isn't set. */
+  private ctxClock?: Clock;
   private pausedUntil = 0;
   private nextStart = 0;
 
@@ -173,9 +199,14 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
     this.time = new Budget(options.timeBudget);
   }
 
+  /** Its own `clock`, else the client's (`ctx.clock` of the last request), else the real one. */
+  private get clock(): Clock {
+    return this.options.clock ?? this.ctxClock ?? systemClock;
+  }
+
   /** The budgets as last read, and what they mean for the next request. */
   get status(): AdaptiveThrottlingStatus {
-    const now = Date.now();
+    const now = this.clock.now();
     const pressure = this.pressure(now);
     const status: AdaptiveThrottlingStatus = {
       pressure,
@@ -200,7 +231,13 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
     ctx: MiddlewareContext,
     next: NextMiddleware
   ): Promise<Response> {
-    const now = Date.now();
+    this.ctxClock = ctx.clock;
+    if (ctx.middlewareOptions?.get("adaptiveThrottling")?.bypass) {
+      const res = await next(request, ctx);
+      this.observe(res, this.clock.now());
+      return res;
+    }
+    const now = this.clock.now();
     const pressure = this.pressure(now);
     // Requests take turns: each starts no sooner than the previous one's start plus the spacing.
     const start = Math.max(now, this.pausedUntil, this.nextStart);
@@ -218,11 +255,22 @@ export class AdaptiveThrottlingMiddleware implements Middleware {
         reason,
         pressure,
       });
-      await sleep(delayMs, request.signal);
+      // The client's telemetry (the context carries it); the URL is left out, as this middleware
+      // can't know the client's redactUrl: the correlation id links the wait to the request.
+      requestTelemetry({}, ctx)?.trackEvent(
+        TelemetryEvents.throttleDelay,
+        {
+          "correlation.id": ctx.correlationId ?? "",
+          "request.method": request.method,
+          "throttle.reason": reason,
+        },
+        { delay_ms: delayMs, "throttle.pressure": pressure }
+      );
+      await this.clock.sleep(delayMs, request.signal);
     }
 
     const res = await next(request, ctx);
-    this.observe(res, Date.now());
+    this.observe(res, this.clock.now());
     return res;
   }
 

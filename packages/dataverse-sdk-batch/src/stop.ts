@@ -13,10 +13,27 @@ import {
 /** The signal an execution sends its requests with: the caller's, plus the `timeoutMs` deadline. */
 export interface ExecutionSignal {
   signal: AbortSignal | undefined;
+  /**
+   * When the execution's `timeoutMs` (or that of the execution whose signal it was given, if
+   * earlier) runs out, in ms since the epoch; `undefined` without one. Sent with each request as
+   * `deadline`, so the retry middleware doesn't start a wait that would end after it (#487).
+   */
+  readonly deadline: number | undefined;
   /** True once `timeoutMs` has passed (as opposed to the caller aborting). */
   readonly expired: boolean;
   /** Stops the timer and detaches from the caller's signal. */
   dispose(): void;
+}
+
+/**
+ * The deadline of each execution signal with a `timeoutMs`, so an execution started with another's
+ * signal (a bulk helper's `$batch`, `getBulkOperationSupport()`) sends its deadline too.
+ */
+const deadlines = new WeakMap<AbortSignal, number>();
+
+/** The deadline of an execution signal (see {@link ExecutionSignal.deadline}), if it has one. */
+export function deadlineOf(signal: AbortSignal | undefined): number | undefined {
+  return signal ? deadlines.get(signal) : undefined;
 }
 
 /**
@@ -28,8 +45,14 @@ export function executionSignal(
   caller: AbortSignal | undefined,
   timeoutMs: number | undefined
 ): ExecutionSignal {
-  if (!timeoutMs) return { signal: caller, expired: false, dispose: () => undefined };
+  const outer = deadlineOf(caller);
+  if (!timeoutMs) {
+    return { signal: caller, deadline: outer, expired: false, dispose: () => undefined };
+  }
+  const own = Date.now() + timeoutMs;
+  const deadline = outer === undefined ? own : Math.min(outer, own);
   const controller = new AbortController();
+  deadlines.set(controller.signal, deadline);
   let expired = false;
   const timer = setTimeout(() => {
     if (controller.signal.aborted) return;
@@ -45,6 +68,7 @@ export function executionSignal(
   else caller?.addEventListener("abort", onAbort, { once: true });
   return {
     signal: controller.signal,
+    deadline,
     get expired() {
       return expired;
     },

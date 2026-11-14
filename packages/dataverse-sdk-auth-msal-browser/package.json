@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-auth-msal-browser",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "type": "module",
   "author": "Mohsin On xRM",
   "license": "AGPL-3.0-only",
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@azure/msal-browser": "^3.30.0",
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
-    "eslint": "^9.39.5",
+    "eslint": "^10.14.0",
     "msal-browser-v4": "npm:@azure/msal-browser@^4.30.0",
     "msal-browser-v5": "npm:@azure/msal-browser@^5.28.0",
     "tsup": "^8.5.1",

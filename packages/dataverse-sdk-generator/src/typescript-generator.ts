@@ -21,10 +21,16 @@ import {
   GENERATOR_VERSION,
   type GenerationStamp,
   hashOf,
+  metadataSource,
   readStamp,
   removeStale,
   writeStamp,
 } from "./incremental.js";
+import {
+  FORM_LAYOUT_MODULE,
+  FORM_LAYOUT_UI,
+  formLayoutHelpersSource,
+} from "./form-layout-helpers.js";
 import { isNoContentOperation, noContentDoc } from "./no-content-operations.js";
 import type { SchemaModel } from "./schema-model.js";
 import { loadTemplate, TEMPLATE_NAMES, type TemplateName } from "./templates.js";
@@ -32,6 +38,8 @@ import type {
   ActionType,
   DataverseGenConfig,
   EntityType,
+  FormControlKind,
+  FormLayoutType,
   FunctionType,
   NavigationPropertyType,
   ParameterType,
@@ -51,11 +59,106 @@ const TYPED_CLIENT_FACTORY = "createTypedClient";
 
 type Folder = "entities" | "enums" | "actions" | "functions" | "complextypes" | "forms";
 
+/**
+ * A constructor argument of a generated action or function, kept as a public readonly field. The
+ * templates declare the field and assign it, rather than use a parameter property, which
+ * `erasableSyntaxOnly` and Node's type stripping don't allow (#479).
+ */
+interface ConstructorParameter {
+  name: string;
+  type: string;
+  /** Source of the default value (`{}` when every parameter is optional). */
+  defaultValue?: string;
+}
+
+/** The names of an entity's typed client types (`typedClient`, #312, #431). */
+interface ClientTypeNames {
+  /** The union of its column names, for `select`: `AccountColumn`. */
+  column: string;
+  /** Its navigation properties, for `expand`: `AccountNavigation`. */
+  navigation: string;
+  /** Its bound actions and functions (#432): `AccountOperations`. */
+  operations: string;
+}
+
 /** The names of an entity's form types (`formContext`, #347). */
 interface FormNames {
   attributes: string;
   controls: string;
   context: string;
+}
+
+/** The names of a form layout's types (`formLayouts`, #430). */
+interface FormLayoutNames {
+  attributes: string;
+  controls: string;
+  tabs: string;
+  context: string;
+}
+
+/** The Xrm control type of a form control that isn't bound to a column, and its doc. */
+const UNBOUND_CONTROLS: Readonly<Record<FormControlKind, { type: string; doc: string }>> = {
+  subgrid: { type: "Xrm.Controls.GridControl", doc: "A subgrid" },
+  webResource: { type: "Xrm.Controls.IframeControl", doc: "A web resource" },
+  iframe: { type: "Xrm.Controls.IframeControl", doc: "An IFRAME" },
+  quickView: { type: "Xrm.Controls.QuickFormControl", doc: "A quick view form" },
+  timeline: { type: "Xrm.Controls.TimelineWall", doc: "The timeline" },
+  other: { type: "Xrm.Controls.Control", doc: "A control" },
+  // A column control without a column (no datafieldname)
+  column: { type: "Xrm.Controls.StandardControl", doc: "A control" },
+};
+
+/**
+ * The Xrm attribute and control types of a column on a form that the table-wide form types don't
+ * have, by its `AttributeTypeName`: a party list is a lookup (`to`, `requiredattendees`); a file or
+ * image column, which `@types/xrm` has no type for, and anything else is a plain attribute with a
+ * standard control.
+ */
+function xrmColumnTypes(columnType: string | undefined): { attribute: string; control: string } {
+  switch (columnType?.replace(/Type$/, "")) {
+    case "PartyList":
+    case "Lookup":
+    case "Customer":
+    case "Owner":
+      return { attribute: "Xrm.Attributes.LookupAttribute", control: "Xrm.Controls.LookupControl" };
+    case "String":
+    case "Memo":
+      return { attribute: "Xrm.Attributes.StringAttribute", control: "Xrm.Controls.StringControl" };
+    case "Integer":
+    case "BigInt":
+    case "Decimal":
+    case "Double":
+    case "Money":
+      return { attribute: "Xrm.Attributes.NumberAttribute", control: "Xrm.Controls.NumberControl" };
+    case "DateTime":
+      return { attribute: "Xrm.Attributes.DateAttribute", control: "Xrm.Controls.DateControl" };
+    case "Boolean":
+      return {
+        attribute: "Xrm.Attributes.BooleanAttribute",
+        control: "Xrm.Controls.StandardControl",
+      };
+    case "Picklist":
+    case "State":
+    case "Status":
+      return {
+        attribute: "Xrm.Attributes.OptionSetAttribute",
+        control: "Xrm.Controls.OptionSetControl",
+      };
+    case "MultiSelectPicklist":
+      return {
+        attribute: "Xrm.Attributes.MultiSelectOptionSetAttribute",
+        control: "Xrm.Controls.MultiSelectOptionSetControl",
+      };
+    default:
+      return { attribute: "Xrm.Attributes.Attribute", control: "Xrm.Controls.StandardControl" };
+  }
+}
+
+/** A form's name as an identifier part: `Sales Insights` → `SalesInsights`; `Form` when empty. */
+function pascalCase(text: string): string {
+  const words = text.split(/[^\p{L}\p{N}]+/u).filter((w) => w.length > 0);
+  const joined = words.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join("");
+  return toSafeIdentifier(joined).replace(/^_+/, "") || "Form";
 }
 
 // Reserved words that cannot name a type, a class or a variable. Contextual keywords such as
@@ -213,7 +316,8 @@ export class TypescriptGenerator {
   private outputNamesCache?: Map<string, string>;
   private writeTypeNamesCache?: Map<EntityType, { create: string; update: string }>;
   private formNamesCache?: Map<EntityType, FormNames>;
-  private columnTypeNamesCache?: Map<EntityType, string>;
+  private formLayoutNamesCache?: Map<EntityType, FormLayoutNames[]>;
+  private clientTypeNamesCache?: Map<EntityType, ClientTypeNames>;
   /** Every file this run wrote or kept, relative to the output folder, with `/`. */
   private readonly written = new Set<string>();
   /** Incremental generation: the tables whose files are kept as they are. */
@@ -244,12 +348,17 @@ export class TypescriptGenerator {
     const previous = incremental ? await readStamp(this.outputRoot) : undefined;
     const tables: GenerationStamp["tables"] = {};
     const settings = incremental ? await this.settingsHash() : "";
+    // The tables' metadata is kept only with a version stamp to ask for the changes since (#429)
+    const versionStamp = this.model.MetadataVersionStamp;
     if (incremental) {
       const reusable = previous?.generator === GENERATOR_VERSION && previous.settings === settings;
       for (const entity of this.model.EntityTypes) {
         const files = this.tableFiles(entity);
-        const hash = hashOf(JSON.stringify(entity));
-        tables[entity.LogicalName] = { hash, files };
+        const hash = hashOf(JSON.stringify(entity), JSON.stringify(this.tableDependencies(entity)));
+        const metadata = versionStamp
+          ? this.model.TableMetadata.get(entity.LogicalName)
+          : undefined;
+        tables[entity.LogicalName] = { hash, files, ...(metadata && { metadata }) };
         const before = previous?.tables[entity.LogicalName];
         if (
           reusable &&
@@ -270,7 +379,8 @@ export class TypescriptGenerator {
     await this.outputFunctions();
     await this.outputComplexTypes();
     await this.outputMetadata();
-    if (this.config.formContext === true) await this.outputForms();
+    if (this.formContext) await this.outputForms();
+    if (this.formLayouts) await this.outputFormLayouts();
     if (this.config.typedClient === true) await this.outputClient();
 
     if (this.config.output?.generateIndex !== false) {
@@ -285,35 +395,102 @@ export class TypescriptGenerator {
         settings,
         tables,
         files: [...this.written].sort(),
+        ...(versionStamp && {
+          metadata: {
+            source: metadataSource(this.config),
+            versionStamp,
+            skipped: [...this.model.SkippedTables].sort(),
+          },
+        }),
       });
     }
   }
 
   /**
-   * Incremental generation: a hash of what every generated file depends on besides its own
-   * table: the generator options, the templates (custom ones included) and the names of the
-   * generated tables, enums and complex types, which other files import.
+   * Incremental generation: a hash of what every table's files depend on besides the table
+   * itself: the generator options, the templates (custom ones included) and the names of the
+   * generated tables, which the tables' files import from each other.
+   *
+   * The enums and complex types aren't in it (#501): `$metadata` declares far more of them than
+   * the generated tables use, and a table's files depend only on the ones it uses, which
+   * {@link tableDependencies} puts in that table's hash. A choice or complex type that no
+   * generated table uses can come and go without regenerating any table. (The enum, complex type,
+   * operation and index files aren't per table and are written on every run.)
    */
   private async settingsHash(): Promise<string> {
     const templates = await Promise.all(TEMPLATE_NAMES.map((name) => this.loadTemplate(name)));
     const settings = {
       fileSuffix: this.fileSuffix,
       strictNulls: this.strictNulls,
-      formContext: this.config.formContext === true,
+      formContext: this.formContext,
+      formLayouts: this.formLayouts,
       typedClient: this.config.typedClient === true,
       tables: this.model.EntityTypes.map((e) => [e.Name, e.LogicalName, this.entityTypeName(e)]),
-      enums: this.model.EnumTypes.map((e) => e.Name),
-      complexTypes: this.model.ComplexTypes.map((c) => c.Name),
     };
     return hashOf(JSON.stringify(settings), ...templates);
+  }
+
+  /**
+   * Incremental generation: what a table's files depend on besides its schema model and the
+   * settings (#501): the names of its create, update and form types (unique among all the
+   * generated names, so another type can change them), and each type its columns, choices and
+   * lookups refer to: what the name resolves to in its files, and the enum or complex type itself,
+   * with the types a complex type refers to in turn (its properties and base type).
+   */
+  private tableDependencies(entity: EntityType): unknown {
+    const enums = new Map(this.model.EnumTypes.map((e) => [e.Name, e]));
+    const complexTypes = new Map(this.model.ComplexTypes.map((c) => [c.Name, c]));
+    const pending: string[] = [];
+    for (const prop of entity.Properties) {
+      if (prop.TypeScriptType.reference !== undefined) pending.push(prop.TypeScriptType.reference);
+      if (prop.EnumName) pending.push(prop.EnumName);
+    }
+    for (const nav of entity.NavigationProperties) {
+      pending.push(nav.TargetType, ...(nav.Targets ?? []));
+    }
+
+    const types = new Map<string, unknown>();
+    for (let name = pending.pop(); name !== undefined; name = pending.pop()) {
+      if (types.has(name)) continue;
+      const complexType = complexTypes.get(name);
+      types.set(name, {
+        as: this.resolveReference(name, "entities", new ImportCollector()),
+        enum: enums.get(name),
+        complexType,
+      });
+      if (complexType) {
+        if (complexType.BaseType) pending.push(complexType.BaseType);
+        for (const prop of complexType.Properties) {
+          const reference = prop.TypeScriptType.reference;
+          if (reference !== undefined) pending.push(reference);
+        }
+      }
+    }
+    return {
+      write: this.writeTypeNames.get(entity),
+      form: this.formNames.get(entity),
+      formLayouts: this.formLayoutNames.get(entity),
+      types: [...types].sort(([a], [b]) => compareCodeUnits(a, b)),
+    };
   }
 
   /** The files generated from one table, relative to the output folder. */
   private tableFiles(entity: EntityType): string[] {
     const typeName = this.entityTypeName(entity);
     const files = [`entities/${typeName}${this.fileSuffix}.ts`];
-    if (this.config.formContext === true) files.push(`forms/${typeName}Form${this.fileSuffix}.ts`);
+    if (this.formContext) files.push(`forms/${typeName}Form${this.fileSuffix}.ts`);
+    if (this.formLayouts) files.push(`forms/${typeName}Forms${this.fileSuffix}.ts`);
     return files;
+  }
+
+  /** The table-wide form context types (`formContext`), which `formLayouts` builds on. */
+  private get formContext(): boolean {
+    return this.config.formContext === true || this.formLayouts;
+  }
+
+  /** A form context type per form layout (`formLayouts`, #430). */
+  private get formLayouts(): boolean {
+    return this.config.formLayouts === true;
   }
 
   /** TypeScript name of a generated entity: its schema name (`Account`), made safe. */
@@ -402,7 +579,7 @@ export class TypescriptGenerator {
     if (this.formNamesCache) return this.formNamesCache;
     const names = new Map<EntityType, FormNames>();
     this.formNamesCache = names;
-    if (this.config.formContext !== true) return names;
+    if (!this.formContext) return names;
     const taken = new Set<string>([
       ...this.model.EntityTypes.flatMap((e) => {
         const typeName = this.entityTypeName(e);
@@ -430,13 +607,14 @@ export class TypescriptGenerator {
   }
 
   /**
-   * With `typedClient`, the name of each entity's column union (#312): `<Entity>Column`, with a
-   * `_2` suffix when another generated type has that name. Empty without the option.
+   * With `typedClient`, the names of each entity's column union (#312) and navigation type
+   * (#431): `<Entity>Column` and `<Entity>Navigation`, with a `_2` suffix when another generated
+   * type has that name. Empty without the option.
    */
-  private get columnTypeNames(): Map<EntityType, string> {
-    if (this.columnTypeNamesCache) return this.columnTypeNamesCache;
-    const names = new Map<EntityType, string>();
-    this.columnTypeNamesCache = names;
+  private get clientTypeNames(): Map<EntityType, ClientTypeNames> {
+    if (this.clientTypeNamesCache) return this.clientTypeNamesCache;
+    const names = new Map<EntityType, ClientTypeNames>();
+    this.clientTypeNamesCache = names;
     if (this.config.typedClient !== true) return names;
     const taken = new Set<string>([
       ...this.model.EntityTypes.flatMap((e) => {
@@ -450,14 +628,113 @@ export class TypescriptGenerator {
       TYPED_CLIENT,
       TYPED_CLIENT_FACTORY,
     ]);
-    for (const entity of this.model.EntityTypes) {
-      const stem = `${this.entityTypeName(entity)}Column`;
+    const unique = (stem: string): string => {
       let name = stem;
       for (let i = 2; taken.has(name); i++) name = `${stem}_${String(i)}`;
       taken.add(name);
-      names.set(entity, name);
+      return name;
+    };
+    for (const entity of this.model.EntityTypes) {
+      const typeName = this.entityTypeName(entity);
+      names.set(entity, {
+        column: unique(`${typeName}Column`),
+        navigation: unique(`${typeName}Navigation`),
+        operations: unique(`${typeName}Operations`),
+      });
     }
     return names;
+  }
+
+  /**
+   * With `typedClient` (#432): the generated actions and functions bound to one record of
+   * `entity` or to its entity set, as the class names `<Entity>Operations` lists by operation
+   * name, importing each class. Only operations bound to the table itself whose entity set is
+   * known: their classes take the record id (or nothing) before the parameters. Undefined when
+   * there are none.
+   */
+  private clientOperations(
+    entity: EntityType,
+    imports: ImportCollector
+  ):
+    | Record<"record" | "collection", Record<"actions" | "functions", Array<[string, string]>>>
+    | undefined {
+    const groups = {
+      record: { actions: [] as Array<[string, string]>, functions: [] as Array<[string, string]> },
+      collection: {
+        actions: [] as Array<[string, string]>,
+        functions: [] as Array<[string, string]>,
+      },
+    };
+    const add = (
+      ops: Array<ActionType | FunctionType>,
+      kind: "actions" | "functions",
+      suffix: "Action" | "Function"
+    ): void => {
+      const names = this.operationNames(ops);
+      for (const op of ops) {
+        if (!op.IsBound || op.BindingEntity !== entity.Name || !op.BindingEntitySetName) continue;
+        const className = `${names.get(op) ?? toSafeIdentifier(op.Name)}${suffix}`;
+        const group = groups[op.IsCollectionBound ? "collection" : "record"][kind];
+        const key = group.some(([k]) => k === op.Name) ? className : op.Name;
+        imports.value(className, `./${kind}/${className}${this.fileSuffix}.js`);
+        group.push([key, className]);
+      }
+    };
+    add(this.model.Actions, "actions", "Action");
+    add(this.model.Functions, "functions", "Function");
+    const lists = Object.values(groups).flatMap((binding) => Object.values(binding));
+    if (lists.every((list) => list.length === 0)) return undefined;
+    for (const binding of Object.values(groups)) {
+      for (const group of Object.values(binding)) group.sort(([a], [b]) => compareCodeUnits(a, b));
+    }
+    return groups;
+  }
+
+  /**
+   * With `typedClient` (#431): the navigation properties of `entity` the Web API expands, by
+   * name, each with its runtime type: `SingleNavigation<Contact, ContactColumn,
+   * ContactNavigation>` for a lookup to a generated table, `CollectionNavigation<…>` for a
+   * one-to-many collection, `ManyToManyNavigation<…>` for a many-to-many one (its own partner),
+   * and the bare kind (any column) for a table that isn't generated. A consolidated polymorphic lookup (`parentcustomerid`) isn't a Web API
+   * property: the ones it stands for (`parentcustomerid_account`, …) are listed instead.
+   */
+  private clientNavigation(
+    entity: EntityType,
+    imports: ImportCollector
+  ): Array<{ key: string; type: string }> {
+    const byName = new Map(this.model.EntityTypes.map((e) => [e.Name, e]));
+    const navigation = new Map<string, string>();
+    const add = (
+      name: string,
+      targetType: string,
+      kind: "SingleNavigation" | "CollectionNavigation" | "ManyToManyNavigation"
+    ): void => {
+      if (navigation.has(name)) return;
+      imports.type(kind, RUNTIME_PACKAGE);
+      const target = byName.get(targetType);
+      const names = target ? this.clientTypeNames.get(target) : undefined;
+      navigation.set(
+        name,
+        target && names
+          ? `${kind}<${this.entityTypeName(target)}, ${names.column}, ${names.navigation}>`
+          : kind
+      );
+    };
+    for (const nav of entity.NavigationProperties) {
+      if (nav.Members) {
+        for (const member of nav.Members) add(member.Name, member.TargetType, "SingleNavigation");
+      } else if (!nav.IsCollection) {
+        add(nav.Name, nav.TargetType, "SingleNavigation");
+      } else {
+        // A many-to-many navigation property is its own partner (Learn: "Web API navigation
+        // properties"); Dataverse refuses a nested $expand inside one
+        const manyToMany = nav.RelationshipName === nav.Name;
+        add(nav.Name, nav.TargetType, manyToMany ? "ManyToManyNavigation" : "CollectionNavigation");
+      }
+    }
+    return [...navigation]
+      .sort(([a], [b]) => compareCodeUnits(a, b))
+      .map(([key, type]) => ({ key, type }));
   }
 
   /**
@@ -482,14 +759,19 @@ export class TypescriptGenerator {
       imports.type(write.create, module);
       imports.type(write.update, module);
       imports.value(metadataName, module);
+      const names = this.clientTypeNames.get(entity);
       return {
         entity,
         typeName,
         metadataName,
         createName: write.create,
         updateName: write.update,
-        columnName: this.columnTypeNames.get(entity) ?? `${typeName}Column`,
+        columnName: names?.column ?? `${typeName}Column`,
         columns: [...new Set(entity.Properties.map((p) => p.Name))],
+        navigationName: names?.navigation ?? `${typeName}Navigation`,
+        navigation: this.clientNavigation(entity, imports),
+        operationsName: names?.operations ?? `${typeName}Operations`,
+        operations: this.clientOperations(entity, imports),
       };
     });
     const first = tables.at(0);
@@ -501,6 +783,7 @@ export class TypescriptGenerator {
       factoryName: TYPED_CLIENT_FACTORY,
       sample: first?.entity.EntitySetName ?? "accounts",
       sampleColumn: first?.entity.PrimaryNameAttribute ?? first?.columns.at(0) ?? "name",
+      sampleNavigation: first?.navigation.find((n) => n.type.includes("<"))?.key,
     });
     await this.writeFile(this.outputRoot, "client", imports, body);
   }
@@ -621,6 +904,181 @@ export class TypescriptGenerator {
       );
     }
     return columns;
+  }
+
+  /**
+   * With `formLayouts` (#430): a `forms/<Entity>Forms.ts` per table with, for each of its main and
+   * quick create forms, the attributes, controls and tabs on that form and a form context whose
+   * `getAttribute()`, `getControl()` and `ui.tabs.get()` take them; and `forms/form-layout.ts`
+   * with the helper types they use.
+   */
+  private async outputFormLayouts(): Promise<void> {
+    const dir = path.join(this.outputRoot, "forms");
+    await fs.mkdir(dir, { recursive: true });
+    await this.writeFile(dir, FORM_LAYOUT_MODULE, new ImportCollector(), formLayoutHelpersSource());
+    const template = await this.loadTemplate("form-layouts.ejs");
+
+    for (const entity of this.model.EntityTypes) {
+      const tableNames = this.formNames.get(entity);
+      if (!tableNames || this.unchanged.has(entity)) continue;
+      const imports = new ImportCollector();
+      const typeName = this.entityTypeName(entity);
+      const layoutNames = this.formLayoutNames.get(entity) ?? [];
+      const forms = (entity.Forms ?? []).map((form, i) => ({
+        ...this.formLayoutMembers(entity, form, tableNames),
+        form,
+        names: layoutNames[i] ?? this.formLayoutBaseNames(`${typeName}_${String(i)}`),
+        kindLabel: form.Kind === "main" ? "main" : "quick create",
+      }));
+      if (forms.length > 0) {
+        const tableModule = this.modulePath("forms", "forms", `${typeName}Form`);
+        imports.type(tableNames.attributes, tableModule);
+        imports.type(tableNames.controls, tableModule);
+        imports.type(FORM_LAYOUT_UI, this.modulePath("forms", "forms", FORM_LAYOUT_MODULE));
+      }
+      const body = ejs.render(template, {
+        ...this.helpers("forms", imports),
+        entity,
+        forms,
+        tableAttributes: tableNames.attributes,
+        tableControls: tableNames.controls,
+        uiType: FORM_LAYOUT_UI,
+      });
+      await this.writeFile(
+        dir,
+        `${typeName}Forms`,
+        imports,
+        body,
+        forms.length > 0 ? '/// <reference types="xrm" />\n\n' : ""
+      );
+    }
+  }
+
+  /**
+   * The attributes, controls and tabs of a form layout, with their Xrm types. A column the
+   * table-wide types have is typed as there (`AccountAttributes["name"]`, with its choice's enum);
+   * another one (a party list, file or image column) by its column type. Each column is an
+   * attribute once, however many controls it has.
+   */
+  private formLayoutMembers(
+    entity: EntityType,
+    form: FormLayoutType,
+    tableNames: FormNames
+  ): {
+    attributes: Array<{ key: string; type: string; doc: string }>;
+    controls: Array<{ key: string; type: string; doc: string }>;
+    tabs: Array<{ key: string; sections: string; doc: string }>;
+    sampleAttribute?: string;
+    sampleTab?: string;
+  } {
+    const tableColumns = new Map(
+      this.formColumns(entity, new ImportCollector()).map((c) => [c.name, c.doc])
+    );
+    const properties = new Map(entity.Properties.map((p) => [p.Name, p]));
+    const columnDoc = (column: string): string => {
+      const prop = properties.get(column);
+      return (
+        [prop?.Description, prop?.DisplayName].find((t) => t) ?? tableColumns.get(column) ?? ""
+      );
+    };
+    const attributes: Array<{ key: string; type: string; doc: string }> = [];
+    const controls: Array<{ key: string; type: string; doc: string }> = [];
+    for (const control of form.Controls) {
+      const column = control.DataField;
+      if (control.Kind === "column" && column !== undefined) {
+        const known = tableColumns.has(column);
+        const xrm = xrmColumnTypes(control.ColumnType);
+        const name = JSON.stringify(column);
+        const described = columnDoc(column);
+        const where = control.Location === "header" ? " (header)" : "";
+        if (!attributes.some((a) => a.key === column)) {
+          attributes.push({
+            key: column,
+            type: known ? `${tableNames.attributes}[${name}]` : xrm.attribute,
+            doc: described && described !== column ? `${column}: ${described}` : column,
+          });
+        }
+        controls.push({
+          key: control.Id,
+          type: known ? `${tableNames.controls}[${name}]` : xrm.control,
+          doc: `The control of ${column}${where}`,
+        });
+        continue;
+      }
+      const unbound = UNBOUND_CONTROLS[control.Kind];
+      controls.push({ key: control.Id, type: unbound.type, doc: unbound.doc });
+    }
+    const tabs = form.Tabs.map((tab) => ({
+      key: tab.Name,
+      sections:
+        tab.Sections.length > 0
+          ? tab.Sections.map((s) => JSON.stringify(s.Name)).join(" | ")
+          : "never",
+      doc:
+        (tab.Label ? `${tab.Label}: ` : "") +
+        (tab.Sections.length > 0
+          ? `sections ${tab.Sections.map((s) => (s.Label ? `${s.Name} (${s.Label})` : s.Name)).join(", ")}`
+          : "no named sections"),
+    }));
+    return {
+      attributes,
+      controls,
+      tabs,
+      sampleAttribute: attributes.at(0)?.key,
+      sampleTab: tabs.at(0)?.key,
+    };
+  }
+
+  /**
+   * With `formLayouts`, the type names of each table's form layouts (#430), in the order of
+   * `entity.Forms`: `<Entity><Kind>_<Form>` (`AccountMain_Account`,
+   * `ContactQuickCreate_ContactQuickCreate`) + `Attributes`, `Controls`, `Tabs`, `FormContext`,
+   * with a `_2` suffix on the stem when another generated type has one of those names. Empty
+   * without the option.
+   */
+  private get formLayoutNames(): Map<EntityType, FormLayoutNames[]> {
+    if (this.formLayoutNamesCache) return this.formLayoutNamesCache;
+    const names = new Map<EntityType, FormLayoutNames[]>();
+    this.formLayoutNamesCache = names;
+    if (!this.formLayouts) return names;
+    const taken = new Set<string>([
+      ...this.model.EntityTypes.flatMap((e) => {
+        const typeName = this.entityTypeName(e);
+        return [typeName, `${typeName}Metadata`];
+      }),
+      ...this.model.EnumTypes.map((e) => toSafeIdentifier(e.Name)),
+      ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
+      ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
+      ...[...this.formNames.values()].flatMap((n) => [n.attributes, n.controls, n.context]),
+      ...[...this.clientTypeNames.values()].flatMap((n) => [n.column, n.navigation, n.operations]),
+      ...this.outputNames.values(),
+      ...(this.config.typedClient === true ? [TYPED_CLIENT, TYPED_CLIENT_FACTORY] : []),
+    ]);
+    for (const entity of this.model.EntityTypes) {
+      const typeName = this.entityTypeName(entity);
+      const forms = (entity.Forms ?? []).map((form) => {
+        const stem = `${typeName}${form.Kind === "main" ? "Main" : "QuickCreate"}_${pascalCase(form.Name)}`;
+        let candidate = this.formLayoutBaseNames(stem);
+        const all = (n: FormLayoutNames): string[] => [n.attributes, n.controls, n.tabs, n.context];
+        for (let i = 2; all(candidate).some((n) => taken.has(n)); i++) {
+          candidate = this.formLayoutBaseNames(`${stem}_${String(i)}`);
+        }
+        for (const name of all(candidate)) taken.add(name);
+        return candidate;
+      });
+      names.set(entity, forms);
+    }
+    return names;
+  }
+
+  /** The four type names of a form layout, from its stem. */
+  private formLayoutBaseNames(stem: string): FormLayoutNames {
+    return {
+      attributes: `${stem}Attributes`,
+      controls: `${stem}Controls`,
+      tabs: `${stem}Tabs`,
+      context: `${stem}FormContext`,
+    };
   }
 
   /**
@@ -880,14 +1338,17 @@ export * from './actions/index.js';
 export * from './functions/index.js';
 export * from './complextypes/index.js';
 export * from './metadata${suffix}.js';
-${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}${
+${this.formContext ? "export * from './forms/index.js';\n" : ""}${
       this.config.typedClient === true ? `export * from './client${suffix}.js';\n` : ""
     }`;
     await this.emit(rootIndexPath, rootIndexContent);
-    if (this.config.formContext === true) {
+    if (this.formContext) {
       await this.outputFolderIndex(
         "forms",
-        this.model.EntityTypes.map((e) => `${this.entityTypeName(e)}Form`)
+        this.model.EntityTypes.flatMap((e) => {
+          const typeName = this.entityTypeName(e);
+          return this.formLayouts ? [`${typeName}Form`, `${typeName}Forms`] : [`${typeName}Form`];
+        })
       );
     }
 
@@ -992,8 +1453,9 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
     const name = `${className}Response`;
     const ref = returnType.reference;
     let element: "primitive" | "enum" | "entity" | "complex" = "primitive";
+    const enumType = this.model.EnumTypes.find((e) => e.Name === ref);
     if (ref !== undefined) {
-      if (this.model.EnumTypes.some((e) => e.Name === ref)) element = "enum";
+      if (enumType) element = "enum";
       else if (this.model.AllEntityTypeNames.has(ref)) element = "entity";
       else if (this.model.ComplexTypes.some((c) => c.Name === ref)) element = "complex";
     }
@@ -1005,6 +1467,10 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
         this.outputReference(ref, folder, imports) ?? this.resolveReference(ref, folder, imports)
       );
     };
+    // An enum value is read as its member name: the enum's type, whose values are the names
+    // (#479), or a string for a flags enum (`"ReadAccess, WriteAccess"`)
+    const enumValue = (): string =>
+      enumType?.IsCsdlEnum === true && enumType.IsFlags !== true ? resolved() : "string";
     // strictNulls: the CSDL leaves the value (or a collection's items) nullable
     const orNull = this.strictNulls && nullable === true && element !== "entity";
     // Dataverse answers 204 although the CSDL declares the return (a primitive or complex value)
@@ -1019,7 +1485,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
     if (returnType.isArray) {
       kind = "collection";
       let item: string;
-      if (element === "enum") item = "string";
+      if (element === "enum") item = enumValue();
       else if (element === "entity") item = `${resolved()} & { ${RECORD_ANNOTATIONS} }`;
       else item = resolved();
       doc += " * The collection, read from the `value` of the response body.\n";
@@ -1058,7 +1524,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
       }
       if (noContent) doc += noContentDoc(operation);
       else if (orNull) doc += NULLABLE_DOC;
-      const value = element === "enum" ? "string" : resolved();
+      const value = element === "enum" ? enumValue() : resolved();
       declaration = `export type ${name} = ${orNull || noContent ? `${value} | null` : value};\n`;
     }
 
@@ -1191,7 +1657,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
     };
 
     // The record or collection a bound operation is called on: the first constructor argument.
-    let bindingDeclaration = "";
+    let binding: ConstructorParameter | undefined;
     let bindingDoc = "";
     let target = "";
     if (op.IsBound && op.BindingEntity) {
@@ -1200,7 +1666,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
         if (set) {
           target = `/${set}`;
         } else {
-          bindingDeclaration = "public readonly entitySetName: string";
+          binding = { name: "entitySetName", type: "string" };
           bindingDoc =
             'The first argument is the entity set to call it on, for example "accounts".';
           target = "/${this.entitySetName}";
@@ -1208,13 +1674,13 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
       } else if (set) {
         imports.value("formatParameterAlias", RUNTIME_PACKAGE);
         const idName = `${toSafeIdentifier(op.BindingEntity)}Id`;
-        bindingDeclaration = `public readonly ${idName}: string`;
+        binding = { name: idName, type: "string" };
         bindingDoc = `The first argument is the id of the ${toDocText(op.BindingEntity)} record to call it on.`;
         target = `/${set}(\${formatParameterAlias(this.${idName}, "Edm.Guid")})`;
       } else {
         imports.value("formatRecordPath", RUNTIME_PACKAGE);
         imports.type("EntityReference", RUNTIME_PACKAGE);
-        bindingDeclaration = "public readonly target: EntityReference";
+        binding = { name: "target", type: "EntityReference" };
         bindingDoc = "The first argument is the record to call it on, with its entitySetName.";
         target = "/${formatRecordPath(this.target)}";
       }
@@ -1225,11 +1691,24 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
     if (isFunction && params.length > 0) imports.value("formatParameterAlias", RUNTIME_PACKAGE);
 
     const parametersName = `${className}Parameters`;
-    const optional = params.every((p) => p.Nullable === true) ? " = {}" : "";
-    const constructorArguments = [
-      ...(bindingDeclaration ? [bindingDeclaration] : []),
-      ...(params.length > 0 ? [`public readonly parameters: ${parametersName}${optional}`] : []),
+    const optional = params.every((p) => p.Nullable === true);
+    const constructorParameters: ConstructorParameter[] = [
+      ...(binding ? [binding] : []),
+      ...(params.length > 0
+        ? [
+            {
+              name: "parameters",
+              type: parametersName,
+              ...(optional ? { defaultValue: "{}" } : {}),
+            },
+          ]
+        : []),
     ];
+    // As parameter properties, for custom templates written before constructorParameters
+    const constructorArguments = constructorParameters.map(
+      (p) =>
+        `public readonly ${p.name}: ${p.type}${p.defaultValue !== undefined ? ` = ${p.defaultValue}` : ""}`
+    );
 
     return {
       ...this.operationReturn(
@@ -1243,6 +1722,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
       ),
       bindingDoc,
       constructorArguments,
+      constructorParameters,
       operationPath,
       parametersName,
       parameterType,
@@ -1286,7 +1766,7 @@ ${this.config.formContext === true ? "export * from './forms/index.js';\n" : ""}
       ...this.model.ComplexTypes.map((c) => toSafeIdentifier(c.Name)),
       ...[...this.writeTypeNames.values()].flatMap((n) => [n.create, n.update]),
       ...[...this.formNames.values()].flatMap((n) => [n.attributes, n.controls, n.context]),
-      ...this.columnTypeNames.values(),
+      ...[...this.clientTypeNames.values()].flatMap((n) => [n.column, n.navigation, n.operations]),
       ...(this.config.typedClient === true ? [TYPED_CLIENT, TYPED_CLIENT_FACTORY] : []),
     ]);
     for (const type of this.model.ComplexTypes) {

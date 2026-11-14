@@ -1,6 +1,17 @@
 name: Integration Tests
 on:
   workflow_dispatch:
+    inputs:
+      tests:
+        description: >-
+          Only these test files, space-separated, relative to packages/dataverse-sdk-integration-tests
+          (e.g. test/metadata-relationship-behavior.int.test.ts). Empty runs every test.
+        required: false
+        default: ""
+      samples:
+        description: "Node samples to run: all, none, or sample folder names, space-separated (e.g. metadata-ops)."
+        required: false
+        default: "all"
   schedule:
     # Nightly against the dev org (03:17 UTC).
     - cron: "17 3 * * *"
@@ -35,16 +46,55 @@ jobs:
           DATAVERSE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
           # Fail instead of silently skipping if a secret is missing.
           DATAVERSE_INTEGRATION_REQUIRED: "1"
-        run: pnpm test:integration
+          # A dispatch can name test files; a scheduled run has none and runs everything.
+          TESTS: ${{ inputs.tests }}
+        run: |
+          if [ -z "$TESTS" ]; then
+            pnpm test:integration
+            exit 0
+          fi
+          for file in $TESTS; do
+            if ! printf '%s' "$file" | grep -Eq '^test/[A-Za-z0-9._-]+\.ts$'; then
+              echo "::error::Not a test file of the integration tests: $file"
+              exit 1
+            fi
+          done
+          cd packages/dataverse-sdk-integration-tests
+          # shellcheck disable=SC2086 # a list of files, split on purpose
+          pnpm exec vitest run --config vitest.config.ts $TESTS
       # The non-interactive Node samples, end to end against the same org. Same job, so it stays
       # in the concurrency group; each sample deletes what it creates and exits non-zero on any
       # failure. Runs even when the tests failed, so one run reports both.
       - name: Run the Node samples against the live org
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && inputs.samples != 'none' }}
         env:
           DATAVERSE_URL: ${{ secrets.DATAVERSE_URL }}
           DATAVERSE_TENANT_ID: ${{ secrets.DATAVERSE_TENANT_ID }}
           DATAVERSE_CLIENT_ID: ${{ secrets.DATAVERSE_CLIENT_ID }}
           DATAVERSE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
           DATAVERSE_INTEGRATION_REQUIRED: "1"
-        run: pnpm samples:live --no-build
+          # A dispatch can name samples; a scheduled run has none and runs every sample.
+          SAMPLES: ${{ inputs.samples }}
+        run: |
+          if [ -z "$SAMPLES" ] || [ "$SAMPLES" = "all" ]; then
+            pnpm samples:live --no-build
+            exit 0
+          fi
+          if ! printf '%s' "$SAMPLES" | grep -Eq '^[a-z0-9 -]+$'; then
+            echo "::error::Not a list of sample folder names: $SAMPLES"
+            exit 1
+          fi
+          # shellcheck disable=SC2086 # a list of names, split on purpose
+          pnpm samples:live --no-build $SAMPLES
+      # Delete what earlier runs left behind: records named with the tests' and samples' prefixes
+      # (sdk-it-, sdk-int , sdk-sample-) created more than 2 hours ago, so this run's records and
+      # any run in progress are never touched. Test schema is only listed. Same job, so it stays
+      # in the concurrency group; runs whatever happened to the steps before it.
+      - name: Sweep records left by earlier runs
+        if: always()
+        env:
+          DATAVERSE_URL: ${{ secrets.DATAVERSE_URL }}
+          DATAVERSE_TENANT_ID: ${{ secrets.DATAVERSE_TENANT_ID }}
+          DATAVERSE_CLIENT_ID: ${{ secrets.DATAVERSE_CLIENT_ID }}
+          DATAVERSE_CLIENT_SECRET: ${{ secrets.DATAVERSE_CLIENT_SECRET }}
+        run: node packages/dataverse-sdk-integration-tests/scripts/sweep.mjs --delete

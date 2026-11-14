@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-core",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "type": "module",
   "author": "Mohsin On xRM",
   "license": "AGPL-3.0-only",
@@ -31,13 +31,14 @@
   ],
   "scripts": {
     "build": "tsup",
-    "test": "vitest run",
+    "test": "vitest run && pnpm run test:types",
+    "test:types": "tsd --files test/requestOptions.test-d.ts --files test/knownConstants.test-d.ts",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.typecheck.json",
     "clean": "rimraf dist"
   },
   "devDependencies": {
-    "eslint": "^9.39.5",
+    "eslint": "^10.14.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"

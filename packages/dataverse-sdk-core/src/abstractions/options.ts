@@ -1,3 +1,4 @@
+import type { AnnotationTerm } from "../client/annotations.js";
 import type { Middleware } from "./middleware.js";
 
 export type PreferOption = string & { __brand: "PreferOption" };
@@ -6,7 +7,11 @@ export const Prefer = {
   returnRepresentation(): PreferOption {
     return "return=representation" as PreferOption;
   },
-  includeAnnotations(term: string): PreferOption {
+  /**
+   * `odata.include-annotations="<term>"`: a term from `Annotations` (`Annotations.FormattedValue`,
+   * `"*"`, …), a wildcard such as `"Microsoft.Dynamics.CRM.*"`, or several joined with commas.
+   */
+  includeAnnotations(term: AnnotationTerm | (string & {})): PreferOption {
     return `odata.include-annotations="${term}"` as PreferOption;
   },
   continueOnError(): PreferOption {
@@ -14,14 +19,6 @@ export const Prefer = {
   },
 } as const;
 
-/**
- * Retry policy, used both for the client (`DataverseClientOptions.retry`) and per request
- * (`new MiddlewareRequestOptions([{ type: "retry", ... }])`). A per-request value overrides the
- * client's value for that request only.
- *
- * The delay before retry `n` (0-based) is `min(maxDelayMs, baseDelayMs * 2^n)`, with ±20% jitter
- * when `jitter` is on. When the response carries `Retry-After`, that wait is used as is instead.
- */
 /** One attempt of a request, as recorded by the retry middleware. */
 export interface RetryAttempt {
   /** 0 for the first attempt, 1 for the first retry, and so on. */
@@ -48,7 +45,10 @@ export interface RetryInfo {
   error?: Error;
   /** How long the SDK waits before the retry, in ms. */
   delayMs: number;
-  /** `Retry-After` of the failed response, in ms, when it had one (then `delayMs` equals it). */
+  /**
+   * `Retry-After` of the failed response, in ms, when it had one. `delayMs` then equals it, plus
+   * up to `retryAfterJitterMs`.
+   */
   retryAfterMs?: number;
   /** The request being retried. Treat it as read-only. */
   request: import("./http.js").RequestInformation;
@@ -56,13 +56,52 @@ export interface RetryInfo {
   correlationId?: string;
 }
 
+/** What `RetryOptions.shouldRetry` receives as its third argument. */
+export interface ShouldRetryInfo {
+  /** The request that failed. Treat it as read-only. */
+  request: import("./http.js").RequestInformation;
+  /**
+   * The response that failed, when there was one (absent for a network error or a timed-out
+   * attempt). Don't read its body: the SDK releases it before a retry, or returns it to the caller.
+   */
+  response?: Response;
+  /** The attempt that failed: 0 for the first attempt, 1 for the first retry, and so on. */
+  attempt: number;
+}
+
+/**
+ * How the computed delay grows from one retry to the next (`baseDelayMs` is `b`, retry `n` is
+ * 0-based): `"exponential"` waits `b * 2^n`, `"linear"` waits `b * (n + 1)`, `"constant"` waits
+ * `b` every time. Each is capped at `maxDelayMs`.
+ */
+export type RetryBackoff = "exponential" | "linear" | "constant";
+
+/**
+ * Retry policy, used both for the client (`DataverseClientOptions.retry`) and per request
+ * (`new MiddlewareRequestOptions([{ type: "retry", ... }])`). A per-request value overrides the
+ * client's value for that request only.
+ *
+ * By default the delay before retry `n` (0-based) is `min(maxDelayMs, baseDelayMs * 2^n)`, with
+ * ±20% jitter (`backoff` and `jitter` change that). When the response carries `Retry-After`, that
+ * wait is used instead (plus up to `retryAfterJitterMs`).
+ */
 export interface RetryOptions {
   /** Retries after the first attempt. @default 6 */
   maxRetries?: number;
-  /** Base of the exponential backoff, in ms. @default 3000 */
+  /**
+   * The first delay, in ms, which `backoff` scales for later retries. With
+   * `jitter: "decorrelated"`, the median of the first delay. @default 3000
+   */
   baseDelayMs?: number;
-  /** Upper bound of the computed backoff, in ms. @default 30000 */
+  /** Upper bound of the computed backoff, in ms (jitter included). @default 30000 */
   maxDelayMs?: number;
+  /**
+   * How the computed delay grows: `"exponential"` (`baseDelayMs * 2^n` before retry `n`, 0-based),
+   * `"linear"` (`baseDelayMs * (n + 1)`) or `"constant"` (`baseDelayMs` every time), capped at
+   * `maxDelayMs`. `Retry-After` replaces it when the response carries one.
+   * @default "exponential"
+   */
+  backoff?: RetryBackoff;
   /**
    * Longest `Retry-After` the SDK waits out, in ms. When the server asks for a longer wait, the
    * response is returned at once (as a `DataverseThrottleError` with `retryAfterMs` for a 429),
@@ -70,8 +109,29 @@ export interface RetryOptions {
    * @default maxDelayMs (30000 unless changed)
    */
   maxRetryAfterMs?: number;
-  /** Add ±20% random jitter to the computed backoff (never to `Retry-After`). @default true */
-  jitter?: boolean;
+  /**
+   * Randomise the computed backoff (never `Retry-After`; see `retryAfterJitterMs` for that), so
+   * clients that failed together don't retry together.
+   *
+   * - `true`: ±20%, uniformly, around the `backoff` delay.
+   * - `false`: the `backoff` delay exactly.
+   * - `"decorrelated"`: with `backoff: "exponential"`, Polly v8's decorrelated jitter
+   *   (`DecorrelatedJitterBackoffV2`): delays spread between 0 and roughly
+   *   `baseDelayMs * (2^(n+1) - 2^(n-1))` before retry `n`, with medians near `baseDelayMs * 2^n`
+   *   and fewer clusters than uniform jitter. Each delay is capped at `maxDelayMs`. With
+   *   `"linear"` or `"constant"` it acts as `true`, as in Polly.
+   *
+   * @default true
+   */
+  jitter?: boolean | "decorrelated";
+  /**
+   * Add a random 0 to `retryAfterJitterMs` ms to each `Retry-After` wait, so requests throttled at
+   * the same moment don't all retry at the same moment. The added time never pushes the wait past
+   * the request's deadline (`timeoutMs`): it shrinks to fit. `maxRetryAfterMs` is compared with
+   * `Retry-After` itself.
+   * @default 0
+   */
+  retryAfterJitterMs?: number;
   /** Status codes that are retried. @default [429, 502, 503, 504] */
   retryableStatusCodes?: number[];
   /**
@@ -92,20 +152,42 @@ export interface RetryOptions {
    * - `true`: the same, and with `retryNonIdempotent: true` every request is retried.
    * - `false`: never retried; the error is thrown at once (the 1.x behaviour).
    *
-   * Aborts, timeouts and requests with a stream body are never retried.
+   * Aborts, timeouts (see `retryAttemptTimeouts`) and requests with a stream body are never
+   * retried.
    * @default undefined (idempotent requests are retried)
    */
   retryNetworkErrors?: boolean;
   /**
+   * Retry an attempt that ran out of `attemptTimeoutMs` (a `DataverseNetworkError` named
+   * `RequestTimeout`). Only idempotent requests are retried: GET, HEAD, OPTIONS, PUT, DELETE, a
+   * PATCH with `If-Match`, or a request marked `idempotent`; a POST or another PATCH may have been
+   * applied before the attempt timed out, so it is retried only with `retryNonIdempotent: true`
+   * as well. The request's own `timeoutMs` (its deadline) still ends it: a timed-out request, an
+   * abort, or a retry whose wait would end after the deadline is never retried. With
+   * `shouldRetry`, it must also return `true` (it gets status `0` and the timeout error).
+   * @default false (a timed-out attempt fails the request)
+   */
+  retryAttemptTimeouts?: boolean;
+  /**
    * Decide which failures are worth retrying. Replaces `retryableStatusCodes` and
-   * `retryNetworkErrors`: for a network error it is called with status `0` and the error.
+   * `retryNetworkErrors`: for a network error it is called with status `0` and the error. The
+   * third argument has the request, the failed response (when there was one) and the attempt
+   * number (0 for the first attempt); a predicate that takes one or two arguments works as before.
    *
    * It does not decide which requests may be replayed. A POST, or a PATCH without `If-Match`, is
    * still not retried after a 5xx or a network error, nor a `$batch` whose 429 response has
    * per-request results, unless `retryNonIdempotent` is `true`. `maxRetries`, the delays,
    * `maxRetryAfterMs` and the request's `timeoutMs` still apply.
+   *
+   * @example
+   * ```typescript
+   * // Retry 5xx, but not on the bulk endpoint, and only twice for anything but a GET.
+   * shouldRetry: (status, _error, { request, attempt }) =>
+   *   status >= 500 && !request.url.includes("CreateMultiple") &&
+   *   (request.method === "GET" || attempt < 2)
+   * ```
    */
-  shouldRetry?: (statusCode: number, error?: Error) => boolean;
+  shouldRetry?: (statusCode: number, error: Error | undefined, info: ShouldRetryInfo) => boolean;
   /**
    * Called once before each retry, after the delay is known and before the SDK waits. Use it to
    * show progress ("Throttled, retrying in 12 s (2/6)") or count retries. It must not throw; an
@@ -188,6 +270,26 @@ export interface ConcurrencyOptions {
    * @default `maxConcurrentRequests` when that is set, otherwise 16
    */
   max?: number;
+  /**
+   * Halve the limit (not below `min`) when Dataverse answers 429 with error `0x80072326`, its
+   * service protection limit on concurrent requests per user. One burst of such 429s halves it
+   * once: only a request sent after the last halving can halve it again. The limit stays down
+   * until the 429's `Retry-After` has passed; then the next `x-ms-dop-hint` sets it again (as
+   * usual), or, without a readable hint (browsers, `adaptiveFromDopHint: false`), each successful
+   * response raises it by 1 back to where it was. The other 429s (`0x80072322` requests,
+   * `0x80072321` execution time) leave the limit alone: they are about volume, not concurrency.
+   * @default true
+   */
+  reduceOnThrottle?: boolean;
+  /**
+   * Most requests waiting for a slot. A request beyond it is refused at once, without being
+   * sent, with `DataverseQueueFullError` (`queue: "concurrency"`). `0` refuses every request over
+   * the limit instead of queueing it. Unbounded by default; on a server, set a bound so a burst of
+   * work can't pile up waiting requests (and their memory) without limit, and answer the refused
+   * ones with a 503 or a retry later.
+   * @default Infinity
+   */
+  maxQueue?: number;
 }
 
 /**
@@ -219,8 +321,18 @@ export interface RequestOptions {
    * `DataverseThrottleError` with `retryAfterMs`. Reading the body afterwards isn't limited.
    */
   timeoutMs?: number;
-  /** Time limit for each attempt, in ms. A timed-out attempt is not retried. */
+  /**
+   * Time limit for each attempt, in ms. A timed-out attempt is not retried, unless the retry
+   * option `retryAttemptTimeouts` is on (idempotent requests only).
+   */
   attemptTimeoutMs?: number;
+  /**
+   * When a time limit you enforce yourself (through `signal`) runs out, in ms since the epoch on
+   * the client's `clock` (`Date.now()` by default): for example one `timeoutMs` for several
+   * requests. It doesn't abort anything; like `timeoutMs`, it stops a retry wait that would end
+   * after it, so the failed response comes back at once. With `timeoutMs` too, the earlier counts.
+   */
+  deadline?: number;
   signal?: AbortSignal;
   /** Correlation id for this request. A new one is generated per request when omitted. */
   correlationId?: string;
@@ -284,6 +396,17 @@ export interface DataverseClientOptions {
   diagnosticHeaders?: boolean | DiagnosticHeaderOptions;
   retry?: RetryOptions;
   concurrency?: ConcurrencyOptions;
+  /**
+   * Slow requests down before Dataverse throttles them, from its service-protection headers, and
+   * hold every new request while a 429's `Retry-After` runs:
+   * `adaptiveThrottling: new AdaptiveThrottlingMiddleware({ ... })` (one instance per client). It
+   * runs inside Retry, so it sees each attempt's response, and outside Concurrency, so a request
+   * it holds back holds no concurrency slot and no access token, and the wait isn't part of the
+   * attempt's dependency duration. Each wait is a `dataverse.throttle.delay` telemetry event. An
+   * instance rather than settings, so clients that don't use it don't bundle it.
+   * @default none (off)
+   */
+  adaptiveThrottling?: import("../middleware/AdaptiveThrottlingMiddleware.js").AdaptiveThrottlingMiddleware;
   /** Headers added to every request. A header the request sets itself wins. */
   defaultHeaders?: Record<string, string>;
   /**
@@ -294,9 +417,12 @@ export interface DataverseClientOptions {
   defaultPrefer?: PreferOption[];
   /**
    * Customise the middleware pipeline. The defaults run in this order: ODataHeaders, Retry,
-   * Concurrency, Auth (when a token provider is set), Telemetry, Logging; then the request goes
-   * to `fetch`. Retry wraps Concurrency, so each attempt takes a concurrency slot and releases it
-   * before a retry wait. `replace` receives that list and returns the one to use (for example without
+   * AdaptiveThrottling (when `adaptiveThrottling` is set), Concurrency, Auth (when a token
+   * provider is set), Telemetry, Logging; then the request goes to `fetch`. Retry wraps
+   * Concurrency, so each attempt takes a concurrency slot and releases it before a retry wait.
+   * Add `AdaptiveThrottlingMiddleware` with the `adaptiveThrottling` option rather than here:
+   * appended, it runs inside the concurrency slot, so its waits hold a slot and an access token
+   * (the client logs a warning once). `replace` receives that list and returns the one to use (for example without
    * Logging); then `prepend` runs first and `append` runs last, right before `fetch`, so it sees
    * the final headers including `authorization`.
    */
@@ -320,4 +446,13 @@ export interface DataverseClientOptions {
    * `"strip"` sends it without the `authorization` header.
    */
   onForeignOrigin?: "throw" | "strip";
+  /**
+   * The clock the client measures time with: the `timeoutMs` deadline and the retry middleware's
+   * waits and deadline checks. It is also on the middleware context (`ctx.clock`), where
+   * `CircuitBreakerMiddleware`, `AdaptiveThrottlingMiddleware` and `ChaosMiddleware` use it unless
+   * they have a `clock` option of their own. Pass the testing package's fake clock to test retries
+   * and timeouts without waiting. Each attempt's `attemptTimeoutMs` stays on real time.
+   * @default `systemClock` (`Date.now()` and `setTimeout`)
+   */
+  clock?: import("../utils/clock.js").Clock;
 }

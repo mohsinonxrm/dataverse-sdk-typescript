@@ -1,7 +1,9 @@
 /**
  * ErrorType enum
  */
-export enum ErrorType {
-  Error = 1,
-  Warning = 2,
-}
+export const ErrorType = {
+  Error: 1,
+  Warning: 2,
+} as const;
+
+export type ErrorType = (typeof ErrorType)[keyof typeof ErrorType];

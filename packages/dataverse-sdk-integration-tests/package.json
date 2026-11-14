@@ -10,11 +10,12 @@
   },
   "scripts": {
     "test:integration": "vitest run --config vitest.config.ts",
+    "sweep": "node scripts/sweep.mjs",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.typecheck.json"
   },
   "dependencies": {
-    "@azure/msal-node": "^2.16.3",
+    "@azure/msal-node": "^7.2.1",
     "@mohsinonxrm/dataverse-sdk-actions": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-appinsights": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-auth-azure-identity": "workspace:*",
@@ -37,10 +38,10 @@
     "@opentelemetry/api-logs": "^0.223.0",
     "@opentelemetry/context-async-hooks": "^2.10.0",
     "@opentelemetry/core": "^2.10.0",
-    "@opentelemetry/sdk-logs": "^0.221.0",
+    "@opentelemetry/sdk-logs": "^3.1.1",
     "@opentelemetry/sdk-trace-base": "^2.10.0",
     "@types/xrm": "^9.0.97",
-    "eslint": "^9.39.5",
+    "eslint": "^10.14.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"
   }

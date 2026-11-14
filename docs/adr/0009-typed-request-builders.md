@@ -52,13 +52,18 @@ columns, so the types must come from the org's metadata, i.e. from `dataverse-ge
 
 ### Not in this first version (follow-ups)
 
-- `expand` is `string[]`, not a typed union of navigation properties, and `select` doesn't narrow
-  the result type (`Pick<Account, …>`).
-- Navigation from a record (`typed.accounts.byId(id).contact_customer_accounts.list()`),
+- ~~`expand` is `string[]`, not a typed union of navigation properties, and `select` doesn't narrow
+  the result type (`Pick<Account, …>`).~~ Done in #431: `expand` is typed by a generated
+  `<Entity>Navigation` (nested options typed by the related table), and a literal `select`
+  narrows the record.
+- ~~Navigation from a record (`typed.accounts.byId(id).contact_customer_accounts.list()`),
   associate/disassociate, `upsert()`, and bound actions/functions on the builders
-  (`typed.accounts.byId(id).contoso_Recalculate(...)`).
-- `iterate()` (async iteration) and a single-page `listPage()`; today they're reachable through
-  `query()`.
+  (`typed.accounts.byId(id).contoso_Recalculate(...)`).~~ Done in #432:
+  `byId(id).nav("contact_customer_accounts")`, `associate()` / `disassociate()`,
+  `typed.accounts.upsert(key, entity)`, and the generated `<Entity>Operations` as
+  `byId(id).actions` / `.functions` and `typed.accounts.actions` / `.functions`.
+- ~~`iterate()` (async iteration) and a single-page `listPage()`; today they're reachable through
+  `query()`.~~ Done in #432.
 - Builders for the SDK's own `$metadata` snapshot tables without running the generator.
 
 ### Consequences

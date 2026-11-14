@@ -9,7 +9,7 @@ import {
 } from "@fluentui/react-components";
 import { RouterLink } from "../components/RouterLink";
 import { ScenarioPage } from "../components/ScenarioPage";
-import { REPO_URL } from "../config";
+import { DOCS_URL } from "../config";
 import { DOC_LINKS, type DocSection } from "../docs";
 import { SAMPLES } from "../explorer/samples";
 
@@ -17,10 +17,10 @@ const useStyles = makeStyles({
   grid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 22rem), 1fr))",
-    gap: tokens.spacingHorizontalL,
+    rowGap: tokens.spacingVerticalL,
+    columnGap: tokens.spacingHorizontalL,
     alignItems: "start",
   },
-  card: { padding: tokens.spacingHorizontalL, gap: tokens.spacingVerticalM },
   list: {
     margin: 0,
     paddingInlineStart: 0,
@@ -34,7 +34,7 @@ const useStyles = makeStyles({
 
 const SECTIONS: DocSection[] = ["Guides", "Operations", "API reference"];
 
-/** Links to the SDK's documentation in the repository, and into the explorer. */
+/** Links into the SDK's documentation site, and into the explorer. */
 export default function DocsPage() {
   const styles = useStyles();
   return (
@@ -42,23 +42,18 @@ export default function DocsPage() {
       title="Documentation"
       description={
         <>
-          The guides and the API reference live with the source on{" "}
-          <Link href={REPO_URL} target="_blank" rel="noreferrer">
-            GitHub
+          The guides, a page per package and the API reference are on the{" "}
+          <Link href={`${DOCS_URL}/`} target="_blank" rel="noreferrer">
+            documentation site
           </Link>
-          . Each API reference is the package&apos;s API Extractor report: every exported class,
-          function and type with its signature.
+          , with search and the SDK&apos;s types on hover in the code samples. Each API reference
+          lists every exported class, function and type with its signature.
         </>
       }
     >
       <div className={styles.grid}>
         {SECTIONS.map((section) => (
-          <Card
-            key={section}
-            className={styles.card}
-            role="region"
-            aria-labelledby={`docs-${section}`}
-          >
+          <Card key={section} size="large" role="region" aria-labelledby={`docs-${section}`}>
             <CardHeader
               header={
                 <Subtitle1 as="h2" id={`docs-${section}`}>
@@ -78,7 +73,7 @@ export default function DocsPage() {
             </ul>
           </Card>
         ))}
-        <Card className={styles.card} role="region" aria-labelledby="docs-try">
+        <Card size="large" role="region" aria-labelledby="docs-try">
           <CardHeader
             header={
               <Subtitle1 as="h2" id="docs-try">

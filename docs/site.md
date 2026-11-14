@@ -11,8 +11,14 @@ Anyone can open it and:
   Global Discovery Service returns for them (see [The visitor's flow](#the-visitors-flow));
 - in the **Explorer** page, build a raw Web API request or pick one of the typed actions,
   functions and messages, see the SDK code for it, preview the request the SDK will send, run it
-  and inspect the response; or try the sample queries;
+  and inspect the response; or try the sample queries; switch the environment or the Web API
+  version, browse the environment's tables and query one, and see the access token decoded;
 - follow the **Documentation** page to the guides and the API reference in this repository.
+
+The same Static Web App serves the **documentation site** at
+[/docs](https://dataverse-sdk.mohsinonxrm.com/docs/): the guides of [docs/](.), the package READMEs
+and an API reference, built with VitePress from the repository's Markdown (see
+[The documentation site](#the-documentation-site)).
 
 There is no backend and there are no secrets: requests go straight from the visitor's browser to
 their environment. What a visitor types (environment URL, client id, tenant, history) stays in
@@ -25,23 +31,95 @@ their browser's storage.
 | The site                                              | `samples/spa-fluentui-v9` (`pnpm --filter spa-fluentui-v9-sample dev` runs it locally)                                                         |
 | Response headers, SPA fallback                        | [`samples/spa-fluentui-v9/public/staticwebapp.config.json`](../samples/spa-fluentui-v9/public/staticwebapp.config.json), copied into the build |
 | Build and deploy                                      | [`.github/workflows/site.yml`](../.github/workflows/site.yml): on every push to `main` (the stable release), and by hand                       |
+| Previews of pull requests                             | The same workflow, for pull requests that change the site (see [Preview deployments](#preview-deployments))                                    |
 | Tests (demo mode, under the site's headers, with axe) | `pnpm --filter spa-fluentui-v9-sample test:e2e`, in CI's `browser-tests` job                                                                   |
+| The documentation site, at `/docs`                    | [`apps/docs`](../apps/docs) (`pnpm --filter docs-site dev` runs it locally), built in CI's `docs-site` job                                     |
 
-The workflow builds the SDK packages and the site, then uploads `samples/spa-fluentui-v9/dist`
+The workflow builds the SDK packages, the site and the documentation site, copies the
+documentation into the site's `dist/docs`, then uploads `samples/spa-fluentui-v9/dist`
 with [`Azure/static-web-apps-deploy`](https://github.com/Azure/static-web-apps-deploy) (no Oryx
 build). Until the deployment token secret exists, it builds the site and skips the deploy with a
 notice, so the workflow stays green before the Azure side is set up. A run by hand on a branch
-other than `main` deploys a preview environment instead of production.
+other than `main` deploys a preview environment instead of production, and so does a pull request
+that changes the site (see [Preview deployments](#preview-deployments)).
+
+## Preview deployments
+
+A pull request **from this repository** that changes the site (`samples/spa-fluentui-v9/**`,
+`apps/docs/**`, `docs/**`, `packages/**` or the workflow) builds the site and the documentation
+as production does and uploads them to a Static Web Apps **preview environment**:
+
+- The deploy action names the environment after the pull request and **comments its URL** on the
+  pull request (`https://<name>-<number>.<region>.azurestaticapps.net`, with `/docs` as on
+  production). Each push to the pull request updates it.
+- **Closing or merging** the pull request deletes it (the workflow's `close` job).
+- **Pull requests from forks** don't run the deploy or close jobs: the deployment token is a
+  secret, and the workflow uses `pull_request` (never `pull_request_target`), so a fork's code
+  never runs with it. Dependabot's pull requests don't get the secret either; they build the site
+  and skip the upload with a notice.
+- The **Free plan has 3 preview environments**. When they are all in use, the upload fails
+  without failing the pull request's checks, and the run says so in a warning; closing another
+  site pull request frees one.
+- **Sign-in on a preview is not set up.** Microsoft Entra ID needs each redirect URI listed on the
+  app registration, without wildcards, and every preview has its own URL. Previews are for demo
+  mode: the app shows a "Preview — sign-in may not work" banner on a preview host
+  (`isPreviewHost()` in `src/preview.ts`). To sign in on one, add its URL as a redirect URI of the
+  app registration (step 4 below), and remove it when the pull request closes.
+- A preview has production's headers and Content-Security-Policy (the same
+  `staticwebapp.config.json`) and is public, like the site.
 
 The Content-Security-Policy allows scripts from the site only (no inline script, no `eval`; the
-SDK's browser tests check the bundles under the same rule), requests to `*.dynamics.com` and
-`login.microsoftonline.com` only, and no framing. Styles allow `'unsafe-inline'` because Fluent
-UI inserts its styles at run time and a static host can't give each response a nonce. Because of
-`connect-src`, the site works with public-cloud environments; `*.dynamics.com` also covers the
+SDK's browser tests check the bundles under the same rule, and the documentation site's build
+checks its pages), requests to `*.dynamics.com` and `login.microsoftonline.com` only, and no framing. Styles allow
+`'unsafe-inline'` because Fluent UI inserts its styles at run time and a static host can't give
+each response a nonce. Because of `connect-src`, the site works with public-cloud environments; `*.dynamics.com` also covers the
 Commercial Global Discovery Service (`globaldisco.crm.dynamics.com`) the environment picker
 calls. A sovereign cloud needs its hosts added there and in `validateEnvironmentUrl()`
 (`src/config.ts`), and its own discovery endpoint (`DISCOVERY_CLOUDS` in the discovery package)
 in `src/auth/environments.ts`.
+
+## The documentation site
+
+[`apps/docs`](../apps/docs) (the private workspace package `docs-site`) builds a
+[VitePress](https://vitepress.dev) site with the guides of `docs/`, a page for each published
+package's README, and an API reference generated by [TypeDoc](https://typedoc.org) from the
+packages' built type declarations. The Markdown files stay where they are and stay the only
+source: `apps/docs/scripts/content.mjs` copies them into `apps/docs/content` (gitignored) at build
+time and adapts the copies:
+
+- relative links to another page of the site go to that page; links to anything else in the
+  repository go to GitHub, and a link to a file that doesn't exist fails the build;
+- a few quick-start blocks (listed in `TWOSLASH` there) become
+  [twoslash](https://shiki.style/packages/vitepress#twoslash) blocks, type-checked against the
+  workspace packages and showing the types on hover. The blocks in the Markdown files don't
+  change, so the examples check and the `<!-- live -->` doc tests see them as they are.
+
+Which file becomes which page, and the sidebars, are in `apps/docs/pages.mjs`; a file that isn't
+listed there isn't on the site (the maintainer docs: releasing, changesets, the 1.0 review).
+
+| Command                           | What it does                                                        |
+| --------------------------------- | ------------------------------------------------------------------- |
+| `pnpm --filter docs-site dev`     | Runs the site at `http://localhost:5173/docs/` (after `pnpm build`) |
+| `pnpm docs:build`                 | Builds it into `apps/docs/.vitepress/dist`, as CI and the deploy do |
+| `pnpm --filter docs-site preview` | Serves that build at `http://localhost:4173/docs/`                  |
+
+The build fails on a dead link, a twoslash block that doesn't compile, or anything the site's
+Content-Security-Policy (`script-src 'self'`) would block (`apps/docs/scripts/check-csp.mjs`).
+VitePress puts two small inline scripts in every page (the saved light or dark appearance,
+applied before the page paints, and a macOS flag for the search shortcut); the build moves each
+into a file loaded from the page's `<head>` (`transformHtml` in `.vitepress/config.mts`), so the
+policy stays as it is. The page metadata goes in a script file too (`metaChunk`), the config holds
+no function (VitePress would rebuild it with `new Function()`, which needs `'unsafe-eval'`), and
+the search (VitePress' local search, in the browser) needs nothing more from the policy.
+
+In `staticwebapp.config.json`, `/docs/*` is excluded from the SPA fallback, `/docs` redirects to
+`/docs/`, and `/docs/assets/*` (hashed file names) is cached for a year.
+
+The API reference of the generated packages (actions, functions, messages) lists what is written
+by hand only: their ~3,800 generated operation classes and ~6,300 parameter, response and
+`$metadata` types would be over 10,000 pages. Their index pages link the lists of
+[actions](mapping/supported-actions.md), [functions](mapping/supported-functions.md) and
+[messages](mapping/supported-messages.md) and the explorer instead.
 
 ## Maintainer setup (one time)
 

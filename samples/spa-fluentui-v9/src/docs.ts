@@ -1,9 +1,9 @@
 /**
- * The SDK's documentation, which lives in the repository: the site links to it rather than
- * copying it, so there is one copy to keep up to date. The site deploys from `main`, the branch
- * of the current stable release, so the links point there too.
+ * The SDK's documentation: pages of the documentation site (`apps/docs`, built from the repo's
+ * `docs/` and package READMEs), which deploys with this app from `main`, the current stable
+ * release. The routes are the site's (`apps/docs/pages.mjs`).
  */
-import { REPO_URL } from "./config";
+import { DOCS_URL } from "./config";
 
 export type DocSection = "Guides" | "Operations" | "API reference";
 
@@ -18,9 +18,10 @@ export interface DocLink {
   signInTitle?: string;
 }
 
-const doc = (path: string) => `${REPO_URL}/blob/main/${path}`;
+/** A page of the documentation site, e.g. `guide/getting-started`. */
+const page = (route: string) => `${DOCS_URL}/${route}`;
 
-/** The published packages with an API Extractor report (`packages/<pkg>/etc/<pkg>.api.md`). */
+/** Packages with a page in the documentation site's API reference (TypeDoc). */
 const API_REPORTS: Array<[string, string]> = [
   ["core", "DataverseClient, the request builder, errors, middleware and paging"],
   ["auth-msal-browser", "MSAL sign-in for single-page apps"],
@@ -40,69 +41,69 @@ const API_REPORTS: Array<[string, string]> = [
 export const DOC_LINKS: DocLink[] = [
   {
     title: "Getting started",
-    href: doc("docs/getting-started.md"),
+    href: page("guide/getting-started"),
     summary: "Install the packages, authenticate, and run your first queries and writes.",
     section: "Guides",
     onSignIn: true,
   },
   {
     title: "Using the SDK in the browser",
-    href: doc("docs/browser.md"),
+    href: page("guide/browser"),
     summary: "App registration, MSAL, CORS and Content-Security-Policy for single-page apps.",
     section: "Guides",
   },
   {
     title: "Usage patterns",
-    href: doc("docs/SDK-USAGE-PATTERNS.md"),
+    href: page("guide/usage-patterns"),
     summary: "Queries, paging, concurrency, impersonation, $batch and error handling.",
     section: "Guides",
   },
   {
     title: "Migrating to 2.0",
-    href: doc("docs/migration-2.0.md"),
+    href: page("guide/migration-2.0"),
     summary: "What changed in 2.0 and how to update your code.",
     section: "Guides",
     onSignIn: true,
   },
   {
     title: "Samples",
-    href: doc("docs/samples/README.md"),
+    href: page("guide/samples"),
     summary: "Node, daemon and browser samples, including this site's source.",
     section: "Guides",
   },
   {
     title: "Supported operations",
-    href: doc("docs/mapping/supported-operations.md"),
+    href: page("guide/mapping/supported-operations"),
     summary: "Every typed action, function and message, and the Web API route it calls.",
     section: "Operations",
   },
   {
     title: "Actions",
-    href: doc("docs/mapping/supported-actions.md"),
+    href: page("guide/mapping/supported-actions"),
     summary: "@mohsinonxrm/dataverse-sdk-actions: POST operations, bulk operations, files.",
     section: "Operations",
   },
   {
     title: "Functions",
-    href: doc("docs/mapping/supported-functions.md"),
+    href: page("guide/mapping/supported-functions"),
     summary: "@mohsinonxrm/dataverse-sdk-functions: GET operations, with parameter aliases.",
     section: "Operations",
   },
   {
     title: "Messages",
-    href: doc("docs/mapping/supported-messages.md"),
+    href: page("guide/mapping/supported-messages"),
     summary: "@mohsinonxrm/dataverse-sdk-messages: OrganizationRequest and its responses.",
     section: "Operations",
   },
   {
     title: "Messages and the Web API",
-    href: doc("docs/mapping/message-to-webapi.md"),
+    href: page("guide/mapping/message-to-webapi"),
     summary: "How an Organization Service message maps to a Web API request.",
     section: "Operations",
   },
   ...API_REPORTS.map(([pkg, summary]): DocLink => ({
     title: `@mohsinonxrm/dataverse-sdk-${pkg}`,
-    href: doc(`packages/dataverse-sdk-${pkg}/etc/dataverse-sdk-${pkg}.api.md`),
+    href: page(`api/@mohsinonxrm/dataverse-sdk-${pkg}/`),
     summary,
     section: "API reference",
     onSignIn: pkg === "core",

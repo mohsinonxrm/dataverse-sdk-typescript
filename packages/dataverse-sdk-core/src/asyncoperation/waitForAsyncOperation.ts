@@ -8,7 +8,6 @@ import {
   DataverseNetworkError,
 } from "../errors/NamedErrors.js";
 import { isTimeoutError, startDeadline } from "../utils/signals.js";
-import { sleep } from "../utils/sleep.js";
 
 /** `statecode` of a system job (`asyncoperation`). */
 export const AsyncOperationStateCode = {
@@ -17,6 +16,10 @@ export const AsyncOperationStateCode = {
   Locked: 2,
   Completed: 3,
 } as const;
+
+/** A `statecode` of a system job: one of the values of `AsyncOperationStateCode`. */
+export type AsyncOperationStateCode =
+  (typeof AsyncOperationStateCode)[keyof typeof AsyncOperationStateCode];
 
 /** `statuscode` of a system job (`asyncoperation`). The last three come with `Completed`. */
 export const AsyncOperationStatusCode = {
@@ -30,6 +33,10 @@ export const AsyncOperationStatusCode = {
   Canceled: 32,
 } as const;
 
+/** A `statuscode` of a system job: one of the values of `AsyncOperationStatusCode`. */
+export type AsyncOperationStatusCode =
+  (typeof AsyncOperationStatusCode)[keyof typeof AsyncOperationStatusCode];
+
 /**
  * A system job (`asyncoperation`) as `waitForAsyncOperation()` reads it: the columns below, plus
  * any extra ones asked for with `select`.
@@ -41,9 +48,12 @@ export interface AsyncOperation {
   /** Type of the job, e.g. `13` for bulk delete or `10` for a workflow. */
   operationtype?: number | null;
   /** See `AsyncOperationStateCode`. */
-  statecode: number;
-  /** See `AsyncOperationStatusCode`. */
-  statuscode: number;
+  statecode: AsyncOperationStateCode | (number & {});
+  /**
+   * See `AsyncOperationStatusCode`. Another number is a status this SDK doesn't know; with
+   * `Completed`, it counts as a failure.
+   */
+  statuscode: AsyncOperationStatusCode | (number & {});
   /** The job's message: details of what went wrong, for a failed job. */
   message?: string | null;
   /** The job's message for people. */
@@ -83,7 +93,10 @@ export interface WaitForAsyncOperationOptions {
   maxIntervalMs?: number;
   /**
    * Give up after this long, in ms, and reject with `DataverseAsyncOperationError`
-   * (`reason: "timeout"`). The job itself keeps running. @default no limit
+   * (`reason: "timeout"`). The job itself keeps running. Each read carries this deadline (as its
+   * `deadline`), so a read throttled with a `Retry-After` longer than the time left rejects at
+   * once with `DataverseThrottleError` instead of waiting for the timeout. Measured on the
+   * client's `clock`. @default no limit
    */
   timeoutMs?: number;
   /** Stop waiting when it aborts: the wait rejects with `DataverseAbortError`. The job keeps running. */
@@ -179,9 +192,19 @@ export async function waitForAsyncOperation(
   }
   if (options.timeoutMs !== undefined) positive("timeoutMs", options.timeoutMs, 0);
 
+  // Timed on the client's clock, like its requests' deadlines and retry waits.
+  const { clock } = client;
   const deadline =
-    options.timeoutMs !== undefined ? startDeadline(options.timeoutMs, options.signal) : undefined;
+    options.timeoutMs !== undefined
+      ? startDeadline(options.timeoutMs, options.signal, clock)
+      : undefined;
   const signal = deadline?.signal ?? options.signal;
+  // Each read gets the wait's deadline, so a throttled read whose Retry-After would end after it
+  // fails at once with DataverseThrottleError instead of waiting for the timeout (#498).
+  const requestOptions: RequestOptions = { ...options.requestOptions, signal };
+  if (deadline) {
+    requestOptions.deadline = Math.min(deadline.at, requestOptions.deadline ?? Infinity);
+  }
   const columns = [...new Set([...COLUMNS, ...(options.select ?? [])])];
   let last: AsyncOperation | undefined;
   let wait = Math.min(intervalMs, maxIntervalMs);
@@ -190,7 +213,7 @@ export async function waitForAsyncOperation(
       last = await client
         .api(`asyncoperations(${id})`)
         .select(...columns)
-        .get<AsyncOperation>({ ...options.requestOptions, signal });
+        .get<AsyncOperation>(requestOptions);
       try {
         options.onProgress?.(last);
       } catch {
@@ -199,7 +222,7 @@ export async function waitForAsyncOperation(
       const outcome = outcomeOf(last);
       if (outcome === "succeeded") return last;
       if (outcome) throw jobError(id, outcome, last);
-      await sleep(wait, signal);
+      await clock.sleep(wait, signal);
       wait = Math.min(maxIntervalMs, wait * backoff);
     }
   } catch (err) {

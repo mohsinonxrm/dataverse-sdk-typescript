@@ -82,7 +82,7 @@ let entitySets: Map<string, string> | undefined;
  * The entity set of a table, from the `$metadata` snapshot, or `undefined` for a table it doesn't
  * know.
  */
-function entitySetNameOf(logicalName: string): string | undefined {
+export function entitySetNameOf(logicalName: string): string | undefined {
   if (!entitySets) {
     entitySets = new Map();
     for (const entry of ENTITY_SETS.split(",")) {

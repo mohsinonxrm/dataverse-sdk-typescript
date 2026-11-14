@@ -9,11 +9,13 @@ import {
   Toaster,
   tokens,
 } from "@fluentui/react-components";
-import { Link, Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { ErrorBoundary } from "../components/ErrorBoundary";
+import { PreviewBanner } from "../components/PreviewBanner";
 import { TOASTER_ID } from "../components/toaster";
-import { NARROW_QUERY, useMediaQuery } from "../hooks/useMediaQuery";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 import { ROUTES } from "../routes";
+import { MEDIA_SMALL, MEDIUM, PAGE_MAX_WIDTH } from "../theme/layout";
 import { AppHeader } from "./AppHeader";
 import { AppNav } from "./AppNav";
 
@@ -36,6 +38,8 @@ const useStyles = makeStyles({
     boxShadow: tokens.shadow8,
     ":focus": { top: tokens.spacingVerticalS },
   },
+  // Square, full width, between the header and the page.
+  preview: { flexShrink: 0, borderRadius: 0 },
   body: { display: "flex", flex: 1, minHeight: 0 },
   main: {
     flex: 1,
@@ -43,7 +47,7 @@ const useStyles = makeStyles({
     overflowY: "auto",
     paddingBlock: tokens.spacingVerticalXXL,
     paddingInline: tokens.spacingHorizontalXXL,
-    "@media (max-width: 47.99em)": {
+    [MEDIA_SMALL]: {
       paddingBlock: tokens.spacingVerticalL,
       paddingInline: tokens.spacingHorizontalM,
     },
@@ -53,7 +57,7 @@ const useStyles = makeStyles({
     display: "flex",
     flexDirection: "column",
     gap: tokens.spacingVerticalM,
-    maxWidth: "80rem",
+    maxWidth: PAGE_MAX_WIDTH,
     marginInline: "auto",
   },
   notFound: {
@@ -78,13 +82,15 @@ function PageLoading() {
 
 function NotFound() {
   const styles = useStyles();
+  const navigate = useNavigate();
   return (
     <div className={styles.notFound}>
       <Title2 as="h1">Page not found</Title2>
       <Body1>There is no scenario at this address.</Body1>
-      <Link to="/">
-        <Button appearance="primary">Go to the overview</Button>
-      </Link>
+      {/* One control: a button inside a link would be two tab stops announced as one. */}
+      <Button appearance="primary" onClick={() => void navigate("/")}>
+        Go to the overview
+      </Button>
     </div>
   );
 }
@@ -92,7 +98,7 @@ function NotFound() {
 /** Header, navigation and the current page, which is loaded on demand. */
 export default function AppShell() {
   const styles = useStyles();
-  const narrow = useMediaQuery(NARROW_QUERY);
+  const narrow = useMediaQuery(MEDIUM);
   const [navOpen, setNavOpen] = useState(!narrow);
   const location = useLocation();
   const main = useRef<HTMLElement>(null);
@@ -116,6 +122,7 @@ export default function AppShell() {
         Skip to content
       </a>
       <AppHeader navOpen={navOpen} onToggleNav={() => setNavOpen((o) => !o)} />
+      <PreviewBanner className={styles.preview} />
       <div className={styles.body}>
         <AppNav open={navOpen} overlay={narrow} onOpenChange={setNavOpen} />
         <main id="main" ref={main} tabIndex={-1} className={styles.main}>

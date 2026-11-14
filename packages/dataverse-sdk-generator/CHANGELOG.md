@@ -1,5 +1,86 @@
 # @mohsinonxrm/dataverse-sdk-generator
 
+## 2.1.0
+
+### Minor Changes
+
+- b63be15: dataverse-gen writes each enum as a const object and a type of the same name instead of `export const enum` (#479), so the generated code compiles with `erasableSyntaxOnly` and runs under Node's type stripping, and `isolatedModules` consumers can use the enums at runtime. `account_industrycode.Accounting` and `x: account_industrycode` work as before.
+  
+  - Option sets (local choices, and a `$metadata` enum used as a choice column's global option set) keep their numbers: `export const account_industrycode = { Accounting: 1, … } as const;` with `type account_industrycode` the union of the values.
+  - **CSDL enum types now have their member names as values** (`contoso_Priority.High === "High"`), which is what the Web API reads and writes; each member's comment gives its number. An action body or a function parameter sends the value as it is, so `bodyValue()` and `parameterValue()` convert only flags enums now, and an operation that returns such an enum is typed with the enum instead of `string`. Code that passed or compared the numbers of a non-flags CSDL enum needs the member (or its name) instead.
+  - Flags enums (`IsFlags="true"`, such as `AccessRights`) keep their numbers and are typed `number`, so members combine with `|`; they're sent as member names as before.
+  - Generated actions and functions declare their constructor arguments as fields and assign them, instead of parameter properties, which `erasableSyntaxOnly` also rejects. The templates get the arguments as `constructorParameters` (`{ name, type, defaultValue? }`); `constructorArguments` is still passed, for custom templates.
+  
+  What no longer works: an enum's reverse mapping (`account_industrycode[1]` to get `"Accounting"`), and assigning a `number` that isn't a member to an option set type. Custom `enum.ejs`, `action.ejs` or `function.ejs` templates ejected from an earlier version keep writing the old output: re-eject and compare.
+- c40018b: `dataverse-gen` can generate form context types per form layout (#430): `"formLayouts": true` reads each table's active main and quick create forms (`systemform` FormXml) and writes `forms/<Entity>Forms.ts` with, per form, `<Entity><Kind>_<Form>Attributes`, `…Controls`, `…Tabs` and `…FormContext`. `getAttribute()` and `getControl()` take the names on that form, including duplicate controls (`name1`), `header_` controls, subgrids (`GridControl`), web resources and IFRAMEs (`IframeControl`), quick view forms (`QuickFormControl`) and the timeline, and return their `@types/xrm` types without `| null`; party list columns are typed as lookups, file and image columns as plain attributes. `ui.tabs.get()` takes the form's tab names and a tab's `sections.get()` its section names. The option turns `formContext` on too. `dataverse-gen validate` checks it; with incremental generation a changed form regenerates its table's files. New exports: `MetadataService.getSystemForms()`, `SystemFormRecord`, `FormLayoutType`, `FormLayoutKind`, `FormTabType`, `FormSectionType`, `FormControlType`, `FormControlKind`, and `EntityType.Forms`; a new `form-layouts.ejs` template (`dataverse-gen eject` copies it).
+- 18123b2: Incremental generation (`"output": { "incremental": true }`) now reads only the tables whose metadata changed (#429). The stamp file keeps each table's metadata (as RetrieveMetadataChanges returned it, without its `null` properties) and the run's `ServerVersionStamp`; the next run reads `$metadata`, sends one RetrieveMetadataChanges request with that `ClientVersionStamp` and `DeletedMetadataFilters`, and reads again only the tables that changed or whose table or column was deleted. A run over unchanged metadata makes no per-table request.
+  
+  - A table that uses a global choice whose option values changed is read again: the docs don't say RetrieveMetadataChanges lists such a table, so when a kept table uses a global choice the run also reads the global choices' option values (one `GlobalOptionSetDefinitions` request) and compares them.
+  - A deleted column's table is read again; a deleted table is gone from `$metadata` too, so it isn't generated and its files are deleted.
+  - Every table is read again when there is nothing to reuse: no stamp or one written before this version, another generator version, `environmentUrl` or `apiVersion`, or an expired version stamp (`ExpiredVersionStamp`, 0x80044352). If the changes request fails for another reason, every table is read again and a warning says why.
+  - `generateCode()` also returns `fetchedTables` (the tables whose metadata was read), and the CLI prints them. New: `MetadataService.getMetadataChanges()` and `getGlobalOptionSetValues()`, `SchemaModel.TableMetadata`, `MetadataVersionStamp`, `FetchedTables` and `SkippedTables`, and `AttributeMetadataDetail.MetadataId`.
+  - The stamp file is larger, since it keeps the metadata: it grows with the number of tables and columns generated, most with `"entities": []`.
+- 1daf1d4: Incremental generation: a table read again right after a change can come from a Dataverse server whose metadata cache is behind (#429). The run now checks each table it read again against what RetrieveMetadataChanges listed (the columns and options it listed, deleted columns, global choice values); when one is behind, it keeps the previous version stamp so the next run reads it again, instead of losing the change, and warns. `generateCode()` also returns `fetchReasons` (why each table was read again), and the CLI prints them.
+- 212bbe4: The typed client (`"typedClient": true`) types `expand` and narrows `select` (#431). `client.ts` has an `<Entity>Navigation` interface per table, one member per navigation property the Web API expands, typed by the related table (`SingleNavigation<Contact, ContactColumn, ContactNavigation>`, `CollectionNavigation<…>`, `ManyToManyNavigation<…>` for a navigation property that is its own partner; a table that isn't generated takes any column), and passes it to `EntitySetClient`. A polymorphic lookup the table's interface shows as one property (`parentcustomerid`) is listed as the Web API's properties, one per target (`parentcustomerid_account`, `parentcustomerid_contact`).
+  
+  ```typescript
+  const account = await typed.accounts.byId(id).get({
+    select: ["name"],
+    expand: { primarycontactid: { select: ["fullname"] }, contact_customer_accounts: { top: 5 } },
+  });
+  account.primarycontactid?.fullname; // string | null | undefined
+  account.creditlimit; // error: not selected
+  ```
+  
+  **Breaking.** (types only, regenerate to get it) Reading a column a literal `select` left out no longer compiles; add it to `select`. A plain name in an `expand` array must be one of the table's navigation properties (names with inline options, `"x($select=…)"`, aren't checked). Custom `client.ejs` templates ejected from an earlier version keep the old output: re-eject and compare (the template gets `navigationName` and `navigation` per table, and `sampleNavigation`).
+- a1845c9: The typed client (`"typedClient": true`) reaches related records, associates them, upserts, calls bound operations and pages (#432):
+  
+  ```typescript
+  await typed.accounts.byId(id).nav("contact_customer_accounts").list({ select: ["fullname"] });
+  await typed.accounts.byId(id).associate("contact_customer_accounts", contactId);
+  await typed.accounts.byId(id).disassociate("primarycontactid");
+  const accountId = await typed.accounts.upsert({ accountnumber: "A-1" }, { name: "Contoso" });
+  const total = await typed.accounts.byId(id).actions.contoso_Recalculate({ Mode: "full" });
+  for await (const account of typed.accounts.iterate({ select: ["name"], pageSize: 500 })) { /* … */ }
+  const page = await typed.accounts.listPage({ select: ["name"], pageSize: 50 });
+  ```
+  
+  `client.ts` has an `<Entity>Operations` object for each table with generated actions or functions bound to it (to one record, or to its entity set), passed to its `EntitySetClient`. A polymorphic lookup's entry in the generated metadata lists its Web API navigation properties as `members` (`regardingobjectid_account_task: "account"`, …), so navigation, associate and lookup writes use the real names on activity tables. Custom `client.ejs` templates ejected from an earlier version keep the old output: re-eject and compare (the template gets `operationsName` and `operations` per table).
+- fcda713: dataverse-gen writes more column constraints into each table's metadata for `validateEntity()` (#433):
+  
+  - `precision` for decimal and currency columns. A currency column's comes from its `PrecisionSource`: its own `Precision` (`precision: 2`), the organization's pricing decimal precision (`precision: "pricing"`) or the precision of the record's transaction currency (`precision: "currency"`). Floating point columns get none.
+  - `maxSizeInKB` for file and image columns.
+  - `optionStates` for the status reason column: the state (`statecode` value) of each status reason, e.g. `optionStates: {"1":0,"2":1}`.
+  
+  `RetrieveMetadataChanges` now also asks for `PrecisionSource` and `MaxSizeInKB`. A table without such columns is written as before; one with them changes only by these lines. Dates need nothing new: a date-only column is already the one whose `odataType` is `Edm.Date`.
+
+### Patch Changes
+
+- 4cded32: The `dataverse-gen` CLI now depends on `@azure/msal-node` 7 (was 2) and `ora` 10 (was 8) (#486). An install of the generator no longer brings in `uuid` 8.3.2 through msal-node 2, which scanners flag. The CLI's device code and client credentials sign-in work as before; both packages support every Node version the generator does (Node 22+). `@mohsinonxrm/dataverse-sdk-auth-msal-node`'s peer range is unchanged: it still accepts `@azure/msal-node` 2.16.3 and later, through 7.
+- ad820ed: Incremental generation (`output.incremental`) no longer regenerates every table when a global choice or complex type that no generated table uses is added to, changed in or removed from the org's `$metadata` (#501). The settings hash now covers the options, the templates and the names of the generated tables; each table's hash also covers the enums and complex types it uses (directly or through a complex type) and the names of its create, update and form types. A change to an enum a table uses regenerates only that table. The enum, complex type, operation and index files are written on every run, as before, and still include every enum and complex type.
+- 632b1cf: Typed metadata shapes (#482): `PropertyType.AttributeType` and `AttributeMetadataDetail.AttributeType` are the metadata package's `AttributeTypeCode | (string & {})`; `SourceType` is `AttributeSourceType | (number & {})`; `Format` suggests the date and time behaviors and formats (and, on `AttributeMetadataDetail`, the string and integer formats); `AttributeMetadataDetail.DateTimeBehavior` and `AttributeTypeName` are the metadata package's types; `OptionSetMetadata.OptionSetType` is `OptionSetType | (string & {})`. Any string or number still compiles there.
+  
+  What narrows: `DataverseGenConfig.apiVersion` is core's `ApiVersion` (`v<major>.<minor>`, such as `"v9.2"`) instead of `string`, as in `DataverseClientOptions`.
+- Updated dependencies [b63be15]
+- Updated dependencies [7aa258b]
+- Updated dependencies [cffc7cf]
+- Updated dependencies [4761209]
+- Updated dependencies [08a709c]
+- Updated dependencies [83a2c45]
+- Updated dependencies [d709a0c]
+- Updated dependencies [eb31ca3]
+- Updated dependencies [212bbe4]
+- Updated dependencies [a1845c9]
+- Updated dependencies [632b1cf]
+- Updated dependencies [632b1cf]
+- Updated dependencies [632b1cf]
+- Updated dependencies [372cd24]
+- Updated dependencies [fcda713]
+  - @mohsinonxrm/dataverse-sdk-core@2.1.0
+  - @mohsinonxrm/dataverse-sdk-metadata@2.1.0
+  - @mohsinonxrm/dataverse-sdk-entities-runtime@2.1.0
+  - @mohsinonxrm/dataverse-sdk-auth-msal-node@2.1.0
+
 ## 2.0.1
 
 ### Patch Changes

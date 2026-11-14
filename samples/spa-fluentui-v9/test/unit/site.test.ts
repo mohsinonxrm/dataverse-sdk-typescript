@@ -14,6 +14,7 @@ import {
   validateEnvironmentUrl,
   validateSettings,
 } from "../../src/config";
+import { isPreviewHost } from "../../src/preview";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 
@@ -44,6 +45,12 @@ describe("staticwebapp.config.json", () => {
     expect(csp.get("default-src")).toEqual(["'self'"]);
     expect(csp.get("object-src")).toEqual(["'none'"]);
     expect(csp.get("base-uri")).toEqual(["'self'"]);
+  });
+
+  it("runs workers from the site only: the code editor's worker is a file, not a blob", () => {
+    // Without worker-src, workers fall back to script-src (then default-src).
+    const workers = csp.get("worker-src") ?? csp.get("script-src") ?? csp.get("default-src");
+    expect(workers).toEqual(["'self'"]);
   });
 
   it("lets the browser call Dataverse and Microsoft sign-in, and nothing else", () => {
@@ -129,5 +136,25 @@ describe("sign-in settings", () => {
       "https://login.microsoftonline.com/contoso.onmicrosoft.com/adminconsent"
     );
     expect(url.searchParams.get("client_id")).toBe(good.clientId);
+  });
+});
+
+describe("preview deployments", () => {
+  it("tells a pull request's preview environment from production", () => {
+    for (const host of [
+      "gentle-sky-0a1b2c3d4-427.westeurope.azurestaticapps.net",
+      "gentle-sky-0a1b2c3d4-12.eastus2.5.azurestaticapps.net",
+      "GENTLE-SKY-0A1B2C3D4-12.WESTEUROPE.AZURESTATICAPPS.NET",
+    ])
+      expect(isPreviewHost(host), host).toBe(true);
+    for (const host of [
+      "dataverse-sdk.mohsinonxrm.com",
+      "gentle-sky-0a1b2c3d4.azurestaticapps.net",
+      "gentle-sky-0a1b2c3d4.5.azurestaticapps.net",
+      "localhost",
+      "127.0.0.1",
+      "westeurope.azurestaticapps.net.example.com",
+    ])
+      expect(isPreviewHost(host), host).toBe(false);
   });
 });

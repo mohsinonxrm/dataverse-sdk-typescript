@@ -109,6 +109,42 @@ page, where each step is a separate scenario.
   `codegen.ts`). Links open a sample or an operation: `/explorer?sample=top-accounts`,
   `/explorer?op=functions/WhoAmI`, `/explorer?method=GET&url=accounts%3F%24top%3D3`.
 
+  **Share** copies a link to the request in the explorer: `/explorer#r=…`, the request as
+  compact versioned JSON, compressed (`CompressionStream("deflate-raw")`) and base64url-encoded,
+  in the URL fragment, which the browser never sends to a server (`src/explorer/share.ts`). It
+  holds the method, the URL relative to the Web API root, the headers and body of a raw request,
+  or a typed operation's name, arguments, parameters and code style. Never the access token or
+  an `Authorization`, `Cookie` or other secret header; the environment URL only if you switch
+  it on. Opening a link loads the request without running it, says so, and warns about a
+  request that changes data. The link is untrusted input: it is limited to 16 KB (64 KB
+  decompressed), checked field by field, and refused with a message when it isn't valid.
+
+  **Copy as** (by the SDK code) shows the request as a curl command, JavaScript `fetch` or C#
+  `HttpClient` code, written from the request the SDK builds: the full URL (with
+  `https://<org>.crm.dynamics.com` in the demo), the OData headers it sends, and `<TOKEN>` for
+  the access token (`src/explorer/copyAs.ts`).
+
+  Above the panels:
+  - **Environment**: the signed-in user's environments from the Global Discovery Service
+    (listed when the dropdown first opens, once per session; demo mode's fake one in demo mode).
+    Choosing one switches the client and keeps the request being built; nothing runs until you
+    run it. **All environments…** opens the full picker.
+  - **Web API version**: v9.2 (the SDK's default), v9.1 or v9.0, kept per environment in
+    `localStorage`. The client, the preview and Copy as use it, and the SDK code shows the
+    `apiVersion` option when it isn't the default (`src/explorer/apiVersion.ts`).
+  - **Browse tables**: a drawer with the environment's tables (`EntityDefinitions` with a light
+    `$select`, read when the drawer first opens and cached for the session), then a table's
+    columns (type, requirement, maximum length), alternate keys and relationships (with the
+    navigation properties for `$expand`). Tick columns for `$select` and **Query this table**
+    fills in `GET <entityset>?$select=…&$top=10`, without running it (`src/explorer/tables.ts`).
+
+  **Token** (a response tab) decodes the access token the explorer's requests carry, in the
+  browser: its header and claims (audience, tenant, user, object id, application, scopes or roles,
+  issued and expiry times with how long ago or from now), never its signature. The raw token isn't
+  shown, kept in the page's state or logged; **Copy the raw token** fetches and copies it only when
+  clicked, under a warning that it is a secret. Demo mode's token is a made-up, unsigned JWT
+  (`src/explorer/token.ts`, `src/demo/demoToken.ts`).
+
   The operation catalog is read from the actions, functions and messages packages' source at
   build time (`src/explorer/catalog/parse.ts`, run by the Vite plugin in `vite.config.ts`), one
   chunk per package (about 40 KB gzipped each), loaded when you open that package's list. Each
@@ -218,15 +254,27 @@ default app registration and its redirect URIs) is in [docs/site.md](../../docs/
   destructive runs, `Badge` for methods and HTTP status.
 - **Accessibility:** a skip link, one `h1` per page and `h2` per scenario, labelled fields, focus
   moved to the page after navigation, and an `aria-live` summary of each run.
-- **Code splitting:** the sign-in page, the environment picker, the shell, MSAL, demo mode and
-  every page are separate chunks, loaded with `React.lazy` when first needed.
+- **Code:** the [Monaco editor](https://github.com/microsoft/monaco-editor), bundled with the site
+  (no CDN) and loaded the first time code is shown, with a `Skeleton` in its place until then
+  (`src/editor/`). Read-only code (SDK code, request previews, responses, the scenarios' code) has
+  highlighting, line numbers, folding, find and a copy button; the explorer's request body is an
+  editable JSON field with validation and **Format** (Shift+Alt+F). Only TypeScript (highlighting,
+  no language service), JSON, an HTTP request language and plain text are included. Its themes are
+  made from the Fluent light, dark and high-contrast tokens and follow the theme toggle and
+  Windows high contrast. Tab moves the focus out of every editor (no keyboard trap); each has its
+  own accessible name and Monaco's screen-reader support on. Its worker is a file served from the
+  site, so the CSP needs no `blob:` workers and no `unsafe-eval`.
+- **Code splitting:** the sign-in page, the environment picker, the shell, MSAL, demo mode, the code
+  editor and every page are separate chunks, loaded with `React.lazy` when first needed. The e2e
+  tests hold the first page's JavaScript and the editor's chunk to a size budget.
 
 ## Layout
 
 ```
 src/
 ├── auth/         # AuthProvider; MSAL sign-in (msalSession.ts, loaded on demand); environment discovery
-├── components/   # Scenario (the page pattern), CodeBlock, RequestInspector, ErrorCard, ErrorBoundary
+├── components/   # Scenario (the page pattern), CodeBlock, JsonEditor, RequestInspector, ErrorCard
+├── editor/       # The Monaco editor (loaded on demand): languages, Fluent themes, JSON validation
 ├── demo/         # Demo mode: an in-browser fake of the Web API and the Global Discovery Service
 ├── explorer/     # The explorer: catalog, raw requests, code generation, preview, samples, history
 ├── lib/          # Snippet extraction, error classification, safe storage

@@ -1,9 +1,39 @@
 <%# Patterned on the templates of dataverse-gen by Scott Durow (https://github.com/scottdurow/dataverse-gen), Copyright (c) 2020 Scott Durow, MIT License. See THIRD_PARTY_NOTICES.md in this package. -%>
+<%_
+  // A const object and a type of the same name, not a TypeScript enum (#479). A choice's option set
+  // keeps its numbers (what Dataverse stores); a CSDL enum type has its member names (what the Web
+  // API reads and writes), except a flags enum, whose numbers combine with `|`.
+  const names = enumType.IsCsdlEnum === true && enumType.IsFlags !== true;
+  const flags = enumType.IsFlags === true;
+_%>
 /**
+<%_ if (enumType.IsCsdlEnum === true) { _%>
+ * <%- doc(enumType.Name) %> (enum type)
+ *
+<%_ if (flags) { _%>
+ * A flags enum: combine members with `|`, so the type is `number`. Actions and functions send a
+ * value as member names (`"ReadAccess, WriteAccess"`).
+<%_ } else { _%>
+ * The Web API reads and writes enum members by name, so the values are the member names; each
+ * member's comment gives its numeric value.
+<%_ } _%>
+<%_ } else { _%>
  * <%- doc(enumType.Name) %> (<%- enumType.IsGlobal ? 'global' : 'local' %> option set)
+<%_ } _%>
  */
-export const enum <%- typeName %> {
+export const <%- typeName %> = {
 <%_ enumType.Members.forEach(function(member){ _%>
-  <%- propertyKey(member.Name) %> = <%- Number(member.Value) %>,
+<%_ if (names) { _%>
+  /** <%- Number(member.Value) %> */
+  <%- propertyKey(member.Name) %>: <%- literal(member.Name) %>,
+<%_ } else { _%>
+  <%- propertyKey(member.Name) %>: <%- Number(member.Value) %>,
+<%_ } _%>
 <%_ }) _%>
-}
+} as const;
+
+<%_ if (flags) { _%>
+export type <%- typeName %> = number;
+<%_ } else { _%>
+export type <%- typeName %> = (typeof <%- typeName %>)[keyof typeof <%- typeName %>];
+<%_ } _%>

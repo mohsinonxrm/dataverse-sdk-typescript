@@ -1,9 +1,11 @@
+import { Fragment } from "react";
 import type { MouseEvent } from "react";
 import {
   Hamburger,
   makeStyles,
   NavDrawer,
   NavDrawerBody,
+  NavDivider,
   NavDrawerHeader,
   NavItem,
   NavSectionHeader,
@@ -21,6 +23,11 @@ const useStyles = makeStyles({
     borderRight: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke2}`,
   },
 });
+
+const GROUPS = NAV_GROUPS.map((group) => ({
+  group,
+  routes: ROUTES.filter((r) => r.group === group),
+})).filter((g) => g.routes.length > 0);
 
 interface AppNavProps {
   open: boolean;
@@ -61,24 +68,34 @@ export function AppNav({ open, overlay, onOpenChange }: AppNavProps) {
         </NavDrawerHeader>
       )}
       <NavDrawerBody>
-        {NAV_GROUPS.map((group) => {
-          const items = ROUTES.filter((r) => r.group === group);
-          if (!items.length) return null;
+        {GROUPS.map(({ group, routes }, index) => {
+          const items = routes.map((route) => (
+            <NavItem
+              key={route.path}
+              value={route.path}
+              href={route.path}
+              icon={<route.icon />}
+              onClick={go(route.path)}
+            >
+              {route.title}
+            </NavItem>
+          ));
+          // A section header names a group of pages; a page on its own is named by its item.
+          // Dividers set the sections apart; pages on their own run together.
+          const section = routes.length > 1;
+          const divider = index > 0 && (section || (GROUPS[index - 1]?.routes.length ?? 0) > 1);
           return (
-            <div key={group} role="group" aria-label={group}>
-              <NavSectionHeader>{group}</NavSectionHeader>
-              {items.map((route) => (
-                <NavItem
-                  key={route.path}
-                  value={route.path}
-                  href={route.path}
-                  icon={<route.icon />}
-                  onClick={go(route.path)}
-                >
-                  {route.title}
-                </NavItem>
-              ))}
-            </div>
+            <Fragment key={group}>
+              {divider && <NavDivider />}
+              {section ? (
+                <div role="group" aria-label={group}>
+                  <NavSectionHeader>{group}</NavSectionHeader>
+                  {items}
+                </div>
+              ) : (
+                items
+              )}
+            </Fragment>
           );
         })}
       </NavDrawerBody>

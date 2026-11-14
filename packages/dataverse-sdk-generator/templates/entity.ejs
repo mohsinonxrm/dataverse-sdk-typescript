@@ -93,6 +93,15 @@ export const <%- metadataName %>: <%- metadataType %> = {
       <%_ if (prop.OptionValues) { _%>
       optionValues: <%- literal(prop.OptionValues) %>,
       <%_ } _%>
+      <%_ if (prop.OptionStates) { _%>
+      optionStates: <%- literal(prop.OptionStates) %>,
+      <%_ } _%>
+      <%_ if (prop.Precision !== undefined) { _%>
+      precision: <%- literal(prop.Precision) %>,
+      <%_ } _%>
+      <%_ if (prop.MaxSizeInKB !== undefined) { _%>
+      maxSizeInKB: <%- literal(prop.MaxSizeInKB) %>,
+      <%_ } _%>
       <%_ if (prop.IsValidForCreate === false) { _%>
       isValidForCreate: false,
       <%_ } _%>
@@ -113,6 +122,13 @@ export const <%- metadataName %>: <%- metadataType %> = {
       <%_ if (nav.IsPolymorphic) { _%>
       isPolymorphic: true,
       targets: <%- literal(nav.Targets || []) %>,
+      <%_ if (nav.Members && nav.Members.length > 0) { _%>
+      members: {
+        <%_ nav.Members.forEach(function(member){ _%>
+        <%- propertyKey(member.Name) %>: <%- literal(member.TargetType) %>,
+        <%_ }) _%>
+      },
+      <%_ } _%>
       <%_ } _%>
       isCollection: <%- nav.IsCollection ? 'true' : 'false' %>,
       relationshipName: <%- literal(nav.RelationshipName) %>,

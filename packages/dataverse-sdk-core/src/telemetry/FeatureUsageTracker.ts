@@ -7,6 +7,10 @@
  * Feature usage flags for telemetry
  * Uses bitwise OR to combine multiple flags efficiently
  *
+ * A const object rather than a TypeScript `enum` (#479), so the SDK compiles under
+ * `erasableSyntaxOnly` and Node's type stripping. `FeatureUsageFlag.RETRY_ENABLED` works as
+ * before; the type {@link FeatureUsageFlag} is `number`, since flags combine.
+ *
  * @example
  * ```typescript
  * const features = FeatureUsageFlag.RETRY_ENABLED | FeatureUsageFlag.CONCURRENCY_ENABLED;
@@ -18,97 +22,103 @@
  * }
  * ```
  */
-export enum FeatureUsageFlag {
+export const FeatureUsageFlag = {
   /**
    * No features enabled (default)
    */
-  NONE = 0,
+  NONE: 0,
 
   /**
    * Retry middleware is active
    */
-  RETRY_ENABLED = 1, // 1 (binary: 0001)
+  RETRY_ENABLED: 1,
 
   /**
    * Concurrency limiting is active
    */
-  CONCURRENCY_ENABLED = 2, // 2 (binary: 0010)
+  CONCURRENCY_ENABLED: 2,
 
   /**
    * Batch operations are being used
    */
-  BATCH_ENABLED = 4, // 4 (binary: 0100)
+  BATCH_ENABLED: 4,
 
   /**
    * Custom authentication provider
    */
-  CUSTOM_AUTH = 8, // 8 (binary: 1000)
+  CUSTOM_AUTH: 8,
 
   /**
    * Telemetry is enabled
    */
-  TELEMETRY_ENABLED = 16, // 16 (binary: 10000)
+  TELEMETRY_ENABLED: 16,
 
   /**
    * Logging is enabled
    */
-  LOGGING_ENABLED = 32, // 32 (binary: 100000)
+  LOGGING_ENABLED: 32,
 
   /**
    * Per-request options override
    */
-  REQUEST_OPTIONS_OVERRIDE = 64, // 64 (binary: 1000000)
+  REQUEST_OPTIONS_OVERRIDE: 64,
 
   /**
    * Paging/iteration is being used
    */
-  PAGING_ENABLED = 128, // 128 (binary: 10000000)
+  PAGING_ENABLED: 128,
 
   /**
    * File/image operations
    */
-  FILE_OPERATIONS = 256, // 256 (binary: 100000000)
+  FILE_OPERATIONS: 256,
 
   /**
    * Metadata operations
    */
-  METADATA_OPERATIONS = 512, // 512 (binary: 1000000000)
+  METADATA_OPERATIONS: 512,
 
   /**
    * Discovery service usage
    */
-  DISCOVERY_SERVICE = 1024, // 1024 (binary: 10000000000)
+  DISCOVERY_SERVICE: 1024,
 
   /**
    * XRM/OrganizationService facade
    */
-  XRM_FACADE = 2048, // 2048 (binary: 100000000000)
+  XRM_FACADE: 2048,
 
   /**
    * SDK Messages
    */
-  SDK_MESSAGES = 4096, // 4096 (binary: 1000000000000)
+  SDK_MESSAGES: 4096,
 
   /**
    * Typed Actions
    */
-  TYPED_ACTIONS = 8192, // 8192 (binary: 10000000000000)
+  TYPED_ACTIONS: 8192,
 
   /**
    * Typed Functions
    */
-  TYPED_FUNCTIONS = 16384, // 16384 (binary: 100000000000000)
+  TYPED_FUNCTIONS: 16384,
 
   /**
    * Application Insights telemetry adapter
    */
-  APPINSIGHTS_TELEMETRY = 32768, // 32768 (binary: 1000000000000000)
+  APPINSIGHTS_TELEMETRY: 32768,
 
   /**
    * OpenTelemetry adapter
    */
-  OTEL_TELEMETRY = 65536, // 65536 (binary: 10000000000000000)
-}
+  OTEL_TELEMETRY: 65536,
+} as const;
+
+/**
+ * A feature usage flag, or a combination of them (`|`): a number. The named flags are the members
+ * of the {@link FeatureUsageFlag} object.
+ */
+export type FeatureUsageFlag = number;
 
 /**
  * Helper class for managing feature usage flags
@@ -191,18 +201,9 @@ export class FeatureUsageTracker {
    * ```
    */
   getEnabledFeatures(): string[] {
-    const enabled: string[] = [];
-
-    for (const key in FeatureUsageFlag) {
-      if (typeof FeatureUsageFlag[key] === "number") {
-        const flag = FeatureUsageFlag[key as keyof typeof FeatureUsageFlag];
-        if (flag !== FeatureUsageFlag.NONE && this.hasFeature(flag)) {
-          enabled.push(key);
-        }
-      }
-    }
-
-    return enabled;
+    return Object.entries(FeatureUsageFlag)
+      .filter(([, flag]) => flag !== FeatureUsageFlag.NONE && this.hasFeature(flag))
+      .map(([name]) => name);
   }
 
   /**

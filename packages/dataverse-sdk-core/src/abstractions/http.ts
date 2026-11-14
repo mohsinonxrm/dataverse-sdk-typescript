@@ -1,3 +1,6 @@
+import type { TelemetryEventName } from "../telemetry/events.js";
+
+/** The HTTP methods the Web API uses. */
 export type HttpMethod = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
 export interface RequestInformation {
@@ -15,8 +18,19 @@ export interface RequestInformation {
    * response is returned at once.
    */
   timeoutMs?: number;
-  /** Time limit for each attempt, in ms. A timed-out attempt is not retried. */
+  /**
+   * Time limit for each attempt, in ms. A timed-out attempt is not retried, unless the retry
+   * option `retryAttemptTimeouts` is on (idempotent requests only).
+   */
   attemptTimeoutMs?: number;
+  /**
+   * When a time limit the caller enforces itself (through `signal`) runs out, in ms since the
+   * epoch on the client's `clock` (`Date.now()` by default): for example one `timeoutMs` for several requests. It doesn't abort
+   * anything; like `timeoutMs`, it stops the retry middleware from starting a wait that would end
+   * after it, so the failed response is returned at once. With `timeoutMs` too, the earlier one
+   * counts.
+   */
+  deadline?: number;
   signal?: AbortSignal;
   /** Correlation id for this request (sent as `x-ms-correlation-id`). A new one is generated when omitted. */
   correlationId?: string;
@@ -79,7 +93,8 @@ export interface Logger {
 export interface DependencyTelemetry {
   /** Host of the request URL. */
   target?: string;
-  method?: string;
+  /** The request's HTTP method. */
+  method?: HttpMethod;
   /** The request URL, redacted with the client's `redactUrl` (see `DataverseClientOptions`). */
   url?: string;
   durationMs?: number;
@@ -119,10 +134,11 @@ export interface DependencyHandle {
 export interface TelemetryClient {
   /**
    * A named event: throttling, retries, waits for a concurrency slot and `$batch` executions
-   * (see `TelemetryEvents`), or your own. String properties, numeric measurements.
+   * (see `TelemetryEvents`), or your own. String properties, numeric measurements. `name` is a
+   * `TelemetryEventName` when the SDK sends the event; an implementation may type it `string`.
    */
   trackEvent(
-    name: string,
+    name: TelemetryEventName | (string & {}),
     props?: Record<string, string>,
     measurements?: Record<string, number>
   ): void;
@@ -142,11 +158,17 @@ export interface MiddlewareContext {
   /** Used by retry middleware for diagnostics */
   attempt?: number;
   /**
-   * When the request's `timeoutMs` runs out, in ms since the epoch (as `Date.now()`); unset without
-   * `timeoutMs`. The retry middleware doesn't start a wait that would end after it: it returns the
-   * response (or throws the network error) at once instead.
+   * When the request's `timeoutMs` (or its `deadline`, if earlier) runs out, in ms since the epoch
+   * on `clock`; unset without either. The retry middleware doesn't start a wait that would end
+   * after it: it returns the response (or throws the network error) at once instead.
    */
   deadline?: number;
+  /**
+   * The client's clock (`DataverseClientOptions.clock`, else `systemClock`): the retry
+   * middleware waits and checks `deadline` with it, and middleware with a `clock` option of their
+   * own use it when that option isn't set. Unset when middleware runs outside a client.
+   */
+  clock?: import("../utils/clock.js").Clock;
   /**
    * Per-request middleware options
    * Allows individual requests to override middleware behavior
@@ -156,4 +178,12 @@ export interface MiddlewareContext {
    * Feature usage tracker for telemetry
    */
   featureTracker?: import("../telemetry/FeatureUsageTracker.js").FeatureUsageTracker;
+  /**
+   * Set by `ChaosMiddleware` when it injects a fault into the current attempt: which kind
+   * (`status` for a fake response, with its `status`; `network`, `latency` or `hang`). The
+   * telemetry middleware clears it before each attempt and, when it is set after the attempt,
+   * tags the attempt's dependency (and its exception or `dataverse.throttle` event) with
+   * `chaos.injected: "true"` and `chaos.fault`, so injected faults can be told from real ones.
+   */
+  chaos?: { fault: "status" | "network" | "latency" | "hang"; status?: number };
 }

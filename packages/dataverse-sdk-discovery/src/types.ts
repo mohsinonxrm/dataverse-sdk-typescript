@@ -13,6 +13,37 @@ export const OrganizationState = {
   Disabled: 1,
 } as const;
 
+/** {@link OrganizationDetail.State}: one of the values of {@link OrganizationState}. */
+export type OrganizationState = (typeof OrganizationState)[keyof typeof OrganizationState];
+
+/**
+ * Values of {@link OrganizationDetail.OrganizationType}: Dataverse's `OrganizationType` enum.
+ * The service can send values added after this list, so the property is typed
+ * `OrganizationType | (number & {})`.
+ */
+export const OrganizationType = {
+  Customer: 0,
+  Monitoring: 1,
+  Support: 2,
+  BackEnd: 3,
+  Secondary: 4,
+  CustomerTest: 5,
+  CustomerFreeTest: 6,
+  CustomerPreview: 7,
+  Placeholder: 8,
+  TestDrive: 9,
+  MsftInvestigation: 10,
+  EmailTrial: 11,
+  Default: 12,
+  Developer: 13,
+  Trial: 14,
+  Teams: 15,
+  Platform: 16,
+} as const;
+
+/** One of the values of {@link OrganizationType}. */
+export type OrganizationType = (typeof OrganizationType)[keyof typeof OrganizationType];
+
 /**
  * A Dataverse environment (an `Instance`) as returned by the Global Discovery Service v2.0
  * (`GET https://globaldisco.crm.dynamics.com/api/discovery/v2.0/Instances`).
@@ -41,7 +72,7 @@ export interface OrganizationDetail {
    * Whether the environment is enabled: `0` = enabled, `1` = disabled
    * (see {@link OrganizationState}). The service sends an integer, not a string.
    */
-  State: number;
+  State: OrganizationState | (number & {});
 
   /** The current version of the environment, e.g. `"9.2.24101.00177"`. */
   Version: string;
@@ -73,8 +104,11 @@ export interface OrganizationDetail {
   /** Whether the calling user has the System Administrator role in the environment. */
   IsUserSysAdmin?: boolean;
 
-  /** The type of the organization (Dataverse `OrganizationType` enum value). */
-  OrganizationType?: number;
+  /**
+   * The type of the organization: a value of Dataverse's `OrganizationType` enum (see
+   * {@link OrganizationType}), e.g. `13` for a developer environment.
+   */
+  OrganizationType?: OrganizationType | (number & {});
 
   /** The id of the data center where the environment is located. */
   DatacenterId?: string | null;

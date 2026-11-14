@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Field, Input } from "@fluentui/react-components";
+import { Body1, Field, Input } from "@fluentui/react-components";
 import { RecordsGrid } from "../components/RecordsGrid";
 import { Scenario } from "../components/Scenario";
 import { ScenarioPage } from "../components/ScenarioPage";
@@ -34,7 +34,7 @@ export default function OperationsPage() {
         }
         renderResult={(r) => (
           <>
-            Dataverse {r.version}
+            <Body1>Dataverse {r.version}</Body1>
             <RecordsGrid
               label="Record counts"
               rows={r.counts}

@@ -81,7 +81,7 @@ export default function DiscoveryPage() {
               },
               {
                 key: "use",
-                label: "",
+                label: "Action",
                 render: (e) =>
                   e.url === connection.environmentUrl ? (
                     <Badge appearance="outline" color="brand" shape="rounded">

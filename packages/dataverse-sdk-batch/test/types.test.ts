@@ -1,6 +1,8 @@
 import { describe, expectTypeOf, it } from "vitest";
+import type { HttpMethod } from "@mohsinonxrm/dataverse-sdk-core";
 import {
   type BatchExecutionResult,
+  type BatchMethod,
   type BatchRequestBuilder,
   type BatchRequestStep,
   type BatchResponsePart,
@@ -71,10 +73,26 @@ export function requestBodiesAreUnknown(): void {
   expectTypeOf(step.body).toEqualTypeOf<unknown>();
 }
 
+export function methodsAreHttpMethods(): void {
+  expectTypeOf<BatchRequestStep["method"]>().toEqualTypeOf<BatchMethod>();
+  expectTypeOf<Parameters<BatchRequestBuilder["addRequest"]>[1]>().toEqualTypeOf<BatchMethod>();
+  expectTypeOf<HttpMethod>().toExtend<BatchMethod>();
+  expectTypeOf<"patch">().toExtend<BatchMethod>();
+
+  builder.addRequest("a", "DELETE", "accounts(1)").addRequest("b", "put", "accounts(1)/name");
+  // @ts-expect-error a misspelt method is a compile error (#480)
+  builder.addRequest("c", "PSOT", "accounts");
+  // @ts-expect-error so is an arbitrary string
+  builder.addRequest("d", "" as string, "accounts");
+  // @ts-expect-error and a step with a method the Web API doesn't take
+  const _head: BatchRequestStep = { id: "e", method: "HEAD", url: "accounts" };
+}
+
 describe("batch body types (#294)", () => {
   it("are type-checked by tsc (see the functions above)", () => {
     expectTypeOf(responseBodiesAreUnknown).toBeFunction();
     expectTypeOf(bodyTypeCanBeNamed).toBeFunction();
     expectTypeOf(requestBodiesAreUnknown).toBeFunction();
+    expectTypeOf(methodsAreHttpMethods).toBeFunction();
   });
 });

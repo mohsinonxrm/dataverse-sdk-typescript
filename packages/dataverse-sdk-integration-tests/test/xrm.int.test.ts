@@ -4,7 +4,7 @@
  */
 import { afterAll, describe, expect, it } from "vitest";
 import { OrganizationService } from "@mohsinonxrm/dataverse-sdk-xrm";
-import { live, liveClient, runId } from "./env.js";
+import { attemptId, live, liveClient, runId } from "./env.js";
 
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const created: Array<{ set: string; id: string }> = [];
@@ -34,7 +34,8 @@ afterAll(async () => {
 describe.skipIf(!live)("live: OrganizationService (#83, #84)", () => {
   it("create, retrieve, retrieveMultiple, update and delete round-trip", async () => {
     const org = service();
-    const name = `sdk-int xrm ${runId}`;
+    // Unique to this attempt: retrieveMultiple below looks the account up by name
+    const name = `sdk-int xrm ${runId} ${attemptId()}`;
 
     // create → id from OData-EntityId
     const id: string = await org.create("accounts", { name, telephone1: "555-0100" });

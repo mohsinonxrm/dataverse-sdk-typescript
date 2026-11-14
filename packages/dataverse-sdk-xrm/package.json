@@ -1,6 +1,6 @@
 {
   "name": "@mohsinonxrm/dataverse-sdk-xrm",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "C#-familiar facade over Dataverse Web API, providing OrganizationService-like operations",
   "publishConfig": {
     "access": "public",
@@ -55,7 +55,7 @@
     "@mohsinonxrm/dataverse-sdk-actions": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-functions": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
-    "eslint": "^9.39.5",
+    "eslint": "^10.14.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"

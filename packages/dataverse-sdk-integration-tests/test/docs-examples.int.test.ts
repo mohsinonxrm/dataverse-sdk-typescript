@@ -400,7 +400,17 @@ async function cleanUp(records: readonly CreatedRecord[], since: number): Promis
       done.add(key);
       const row = await client.api(key).select("createdon").get<{ createdon?: string | null }>();
       if (!row.createdon || Date.parse(row.createdon) < since) continue;
-      await client.api(key).delete();
+      // Dataverse sometimes fails a delete once ("There is no active transaction", ...): try
+      // again a couple of times before reporting it.
+      for (let attempt = 1; ; attempt++) {
+        try {
+          await client.api(key).delete();
+          break;
+        } catch (err) {
+          if (attempt >= 3 || (err instanceof DataverseODataError && err.status === 404)) throw err;
+          await new Promise((resolve) => setTimeout(resolve, attempt * 5000));
+        }
+      }
     } catch (err) {
       if (err instanceof DataverseODataError && err.status === 404) continue;
       problems.push(

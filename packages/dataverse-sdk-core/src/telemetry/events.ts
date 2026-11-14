@@ -28,8 +28,11 @@ export const TelemetryEvents = {
    */
   concurrencyWait: "dataverse.concurrency.wait",
   /**
-   * The concurrency limit changed because of an `x-ms-dop-hint` response header. Measurements:
-   * `concurrency.limit`, `concurrency.previous_limit`, `dop_hint`.
+   * The concurrency limit changed. Properties: `concurrency.reason`: `dop_hint` (an
+   * `x-ms-dop-hint` response header), `throttle` (halved after a 429 with error `0x80072326`, too
+   * many concurrent requests; see `concurrency.reduceOnThrottle`) or `recovery` (raised one step
+   * after such a halving, when no hint is readable). Measurements: `concurrency.limit`,
+   * `concurrency.previous_limit`, and `dop_hint` when the response had one.
    */
   concurrencyLimit: "dataverse.concurrency.limit",
   /**
@@ -39,4 +42,37 @@ export const TelemetryEvents = {
    * `batch.succeeded` and `batch.failed` are absent when the batch failed as a whole.
    */
   batch: "dataverse.batch",
+  /**
+   * A `CircuitBreakerMiddleware` changed state. Properties: `circuit.state` (`closed`, `open`,
+   * `half-open` or `isolated`), `circuit.previous_state`, `circuit.reason` (`failure_threshold`,
+   * `failure_ratio`, `probe_failed`, `probe_succeeded`, `break_elapsed`, `isolate` or `reset`),
+   * `circuit.mode` (`consecutive` or `ratio`); `correlation.id` is the request's that caused the
+   * change (empty for `isolate()` and `reset()`, which report through the last request's
+   * telemetry client). Measurements: `circuit.failures` (in a row, or in the sampling window in
+   * ratio mode), `circuit.break_ms` (when it opens), `circuit.throughput` (ratio mode).
+   */
+  circuitState: "dataverse.circuit.state",
+  /**
+   * `ChaosMiddleware` injected a fault into an attempt (dev and test environments only). The
+   * attempt's dependency, and its exception or `dataverse.throttle` event, carry
+   * `chaos.injected: "true"` and `chaos.fault` too. Properties: `chaos.fault` (`status`,
+   * `network`, `latency` or `hang`), `request.method`, `error.type` (`ConnectionFailed`) for a
+   * network fault. Measurements: `retry.attempt`, `status` (a fake response's status),
+   * `chaos.delay_ms` (a fault's `delayMs`).
+   */
+  chaosInjected: "dataverse.chaos.injected",
+  /**
+   * `AdaptiveThrottlingMiddleware` held a request back before sending it (the same moment its
+   * `onDelay` runs). Properties: `request.method`, `throttle.reason` (`pressure`: a
+   * service-protection budget is low; `retry-after`: a 429's pause is in force). No `request.url`:
+   * use `correlation.id` to find the request. Measurements: `delay_ms`, `throttle.pressure` (0 to
+   * 1).
+   */
+  throttleDelay: "dataverse.throttle.delay",
 } as const;
+
+/**
+ * The name of an event the SDK sends to `TelemetryClient.trackEvent`: one of the values of
+ * `TelemetryEvents`, such as `"dataverse.throttle"`.
+ */
+export type TelemetryEventName = (typeof TelemetryEvents)[keyof typeof TelemetryEvents];

@@ -20,6 +20,8 @@ export {
   type MiddlewareOptions,
   type MiddlewareOptionEntry,
   type BuiltInMiddlewareOptions,
+  type CheckedMiddlewareOptionEntry,
+  type MiddlewareOptionKey,
 } from "./middleware/RequestOptions.js";
 
 export * from "./utils/HeaderUtils.js";
@@ -48,12 +50,21 @@ export {
   type ChaosRequestOptions,
   type ChaosScriptInfo,
 } from "./middleware/ChaosMiddleware.js";
+// Dataverse failures for ChaosMiddleware, and a clock tests can replace (#475, #478).
+export {
+  ChaosPresets,
+  type ServiceProtectionChaosOptions,
+  type SlowOrgChaosOptions,
+} from "./middleware/chaosPresets.js";
+export { systemClock, type Clock } from "./utils/clock.js";
 export { getRetryAttempts } from "./middleware/RetryMiddleware.js";
 export type { RawBody } from "./utils/body.js";
 // Opt-in resilience middleware (#343).
 export {
   CircuitBreakerMiddleware,
+  type CircuitBreakDurationInfo,
   type CircuitBreakerOptions,
+  type CircuitBreakerRequestOptions,
   type CircuitState,
   type CircuitStateChange,
 } from "./middleware/CircuitBreakerMiddleware.js";
@@ -66,6 +77,12 @@ export {
   DataverseBulkheadRejectedError,
   DataverseCircuitOpenError,
 } from "./errors/DataverseResilienceErrors.js";
+// A full concurrency or bulkhead queue (#477).
+export {
+  DataverseQueueFullError,
+  type DataverseQueueFullDetails,
+  type DataverseQueueName,
+} from "./errors/DataverseQueueFullError.js";
 
 export {
   DataverseAuthenticationError,
@@ -73,20 +90,35 @@ export {
   DataverseServiceError,
   DataverseNetworkError,
   DataverseAbortError,
+  type DataverseAuthenticationErrorName,
+  type DataverseInvalidRequestErrorName,
+  type DataverseServiceErrorName,
+  type DataverseNetworkErrorName,
 } from "./errors/NamedErrors.js";
 
+// Known Dataverse constants: error codes, request headers, Prefer annotation terms (#481).
+export { DataverseErrorCode, hasErrorCode } from "./errors/errorCodes.js";
+export {
+  DataverseHeaders,
+  type DataverseHeaderValue,
+  type DataverseHeaderValues,
+} from "./client/headers.js";
+export { Annotations, type AnnotationTerm } from "./client/annotations.js";
+
 export * from "./telemetry/FeatureUsageTracker.js";
-export { TelemetryEvents } from "./telemetry/events.js";
+export { TelemetryEvents, type TelemetryEventName } from "./telemetry/events.js";
 
 export { odata, type EqValue } from "./odata/filter.js";
 export type { ExpandOptions } from "./odata/expand.js";
 export {
   odataLiteral,
   odataKey,
+  type EdmPrimitiveType,
   type ODataKey,
   type ODataParameterKind,
   type ODataRecordReference,
   type ODataScalar,
+  type ODataTypeName,
 } from "./odata/literal.js";
 
 // Change tracking (#319)
@@ -112,5 +144,6 @@ export {
   AdaptiveThrottlingMiddleware,
   type AdaptiveThrottlingDelay,
   type AdaptiveThrottlingOptions,
+  type AdaptiveThrottlingRequestOptions,
   type AdaptiveThrottlingStatus,
 } from "./middleware/AdaptiveThrottlingMiddleware.js";

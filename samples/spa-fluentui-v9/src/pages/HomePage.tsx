@@ -18,15 +18,16 @@ import { whoAmI } from "../scenarios/basics";
 import basicsSource from "../scenarios/basics.ts?raw";
 import { useSdkContext } from "../sdk/SdkProvider";
 import sdkSource from "../sdk/createSdk.ts?raw";
+import { useCommonStyles } from "../theme/styles";
 
 const useStyles = makeStyles({
   groups: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 18rem), 1fr))",
-    gap: tokens.spacingHorizontalL,
+    rowGap: tokens.spacingVerticalL,
+    columnGap: tokens.spacingHorizontalL,
   },
   section: { display: "flex", flexDirection: "column", gap: tokens.spacingVerticalM },
-  group: { padding: tokens.spacingHorizontalL },
   list: {
     margin: 0,
     paddingInlineStart: 0,
@@ -36,19 +37,20 @@ const useStyles = makeStyles({
     gap: tokens.spacingVerticalS,
   },
   summary: { display: "block", color: tokens.colorNeutralForeground3 },
-  card: { padding: tokens.spacingHorizontalL, gap: tokens.spacingVerticalM },
 });
 
 export default function HomePage() {
   const styles = useStyles();
+  const common = useCommonStyles();
   const { session } = useSdkContext();
   return (
     <ScenarioPage
       title="Overview"
       description={
         <>
-          Each page runs real calls of the <code>@mohsinonxrm/dataverse-sdk</code> packages, shows
-          the exact code it runs, and lists every request it sent with its status and timing.{" "}
+          Each page runs real calls of the{" "}
+          <span className={common.mono}>@mohsinonxrm/dataverse-sdk</span> packages, shows the exact
+          code it runs, and lists every request it sent with its status and timing.{" "}
           {session.mode === "demo"
             ? "You are in demo mode: the SDK talks to an in-browser copy of a small environment, so you can change and delete freely."
             : "You are signed in to your own environment: write scenarios create, change and delete records there."}
@@ -64,7 +66,7 @@ export default function HomePage() {
             const routes = ROUTES.filter((r) => r.group === group);
             if (!routes.length) return null;
             return (
-              <Card key={group} className={styles.group}>
+              <Card key={group} size="large">
                 <CardHeader header={<Subtitle2 as="h3">{group}</Subtitle2>} />
                 <ul className={styles.list}>
                   {routes.map((r) => (
@@ -87,7 +89,7 @@ export default function HomePage() {
         run={(sdk, signal) => whoAmI(sdk, signal)}
       />
 
-      <Card className={styles.card} role="region" aria-labelledby="client-setup-heading">
+      <Card size="large" role="region" aria-labelledby="client-setup-heading">
         <CardHeader
           header={
             <Subtitle1 as="h2" id="client-setup-heading">
@@ -96,9 +98,9 @@ export default function HomePage() {
           }
           description={
             <Body1>
-              Every scenario gets a <code>DataverseClient</code> made like this: the session&apos;s
-              token provider, a logger and telemetry client that feed the Telemetry page, a retry
-              hook, and the request inspector appended to the pipeline.
+              Every scenario gets a <span className={common.mono}>DataverseClient</span> made like
+              this: the session&apos;s token provider, a logger and telemetry client that feed the
+              Telemetry page, a retry hook, and the request inspector appended to the pipeline.
             </Body1>
           }
         />

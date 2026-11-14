@@ -9,7 +9,7 @@ import * as path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { DataverseClient } from "@mohsinonxrm/dataverse-sdk-core";
 import { createEntityReference } from "@mohsinonxrm/dataverse-sdk-entities-runtime";
-import { live, liveClient, runId } from "./env.js";
+import { attemptId, live, liveClient, runId } from "./env.js";
 import {
   compileToJs,
   generateLive,
@@ -32,6 +32,16 @@ export async function run(client: DataverseClient, id: string): Promise<void> {
   await typed.accounts.create({ name: "Contoso", primarycontactid: createEntityReference("contact", contactId) });
   const account = await typed.accounts.byId(id).get({ select: ["name", "_primarycontactid_value"] });
   console.log(account.name, await typed.contacts.list({ select: ["fullname"], top: 5 }));
+  // #431: expand by the org's navigation properties; select narrows
+  const expanded = await typed.accounts.byId(id).get({
+    select: ["name"],
+    expand: { primarycontactid: { select: ["fullname"] }, contact_customer_accounts: { select: ["fullname"], top: 5 } },
+  });
+  console.log(expanded.primarycontactid?.fullname, expanded.contact_customer_accounts.length);
+  // @ts-expect-error not selected
+  console.log(expanded.accountnumber);
+  // @ts-expect-error not a navigation property of account
+  await typed.accounts.byId(id).get({ expand: { primarycontact: true } });
   await typed.accounts.byId(id).update({ name: "Contoso Ltd", primarycontactid: null });
   await typed.accounts.byId(id).delete();
   // @ts-expect-error not a column of account
@@ -94,7 +104,9 @@ describe.skipIf(!live)("live: generated typed client (#312)", () => {
         createTypedClient: (client: DataverseClient) => Typed;
       }>(dir, "client.js");
       const typed = createTypedClient(liveClient().client);
-      const name = `${runId}-typed-client`;
+      // Unique to this attempt: list() below looks the account up by name. It's the contact's
+      // lastname too, so at most 50 characters (runId is 31).
+      const name = `${runId}-typed-${attemptId()}`;
 
       const contactId = await typed.contacts.create({ lastname: name });
       created.push({ set: "contacts", id: contactId });
@@ -115,6 +127,22 @@ describe.skipIf(!live)("live: generated typed client (#312)", () => {
         filter: `name eq '${name}'`,
       });
       expect(listed.map((a) => a.name)).toEqual([name]);
+
+      // #431: a typed expand of the lookup and of the contact's side of a collection
+      const expanded = await typed.accounts.byId(accountId).get({
+        select: ["name"],
+        expand: { primarycontactid: { select: ["lastname"] } },
+      });
+      expect(expanded.primarycontactid).toMatchObject({ contactid: contactId, lastname: name });
+      const contacts = await typed.contacts.list({
+        select: ["lastname"],
+        filter: `contactid eq ${contactId}`,
+        expand: { account_primary_contact: { select: ["name"] } },
+      });
+      expect(contacts).toHaveLength(1);
+      expect(contacts[0].account_primary_contact).toEqual([
+        expect.objectContaining({ accountid: accountId, name }),
+      ]);
 
       await typed.accounts.byId(accountId).update({ primarycontactid: null });
       const updated = await typed.accounts

@@ -12,6 +12,7 @@ import {
   odataLiteral,
   type ODataParameterKind,
   type ODataRecordReference,
+  type ODataTypeName,
 } from "@mohsinonxrm/dataverse-sdk-core";
 
 /** Structural kind of an operation parameter, as the generator classifies it. */
@@ -48,7 +49,7 @@ export function formatRecordPath(reference: ODataRecordReference): string {
  */
 export function formatParameterAlias(
   value: unknown,
-  odataType: string,
+  odataType: ODataTypeName,
   kind: ParameterKind = "PrimitiveType"
 ): string {
   return odataLiteral.parameter(value, odataType, kind);

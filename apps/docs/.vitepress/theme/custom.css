@@ -1,0 +1,16 @@
+/* Fluent blue, as in the explorer */
+:root {
+  --vp-c-brand-1: #0f6cbd;
+  --vp-c-brand-2: #115ea3;
+  --vp-c-brand-3: #0f548c;
+  --vp-c-brand-soft: rgba(15, 108, 189, 0.14);
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(120deg, #0f6cbd 30%, #479ef5);
+}
+
+.dark {
+  --vp-c-brand-1: #479ef5;
+  --vp-c-brand-2: #62abf5;
+  --vp-c-brand-3: #2886de;
+  --vp-c-brand-soft: rgba(71, 158, 245, 0.16);
+}
