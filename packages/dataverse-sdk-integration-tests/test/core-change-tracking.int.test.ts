@@ -3,6 +3,11 @@
  * creates two accounts, updates one and deletes the other, the delta sync returns the updated one
  * as changed and the deleted one as deleted. Skips when change tracking is off for `account`.
  * Creates and deletes only its own records.
+ *
+ * A change can take a few seconds to reach change tracking: a delta sync made right after it may
+ * not have it yet (seen once in a release rehearsal, 2026-11-14). Each delta sync is read again
+ * from the same delta link, for up to a minute, until it shows the changes; reading a delta link
+ * again is safe, it doesn't move the link.
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { TrackedChangesPage } from "@mohsinonxrm/dataverse-sdk-core";
@@ -14,6 +19,18 @@ interface Account {
 }
 
 const prefix = `sdk-int change tracking ${runId}`;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/** Call `read` until `done` says its result has the changes, for up to a minute. */
+async function until<T>(read: () => Promise<T>, done: (result: T) => boolean): Promise<T> {
+  const deadline = Date.now() + 60_000;
+  for (;;) {
+    const result = await read();
+    if (done(result) || Date.now() > deadline) return result;
+    await sleep(5_000);
+  }
+}
 const created: string[] = [];
 let enabled = false;
 
@@ -65,13 +82,22 @@ describe.skipIf(!live)("live: change tracking (#319)", () => {
     await client.api(`accounts(${removed})`).delete();
     created.splice(created.indexOf(removed), 1);
 
-    // Delta sync, one row per page, so @odata.nextLink is followed when Dataverse pages it.
-    const pages: Array<TrackedChangesPage<Account>> = [];
-    for await (const page of client.iterateChangesSince<Account>(initial.deltaLink, {
-      maxPageSize: 1,
-    })) {
-      pages.push(page);
-    }
+    // Delta sync, one row per page, so @odata.nextLink is followed when Dataverse pages it; read
+    // again until it has both changes (they reach change tracking a little after the requests).
+    const pages = await until(
+      async () => {
+        const read: Array<TrackedChangesPage<Account>> = [];
+        for await (const page of client.iterateChangesSince<Account>(initial.deltaLink, {
+          maxPageSize: 1,
+        })) {
+          read.push(page);
+        }
+        return read;
+      },
+      (read) =>
+        read.some((p) => p.changed.some((r) => r.accountid === kept)) &&
+        read.some((p) => p.deleted.some((d) => d.id === removed))
+    );
     const changed = pages.flatMap((p) => p.changed);
     const deleted = pages.flatMap((p) => p.deleted);
     const deltaLink = pages.at(-1)?.deltaLink;
@@ -86,7 +112,10 @@ describe.skipIf(!live)("live: change tracking (#319)", () => {
     // The new delta link carries on from there: deleting the other account shows up next time.
     await client.api(`accounts(${kept})`).delete();
     created.splice(created.indexOf(kept), 1);
-    const next = await client.changesSince<Account>(deltaLink ?? "");
+    const next = await until(
+      () => client.changesSince<Account>(deltaLink ?? ""),
+      (result) => result.deleted.some((d) => d.id === kept)
+    );
     expect(next.deleted).toContainEqual({ id: kept, reason: "deleted" });
     expect(next.changed.some((r) => r.accountid === kept)).toBe(false);
   });
