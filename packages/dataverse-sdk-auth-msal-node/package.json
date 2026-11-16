@@ -43,7 +43,7 @@
     "@azure/msal-node": "^2.16.3 || ^3.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0"
   },
   "devDependencies": {
-    "@azure/msal-node": "^7.2.1",
+    "@azure/msal-node": "^7.2.2",
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
     "eslint": "^10.14.0",
     "msal-node-v2": "npm:@azure/msal-node@^2.16.3",
