@@ -203,8 +203,8 @@ importers:
         specifier: ^2.10.0
         version: 2.12.0(@opentelemetry/api@1.10.0)
       '@opentelemetry/resources':
-        specifier: ^2.10.0
-        version: 2.12.0(@opentelemetry/api@1.10.0)
+        specifier: ^3.1.1
+        version: 3.1.1(@opentelemetry/api@1.10.0)
       '@opentelemetry/sdk-logs':
         specifier: ^3.1.1
         version: 3.1.1(@opentelemetry/api@1.10.0)
@@ -5649,6 +5649,7 @@ packages:
 
   tldts-core@7.4.20:
     resolution: {integrity: sha512-C630TWXZCZmLq0F2bW4QqwnaaxCQ/svpAqvJwnC4JvgEM5ohhBnGsEzTLSOXcN+xjz+kEaHS5uoWIw2klnqd0A==}
+    deprecated: Partial release, see https://github.com/remusao/tldts/issues/2735. Use >=7.4.22.
 
   tldts@7.4.19:
     resolution: {integrity: sha512-48dH6aSpQnpbzDUc4vIQZ1VjB8tkK+e8c1yx05/SZK+rkssgjEOlxDd/yU8/a4vGYQ9vRgJr9dwMq9TJ0b3X2Q==}
@@ -6357,7 +6358,7 @@ snapshots:
       '@azure/core-util': 1.14.0
       '@opentelemetry/api': 1.10.0
       '@opentelemetry/api-logs': 0.221.0
-      '@opentelemetry/core': 2.12.1(@opentelemetry/api@1.10.0)
+      '@opentelemetry/core': 2.12.0(@opentelemetry/api@1.10.0)
       '@opentelemetry/resources': 2.12.1(@opentelemetry/api@1.10.0)
       '@opentelemetry/sdk-logs': 0.221.0(@opentelemetry/api@1.10.0)
       '@opentelemetry/sdk-metrics': 2.12.1(@opentelemetry/api@1.10.0)
@@ -6441,7 +6442,7 @@ snapshots:
       '@azure/core-tracing': 1.4.0
       '@azure/logger': 1.4.0
       '@opentelemetry/api': 1.10.0
-      '@opentelemetry/core': 2.12.1(@opentelemetry/api@1.10.0)
+      '@opentelemetry/core': 2.12.0(@opentelemetry/api@1.10.0)
       '@opentelemetry/instrumentation': 0.211.0(@opentelemetry/api@1.10.0)
       '@opentelemetry/sdk-trace-web': 2.12.0(@opentelemetry/api@1.10.0)
       tslib: 2.9.1
@@ -8488,7 +8489,7 @@ snapshots:
   '@opentelemetry/instrumentation-pg@0.73.0(@opentelemetry/api@1.10.0)':
     dependencies:
       '@opentelemetry/api': 1.10.0
-      '@opentelemetry/core': 2.12.1(@opentelemetry/api@1.10.0)
+      '@opentelemetry/core': 2.12.0(@opentelemetry/api@1.10.0)
       '@opentelemetry/instrumentation': 0.221.0(@opentelemetry/api@1.10.0)
       '@opentelemetry/semantic-conventions': 1.45.0
       '@opentelemetry/sql-common': 0.42.0(@opentelemetry/api@1.10.0)
@@ -8580,7 +8581,7 @@ snapshots:
   '@opentelemetry/resource-detector-azure@0.29.0(@opentelemetry/api@1.10.0)':
     dependencies:
       '@opentelemetry/api': 1.10.0
-      '@opentelemetry/core': 2.12.1(@opentelemetry/api@1.10.0)
+      '@opentelemetry/core': 2.12.0(@opentelemetry/api@1.10.0)
       '@opentelemetry/resources': 2.12.1(@opentelemetry/api@1.10.0)
       '@opentelemetry/semantic-conventions': 1.45.0
 
@@ -8594,7 +8595,7 @@ snapshots:
     dependencies:
       '@opentelemetry/api': 1.10.0
       '@opentelemetry/core': 2.12.0(@opentelemetry/api@1.10.0)
-      '@opentelemetry/semantic-conventions': 1.44.0
+      '@opentelemetry/semantic-conventions': 1.45.0
 
   '@opentelemetry/resources@2.12.1(@opentelemetry/api@1.10.0)':
     dependencies:
@@ -8614,7 +8615,7 @@ snapshots:
       '@opentelemetry/api-logs': 0.221.0
       '@opentelemetry/core': 2.10.0(@opentelemetry/api@1.10.0)
       '@opentelemetry/resources': 2.10.0(@opentelemetry/api@1.10.0)
-      '@opentelemetry/semantic-conventions': 1.44.0
+      '@opentelemetry/semantic-conventions': 1.45.0
 
   '@opentelemetry/sdk-logs@3.1.1(@opentelemetry/api@1.10.0)':
     dependencies:
