@@ -12,7 +12,8 @@ import {
 
 // A real MSAL error class. The provider has no runtime import of MSAL, so this is a "foreign" copy
 // as far as the provider is concerned (see msal-versions.test.ts for v4 and v5).
-import { InteractionRequiredAuthError } from "@azure/msal-browser";
+// msal-browser 3.x error (single-argument constructor); the provider accepts any major's errors
+import { InteractionRequiredAuthError } from "msal-browser-v3";
 import { asPca, createFakePca } from "./fakePca.js";
 
 describe("MsalBrowserTokenProvider", () => {
