@@ -509,8 +509,8 @@ importers:
         specifier: workspace:*
         version: link:../dataverse-sdk-metadata
       chalk:
-        specifier: ^5.6.2
-        version: 5.6.2
+        specifier: ^6.0.1
+        version: 6.0.1
       commander:
         specifier: ^14.0.3
         version: 14.0.3
@@ -789,8 +789,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/dataverse-sdk-functions
       chalk:
-        specifier: ^5.6.2
-        version: 5.6.2
+        specifier: ^6.0.1
+        version: 6.0.1
       dotenv:
         specifier: ^18.0.9
         version: 18.0.10
@@ -826,8 +826,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/dataverse-sdk-xrm
       chalk:
-        specifier: ^5.6.2
-        version: 5.6.2
+        specifier: ^6.0.1
+        version: 6.0.1
     devDependencies:
       '@types/node':
         specifier: ^22.20.5
@@ -860,8 +860,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/dataverse-sdk-xrm
       chalk:
-        specifier: ^5.6.2
-        version: 5.6.2
+        specifier: ^6.0.1
+        version: 6.0.1
     devDependencies:
       '@types/node':
         specifier: ^22.20.5
@@ -894,8 +894,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/dataverse-sdk-xrm
       chalk:
-        specifier: ^5.6.2
-        version: 5.6.2
+        specifier: ^6.0.1
+        version: 6.0.1
       dotenv:
         specifier: ^18.0.9
         version: 18.0.10
@@ -928,8 +928,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/dataverse-sdk-xrm
       chalk:
-        specifier: ^5.6.2
-        version: 5.6.2
+        specifier: ^6.0.1
+        version: 6.0.1
     devDependencies:
       '@types/node':
         specifier: ^22.20.5
@@ -959,8 +959,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/dataverse-sdk-functions
       chalk:
-        specifier: ^5.6.2
-        version: 5.6.2
+        specifier: ^6.0.1
+        version: 6.0.1
       prompts:
         specifier: ^2.4.2
         version: 2.4.2
