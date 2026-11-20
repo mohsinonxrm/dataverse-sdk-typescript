@@ -95,6 +95,34 @@ describe("explorer tools", () => {
     expect(await problems(session)).toEqual([]);
   });
 
+  it("a shared link opens on the Web API version it was made on (#548)", async () => {
+    const session = await open();
+    const { page } = session;
+    await openExplorer(page);
+    await page.locator('[data-sample="top-accounts"]').click();
+    await page.getByLabel("Web API version").selectOption("v9.0");
+    await page.getByRole("button", { name: "Share" }).click();
+    const dialog = page.getByRole("dialog", { name: "Share this request" });
+    const linkField = dialog.getByRole("textbox", { name: "Link" });
+    await expect.poll(() => linkField.inputValue()).toMatch(/\/explorer#r=[zj]\.[\w-]+$/);
+    const link = await linkField.inputValue();
+    await page.keyboard.press("Escape");
+
+    // Another browser, whose storage has the default (v9.2) for this environment.
+    const other = await open(link);
+    const second = other.page;
+    await startDemo(second, "Explorer");
+    await second.getByText("Loaded a shared request").waitFor();
+    await second.getByText(/It uses Web API v9\.0, now picked instead of v9\.2\./).waitFor();
+    await expect(second.getByLabel("Web API version").inputValue()).resolves.toBe("v9.0");
+    await requestCard(second)
+      .getByText("https://contoso.crm.dynamics.com/api/data/v9.0/")
+      .waitFor();
+    expect(await axeViolations(second)).toEqual([]);
+    expect(await problems(session)).toEqual([]);
+    expect(await problems(other)).toEqual([]);
+  });
+
   it("browses the tables and queries one", async () => {
     const session = await open();
     const { page } = session;

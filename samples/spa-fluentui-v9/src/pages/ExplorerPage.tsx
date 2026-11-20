@@ -184,7 +184,14 @@ const useStyles = makeStyles({
 });
 
 /** A request opened from a shared link, or why the link couldn't be opened. */
-type ShareNotice = { type: "loaded"; shared: SharedRequest } | { type: "error"; reason: string };
+type ShareNotice =
+  | {
+      type: "loaded";
+      shared: SharedRequest;
+      /** The version picked before the link switched to its own (#548). */
+      switchedFrom?: ExplorerApiVersion;
+    }
+  | { type: "error"; reason: string };
 
 const SHARED_TITLE = "Shared request";
 
@@ -559,6 +566,10 @@ export default function ExplorerPage() {
       (shared) => {
         if (cancelled) return;
         setPicked(undefined);
+        // The link's Web API version (#548), as if picked: the request runs as it was shared.
+        const switchedFrom =
+          shared.apiVersion && shared.apiVersion !== apiVersion ? apiVersion : undefined;
+        if (shared.apiVersion && switchedFrom) changeApiVersion(shared.apiVersion);
         if (shared.type === "raw") selectRaw(shared.request, SHARED_TITLE);
         else
           void selectByName(
@@ -568,7 +579,7 @@ export default function ExplorerPage() {
             shared.flavour,
             SHARED_TITLE
           );
-        setShareNotice({ type: "loaded", shared });
+        setShareNotice({ type: "loaded", shared, switchedFrom });
         done();
         // In one column, the request (and the notice) is below the picker: show it.
         if (window.matchMedia(MEDIUM).matches)
@@ -591,14 +602,15 @@ export default function ExplorerPage() {
   const sharedRequest = useMemo<SharedRequest>(
     () =>
       target.type === "raw"
-        ? { type: "raw", request: raw }
+        ? { type: "raw", request: raw, apiVersion }
         : {
             type: "operation",
             operation: { kind: target.op.kind, name: target.op.name },
             input: opInput,
             flavour,
+            apiVersion,
           },
-    [target, raw, opInput, flavour]
+    [target, raw, opInput, flavour, apiVersion]
   );
 
   const copyAsRequests = useMemo<CopyAsRequest[] | undefined>(() => {
@@ -751,6 +763,15 @@ export default function ExplorerPage() {
                       It was shared from{" "}
                       <span className={common.mono}>{new URL(sharedFrom).host}</span>; here it runs
                       against <span className={common.mono}>{host}</span>.
+                    </>
+                  )}
+                  {shareNotice.switchedFrom && shareNotice.shared.apiVersion && (
+                    <>
+                      {" "}
+                      It uses Web API{" "}
+                      <span className={common.mono}>{shareNotice.shared.apiVersion}</span>, now
+                      picked instead of{" "}
+                      <span className={common.mono}>{shareNotice.switchedFrom}</span>.
                     </>
                   )}
                 </MessageBarBody>

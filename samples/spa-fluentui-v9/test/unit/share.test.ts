@@ -146,6 +146,25 @@ describe("share: round trip", () => {
     const sneaky = await encodeShare({ ...raw(), environmentUrl: ORG }, { compress: false });
     expect(JSON.stringify(payloadJson(sneaky))).not.toContain("contoso");
   });
+
+  it("carries the Web API version, and a link without one opens without one (#548)", async () => {
+    const onV90 = await encodeShare({ ...raw(), apiVersion: "v9.0" }, { compress: false });
+    expect(payloadJson(onV90)).toMatchObject({ w: "v9.0" });
+    await expect(decodeShare(onV90)).resolves.toMatchObject({ apiVersion: "v9.0" });
+
+    const op: SharedRequest = {
+      type: "operation",
+      operation: { kind: "functions", name: "WhoAmI" },
+      input: { args: {}, parameters: {} },
+      apiVersion: "v9.1",
+    };
+    await expect(decodeShare(await encodeShare(op))).resolves.toMatchObject({ apiVersion: "v9.1" });
+
+    // A link made before the version was shared
+    const old = await encodeShare(raw(), { compress: false });
+    expect(payloadJson(old)).not.toHaveProperty("w");
+    expect(await decodeShare(old)).not.toHaveProperty("apiVersion");
+  });
 });
 
 describe("share: never a secret", () => {
@@ -230,6 +249,9 @@ describe("share: untrusted input", () => {
     await rejects(plainPayload({ ...base, b: { name: "x" } }), /body isn't text/);
     await rejects(plainPayload({ ...base, e: "https://evil.example" }), /environment/);
     await rejects(plainPayload({ ...base, e: "http://contoso.crm.dynamics.com" }), /environment/);
+    await rejects(plainPayload({ ...base, w: "v9.3" }), /Web API version/);
+    await rejects(plainPayload({ ...base, w: 9.1 }), /Web API version/);
+    await rejects(plainPayload({ ...base, w: "../v9.2" }), /Web API version/);
 
     const op = { v: 1, t: "op", k: "functions", n: "WhoAmI" };
     await rejects(plainPayload({ ...op, k: "plugins" }), /package "plugins"/);
