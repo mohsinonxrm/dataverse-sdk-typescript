@@ -47,7 +47,7 @@
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
     "eslint": "^10.15.0",
     "msal-node-v2": "npm:@azure/msal-node@^2.16.3",
-    "tsup": "^8.5.1",
+    "tsup": "^9.0.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"
   }
