@@ -4,7 +4,7 @@
  * the MIT License. See THIRD_PARTY_NOTICES.md in this package for the notice.
  */
 
-import * as ejs from "ejs";
+import { ejs } from "./ejs.js";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import {
