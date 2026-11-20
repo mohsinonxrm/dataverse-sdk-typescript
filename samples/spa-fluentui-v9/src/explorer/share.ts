@@ -5,14 +5,16 @@
  *
  * What a link holds: the method, the URL relative to the Web API root, the headers that aren't
  * secrets and the body of a raw request; or the kind, name, arguments, parameters and code style
- * of a typed operation; and the environment URL only when the visitor asks for it. Never the
- * access token, an `Authorization`, `Cookie` or other secret header.
+ * of a typed operation; the Web API version it was made on (v9.2, v9.1 or v9.0, #548); and the
+ * environment URL only when the visitor asks for it. Never the access token, an `Authorization`,
+ * `Cookie` or other secret header.
  *
  * A link is someone else's request: `decodeShare()` treats it as untrusted input. It checks the
  * size before and after decompression, the version, every field's type and size, drops secret
  * headers, refuses absolute URLs, and throws a `ShareError` that says what is wrong.
  */
 import { validateEnvironmentUrl } from "../config";
+import { isApiVersion, type ExplorerApiVersion } from "./apiVersion";
 import { relativePath } from "./rawRequest";
 import {
   HTTP_METHODS,
@@ -39,6 +41,11 @@ const FLAVOURS: readonly CodeFlavour[] = ["typed", "service", "fluent"];
 export type SharedRequest = {
   /** The environment it was shared from; only when the visitor chose to include it. */
   environmentUrl?: string;
+  /**
+   * The Web API version the request was made on (#548). A link opens on it; a link without one
+   * (made before it was shared) opens on the version picked for the environment.
+   */
+  apiVersion?: ExplorerApiVersion;
 } & (
   | { type: "raw"; request: RawRequestInput }
   | {
@@ -57,8 +64,8 @@ export class ShareError extends Error {
   }
 }
 
-/** The JSON in a link, version 1. Short keys keep links short. */
-type Payload = { v: number; e?: string } & (
+/** The JSON in a link, version 1. Short keys keep links short; `w` is the Web API version. */
+type Payload = { v: number; e?: string; w?: string } & (
   | { t: "raw"; m: string; u: string; h?: string; b?: string }
   | {
       t: "op";
@@ -198,7 +205,10 @@ const COMPRESSED = "z.";
 const PLAIN = "j.";
 
 function toPayload(shared: SharedRequest, environmentUrl?: string): Payload {
-  const e = shared.environmentUrl ? { e: shared.environmentUrl } : {};
+  const e = {
+    ...(shared.environmentUrl ? { e: shared.environmentUrl } : {}),
+    ...(shared.apiVersion ? { w: shared.apiVersion } : {}),
+  };
   if (shared.type === "raw") {
     const { method, url, headers, body } = shared.request;
     const h = withoutSecretHeaders(headers);
@@ -325,8 +335,8 @@ function strings(value: unknown, field: string): Record<string, string> {
 }
 
 const ALLOWED_KEYS = {
-  raw: new Set(["v", "t", "e", "m", "u", "h", "b"]),
-  op: new Set(["v", "t", "e", "k", "n", "a", "p", "f"]),
+  raw: new Set(["v", "t", "e", "w", "m", "u", "h", "b"]),
+  op: new Set(["v", "t", "e", "w", "k", "n", "a", "p", "f"]),
 };
 
 /** Checks the decoded JSON field by field: it came from someone else. */
@@ -354,7 +364,19 @@ function fromPayload(value: unknown): SharedRequest {
     }
     environmentUrl = new URL(e).origin;
   }
-  const env = environmentUrl ? { environmentUrl } : {};
+  let apiVersion: ExplorerApiVersion | undefined;
+  if (value.w !== undefined) {
+    if (!isApiVersion(value.w)) {
+      throw new ShareError(
+        "The link's Web API version isn't one the explorer offers (v9.2, v9.1 or v9.0)."
+      );
+    }
+    apiVersion = value.w;
+  }
+  const env = {
+    ...(environmentUrl ? { environmentUrl } : {}),
+    ...(apiVersion ? { apiVersion } : {}),
+  };
 
   if (value.t === "raw") {
     const method = text(value.m, "method", 10, false).toUpperCase();
