@@ -8,6 +8,8 @@ import {
   DataverseAbortError,
   DataverseError,
   DataverseNetworkError,
+  systemClock,
+  type Clock,
 } from "@mohsinonxrm/dataverse-sdk-core";
 
 /** The signal an execution sends its requests with: the caller's, plus the `timeoutMs` deadline. */
@@ -37,30 +39,39 @@ export function deadlineOf(signal: AbortSignal | undefined): number | undefined 
 }
 
 /**
- * Starts the signal for one execution. `timeoutMs` covers the whole execution, every request of
+ * Starts the signal for one execution, timed on `clock` (the client's: `DataverseClient.clock`, so a
+ * fake clock in tests times it too, #547). `timeoutMs` covers the whole execution, every request of
  * it included, so it is a deadline signal linked to the caller's rather than a per-request
  * `timeoutMs`.
  */
 export function executionSignal(
   caller: AbortSignal | undefined,
-  timeoutMs: number | undefined
+  timeoutMs: number | undefined,
+  clock: Clock = systemClock
 ): ExecutionSignal {
   const outer = deadlineOf(caller);
   if (!timeoutMs) {
     return { signal: caller, deadline: outer, expired: false, dispose: () => undefined };
   }
-  const own = Date.now() + timeoutMs;
+  const own = clock.now() + timeoutMs;
   const deadline = outer === undefined ? own : Math.min(outer, own);
   const controller = new AbortController();
   deadlines.set(controller.signal, deadline);
   let expired = false;
-  const timer = setTimeout(() => {
+  const onTimeout = (): void => {
     if (controller.signal.aborted) return;
     expired = true;
     controller.abort(
       new DOMException(`Request timed out after ${String(timeoutMs)}ms`, "TimeoutError")
     );
-  }, timeoutMs);
+  };
+  // As core's own timeoutMs (startDeadline): the real clock gets a timer; another (a fake one in
+  // tests) times it with its sleep, which dispose() ends through `stop`.
+  const stop = new AbortController();
+  const timer =
+    clock === systemClock
+      ? setTimeout(onTimeout, timeoutMs)
+      : void clock.sleep(timeoutMs, stop.signal).then(onTimeout, () => undefined);
   const onAbort = (): void => {
     controller.abort(caller?.reason);
   };
@@ -74,6 +85,7 @@ export function executionSignal(
     },
     dispose() {
       clearTimeout(timer);
+      stop.abort();
       caller?.removeEventListener("abort", onAbort);
     },
   };

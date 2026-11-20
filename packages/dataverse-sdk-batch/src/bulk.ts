@@ -474,7 +474,7 @@ async function runBulkOperation(
     chunks.push(Array.from({ length: Math.min(batchSize, count - start) }, (_, i) => start + i));
   }
 
-  const execution = executionSignal(options.signal, options.timeoutMs);
+  const execution = executionSignal(options.signal, options.timeoutMs, client.clock);
   try {
     const strategy = await resolveStrategy(checked, requested, execution);
     return await runChunks({ ...checked, strategy }, chunks, results, execution);

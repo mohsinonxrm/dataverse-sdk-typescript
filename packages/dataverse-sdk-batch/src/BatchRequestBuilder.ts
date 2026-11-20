@@ -402,7 +402,7 @@ export class BatchRequestBuilder {
     }
 
     const chunks = this.split(batchSize);
-    const execution = executionSignal(options.signal, options.timeoutMs);
+    const execution = executionSignal(options.signal, options.timeoutMs, this.client.clock);
     try {
       return await this.executeChunks(chunks, options, execution);
     } finally {
