@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { BrowserAuthError as BrowserAuthErrorV3 } from "@azure/msal-browser";
+import { BrowserAuthError as BrowserAuthErrorV3 } from "msal-browser-v3";
 import { AuthError as AuthErrorV5 } from "msal-browser-v5";
 import type { AccountInfo, AuthenticationResult } from "@azure/msal-browser";
 import { MsalBrowserTokenProvider, type MsalBrowserTokenProviderOptions } from "../src/index.js";

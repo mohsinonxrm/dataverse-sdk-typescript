@@ -8,7 +8,46 @@
 //   over 10,000 pages, more than the site can hold. Their reference keeps what is written by
 //   hand (the messages base classes and CRUD messages, queryFunctions) and points to the lists of
 //   operations in the guide and to the explorer for the rest.
+// - Third-party doc comments: a type re-exported from a dependency (auth-msal-browser re-exports
+//   MSAL's PopupRequest, …) keeps that package's TSDoc, whose relative links point into its own
+//   repository (`[login-user.md](../../../docs/login-user.md)` in msal-browser 5) and are dead
+//   links on this site. In comments from node_modules, a relative Markdown link becomes its text;
+//   absolute links stay.
 import { Comment, Converter, ReflectionKind } from "typedoc";
+
+/** A Markdown link whose target isn't absolute (http(s):, mailto:, /path or #anchor). */
+const RELATIVE_LINK = /\[([^\]]*)\]\((?!(?:https?:|mailto:|\/|#))[^)]*\)/g;
+
+/**
+ * `parts` (a comment's display parts) with relative Markdown links replaced by their text.
+ * TypeDoc splits `[label](../x.md)` into a text part ending `[label](`, a `relative-link` part
+ * (the target) and a text part starting `)`; a link it didn't split stays in one text part.
+ */
+function unlinkParts(parts) {
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (part.kind === "relative-link") {
+      const before = parts[i - 1];
+      const after = parts[i + 1];
+      const open = before?.kind === "text" ? /\[([^\]]*)\]\($/.exec(before.text) : null;
+      if (open && after?.kind === "text" && after.text.startsWith(")")) {
+        before.text = before.text.slice(0, open.index) + open[1];
+        after.text = after.text.slice(1);
+        parts.splice(i, 1);
+        i--;
+      }
+    } else if (part.kind === "text") {
+      part.text = part.text.replace(RELATIVE_LINK, "$1");
+    }
+  }
+}
+
+/** `comment` with relative Markdown links replaced by their text. */
+function unlinkRelative(comment) {
+  if (!comment) return;
+  unlinkParts(comment.summary);
+  for (const tag of comment.blockTags) unlinkParts(tag.content);
+}
 
 const PATH = /^(dataverse-sdk-[\w-]+)\/(?:dist|src)(?:\/(\w+))?$/;
 const EXPLORER = "https://dataverse-sdk.mohsinonxrm.com";
@@ -24,6 +63,15 @@ const GENERATED = {
 };
 
 export function load(app) {
+  app.converter.on(Converter.EVENT_RESOLVE_END, (context) => {
+    for (const reflection of Object.values(context.project.reflections)) {
+      const file = reflection.sources?.[0]?.fullFileName?.replace(/\\/g, "/") ?? "";
+      if (!file.includes("/node_modules/")) continue;
+      unlinkRelative(reflection.comment);
+      for (const signature of reflection.signatures ?? []) unlinkRelative(signature.comment);
+    }
+  });
+
   app.converter.on(Converter.EVENT_RESOLVE_BEGIN, (context) => {
     const project = context.project;
     for (const mod of project.getChildrenByKind(ReflectionKind.Module)) {

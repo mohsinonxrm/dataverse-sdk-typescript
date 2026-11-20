@@ -354,7 +354,8 @@ describe("#17: one Retry-After parser", () => {
   it("the error parser agrees with the retry middleware on decimals", async () => {
     const err = await parseODataError(status(429, { "retry-after": "1.5" }));
     expect(err).toBeInstanceOf(DataverseThrottleError);
-    expect((err as DataverseThrottleError).retryAfterMs).toBe(parseRetryAfter("1.5"));
-    expect((err as DataverseThrottleError).retryAfterMs).toBe(1500);
+    if (!(err instanceof DataverseThrottleError)) throw new Error("not a DataverseThrottleError");
+    expect(err.retryAfterMs).toBe(parseRetryAfter("1.5"));
+    expect(err.retryAfterMs).toBe(1500);
   });
 });

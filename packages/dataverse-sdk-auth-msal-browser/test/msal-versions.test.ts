@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import * as msal3 from "@azure/msal-browser";
+import * as msal3 from "msal-browser-v3";
 import * as msal4 from "msal-browser-v4";
 import * as msal5 from "msal-browser-v5";
 import type { AccountInfo, AuthenticationResult } from "@azure/msal-browser";

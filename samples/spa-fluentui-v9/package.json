@@ -14,7 +14,7 @@
     "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "dependencies": {
-    "@azure/msal-browser": "^3.30.0",
+    "@azure/msal-browser": "^5.29.1",
     "@fluentui/react-components": "^9.75.2",
     "@fluentui/react-icons": "^2.0.346",
     "@mohsinonxrm/dataverse-sdk-actions": "workspace:*",
@@ -29,17 +29,17 @@
     "@mohsinonxrm/dataverse-sdk-xrm": "workspace:*",
     "jsonc-parser": "^3.3.1",
     "monaco-editor": "^0.57.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.5"
   },
   "devDependencies": {
     "@mohsinonxrm/dataverse-sdk-testing": "workspace:*",
-    "@types/react": "^18.3.31",
-    "@types/react-dom": "^18.3.7",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",
-    "axe-core": "^4.14.0",
-    "playwright": "1.65.0",
+    "axe-core": "^4.14.1",
+    "playwright": "1.65.1",
     "typescript": "^5.9.3",
     "vite": "^8.3.8",
     "vitest": "^4.1.11"
