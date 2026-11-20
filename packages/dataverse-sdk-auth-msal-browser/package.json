@@ -48,7 +48,7 @@
     "eslint": "^10.14.0",
     "msal-browser-v4": "npm:@azure/msal-browser@^4.30.0",
     "msal-browser-v5": "npm:@azure/msal-browser@^5.28.0",
-    "tsup": "^8.5.1",
+    "tsup": "^9.0.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.11"
   }

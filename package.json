@@ -55,7 +55,7 @@
     "publint": "^0.3.12",
     "rimraf": "^6.1.4",
     "tsd": "^0.33.0",
-    "tsup": "^8.5.1",
+    "tsup": "^9.0.0",
     "turbo": "^2.11.11",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.2",
