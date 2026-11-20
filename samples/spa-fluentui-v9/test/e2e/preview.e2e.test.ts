@@ -25,15 +25,21 @@ describe("preview deployments", () => {
       const response = await route.fetch({ url: `${origin}${url.pathname}${url.search}` });
       await route.fulfill({ response });
     });
-    await page.goto(`${PREVIEW}/`);
-    await page.getByText(BANNER).waitFor();
-    await page.getByRole("link", { name: "production site" }).waitFor();
-    expect(await axeViolations(page)).toEqual([]);
+    try {
+      await page.goto(`${PREVIEW}/`);
+      await page.getByText(BANNER).waitFor();
+      await page.getByRole("link", { name: "production site" }).waitFor();
+      expect(await axeViolations(page)).toEqual([]);
 
-    await startDemo(page);
-    await page.getByRole("banner").waitFor();
-    await page.getByText(BANNER).waitFor();
-    expect(await axeViolations(page)).toEqual([]);
-    expect(await problems(session)).toEqual([]);
+      await startDemo(page);
+      await page.getByRole("banner").waitFor();
+      await page.getByText(BANNER).waitFor();
+      expect(await axeViolations(page)).toEqual([]);
+      expect(await problems(session)).toEqual([]);
+    } finally {
+      // A request still being answered when the page closes would fail its fulfill
+      // ("Fetch response has been disposed", reported since Playwright 1.65): drop it.
+      await context.unrouteAll({ behavior: "ignoreErrors" });
+    }
   });
 });
