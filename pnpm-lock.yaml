@@ -259,14 +259,17 @@ importers:
         version: link:../dataverse-sdk-core
     devDependencies:
       '@azure/msal-browser':
-        specifier: ^3.30.0
-        version: 3.30.0
+        specifier: ^5.29.1
+        version: 5.30.0
       '@mohsinonxrm/dataverse-sdk-testing':
         specifier: workspace:*
         version: link:../dataverse-sdk-testing
       eslint:
         specifier: ^10.14.0
         version: 10.14.0
+      msal-browser-v3:
+        specifier: npm:@azure/msal-browser@^3.30.0
+        version: '@azure/msal-browser@3.30.0'
       msal-browser-v4:
         specifier: npm:@azure/msal-browser@^4.30.0
         version: '@azure/msal-browser@4.30.0'
@@ -336,8 +339,8 @@ importers:
   packages/dataverse-sdk-browser-tests:
     dependencies:
       '@azure/msal-browser':
-        specifier: ^3.30.0
-        version: 3.30.0
+        specifier: ^5.29.1
+        version: 5.30.0
       '@mohsinonxrm/dataverse-sdk-appinsights':
         specifier: workspace:*
         version: link:../dataverse-sdk-appinsights
@@ -978,8 +981,8 @@ importers:
   samples/spa-fluentui-v9:
     dependencies:
       '@azure/msal-browser':
-        specifier: ^3.30.0
-        version: 3.30.0
+        specifier: ^5.29.1
+        version: 5.30.0
       '@fluentui/react-components':
         specifier: ^9.75.2
         version: 9.75.2(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(scheduler@0.23.2)
@@ -1265,6 +1268,10 @@ packages:
 
   '@azure/msal-browser@5.28.0':
     resolution: {integrity: sha512-f3yY518Z++x3ZogCbcLK6vnABgpxc8rAKGKtQibcUJKAVU9gamgh5mNAPJIRwduzXQvO2xtHx/gtmPz8iuZ8+w==}
+    engines: {node: '>=0.8.0'}
+
+  '@azure/msal-browser@5.30.0':
+    resolution: {integrity: sha512-o/ADxWxEFcVrE65a7ssOGuxnivq8lcy+2hSGlOOwtn0gGd6iiwl3q8/BMVRorYE81UB/r4B+8WGEUxWnqP7ryA==}
     engines: {node: '>=0.8.0'}
 
   '@azure/msal-common@14.16.1':
@@ -6485,6 +6492,10 @@ snapshots:
   '@azure/msal-browser@5.28.0':
     dependencies:
       '@azure/msal-common': 16.16.0
+
+  '@azure/msal-browser@5.30.0':
+    dependencies:
+      '@azure/msal-common': 16.17.0
 
   '@azure/msal-common@14.16.1': {}
 
