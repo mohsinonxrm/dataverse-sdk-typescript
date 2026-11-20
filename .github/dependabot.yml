@@ -16,17 +16,20 @@ updates:
         dependency-type: "production"
         update-types: ["minor", "patch"]
     ignore:
-      # TypeScript minor upgrades — track manually
+      # TypeScript minor upgrades — track manually. Majors too: TypeScript 6 makes options this
+      # repo uses (baseUrl, esModuleInterop false) errors, so the move is its own work (#569).
       - dependency-name: "typescript"
-        update-types: ["version-update:semver-minor"]
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
       # The packages support Node 22+, so @types/node stays at the oldest supported major (22):
       # newer majors type APIs that Node 22 doesn't have. Minor and patch updates still come.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
       # appinsights hands its resource to @azure/monitor-opentelemetry, which (1.21.0) depends on
-      # @opentelemetry/resources ^2.10.0, so the package's peer range and its tests stay on
-      # major 2. Lift this when Azure Monitor moves to resources 3 (see #549).
+      # @opentelemetry/resources and @opentelemetry/core ^2.10.0, so the package's peer range and
+      # the tests stay on major 2. Lift these when Azure Monitor moves to 3 (see #549).
       - dependency-name: "@opentelemetry/resources"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@opentelemetry/core"
         update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
     directory: "/"
