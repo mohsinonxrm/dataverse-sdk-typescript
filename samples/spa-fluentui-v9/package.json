@@ -15,8 +15,8 @@
   },
   "dependencies": {
     "@azure/msal-browser": "^5.29.1",
-    "@fluentui/react-components": "^9.75.1",
-    "@fluentui/react-icons": "^2.0.345",
+    "@fluentui/react-components": "^9.75.2",
+    "@fluentui/react-icons": "^2.0.346",
     "@mohsinonxrm/dataverse-sdk-actions": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-auth-msal-browser": "workspace:*",
     "@mohsinonxrm/dataverse-sdk-batch": "workspace:*",
