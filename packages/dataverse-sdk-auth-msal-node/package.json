@@ -48,7 +48,7 @@
     "eslint": "^10.14.0",
     "msal-node-v2": "npm:@azure/msal-node@^2.16.3",
     "tsup": "^8.5.1",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.11"
   }
 }
