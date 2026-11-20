@@ -24,12 +24,11 @@ updates:
       # newer majors type APIs that Node 22 doesn't have. Minor and patch updates still come.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
-      # appinsights hands its resource to @azure/monitor-opentelemetry, which (1.21.0) depends on
-      # @opentelemetry/resources and @opentelemetry/core ^2.10.0, so the package's peer range and
-      # the tests stay on major 2. Lift these when Azure Monitor moves to 3 (see #549).
-      - dependency-name: "@opentelemetry/resources"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@opentelemetry/core"
+      # The OpenTelemetry JS packages are released together (core, resources, sdk-trace-base,
+      # context-async-hooks, ... share a version line). appinsights hands its resource to
+      # @azure/monitor-opentelemetry, which (1.21.0) depends on the 2.x line, so the package's peer
+      # ranges and the tests stay on it. Lift this when Azure Monitor moves to 3 (see #549).
+      - dependency-name: "@opentelemetry/*"
         update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
     directory: "/"
